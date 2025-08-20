@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Progress getStreamsProgress returns the progress of each stream 1`] = `
+[
+  49.82118399026023,
+  248.95437262357416,
+  248.95437262357416,
+  248.95437262357416,
+  995.8174904942966,
+  159.90424325672453,
+]
+`;

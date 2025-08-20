@@ -1,0 +1,25 @@
+# Packages
+.yalc
+yalc.lock
+node_modules/
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+
+# Tests
+coverage/
+.jest/
+spec.json
+
+# Vi
+*.swp

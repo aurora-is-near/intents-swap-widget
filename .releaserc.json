@@ -1,0 +1,3 @@
+{
+  "extends": "@aurora-is-near/semantic-release-config"
+}
