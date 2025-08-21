@@ -40,7 +40,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
       {({ open, close }) => (
         <div>
           <MenuButton as={Fragment}>
-            {({ open }) => (
+            {({ open: isOpen }) => (
               <div className="py-ds-sm px-ds-md gap-ds-md flex h-[42px] cursor-pointer items-center rounded-md bg-gray-500">
                 {(() => {
                   switch (selected) {
@@ -77,7 +77,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                   }
                 })()}
 
-                {open ? (
+                {isOpen ? (
                   <Icons.ChevronUp size={18} className="text-gray-50" />
                 ) : (
                   <Icons.ChevronDown size={18} className="text-gray-50" />

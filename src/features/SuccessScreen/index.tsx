@@ -41,7 +41,6 @@ export const SuccessScreen = ({
       <span className="text-label-l text-gray-50">All done</span>
       <p className="mt-ds-sm text-p-s text-gray-100">
         {lines.map((line, idx) => (
-          // eslint-disable-next-line react/no-array-index-key
           <Fragment key={idx}>
             {line}
             {idx !== lines.length - 1 && <br />}

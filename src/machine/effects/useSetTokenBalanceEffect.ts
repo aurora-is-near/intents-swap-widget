@@ -27,7 +27,5 @@ export const useSetTokenBalanceEffect = ({ isEnabled }: ListenerProps) => {
     const tokenBalanceKey = getTokenBalanceKey(ctx.sourceToken);
 
     fireEvent('tokenSetBalance', mergedBalance[tokenBalanceKey]);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mergedBalance, ctx.sourceToken]);
 };
