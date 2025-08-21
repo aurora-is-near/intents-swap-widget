@@ -1,0 +1,33 @@
+import { useEffect } from 'react';
+
+import { useMergedBalance } from '@/hooks/useMergedBalance';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
+
+import { fireEvent } from '@/machine';
+import { useUnsafeSnapshot } from '@/machine/snap';
+
+import type { ListenerProps } from './types';
+
+export const useSetTokenBalanceEffect = ({ isEnabled }: ListenerProps) => {
+  const { ctx } = useUnsafeSnapshot();
+
+  const { mergedBalance } = useMergedBalance();
+
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
+    if (!ctx.sourceToken || !ctx.walletAddress) {
+      fireEvent('tokenSetBalance', undefined);
+
+      return;
+    }
+
+    const tokenBalanceKey = getTokenBalanceKey(ctx.sourceToken);
+
+    fireEvent('tokenSetBalance', mergedBalance[tokenBalanceKey]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mergedBalance, ctx.sourceToken]);
+};

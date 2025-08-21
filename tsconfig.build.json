@@ -1,0 +1,35 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "compilerOptions": {
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowJs": false,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": false,
+    "skipLibCheck": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "module": "ESNext",
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@resources/*": ["./resources/*"],
+    },
+  },
+}

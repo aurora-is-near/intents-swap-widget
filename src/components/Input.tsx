@@ -1,0 +1,104 @@
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Input as UIInput } from '@headlessui/react';
+import type { InputProps } from '@headlessui/react';
+import type { PropsWithChildren } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import * as Icons from 'lucide-react';
+
+import { cn } from '@/utils/cn';
+
+type State = 'default' | 'disabled' | 'error';
+
+export type Props = Omit<InputProps, 'size'> & {
+  icon?: LucideIcon;
+  defaultValue?: string;
+  state?: State;
+};
+
+export const Input = ({
+  state = 'default',
+  defaultValue = '',
+  className,
+  onChange,
+  children,
+  icon: Icon,
+  ...inputProps
+}: PropsWithChildren<Props>) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [value, setValue] = useState(defaultValue);
+
+  const handleFocus = () => setIsFocused(true);
+  const handleBlur = () => setIsFocused(false);
+  const handleClear = () => {
+    setValue('');
+    onChange?.({
+      target: { value: '' },
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+    onChange?.(e);
+  };
+
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
+
+  return (
+    <UIInput
+      type="text"
+      as={Fragment}
+      disabled={state === 'disabled'}
+      autoComplete="off"
+      className={cn(
+        'px-ds-lg py-ds-lg text-label-m rounded-md border border-transparent data-focus:outline-none',
+        { 'bg-gray-600 text-gray-50': state === 'default' },
+        { 'border-gray-400': isFocused && state === 'default' },
+        {
+          'cursor-not-allowed bg-gray-800 text-gray-100': state === 'disabled',
+        },
+        { 'text-alert-100 bg-gray-600': state === 'error' },
+        className,
+      )}
+      {...inputProps}>
+      {() => (
+        <div className="flex items-center justify-between">
+          {Icon && <Icon size={16} className="mr-ds-md text-gray-100" />}
+          <input
+            value={value}
+            ref={inputRef}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            onChange={onInputChange}
+            disabled={state === 'disabled'}
+            placeholder={inputProps.placeholder}
+            autoComplete="off"
+            className={cn('text-label-m mr-auto w-full outline-none', {
+              'cursor-not-allowed': state === 'disabled',
+            })}
+          />
+          {state !== 'disabled' && (
+            <div className="gap-ds-md relative flex items-center">
+              {children}
+              {value ? (
+                <button
+                  type="button"
+                  className={cn(
+                    'cursor-default text-gray-100 opacity-0 transition-opacity duration-150 ease-in-out hover:text-gray-50',
+                    {
+                      'cursor-pointer opacity-100': !!value,
+                    },
+                  )}
+                  onClick={handleClear}>
+                  <Icons.X className="h-ds-xl w-ds-xl" />
+                </button>
+              ) : null}
+            </div>
+          )}
+        </div>
+      )}
+    </UIInput>
+  );
+};

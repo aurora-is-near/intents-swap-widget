@@ -1,24 +1,30 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "examples/**/*"],
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "./dist",
     "target": "ESNext",
-    "module": "NodeNext",
-    "lib": ["dom", "dom.iterable", "es2020"],
+    "module": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "declaration": true,
     "strict": true,
     "jsx": "react-jsx",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declarationMap": true,
     "allowJs": true,
+    "emitDeclarationOnly": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "strictPropertyInitialization": false,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "types": ["./typings/global.d.ts"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@resources/*": ["./resources/*"],
+    },
   }
 }

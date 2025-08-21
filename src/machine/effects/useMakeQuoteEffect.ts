@@ -1,0 +1,108 @@
+import { useEffect } from 'react';
+
+import { QuoteError } from '@/errors';
+import { useMakeQuote } from '@/hooks/useMakeQuote';
+
+import { fireEvent, moveTo } from '@/machine';
+import { guardStates } from '@/machine/guards';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
+
+import type { ListenerProps } from './types';
+
+export const useMakeQuoteEffect = ({ isEnabled }: ListenerProps) => {
+  const { ctx } = useUnsafeSnapshot();
+  const { isDirectTransfer } = useComputedSnapshot();
+
+  const isDry = !ctx.walletAddress;
+  const shouldRun = isEnabled && !isDirectTransfer;
+
+  const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
+
+  useEffect(() => {
+    const isValidDryInput = guardStates(ctx, ['input_valid_dry']);
+    const isValidExternalInput = guardStates(ctx, ['input_valid_external']);
+    const isValidInternalInput = guardStates(ctx, ['input_valid_internal']);
+
+    if (isDry && !isValidDryInput) {
+      cancel();
+    } else if (!isDry && ctx.targetToken?.isIntent && !isValidInternalInput) {
+      cancel();
+    } else if (!isDry && !ctx.targetToken?.isIntent && !isValidExternalInput) {
+      cancel();
+    }
+  }, [cancel, isDry, ctx]);
+
+  useEffect(() => {
+    if (!shouldRun) {
+      return;
+    }
+
+    const cancelled = false;
+
+    const isValidState = isDry
+      ? ctx.state === 'input_valid_dry'
+      : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
+        (ctx.state === 'input_valid_internal' && ctx.targetToken?.isIntent);
+
+    void (async () => {
+      try {
+        // do not refetch failed quotes - persist an error instead
+        if (
+          isValidState &&
+          (ctx.quoteStatus === 'idle' || ctx.quoteStatus === 'pending')
+        ) {
+          fireEvent('quoteSetStatus', 'pending');
+          const quote = await makeQuote();
+
+          if (cancelled || !quote) {
+            return;
+          }
+
+          fireEvent('quoteSetStatus', 'success');
+          fireEvent('quoteSet', quote);
+          fireEvent('errorSet', null);
+
+          fireEvent('tokenSetAmount', {
+            variant: 'target',
+            amount: quote.amountOut,
+          });
+
+          if (ctx.state === 'input_valid_dry') {
+            moveTo('quote_success_dry');
+
+            return;
+          }
+
+          if (ctx.targetToken?.isIntent) {
+            moveTo('quote_success_internal');
+          } else {
+            moveTo('quote_success_external');
+          }
+        }
+      } catch (err) {
+        if (cancelled) {
+          return;
+        }
+
+        if (err instanceof QuoteError) {
+          if (err.data.code === 'QUOTE_INVALID_INITIAL') {
+            fireEvent('quoteSetStatus', 'idle');
+            fireEvent('quoteSet', undefined);
+            fireEvent('errorSet', null);
+
+            return;
+          }
+
+          fireEvent('quoteSetStatus', 'error');
+          fireEvent('quoteSet', undefined);
+          fireEvent('errorSet', err.data);
+
+          validateInputAndMoveTo(ctx);
+
+          return;
+        }
+      }
+    })();
+  }, [ctx, shouldRun, isDry, makeQuote]);
+};
