@@ -3,7 +3,6 @@ import { proxy, useSnapshot } from 'valtio';
 import { createContext, useContext, useEffect, useMemo } from 'react';
 import type { PropsWithChildren } from 'react';
 
-import { EVM_CHAINS } from '@/constants/chains';
 import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
