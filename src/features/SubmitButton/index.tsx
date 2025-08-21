@@ -2,12 +2,10 @@ import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
-import {
-  useComputedSnapshot,
-  useUnsafeSnapshot,
-} from '@/machine/snap';
+import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
@@ -128,7 +126,7 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
       }
     } catch (error: unknown) {
       if (error instanceof TransferError) {
-        console.error(error.data);
+        logger.error(error.data);
         fireEvent('transferSetStatus', { status: 'error' });
         fireEvent('errorSet', error.data);
       }

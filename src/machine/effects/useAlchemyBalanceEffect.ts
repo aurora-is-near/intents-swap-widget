@@ -41,6 +41,5 @@ export const useAlchemyBalanceEffect = ({
         fireEvent('tokenSetBalance', alchemyBalances[ctx.sourceToken.assetId]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEnabled, alchemyBalances, ctx.walletAddress]);
 };

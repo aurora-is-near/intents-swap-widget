@@ -67,19 +67,17 @@ export const Icon = ({
     );
   }
 
-  return (
-    <Wrapper
-      size={size}
-      radius={radius}
-      variant={variant}
-      noLoadedBg={noLoadedBg}
-      isLoaded={typeof icon !== 'string' || imageState === 'loaded'}>
-      {!icon ? (
+  const Ico = () => {
+    if (!icon) {
+      return (
         <span className="text-label-m text-gray-100">
           {label?.charAt(0).toUpperCase()}
         </span>
-      ) : typeof icon === 'string' ? (
-        // eslint-disable-next-line @next/next/no-img-element
+      );
+    }
+
+    if (typeof icon === 'string') {
+      return (
         <img
           width={28}
           height={28}
@@ -88,9 +86,20 @@ export const Icon = ({
           onLoad={() => setImageState('loaded')}
           onError={() => setImageState('failed')}
         />
-      ) : (
-        icon
-      )}
+      );
+    }
+
+    return icon;
+  };
+
+  return (
+    <Wrapper
+      size={size}
+      radius={radius}
+      variant={variant}
+      noLoadedBg={noLoadedBg}
+      isLoaded={typeof icon !== 'string' || imageState === 'loaded'}>
+      <Ico />
     </Wrapper>
   );
 };

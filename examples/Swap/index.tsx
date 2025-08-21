@@ -39,7 +39,6 @@ export type Props = QuoteTransferArgs &
     onMsg: (msg: Msg) => void;
   };
 
-
 export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();

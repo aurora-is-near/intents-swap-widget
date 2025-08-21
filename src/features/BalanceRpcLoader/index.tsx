@@ -44,7 +44,7 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
     }
 
     const chainPriority =
-      tokensBalancePriority[aChainIndex]?.[a.blockchain] || [];
+      tokensBalancePriority[aChainIndex]?.[a.blockchain] ?? [];
 
     const aPriority = chainPriority.indexOf(a.symbol);
     const bPriority = chainPriority.indexOf(b.symbol);
