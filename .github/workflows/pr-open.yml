@@ -34,6 +34,10 @@ jobs:
           subjectPatternError: 'PR title must have a non-empty subject'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  checks:
+    uses: ./.github/workflows/checks.yml
+    secrets: inherit
+
   test:
     uses: ./.github/workflows/test.yml
     secrets: inherit
