@@ -4,12 +4,12 @@ import { cn } from '@/utils/cn';
 import { Icon } from '@/components/Icon';
 import type { Chains } from '@/types/chain';
 
-type Msg = { type: 'on_click_chain'; chain: 'calyx' | 'all' | Chains };
+type Msg = { type: 'on_click_chain'; chain: 'intents' | 'all' | Chains };
 
 type Props = {
   label: string;
   isSelected: boolean;
-  chain: 'calyx' | 'all' | Chains;
+  chain: 'intents' | 'all' | Chains;
   icon: string | React.ReactElement;
   onMsg: (msg: Msg) => void;
 };

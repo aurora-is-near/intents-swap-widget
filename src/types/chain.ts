@@ -10,7 +10,7 @@ export type Chain = {
 };
 
 export type DefaultChainsFilter = {
-  calyx: 'none' | 'all' | 'with-balance';
+  intents: 'none' | 'all' | 'with-balance';
   external: 'none' | 'all' | 'wallet-supported';
 };
 

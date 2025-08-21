@@ -21,7 +21,7 @@ export const useNotification = (
   userError: string | undefined,
 ): Notification => {
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains } = useConfig();
+  const { walletSupportedChains, appName } = useConfig();
 
   return useMemo(() => {
     if (ctx.sendAddress && userError) {
@@ -109,7 +109,7 @@ export const useNotification = (
       return {
         variant: 'success',
         state: 'default',
-        message: 'You will receive funds on your Calyx account',
+        message: `You will receive funds on your ${appName} account`,
       };
     }
   }, [ctx, userError, walletSupportedChains]);

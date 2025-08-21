@@ -24,7 +24,6 @@
     "types": ["./typings/global.d.ts"],
     "paths": {
       "@/*": ["./src/*"],
-      "@resources/*": ["./resources/*"],
     },
   }
 }

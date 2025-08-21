@@ -18,14 +18,13 @@ export default function WidgetPage({ isLoading, walletAddress }: Props) {
   const config: WipgetConfig = useMemo(
     () => ({
       ...defaultConfig,
-      referral: '', // used as referral for Intents
       walletAddress, // reactively pass connected wallet address
       walletSupportedChains: ['near'],
       intentsAccountType: 'near',
       chainsFilter: {
-        target: { calyx: 'all', external: 'all' },
+        target: { intents: 'all', external: 'all' },
         source: {
-          calyx: walletAddress ? 'with-balance' : 'all',
+          intents: walletAddress ? 'with-balance' : 'all',
           external: walletAddress ? 'wallet-supported' : 'all',
         },
       },

@@ -11,7 +11,7 @@ import { useIntentsBalance } from './useIntentsBalance';
 
 export type TokensFilterOptions = {
   search: string;
-  selectedChain: Chains | 'all' | 'calyx';
+  selectedChain: Chains | 'all' | 'intents';
   chainsFilter: DefaultChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
 };

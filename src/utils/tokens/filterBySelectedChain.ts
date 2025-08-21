@@ -5,7 +5,7 @@ import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 
 type Options = {
   search: string;
-  selectedChain: Chains | 'all' | 'calyx';
+  selectedChain: Chains | 'all' | 'intents';
   chainsFilter: DefaultChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
   intentBalances: TokenBalances;
@@ -18,13 +18,13 @@ export const createFilterBySelectedChain = (options: Options) => {
   return (token: Token) => {
     if (
       token.isIntent &&
-      (chainsFilter.calyx === 'none' ||
-        !['all', 'calyx'].includes(selectedChain))
+      (chainsFilter.intents === 'none' ||
+        !['all', 'intents'].includes(selectedChain))
     ) {
       return false;
     }
 
-    if (token.isIntent && chainsFilter.calyx === 'with-balance') {
+    if (token.isIntent && chainsFilter.intents === 'with-balance') {
       const balance = intentBalances[getTokenBalanceKey(token)];
 
       return !!balance && balance !== '0';
@@ -34,7 +34,7 @@ export const createFilterBySelectedChain = (options: Options) => {
       return true;
     }
 
-    if (token.isIntent && ['all', 'calyx'].includes(selectedChain)) {
+    if (token.isIntent && ['all', 'intents'].includes(selectedChain)) {
       return true;
     }
 

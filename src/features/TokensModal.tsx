@@ -35,13 +35,13 @@ export const TokensModal = ({
   const { walletSupportedChains } = useConfig();
 
   const [search, setSearch] = useState('');
-  const [selectedChain, setSelectedChain] = useState<'all' | 'calyx' | Chains>(
-    'all',
-  );
+  const [selectedChain, setSelectedChain] = useState<
+    'all' | 'intents' | Chains
+  >('all');
 
   const selectedChainIsNotSupportedByConnectedWallet =
     selectedChain !== 'all' &&
-    selectedChain !== 'calyx' &&
+    selectedChain !== 'intents' &&
     !walletSupportedChains.includes(selectedChain);
 
   return (

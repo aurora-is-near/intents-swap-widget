@@ -3,6 +3,7 @@ import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
 import { logger } from '@/logger';
+import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -83,6 +84,7 @@ export const SubmitButtonError = () => {
 };
 
 export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
+  const { appName } = useConfig();
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
 
@@ -160,7 +162,7 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
         </Button>
         <ErrorMessage variant="dimmed">
           It's temporary not possible to deposit the same asset on Near to
-          Calyx. Please select another asset or swap first.
+          {appName}. Please select another asset or swap first.
         </ErrorMessage>
       </div>
     );

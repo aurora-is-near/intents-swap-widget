@@ -57,7 +57,7 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { referral, intentsAccountType } = useConfig();
+  const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
     onPending,
@@ -125,7 +125,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         });
     }
 
-    const sdk = new BridgeSDK({ referral });
+    const sdk = new BridgeSDK({ referral: appName });
 
     sdk.setIntentSigner(signer);
 
