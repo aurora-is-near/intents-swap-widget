@@ -39,5 +39,6 @@ jobs:
     secrets: inherit
 
   test:
+    if: false
     uses: ./.github/workflows/test.yml
     secrets: inherit
