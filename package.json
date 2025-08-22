@@ -6,6 +6,8 @@
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "module": "./dist/index.js",
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.tsx",
@@ -14,11 +16,12 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepublishOnly": "yarn run build",
-    "build": "vite build && node scripts/copy-styles.js && node scripts/generate-tw-utils.js",
+    "build:watch": "vite build --watch",
+    "build": "vite build",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=20.18.1"
   },
   "husky": {
     "hooks": {
@@ -99,7 +102,6 @@
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.1.12",
     "@types/jest": "^29.0.0",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.once": "^4.1.9",
