@@ -1,4 +1,5 @@
 import glob from "glob";
+import execa from "execa";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative, extname } from "node:path";
 
@@ -6,7 +7,6 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
-// import tailwindcss from "@tailwindcss/vite";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -22,6 +22,11 @@ function isExt(id: string) {
   return externals.some((d) => id === d || id.startsWith(d + "/"));
 }
 
+async function runPostBuild() {
+  await execa('node', ['scripts/copy-styles.js'], { stdio: 'inherit' });
+  await execa('node', ['scripts/generate-tw-utils.js'], { stdio: 'inherit' });
+}
+
 export default defineConfig({
   plugins: [
     svgr({
@@ -33,7 +38,6 @@ export default defineConfig({
       },
       include: "**/*.svg",
     }),
-    // tailwindcss(),
     react(),
     dts({
       include: ["src"],
@@ -44,6 +48,13 @@ export default defineConfig({
       rollupTypes: false,
       insertTypesEntry: true,
     }),
+    {
+      name: 'postbuild-runner',
+      closeBundle: async () => {
+        // runs after each build (including incremental rebuilds in --watch)
+        await runPostBuild();
+      },
+    },
   ],
   css: {
     postcss: "./postcss.config.cjs",
