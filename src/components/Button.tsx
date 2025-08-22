@@ -29,7 +29,8 @@ const styles = {
   }),
 
   state: (state: State) => ({
-    'bg-transparent text-sw-mauve-400 ring-1 ring-sw-mauve-700': state === 'disabled',
+    'bg-transparent text-sw-mauve-400 ring-1 ring-sw-mauve-700':
+      state === 'disabled',
     'bg-sw-mauve-700 text-sw-mauve-300': state === 'loading',
     'bg-sw-alert-900 text-sw-alert-100': state === 'error',
     'text-sw-mauve-975 bg-sw-mauve-300 hover:bg-sw-mauve-50': [

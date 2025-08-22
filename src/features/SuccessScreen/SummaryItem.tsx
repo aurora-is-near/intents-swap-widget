@@ -19,7 +19,9 @@ export const SummaryItem = ({
   <li className="py-sw-md flex items-center justify-between">
     <span className="text-sw-label-s text-sw-gray-100">{label}</span>
     <div className="gap-sw-md flex items-center">
-      <span className="text-sw-label-s text-sw-mauve-300">{formatTxHash(value)}</span>
+      <span className="text-sw-label-s text-sw-mauve-300">
+        {formatTxHash(value)}
+      </span>
       {!!externalUrl && <ExternalAction url={externalUrl} />}
       {hasCopyAction && <CopyButton value={value} />}
     </div>

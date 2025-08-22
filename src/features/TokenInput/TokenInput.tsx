@@ -77,7 +77,9 @@ export const TokenInputWithToken = ({
             { 'animate-pulse cursor-default': state === 'disabled' },
           )}>
           <TokenIcon chainShowIcon={!token.isIntent} {...token} />
-          <span className="text-sw-label-m text-sw-gray-50">{token.symbol}</span>
+          <span className="text-sw-label-m text-sw-gray-50">
+            {token.symbol}
+          </span>
         </button>
       </div>
       <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between">

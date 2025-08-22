@@ -57,7 +57,8 @@ export const Input = ({
         { 'bg-sw-gray-600 text-sw-gray-50': state === 'default' },
         { 'border-gray-400': isFocused && state === 'default' },
         {
-          'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100': state === 'disabled',
+          'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100':
+            state === 'disabled',
         },
         { 'text-sw-alert-100 bg-sw-gray-600': state === 'error' },
         className,
