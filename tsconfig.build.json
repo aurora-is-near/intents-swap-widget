@@ -29,7 +29,6 @@
     "emitDecoratorMetadata": false,
     "paths": {
       "@/*": ["./src/*"],
-      "@resources/*": ["./resources/*"],
     },
   },
 }

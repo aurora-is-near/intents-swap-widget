@@ -49,7 +49,8 @@ export const NOT_EVM_CHAINS = [
 
 export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
 
-export const DEFAULT_CHAIN_ICON = '../resources/icons/unknown.svg';
+export const DEFAULT_CHAIN_ICON =
+  'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg';
 
 export const DRY_QUOTE_ADDRESSES = {
   evm: '0x0000000000000000000000000000000000000000',

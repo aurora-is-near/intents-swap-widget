@@ -25,7 +25,7 @@ type Props = {
   offset?: string;
   groupTokens: boolean;
   chainsFilter: DefaultChainsFilter;
-  selectedChain: 'all' | 'calyx' | Chains;
+  selectedChain: 'all' | 'intents' | Chains;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
@@ -52,13 +52,13 @@ export const TokensList = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { topScreenOffset, walletSupportedChains } = useConfig();
+  const { topScreenOffset, walletSupportedChains, appName } = useConfig();
   const { mergedBalance } = useMergedBalance();
 
   // selected chain is not supported by connected wallet
   const isNotSelectable =
     selectedChain !== 'all' &&
-    selectedChain !== 'calyx' &&
+    selectedChain !== 'intents' &&
     chainsFilter.external !== 'all' &&
     !walletSupportedChains.includes(selectedChain);
 
@@ -79,7 +79,7 @@ export const TokensList = ({
 
   const tokensBySection = useMemo(
     () => [
-      { label: 'Calyx account', tokens: filteredTokens.intents },
+      { label: `${appName} account`, tokens: filteredTokens.intents },
       {
         label: isNotSelectable ? null : 'Connected wallet',
         tokens: filteredTokens.wallet,
@@ -160,7 +160,7 @@ export const TokensList = ({
       return (
         <Banner
           variant="info"
-          message="No balances available on the Calyx platform"
+          message={`No balances available on the ${appName}`}
         />
       );
   }

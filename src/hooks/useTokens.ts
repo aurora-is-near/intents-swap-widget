@@ -4,6 +4,7 @@ import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 import type { QueryObserverOptions } from '@tanstack/react-query';
 import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
+import { useConfig } from '@/config';
 import { TOKENS_DATA } from '@/constants/tokens';
 import { CHAINS_LIST, DEFAULT_CHAIN_ICON } from '@/constants/chains';
 import { isValidChain } from '@/utils/checkers/isValidChain';
@@ -33,6 +34,8 @@ export const useTokens = (
     'queryKey' | 'queryFn'
   > = {},
 ) => {
+  const { showIntentTokens, filterTokens } = useConfig();
+
   const query = useQuery<TokenResponse[]>({
     ...options,
     queryKey: ['tokens'],
@@ -67,16 +70,19 @@ export const useTokens = (
           contractAddress: token.contractAddress,
         };
       })
-      .filter((t) => !!t);
+      .filter((t) => !!t)
+      .filter(filterTokens);
 
-    return [
-      ...tokens,
-      // add Calyx tokens to the full list
-      ...tokens
-        .filter((t) => t && t.blockchain === 'near')
-        .map((t) => ({ ...t, isIntent: true })),
-    ];
-  }, [query.data]);
+    return showIntentTokens
+      ? [
+          ...tokens,
+          // add intents tokens to the full list
+          ...tokens
+            .filter((t) => t && t.blockchain === 'near')
+            .map((t) => ({ ...t, isIntent: true })),
+        ]
+      : tokens;
+  }, [query.data, showIntentTokens, filterTokens]);
 
   return {
     ...query,

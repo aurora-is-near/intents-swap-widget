@@ -3,6 +3,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as Icons from 'lucide-react';
 
+import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { Icon } from '@/components/Icon';
 import { useChains } from '@/hooks/useChains';
@@ -11,14 +12,13 @@ import { notReachable } from '@/utils/notReachable';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 
 import { ChainItem } from './ChainItem';
-import { CalyxIcon } from './CalyxIcon';
 import { AllNetworksIcon } from './AllNetworksIcon';
 
-type Msg = { type: 'on_click_chain'; chain: 'all' | 'calyx' | Chains };
+type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
 
 type Props = {
   chainsFilter: DefaultChainsFilter;
-  selected: 'all' | 'calyx' | Chains;
+  selected: 'all' | 'intents' | Chains;
   onMsg: (msg: Msg) => void;
 };
 
@@ -30,6 +30,7 @@ const commonIconProps = {
 
 export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
   const chains = useChains();
+  const { appIcon, appName, showIntentTokens } = useConfig();
   const selectedChain = useMemo(
     () => chains.find((item) => item.id === selected),
     [chains, selected],
@@ -52,14 +53,14 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                           label="All networks"
                         />
                       );
-                    case 'calyx':
-                      return (
+                    case 'intents':
+                      return showIntentTokens ? (
                         <Icon
                           {...commonIconProps}
-                          icon={<CalyxIcon />}
-                          label="Calyx account"
+                          icon={appIcon}
+                          label={`${appName} account`}
                         />
-                      );
+                      ) : null;
                     default:
                       return !selectedChain ? (
                         <Icon
@@ -114,13 +115,13 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                   />
                 </MenuItem>
 
-                {chainsFilter.calyx !== 'none' && (
+                {chainsFilter.intents !== 'none' && (
                   <MenuItem>
                     <ChainItem
-                      chain="calyx"
-                      label="Calyx account"
-                      isSelected={selected === 'calyx'}
-                      icon={<CalyxIcon />}
+                      chain="intents"
+                      label={`${appName} account`}
+                      isSelected={selected === 'intents'}
+                      icon={appIcon}
                       onMsg={(msg) => {
                         switch (msg.type) {
                           case 'on_click_chain':

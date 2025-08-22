@@ -3,7 +3,7 @@ import type { Chains } from '@/types/chain';
 
 import { notReachable } from '../notReachable';
 
-import { getDefaultCalyxToken } from './getDefaultCalyxToken';
+import { getDefaultIntentsToken } from './getDefaultIntentsToken';
 import { createTokenSorter } from './sort';
 
 type Args = {
@@ -38,7 +38,7 @@ export const getTokenWithHighBalance = ({
     const highestBalanceTkn =
       intentsTokens.sort(
         createTokenSorter(balances, walletSupportedChains),
-      )[0] ?? getDefaultCalyxToken({ tokens });
+      )[0] ?? getDefaultIntentsToken({ tokens });
 
     return highestBalanceTkn;
   }

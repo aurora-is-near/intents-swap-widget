@@ -4,7 +4,7 @@ import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
 import { getMainTokenByChain } from '@/utils/tokens/getMainTokenByChain';
-import { getDefaultCalyxToken } from '@/utils/tokens/getDefaultCalyxToken';
+import { getDefaultIntentsToken } from '@/utils/tokens/getDefaultIntentsToken';
 import { getTokenWithHighBalance } from '@/utils/tokens/getTokenWithHighBalance';
 
 import { fireEvent } from '@/machine';
@@ -19,7 +19,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
   const { intentBalances } = useIntentsBalance();
   const { walletSupportedChains, chainsFilter } = useConfig();
 
-  const highestCalyxToken = getTokenWithHighBalance({
+  const highestIntentsToken = getTokenWithHighBalance({
     tokens,
     walletSupportedChains,
     balances: intentBalances,
@@ -28,16 +28,16 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
 
   const [sourceToken, targetToken] = useMemo(() => {
     if (state === 'initial_dry' || state === 'input_valid_dry') {
-      const defaultCalyxToken = getDefaultCalyxToken({ tokens });
+      const defaultIntentsToken = getDefaultIntentsToken({ tokens });
 
       return [
-        { token: defaultCalyxToken, status: 'loaded' },
+        { token: defaultIntentsToken, status: 'loaded' },
         { token: undefined, status: 'loaded' },
       ] as const;
     }
 
-    if (chainsFilter.source.calyx !== 'none') {
-      if (!highestCalyxToken) {
+    if (chainsFilter.source.intents !== 'none') {
+      if (!highestIntentsToken) {
         return [
           { token: undefined, status: 'loading' },
           { token: undefined, status: 'loading' },
@@ -45,7 +45,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
       }
 
       return [
-        { token: highestCalyxToken, status: 'loaded' },
+        { token: highestIntentsToken, status: 'loaded' },
         { token: undefined, status: 'loaded' },
       ] as const;
     }
@@ -59,7 +59,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
       { token: mainExternalToken, status: 'loaded' },
       { token: undefined, status: 'loaded' },
     ] as const;
-  }, [tokens, chainsFilter, highestCalyxToken, walletSupportedChains, state]);
+  }, [tokens, chainsFilter, highestIntentsToken, walletSupportedChains, state]);
 
   useEffect(() => {
     if (!isEnabled) {

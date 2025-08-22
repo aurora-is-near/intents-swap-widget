@@ -5,7 +5,7 @@ type Args = {
   butNot?: Token;
 };
 
-export const getDefaultCalyxToken = ({ tokens, butNot }: Args) => {
+export const getDefaultIntentsToken = ({ tokens, butNot }: Args) => {
   return (
     tokens.find((t) =>
       butNot?.symbol === 'USDT'

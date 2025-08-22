@@ -26,7 +26,7 @@ export const TokenItem = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains } = useConfig();
+  const { walletSupportedChains, appName } = useConfig();
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
   const isTokenSupported =
     walletSupportedChains.includes(token.blockchain) || token.isIntent;
@@ -49,7 +49,7 @@ export const TokenItem = ({
         <div className="gap-ds-sm mr-auto flex flex-col">
           <span className="text-label-m text-gray-50">{token.name}</span>
           {token.isIntent ? (
-            <span className="text-label-s text-gray-100">{`${token.symbol} on Calyx ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
+            <span className="text-label-s text-gray-100">{`${token.symbol} on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
           ) : (
             <span className="text-label-s text-gray-100">{`${token.symbol} on ${token.chainName}`}</span>
           )}
