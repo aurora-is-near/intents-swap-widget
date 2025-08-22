@@ -140,8 +140,8 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
 
       return (
         <Wrapper>
-          <div className="gap-ds-lg relative flex flex-col">
-            <div className="gap-ds-lg relative flex flex-col">
+          <div className="gap-sw-lg relative flex flex-col">
+            <div className="gap-sw-lg relative flex flex-col">
               <TokenInput.Source
                 onMsg={(msg) => {
                   switch (msg.type) {

@@ -42,7 +42,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
         <div>
           <MenuButton as={Fragment}>
             {({ open: isOpen }) => (
-              <div className="py-ds-sm px-ds-md gap-ds-md flex h-[42px] cursor-pointer items-center rounded-md bg-gray-500">
+              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[42px] cursor-pointer items-center rounded-sw-md bg-sw-gray-500">
                 {(() => {
                   switch (selected) {
                     case 'all':
@@ -79,9 +79,9 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                 })()}
 
                 {isOpen ? (
-                  <Icons.ChevronUp size={18} className="text-gray-50" />
+                  <Icons.ChevronUp size={18} className="text-sw-gray-50" />
                 ) : (
-                  <Icons.ChevronDown size={18} className="text-gray-50" />
+                  <Icons.ChevronDown size={18} className="text-sw-gray-50" />
                 )}
               </div>
             )}
@@ -95,7 +95,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
-                className="hide-scrollbar gap-ds-md p-ds-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-lg bg-gray-900 shadow-lg ring-1 ring-gray-600 outline-none">
+                className="hide-scrollbar gap-sw-md p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-sw-gray-600 outline-none">
                 <MenuItem>
                   <ChainItem
                     chain="all"

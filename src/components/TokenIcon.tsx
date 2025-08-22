@@ -26,7 +26,7 @@ export const TokenIcon = ({
   <div className="relative block">
     <Icon noLoadedBg variant="dark" icon={icon} label={name} />
     {chainShowIcon && (
-      <div className="absolute top-[17px] right-[-4px] flex h-[12px] w-[12px] items-center justify-center overflow-hidden rounded-[4px] ring-2 ring-gray-900">
+      <div className="absolute top-[17px] right-[-4px] flex h-[12px] w-[12px] items-center justify-center overflow-hidden rounded-[4px] ring-2 ring-sw-gray-900">
         <Icon
           size={12}
           radius={4}

@@ -32,9 +32,9 @@ const Wrapper = ({
   <div
     style={{ width: `${size}px`, height: `${size}px` }}
     className={cn('flex items-center justify-center overflow-hidden', {
-      'bg-gray-500':
+      'bg-sw-gray-500':
         variant === 'dark' && ((isLoaded && !noLoadedBg) || !isLoaded),
-      'bg-gray-200':
+      'bg-sw-gray-200':
         variant === 'light' && ((isLoaded && !noLoadedBg) || !isLoaded),
       [`rounded-[${radius}px]`]: radius,
     })}>
@@ -60,7 +60,7 @@ export const Icon = ({
         variant={variant}
         noLoadedBg={noLoadedBg}
         isLoaded={false}>
-        <span className="text-label-m text-gray-100">
+        <span className="text-sw-label-m text-sw-gray-100">
           {label.charAt(0).toUpperCase()}
         </span>
       </Wrapper>
@@ -70,7 +70,7 @@ export const Icon = ({
   const Ico = () => {
     if (!icon) {
       return (
-        <span className="text-label-m text-gray-100">
+        <span className="text-sw-label-m text-sw-gray-100">
           {label?.charAt(0).toUpperCase()}
         </span>
       );

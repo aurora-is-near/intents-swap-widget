@@ -20,8 +20,8 @@ export const WalletBalance = ({
 
   return (
     <span
-      className={cn('text-label-s text-gray-100', {
-        'text-alert-100': isNotSufficient,
+      className={cn('text-sw-label-s text-sw-gray-100', {
+        'text-sw-alert-100': isNotSufficient,
       })}>
       <TinyNumber
         decimals={token.decimals}

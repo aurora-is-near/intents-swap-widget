@@ -10,13 +10,13 @@ type Props = {
 
 export const BlockingError = ({ message, onClickRetry }: Props) => (
   <Card>
-    <div className="gap-ds-2xl py-6xl flex min-h-[200px] flex-col items-center justify-center">
-      <div className="gap-ds-md flex flex-col items-center justify-center">
-        <header className="gap-ds-md flex items-center">
-          <Icons.X strokeWidth={2.5} className="text-mauve-50 h-7 w-7" />
-          <h3 className="text-h4 text-mauve-50">Ooops...</h3>
+    <div className="gap-sw-2xl py-6xl flex min-h-[200px] flex-col items-center justify-center">
+      <div className="gap-sw-md flex flex-col items-center justify-center">
+        <header className="gap-sw-md flex items-center">
+          <Icons.X strokeWidth={2.5} className="text-sw-mauve-50 h-7 w-7" />
+          <h3 className="text-sw-h4 text-sw-mauve-50">Ooops...</h3>
         </header>
-        <p className="text-p-s text-center text-gray-300">
+        <p className="text-sw-p-s text-center text-sw-gray-300">
           {message} <br /> Please try again or contact support.
         </p>
       </div>

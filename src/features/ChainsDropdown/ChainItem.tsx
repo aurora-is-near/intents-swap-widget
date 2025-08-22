@@ -20,12 +20,12 @@ export const ChainItem = ({ chain, label, icon, isSelected, onMsg }: Props) => {
       type="button"
       onClick={() => onMsg({ type: 'on_click_chain', chain })}
       className={cn(
-        'gap-ds-md px-ds-lg py-ds-sm text-mauve-50 flex cursor-pointer items-center justify-between rounded-md transition-colors',
-        { 'hover:text-mauve-200 hover:bg-gray-700': !isSelected },
-        { 'bg-gray-700': isSelected },
+        'gap-sw-md px-sw-lg py-sw-sm text-sw-mauve-50 flex cursor-pointer items-center justify-between rounded-sw-md transition-colors',
+        { 'hover:text-sw-mauve-200 hover:bg-sw-gray-700': !isSelected },
+        { 'bg-sw-gray-700': isSelected },
       )}>
       <Icon noLoadedBg radius={10} variant="dark" label={label} icon={icon} />
-      <span className="text-label-m mr-auto">{label}</span>
+      <span className="text-sw-label-m mr-auto">{label}</span>
       {isSelected && <Icons.Check size={16} />}
     </button>
   );

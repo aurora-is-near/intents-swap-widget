@@ -1,0 +1,67 @@
+@layer components {
+    .text-sw-display {
+        font-size: 72px;
+        line-height: 74px;
+        font-weight: 500;
+    }
+
+    .text-sw-h1 {
+        font-size: 48px;
+        line-height: 48px;
+        font-weight: 500;
+    }
+
+    .text-sw-h2 {
+        font-size: 40px;
+        line-height: 40px;
+        font-weight: 500;
+    }
+
+    .text-sw-h3 {
+        font-size: 32px;
+        line-height: 32px;
+        font-weight: 500;
+    }
+
+    .text-sw-h4 {
+        font-size: 24px;
+        line-height: 24px;
+        font-weight: 500;
+    }
+
+    .text-sw-p-xs {
+        font-size: 12px;
+        line-height: 18px;
+        font-weight: 400;
+    }
+
+    .text-sw-p-s {
+        font-size: 14px;
+        line-height: 20px;
+        font-weight: 400;
+    }
+
+    .text-sw-p-m {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 400;
+    }
+
+    .text-sw-label-s {
+        font-size: 12px;
+        line-height: 12px;
+        font-weight: 500;
+    }
+
+    .text-sw-label-m {
+        font-size: 14px;
+        line-height: 16px;
+        font-weight: 400;
+    }
+
+    .text-sw-label-l {
+        font-size: 16px;
+        line-height: 18px;
+        font-weight: 500;
+    }
+}

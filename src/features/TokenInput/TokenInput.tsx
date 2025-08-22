@@ -53,7 +53,7 @@ export const TokenInputWithToken = ({
   };
 
   return (
-    <Card className="gap-ds-2xl flex flex-col">
+    <Card className="gap-sw-2xl flex flex-col">
       <div className="flex items-center justify-between">
         <InputAmount
           value={value}
@@ -73,16 +73,16 @@ export const TokenInputWithToken = ({
               : () => onMsg({ type: 'on_click_select_token' })
           }
           className={cn(
-            'gap-ds-md pl-ds-sm pr-ds-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-md bg-gray-600',
+            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600',
             { 'animate-pulse cursor-default': state === 'disabled' },
           )}>
           <TokenIcon chainShowIcon={!token.isIntent} {...token} />
-          <span className="text-label-m text-gray-50">{token.symbol}</span>
+          <span className="text-sw-label-m text-sw-gray-50">{token.symbol}</span>
         </button>
       </div>
-      <div className="gap-ds-sm min-h-ds-2xl flex items-center justify-between">
-        <div className="gap-ds-md flex items-center">
-          <span className="text-label-s text-gray-100">{usdAmount}</span>
+      <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between">
+        <div className="gap-sw-md flex items-center">
+          <span className="text-sw-label-s text-sw-gray-100">{usdAmount}</span>
           {quoteUsdDelta ? (
             <Badge
               size="sm"
@@ -93,7 +93,7 @@ export const TokenInputWithToken = ({
             </Badge>
           ) : null}
         </div>
-        <div className="gap-ds-sm flex items-center">
+        <div className="gap-sw-sm flex items-center">
           {token && !!config.walletAddress && (
             <WalletBalance
               token={token}

@@ -38,8 +38,8 @@ export const SuccessScreen = ({
         <CheckIcon />
         <CloseButton onClick={onDismiss} />
       </header>
-      <span className="text-label-l text-gray-50">All done</span>
-      <p className="mt-ds-sm text-p-s text-gray-100">
+      <span className="text-sw-label-l text-sw-gray-50">All done</span>
+      <p className="mt-sw-sm text-sw-p-s text-sw-gray-100">
         {lines.map((line, idx) => (
           <Fragment key={idx}>
             {line}
@@ -47,8 +47,8 @@ export const SuccessScreen = ({
           </Fragment>
         ))}
       </p>
-      <Hr className="mt-ds-xl mb-ds-md" />
-      <ul className="mt-ds-xl flex flex-col">
+      <Hr className="mt-sw-xl mb-sw-md" />
+      <ul className="mt-sw-xl flex flex-col">
         <SummaryItem
           hasCopyAction
           value={txHash}

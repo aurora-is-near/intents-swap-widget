@@ -32,7 +32,7 @@ export const SwapQuote = () => {
           <>
             {`1 ${ctx.sourceToken.symbol} ≈ `} {formatTinyNumber(price ?? 0)}{' '}
             {`${ctx.targetToken.symbol}`}
-            <span className="text-gray-50">{`(${formatUsdAmount(ctx.sourceToken.price)})`}</span>
+            <span className="text-sw-gray-50">{`(${formatUsdAmount(ctx.sourceToken.price)})`}</span>
           </>
         ) : (
           <>

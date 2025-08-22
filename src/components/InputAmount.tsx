@@ -20,9 +20,9 @@ const RawInputAmount = forwardRef<
       data-lpignore="true"
       disabled={state === 'disabled'}
       className={cn(
-        'font-suisse h-[48px] w-full font-medium text-gray-50 data-focus:outline-none',
-        { 'text-gray-200': state === 'disabled' },
-        { 'text-alert-100': state === 'error' },
+        'font-suisse h-[48px] w-full font-medium text-sw-gray-50 data-focus:outline-none',
+        { 'text-sw-gray-200': state === 'disabled' },
+        { 'text-sw-alert-100': state === 'error' },
         className,
       )}
       style={{

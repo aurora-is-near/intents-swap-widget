@@ -13,12 +13,12 @@ export const Banner = ({ variant, message, className, onDismiss }: Props) => {
   return (
     <div
       className={cn(
-        'gap-ds-md px-ds-lg py-ds-md relative flex items-center rounded-md',
+        'gap-sw-md px-sw-lg py-sw-md relative flex items-center rounded-sw-md',
         {
-          'bg-warn-900 text-warn-100': variant === 'warn',
-          'bg-mauve-800 text-mauve-100': variant === 'info',
-          'bg-alert-900 text-alert-100': variant === 'error',
-          'bg-success-900 text-success-100': variant === 'success',
+          'bg-sw-warn-900 text-sw-warn-100': variant === 'warn',
+          'bg-sw-mauve-800 text-sw-mauve-100': variant === 'info',
+          'bg-sw-alert-900 text-sw-alert-100': variant === 'error',
+          'bg-sw-success-900 text-sw-success-100': variant === 'success',
         },
         className,
       )}>
@@ -27,7 +27,7 @@ export const Banner = ({ variant, message, className, onDismiss }: Props) => {
       ) : (
         <Icons.CircleAlert size={16} />
       )}
-      <span className="text-label-s text-nowrap">{message}</span>
+      <span className="text-sw-label-s text-nowrap">{message}</span>
       {onDismiss && (
         <div
           onClick={onDismiss}

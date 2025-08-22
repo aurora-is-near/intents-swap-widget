@@ -16,10 +16,10 @@ export const SummaryItem = ({
   hasCopyAction,
   externalUrl,
 }: Props) => (
-  <li className="py-ds-md flex items-center justify-between">
-    <span className="text-label-s text-gray-100">{label}</span>
-    <div className="gap-ds-md flex items-center">
-      <span className="text-label-s text-mauve-300">{formatTxHash(value)}</span>
+  <li className="py-sw-md flex items-center justify-between">
+    <span className="text-sw-label-s text-sw-gray-100">{label}</span>
+    <div className="gap-sw-md flex items-center">
+      <span className="text-sw-label-s text-sw-mauve-300">{formatTxHash(value)}</span>
       {!!externalUrl && <ExternalAction url={externalUrl} />}
       {hasCopyAction && <CopyButton value={value} />}
     </div>

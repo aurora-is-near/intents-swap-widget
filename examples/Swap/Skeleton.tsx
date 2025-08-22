@@ -6,7 +6,7 @@ import { Wrapper } from './Wrapper';
 
 export const Skeleton = () => (
   <Wrapper>
-    <div className="gap-ds-lg relative flex flex-col">
+    <div className="gap-sw-lg relative flex flex-col">
       <TokenInput.Skeleton />
       <TokenInput.Skeleton />
     </div>
