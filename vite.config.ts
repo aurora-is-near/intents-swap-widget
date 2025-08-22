@@ -7,6 +7,7 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
+// import tailwindcss from "@tailwindcss/vite";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -38,6 +39,7 @@ export default defineConfig({
       },
       include: "**/*.svg",
     }),
+    // tailwindcss(),
     react(),
     dts({
       include: ["src"],
