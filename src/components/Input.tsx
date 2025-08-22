@@ -53,19 +53,20 @@ export const Input = ({
       disabled={state === 'disabled'}
       autoComplete="off"
       className={cn(
-        'px-ds-lg py-ds-lg text-label-m rounded-md border border-transparent data-focus:outline-none',
-        { 'bg-gray-600 text-gray-50': state === 'default' },
+        'px-sw-lg py-sw-lg text-sw-label-m rounded-sw-md border border-transparent data-focus:outline-none',
+        { 'bg-sw-gray-600 text-sw-gray-50': state === 'default' },
         { 'border-gray-400': isFocused && state === 'default' },
         {
-          'cursor-not-allowed bg-gray-800 text-gray-100': state === 'disabled',
+          'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100':
+            state === 'disabled',
         },
-        { 'text-alert-100 bg-gray-600': state === 'error' },
+        { 'text-sw-alert-100 bg-sw-gray-600': state === 'error' },
         className,
       )}
       {...inputProps}>
       {() => (
         <div className="flex items-center justify-between">
-          {Icon && <Icon size={16} className="mr-ds-md text-gray-100" />}
+          {Icon && <Icon size={16} className="mr-sw-md text-sw-gray-100" />}
           <input
             value={value}
             ref={inputRef}
@@ -75,24 +76,24 @@ export const Input = ({
             disabled={state === 'disabled'}
             placeholder={inputProps.placeholder}
             autoComplete="off"
-            className={cn('text-label-m mr-auto w-full outline-none', {
+            className={cn('text-sw-label-m mr-auto w-full outline-none', {
               'cursor-not-allowed': state === 'disabled',
             })}
           />
           {state !== 'disabled' && (
-            <div className="gap-ds-md relative flex items-center">
+            <div className="gap-sw-md relative flex items-center">
               {children}
               {value ? (
                 <button
                   type="button"
                   className={cn(
-                    'cursor-default text-gray-100 opacity-0 transition-opacity duration-150 ease-in-out hover:text-gray-50',
+                    'cursor-default text-sw-gray-100 opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
                     {
                       'cursor-pointer opacity-100': !!value,
                     },
                   )}
                   onClick={handleClear}>
-                  <Icons.X className="h-ds-xl w-ds-xl" />
+                  <Icons.X className="h-sw-xl w-sw-xl" />
                 </button>
               ) : null}
             </div>

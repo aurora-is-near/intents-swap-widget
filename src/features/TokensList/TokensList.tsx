@@ -105,14 +105,14 @@ export const TokensList = ({
     case 'EMPTY_SEARCH':
       return (
         <TokensListPlaceholder
-          className="pt-ds-5xl pb-ds-5xl"
+          className="pt-sw-5xl pb-sw-5xl"
           onResetSearch={() => onMsg({ type: 'on_reset_search' })}
         />
       );
 
     case 'HAS_TOKENS':
       return (
-        <div className={cn('gap-ds-lg flex flex-col', className)}>
+        <div className={cn('gap-sw-lg flex flex-col', className)}>
           <VList
             className="hide-scrollbar"
             style={{
@@ -127,9 +127,9 @@ export const TokensList = ({
               ({ label, tokens: tokensToDisplay }) => (
                 <>
                   {tokensToDisplay.length && label ? (
-                    <header className="gap-ds-md pb-ds-xl flex flex-col">
+                    <header className="gap-sw-md pb-sw-xl flex flex-col">
                       <Hr />
-                      <span className="text-label-s text-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
+                      <span className="text-sw-label-s text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
                     </header>
                   ) : null}
 
@@ -147,7 +147,7 @@ export const TokensList = ({
                     );
                   })}
 
-                  {tokensToDisplay.length ? <div className="h-ds-2xl" /> : null}
+                  {tokensToDisplay.length ? <div className="h-sw-2xl" /> : null}
                 </>
               ),
             )}

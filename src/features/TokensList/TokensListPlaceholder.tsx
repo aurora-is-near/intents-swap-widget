@@ -11,12 +11,12 @@ type Props = {
 export const TokensListPlaceholder = ({ onResetSearch, className }: Props) => (
   <div
     className={cn(
-      'py-ds-lg gap-ds-2xl flex flex-col items-center justify-center text-gray-100',
+      'py-sw-lg gap-sw-2xl flex flex-col items-center justify-center text-sw-gray-100',
       className,
     )}>
-    <div className="gap-ds-md flex items-center">
+    <div className="gap-sw-md flex items-center">
       <Icons.SearchX size={16} />
-      <span className="text-label-m">No tokens match your search</span>
+      <span className="text-sw-label-m">No tokens match your search</span>
     </div>
     <Button
       variant="primary"

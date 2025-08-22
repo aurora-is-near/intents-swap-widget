@@ -35,7 +35,7 @@ export const TokenItem = ({
     <li className="list-none">
       <div
         className={cn(
-          'gap-ds-lg py-ds-md px-ds-lg flex cursor-pointer justify-between rounded-md transition-colors hover:bg-gray-600',
+          'gap-sw-lg py-sw-md px-sw-lg flex cursor-pointer justify-between rounded-sw-md transition-colors hover:bg-sw-gray-600',
           {
             'cursor-not-allowed hover:bg-transparent': isNotSelectable,
           },
@@ -46,21 +46,21 @@ export const TokenItem = ({
         }>
         <TokenIcon chainShowIcon={!token.isIntent} {...token} />
 
-        <div className="gap-ds-sm mr-auto flex flex-col">
-          <span className="text-label-m text-gray-50">{token.name}</span>
+        <div className="gap-sw-sm mr-auto flex flex-col">
+          <span className="text-sw-label-m text-sw-gray-50">{token.name}</span>
           {token.isIntent ? (
-            <span className="text-label-s text-gray-100">{`${token.symbol} on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
+            <span className="text-sw-label-s text-sw-gray-100">{`${token.symbol} on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
           ) : (
-            <span className="text-label-s text-gray-100">{`${token.symbol} on ${token.chainName}`}</span>
+            <span className="text-sw-label-s text-sw-gray-100">{`${token.symbol} on ${token.chainName}`}</span>
           )}
         </div>
 
         {isTokenSupported && !!ctx.walletAddress && (
-          <div className="gap-ds-sm flex flex-col items-end">
+          <div className="gap-sw-sm flex flex-col items-end">
             {balance === undefined && !token.isIntent ? (
-              <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-gray-700" />
+              <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
-              <span className="text-label-m text-gray-50">
+              <span className="text-sw-label-m text-sw-gray-50">
                 <TinyNumber
                   decimals={token.decimals}
                   value={balance === undefined ? '0' : `${balance}`}
@@ -68,7 +68,7 @@ export const TokenItem = ({
               </span>
             )}
             {balance !== '0' && balance !== 0 && balance !== undefined && (
-              <span className="text-label-s text-gray-100">
+              <span className="text-sw-label-s text-sw-gray-100">
                 {displayUsdBalance}
               </span>
             )}

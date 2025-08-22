@@ -33,27 +33,27 @@ export const Accordion = ({
       className={className}
       onClick={() => setIsExpanded((p) => !p)}>
       <header className="align-center flex w-full justify-between">
-        <span className="gap-ds-xs text-label-s mt-ds-xs flex text-center text-gray-100">
+        <span className="gap-sw-xs text-sw-label-s mt-sw-xs flex text-center text-sw-gray-100">
           {title}
         </span>
         {isBadgeLoading ? (
-          <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-gray-700" />
+          <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-700" />
         ) : (
           badge && <Badge>{badge}</Badge>
         )}
-        <button type="button" className="ml-ds-lg cursor-pointer">
+        <button type="button" className="ml-sw-lg cursor-pointer">
           {isExpanded ? (
-            <Icons.ChevronUp className="h-ds-2xl w-ds-2xl text-gray-50" />
+            <Icons.ChevronUp className="h-sw-2xl w-sw-2xl text-sw-gray-50" />
           ) : (
-            <Icons.ChevronDown className="h-ds-2xl w-ds-2xl text-gray-50" />
+            <Icons.ChevronDown className="h-sw-2xl w-sw-2xl text-sw-gray-50" />
           )}
         </button>
       </header>
 
       <div
         style={{ height: isExpanded ? expandedHeightPx : 0 }} // has to be inline for animation to work
-        className="gap-ds-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
-        <Hr className="mt-ds-xl mb-ds-md" />
+        className="gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
+        <Hr className="mt-sw-xl mb-sw-md" />
         {children}
       </div>
     </Card>

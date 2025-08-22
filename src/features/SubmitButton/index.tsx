@@ -46,7 +46,7 @@ const getErrorButton = (ctx: Context) => {
 
   if (ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW') {
     return (
-      <div className="gap-ds-md flex flex-col">
+      <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
           Amount is too low
         </Button>
@@ -64,7 +64,7 @@ const getErrorButton = (ctx: Context) => {
   // other quote errors
   if (ctx.quoteStatus === 'error') {
     return (
-      <div className="gap-ds-md flex flex-col">
+      <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
           Quote failed
         </Button>
@@ -156,7 +156,7 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
     ctx.sourceToken.assetId === ctx.targetToken.assetId
   ) {
     return (
-      <div className="gap-ds-md flex flex-col">
+      <div className="gap-sw-md flex flex-col">
         <Button state="disabled" {...commonBtnProps}>
           Not possible
         </Button>
@@ -194,7 +194,7 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
 
   if (ctx.transferStatus.status === 'error') {
     return (
-      <div className="gap-ds-md flex flex-col">
+      <div className="gap-sw-md flex flex-col">
         <Button {...commonBtnProps}>{getMainLabel()}</Button>
         <ErrorMessage>
           {(() => {

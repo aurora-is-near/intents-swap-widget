@@ -45,18 +45,18 @@ export const TokensModal = ({
     !walletSupportedChains.includes(selectedChain);
 
   return (
-    <Card className="gap-ds-2xl flex flex-col">
-      <header className="py-ds-md flex items-center justify-between">
-        <h2 className="text-label-l">Select token</h2>
+    <Card className="gap-sw-2xl flex flex-col">
+      <header className="py-sw-md flex items-center justify-between">
+        <h2 className="text-sw-label-l">Select token</h2>
         <button
           type="button"
-          className="flex cursor-pointer items-center justify-center text-gray-100 transition-colors hover:text-gray-50"
+          className="flex cursor-pointer items-center justify-center text-sw-gray-100 transition-colors hover:text-sw-gray-50"
           onClick={() => onMsg({ type: 'on_dismiss_tokens_modal' })}>
           <Icons.X size={22} />
         </button>
       </header>
 
-      <div className="gap-ds-xl flex items-center">
+      <div className="gap-sw-xl flex items-center">
         <Input
           icon={Icons.Search}
           defaultValue={search}

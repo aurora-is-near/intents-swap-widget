@@ -14,7 +14,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepublishOnly": "yarn run build",
-    "build": "vite build && node scripts/post-build.mjs",
+    "build": "vite build && node scripts/copy-styles.js && node scripts/generate-tw-utils.js",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly"
   },
   "engines": {
@@ -38,6 +38,9 @@
   ],
   "exports": {
     ".": "./dist/index.js",
+    "./vars.css": "./dist/vars.css",
+    "./text.css": "./dist/text.css",
+    "./utils.css": "./dist/utils.css",
     "./components": "./dist/components/index.js",
     "./features": "./dist/features/index.js",
     "./machine": "./dist/machine/index.js",
@@ -96,6 +99,7 @@
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.1.12",
     "@types/jest": "^29.0.0",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash.once": "^4.1.9",

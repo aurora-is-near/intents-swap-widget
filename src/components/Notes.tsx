@@ -17,18 +17,18 @@ const NoteItem = ({
   isLoading?: boolean;
 }) => (
   <li className="flex w-full items-center justify-between">
-    <span className="text-label-s text-gray-100">{label}</span>
+    <span className="text-sw-label-s text-sw-gray-100">{label}</span>
     {isLoading ? (
-      <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-gray-700" />
+      <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-sw-gray-700" />
     ) : (
-      <span className="text-label-s text-gray-50">{value ?? '—'}</span>
+      <span className="text-sw-label-s text-sw-gray-50">{value ?? '—'}</span>
     )}
   </li>
 );
 
 const NotesList = ({ children, className }: Props) => {
   return (
-    <ul className={cn('gap-ds-2xl flex flex-col', className)}>{children}</ul>
+    <ul className={cn('gap-sw-2xl flex flex-col', className)}>{children}</ul>
   );
 };
 

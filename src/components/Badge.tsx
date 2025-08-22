@@ -29,32 +29,32 @@ export const Badge = ({
           // common
           'cursor-pointer': isClickable,
           'ring-1': detail === 'outlined',
-          'py-ds-xs px-ds-sm': size === 'sm',
-          'py-ds-sm px-ds-md': size === 'md',
+          'py-sw-xs px-sw-sm': size === 'sm',
+          'py-sw-sm px-sw-md': size === 'md',
 
           // gray
-          'text-gray-50 ring-gray-500': variant === 'gray',
-          'bg-gray-600': variant === 'gray' && detail === 'dimmed',
-          'hover:bg-gray-800':
+          'text-sw-gray-50 ring-sw-gray-500': variant === 'gray',
+          'bg-sw-gray-600': variant === 'gray' && detail === 'dimmed',
+          'hover:bg-sw-gray-800':
             isClickable && variant === 'gray' && detail === 'outlined',
 
           // primary
-          'ring-mauve-300 text-mauve-300': variant === 'primary',
-          'bg-mauve-700': variant === 'primary' && detail === 'dimmed',
-          'hover:bg-mauve-700':
+          'ring-sw-mauve-300 text-sw-mauve-300': variant === 'primary',
+          'bg-sw-mauve-700': variant === 'primary' && detail === 'dimmed',
+          'hover:bg-sw-mauve-700':
             isClickable && variant === 'primary' && detail === 'outlined',
 
           // alert
-          'bg-alert-900 text-alert-100': variant === 'alert',
-          'ring-alert-100': detail === 'outlined' && variant === 'alert',
+          'bg-sw-alert-900 text-sw-alert-100': variant === 'alert',
+          'ring-sw-alert-100': detail === 'outlined' && variant === 'alert',
 
           // success
-          'bg-success-900 text-success-100': variant === 'success',
-          'ring-success-100': detail === 'outlined' && variant === 'success',
+          'bg-sw-success-900 text-sw-success-100': variant === 'success',
+          'ring-sw-success-100': detail === 'outlined' && variant === 'success',
         },
         className,
       )}>
-      <span className="gap-ds-sm text-label-s flex items-center text-nowrap">
+      <span className="gap-sw-sm text-sw-label-s flex items-center text-nowrap">
         {children}
       </span>
     </div>

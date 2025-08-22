@@ -1,0 +1,78 @@
+:root {
+  /* Typography */
+  --sw-font-sans: 'Suisse Intl', ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --sw-radius-xl: 20px;
+  --sw-radius-md: 10px;
+  --sw-radius-lg: 16px;
+  --sw-radius-sm: 6px;
+
+  /* Palette (map key scales you actually use) */
+  --sw-gray-50: #ebedf5;
+  --sw-gray-100: #b2b5c1;
+  --sw-gray-200: #7c7f8a;
+  --sw-gray-300: #71747f;
+  --sw-gray-400: #666873;
+  --sw-gray-500: #4f525c;
+  --sw-gray-600: #444650;
+  --sw-gray-700: #3c3e48;
+  --sw-gray-800: #373942;
+  --sw-gray-900: #31343d;
+  --sw-gray-950: #2a2c33;
+  --sw-gray-975: #24262d;
+
+  --sw-mauve-50: #e6ddf5;
+  --sw-mauve-100: #c7a9f0;
+  --sw-mauve-200: #cbadf4;
+  --sw-mauve-300: #d5b7ff;
+  --sw-mauve-400: #7c619f;
+  --sw-mauve-500: #675185;
+  --sw-mauve-600: #594573;
+  --sw-mauve-700: #503c68;
+  --sw-mauve-800: #47365e;
+  --sw-mauve-900: #3c304c;
+  --sw-mauve-950: #2c2733;
+  --sw-mauve-975: #28242e;
+
+  --sw-dune-50: #ede5d9;
+  --sw-dune-100: #c9bca6;
+  --sw-dune-200: #c2b6a0;
+  --sw-dune-300: #cdc0aa;
+  --sw-dune-400: #776c5b;
+  --sw-dune-500: #5f584b;
+  --sw-dune-600: #504b41;
+  --sw-dune-700: #46423b;
+  --sw-dune-800: #3e3b36;
+  --sw-dune-900: #373531;
+  --sw-dune-950: #2e2d2b;
+  --sw-dune-975: #272625;
+
+  /* Status */
+  --sw-alert-100: #f4bbbf;
+  --sw-alert-900: #433c43;
+  --sw-success-100: #b0fcbb;
+  --sw-success-900: #3e4849;
+  --sw-warn-100: #f6e0b3;
+  --sw-warn-900: #42403e;
+
+  /* Spacing tokens (optional public surface) */
+  --sw-space-xxs: 2px;
+  --sw-space-xs: 4px;
+  --sw-space-sm: 6px;
+  --sw-space-md: 8px;
+  --sw-space-lg: 12px;
+  --sw-space-xl: 16px;
+  --sw-space-2xl: 20px;
+  --sw-space-3xl: 24px;
+  --sw-space-4xl: 32px;
+  --sw-space-5xl: 40px;
+  --sw-space-6xl: 48px;
+  --sw-space-7xl: 64px;
+  --sw-space-8xl: 72px;
+  --sw-space-9xl: 80px;
+  --sw-space-10xl: 88px;
+  --sw-space-11xl: 96px;
+  --sw-space-12xl: 108px;
+  --sw-space-max: 128px;
+}

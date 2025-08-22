@@ -38,8 +38,8 @@ export const SendAddress = ({ error, onMsg }: Props) => {
   };
 
   return (
-    <Card className="gap-ds-lg flex flex-col">
-      <h5 className="text-label-m text-gray-50">Send to</h5>
+    <Card className="gap-sw-lg flex flex-col">
+      <h5 className="text-sw-label-m text-sw-gray-50">Send to</h5>
       <Input
         defaultValue={ctx.sendAddress}
         state={notification?.state ?? 'default'}

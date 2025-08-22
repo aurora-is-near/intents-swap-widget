@@ -21,27 +21,28 @@ type Props = {
 );
 
 const styles = {
-  icon: 'h-ds-xl w-ds-xl',
+  icon: 'h-sw-xl w-sw-xl',
 
   size: (size: Size) => ({
-    'px-ds-2xl py-ds-lg': size === 'md',
-    'px-ds-3xl py-ds-xl': size === 'lg',
+    'px-sw-2xl py-sw-lg': size === 'md',
+    'px-sw-3xl py-sw-xl': size === 'lg',
   }),
 
   state: (state: State) => ({
-    'bg-transparent text-mauve-400 ring-1 ring-mauve-700': state === 'disabled',
-    'bg-mauve-700 text-mauve-300': state === 'loading',
-    'bg-alert-900 text-alert-100': state === 'error',
-    'text-mauve-975 bg-mauve-300 hover:bg-mauve-50': [
+    'bg-transparent text-sw-mauve-400 ring-1 ring-sw-mauve-700':
+      state === 'disabled',
+    'bg-sw-mauve-700 text-sw-mauve-300': state === 'loading',
+    'bg-sw-alert-900 text-sw-alert-100': state === 'error',
+    'text-sw-mauve-975 bg-sw-mauve-300 hover:bg-sw-mauve-50': [
       'active',
       'default',
     ].includes(state),
   }),
 
   common: `
-    flex w-full items-center justify-center gap-ds-lg
+    flex w-full items-center justify-center gap-sw-lg
     transition-colors duration-250 ease-in-out
-    text-label-m rounded-md
+    text-sw-label-m rounded-sw-md
   `,
 };
 
@@ -114,9 +115,9 @@ const ButtonTertiary = ({
         styles.common,
         styles.size(size),
         {
-          'text-mauve-300 bg-gray-900': state === 'active',
+          'text-sw-mauve-300 bg-sw-gray-900': state === 'active',
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'hover:text-mauve-300 bg-transparent text-gray-100':
+          'hover:text-sw-mauve-300 bg-transparent text-sw-gray-100':
             state === 'default',
         },
         className,
