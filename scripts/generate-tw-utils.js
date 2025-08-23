@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 const INPUT = path.resolve('./src/tailwind.css');
-const OUTPUT = path.resolve('./dist/utils.css');
+const OUTPUT = path.resolve('./dist/theme-classes.css');
 
 // Heuristics to pick which @theme custom properties become which utility families.
 // We map normalized token names to their CSS var reference (var(--...)) and route them by prefix.

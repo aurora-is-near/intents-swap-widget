@@ -7,7 +7,7 @@ import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
-// import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from "@tailwindcss/vite";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -39,7 +39,7 @@ export default defineConfig({
       },
       include: "**/*.svg",
     }),
-    // tailwindcss(),
+    tailwindcss(),
     react(),
     dts({
       include: ["src"],
@@ -80,7 +80,14 @@ export default defineConfig({
       output: {
         // inlineDynamicImports: true,
         entryFileNames: "[name].js",
-        assetFileNames: 'assets/[name][extname]',
+        assetFileNames: (assetInfo) => {
+            if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+              return 'styles.css';
+            }
+
+            // default for other assets
+            return 'assets/[name][extname]';
+        },
       },
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input

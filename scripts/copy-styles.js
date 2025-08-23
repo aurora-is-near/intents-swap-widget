@@ -5,5 +5,5 @@ const src = resolve("src");
 const dist = resolve("dist");
 
 const files = await fs.readdir(src);
-await fs.copyFile(resolve(src, files.find((f) => f.endsWith("vars.css"))), resolve(dist, "vars.css"));
-await fs.copyFile(resolve(src, files.find((f) => f.endsWith("text.css"))), resolve(dist, "text.css"));
+await fs.copyFile(resolve(src, files.find((f) => f.endsWith("theme.css"))), resolve(dist, "theme.css"));
+await fs.copyFile(resolve(src, files.find((f) => f.endsWith("theme-text.css"))), resolve(dist, "theme-text.css"));
