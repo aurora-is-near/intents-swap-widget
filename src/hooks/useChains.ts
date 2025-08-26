@@ -13,7 +13,7 @@ export const useChains = () => {
     () =>
       Array.from(
         new Set(tokens.map((token) => CHAINS_LIST[token.blockchain])),
-      ).filter(filterChains),
+      ).filter(filterChains ?? (() => true)),
     [tokens, filterChains],
   );
 };

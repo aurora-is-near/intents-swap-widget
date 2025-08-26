@@ -24,8 +24,12 @@ export const TinyNumber = ({ decimals, value, symbol }: Props) => {
         {formattedPrice[1]}
       </span>
       {formattedPrice[2]}
-      &nbsp;
-      {symbol}
+      {symbol ? (
+        <>
+          &nbsp;
+          {symbol}
+        </>
+      ) : null}
     </span>
   );
 };

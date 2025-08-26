@@ -60,7 +60,7 @@ export const TokenItem = ({
             {balance === undefined && !token.isIntent ? (
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
-              <span className="text-sw-label-m text-sw-gray-50">
+              <span className="h-[16px] text-sw-label-m text-sw-gray-50">
                 <TinyNumber
                   decimals={token.decimals}
                   value={balance === undefined ? '0' : `${balance}`}

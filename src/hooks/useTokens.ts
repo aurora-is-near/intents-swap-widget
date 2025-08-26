@@ -71,7 +71,7 @@ export const useTokens = (
         };
       })
       .filter((t) => !!t)
-      .filter(filterTokens);
+      .filter(filterTokens ?? (() => true));
 
     return showIntentTokens
       ? [
