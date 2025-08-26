@@ -83,6 +83,10 @@ yarn link @aurora-is-near/intents-swap-widget
 yarn dev
 ```
 
+If you have an error: `valtio-fsm` not found while using `link`. You need
+temporary add valtio to `devDependencies` in @aurora-is-near/intents-swap-widget
+`package.json` and reinstall. Do not commit this!
+
 ### Contribution
 
 We use semantic release with commitlint. While creating a PR make sure it's
