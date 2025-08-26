@@ -1,4 +1,5 @@
-import { cn } from '@/utils/cn';
+import clsx from 'clsx';
+
 import { Skeleton } from '@/components/Skeleton';
 import { TinyNumber } from '@/components/TinyNumber';
 import type { Token, TokenBalance } from '@/types/token';
@@ -20,8 +21,9 @@ export const WalletBalance = ({
 
   return (
     <span
-      className={cn('text-sw-label-s text-sw-gray-100', {
+      className={clsx('text-sw-label-s', {
         'text-sw-alert-100': isNotSufficient,
+        'text-sw-gray-100': !isNotSufficient,
       })}>
       <TinyNumber
         decimals={token.decimals}

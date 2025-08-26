@@ -46,18 +46,12 @@ _Ext_ submodule contains various extensions that can be used with the widget but
 
 This package uses Tailwind, but your app doesn't have to. It exposes CSS variables to control styling. Each variable and its corresponding Tailwind token uses the `sw-` prefix to avoid conflicts with your app's theme and variables.
 
-Here is the full list of exposed CSS files:
-
-- `theme.css` - contains a list of CSS variables with predefined default theme values
-- `theme-text.css` - contains text classes to style typography only
-- `theme-classes.css` - contains utility classes that use theme variables
-(e.g. `bg-sw-gray-100`, `gap-sw-xs`, `text-mauve-900` etc.)
-- `styles.css` - a complete CSS file that includes all of the above plus all Tailwind utility classes used by the widget
-
 To adjust theme, override CSS variables on your app's side (full list of defined
-variable you can find in `src/theme.css` or `dist/theme.css`):
+variable you can find in `src/theme.css`):
 
 ```css
+@import '@aurora-is-near/intents-swap-widget/styles';
+
 :root {
     /* colors */
     --sw-success-100: #0f0;
@@ -72,28 +66,6 @@ variable you can find in `src/theme.css` or `dist/theme.css`):
         ...
     }
 }
-```
-
-### Your app uses Tailwind
-
-If your app uses Tailwind, you just need to load the theme variables, theme utility classes, and text styles. In your app's CSS file:
-
-```css
-@import 'tailwindcss';
-
-@import '@aurora-is-near/intents-swap-widget/theme.css';
-@import '@aurora-is-near/intents-swap-widget/theme-text.css';
-@import '@aurora-is-near/intents-swap-widget/theme-classes.css';
-
-@theme { ... your app's theme here ... }
-```
-
-### Your app doesn't use Tailwind
-
-Load the complete set of CSS styles used by the widget. You can still override variables and text classes in your app to control the theme.
-
-```css
-@import '@aurora-is-near/intents-swap-widget/styles.css';
 ```
 
 ## Development

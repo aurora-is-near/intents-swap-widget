@@ -1,8 +1,11 @@
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 
+import { EVM_CHAINS } from '@/constants/chains';
+import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
@@ -33,6 +36,14 @@ export type WipgetConfig = {
   };
 };
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2000 * 60,
+    },
+  },
+});
+
 export const defaultConfig: WipgetConfig = {
   appName: 'Unknown',
   appIcon:
@@ -43,8 +54,8 @@ export const defaultConfig: WipgetConfig = {
   topScreenOffset: '10vh + 74px',
   defaultMaxSlippage: 0.01,
 
-  intentsAccountType: 'near',
-  walletSupportedChains: ['near'],
+  intentsAccountType: 'evm',
+  walletSupportedChains: EVM_CHAINS,
   walletAddress: undefined,
 
   filterChains: () => true,
@@ -63,9 +74,7 @@ const WipgetConfigContext =
 
 type Props = PropsWithChildren<{ config?: WipgetConfig }>;
 
-export const configStore = proxy<{
-  config: Omit<WipgetConfig, 'filterChains' | 'filterTokens'>;
-}>({
+export const configStore = proxy<{ config: WipgetConfig }>({
   config: defaultConfig,
 });
 
@@ -80,25 +89,18 @@ export const WipgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
 }: Props) => {
-  // do not add functions to valtio proxy
-  const { filterChains, filterTokens, ...restConfig } = userConfig;
-
   useEffect(() => {
-    configStore.config = deepClone(restConfig);
-  }, [restConfig]);
+    configStore.config = deepClone(userConfig);
+  }, [userConfig]);
 
-  const providerValue = useMemo(
-    () => ({
-      ...configStore.config,
-      filterChains,
-      filterTokens,
-    }),
-    [userConfig],
-  );
+  // add tailwind parent class to portal root
+  useAddClassToPortal('headlessui-portal-root', 'sw');
 
   return (
-    <WipgetConfigContext.Provider value={providerValue}>
-      {children}
-    </WipgetConfigContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <WipgetConfigContext.Provider value={configStore.config}>
+        <div className="sw">{children}</div>
+      </WipgetConfigContext.Provider>
+    </QueryClientProvider>
   );
 };

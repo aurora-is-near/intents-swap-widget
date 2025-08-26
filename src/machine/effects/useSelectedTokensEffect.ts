@@ -17,7 +17,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
-  const { walletSupportedChains, chainsFilter } = useConfig();
+  const { walletSupportedChains, chainsFilter, walletAddress } = useConfig();
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
@@ -27,7 +27,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
   });
 
   const [sourceToken, targetToken] = useMemo(() => {
-    if (state === 'initial_dry' || state === 'input_valid_dry') {
+    if (!walletAddress) {
       const defaultIntentsToken = getDefaultIntentsToken({ tokens });
 
       return [
@@ -59,7 +59,14 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
       { token: mainExternalToken, status: 'loaded' },
       { token: undefined, status: 'loaded' },
     ] as const;
-  }, [tokens, chainsFilter, highestIntentsToken, walletSupportedChains, state]);
+  }, [
+    walletAddress,
+    tokens,
+    chainsFilter,
+    highestIntentsToken,
+    walletSupportedChains,
+    state,
+  ]);
 
   useEffect(() => {
     if (!isEnabled) {

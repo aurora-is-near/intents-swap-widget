@@ -1,8 +1,7 @@
+import clsx from 'clsx';
 import { Button as UIButton } from '@headlessui/react';
 import type { LucideIcon, LucideProps } from 'lucide-react';
 import * as Icons from 'lucide-react';
-
-import { cn } from '@/utils/cn';
 
 type Size = 'md' | 'lg';
 type Variant = 'primary' | 'tertiary';
@@ -29,7 +28,7 @@ const styles = {
   }),
 
   state: (state: State) => ({
-    'bg-transparent text-sw-mauve-400 ring-1 ring-sw-mauve-700':
+    'bg-transparent text-sw-mauve-400 border border-sw-mauve-700':
       state === 'disabled',
     'bg-sw-mauve-700 text-sw-mauve-300': state === 'loading',
     'bg-sw-alert-900 text-sw-alert-100': state === 'error',
@@ -58,7 +57,7 @@ const ButtonChildren = ({
       ? (icon ?? (() => <span />))
       : ({ className, ...lucidProps }: LucideProps) => (
           <Icons.Loader
-            className={cn(styles.icon, 'animate-spin', className)}
+            className={clsx(styles.icon, 'animate-spin', className)}
             {...lucidProps}
           />
         );
@@ -86,7 +85,7 @@ const ButtonPrimary = ({
   return (
     <UIButton
       onClick={() => state === 'default' && onClick?.()}
-      className={cn(
+      className={clsx(
         styles.common,
         styles.size(size),
         styles.state(state),
@@ -111,7 +110,7 @@ const ButtonTertiary = ({
   return (
     <UIButton
       onClick={() => state === 'default' && onClick?.()}
-      className={cn(
+      className={clsx(
         styles.common,
         styles.size(size),
         {
@@ -140,10 +139,10 @@ export const OutlinedButton = ({
   return (
     <UIButton
       onClick={onClick}
-      className={cn(
+      className={clsx(
         styles.common,
         styles.size(size),
-        'cursor-pointer border-[1px] border-white/40 text-[#EBEDF5]',
+        'cursor-pointer border border-white/40 text-[#EBEDF5]',
         className,
       )}>
       <ButtonChildren state={state} {...props}>
