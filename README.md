@@ -36,7 +36,7 @@ _Machine_ submodule defines the finite state machine and context store. It is th
 
 _Types_ submodule exports domain types such as `Token`, `Chain`, `Quote` etc.
 
-## Ext
+### Ext
 
 > `import { useAlchemyBalanceIntegration } from '@aurora-is-near/intents-swap-widget/ext'`
 
