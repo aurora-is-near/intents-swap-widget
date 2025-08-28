@@ -13,6 +13,7 @@ type Msg = { type: 'on_select_token'; token: Token };
 type Props = {
   token: Token;
   balance: TokenBalance;
+  showBalance?: boolean;
   isNotSelectable?: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
@@ -21,6 +22,7 @@ type Props = {
 export const TokenItem = ({
   token,
   balance,
+  showBalance = true,
   isNotSelectable,
   className,
   onMsg,
@@ -55,7 +57,7 @@ export const TokenItem = ({
           )}
         </div>
 
-        {isTokenSupported && !!ctx.walletAddress && (
+        {isTokenSupported && !!ctx.walletAddress && showBalance && (
           <div className="gap-sw-sm flex flex-col items-end">
             {balance === undefined && !token.isIntent ? (
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />

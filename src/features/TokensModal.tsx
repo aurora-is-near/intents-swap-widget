@@ -20,12 +20,14 @@ type Msg =
 
 type Props = {
   groupTokens: boolean;
+  showBalances: boolean;
   showChainsSelector: boolean;
   chainsFilter: DefaultChainsFilter;
   onMsg: (msg: Msg) => void;
 };
 
 export const TokensModal = ({
+  showBalances,
   showChainsSelector,
   chainsFilter,
   groupTokens,
@@ -91,6 +93,7 @@ export const TokensModal = ({
       <TokensList
         search={search}
         groupTokens={groupTokens}
+        showBalances={showBalances}
         chainsFilter={chainsFilter}
         selectedChain={selectedChain}
         offset={

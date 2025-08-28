@@ -32,6 +32,7 @@ export const TokenInputTarget = ({ onMsg }: Props) => {
       value={formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken?.decimals)}
       state={ctx.quoteStatus === 'pending' ? 'disabled' : 'default'}
       showQuickBalanceActions={false}
+      showBalance={true}
       onMsg={onMsg}
     />
   );
