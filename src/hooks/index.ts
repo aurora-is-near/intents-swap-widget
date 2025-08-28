@@ -2,6 +2,7 @@ export { useChains } from './useChains';
 export { useIntentsBalance } from './useIntentsBalance';
 export { useMakeIntentsTransfer } from './useMakeIntentsTransfer';
 export { useMakeQuote } from './useMakeQuote';
+export { useMakeTransfer } from './useMakeTransfer';
 export { useMakeQuoteTransfer } from './useMakeQuoteTransfer';
 export { useMergedBalance } from './useMergedBalance';
 export { useTokenInputPair } from './useTokenInputPair';
