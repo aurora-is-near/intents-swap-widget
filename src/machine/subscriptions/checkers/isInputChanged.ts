@@ -17,6 +17,7 @@ export const isInputChanged = (ctx: Context, changes: ContextChange[]) => {
           'targetTokenAmount',
           'sourceTokenAmount',
           'sourceTokenBalance',
+          'isDepositFromExternalWallet',
         ].includes(change.key),
     ),
   };

@@ -17,6 +17,6 @@ export const guardInitialWallet = (
       !ctx.targetToken ||
       !isNotEmptyAmount(ctx.sourceTokenAmount) ||
       !isSendAddressValid(ctx) ||
-      !isBalanceSufficient(ctx))
+      (!isBalanceSufficient(ctx) && !ctx.isDepositFromExternalWallet))
   );
 };

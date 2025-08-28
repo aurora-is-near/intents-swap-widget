@@ -9,6 +9,7 @@ import { addressSet, type AddressSetPayload } from './addressSet';
 import { tokenSelect, type TokenSelectPayload } from './tokenSelect';
 import { tokenSetAmount, type TokenSetAmountPayload } from './tokenSetAmount';
 import { quoteSetStatus, type QuoteSetStatusPayload } from './quoteSetStatus';
+import { depositTypeSet, type DepositTypeSetPayload } from './depositTypeSet';
 import {
   validateDryInputs,
   validateExternalInputs,
@@ -39,6 +40,7 @@ export type TradeEvents = {
   addressSet: AddressSetPayload;
   errorSet: ErrorSetPayload;
   quoteSet: QuoteSetPayload;
+  depositTypeSet: DepositTypeSetPayload;
   quoteSetStatus: QuoteSetStatusPayload;
   transferSetStatus: TransferSetStatusPayload;
   walletAddressSet: WalletAddressSetPayload;
@@ -58,6 +60,7 @@ export const registerEvents = () => {
   onEvent('tokenSelectRotate', tokenSelectRotate);
   onEvent('tokenSetBalance', tokenSetBalance);
   onEvent('tokenSetAmount', tokenSetAmount);
+  onEvent('depositTypeSet', depositTypeSet);
   onEvent('tokenSelect', tokenSelect);
   onEvent('addressSet', addressSet);
   onEvent('errorSet', errorSet);
