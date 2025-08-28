@@ -20,6 +20,7 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   targetToken: undefined,
   targetTokenAmount: '',
 
+  isDepositFromExternalWallet: false,
   walletAddress: undefined,
   sendAddress: undefined,
   error: null,
@@ -62,6 +63,7 @@ export type InitialDryContext = {
 
   sendAddress?: never;
   walletAddress?: never;
+  isDepositFromExternalWallet: boolean;
   error: InitialDryStateError | null;
 
   quote?: never;
@@ -81,6 +83,7 @@ export type InitialWalletContext = {
 
   walletAddress: string;
   sendAddress: string | undefined;
+  isDepositFromExternalWallet: boolean;
   error: InitialInternalStateError | InitialExternalStateError | null;
 
   quote?: never;
@@ -100,6 +103,7 @@ export type InputValidDryContext = {
 
   sendAddress?: never;
   walletAddress?: never;
+  isDepositFromExternalWallet: boolean;
   error: InputValidDryError | null;
 
   quote?: never;
@@ -119,6 +123,7 @@ export type InputValidInternalContext = {
 
   sendAddress?: never;
   walletAddress: string;
+  isDepositFromExternalWallet: boolean;
   error: InputValidWalletError | null;
 
   quote?: never;
@@ -138,6 +143,7 @@ export type InputValidExternalContext = {
 
   sendAddress: string;
   walletAddress: string;
+  isDepositFromExternalWallet: boolean;
   error: InputValidWalletError | null;
 
   quote?: never;
@@ -157,6 +163,7 @@ export type QuoteSuccessDryContext = {
 
   sendAddress?: never;
   walletAddress?: never;
+  isDepositFromExternalWallet: boolean;
   error: QuoteSuccessError | null;
 
   quote: QuoteDry;
@@ -176,6 +183,7 @@ export type QuoteSuccessInternalContext = {
 
   sendAddress?: never;
   walletAddress: string;
+  isDepositFromExternalWallet: boolean;
   error: QuoteSuccessError | null;
 
   quote: QuoteReal;
@@ -197,6 +205,7 @@ export type QuoteSuccessExternalContext = {
 
   sendAddress: string;
   walletAddress: string;
+  isDepositFromExternalWallet: boolean;
   error: QuoteSuccessError | null;
 
   quote: QuoteReal;
@@ -218,6 +227,7 @@ export type TransferSuccessContext = {
 
   walletAddress: string;
   sendAddress: string | undefined;
+  isDepositFromExternalWallet: boolean;
   error?: never;
 
   quote: Quote | undefined;

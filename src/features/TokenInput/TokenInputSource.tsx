@@ -9,10 +9,11 @@ import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 
 export type Props = {
+  showBalance?: boolean;
   onMsg: (msg: Msg) => void;
 };
 
-export const TokenInputSource = ({ onMsg }: Props) => {
+export const TokenInputSource = ({ onMsg, showBalance = true }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { mergedBalance } = useMergedBalance();
 
@@ -41,8 +42,9 @@ export const TokenInputSource = ({ onMsg }: Props) => {
   return (
     <TokenInputWithToken
       token={ctx.sourceToken}
-      balance={sourceTokenBalance}
       state={sourceInputState}
+      balance={sourceTokenBalance}
+      showBalance={showBalance}
       showQuickBalanceActions
       value={formatBigToHuman(ctx.sourceTokenAmount, ctx.sourceToken?.decimals)}
       onMsg={onMsg}

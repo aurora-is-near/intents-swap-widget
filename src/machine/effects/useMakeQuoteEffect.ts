@@ -10,7 +10,11 @@ import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo'
 
 import type { ListenerProps } from './types';
 
-export const useMakeQuoteEffect = ({ isEnabled }: ListenerProps) => {
+export type Props = ListenerProps & {
+  message?: string;
+};
+
+export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
 
@@ -53,7 +57,7 @@ export const useMakeQuoteEffect = ({ isEnabled }: ListenerProps) => {
           (ctx.quoteStatus === 'idle' || ctx.quoteStatus === 'pending')
         ) {
           fireEvent('quoteSetStatus', 'pending');
-          const quote = await makeQuote();
+          const quote = await makeQuote({ message });
 
           if (cancelled || !quote) {
             return;

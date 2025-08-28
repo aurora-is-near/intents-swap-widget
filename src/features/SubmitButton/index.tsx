@@ -2,16 +2,12 @@ import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
 
-import { logger } from '@/logger';
 import { useConfig } from '@/config';
-import { TransferError } from '@/errors';
-import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
-import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
-import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
+import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
@@ -27,7 +23,7 @@ const commonBtnProps = {
   variant: 'primary' as const,
 };
 
-const getErrorButton = (ctx: Context) => {
+export const getErrorButton = (ctx: Context) => {
   if (ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
     return (
       <Button state="error" {...commonBtnProps}>
@@ -77,19 +73,18 @@ const getErrorButton = (ctx: Context) => {
   }
 };
 
-export const SubmitButtonError = () => {
+const SubmitButtonError = () => {
   const { ctx } = useUnsafeSnapshot();
 
   return getErrorButton(ctx);
 };
 
-export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
+const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   const { appName } = useConfig();
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
 
-  const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
-  const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
+  const { make } = useMakeTransfer({ providers, makeTransfer });
 
   const getMainLabel = () => {
     if (isDirectTransfer) {
@@ -102,51 +97,14 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
   };
 
   const onClick = async () => {
-    if (!ctx.targetToken) {
-      return;
-    }
+    const transferResult = await make();
 
-    let transferResult: TransferResult | undefined;
-
-    try {
-      fireEvent('transferSetStatus', {
-        status: 'pending',
-        reason: 'WAITING_CONFIRMATION',
+    if (transferResult) {
+      onMsg({
+        type: 'on_successful_transfer',
+        transfer: transferResult,
       });
-
-      if (!ctx.sourceToken?.isIntent) {
-        transferResult = await makeQuoteTransfer();
-      } else {
-        transferResult = await makeIntentsTransfer({
-          onPending: (reason) => {
-            fireEvent('transferSetStatus', {
-              status: 'pending',
-              reason,
-            });
-          },
-        });
-      }
-    } catch (error: unknown) {
-      if (error instanceof TransferError) {
-        logger.error(error.data);
-        fireEvent('transferSetStatus', { status: 'error' });
-        fireEvent('errorSet', error.data);
-      }
     }
-
-    if (!transferResult) {
-      fireEvent('transferSetStatus', { status: 'idle' });
-
-      return;
-    }
-
-    fireEvent('transferSetStatus', { status: 'success' });
-    moveTo('transfer_success');
-
-    onMsg({
-      type: 'on_successful_transfer',
-      transfer: transferResult,
-    });
   };
 
   if (
@@ -240,3 +198,7 @@ export const SubmitButton = ({ providers, makeTransfer, onMsg }: Props) => {
     </Button>
   );
 };
+
+export const SubmitButton = Object.assign(SubmitButtonBase, {
+  Error: SubmitButtonError,
+});

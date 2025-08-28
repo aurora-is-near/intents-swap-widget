@@ -16,7 +16,7 @@ export const guardInputValidExternal = (
     !!ctx.sourceToken &&
     !!ctx.targetToken &&
     !ctx.targetToken.isIntent &&
-    isBalanceSufficient(ctx) &&
+    (isBalanceSufficient(ctx) || ctx.isDepositFromExternalWallet) &&
     isNotEmptyAmount(ctx.sourceTokenAmount)
   );
 };

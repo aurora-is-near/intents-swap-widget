@@ -6,7 +6,7 @@ import { TokensModal } from '@/features/TokensModal';
 import { SendAddress } from '@/features/SendAddress';
 import { SuccessScreen } from '@/features/SuccessScreen';
 import { SwapDirectionSwitcher } from '@/features/SwapDirectionSwitcher';
-import { SubmitButton, SubmitButtonError } from '@/features/SubmitButton';
+import { SubmitButton } from '@/features/SubmitButton';
 
 import { BlockingError } from '@/components/BlockingError';
 
@@ -58,10 +58,10 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
-      'makeQuote',
       'checkWalletConnection',
       'setSourceTokenBalance',
-      'setDefaultSelectedTokens',
+      ['makeQuote', { message: undefined }],
+      ['setDefaultSelectedTokens', { skipIntents: false }],
       [
         'setBalancesUsingAlchemyExt',
         { alchemyApiKey: 'DFfe56HsC5zN0p1yox93f' },
@@ -108,6 +108,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
       if (tokenModalOpen !== 'none') {
         return (
           <TokensModal
+            showBalances
             showChainsSelector
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
@@ -210,7 +211,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
                 }}
               />
             ) : (
-              <SubmitButtonError />
+              <SubmitButton.Error />
             )}
           </div>
         </Wrapper>

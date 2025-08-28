@@ -15,6 +15,6 @@ export const guardQuoteSuccessExternal = (
     (ctx.transferStatus.status === 'pending' ||
       ctx.transferStatus.status === 'idle' ||
       ctx.transferStatus.status === 'error') &&
-    isBalanceSufficient(ctx)
+    (isBalanceSufficient(ctx) || ctx.isDepositFromExternalWallet)
   );
 };

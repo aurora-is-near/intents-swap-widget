@@ -24,6 +24,7 @@ type Props = {
   search: string;
   offset?: string;
   groupTokens: boolean;
+  showBalances: boolean;
   chainsFilter: DefaultChainsFilter;
   selectedChain: 'all' | 'intents' | Chains;
   className?: string;
@@ -47,6 +48,7 @@ export const TokensList = ({
   offset,
   className,
   groupTokens,
+  showBalances,
   chainsFilter,
   selectedChain,
   onMsg,
@@ -140,6 +142,7 @@ export const TokensList = ({
                       <TokenItem
                         token={token}
                         key={tokenBalanceKey}
+                        showBalance={showBalances}
                         isNotSelectable={isNotSelectable && !!ctx.walletAddress}
                         balance={mergedBalance[tokenBalanceKey]}
                         onMsg={onMsg}

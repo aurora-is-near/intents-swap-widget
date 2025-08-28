@@ -61,12 +61,14 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
       err = { code: 'SOURCE_TOKEN_IS_INTENT' };
     } else if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
       err = { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' };
-    } else if (!sourceBalance || !isValidBigint(sourceBalance)) {
-      err = { code: 'INVALID_SOURCE_BALANCE' };
     } else if (!ctx.sendAddress) {
       err = { code: 'SEND_ADDRESS_IS_EMPTY' };
-    } else if (!isBalanceSufficient(ctx)) {
-      err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+    } else if (!ctx.isDepositFromExternalWallet) {
+      if (!sourceBalance || !isValidBigint(sourceBalance)) {
+        err = { code: 'INVALID_SOURCE_BALANCE' };
+      } else if (!isBalanceSufficient(ctx)) {
+        err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+      }
     }
   }
 
@@ -99,10 +101,12 @@ export const validateInternalInputs = (ctx: Context): boolean | undefined => {
       err = { code: 'SOURCE_TOKEN_NOT_INTENT' };
     } else if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
       err = { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' };
-    } else if (!sourceBalance || !isValidBigint(sourceBalance)) {
-      err = { code: 'INVALID_SOURCE_BALANCE' };
-    } else if (!isBalanceSufficient(ctx)) {
-      err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+    } else if (!ctx.isDepositFromExternalWallet) {
+      if (!sourceBalance || !isValidBigint(sourceBalance)) {
+        err = { code: 'INVALID_SOURCE_BALANCE' };
+      } else if (!isBalanceSufficient(ctx)) {
+        err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+      }
     }
   }
 

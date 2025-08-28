@@ -9,25 +9,38 @@ import {
 } from '@/machine/subscriptions';
 import { registerEvents } from '@/machine/events';
 
-import { useSelectedTokensEffect } from './useSelectedTokensEffect';
 import { useSetTokenBalanceEffect } from './useSetTokenBalanceEffect';
 import { useWalletConnEffect } from './useWalletConnEffect';
-import { useMakeQuoteEffect } from './useMakeQuoteEffect';
+import {
+  type Props as PropsMakeQuote,
+  useMakeQuoteEffect,
+} from './useMakeQuoteEffect';
+import {
+  type Props as PropsDefaultTokens,
+  useSelectedTokensEffect,
+} from './useSelectedTokensEffect';
 import {
   type Props as PropsAlchemyBalances,
   useAlchemyBalanceEffect,
 } from './useAlchemyBalanceEffect';
+
+type EffectMakeQuote = ['makeQuote', Omit<PropsMakeQuote, 'isEnabled'>];
 
 type EffectAlchemyBalances = [
   'setBalancesUsingAlchemyExt',
   Omit<PropsAlchemyBalances, 'isEnabled'>,
 ];
 
+type EffectDefaultTokens = [
+  'setDefaultSelectedTokens',
+  Omit<PropsDefaultTokens, 'isEnabled'>,
+];
+
 type Effect =
-  | 'makeQuote'
   | 'checkWalletConnection'
   | 'setSourceTokenBalance'
-  | 'setDefaultSelectedTokens'
+  | EffectMakeQuote
+  | EffectDefaultTokens
   | EffectAlchemyBalances;
 
 type Args = {
@@ -55,24 +68,36 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
       Array.isArray(item) && item[0] === 'setBalancesUsingAlchemyExt',
   );
 
+  const defaultTokenListener = listenTo.find<EffectDefaultTokens>(
+    (item): item is EffectDefaultTokens =>
+      Array.isArray(item) && item[0] === 'setDefaultSelectedTokens',
+  );
+
+  const makeQuoteListener = listenTo.find<EffectMakeQuote>(
+    (item): item is EffectMakeQuote =>
+      Array.isArray(item) && item[0] === 'makeQuote',
+  );
+
   useAlchemyBalanceEffect({
     isEnabled: !!alchemyBalancesListener,
     alchemyApiKey: alchemyBalancesListener?.[1].alchemyApiKey,
+  });
+
+  useSelectedTokensEffect({
+    isEnabled: !!defaultTokenListener,
+    skipIntents: defaultTokenListener?.[1].skipIntents,
+  });
+
+  useMakeQuoteEffect({
+    isEnabled: !!makeQuoteListener,
+    message: makeQuoteListener?.[1].message,
   });
 
   useWalletConnEffect({
     isEnabled: listenTo.includes('checkWalletConnection'),
   });
 
-  useSelectedTokensEffect({
-    isEnabled: listenTo.includes('setDefaultSelectedTokens'),
-  });
-
   useSetTokenBalanceEffect({
     isEnabled: listenTo.includes('setSourceTokenBalance'),
-  });
-
-  useMakeQuoteEffect({
-    isEnabled: listenTo.includes('makeQuote'),
   });
 };

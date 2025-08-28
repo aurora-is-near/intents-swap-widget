@@ -4,12 +4,26 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   message: string;
+  multiline?: boolean;
   variant: 'error' | 'warn' | 'info' | 'success';
   className?: string;
   onDismiss?: () => void;
 };
 
-export const Banner = ({ variant, message, className, onDismiss }: Props) => {
+export const Banner = ({
+  variant,
+  multiline,
+  message,
+  className,
+  onDismiss,
+}: Props) => {
+  const icon =
+    variant === 'success' ? (
+      <Icons.CheckCircle size={16} />
+    ) : (
+      <Icons.CircleAlert size={16} />
+    );
+
   return (
     <div
       className={cn(
@@ -22,12 +36,14 @@ export const Banner = ({ variant, message, className, onDismiss }: Props) => {
         },
         className,
       )}>
-      {variant === 'success' ? (
-        <Icons.CheckCircle size={16} />
-      ) : (
-        <Icons.CircleAlert size={16} />
-      )}
-      <span className="text-sw-label-s text-nowrap">{message}</span>
+      {!multiline && icon}
+      <span
+        className={cn('text-sw-label-s', {
+          'text-nowrap': !multiline,
+          'leading-[18px]': multiline,
+        })}>
+        {message}
+      </span>
       {onDismiss && (
         <div
           onClick={onDismiss}

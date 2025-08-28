@@ -25,6 +25,7 @@ export type Props = {
   value?: string;
   quoteUsdDelta?: number;
   quoteUsdValue?: number;
+  showBalance?: boolean;
   showQuickBalanceActions?: boolean;
   state?: 'default' | 'disabled' | 'error' | 'error-balance';
   onMsg: (msg: Msg) => void;
@@ -37,6 +38,7 @@ export const TokenInputWithToken = ({
   quoteUsdDelta,
   quoteUsdValue,
   state = 'default',
+  showBalance = true,
   showQuickBalanceActions = true,
   onMsg,
 }: Props) => {
@@ -96,7 +98,7 @@ export const TokenInputWithToken = ({
           ) : null}
         </div>
         <div className="gap-sw-sm flex items-center">
-          {token && !!config.walletAddress && (
+          {token && !!config.walletAddress && showBalance && (
             <WalletBalance
               token={token}
               balance={balance}
@@ -104,7 +106,7 @@ export const TokenInputWithToken = ({
             />
           )}
 
-          {!!balance && showQuickBalanceActions && (
+          {!!balance && showBalance && showQuickBalanceActions && (
             <>
               <Badge
                 isClickable={state !== 'disabled'}
