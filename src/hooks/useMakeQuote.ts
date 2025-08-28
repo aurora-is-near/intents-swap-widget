@@ -44,7 +44,7 @@ export const useMakeQuote = ({ variant }: Props) => {
     ? DRY_QUOTE_ADDRESSES[intentsAccountType]
     : (ctx.walletAddress ?? '');
 
-  const make = async () => {
+  const make = async ({ message }: { message?: string } = {}) => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
@@ -91,6 +91,11 @@ export const useMakeQuote = ({ variant }: Props) => {
         originAsset: ctx.sourceToken.assetId,
         amount: ctx.sourceTokenAmount,
       };
+
+      if (message) {
+        // @ts-expect-error customRecipientMsg is not in the types
+        commonQuoteParams.customRecipientMsg = message;
+      }
 
       try {
         switch (variant) {

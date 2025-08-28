@@ -13,7 +13,14 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 
 import type { ListenerProps } from './types';
 
-export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
+export type Props = ListenerProps & {
+  skipIntents?: boolean;
+};
+
+export const useSelectedTokensEffect = ({
+  isEnabled,
+  skipIntents = false,
+}: Props) => {
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
@@ -27,7 +34,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
   });
 
   const [sourceToken, targetToken] = useMemo(() => {
-    if (!walletAddress) {
+    if (!walletAddress && !skipIntents) {
       const defaultIntentsToken = getDefaultIntentsToken({ tokens });
 
       return [
@@ -36,7 +43,7 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
       ] as const;
     }
 
-    if (chainsFilter.source.intents !== 'none') {
+    if (chainsFilter.source.intents !== 'none' && !skipIntents) {
       if (!highestIntentsToken) {
         return [
           { token: undefined, status: 'loading' },
@@ -60,9 +67,10 @@ export const useSelectedTokensEffect = ({ isEnabled }: ListenerProps) => {
       { token: undefined, status: 'loaded' },
     ] as const;
   }, [
-    walletAddress,
     tokens,
+    skipIntents,
     chainsFilter,
+    walletAddress,
     highestIntentsToken,
     walletSupportedChains,
     state,
