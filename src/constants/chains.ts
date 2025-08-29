@@ -54,6 +54,7 @@ export const DEFAULT_CHAIN_ICON =
 
 export const DRY_QUOTE_ADDRESSES = {
   evm: '0x0000000000000000000000000000000000000000',
+  sol: '11111111111111111111111111111111',
   near: 'system.near',
 } as const;
 

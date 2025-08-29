@@ -23,6 +23,7 @@ import type { Context } from '@/machine/context';
 
 export type IntentsTransferArgs = {
   providers: {
+    sol?: undefined | null | (() => Promise<Eip1193Provider>);
     evm?: undefined | null | (() => Promise<Eip1193Provider>);
     near?: undefined | null | (() => NearWallet);
   };
@@ -105,6 +106,19 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           providers.evm,
         );
         break;
+      case 'sol':
+        if (!providers.sol) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No EVM provider configured' },
+          });
+        }
+
+        signer = new IntentSignerPrivy(
+          { walletAddress: ctx.walletAddress },
+          providers.sol,
+        );
+        break;
       case 'near':
         if (!providers.near) {
           throw new TransferError({
@@ -119,10 +133,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         });
         break;
       default:
-        notReachable(intentsAccountType, { throwError: false });
-        throw new TransferError({
-          code: 'BRIDGE_SDK_FAILED',
-        });
+        notReachable(intentsAccountType);
     }
 
     const sdk = new BridgeSDK({ referral: appName });

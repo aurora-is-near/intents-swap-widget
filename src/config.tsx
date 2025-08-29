@@ -18,7 +18,7 @@ export type WipgetConfig = {
   topScreenOffset: string;
 
   // Connected wallet
-  intentsAccountType: 'evm' | 'near';
+  intentsAccountType: 'evm' | 'near' | 'sol';
   walletSupportedChains: ReadonlyArray<Chains>;
   walletAddress: string | undefined | null;
 
