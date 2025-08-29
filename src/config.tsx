@@ -85,6 +85,10 @@ export const useConfig = () => {
   return config;
 };
 
+export const resetConfig = (config: WipgetConfig) => {
+  configStore.config = deepClone(config);
+};
+
 export const WipgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
