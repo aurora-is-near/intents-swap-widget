@@ -37,7 +37,7 @@ export const parse = (
             t.symbol.toLowerCase() ===
               (isEvmChain(blockchain)
                 ? (EVM_CHAIN_BASE_TOKENS[blockchain] ?? blockchain)
-                : ''
+                : blockchain
               ).toLowerCase(),
         );
       }
