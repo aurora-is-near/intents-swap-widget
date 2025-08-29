@@ -5,6 +5,7 @@ import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
 
+import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
@@ -23,6 +24,7 @@ type Props = {
   showBalances: boolean;
   showChainsSelector: boolean;
   chainsFilter: DefaultChainsFilter;
+  className?: string;
   onMsg: (msg: Msg) => void;
 };
 
@@ -31,6 +33,7 @@ export const TokensModal = ({
   showChainsSelector,
   chainsFilter,
   groupTokens,
+  className,
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
@@ -47,7 +50,7 @@ export const TokensModal = ({
     !walletSupportedChains.includes(selectedChain);
 
   return (
-    <Card className="gap-sw-2xl flex flex-col">
+    <Card className={cn('gap-sw-2xl flex flex-col', className)}>
       <header className="py-sw-md flex items-center justify-between">
         <h2 className="text-sw-label-l">Select token</h2>
         <button
