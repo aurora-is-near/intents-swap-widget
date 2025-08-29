@@ -191,11 +191,7 @@ export const useMakeQuote = ({ variant }: Props) => {
 
         if (error instanceof ApiError) {
           logger.error(error);
-
-          throw new QuoteError({
-            code: 'QUOTE_INVALID',
-            meta: { isDry },
-          });
+          throw error;
         }
 
         logger.error('[WIDGET] Failed to get a deposit address from the quote');
@@ -214,40 +210,44 @@ export const useMakeQuote = ({ variant }: Props) => {
         throw new Error('Failed to get a deposit address from the quote');
       }
     } catch (error: unknown) {
-      // @ts-expect-error In case error has a message
-      const errorMessage: string = error?.message;
+      if (error instanceof ApiError) {
+        const errorMessage = error.body.message ?? error.message;
 
-      if (errorMessage.includes('Amount is too low')) {
-        const match = errorMessage.match(/\d+/);
-        const minAmount = match ? match[0] : undefined;
+        if (errorMessage.includes('Amount is too low')) {
+          const match = errorMessage.match(/\d+/);
+          const minAmount = match ? match[0] : undefined;
 
-        throw new QuoteError({
-          code: 'QUOTE_AMOUNT_IS_TOO_LOW',
-          meta: {
-            minAmount:
-              (minAmount &&
-                formatBigToHuman(minAmount, ctx.sourceToken.decimals)) ??
-              '0',
-          },
-        });
-      }
+          throw new QuoteError({
+            code: 'QUOTE_AMOUNT_IS_TOO_LOW',
+            meta: {
+              minAmount:
+                (minAmount &&
+                  formatBigToHuman(minAmount, ctx.sourceToken.decimals)) ??
+                '0',
+            },
+          });
+        }
 
-      if (errorMessage.includes('recipient is not valid')) {
-        throw new QuoteError({
-          code: 'TOKEN_IS_NOT_SUPPORTED',
-        });
-      }
+        if (errorMessage.includes('recipient is not valid')) {
+          throw new QuoteError({
+            code: 'TOKEN_IS_NOT_SUPPORTED',
+          });
+        }
 
-      if (errorMessage.includes('Failed to get a deposit address')) {
-        throw new QuoteError({
-          code: 'QUOTE_NO_ONE_TIME_ADDRESS',
-        });
+        if (errorMessage.includes('Failed to get a deposit address')) {
+          throw new QuoteError({
+            code: 'QUOTE_NO_ONE_TIME_ADDRESS',
+          });
+        }
+
+        throw error;
       }
 
       throw new QuoteError({
         code: 'QUOTE_FAILED',
         meta: {
-          message: errorMessage ?? 'Failed to fetch quote. Please try again.',
+          // @ts-expect-error In case error has a message
+          message: error?.message ?? 'Failed to fetch quote. Please try again.',
         },
       });
     }

@@ -53,3 +53,41 @@ export type ErrorType =
   | InputValidDryError
   | InputValidWalletError
   | QuoteSuccessError;
+
+export const QUOTE_ERRORS: Array<
+  InputValidDryError['code'] | InputValidWalletError['code']
+> = [
+  'NO_NEAR_TOKEN_FOUND',
+  'TOKEN_IS_NOT_SUPPORTED',
+  'QUOTE_FAILED',
+  'QUOTE_INVALID',
+  'QUOTE_INVALID_INITIAL',
+  'QUOTE_AMOUNT_IS_TOO_LOW',
+  'QUOTE_NO_ONE_TIME_ADDRESS',
+];
+
+export const TRANSFER_ERRORS: Array<
+  QuoteSuccessDirectTransferError['code'] | QuoteSuccessTransferError['code']
+> = [
+  'DIRECT_TRANSFER_ERROR',
+  'BRIDGE_SDK_FAILED',
+  'FEES_NOT_ESTIMATED',
+  'NO_QUOTE_FOUND',
+  'NO_DEPOSIT_RESULT',
+  'QUOTE_ERROR',
+  'TRANSFER_INVALID_INITIAL',
+];
+
+export const isQuoteError = (
+  error: ErrorType,
+): error is InputValidDryError | InputValidWalletError => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return QUOTE_ERRORS.includes(error.code as any);
+};
+
+export const isTransferError = (
+  error: ErrorType,
+): error is QuoteSuccessError => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return TRANSFER_ERRORS.includes(error.code as any);
+};

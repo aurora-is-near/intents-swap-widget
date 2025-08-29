@@ -3,6 +3,7 @@ import { isValidBigint } from '@/utils/checkers/isValidBigint';
 
 import { guardStates } from '@/machine/guards';
 import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
+import { isQuoteError, isTransferError } from '@/machine/errors';
 import type { Context } from '@/machine/context';
 import type {
   InitialDryStateError,
@@ -34,7 +35,11 @@ export const validateDryInputs = (ctx: Context): boolean | undefined => {
 
   if (!isValidInputsState && err) {
     fireEvent('errorSet', err);
-  } else {
+  } else if (
+    ctx.error &&
+    !isQuoteError(ctx.error) &&
+    !isTransferError(ctx.error)
+  ) {
     fireEvent('errorSet', null);
   }
 
@@ -74,7 +79,11 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
 
   if (!isValidInputsState && err) {
     fireEvent('errorSet', err);
-  } else {
+  } else if (
+    ctx.error &&
+    !isQuoteError(ctx.error) &&
+    !isTransferError(ctx.error)
+  ) {
     fireEvent('errorSet', null);
   }
 
@@ -112,7 +121,11 @@ export const validateInternalInputs = (ctx: Context): boolean | undefined => {
 
   if (!isValidInputsState && err) {
     fireEvent('errorSet', err);
-  } else {
+  } else if (
+    ctx.error &&
+    !isQuoteError(ctx.error) &&
+    !isTransferError(ctx.error)
+  ) {
     fireEvent('errorSet', null);
   }
 

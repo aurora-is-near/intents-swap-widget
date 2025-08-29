@@ -18,6 +18,14 @@ export const getMainTokenByChain = ({
     );
   }
 
+  if (walletSupportedChains.includes('sol')) {
+    return (
+      tokens.find(
+        (t) => !t.isIntent && t.name === 'Solana' && t.blockchain === 'sol',
+      ) ?? tokens[0]
+    );
+  }
+
   return (
     tokens.find(
       (t) => !t.isIntent && t.name === 'ETH' && t.blockchain === 'eth',
