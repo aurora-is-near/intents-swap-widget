@@ -2,6 +2,7 @@
   "include": ["src/**/*", "examples/**/*"],
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "outDir": "./dist",
     "target": "ESNext",
     "module": "esnext",

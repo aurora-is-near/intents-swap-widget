@@ -16,6 +16,7 @@ export { formatTxHash } from './formatters/formatTxHash';
 export { formatUsdAmount } from './formatters/formatUsdAmount';
 export { getExplorerUrl } from './formatters/getExplorerUrl';
 export { getTransactionLink } from './formatters/getTransactionLink';
+export { formatAddressTruncate } from './formatters/formatAddressTruncate';
 
 export { cn } from './cn';
 export { noop } from './noop';

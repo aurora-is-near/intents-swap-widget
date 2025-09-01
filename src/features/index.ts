@@ -8,3 +8,5 @@ export * from './TokenInput';
 export * from './TokensList';
 export * from './TokensModal';
 export * from './SwapDirectionSwitcher';
+export * from './ExternalDeposit';
+export * from './DepositMethodSwitcher';
