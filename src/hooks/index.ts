@@ -9,3 +9,4 @@ export { useTokenInputPair } from './useTokenInputPair';
 export { useTokensFiltered } from './useTokensFiltered';
 export { useTokens } from './useTokens';
 export { useWalletBalance } from './useWalletBalance';
+export { useExternalDepositStatus } from './useExternalDepositStatus';

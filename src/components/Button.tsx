@@ -1,15 +1,18 @@
-import clsx from 'clsx';
 import { Button as UIButton } from '@headlessui/react';
 import type { LucideIcon, LucideProps } from 'lucide-react';
 import * as Icons from 'lucide-react';
 
+import { cn as clsx } from '@/utils/cn';
+
 type Size = 'md' | 'lg';
-type Variant = 'primary' | 'tertiary';
+type Variant = 'primary' | 'tertiary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
+type Detail = 'default' | 'dimmed';
 
 type Props = {
   size: Size;
   state?: State;
+  detail?: Detail;
   variant: Variant;
   children: React.ReactNode;
   className?: string;
@@ -39,9 +42,9 @@ const styles = {
   }),
 
   common: `
-    flex w-full items-center justify-center gap-sw-lg
+    border border-transparent
     transition-colors duration-250 ease-in-out
-    text-sw-label-m rounded-sw-md
+    w-full rounded-sw-md
   `,
 };
 
@@ -63,14 +66,14 @@ const ButtonChildren = ({
         );
 
   return (
-    <>
+    <span className="text-sw-label-m flex w-full items-center justify-center gap-sw-lg">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
         <Icon className={styles.icon} />
       ) : null}
       {children}
       {hasIcon && iconPosition === 'tail' && <Icon className={styles.icon} />}
-    </>
+    </span>
   );
 };
 
@@ -79,6 +82,7 @@ const ButtonPrimary = ({
   className,
   children,
   state = 'default',
+  detail = 'default',
   onClick,
   ...props
 }: Omit<Props, 'variant'>) => {
@@ -89,7 +93,10 @@ const ButtonPrimary = ({
         styles.common,
         styles.size(size),
         styles.state(state),
-        { 'cursor-pointer': !['disabled', 'loading', 'error'].includes(state) },
+        {
+          'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
+          'bg-gray-700': detail === 'dimmed',
+        },
         className,
       )}>
       <ButtonChildren state={state} {...props}>
@@ -104,6 +111,7 @@ const ButtonTertiary = ({
   children,
   className,
   state = 'default',
+  detail = 'default',
   onClick,
   ...props
 }: Omit<Props, 'variant'>) => {
@@ -114,7 +122,9 @@ const ButtonTertiary = ({
         styles.common,
         styles.size(size),
         {
-          'text-sw-mauve-300 bg-sw-gray-900': state === 'active',
+          'text-sw-mauve-300': state === 'active',
+          'bg-gray-700': detail === 'dimmed' && state === 'active',
+          'bg-gray-900': detail !== 'dimmed' && state === 'active',
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
           'hover:text-sw-mauve-300 bg-transparent text-sw-gray-100':
             state === 'default',
@@ -142,7 +152,11 @@ export const OutlinedButton = ({
       className={clsx(
         styles.common,
         styles.size(size),
-        'cursor-pointer border border-white/40 text-[#EBEDF5]',
+        'cursor-pointer border-[1px] border-gray-500 text-gray-100',
+        {
+          'hover:text-mauve-300 bg-transparent text-gray-100':
+            state === 'default',
+        },
         className,
       )}>
       <ButtonChildren state={state} {...props}>
@@ -156,6 +170,8 @@ export const Button = ({ variant, ...restProps }: Props) => {
   switch (variant) {
     case 'tertiary':
       return <ButtonTertiary {...restProps} />;
+    case 'outlined':
+      return <OutlinedButton {...restProps} />;
     case 'primary':
     default:
       return <ButtonPrimary {...restProps} />;
