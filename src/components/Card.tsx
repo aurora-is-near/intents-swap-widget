@@ -8,6 +8,7 @@ type Props = PropsWithChildren<
   {
     as?: Tags;
     className?: string;
+    padding?: 'none' | 'default';
   } & (
     | { isClickable: true; onClick: () => void }
     | { isClickable?: false; onClick?: never }
@@ -18,6 +19,7 @@ export const Card = ({
   children,
   isClickable,
   onClick,
+  padding = 'default',
   className,
   as = 'div',
 }: Props) => {
@@ -27,8 +29,11 @@ export const Card = ({
     <Component
       onClick={onClick}
       className={cn(
-        'p-sw-2xl rounded-sw-lg bg-sw-gray-900',
-        { 'cursor-pointer hover:bg-sw-gray-800': isClickable },
+        'rounded-sw-lg bg-sw-gray-900',
+        {
+          'cursor-pointer hover:bg-sw-gray-800': isClickable,
+          'p-sw-2xl': padding === 'default',
+        },
         className,
       )}>
       {children}
