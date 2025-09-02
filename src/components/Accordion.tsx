@@ -2,6 +2,8 @@ import { useState } from 'react';
 import * as Icons from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { cn } from '@/utils/cn';
+
 import { Hr } from './Hr';
 import { Card } from './Card';
 import { Badge } from './Badge';
@@ -30,10 +32,10 @@ export const Accordion = ({
   return (
     <Card
       isClickable
-      className={className}
+      className={cn('py-sw-lg', className)}
       onClick={() => setIsExpanded((p) => !p)}>
       <header className="align-center flex w-full justify-between">
-        <span className="gap-sw-xs text-sw-label-s mt-sw-xs flex text-center text-sw-gray-100">
+        <span className="gap-sw-xs text-sw-label-s mt-sw-xs flex text-center text-sw-gray-50">
           {title}
         </span>
         {isBadgeLoading ? (

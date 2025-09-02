@@ -53,9 +53,12 @@ export const Input = ({
       disabled={state === 'disabled'}
       autoComplete="off"
       className={cn(
-        'px-sw-lg py-sw-lg text-sw-label-m rounded-sw-md border border-transparent data-focus:outline-none',
-        { 'bg-sw-gray-600 text-sw-gray-50': state === 'default' },
-        { 'border-gray-400': isFocused && state === 'default' },
+        'px-sw-lg py-sw-lg text-sw-label-m rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors',
+        {
+          'bg-sw-gray-600 text-sw-gray-50 hover:bg-sw-gray-500':
+            state === 'default',
+        },
+        { 'ring-sw-gray-400': isFocused && state === 'default' },
         {
           'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100':
             state === 'disabled',

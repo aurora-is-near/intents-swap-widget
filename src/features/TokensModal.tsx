@@ -50,7 +50,7 @@ export const TokensModal = ({
     !walletSupportedChains.includes(selectedChain);
 
   return (
-    <Card className={cn('gap-sw-2xl flex flex-col', className)}>
+    <Card className={cn('gap-sw-2xl flex flex-col pb-0', className)}>
       <header className="py-sw-md flex items-center justify-between">
         <h2 className="text-sw-label-l">Select token</h2>
         <button
@@ -99,11 +99,6 @@ export const TokensModal = ({
         showBalances={showBalances}
         chainsFilter={chainsFilter}
         selectedChain={selectedChain}
-        offset={
-          selectedChainIsNotSupportedByConnectedWallet && ctx.walletAddress
-            ? '68px'
-            : undefined
-        }
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_reset_search':

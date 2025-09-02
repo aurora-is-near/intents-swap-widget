@@ -31,7 +31,7 @@ const styles = {
   }),
 
   state: (state: State) => ({
-    'bg-transparent text-sw-mauve-400 border border-sw-mauve-700':
+    'bg-transparent text-sw-mauve-400 ring-1 ring-inset ring-sw-mauve-700':
       state === 'disabled',
     'bg-sw-mauve-700 text-sw-mauve-300': state === 'loading',
     'bg-sw-alert-900 text-sw-alert-100': state === 'error',
@@ -42,7 +42,7 @@ const styles = {
   }),
 
   common: `
-    border border-transparent
+    ring-1 ring-inset ring-transparent
     transition-colors duration-250 ease-in-out
     w-full rounded-sw-md
   `,
@@ -95,7 +95,7 @@ const ButtonPrimary = ({
         styles.state(state),
         {
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'bg-gray-700': detail === 'dimmed',
+          'bg-sw-gray-700': detail === 'dimmed',
         },
         className,
       )}>
@@ -122,9 +122,9 @@ const ButtonTertiary = ({
         styles.common,
         styles.size(size),
         {
-          'text-sw-mauve-300': state === 'active',
-          'bg-gray-700': detail === 'dimmed' && state === 'active',
-          'bg-gray-900': detail !== 'dimmed' && state === 'active',
+          'text-sw-gray-50': state === 'active',
+          'bg-sw-gray-700': detail === 'dimmed' && state === 'active',
+          'bg-sw-gray-900': detail !== 'dimmed' && state === 'active',
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
           'hover:text-sw-mauve-300 bg-transparent text-sw-gray-100':
             state === 'default',
@@ -152,10 +152,9 @@ export const OutlinedButton = ({
       className={clsx(
         styles.common,
         styles.size(size),
-        'cursor-pointer border-[1px] border-gray-500 text-gray-100',
+        'cursor-pointer ring-1 ring-sw-gray-500 text-sw-gray-50',
         {
-          'hover:text-mauve-300 bg-transparent text-gray-100':
-            state === 'default',
+          'hover:text-sw-mauve-300 bg-transparent': state === 'default',
         },
         className,
       )}>

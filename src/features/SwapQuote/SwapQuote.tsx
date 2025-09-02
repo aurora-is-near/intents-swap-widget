@@ -8,7 +8,11 @@ import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
-export const SwapQuote = () => {
+type Props = {
+  className?: string;
+};
+
+export const SwapQuote = ({ className }: Props) => {
   const { defaultMaxSlippage } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
@@ -27,6 +31,7 @@ export const SwapQuote = () => {
       expandedHeightPx={ctx.walletAddress ? 80 : 50}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate} sec` : undefined}
+      className={className}
       title={
         ctx.sourceToken && ctx.targetToken ? (
           <>
