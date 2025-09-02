@@ -9,13 +9,13 @@ import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
+import { initLocalisation } from './localisation';
+import type { LocalisationKeys } from './localisation';
+
 export type WipgetConfig = {
   // Application metadata
   appName: string;
   appIcon: string;
-
-  // Layout and UI
-  topScreenOffset: string;
 
   // Connected wallet
   intentsAccountType: 'evm' | 'near' | 'sol';
@@ -49,11 +49,7 @@ export const defaultConfig: WipgetConfig = {
   appIcon:
     'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg',
 
-  // 74px - height of the header
-  // 10vh - desired offset from the top of the screen
-  topScreenOffset: '10vh + 74px',
   defaultMaxSlippage: 0.01,
-
   intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
   walletAddress: undefined,
@@ -72,7 +68,10 @@ type WipgetConfigContextType = WipgetConfig;
 const WipgetConfigContext =
   createContext<WipgetConfigContextType>(defaultConfig);
 
-type Props = PropsWithChildren<{ config?: WipgetConfig }>;
+type Props = PropsWithChildren<{
+  config?: WipgetConfig;
+  localisation?: Partial<Record<LocalisationKeys, string>>;
+}>;
 
 export const configStore = proxy<{ config: WipgetConfig }>({
   config: defaultConfig,
@@ -92,8 +91,10 @@ export const resetConfig = (config: WipgetConfig) => {
 export const WipgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
+  localisation = {},
 }: Props) => {
   useEffect(() => {
+    initLocalisation(localisation);
     configStore.config = deepClone(userConfig);
   }, [userConfig]);
 

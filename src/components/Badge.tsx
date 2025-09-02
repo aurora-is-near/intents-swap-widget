@@ -28,30 +28,29 @@ export const Badge = ({
         {
           // common
           'cursor-pointer': isClickable,
-          border: detail === 'outlined',
+          'ring-1 ring-inset': detail === 'outlined',
           'py-sw-xs px-sw-sm': size === 'sm',
           'py-sw-sm px-sw-md': size === 'md',
 
           // gray
-          'text-sw-gray-50 border-sw-gray-500': variant === 'gray',
+          'text-sw-gray-50 ring-sw-gray-500': variant === 'gray',
           'bg-sw-gray-600': variant === 'gray' && detail === 'dimmed',
           'hover:bg-sw-gray-800':
             isClickable && variant === 'gray' && detail === 'outlined',
 
           // primary
-          'border-sw-mauve-300 text-sw-mauve-300': variant === 'primary',
+          'ring-sw-mauve-300 text-sw-mauve-300': variant === 'primary',
           'bg-sw-mauve-700': variant === 'primary' && detail === 'dimmed',
           'hover:bg-sw-mauve-700':
             isClickable && variant === 'primary' && detail === 'outlined',
 
           // alert
           'bg-sw-alert-900 text-sw-alert-100': variant === 'alert',
-          'border-sw-alert-100': detail === 'outlined' && variant === 'alert',
+          'ring-sw-alert-100': detail === 'outlined' && variant === 'alert',
 
           // success
           'bg-sw-success-900 text-sw-success-100': variant === 'success',
-          'border-sw-success-100':
-            detail === 'outlined' && variant === 'success',
+          'ring-sw-success-100': detail === 'outlined' && variant === 'success',
         },
         className,
       )}>

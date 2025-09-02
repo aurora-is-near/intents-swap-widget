@@ -42,7 +42,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
         <div>
           <MenuButton as={Fragment}>
             {({ open: isOpen }) => (
-              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[42px] cursor-pointer items-center rounded-sw-md bg-sw-gray-500">
+              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[40px] cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500">
                 {(() => {
                   switch (selected) {
                     case 'all':
@@ -95,7 +95,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
-                className="hide-scrollbar gap-sw-md p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg border border-sw-gray-600 outline-none">
+                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none">
                 <MenuItem>
                   <ChainItem
                     chain="all"
@@ -136,7 +136,8 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                   </MenuItem>
                 )}
 
-                {chains.length > 0 && <Hr className="shrink-0" />}
+                {chains.length > 0 && <Hr className="shrink-0 my-sw-sm" />}
+
                 {chains.map((chain) => {
                   return (
                     <MenuItem key={chain.id}>

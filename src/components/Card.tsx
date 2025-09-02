@@ -27,7 +27,7 @@ export const Card = ({
     <Component
       onClick={onClick}
       className={cn(
-        'px-sw-2xl py-sw-xl rounded-sw-lg bg-sw-gray-900',
+        'p-sw-2xl rounded-sw-lg bg-sw-gray-900',
         { 'cursor-pointer hover:bg-sw-gray-800': isClickable },
         className,
       )}>

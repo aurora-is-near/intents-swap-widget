@@ -9,6 +9,7 @@ import { Badge } from '@/components/Badge';
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { cn } from '@/utils';
 
 import { useNotification } from './useNotification';
 
@@ -16,10 +17,11 @@ type Msg = { type: 'on_change_send_address'; address: string };
 
 type Props = {
   error?: string;
+  className?: string;
   onMsg: (msg: Msg) => void;
 };
 
-export const SendAddress = ({ error, onMsg }: Props) => {
+export const SendAddress = ({ error, className, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains } = useConfig();
 
@@ -38,7 +40,7 @@ export const SendAddress = ({ error, onMsg }: Props) => {
   };
 
   return (
-    <Card className="gap-sw-lg flex flex-col">
+    <Card className={cn('gap-sw-lg flex flex-col', className)}>
       <h5 className="text-sw-label-m text-sw-gray-50">Send to</h5>
       <Input
         defaultValue={ctx.sendAddress}

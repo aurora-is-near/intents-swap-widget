@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { InputAmount } from '@/components/InputAmount';
 
 export const TokenInputSkeleton = () => (
-  <Card className="gap-sw-2xl flex flex-col">
+  <Card className="gap-sw-lg flex flex-col">
     <div className="flex items-center justify-between">
       <InputAmount
         value=""

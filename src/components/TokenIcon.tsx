@@ -23,7 +23,7 @@ export const TokenIcon = ({
   chainIcon,
   chainShowIcon,
 }: TokenItemProps) => (
-  <div className="relative block">
+  <div className="relative flex items-center">
     <Icon noLoadedBg variant="dark" icon={icon} label={name} />
     {chainShowIcon && (
       <div className="absolute top-[17px] right-[-4px] flex h-[16px] w-[16px] items-center justify-center overflow-hidden rounded-[4px] border-2 border-sw-gray-900">

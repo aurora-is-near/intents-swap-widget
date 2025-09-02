@@ -55,7 +55,7 @@ export const TokenInputWithToken = ({
   };
 
   return (
-    <Card className="gap-sw-2xl flex flex-col">
+    <Card className="gap-sw-lg flex flex-col">
       <div className="flex items-center justify-between">
         <InputAmount
           value={value}
@@ -75,8 +75,10 @@ export const TokenInputWithToken = ({
               : () => onMsg({ type: 'on_click_select_token' })
           }
           className={cn(
-            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600',
-            { 'animate-pulse cursor-default': state === 'disabled' },
+            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500 transition-colors',
+            {
+              'animate-pulse cursor-default': state === 'disabled',
+            },
           )}>
           <TokenIcon chainShowIcon={!token.isIntent} {...token} />
           <span className="text-sw-label-m text-sw-gray-50">
@@ -103,6 +105,7 @@ export const TokenInputWithToken = ({
               token={token}
               balance={balance}
               isNotSufficient={state === 'error-balance'}
+              onClick={() => onSetPortionOfBalance(1)}
             />
           )}
 
@@ -119,6 +122,14 @@ export const TokenInputWithToken = ({
                 Max
               </Badge>
             </>
+          )}
+
+          {!showBalance && (
+            <div className="rounded-full bg-sw-gray-700 py-sw-xs px-sw-sm flex items-center justify-center">
+              <span className="text-sw-gray-100 text-label-s">
+                External balance
+              </span>
+            </div>
           )}
         </div>
       </div>

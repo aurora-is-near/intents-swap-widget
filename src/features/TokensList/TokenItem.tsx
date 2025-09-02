@@ -33,11 +33,13 @@ export const TokenItem = ({
   const isTokenSupported =
     walletSupportedChains.includes(token.blockchain) || token.isIntent;
 
+  const hasBalance = balance !== '0' && balance !== 0 && balance !== undefined;
+
   return (
     <li className="list-none">
       <div
         className={cn(
-          'gap-sw-lg py-sw-md px-sw-lg flex cursor-pointer justify-between rounded-sw-md transition-colors hover:bg-sw-gray-600',
+          'gap-sw-lg p-sw-lg flex cursor-pointer justify-between rounded-sw-md transition-colors hover:bg-sw-gray-600',
           {
             'cursor-not-allowed hover:bg-transparent': isNotSelectable,
           },
@@ -51,9 +53,19 @@ export const TokenItem = ({
         <div className="gap-sw-sm mr-auto flex flex-col">
           <span className="text-sw-label-m text-sw-gray-50">{token.name}</span>
           {token.isIntent ? (
-            <span className="text-sw-label-s text-sw-gray-100">{`${token.symbol} on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
+            <div className="flex items-center gap-sw-xs">
+              <span className="text-sw-label-s text-sw-gray-100">
+                {token.symbol}
+              </span>{' '}
+              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
+            </div>
           ) : (
-            <span className="text-sw-label-s text-sw-gray-100">{`${token.symbol} on ${token.chainName}`}</span>
+            <div className="flex items-center gap-sw-xs">
+              <span className="text-sw-label-s text-sw-gray-100">
+                {token.symbol}
+              </span>{' '}
+              <span className="text-sw-label-s text-sw-gray-200">{`on ${token.chainName}`}</span>
+            </div>
           )}
         </div>
 
@@ -63,13 +75,15 @@ export const TokenItem = ({
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
               <span className="h-[16px] text-sw-label-m text-sw-gray-50">
-                <TinyNumber
-                  decimals={token.decimals}
-                  value={balance === undefined ? '0' : `${balance}`}
-                />
+                {hasBalance && (
+                  <TinyNumber
+                    decimals={token.decimals}
+                    value={balance === undefined ? '0' : `${balance}`}
+                  />
+                )}
               </span>
             )}
-            {balance !== '0' && balance !== 0 && balance !== undefined && (
+            {hasBalance && (
               <span className="text-sw-label-s text-sw-gray-100">
                 {displayUsdBalance}
               </span>

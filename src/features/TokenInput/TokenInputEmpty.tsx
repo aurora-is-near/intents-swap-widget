@@ -9,11 +9,11 @@ type Props = {
 export const TokenInputEmpty = ({ onMsg }: Props) => (
   <Card
     isClickable
-    className="gap-sw-2xl flex flex-col"
+    className="gap-sw-lg flex flex-col"
     onClick={() => onMsg({ type: 'on_click_select_token' })}>
     <div className="flex items-center justify-between">
       <span
-        className="font-medium text-sw-gray-200"
+        className="h-[36px] font-medium text-sw-gray-200"
         style={{ fontSize: '32px' }}>
         0
       </span>

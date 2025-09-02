@@ -22,7 +22,6 @@ type Msg =
 
 type Props = {
   search: string;
-  offset?: string;
   groupTokens: boolean;
   showBalances: boolean;
   chainsFilter: DefaultChainsFilter;
@@ -45,7 +44,6 @@ const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
 
 export const TokensList = ({
   search,
-  offset,
   className,
   groupTokens,
   showBalances,
@@ -54,7 +52,7 @@ export const TokensList = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { topScreenOffset, walletSupportedChains, appName } = useConfig();
+  const { walletSupportedChains, appName } = useConfig();
   const { mergedBalance } = useMergedBalance();
 
   // selected chain is not supported by connected wallet
@@ -101,7 +99,8 @@ export const TokensList = ({
   // 152px - height of TokenModal elements like search and paddings
   // 48px - minimal offset from the bottom screen edge
   // Total: 152 + 48 = 200px
-  const maxHeight = `calc(100vh - (${topScreenOffset ?? '0px'} + ${offset ?? '0px'} + 200px))`;
+  // const maxHeight = `calc(100vh - (${topScreenOffset ?? '0px'} + ${offset ?? '0px'} + 200px))`;
+  const maxHeight = '450px';
 
   switch (tokensListState) {
     case 'EMPTY_SEARCH':
@@ -129,9 +128,9 @@ export const TokensList = ({
               ({ label, tokens: tokensToDisplay }) => (
                 <>
                   {tokensToDisplay.length && label ? (
-                    <header className="gap-sw-md pb-sw-xl flex flex-col">
+                    <header className="pb-sw-lg flex flex-col">
                       <Hr />
-                      <span className="text-sw-label-s text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
+                      <span className="text-sw-label-s pt-sw-xl text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
                     </header>
                   ) : null}
 

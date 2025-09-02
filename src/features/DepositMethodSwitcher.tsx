@@ -1,5 +1,6 @@
 import * as Icons from 'lucide-react';
 
+import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -17,10 +18,11 @@ const notActiveBtnProps = {
 } as const;
 
 type Props = {
+  className?: string;
   children: ({ isExternal }: { isExternal: boolean }) => React.ReactNode;
 };
 
-export const DepositMethodSwitcher = ({ children }: Props) => {
+export const DepositMethodSwitcher = ({ children, className }: Props) => {
   const { ctx } = useUnsafeSnapshot();
 
   const onToggle = (isExternal: boolean) => {
@@ -28,8 +30,10 @@ export const DepositMethodSwitcher = ({ children }: Props) => {
   };
 
   return (
-    <Card className="gap-sw-2xl p-sw-2xl flex flex-col">
-      <span className="text-label-m text-gray-50">Select deposit method</span>
+    <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
+      <span className="text-label-m text-sw-gray-50">
+        Select deposit method
+      </span>
       <div className="flex gap-sw-lg">
         <Button
           size="md"
