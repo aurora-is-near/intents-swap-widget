@@ -10,21 +10,29 @@ import { getTokenWithHighBalance } from '@/utils/tokens/getTokenWithHighBalance'
 import { fireEvent } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import type { Token } from '@/types/token';
 
 import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;
+  target?: 'none' | 'same-asset';
 };
 
 export const useSelectedTokensEffect = ({
   isEnabled,
   skipIntents = false,
+  target = 'none',
 }: Props) => {
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
-  const { walletSupportedChains, chainsFilter, walletAddress } = useConfig();
+  const {
+    walletSupportedChains,
+    chainsFilter,
+    walletAddress,
+    intentsAccountType,
+  } = useConfig();
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
@@ -91,10 +99,33 @@ export const useSelectedTokensEffect = ({
         });
       }
 
-      if (targetToken.status === 'loaded' && !ctx.targetToken) {
+      if (
+        targetToken.status === 'loaded' &&
+        sourceToken.status === 'loaded' &&
+        !ctx.targetToken
+      ) {
+        let tkn: Token | undefined = targetToken.token;
+
+        if (target === 'same-asset') {
+          if (sourceToken.token?.isIntent) {
+            tkn = tokens.find(
+              (t) =>
+                !t.isIntent &&
+                t.symbol === ctx.sourceToken?.symbol &&
+                (intentsAccountType === 'near'
+                  ? t.blockchain === 'near'
+                  : t.blockchain === 'eth'),
+            );
+          } else {
+            tkn = tokens.find(
+              (t) => t.isIntent && t.symbol === ctx.sourceToken?.symbol,
+            );
+          }
+        }
+
         fireEvent('tokenSelect', {
           variant: 'target',
-          token: targetToken.token,
+          token: tkn,
         });
       }
     }

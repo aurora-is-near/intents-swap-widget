@@ -24,6 +24,10 @@ export const createFilterBySelectedChain = (options: Options) => {
       return false;
     }
 
+    if (chainsFilter.external === 'none' && !token.isIntent) {
+      return false;
+    }
+
     if (token.isIntent && chainsFilter.intents === 'with-balance') {
       const balance = intentBalances[getTokenBalanceKey(token)];
 

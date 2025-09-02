@@ -86,6 +86,7 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
   useSelectedTokensEffect({
     isEnabled: !!defaultTokenListener,
     skipIntents: defaultTokenListener?.[1].skipIntents,
+    target: defaultTokenListener?.[1].target,
   });
 
   useMakeQuoteEffect({
