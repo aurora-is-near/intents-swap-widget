@@ -9,6 +9,7 @@ import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
+import { useTypedTranslation } from '@/localisation';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
@@ -36,6 +37,7 @@ export const TokensModal = ({
   className,
   onMsg,
 }: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains } = useConfig();
 
@@ -91,7 +93,10 @@ export const TokensModal = ({
       {selectedChainIsNotSupportedByConnectedWallet && !!ctx.walletAddress && (
         <Banner
           variant="info"
-          message="Your connected wallet doesn't support this chain"
+          message={t(
+            'wallet.connected.error.notSupportedChain',
+            "Your connected wallet doesn't support this chain",
+          )}
         />
       )}
 

@@ -6,6 +6,7 @@ import type { Banner } from '@/components/Banner';
 
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { useTypedTranslation } from '@/localisation';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { CHAINS_LIST, EVM_CHAINS } from '@/constants/chains';
 
@@ -20,6 +21,7 @@ type Notification =
 export const useNotification = (
   userError: string | undefined,
 ): Notification => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains, appName } = useConfig();
 
@@ -36,7 +38,10 @@ export const useNotification = (
       return {
         variant: 'info' as const,
         state: 'disabled' as const,
-        message: 'Select a token to receive',
+        message: t(
+          'wallet.recipient.info.selectToken',
+          'Select a token to receive',
+        ),
       };
     }
 
@@ -49,7 +54,10 @@ export const useNotification = (
       return {
         variant: 'error',
         state: 'error',
-        message: `Invalid address. Use one on ${CHAINS_LIST[ctx.targetToken.blockchain]?.label ?? 'selected'} network.`,
+        message: t('wallet.recipient.error.invalidAddress', {
+          defaultValue: 'Invalid address. Use one on {{network}} network.',
+          network: CHAINS_LIST[ctx.targetToken.blockchain]?.label ?? 'selected',
+        }),
       };
     }
 
@@ -66,7 +74,11 @@ export const useNotification = (
       return {
         variant: 'warn',
         state: 'default',
-        message: `Make sure the address is on the ${chainLabel} compatible network`,
+        message: t('wallet.recipient.warn.compatibleNetwork', {
+          defaultValue:
+            'Make sure the address is on the {{chainLabel}} compatible network',
+          chainLabel,
+        }),
       };
     }
 
@@ -74,7 +86,11 @@ export const useNotification = (
       return {
         variant: 'warn',
         state: 'default',
-        message: `Make sure the address is on the ${chainLabel} compatible network`,
+        message: t('wallet.recipient.warn.compatibleNetwork', {
+          defaultValue:
+            'Make sure the address is on the {{chainLabel}} compatible network',
+          chainLabel,
+        }),
       };
     }
 
@@ -85,7 +101,11 @@ export const useNotification = (
       return {
         variant: 'success',
         state: 'default',
-        message: `Address verified for ${chainLabel} compatible network`,
+        message: t('wallet.recipient.message.networkVerified', {
+          defaultValue:
+            'Address verified for {{chainLabel}} compatible network',
+          chainLabel,
+        }),
       };
     }
 
@@ -93,7 +113,10 @@ export const useNotification = (
       return {
         variant: 'error',
         state: 'error',
-        message: 'Please enter wallet address to receive funds',
+        message: t(
+          'wallet.recipient.message.receiveFunds',
+          'Please enter wallet address to receive funds',
+        ),
       };
     }
 
@@ -109,7 +132,10 @@ export const useNotification = (
       return {
         variant: 'success',
         state: 'default',
-        message: `You will receive funds on your ${appName} account`,
+        message: t('wallet.recipient.message.receiveFunds', {
+          defaultValue: 'You will receive funds on your {{appName}} account',
+          appName,
+        }),
       };
     }
   }, [ctx, userError, walletSupportedChains]);

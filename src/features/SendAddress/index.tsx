@@ -8,6 +8,7 @@ import { Badge } from '@/components/Badge';
 
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
+import { useTypedTranslation } from '@/localisation';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { cn } from '@/utils';
 
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export const SendAddress = ({ error, className, onMsg }: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains } = useConfig();
 
@@ -45,7 +47,10 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
       <Input
         defaultValue={ctx.sendAddress}
         state={notification?.state ?? 'default'}
-        placeholder="Enter recipient wallet address"
+        placeholder={t(
+          'wallet.recipient.placeholder',
+          'Enter recipient wallet address',
+        )}
         onChange={onChange}>
         {!!showMagicButton && (
           <Badge

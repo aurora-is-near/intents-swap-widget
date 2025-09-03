@@ -9,9 +9,6 @@ import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
-import { initLocalisation } from './localisation';
-import type { LocalisationKeys } from './localisation';
-
 export type WipgetConfig = {
   // Application metadata
   appName: string;
@@ -68,10 +65,7 @@ type WipgetConfigContextType = WipgetConfig;
 const WipgetConfigContext =
   createContext<WipgetConfigContextType>(defaultConfig);
 
-type Props = PropsWithChildren<{
-  config?: WipgetConfig;
-  localisation?: Partial<Record<LocalisationKeys, string>>;
-}>;
+type Props = PropsWithChildren<{ config?: WipgetConfig }>;
 
 export const configStore = proxy<{ config: WipgetConfig }>({
   config: defaultConfig,
@@ -91,10 +85,8 @@ export const resetConfig = (config: WipgetConfig) => {
 export const WipgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
-  localisation = {},
 }: Props) => {
   useEffect(() => {
-    initLocalisation(localisation);
     configStore.config = deepClone(userConfig);
   }, [userConfig]);
 

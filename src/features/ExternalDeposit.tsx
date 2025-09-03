@@ -6,6 +6,7 @@ import * as Icons from 'lucide-react';
 import { notReachable } from '@/utils';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
+import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
 import { fireEvent, guardStates, moveTo, useUnsafeSnapshot } from '@/machine';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
@@ -36,6 +37,7 @@ const QrCode = ({ address }: { address: string }) => (
 );
 
 const Skeleton = () => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
 
   return (
@@ -45,8 +47,8 @@ const Skeleton = () => {
         <Icons.Loader className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
         <span className="text-sw-gray-100 text-label-s">
           {!isNotEmptyAmount(ctx.sourceTokenAmount)
-            ? 'Waiting for token amount'
-            : 'Fetching new address'}
+            ? t('deposit.external.loading.waiting', 'Waiting for token amount')
+            : t('deposit.external.loading.fetching', 'Fetching new address')}
         </span>
       </div>
     </div>
@@ -54,6 +56,7 @@ const Skeleton = () => {
 };
 
 export const ExternalDeposit = ({ onMsg }: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
 
   const isValidState = guardStates(ctx, [
@@ -134,19 +137,43 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
 
   switch (depositStatusQuery.status) {
     case 'error':
-      return <StatusWidget.Error message="Unable to check transfer status" />;
+      return (
+        <StatusWidget.Error
+          message={t(
+            'deposit.external.error.noStatus',
+            'Unable to check transfer status',
+          )}
+        />
+      );
 
     case 'success': {
       switch (depositStatusQuery.data.status) {
         case GetExecutionStatusResponse.status.FAILED:
           return (
-            <StatusWidget.Error message="Unable to check transfer status" />
+            <StatusWidget.Error
+              message={t(
+                'deposit.external.error.noStatus',
+                'Unable to check transfer status',
+              )}
+            />
           );
         case GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT:
-          return <StatusWidget.Error message="Incomplete deposit" />;
+          return (
+            <StatusWidget.Error
+              message={t(
+                'deposit.external.error.incomplete',
+                'Incomplete deposit',
+              )}
+            />
+          );
         case GetExecutionStatusResponse.status.REFUNDED:
           return (
-            <StatusWidget.Error message="Deposit failed. You were refunded." />
+            <StatusWidget.Error
+              message={t(
+                'deposit.external.error.failed',
+                'Deposit failed. You were refunded.',
+              )}
+            />
           );
         case GetExecutionStatusResponse.status.PROCESSING:
         case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
