@@ -1,3 +1,4 @@
+import { Trans } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -7,7 +8,9 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
+import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
@@ -23,11 +26,13 @@ const commonBtnProps = {
   variant: 'primary' as const,
 };
 
-export const getErrorButton = (ctx: Context) => {
+const useGetErrorButton = (ctx: Context) => {
+  const { t } = useTypedTranslation();
+
   if (ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
     return (
       <Button state="error" {...commonBtnProps}>
-        Insufficient balance
+        {t('submit.error.insufficientBalance', 'Insufficient balance')}
       </Button>
     );
   }
@@ -35,7 +40,7 @@ export const getErrorButton = (ctx: Context) => {
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
     return (
       <Button state="error" {...commonBtnProps}>
-        Invalid address
+        {t('submit.error.invalidAddress', 'Invalid address')}
       </Button>
     );
   }
@@ -44,14 +49,16 @@ export const getErrorButton = (ctx: Context) => {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
-          Amount is too low
+          {t('submit.error.amountTooLow.label', 'Amount is too low')}
         </Button>
         <ErrorMessage>
-          Amount you entered is very low. Please try increasing it{' '}
-          <span className="text-nowrap">
-            above <TinyNumber value={ctx.error.meta.minAmount ?? '0'} />{' '}
-            {ctx.sourceToken?.symbol ?? ''}.
-          </span>
+          <Trans i18nKey="submit.error.amountTooLow.message">
+            Amount you entered is very low. Please try increasing it{' '}
+            <span className="text-nowrap">
+              above <TinyNumber value={ctx.error.meta.minAmount ?? '0'} />{' '}
+              {ctx.sourceToken?.symbol ?? ''}.
+            </span>
+          </Trans>
         </ErrorMessage>
       </div>
     );
@@ -62,11 +69,13 @@ export const getErrorButton = (ctx: Context) => {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
-          Quote failed
+          {t('submit.error.quoteFailed.label', 'Quote failed')}
         </Button>
         <ErrorMessage>
-          We couldn’t finalize your quote. Please try again or adjust your
-          values.
+          {t(
+            'submit.error.quoteFailed.message',
+            'We couldn’t finalize your quote. Please try again or adjust your values.',
+          )}
         </ErrorMessage>
       </div>
     );
@@ -76,24 +85,27 @@ export const getErrorButton = (ctx: Context) => {
 const SubmitButtonError = () => {
   const { ctx } = useUnsafeSnapshot();
 
-  return getErrorButton(ctx);
+  return useGetErrorButton(ctx);
 };
 
 const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   const { appName } = useConfig();
   const { ctx } = useUnsafeSnapshot();
+  const { t } = useTypedTranslation();
   const { isDirectTransfer } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
 
+  const SubmitErrorButton = useGetErrorButton(ctx);
+
   const getMainLabel = () => {
     if (isDirectTransfer) {
-      return 'Transfer';
+      return t('submit.active.transfer', 'Transfer');
     }
 
     return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? 'Swap'
-      : 'Swap & send';
+      ? t('submit.active.internal', 'Swap')
+      : t('submit.active.external', 'Swap & send');
   };
 
   const onClick = async () => {
@@ -107,6 +119,14 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
     }
   };
 
+  if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+    return (
+      <Button {...commonBtnProps} state="disabled">
+        Enter amount
+      </Button>
+    );
+  }
+
   if (
     ctx.targetToken &&
     ctx.sourceToken &&
@@ -116,17 +136,18 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="disabled" {...commonBtnProps}>
-          Not possible
+          {t('submit.disabled.temporary.label', 'Not possible')}
         </Button>
         <ErrorMessage variant="dimmed">
-          It's temporary not possible to deposit the same asset on Near to
-          {appName}. Please select another asset or swap first.
+          {t('submit.disabled.temporary.message', {
+            defaultValue:
+              "It's temporary not possible to deposit the same asset on Near to {appName}. Please select another asset or swap first.",
+            context: { appName },
+          })}
         </ErrorMessage>
       </div>
     );
   }
-
-  const SubmitErrorButton = getErrorButton(ctx);
 
   if (SubmitErrorButton) {
     return SubmitErrorButton;
@@ -137,14 +158,14 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
       case 'WAITING_CONFIRMATION':
         return (
           <Button state="loading" {...commonBtnProps}>
-            Confirm in wallet
+            {t('submit.pending.transfer.confirmInWallet', 'Confirm in wallet')}
           </Button>
         );
       case 'PROCESSING':
       default:
         return (
           <Button state="loading" {...commonBtnProps}>
-            Finalizing transfer
+            {t('submit.pending.transfer.finalizing', 'Finalizing transfer')}
           </Button>
         );
     }
@@ -158,9 +179,15 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
           {(() => {
             switch (ctx.error?.code) {
               case 'FEES_NOT_ESTIMATED':
-                return 'Transfer fees could not be estimated.';
+                return t(
+                  'submit.error.transfer.noFees',
+                  'Transfer fees could not be estimated.',
+                );
               default:
-                return 'Transfer can not be completed.';
+                return t(
+                  'submit.error.transfer.failed',
+                  'Transfer can not be completed.',
+                );
             }
           })()}
         </ErrorMessage>
@@ -171,7 +198,7 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   if (ctx.quoteStatus === 'pending') {
     return (
       <Button state="loading" {...commonBtnProps}>
-        Finalizing quote
+        {t('submit.pending.quote.finalizing', 'Finalizing quote')}
       </Button>
     );
   }

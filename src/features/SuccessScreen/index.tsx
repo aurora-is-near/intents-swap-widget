@@ -5,6 +5,7 @@ import { Card } from '@/components/Card';
 import type { TransferResult } from '@/types/transfer';
 
 import { fireEvent, moveTo } from '@/machine';
+import { useTypedTranslation } from '@/localisation';
 
 import { CheckIcon } from './CheckIcon';
 import { CloseButton } from './CloseButton';
@@ -24,6 +25,7 @@ export const SuccessScreen = ({
   message,
   onMsg,
 }: Props) => {
+  const { t } = useTypedTranslation();
   const lines = Array.isArray(message) ? message : [message];
 
   const onDismiss = () => {
@@ -53,10 +55,14 @@ export const SuccessScreen = ({
           hasCopyAction
           value={txHash}
           externalUrl={transactionLink}
-          label="Transaction hash"
+          label={t('transfer.success.hash.label', 'Transaction hash')}
         />
         {!!intent && (
-          <SummaryItem hasCopyAction label="Intent" value={intent} />
+          <SummaryItem
+            hasCopyAction
+            label={t('transfer.success.intent.label', 'Intent')}
+            value={intent}
+          />
         )}
       </ul>
     </Card>

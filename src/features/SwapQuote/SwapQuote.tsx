@@ -5,6 +5,7 @@ import { Notes } from '@/components/Notes';
 import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
+import { useTypedTranslation } from '@/localisation';
 
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export const SwapQuote = ({ className }: Props) => {
+  const { t } = useTypedTranslation();
   const { defaultMaxSlippage } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
@@ -48,13 +50,13 @@ export const SwapQuote = ({ className }: Props) => {
       }>
       <Notes>
         <Notes.Item
-          label="Max slippage"
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
           value={`${(defaultMaxSlippage * 100).toFixed(2)}%`}
         />
         {!!ctx.walletAddress && (
           <Notes.Item
             isLoading={ctx.quoteStatus === 'pending'}
-            label="Processing time"
+            label={t('quote.result.processingTime.label', 'Processing time')}
             value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
           />
         )}

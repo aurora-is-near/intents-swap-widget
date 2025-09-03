@@ -68,6 +68,18 @@ variable you can find in `src/theme.css`):
 }
 ```
 
+## Change copies
+
+To change copies use `LocalisationProvider`. To know all available keys check
+`src/localisation.tsx` file. Localisation object is type safe so you don't make
+a typo :)
+
+```jsx
+<LocalisationProvider localisation={{ 'quote.result.maxSlippage.label': 'MAX' }}>
+  // widget components
+</LocalisationProvider>
+```
+
 ## Development
 
 If you want to make changes to the package and submit PRs, here's how you can link the package to your application locally. This allows you to make changes to the package and see the results in your app:

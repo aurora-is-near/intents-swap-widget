@@ -3,6 +3,7 @@ import { useId } from 'react';
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
+import { useTypedTranslation } from '@/localisation';
 
 import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
@@ -44,6 +45,7 @@ export const TokenInputWithToken = ({
 }: Props) => {
   const inputName = useId();
   const config = useConfig();
+  const { t } = useTypedTranslation();
 
   const usdAmount = getUsdDisplayAmount(token, value, quoteUsdValue);
 
@@ -114,12 +116,12 @@ export const TokenInputWithToken = ({
               <Badge
                 isClickable={state !== 'disabled'}
                 onClick={() => onSetPortionOfBalance(2)}>
-                50%
+                {t('tokens.input.half.label', '50%')}
               </Badge>
               <Badge
                 isClickable={state !== 'disabled'}
                 onClick={() => onSetPortionOfBalance(1)}>
-                Max
+                {t('tokens.input.max.label', 'Max')}
               </Badge>
             </>
           )}
@@ -127,7 +129,7 @@ export const TokenInputWithToken = ({
           {!showBalance && (
             <div className="rounded-full bg-sw-gray-700 py-sw-xs px-sw-sm flex items-center justify-center">
               <span className="text-sw-gray-100 text-label-s">
-                External balance
+                {t('tokens.input.externalBalance.label', 'External balance')}
               </span>
             </div>
           )}

@@ -8,6 +8,7 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { useTokensFiltered } from '@/hooks/useTokensFiltered';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
+import { useTypedTranslation } from '@/localisation';
 import { useConfig } from '@/config';
 
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
@@ -51,6 +52,7 @@ export const TokensList = ({
   selectedChain,
   onMsg,
 }: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains, appName } = useConfig();
   const { mergedBalance } = useMergedBalance();
@@ -162,7 +164,10 @@ export const TokensList = ({
       return (
         <Banner
           variant="info"
-          message={`No balances available on the ${appName}`}
+          message={t('tokens.list.noBalanceOnApp.label', {
+            defaultValue: 'No balances available on the {{appName}}',
+            appName,
+          })}
         />
       );
   }

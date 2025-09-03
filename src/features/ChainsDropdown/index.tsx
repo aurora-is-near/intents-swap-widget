@@ -9,6 +9,7 @@ import { Icon } from '@/components/Icon';
 import { useChains } from '@/hooks/useChains';
 import { CHAINS_LIST } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { useTypedTranslation } from '@/localisation';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 
 import { ChainItem } from './ChainItem';
@@ -29,6 +30,8 @@ const commonIconProps = {
 };
 
 export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
+  const { t } = useTypedTranslation();
+
   const chains = useChains();
   const { appIcon, appName, showIntentTokens } = useConfig();
   const selectedChain = useMemo(
@@ -66,7 +69,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                         <Icon
                           {...commonIconProps}
                           icon={<AllNetworksIcon />}
-                          label="All networks"
+                          label={t('chain.all.label', 'All networks')}
                         />
                       ) : (
                         <Icon
