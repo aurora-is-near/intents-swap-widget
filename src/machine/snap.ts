@@ -5,6 +5,7 @@ import { machine } from '@/machine/machine';
 import { guardStates } from '@/machine/guards';
 import { getUsdTradeDelta } from '@/machine/computed/getUsdTradeDelta';
 import { getIsDirectTransfer } from '@/machine/computed/getIsDirectTransfer';
+import { getIsNearToIntentsSameAssetTransfer } from '@/machine/computed/getIsNearToIntentsSameAssetTransfer';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
 
@@ -13,6 +14,8 @@ const store = machine.getStore();
 const computed = derive({
   usdTradeDelta: (get) => getUsdTradeDelta(get(store.context)),
   isDirectTransfer: (get) => getIsDirectTransfer(get(store.context)),
+  isNearToIntentsSameAssetTransfer: (get) =>
+    getIsNearToIntentsSameAssetTransfer(get(store.context)),
 });
 
 export const useComputedSnapshot = () => {

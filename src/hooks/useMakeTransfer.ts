@@ -8,16 +8,19 @@ import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
+import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
+import { useComputedSnapshot } from '@/machine/snap';
 
 export const useMakeTransfer = ({
   providers,
   makeTransfer,
 }: QuoteTransferArgs & IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-
+  const { isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
-
+  const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(providers?.near);
+  
   const make = async () => {
     if (!ctx.targetToken) {
       return;
@@ -32,7 +35,10 @@ export const useMakeTransfer = ({
       });
 
       if (!ctx.sourceToken?.isIntent) {
-        transferResult = await makeQuoteTransfer();
+        if (isNearToIntentsSameAssetTransfer) {
+          transferResult = await makeNEARFtTransferCall()
+        }
+          transferResult = await makeQuoteTransfer();
       } else {
         transferResult = await makeIntentsTransfer({
           onPending: (reason) => {

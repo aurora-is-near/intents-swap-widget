@@ -16,10 +16,11 @@ export type Props = ListenerProps & {
 
 export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectTransfer, isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
 
   const isDry = !ctx.walletAddress;
-  const shouldRun = isEnabled && !isDirectTransfer;
+  const shouldRun =
+    isEnabled && !isDirectTransfer && !isNearToIntentsSameAssetTransfer;
 
   const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
 
@@ -47,7 +48,7 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
     const isValidState = isDry
       ? ctx.state === 'input_valid_dry'
       : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
-        (ctx.state === 'input_valid_internal' && ctx.targetToken?.isIntent);
+        (ctx.state === 'input_valid_internal' && ctx.targetToken?.isIntent)
 
     void (async () => {
       try {
