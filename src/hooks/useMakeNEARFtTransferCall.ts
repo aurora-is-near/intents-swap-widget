@@ -1,46 +1,54 @@
-import type { Action } from '@near-wallet-selector/core';
-import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
-import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
-import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
+import type { Action, Wallet as NearWallet } from '@near-wallet-selector/core';
 import { TransferError } from '@/errors';
 import { logger } from '@/logger';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
-import type { Wallet as NearWallet } from '@near-wallet-selector/core';
+import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
+import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
+import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 
-export function useMakeNEARFtTransferCall(nearWallet: null | undefined | (() => NearWallet)) {
+export function useMakeNEARFtTransferCall(
+  nearWallet: null | undefined | (() => NearWallet),
+) {
   const { ctx } = useUnsafeSnapshot();
   const sourceTokenAddress = ctx.sourceToken?.contractAddress;
-  const recipient = ctx.quote?.depositAddress ?? 'intents.near';
-  const amount = ctx.quote?.amountIn ?? ctx.sourceTokenAmount
+  const amount = ctx.quote?.amountIn ?? ctx.sourceTokenAmount;
 
-  const NEARFtTransferCall = async (msgRecipient?: string): Promise<TransferResult | undefined> => {
+  const NEARFtTransferCall = async (
+    recipient: string,
+    msgRecipient?: string,
+  ): Promise<TransferResult | undefined> => {
     if (!nearWallet) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No connected wallet to sign a transfer.' },
       });
     }
+
     if (!sourceTokenAddress) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No token selected to transfer.' },
       });
     }
+
     if (!recipient) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No recipient address to transfer.' },
       });
     }
+
     if (!amount) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No amount to transfer.' },
       });
     }
+
     const wallet = nearWallet();
     const tokenContractActions: Action[] = [];
+
     try {
       const [minStorageBalanceResult, userStorageBalanceResult] =
         await Promise.all([
@@ -75,7 +83,7 @@ export function useMakeNEARFtTransferCall(nearWallet: null | undefined | (() => 
           args: {
             receiver_id: recipient,
             amount,
-            msg: msgRecipient ?? ''
+            msg: msgRecipient ?? '',
           },
           gas: FT_TRANSFER_GAS,
           deposit: '1',
@@ -96,11 +104,11 @@ export function useMakeNEARFtTransferCall(nearWallet: null | undefined | (() => 
           transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
           intent: undefined,
         };
-      } else {
-        throw new TransferError({
-          code: 'NO_DEPOSIT_RESULT',
-        });
       }
+
+      throw new TransferError({
+        code: 'NO_DEPOSIT_RESULT',
+      });
     } catch (err: unknown) {
       logger.error('[TRANSFER ERROR]', err);
       throw new TransferError({

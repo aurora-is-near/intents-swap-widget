@@ -89,17 +89,24 @@ const SubmitButtonError = () => {
 };
 
 const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
-  const { appName } = useConfig();
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { isDirectTransfer, isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
+  const {
+    isDirectTransfer,
+    isNearToIntentsSameAssetTransfer,
+    isDirectNearDeposit,
+  } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
   const getMainLabel = () => {
-    if (isDirectTransfer || isNearToIntentsSameAssetTransfer) {
+    if (
+      isDirectTransfer ||
+      isNearToIntentsSameAssetTransfer ||
+      isDirectNearDeposit
+    ) {
       return t('submit.active.transfer', 'Transfer');
     }
 
@@ -189,7 +196,12 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
     );
   }
 
-  if (!ctx.quote && (!isDirectTransfer && !isNearToIntentsSameAssetTransfer)) {
+  if (
+    !ctx.quote &&
+    !isDirectTransfer &&
+    !isNearToIntentsSameAssetTransfer &&
+    !isDirectNearDeposit
+  ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
         {getMainLabel()}

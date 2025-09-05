@@ -1,7 +1,7 @@
-import { decodeQueryResult } from "./decodeQueryResult";
 import { base64 } from '@scure/base';
-import { nearRpcClient } from "./rpc";
-import { z } from "zod";
+import { z } from 'zod';
+import { decodeQueryResult } from './decodeQueryResult';
+import { nearRpcClient } from './rpc';
 
 export const getNearNep141MinStorageBalance = async ({
   contractId,

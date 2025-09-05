@@ -1,7 +1,7 @@
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
-import { useUnsafeSnapshot } from '@/machine/snap';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
@@ -9,18 +9,24 @@ import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
-import { useComputedSnapshot } from '@/machine/snap';
 
 export const useMakeTransfer = ({
   providers,
   makeTransfer,
 }: QuoteTransferArgs & IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
+  const {
+    isNearToIntentsSameAssetTransfer,
+    isParticipateWidget,
+    isDirectNearDeposit,
+  } = useComputedSnapshot();
+
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
-  const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(providers?.near);
-  
+  const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(
+    providers?.near,
+  );
+
   const make = async () => {
     if (!ctx.targetToken) {
       return;
@@ -36,9 +42,19 @@ export const useMakeTransfer = ({
 
       if (!ctx.sourceToken?.isIntent) {
         if (isNearToIntentsSameAssetTransfer) {
-          transferResult = await makeNEARFtTransferCall()
-        }
+          transferResult = await makeNEARFtTransferCall('intents.near');
+        } else if (isParticipateWidget && isDirectNearDeposit) {
+          if (!ctx.sendAddress) {
+            throw new TransferError({
+              code: 'TRANSFER_INVALID_INITIAL',
+              meta: { message: 'No recipient address to transfer.' },
+            });
+          }
+
+          transferResult = await makeNEARFtTransferCall(ctx.sendAddress);
+        } else {
           transferResult = await makeQuoteTransfer();
+        }
       } else {
         transferResult = await makeIntentsTransfer({
           onPending: (reason) => {

@@ -1,6 +1,6 @@
+import { z } from 'zod';
 import { decodeQueryResult } from './decodeQueryResult';
 import { nearRpcClient } from './rpc';
-import { z } from 'zod';
 
 export const getNearNep141StorageBalance = async ({
   contractId,

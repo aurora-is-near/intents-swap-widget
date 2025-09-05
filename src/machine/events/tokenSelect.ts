@@ -1,9 +1,8 @@
 import { notReachable } from '@/utils/notReachable';
 import type { Token } from '@/types/token';
-
 import type { Context } from '@/machine/context';
-
 import { tokenSelectRotate } from './tokenSelectRotate';
+import { getIsParticipateWidget } from '../computed/getIsParticipateWidget';
 
 export type TokenSelectPayload = {
   variant: 'source' | 'target';
@@ -15,13 +14,15 @@ export const tokenSelect = (
   payload: TokenSelectPayload,
 ): void => {
   const { variant, token } = payload;
+  const isParticipateWidget = getIsParticipateWidget(ctx);
 
   switch (variant) {
     case 'source':
       if (
         token &&
         token.assetId === ctx.targetToken?.assetId &&
-        token.isIntent === ctx.targetToken.isIntent
+        token.isIntent === ctx.targetToken.isIntent &&
+        !isParticipateWidget
       ) {
         if (!ctx.sourceToken) {
           return;
@@ -36,7 +37,8 @@ export const tokenSelect = (
         token &&
         !ctx.sourceToken &&
         token.assetId === ctx.targetToken?.assetId &&
-        token.isIntent === ctx.targetToken.isIntent
+        token.isIntent === ctx.targetToken.isIntent &&
+        !isParticipateWidget
       ) {
         return;
       }
@@ -47,7 +49,8 @@ export const tokenSelect = (
       if (
         token &&
         token.assetId === ctx.sourceToken?.assetId &&
-        token.isIntent === ctx.sourceToken.isIntent
+        token.isIntent === ctx.sourceToken.isIntent &&
+        !isParticipateWidget
       ) {
         if (!ctx.targetToken) {
           return;
