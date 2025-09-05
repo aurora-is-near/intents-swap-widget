@@ -26,7 +26,7 @@ export const getNearNep141StorageBalance = async ({
       z.union([z.null(), z.object({ total: z.string() })]),
     );
 
-    return BigInt(parsed?.total || '0');
+    return BigInt(parsed?.total ?? '0');
   } catch (err: unknown) {
     throw new Error('Error fetching balance', { cause: err });
   }

@@ -23,7 +23,6 @@ import {
   type Props as PropsAlchemyBalances,
   useAlchemyBalanceEffect,
 } from './useAlchemyBalanceEffect';
-import { useComputedSnapshot } from '../snap';
 
 type EffectMakeQuote = ['makeQuote', Omit<PropsMakeQuote, 'isEnabled'>];
 
