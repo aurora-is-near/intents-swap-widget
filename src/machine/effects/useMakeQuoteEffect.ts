@@ -16,10 +16,18 @@ export type Props = ListenerProps & {
 
 export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const {
+    isDirectTransfer,
+    isNearToIntentsSameAssetTransfer,
+    isDirectNearDeposit,
+  } = useComputedSnapshot();
 
   const isDry = !ctx.walletAddress;
-  const shouldRun = isEnabled && !isDirectTransfer;
+  const shouldRun =
+    isEnabled &&
+    !isDirectTransfer &&
+    !isNearToIntentsSameAssetTransfer &&
+    !isDirectNearDeposit;
 
   const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
 

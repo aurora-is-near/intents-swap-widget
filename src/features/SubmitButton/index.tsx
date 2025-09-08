@@ -2,8 +2,6 @@ import { Trans } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
-
-import { useConfig } from '@/config';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
@@ -89,17 +87,24 @@ const SubmitButtonError = () => {
 };
 
 const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
-  const { appName } = useConfig();
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const {
+    isDirectTransfer,
+    isNearToIntentsSameAssetTransfer,
+    isDirectNearDeposit,
+  } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
   const getMainLabel = () => {
-    if (isDirectTransfer) {
+    if (
+      isDirectTransfer ||
+      isNearToIntentsSameAssetTransfer ||
+      isDirectNearDeposit
+    ) {
       return t('submit.active.transfer', 'Transfer');
     }
 
@@ -124,28 +129,6 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
       <Button {...commonBtnProps} state="disabled">
         Enter amount
       </Button>
-    );
-  }
-
-  if (
-    ctx.targetToken &&
-    ctx.sourceToken &&
-    ctx.targetToken.isIntent &&
-    ctx.sourceToken.assetId === ctx.targetToken.assetId
-  ) {
-    return (
-      <div className="gap-sw-md flex flex-col">
-        <Button state="disabled" {...commonBtnProps}>
-          {t('submit.disabled.temporary.label', 'Not possible')}
-        </Button>
-        <ErrorMessage variant="dimmed">
-          {t('submit.disabled.temporary.message', {
-            defaultValue:
-              "It's temporary not possible to deposit the same asset on Near to {appName}. Please select another asset or swap first.",
-            context: { appName },
-          })}
-        </ErrorMessage>
-      </div>
     );
   }
 
@@ -211,7 +194,12 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
     );
   }
 
-  if (!ctx.quote && !isDirectTransfer) {
+  if (
+    !ctx.quote &&
+    !isDirectTransfer &&
+    !isNearToIntentsSameAssetTransfer &&
+    !isDirectNearDeposit
+  ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
         {getMainLabel()}

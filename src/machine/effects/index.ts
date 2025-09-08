@@ -62,7 +62,6 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
   useEffect(() => {
     registerStoreEvents({ debug });
   }, [debug]);
-
   const alchemyBalancesListener = listenTo.find<EffectAlchemyBalances>(
     (item): item is EffectAlchemyBalances =>
       Array.isArray(item) && item[0] === 'setBalancesUsingAlchemyExt',
