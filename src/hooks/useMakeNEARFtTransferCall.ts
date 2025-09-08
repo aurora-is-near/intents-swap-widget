@@ -61,17 +61,16 @@ export function useMakeNEARFtTransferCall(
           }),
         ]);
 
-      if (
-        userStorageBalanceResult === BigInt('0') ||
-        userStorageBalanceResult < minStorageBalanceResult
-      ) {
+      const storageDelta = minStorageBalanceResult - userStorageBalanceResult;
+
+      if (storageDelta > 0n) {
         tokenContractActions.push({
           type: 'FunctionCall',
           params: {
             methodName: 'storage_deposit',
             args: { account_id: recipient },
             gas: FT_DEPOSIT_GAS,
-            deposit: minStorageBalanceResult.toString(),
+            deposit: storageDelta.toString(),
           },
         });
       }
@@ -98,7 +97,7 @@ export function useMakeNEARFtTransferCall(
         ],
       });
 
-      if (tx && tx.length > 0) {
+      if (tx?.[0]?.transaction?.hash) {
         return {
           hash: tx[0].transaction?.hash ?? '',
           transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
