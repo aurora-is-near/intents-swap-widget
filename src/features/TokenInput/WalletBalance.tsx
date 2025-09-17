@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 
+import { useConfig } from '@/config';
 import { Skeleton } from '@/components/Skeleton';
 import { TinyNumber } from '@/components/TinyNumber';
 import type { Token, TokenBalance } from '@/types/token';
@@ -17,6 +18,15 @@ export const WalletBalance = ({
   isNotSufficient = false,
   onClick,
 }: Props) => {
+  const config = useConfig();
+
+  if (
+    !token.isIntent &&
+    !config.walletSupportedChains.includes(token.blockchain)
+  ) {
+    return <span />;
+  }
+
   if (balance === undefined) {
     return <Skeleton width={100} />;
   }
