@@ -70,6 +70,12 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   pol: 'MATIC',
 };
 
+export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
+  ...EVM_CHAIN_BASE_TOKENS,
+  sol: 'SOL',
+  near: 'NEAR',
+};
+
 export const CHAINS_LIST: Record<Chains, Chain> = {
   near: {
     id: 'near',
