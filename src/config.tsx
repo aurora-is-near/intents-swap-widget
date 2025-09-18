@@ -91,6 +91,7 @@ export const WipgetConfigProvider = ({
 
   useEffect(() => {
     const next = deepClone(userConfig);
+
     Object.assign(storeRef.current.config, next);
   }, [userConfig]);
 
