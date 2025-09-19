@@ -26,6 +26,7 @@ export type WipgetConfig = {
   showIntentTokens: boolean;
   filterTokens: (token: Token) => boolean;
   filterChains: (chain: Chain) => boolean;
+  chainsOrder: Chains[];
 
   chainsFilter: {
     source: DefaultChainsFilter;
@@ -41,6 +42,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const disabledTokens = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
+
 export const defaultConfig: WipgetConfig = {
   appName: 'Unknown',
   appIcon:
@@ -51,9 +54,34 @@ export const defaultConfig: WipgetConfig = {
   walletSupportedChains: EVM_CHAINS,
   walletAddress: undefined,
 
-  filterChains: () => true,
-  filterTokens: () => true,
   showIntentTokens: true,
+  chainsOrder: [
+    'eth',
+    'btc',
+    'near',
+    'sol',
+    'bsc',
+    'base',
+    'arb',
+    'cardano',
+    'sui',
+    'ton',
+    'pol',
+    'op',
+    'zec',
+    'tron',
+    'xrp',
+    'avax',
+    'bera',
+    'xrp',
+    'gnosis',
+    'doge',
+  ],
+
+  filterChains: () => true,
+  filterTokens: (tkn: Token) =>
+    !disabledTokens.includes(tkn.symbol.toLocaleLowerCase()),
+
   chainsFilter: {
     source: { external: 'wallet-supported', intents: 'with-balance' },
     target: { external: 'all', intents: 'all' },
