@@ -64,10 +64,6 @@ export const LocalisationProvider = ({
     void initLocalisation(localisation);
   }, []);
 
-  useEffect(() => {
-    void i18n.changeLanguage('en');
-  }, [localisation]);
-
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
 };
 
