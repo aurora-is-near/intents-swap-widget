@@ -9,6 +9,7 @@ import {
 } from '@/machine/subscriptions';
 import { registerEvents } from '@/machine/events';
 
+import { useBalancesUpdateEffect } from './useBalancesUpdateEffect';
 import { useSetTokenBalanceEffect } from './useSetTokenBalanceEffect';
 import { useWalletConnEffect } from './useWalletConnEffect';
 import {
@@ -37,6 +38,7 @@ type EffectDefaultTokens = [
 ];
 
 type Effect =
+  | 'updateBalances'
   | 'checkWalletConnection'
   | 'setSourceTokenBalance'
   | EffectMakeQuote
@@ -99,5 +101,10 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
 
   useSetTokenBalanceEffect({
     isEnabled: listenTo.includes('setSourceTokenBalance'),
+  });
+
+  useBalancesUpdateEffect({
+    isEnabled: listenTo.includes('updateBalances'),
+    alchemyApiKey: alchemyBalancesListener?.[1].alchemyApiKey,
   });
 };

@@ -1,10 +1,5 @@
-import { useEffect } from 'react';
-
-import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 
-import { fireEvent } from '@/machine';
-import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 import type { ListenerProps } from './types';
@@ -18,28 +13,10 @@ export const useAlchemyBalanceEffect = ({
   alchemyApiKey,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { setWalletBalance } = useWalletBalance(ctx.walletAddress);
-  const { balances: alchemyBalances } = useAlchemyBalanceIntegration({
+
+  useAlchemyBalanceIntegration({
+    isEnabled,
     walletAddress: ctx.walletAddress,
     alchemyApiKey: alchemyApiKey ?? '',
   });
-
-  useEffect(() => {
-    if (!isEnabled) {
-      return;
-    }
-
-    const validState = guardStates(ctx, ['initial_wallet']);
-
-    if (validState) {
-      setWalletBalance(ctx.walletAddress, alchemyBalances);
-
-      if (
-        ctx.sourceToken &&
-        Object.keys(alchemyBalances).includes(ctx.sourceToken.assetId)
-      ) {
-        fireEvent('tokenSetBalance', alchemyBalances[ctx.sourceToken.assetId]);
-      }
-    }
-  }, [isEnabled, alchemyBalances, ctx.walletAddress]);
 };
