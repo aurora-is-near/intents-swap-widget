@@ -114,6 +114,14 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
 
           return;
         }
+
+        // unhandled error
+        fireEvent('quoteSetStatus', 'error');
+        fireEvent('quoteSet', undefined);
+        fireEvent('errorSet', {
+          code: 'QUOTE_FAILED',
+          meta: { message: 'Unknown error' },
+        });
       }
     })();
   }, [ctx, shouldRun, isDry, makeQuote]);
