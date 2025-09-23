@@ -11,7 +11,7 @@ export const isBalanceSufficient = (ctx: Context): boolean => {
     !!ctx.sourceTokenBalance &&
     isNotEmptyAmount(ctx.sourceTokenAmount) &&
     isNotEmptyAmount(ctx.sourceTokenBalance) &&
-    parseUnits(ctx.sourceTokenAmount, ctx.sourceToken.decimals) <
+    parseUnits(ctx.sourceTokenAmount, ctx.sourceToken.decimals) <=
       parseUnits(ctx.sourceTokenBalance, ctx.sourceToken.decimals)
   );
 };
