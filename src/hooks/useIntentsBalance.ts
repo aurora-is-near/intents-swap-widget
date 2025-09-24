@@ -32,7 +32,7 @@ export const useIntentsBalance = () => {
       }
 
       const data = await getIntentsBalances(intentsAccountId, tokenIds);
-
+      
       return data;
     },
   });

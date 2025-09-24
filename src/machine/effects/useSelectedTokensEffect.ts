@@ -53,7 +53,7 @@ export const useSelectedTokensEffect = ({
   const [sourceToken, targetToken] = useMemo(() => {
     if (!walletAddress && !skipIntents) {
       const defaultIntentsToken = getDefaultIntentsToken({ tokens });
-
+      
       return [
         { token: defaultIntentsToken, status: 'loaded' },
         { token: undefined, status: 'loaded' },
@@ -183,7 +183,7 @@ export const useSelectedTokensEffect = ({
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [tokens]);
 
   return { source: ctx.sourceToken, target: ctx.targetToken };
 };
