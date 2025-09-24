@@ -183,7 +183,7 @@ export const useSelectedTokensEffect = ({
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [tokens]);
 
   return { source: ctx.sourceToken, target: ctx.targetToken };
 };
