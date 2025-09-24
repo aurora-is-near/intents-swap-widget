@@ -1,9 +1,9 @@
 import * as Icons from 'lucide-react';
-
+import { useMemo } from 'react';
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import { useUnsafeSnapshot } from '@/machine/snap';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine';
 
 const activeBtnProps = {
@@ -17,6 +17,11 @@ const notActiveBtnProps = {
   state: 'default',
 } as const;
 
+const disabledBtnProps = {
+  variant: 'outlined',
+  state: 'disabled',
+} as const;
+
 type Props = {
   className?: string;
   children: ({ isExternal }: { isExternal: boolean }) => React.ReactNode;
@@ -24,10 +29,23 @@ type Props = {
 
 export const DepositMethodSwitcher = ({ children, className }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const { isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
 
   const onToggle = (isExternal: boolean) => {
     fireEvent('depositTypeSet', { isExternal });
   };
+
+  const state = useMemo(() => {
+    if (isNearToIntentsSameAssetTransfer) {
+      return disabledBtnProps;
+    }
+
+    if (ctx.isDepositFromExternalWallet) {
+      return activeBtnProps;
+    }
+
+    return notActiveBtnProps;
+  }, [ctx.isDepositFromExternalWallet, isNearToIntentsSameAssetTransfer]);
 
   return (
     <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
@@ -48,9 +66,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
           size="md"
           icon={Icons.QrCode}
           onClick={() => onToggle(true)}
-          {...(ctx.isDepositFromExternalWallet
-            ? activeBtnProps
-            : notActiveBtnProps)}>
+          {...state}>
           QR / Address
         </Button>
       </div>

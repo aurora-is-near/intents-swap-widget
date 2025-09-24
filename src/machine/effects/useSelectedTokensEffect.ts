@@ -6,6 +6,9 @@ import { useIntentsBalance } from '@/hooks/useIntentsBalance';
 import { getMainTokenByChain } from '@/utils/tokens/getMainTokenByChain';
 import { getDefaultIntentsToken } from '@/utils/tokens/getDefaultIntentsToken';
 import { getTokenWithHighBalance } from '@/utils/tokens/getTokenWithHighBalance';
+import { CHAIN_BASE_TOKENS } from '@/constants/chains';
+import type { WipgetConfig } from '@/config';
+import type { Chains } from '@/types/chain';
 
 import { fireEvent } from '@/machine';
 import { guardStates } from '@/machine/guards';
@@ -17,6 +20,12 @@ import type { ListenerProps } from './types';
 export type Props = ListenerProps & {
   skipIntents?: boolean;
   target?: 'none' | 'same-asset';
+};
+
+const accountChainMap: Record<WipgetConfig['intentsAccountType'], Chains> = {
+  sol: 'sol',
+  evm: 'eth',
+  near: 'near',
 };
 
 export const useSelectedTokensEffect = ({
@@ -112,9 +121,7 @@ export const useSelectedTokensEffect = ({
               (t) =>
                 !t.isIntent &&
                 t.symbol === ctx.sourceToken?.symbol &&
-                (intentsAccountType === 'near'
-                  ? t.blockchain === 'near'
-                  : t.blockchain === 'eth'),
+                t.blockchain === accountChainMap[intentsAccountType],
             );
           } else {
             tkn = tokens.find(
@@ -130,6 +137,53 @@ export const useSelectedTokensEffect = ({
       }
     }
   }, [ctx, sourceToken, targetToken, isEnabled]);
+
+  // in case we cannot load intents balances we eventually set default token
+  // based on wallet supported chains to avoid infinite loading state
+  useEffect(() => {
+    const isGuardedState = guardStates(ctx, ['initial_dry', 'initial_wallet']);
+
+    if (!isEnabled || !isGuardedState) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!sourceToken.token) {
+        // 1. Intents token if possible
+        if (!skipIntents) {
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: getDefaultIntentsToken({ tokens }),
+          });
+          // 2. Wallet base token if intents not supported
+        } else if (walletSupportedChains.length) {
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: tokens.find(
+              (t) =>
+                !t.isIntent &&
+                t.blockchain === accountChainMap[intentsAccountType] &&
+                t.symbol ===
+                  CHAIN_BASE_TOKENS[
+                    accountChainMap[intentsAccountType]
+                  ]?.toLowerCase(),
+            ),
+          });
+          // 3. Fallback to ETH if intents is not supported and wallet is not connected
+        } else {
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: tokens.find(
+              (t) =>
+                !t.isIntent && t.blockchain === 'eth' && t.symbol === 'ETH',
+            ),
+          });
+        }
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return { source: ctx.sourceToken, target: ctx.targetToken };
 };

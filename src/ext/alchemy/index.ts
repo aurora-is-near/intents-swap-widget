@@ -2,7 +2,11 @@ import { useEffect, useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { useConfig } from '@/config';
+import { fireEvent } from '@/machine';
 import { useTokens } from '@/hooks/useTokens';
+import { guardStates } from '@/machine/guards';
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 import { parse } from './parse';
 import { createLoader } from './load';
@@ -10,6 +14,7 @@ import { isAlchemySupportedChain } from './types';
 import type { AlchemyResponse } from './types';
 
 type Args = {
+  isEnabled: boolean;
   alchemyApiKey: string;
   walletAddress: string | null | undefined;
 };
@@ -19,11 +24,16 @@ const MAX_PAGES_DEPTH = 3;
 export const useAlchemyBalanceIntegration = ({
   walletAddress,
   alchemyApiKey,
+  ...args
 }: Args) => {
+  const { ctx } = useUnsafeSnapshot();
+
   const { tokens } = useTokens();
   const { walletSupportedChains } = useConfig();
+  const { setWalletBalance } = useWalletBalance(ctx.walletAddress);
 
-  const isEnabled = !!walletAddress && walletSupportedChains.length > 0;
+  const isEnabled =
+    args.isEnabled && !!walletAddress && walletSupportedChains.length > 0;
 
   const query = useInfiniteQuery<AlchemyResponse>({
     initialPageParam: null,
@@ -82,6 +92,21 @@ export const useAlchemyBalanceIntegration = ({
 
     return balances;
   }, [query.data, tokens]);
+
+  useEffect(() => {
+    const validState = guardStates(ctx, ['initial_wallet']);
+
+    if (validState) {
+      setWalletBalance(ctx.walletAddress, balancesMap);
+
+      if (
+        ctx.sourceToken &&
+        Object.keys(balancesMap).includes(ctx.sourceToken.assetId)
+      ) {
+        fireEvent('tokenSetBalance', balancesMap[ctx.sourceToken.assetId]);
+      }
+    }
+  }, [balancesMap]);
 
   return {
     status: query.status,

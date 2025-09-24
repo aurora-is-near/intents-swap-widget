@@ -148,13 +148,15 @@ export const OutlinedButton = ({
 }: Omit<Props, 'variant'>) => {
   return (
     <UIButton
-      onClick={onClick}
+      onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
         styles.size(size),
-        'cursor-pointer ring-1 ring-sw-gray-500 text-sw-gray-50',
+        'ring-1 ring-sw-gray-500 text-sw-gray-50',
         {
-          'hover:text-sw-mauve-300 bg-transparent': state === 'default',
+          'cursor-pointer hover:text-sw-mauve-300 bg-transparent':
+            state === 'default',
+          'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
         },
         className,
       )}>

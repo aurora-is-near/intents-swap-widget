@@ -1,6 +1,6 @@
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 
@@ -26,6 +26,7 @@ export type WipgetConfig = {
   showIntentTokens: boolean;
   filterTokens: (token: Token) => boolean;
   filterChains: (chain: Chain) => boolean;
+  chainsOrder: Chains[];
 
   chainsFilter: {
     source: DefaultChainsFilter;
@@ -41,6 +42,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const disabledTokens = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
+
 export const defaultConfig: WipgetConfig = {
   appName: 'Unknown',
   appIcon:
@@ -51,19 +54,45 @@ export const defaultConfig: WipgetConfig = {
   walletSupportedChains: EVM_CHAINS,
   walletAddress: undefined,
 
-  filterChains: () => true,
-  filterTokens: () => true,
   showIntentTokens: true,
+  chainsOrder: [
+    'eth',
+    'btc',
+    'near',
+    'sol',
+    'bsc',
+    'base',
+    'arb',
+    'cardano',
+    'sui',
+    'ton',
+    'pol',
+    'op',
+    'zec',
+    'tron',
+    'xrp',
+    'avax',
+    'bera',
+    'xrp',
+    'gnosis',
+    'doge',
+  ],
+
+  filterChains: () => true,
+  filterTokens: (tkn: Token) =>
+    !disabledTokens.includes(tkn.symbol.toLocaleLowerCase()),
+
   chainsFilter: {
     source: { external: 'wallet-supported', intents: 'with-balance' },
     target: { external: 'all', intents: 'all' },
   },
 };
 
-type WipgetConfigContextType = WipgetConfig;
+type WipgetConfigContextType = { config: WipgetConfig };
 
-const WipgetConfigContext =
-  createContext<WipgetConfigContextType>(defaultConfig);
+const WipgetConfigContext = createContext<WipgetConfigContextType>({
+  config: defaultConfig,
+});
 
 type Props = PropsWithChildren<{ config?: WipgetConfig }>;
 
@@ -73,9 +102,9 @@ export const configStore = proxy<{ config: WipgetConfig }>({
 
 export const useConfig = () => {
   const configState = useContext(WipgetConfigContext);
-  const config = useSnapshot(configState);
+  const store = useSnapshot(configState);
 
-  return config;
+  return store.config;
 };
 
 export const resetConfig = (config: WipgetConfig) => {
@@ -86,8 +115,12 @@ export const WipgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
 }: Props) => {
+  const storeRef = useRef(proxy({ config: deepClone(userConfig) }));
+
   useEffect(() => {
-    configStore.config = deepClone(userConfig);
+    const next = deepClone(userConfig);
+
+    Object.assign(storeRef.current.config, next);
   }, [userConfig]);
 
   // add tailwind parent class to portal root
@@ -95,7 +128,7 @@ export const WipgetConfigProvider = ({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WipgetConfigContext.Provider value={configStore.config}>
+      <WipgetConfigContext.Provider value={storeRef.current}>
         <div className="sw">{children}</div>
       </WipgetConfigContext.Provider>
     </QueryClientProvider>
