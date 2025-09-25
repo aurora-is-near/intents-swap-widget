@@ -1,7 +1,6 @@
 import { notReachable } from '@/utils/notReachable';
 import { calculatePairAmount } from '@/utils/tokens/calculatePairAmount';
 import { formatHumanToBig } from '@/utils/formatters/formatHumanToBig';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import type { Token } from '@/types/token';
 
 import { fireEvent } from '../machine';
@@ -63,12 +62,17 @@ export const useTokenInputPair = () => {
             amount: '',
           });
         } else {
+          const recalculatedAmount =
+            ((parseFloat(ctx.targetTokenAmount) /
+              10 ** ctx.targetToken.decimals) *
+              ctx.targetToken.price) /
+            token.price;
+
           fireEvent('tokenSetAmount', {
             variant: 'source',
-            amount: calculatePairAmount(
-              formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken.decimals),
-              ctx.sourceToken,
-              token,
+            amount: formatHumanToBig(
+              recalculatedAmount.toFixed(5).toString(),
+              token.decimals,
             ),
           });
         }
@@ -86,12 +90,17 @@ export const useTokenInputPair = () => {
             amount: '',
           });
         } else {
+          const recalculatedAmount =
+            ((parseFloat(ctx.sourceTokenAmount) /
+              10 ** ctx.sourceToken.decimals) *
+              ctx.sourceToken.price) /
+            token.price;
+
           fireEvent('tokenSetAmount', {
             variant: 'target',
-            amount: calculatePairAmount(
-              formatBigToHuman(ctx.sourceTokenAmount, ctx.sourceToken.decimals),
-              ctx.sourceToken,
-              token,
+            amount: formatHumanToBig(
+              recalculatedAmount.toFixed(5).toString(),
+              token.decimals,
             ),
           });
         }
