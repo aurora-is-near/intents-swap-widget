@@ -6,7 +6,7 @@ import type { PropsWithChildren } from 'react';
 
 import { EVM_CHAINS } from '@/constants/chains';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
-import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
 export type WipgetConfig = {
