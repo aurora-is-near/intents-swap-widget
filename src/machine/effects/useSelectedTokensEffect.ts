@@ -146,11 +146,10 @@ export const useSelectedTokensEffect = ({
     if (!isEnabled || !isGuardedState) {
       return;
     }
-
     const timer = setTimeout(() => {
       if (!sourceToken.token) {
         // 1. Intents token if possible
-        if (!skipIntents) {
+        if (skipIntents) {
           fireEvent('tokenSelect', {
             variant: 'source',
             token: getDefaultIntentsToken({ tokens }),
@@ -163,7 +162,7 @@ export const useSelectedTokensEffect = ({
               (t) =>
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
-                t.symbol ===
+                t.symbol.toLowerCase() ===
                   CHAIN_BASE_TOKENS[
                     accountChainMap[intentsAccountType]
                   ]?.toLowerCase(),
