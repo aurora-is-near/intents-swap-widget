@@ -34,7 +34,7 @@ export const useTokens = (
     'queryKey' | 'queryFn'
   > = {},
 ) => {
-  const { showIntentTokens, filterTokens } = useConfig();
+  const { showIntentTokens, allowedTokensList, filterTokens } = useConfig();
 
   const query = useQuery<TokenResponse[]>({
     ...options,
@@ -56,6 +56,10 @@ export const useTokens = (
         const blockchain = token.blockchain.toLowerCase();
 
         if (!isValidChain(blockchain)) {
+          return null;
+        }
+
+        if (allowedTokensList && !allowedTokensList.includes(token.assetId)) {
           return null;
         }
 

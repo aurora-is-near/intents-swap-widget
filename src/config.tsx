@@ -6,7 +6,7 @@ import type { PropsWithChildren } from 'react';
 
 import { EVM_CHAINS } from '@/constants/chains';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
-import type { Chain, Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
 export type WipgetConfig = {
@@ -22,12 +22,14 @@ export type WipgetConfig = {
   // Quotes & Transfers
   defaultMaxSlippage: number;
 
-  // Chains & Tokens filtering
+  // Tokens filtering
   showIntentTokens: boolean;
+  allowedTokensList: string[] | undefined; // assetIDs
   filterTokens: (token: Token) => boolean;
-  filterChains: (chain: Chain) => boolean;
-  chainsOrder: Chains[];
 
+  // Chains filtering
+  chainsOrder: Chains[];
+  allowedChainsList: Chains[] | undefined;
   chainsFilter: {
     source: DefaultChainsFilter;
     target: DefaultChainsFilter;
@@ -78,9 +80,11 @@ export const defaultConfig: WipgetConfig = {
     'doge',
   ],
 
-  filterChains: () => true,
   filterTokens: (tkn: Token) =>
     !disabledTokens.includes(tkn.symbol.toLocaleLowerCase()),
+
+  allowedTokensList: undefined,
+  allowedChainsList: undefined,
 
   chainsFilter: {
     source: { external: 'wallet-supported', intents: 'with-balance' },

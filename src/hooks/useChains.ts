@@ -22,18 +22,20 @@ function sortChains(items: Chain[], order: ReadonlyArray<Chains>) {
 }
 
 export const useChains = () => {
-  const { filterChains, chainsOrder } = useConfig();
+  const { chainsOrder, allowedChainsList } = useConfig();
   const { tokens } = useTokens();
 
   return useMemo(() => {
     const chainsFromTokens = Array.from(
       new Set(tokens.map((token) => CHAINS_LIST[token.blockchain])),
-    ).filter(filterChains ?? (() => true));
+    ).filter((chain) =>
+      allowedChainsList ? allowedChainsList.includes(chain.id) : true,
+    );
 
     if (chainsOrder) {
       return sortChains(chainsFromTokens, chainsOrder);
     }
 
     return chainsFromTokens;
-  }, [tokens, chainsOrder, filterChains]);
+  }, [tokens, chainsOrder, allowedChainsList]);
 };
