@@ -146,6 +146,7 @@ export const useSelectedTokensEffect = ({
     if (!isEnabled || !isGuardedState) {
       return;
     }
+
     const timer = setTimeout(() => {
       if (!sourceToken.token) {
         // 1. Intents token if possible
