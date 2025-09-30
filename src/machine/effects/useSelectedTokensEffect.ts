@@ -163,7 +163,7 @@ export const useSelectedTokensEffect = ({
               (t) =>
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
-                t.symbol ===
+                t.symbol.toLowerCase() ===
                   CHAIN_BASE_TOKENS[
                     accountChainMap[intentsAccountType]
                   ]?.toLowerCase(),
