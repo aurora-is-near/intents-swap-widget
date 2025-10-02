@@ -17,3 +17,5 @@ export const createNetworkClient = (config: AxiosRequestConfig = {}) => {
 export const bridgeApi = createNetworkClient({
   baseURL: 'https://bridge.chaindefuser.com/rpc',
 });
+
+export const oneClickApi = createNetworkClient();
