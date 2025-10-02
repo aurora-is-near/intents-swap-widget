@@ -10,6 +10,7 @@ export const EVM_CHAINS = [
   'avax',
   'op',
   'pol',
+  'aurora',
 ] as const;
 
 export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
@@ -22,6 +23,7 @@ export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
   bsc: 56,
   op: 10,
   pol: 137,
+  aurora: 1313161554,
 };
 
 export const CHAIN_IDS_MAP: Partial<Record<Chains, number>> = {
@@ -68,6 +70,7 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   bsc: 'BNB',
   op: 'ETH',
   pol: 'MATIC',
+  aurora: 'ETH',
 };
 
 export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
@@ -136,6 +139,11 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'arb',
     label: 'Arbitrum',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/arb.svg',
+  },
+  aurora: {
+    id: 'aurora',
+    label: 'Aurora',
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/aurora.svg',
   },
   ton: {
     id: 'ton',

@@ -65,6 +65,7 @@ export const defaultConfig: WipgetConfig = {
     'bsc',
     'base',
     'arb',
+    'aurora',
     'cardano',
     'sui',
     'ton',
