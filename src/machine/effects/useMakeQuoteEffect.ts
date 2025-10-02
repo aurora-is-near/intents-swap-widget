@@ -50,8 +50,6 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
       return;
     }
 
-    const cancelled = false;
-
     const isValidState = isDry
       ? ctx.state === 'input_valid_dry'
       : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
@@ -60,14 +58,11 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
     void (async () => {
       try {
         // do not refetch failed quotes - persist an error instead
-        if (
-          isValidState &&
-          (ctx.quoteStatus === 'idle' || ctx.quoteStatus === 'pending')
-        ) {
+        if (isValidState && ctx.quoteStatus === 'idle') {
           fireEvent('quoteSetStatus', 'pending');
           const quote = await makeQuote({ message });
 
-          if (cancelled || !quote) {
+          if (!quote) {
             return;
           }
 
@@ -93,10 +88,6 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
           }
         }
       } catch (err) {
-        if (cancelled) {
-          return;
-        }
-
         if (err instanceof QuoteError) {
           if (err.data.code === 'QUOTE_INVALID_INITIAL') {
             fireEvent('quoteSetStatus', 'idle');
