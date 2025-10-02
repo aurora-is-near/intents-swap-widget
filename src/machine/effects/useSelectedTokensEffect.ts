@@ -150,10 +150,10 @@ export const useSelectedTokensEffect = ({
     const timer = setTimeout(() => {
       if (!sourceToken.token) {
         // 1. Intents token if possible
-        if (!skipIntents) {
+        if (!skipIntents && highestIntentsToken) {
           fireEvent('tokenSelect', {
             variant: 'source',
-            token: getDefaultIntentsToken({ tokens }),
+            token: highestIntentsToken,
           });
           // 2. Wallet base token if intents not supported
         } else if (walletSupportedChains.length) {
@@ -163,7 +163,7 @@ export const useSelectedTokensEffect = ({
               (t) =>
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
-                t.symbol ===
+                t.symbol.toLowerCase() ===
                   CHAIN_BASE_TOKENS[
                     accountChainMap[intentsAccountType]
                   ]?.toLowerCase(),
