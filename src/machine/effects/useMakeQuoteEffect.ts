@@ -38,6 +38,7 @@ export const useMakeQuoteEffect = ({
     variant: 'swap',
   });
 
+  // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
     const isValidDryInput = guardStates(ctx, ['input_valid_dry']);
     const isValidExternalInput = guardStates(ctx, ['input_valid_external']);

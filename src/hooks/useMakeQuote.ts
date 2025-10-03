@@ -90,7 +90,7 @@ export const useMakeQuote = ({ variant }: Props) => {
     }
 
     if (request.current) {
-      abortController.current.abort();
+      abortController.current.abort('Abort previous quote (auto)');
       abortController.current = new AbortController();
     }
 
@@ -289,6 +289,9 @@ export const useMakeQuote = ({ variant }: Props) => {
 
   return {
     make,
-    cancel: () => abortController.current.abort(),
+    cancel: () => {
+      abortController.current.abort('Abort quote manually');
+      abortController.current = new AbortController();
+    },
   };
 };
