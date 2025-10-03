@@ -12,9 +12,14 @@ import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   message?: string;
+  type?: 'exact_in' | 'exact_out';
 };
 
-export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
+export const useMakeQuoteEffect = ({
+  isEnabled,
+  message,
+  type: quoteType = 'exact_in',
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const {
     isDirectTransfer,
@@ -29,7 +34,9 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
+  const { make: makeQuote, cancel } = useMakeQuote({
+    variant: 'swap',
+  });
 
   useEffect(() => {
     const isValidDryInput = guardStates(ctx, ['input_valid_dry']);
@@ -60,7 +67,7 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
         // do not refetch failed quotes - persist an error instead
         if (isValidState && ctx.quoteStatus === 'idle') {
           fireEvent('quoteSetStatus', 'pending');
-          const quote = await makeQuote({ message });
+          const quote = await makeQuote({ message, quoteType });
 
           if (!quote) {
             return;
