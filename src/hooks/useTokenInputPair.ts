@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { notReachable } from '@/utils/notReachable';
 import { calculatePairAmount } from '@/utils/tokens/calculatePairAmount';
 import { formatHumanToBig } from '@/utils/formatters/formatHumanToBig';
@@ -8,6 +10,9 @@ import { useUnsafeSnapshot } from '../machine/snap';
 
 export const useTokenInputPair = () => {
   const { ctx } = useUnsafeSnapshot();
+  const [lastChangedInput, setLastChangedInput] = useState<
+    'source' | 'target' | undefined
+  >(undefined);
 
   const onChangeAmount = (input: 'source' | 'target', amount: string) => {
     switch (input) {
@@ -26,6 +31,7 @@ export const useTokenInputPair = () => {
           amount: calculatePairAmount(amount, ctx.sourceToken, ctx.targetToken),
         });
 
+        setLastChangedInput('source');
         break;
       case 'target':
         if (!ctx.targetToken) {
@@ -42,6 +48,7 @@ export const useTokenInputPair = () => {
           amount: formatHumanToBig(amount, ctx.targetToken.decimals),
         });
 
+        setLastChangedInput('target');
         break;
       default:
         notReachable(input, { throwError: false });
@@ -49,6 +56,8 @@ export const useTokenInputPair = () => {
   };
 
   const onChangeToken = (input: 'source' | 'target', token: Token) => {
+    setLastChangedInput(undefined);
+
     switch (input) {
       case 'source':
         fireEvent('tokenSelect', {
@@ -111,5 +120,5 @@ export const useTokenInputPair = () => {
     }
   };
 
-  return { onChangeAmount, onChangeToken };
+  return { lastChangedInput, onChangeAmount, onChangeToken };
 };

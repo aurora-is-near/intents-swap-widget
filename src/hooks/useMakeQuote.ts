@@ -22,6 +22,11 @@ type Props = {
   variant: 'deposit' | 'swap';
 };
 
+type MakeArgs = {
+  message?: string;
+  quoteType?: 'exact_in' | 'exact_out';
+};
+
 export const useMakeQuote = ({ variant }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType, oneClickApiQuoteProxyUrl, appName } = useConfig();
@@ -55,7 +60,7 @@ export const useMakeQuote = ({ variant }: Props) => {
     ? DRY_QUOTE_ADDRESSES[intentsAccountType]
     : (ctx.walletAddress ?? '');
 
-  const make = async ({ message }: { message?: string } = {}) => {
+  const make = async ({ message, quoteType = 'exact_in' }: MakeArgs = {}) => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
@@ -85,7 +90,7 @@ export const useMakeQuote = ({ variant }: Props) => {
     }
 
     if (request.current) {
-      abortController.current.abort();
+      abortController.current.abort('Abort previous quote (auto)');
       abortController.current = new AbortController();
     }
 
@@ -93,14 +98,20 @@ export const useMakeQuote = ({ variant }: Props) => {
 
     const commonQuoteParams = {
       // Settings
-      slippageTolerance: 100, // 1%
-      swapType: QuoteRequest.swapType.EXACT_INPUT,
-      deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
       dry: isDry,
+      slippageTolerance: 100, // 1%
+      deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+      swapType:
+        quoteType === 'exact_out'
+          ? QuoteRequest.swapType.EXACT_OUTPUT
+          : QuoteRequest.swapType.EXACT_INPUT,
 
       // Source
       originAsset: ctx.sourceToken.assetId,
-      amount: ctx.sourceTokenAmount,
+      amount:
+        quoteType === 'exact_out'
+          ? ctx.targetTokenAmount
+          : ctx.sourceTokenAmount,
     };
 
     if (message) {
@@ -278,6 +289,9 @@ export const useMakeQuote = ({ variant }: Props) => {
 
   return {
     make,
-    cancel: () => abortController.current.abort(),
+    cancel: () => {
+      abortController.current.abort('Abort quote manually');
+      abortController.current = new AbortController();
+    },
   };
 };

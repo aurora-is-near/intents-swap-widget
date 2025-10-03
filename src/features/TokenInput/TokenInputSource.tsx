@@ -9,11 +9,16 @@ import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 
 export type Props = {
+  isChanging?: boolean;
   showBalance?: boolean;
   onMsg: (msg: Msg) => void;
 };
 
-export const TokenInputSource = ({ onMsg, showBalance = true }: Props) => {
+export const TokenInputSource = ({
+  onMsg,
+  isChanging = true,
+  showBalance = true,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { mergedBalance } = useMergedBalance();
 
@@ -22,6 +27,10 @@ export const TokenInputSource = ({ onMsg, showBalance = true }: Props) => {
     : undefined;
 
   const sourceInputState = useMemo(() => {
+    if (!isChanging && ctx.quoteStatus === 'pending') {
+      return 'disabled' as const;
+    }
+
     if (!ctx.error) {
       return 'default' as const;
     }
@@ -33,7 +42,7 @@ export const TokenInputSource = ({ onMsg, showBalance = true }: Props) => {
     if (ctx.error.code === 'SOURCE_BALANCE_INSUFFICIENT') {
       return 'error-balance' as const;
     }
-  }, [ctx.error]);
+  }, [isChanging, ctx.error, ctx.quoteStatus]);
 
   if (!ctx.sourceToken) {
     return <TokenInputEmpty onMsg={onMsg} />;
