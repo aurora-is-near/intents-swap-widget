@@ -46,9 +46,11 @@ export const TokensModal = ({
     'all' | 'intents' | Chains
   >('all');
 
-  const selectedChainIsNotSupportedByConnectedWallet =
+  // selected chain is not supported by connected wallet
+  const chainIsNotSupported =
     selectedChain !== 'all' &&
     selectedChain !== 'intents' &&
+    chainsFilter.external !== 'all' &&
     !walletSupportedChains.includes(selectedChain);
 
   return (
@@ -90,7 +92,7 @@ export const TokensModal = ({
         )}
       </div>
 
-      {selectedChainIsNotSupportedByConnectedWallet && !!ctx.walletAddress && (
+      {chainIsNotSupported && !!ctx.walletAddress && (
         <Banner
           variant="info"
           message={t(
@@ -106,6 +108,7 @@ export const TokensModal = ({
         showBalances={showBalances}
         chainsFilter={chainsFilter}
         selectedChain={selectedChain}
+        chainIsNotSupported={chainIsNotSupported}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_reset_search':
