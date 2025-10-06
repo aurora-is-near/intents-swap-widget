@@ -11,6 +11,7 @@ import { registerEvents } from '@/machine/events';
 
 import { useBalancesUpdateEffect } from './useBalancesUpdateEffect';
 import { useSetTokenBalanceEffect } from './useSetTokenBalanceEffect';
+import { useSetTokenIntentsTargetEffect } from './useSetTokenIntentsTargetEffect';
 import { useWalletConnEffect } from './useWalletConnEffect';
 import {
   type Props as PropsMakeQuote,
@@ -41,6 +42,7 @@ type Effect =
   | 'updateBalances'
   | 'checkWalletConnection'
   | 'setSourceTokenBalance'
+  | 'setSourceTokenIntentsTarget'
   | EffectMakeQuote
   | EffectDefaultTokens
   | EffectAlchemyBalances;
@@ -102,6 +104,10 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
 
   useSetTokenBalanceEffect({
     isEnabled: listenTo.includes('setSourceTokenBalance'),
+  });
+
+  useSetTokenIntentsTargetEffect({
+    isEnabled: listenTo.includes('setSourceTokenIntentsTarget'),
   });
 
   useBalancesUpdateEffect({

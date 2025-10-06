@@ -8,6 +8,7 @@ import { useChains } from './useChains';
 import { useTokens } from './useTokens';
 import { useMergedBalance } from './useMergedBalance';
 import { useIntentsBalance } from './useIntentsBalance';
+import { useTokensIntentsUnique } from './useTokensIntentsUnique';
 
 export type TokensFilterOptions = {
   search: string;
@@ -22,6 +23,7 @@ export const useTokensFiltered = (options: TokensFilterOptions) => {
   const { tokens } = useTokens();
   const { mergedBalance } = useMergedBalance();
   const { intentBalances } = useIntentsBalance();
+  const { uniqueIntentsTokens } = useTokensIntentsUnique();
 
   const sorter = createTokenSorter(
     mergedBalance,
@@ -34,6 +36,7 @@ export const useTokensFiltered = (options: TokensFilterOptions) => {
       createFilterBySelectedChain({
         ...options,
         intentBalances,
+        uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
       }),
     );
 

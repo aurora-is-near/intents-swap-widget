@@ -81,9 +81,7 @@ export const useTokens = (
       ? [
           ...tokens,
           // add intents tokens to the full list
-          ...tokens
-            .filter((t) => t && t.blockchain === 'near')
-            .map((t) => ({ ...t, isIntent: true })),
+          ...tokens.map((t) => ({ ...t, isIntent: true })),
         ]
       : tokens;
   }, [query.data, showIntentTokens, filterTokens]);
