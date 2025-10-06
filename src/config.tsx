@@ -34,6 +34,9 @@ export type WipgetConfig = {
     source: DefaultChainsFilter;
     target: DefaultChainsFilter;
   };
+
+  // 1Click API
+  oneClickApiQuoteProxyUrl: string;
 };
 
 const queryClient = new QueryClient({
@@ -55,6 +58,8 @@ export const defaultConfig: WipgetConfig = {
   intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
   walletAddress: undefined,
+
+  oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
 
   showIntentTokens: true,
   chainsOrder: [

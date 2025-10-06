@@ -1,22 +1,20 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
-  ApiError,
-  CancelablePromise,
-  CancelError,
-  OneClickService,
   QuoteRequest,
   QuoteResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
+import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
+import { oneClickApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
-import { Quote } from '@/types/quote';
+import type { Quote } from '@/types/quote';
 
 import { useTokens } from './useTokens';
 
@@ -24,9 +22,14 @@ type Props = {
   variant: 'deposit' | 'swap';
 };
 
+type MakeArgs = {
+  message?: string;
+  quoteType?: 'exact_in' | 'exact_out';
+};
+
 export const useMakeQuote = ({ variant }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType } = useConfig();
+  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName } = useConfig();
 
   const isDry = !ctx.walletAddress;
 
@@ -38,13 +41,26 @@ export const useMakeQuote = ({ variant }: Props) => {
       : (ctx.walletAddress ?? ''),
   });
 
-  const request = useRef<CancelablePromise<QuoteResponse>>(null);
+  const request = useRef<Promise<AxiosResponse<QuoteResponse>>>(null);
+  const abortController = useRef<AbortController>(new AbortController());
+
+  const requestQuote = useMemo(() => {
+    return async (data: QuoteRequest) => {
+      return oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
+        oneClickApiQuoteProxyUrl,
+        data,
+        {
+          signal: abortController.current.signal,
+        },
+      );
+    };
+  }, [oneClickApiQuoteProxyUrl, oneClickApi]);
 
   const targetWalletAddress = isDry
     ? DRY_QUOTE_ADDRESSES[intentsAccountType]
     : (ctx.walletAddress ?? '');
 
-  const make = async ({ message }: { message?: string } = {}) => {
+  const make = async ({ message, quoteType = 'exact_in' }: MakeArgs = {}) => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
@@ -73,145 +89,135 @@ export const useMakeQuote = ({ variant }: Props) => {
       });
     }
 
-    if (request.current && !request.current.isCancelled) {
-      request.current.cancel();
+    if (request.current) {
+      abortController.current.abort('Abort previous quote (auto)');
+      abortController.current = new AbortController();
     }
 
     let quoteResponse: QuoteResponse;
 
+    const commonQuoteParams = {
+      // Settings
+      dry: isDry,
+      slippageTolerance: 100, // 1%
+      deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+      swapType:
+        quoteType === 'exact_out'
+          ? QuoteRequest.swapType.EXACT_OUTPUT
+          : QuoteRequest.swapType.EXACT_INPUT,
+
+      // Source
+      originAsset: ctx.sourceToken.assetId,
+      amount:
+        quoteType === 'exact_out'
+          ? ctx.targetTokenAmount
+          : ctx.sourceTokenAmount,
+    };
+
+    if (message) {
+      // @ts-expect-error customRecipientMsg is not in the types
+      commonQuoteParams.customRecipientMsg = message;
+    }
+
+    if (appName) {
+      // @ts-expect-error appName is not in the types
+      commonQuoteParams.referral = appName.toLowerCase();
+    }
+
     try {
-      const commonQuoteParams = {
-        // Settings
-        slippageTolerance: 100, // 1%
-        swapType: QuoteRequest.swapType.EXACT_INPUT,
-        deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
-        dry: isDry,
+      switch (variant) {
+        case 'deposit': {
+          const destinationAsset = tokenList.find(
+            (t) =>
+              t.blockchain === 'near' && t.symbol === ctx.sourceToken.symbol,
+          );
 
-        // Source
-        originAsset: ctx.sourceToken.assetId,
-        amount: ctx.sourceTokenAmount,
-      };
+          if (!destinationAsset) {
+            throw new QuoteError({
+              code: 'NO_NEAR_TOKEN_FOUND',
+              meta: { symbol: ctx.sourceToken.symbol },
+            });
+          }
 
-      if (message) {
-        // @ts-expect-error customRecipientMsg is not in the types
-        commonQuoteParams.customRecipientMsg = message;
-      }
+          request.current = requestQuote({
+            ...commonQuoteParams,
+            recipient: intentsAccountId,
+            recipientType: QuoteRequest.recipientType.INTENTS,
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: destinationAsset.assetId,
 
-      try {
-        switch (variant) {
-          case 'deposit': {
-            const destinationAsset = tokenList.find(
-              (t) =>
-                t.blockchain === 'near' && t.symbol === ctx.sourceToken.symbol,
-            );
+            // Refund
+            refundTo: targetWalletAddress,
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+          });
 
-            if (!destinationAsset) {
-              throw new QuoteError({
-                code: 'NO_NEAR_TOKEN_FOUND',
-                meta: { symbol: ctx.sourceToken.symbol },
-              });
-            }
+          quoteResponse = (await request.current).data;
+          break;
+        }
 
-            request.current = OneClickService.getQuote({
+        case 'swap': {
+          if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
+            request.current = requestQuote({
               ...commonQuoteParams,
               recipient: intentsAccountId,
               recipientType: QuoteRequest.recipientType.INTENTS,
-              depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-              destinationAsset: destinationAsset.assetId,
-
-              // Refund
-              refundTo: targetWalletAddress,
-              refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-            });
-
-            quoteResponse = await request.current;
-            break;
-          }
-
-          case 'swap': {
-            if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
-              request.current = OneClickService.getQuote({
-                ...commonQuoteParams,
-                recipient: intentsAccountId,
-                recipientType: QuoteRequest.recipientType.INTENTS,
-                destinationAsset: ctx.targetToken.assetId,
-                depositType: QuoteRequest.depositType.INTENTS,
-
-                // Refund
-                refundTo: intentsAccountId,
-                refundType: QuoteRequest.refundType.INTENTS,
-              });
-
-              quoteResponse = await request.current;
-              break;
-            }
-
-            request.current = OneClickService.getQuote({
-              ...commonQuoteParams,
-              recipient:
-                !ctx.targetToken.isIntent && ctx.sendAddress
-                  ? ctx.sendAddress
-                  : intentsAccountId,
-              recipientType: ctx.targetToken.isIntent
-                ? QuoteRequest.recipientType.INTENTS
-                : QuoteRequest.recipientType.DESTINATION_CHAIN,
               destinationAsset: ctx.targetToken.assetId,
-              depositType: ctx.sourceToken.isIntent
-                ? QuoteRequest.depositType.INTENTS
-                : QuoteRequest.depositType.ORIGIN_CHAIN,
+              depositType: QuoteRequest.depositType.INTENTS,
 
               // Refund
-              refundTo: ctx.sourceToken.isIntent
-                ? intentsAccountId
-                : targetWalletAddress,
-              refundType: ctx.sourceToken.isIntent
-                ? QuoteRequest.refundType.INTENTS
-                : QuoteRequest.refundType.ORIGIN_CHAIN,
+              refundTo: intentsAccountId,
+              refundType: QuoteRequest.refundType.INTENTS,
             });
 
-            quoteResponse = await request.current;
+            quoteResponse = (await request.current).data;
             break;
           }
 
-          default: {
-            const msg = 'Unknown swap variant (deposit or swap expected)';
+          request.current = requestQuote({
+            ...commonQuoteParams,
+            recipient:
+              !ctx.targetToken.isIntent && ctx.sendAddress
+                ? ctx.sendAddress
+                : intentsAccountId,
+            recipientType: ctx.targetToken.isIntent
+              ? QuoteRequest.recipientType.INTENTS
+              : QuoteRequest.recipientType.DESTINATION_CHAIN,
+            destinationAsset: ctx.targetToken.assetId,
+            depositType: ctx.sourceToken.isIntent
+              ? QuoteRequest.depositType.INTENTS
+              : QuoteRequest.depositType.ORIGIN_CHAIN,
 
-            logger.error(`[WIDGET] ${msg}`);
+            // Refund
+            refundTo: ctx.sourceToken.isIntent
+              ? intentsAccountId
+              : targetWalletAddress,
+            refundType: ctx.sourceToken.isIntent
+              ? QuoteRequest.refundType.INTENTS
+              : QuoteRequest.refundType.ORIGIN_CHAIN,
+          });
 
-            throw new QuoteError({
-              code: 'QUOTE_INVALID_INITIAL',
-              meta: { isDry, message: msg },
-            });
-          }
+          quoteResponse = (await request.current).data;
+          break;
         }
-      } catch (error: unknown) {
-        if (error instanceof CancelError) {
-          return;
+
+        default: {
+          const msg = 'Unknown swap variant (deposit or swap expected)';
+
+          logger.error(`[WIDGET] ${msg}`);
+
+          throw new QuoteError({
+            code: 'QUOTE_INVALID_INITIAL',
+            meta: { isDry, message: msg },
+          });
         }
-
-        if (error instanceof ApiError) {
-          logger.error(error);
-          throw error;
-        }
-
-        logger.error('[WIDGET] Failed to get a deposit address from the quote');
-
-        throw new QuoteError({
-          code: 'QUOTE_INVALID',
-          meta: { isDry },
-        });
-      }
-
-      if (
-        !quoteResponse.quote.depositAddress &&
-        !request.current.isCancelled &&
-        !isDry
-      ) {
-        throw new Error('Failed to get a deposit address from the quote');
       }
     } catch (error: unknown) {
-      if (error instanceof ApiError) {
-        const errorMessage = error.body.message ?? error.message;
+      if (error instanceof CanceledError) {
+        return;
+      }
+
+      if (error instanceof AxiosError) {
+        const errorMessage = error.response?.data.message || error.message;
 
         if (errorMessage.includes('Amount is too low')) {
           const match = errorMessage.match(/\d+/);
@@ -247,7 +253,7 @@ export const useMakeQuote = ({ variant }: Props) => {
         code: 'QUOTE_FAILED',
         meta: {
           // @ts-expect-error In case error has a message
-          message: error?.message ?? 'Failed to fetch quote. Please try again.',
+          message: errorMessage ?? 'Failed to fetch quote. Please try again.',
         },
       });
     }
@@ -281,5 +287,11 @@ export const useMakeQuote = ({ variant }: Props) => {
     return result;
   };
 
-  return { make, cancel: () => request.current?.cancel() };
+  return {
+    make,
+    cancel: () => {
+      abortController.current.abort('Abort quote manually');
+      abortController.current = new AbortController();
+    },
+  };
 };

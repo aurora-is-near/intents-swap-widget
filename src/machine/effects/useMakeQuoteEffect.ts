@@ -12,9 +12,14 @@ import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   message?: string;
+  type?: 'exact_in' | 'exact_out';
 };
 
-export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
+export const useMakeQuoteEffect = ({
+  isEnabled,
+  message,
+  type: quoteType = 'exact_in',
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const {
     isDirectTransfer,
@@ -29,8 +34,11 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
+  const { make: makeQuote, cancel } = useMakeQuote({
+    variant: 'swap',
+  });
 
+  // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
     const isValidDryInput = guardStates(ctx, ['input_valid_dry']);
     const isValidExternalInput = guardStates(ctx, ['input_valid_external']);
@@ -50,8 +58,6 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
       return;
     }
 
-    const cancelled = false;
-
     const isValidState = isDry
       ? ctx.state === 'input_valid_dry'
       : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
@@ -60,14 +66,11 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
     void (async () => {
       try {
         // do not refetch failed quotes - persist an error instead
-        if (
-          isValidState &&
-          (ctx.quoteStatus === 'idle' || ctx.quoteStatus === 'pending')
-        ) {
+        if (isValidState && ctx.quoteStatus === 'idle') {
           fireEvent('quoteSetStatus', 'pending');
-          const quote = await makeQuote({ message });
+          const quote = await makeQuote({ message, quoteType });
 
-          if (cancelled || !quote) {
+          if (!quote) {
             return;
           }
 
@@ -93,10 +96,6 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
           }
         }
       } catch (err) {
-        if (cancelled) {
-          return;
-        }
-
         if (err instanceof QuoteError) {
           if (err.data.code === 'QUOTE_INVALID_INITIAL') {
             fireEvent('quoteSetStatus', 'idle');

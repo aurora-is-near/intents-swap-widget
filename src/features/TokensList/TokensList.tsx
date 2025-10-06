@@ -27,6 +27,7 @@ type Props = {
   showBalances: boolean;
   chainsFilter: DefaultChainsFilter;
   selectedChain: 'all' | 'intents' | Chains;
+  chainIsNotSupported: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
@@ -50,19 +51,13 @@ export const TokensList = ({
   showBalances,
   chainsFilter,
   selectedChain,
+  chainIsNotSupported,
   onMsg,
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains, appName } = useConfig();
   const { mergedBalance } = useMergedBalance();
-
-  // selected chain is not supported by connected wallet
-  const isNotSelectable =
-    selectedChain !== 'all' &&
-    selectedChain !== 'intents' &&
-    chainsFilter.external !== 'all' &&
-    !walletSupportedChains.includes(selectedChain);
 
   const filteredTokens = useTokensFiltered({
     search,
@@ -83,11 +78,11 @@ export const TokensList = ({
     () => [
       { label: `${appName} account`, tokens: filteredTokens.intents },
       {
-        label: isNotSelectable ? null : 'Connected wallet',
+        label: chainIsNotSupported ? null : 'Connected wallet',
         tokens: filteredTokens.wallet,
       },
     ],
-    [filteredTokens.wallet, filteredTokens.intents, isNotSelectable],
+    [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
   );
 
   const tokensCount = useMemo(() => {
@@ -144,8 +139,10 @@ export const TokensList = ({
                         token={token}
                         key={tokenBalanceKey}
                         showBalance={showBalances}
-                        isNotSelectable={isNotSelectable && !!ctx.walletAddress}
                         balance={mergedBalance[tokenBalanceKey]}
+                        isNotSelectable={
+                          chainIsNotSupported && !!ctx.walletAddress
+                        }
                         onMsg={onMsg}
                       />
                     );
