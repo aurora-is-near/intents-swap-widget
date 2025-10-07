@@ -86,9 +86,9 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.invalidTransferData.label', 'Invalid transfer data')}
         </Button>
-        {ctx.error.meta?.message && (
+        {ctx.error.meta?.message ? (
           <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
-        )}
+        ) : null}
       </div>
     );
   }
@@ -99,9 +99,9 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.transferFailed.label', 'Transfer failed')}
         </Button>
-        {ctx.error.meta?.message && (
+        {ctx.error.meta?.message ? (
           <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
-        )}
+        ) : null}
       </div>
     );
   }

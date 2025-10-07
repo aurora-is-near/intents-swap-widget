@@ -83,7 +83,6 @@ export type LocalisationKeys =
   // transfer
   | 'transfer.success.hash.label'
   | 'transfer.success.intent.label'
-  | 'transfer.success.intent.label'
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'
