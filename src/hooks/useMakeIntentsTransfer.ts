@@ -10,6 +10,7 @@ import type { Eip1193Provider } from 'ethers';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
+import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
 import { queryContract } from '@/utils/near/queryContract';
@@ -92,7 +93,7 @@ const validateNearPublicKey = async (
   });
 
   const hasPublicKey = await queryContract({
-    contractId: 'intents.near',
+    contractId: INTENTS_CONTRACT,
     methodName: 'has_public_key',
     args: {
       account_id: accountId,
@@ -105,7 +106,7 @@ const validateNearPublicKey = async (
       await nearProvider.signAndSendTransactions({
         transactions: [
           {
-            receiverId: 'intents.near',
+            receiverId: INTENTS_CONTRACT,
             signerId: walletAddress,
             actions: [
               {

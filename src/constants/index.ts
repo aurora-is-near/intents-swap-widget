@@ -8,3 +8,4 @@ export {
   CHAIN_EXPLORERS,
 } from './chains';
 export { TOKENS_DATA as TOKENS } from './tokens';
+export { INTENTS_CONTRACT } from './intents';

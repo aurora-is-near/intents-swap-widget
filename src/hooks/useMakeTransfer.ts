@@ -4,6 +4,7 @@ import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 
+import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -43,7 +44,7 @@ export const useMakeTransfer = ({
 
       if (!ctx.sourceToken?.isIntent) {
         if (isNearToIntentsSameAssetTransfer) {
-          transferResult = await makeNEARFtTransferCall('intents.near');
+          transferResult = await makeNEARFtTransferCall(INTENTS_CONTRACT);
         } else if (isParticipateWidget && isDirectNearDeposit) {
           if (!ctx.sendAddress) {
             throw new TransferError({
