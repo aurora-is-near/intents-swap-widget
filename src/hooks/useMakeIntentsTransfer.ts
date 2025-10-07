@@ -70,6 +70,13 @@ const validateNearPublicKey = async (
     });
   }
 
+  if (walletAccounts.length === 0) {
+    throw new TransferError({
+      code: 'DIRECT_TRANSFER_ERROR',
+      meta: { message: 'No accounts found for connected Near wallet' },
+    });
+  }
+
   const { publicKey } = walletAccounts[0]!;
 
   if (!publicKey) {
