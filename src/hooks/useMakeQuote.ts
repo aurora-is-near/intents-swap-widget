@@ -5,6 +5,7 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
+import { snakeCase } from 'change-case';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -121,7 +122,7 @@ export const useMakeQuote = ({ variant }: Props) => {
 
     if (appName) {
       // @ts-expect-error appName is not in the types
-      commonQuoteParams.referral = appName.toLowerCase();
+      commonQuoteParams.referral = snakeCase(appName);
     }
 
     try {
