@@ -56,12 +56,12 @@
     "./ext": "./dist/ext/index.js"
   },
   "peerDependencies": {
+    "i18next": ">=25.4.2",
     "react": ">=18",
     "react-dom": ">=18",
+    "react-i18next": ">=15.7.3",
     "valtio": "2.1.7",
-    "valtio-fsm": "1.0.0",
-    "i18next": ">=25.4.2",
-    "react-i18next": ">=15.7.3"
+    "valtio-fsm": "1.0.0"
   },
   "dependencies": {
     "@aurora-is-near/eslint-config": "^1.5.3",
@@ -78,6 +78,8 @@
     "@radix-ui/react-icons": "^1.3.2",
     "@tanstack/react-query": "^5.85.5",
     "axios": "^1.10.0",
+    "bs58": "^6.0.0",
+    "change-case": "^5.4.4",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
     "date-fns": "^4.1.0",

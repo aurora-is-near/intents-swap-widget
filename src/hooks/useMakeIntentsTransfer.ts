@@ -6,7 +6,7 @@ import {
 } from '@defuse-protocol/bridge-sdk';
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
-
+import { snakeCase } from 'change-case';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
@@ -22,10 +22,12 @@ import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+import { IntentSignerSolana } from '../utils/intents/signers/solana';
+import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
 
 export type IntentsTransferArgs = {
   providers: {
-    sol?: undefined | null | (() => Promise<Eip1193Provider>);
+    sol?: undefined | null | SolanaWalletAdapter;
     evm?: undefined | null | (() => Promise<Eip1193Provider>);
     near?: undefined | null | (() => NearWallet);
   };
@@ -191,7 +193,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           });
         }
 
-        signer = new IntentSignerPrivy(
+        signer = new IntentSignerSolana(
           { walletAddress: ctx.walletAddress },
           providers.sol,
         );
@@ -219,7 +221,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         notReachable(intentsAccountType);
     }
 
-    const sdk = new BridgeSDK({ referral: appName });
+    const sdk = new BridgeSDK({ referral: snakeCase(appName) });
 
     sdk.setIntentSigner(signer);
 
