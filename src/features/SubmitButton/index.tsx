@@ -78,6 +78,33 @@ const useGetErrorButton = (ctx: Context) => {
       </div>
     );
   }
+
+  // transfer errors
+  if (ctx.error?.code === 'TRANSFER_INVALID_INITIAL') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.invalidTransferData.label', 'Invalid transfer data')}
+        </Button>
+        {ctx.error.meta?.message ? (
+          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (ctx.error?.code === 'DIRECT_TRANSFER_ERROR') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.transferFailed.label', 'Transfer failed')}
+        </Button>
+        {ctx.error.meta?.message ? (
+          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+        ) : null}
+      </div>
+    );
+  }
 };
 
 const SubmitButtonError = () => {
