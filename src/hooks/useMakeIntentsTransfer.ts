@@ -12,6 +12,7 @@ import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -53,6 +54,73 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   }
 
   return ctx.quote.depositAddress;
+};
+
+const validateNearPublicKey = async (
+  nearProvider: NearWallet,
+  walletAddress: string,
+) => {
+  const accounts = await nearProvider.getAccounts();
+  const walletAccounts = accounts.filter((a) => a.accountId === walletAddress);
+
+  if (walletAccounts.length > 1) {
+    throw new TransferError({
+      code: 'DIRECT_TRANSFER_ERROR',
+      meta: { message: 'Multiple accounts found for connected Near wallet' },
+    });
+  }
+
+  const { publicKey } = walletAccounts[0]!;
+
+  if (!publicKey) {
+    throw new TransferError({
+      code: 'DIRECT_TRANSFER_ERROR',
+      meta: { message: 'No public key found for connected Near wallet' },
+    });
+  }
+
+  const accountId = getIntentsAccountId({
+    walletAddress,
+    addressType: 'near',
+  });
+
+  const hasPublicKey = await queryContract({
+    contractId: 'intents.near',
+    methodName: 'has_public_key',
+    args: {
+      account_id: accountId,
+      public_key: publicKey,
+    },
+  });
+
+  if (!hasPublicKey) {
+    try {
+      await nearProvider.signAndSendTransactions({
+        transactions: [
+          {
+            receiverId: 'intents.near',
+            signerId: walletAddress,
+            actions: [
+              {
+                type: 'FunctionCall',
+                params: {
+                  methodName: 'add_public_key',
+                  args: { public_key: publicKey },
+                  gas: '100000000000000',
+                  deposit: '1',
+                },
+              },
+            ],
+          },
+        ],
+      });
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: 'Unable to add public key to intents account' },
+      });
+    }
+  }
 };
 
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
@@ -106,11 +174,12 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           providers.evm,
         );
         break;
+
       case 'sol':
         if (!providers.sol) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No EVM provider configured' },
+            meta: { message: 'No SOL provider configured' },
           });
         }
 
@@ -118,8 +187,10 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           { walletAddress: ctx.walletAddress },
           providers.sol,
         );
+
         break;
-      case 'near':
+
+      case 'near': {
         if (!providers.near) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
@@ -127,11 +198,15 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           });
         }
 
+        await validateNearPublicKey(providers.near(), ctx.walletAddress);
+
         signer = createNearWalletSigner({
           walletAddress: ctx.walletAddress,
           getProvider: providers.near,
         });
+
         break;
+      }
       default:
         notReachable(intentsAccountType);
     }

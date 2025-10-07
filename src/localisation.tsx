@@ -83,6 +83,7 @@ export type LocalisationKeys =
   // transfer
   | 'transfer.success.hash.label'
   | 'transfer.success.intent.label'
+  | 'transfer.success.intent.label'
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'
@@ -100,6 +101,8 @@ export type LocalisationKeys =
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
   // submit - errors
+  | 'submit.error.invalidTransferData.label'
+  | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'
   | 'submit.error.invalidAddress'
   | 'submit.error.amountTooLow.label'
