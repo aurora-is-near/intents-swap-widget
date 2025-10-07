@@ -2,11 +2,10 @@ import { useMemo } from 'react';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
-import { useMergedBalance } from '@/hooks/useMergedBalance';
 
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
+import { useTokenInputBalance } from './hooks';
 
 export type Props = {
   isChanging?: boolean;
@@ -20,11 +19,7 @@ export const TokenInputSource = ({
   showBalance = true,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { mergedBalance } = useMergedBalance();
-
-  const sourceTokenBalance = ctx.sourceToken
-    ? mergedBalance[getTokenBalanceKey(ctx.sourceToken)]
-    : undefined;
+  const sourceTokenBalance = useTokenInputBalance(ctx.sourceToken);
 
   const sourceInputState = useMemo(() => {
     if (!isChanging && ctx.quoteStatus === 'pending') {
