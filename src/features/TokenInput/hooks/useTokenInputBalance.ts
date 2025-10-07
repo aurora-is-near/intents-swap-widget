@@ -24,6 +24,8 @@ export const useTokenInputBalance = (token: Token | undefined) => {
             token ? (mergedBalance[getTokenBalanceKey(token)] ?? 0) : 0,
           );
         }, 2000);
+      } else {
+        setSourceTokenBalance(existingBalance);
       }
     }
 
