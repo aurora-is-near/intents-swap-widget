@@ -13,9 +13,10 @@ import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 
 export const useMakeTransfer = ({
+  message,
   providers,
   makeTransfer,
-}: QuoteTransferArgs & IntentsTransferArgs) => {
+}: QuoteTransferArgs & IntentsTransferArgs & { message?: string }) => {
   const { ctx } = useUnsafeSnapshot();
   const { isNearToIntentsSameAssetTransfer, isDirectNearDeposit } =
     useComputedSnapshot();
@@ -41,7 +42,10 @@ export const useMakeTransfer = ({
 
       if (!ctx.sourceToken?.isIntent) {
         if (isNearToIntentsSameAssetTransfer) {
-          transferResult = await makeNEARFtTransferCall(INTENTS_CONTRACT);
+          transferResult = await makeNEARFtTransferCall(
+            INTENTS_CONTRACT,
+            message,
+          );
         } else if (isDirectNearDeposit) {
           if (!ctx.sendAddress) {
             throw new TransferError({
@@ -50,7 +54,10 @@ export const useMakeTransfer = ({
             });
           }
 
-          transferResult = await makeNEARFtTransferCall(ctx.sendAddress);
+          transferResult = await makeNEARFtTransferCall(
+            ctx.sendAddress,
+            message,
+          );
         } else {
           transferResult = await makeQuoteTransfer();
         }
