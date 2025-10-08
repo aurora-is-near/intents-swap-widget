@@ -16,6 +16,7 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
 
 import type { ListenerProps } from './types';
+import { logger } from '../../logger';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;
@@ -130,6 +131,7 @@ export const useSelectedTokensEffect = ({
           }
         }
 
+        logger.warn('---1', tkn);
         fireEvent('tokenSelect', {
           variant: 'target',
           token: tkn,

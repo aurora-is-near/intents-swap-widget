@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import { useTokens } from '@/hooks/useTokens';
 
+import { logger } from '@/logger';
 import { fireEvent } from '@/machine';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
@@ -43,6 +44,7 @@ export const useSetTokenIntentsTargetEffect = ({
 
     // 1. If source token is not set - no target token exists
     if (!ctx.sourceToken) {
+      logger.warn('---2');
       fireEvent('tokenSelect', { variant: 'target', token: undefined });
 
       return;
@@ -52,13 +54,16 @@ export const useSetTokenIntentsTargetEffect = ({
 
     // 2. If source token is BTC/ETH/NEAR select corresponding target token
     if (ctx.sourceToken.assetId in intentDepositTokensMap) {
+      const tkn = tokens.find(
+        (t) =>
+          t.isIntent &&
+          t.assetId === intentDepositTokensMap[sourceToken.assetId],
+      );
+
+      logger.warn('---3', tkn);
       fireEvent('tokenSelect', {
         variant: 'target',
-        token: tokens.find(
-          (t) =>
-            t.isIntent &&
-            t.assetId === intentDepositTokensMap[sourceToken.assetId],
-        ),
+        token: tkn,
       });
 
       return;
@@ -73,20 +78,28 @@ export const useSetTokenIntentsTargetEffect = ({
     );
 
     if (targetTokenOnNear) {
+      logger.warn('---4', targetTokenOnNear);
       fireEvent('tokenSelect', { variant: 'target', token: targetTokenOnNear });
 
       return;
     }
 
     // 4. If no token on NEAR - select token with the same assetId
+    const firstToken = tokens.find(
+      (t) => t.isIntent && t.assetId === sourceToken.assetId,
+    );
+
+    const secondToken = tokens.find(
+      (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
+    );
+
+    logger.warn('---5', firstToken, secondToken);
     fireEvent('tokenSelect', {
       variant: 'target',
       token:
-        tokens.find((t) => t.isIntent && t.assetId === sourceToken.assetId) ??
+        firstToken ??
         // 5. As a last resort - select USDC on NEAR
-        tokens.find(
-          (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
-        ),
+        secondToken,
     });
   }, [tokens, ctx.sourceToken]);
 };
