@@ -17,11 +17,8 @@ export const useMakeTransfer = ({
   makeTransfer,
 }: QuoteTransferArgs & IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const {
-    isNearToIntentsSameAssetTransfer,
-    isParticipateWidget,
-    isDirectNearDeposit,
-  } = useComputedSnapshot();
+  const { isNearToIntentsSameAssetTransfer, isDirectNearDeposit } =
+    useComputedSnapshot();
 
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
@@ -45,7 +42,7 @@ export const useMakeTransfer = ({
       if (!ctx.sourceToken?.isIntent) {
         if (isNearToIntentsSameAssetTransfer) {
           transferResult = await makeNEARFtTransferCall(INTENTS_CONTRACT);
-        } else if (isParticipateWidget && isDirectNearDeposit) {
+        } else if (isDirectNearDeposit) {
           if (!ctx.sendAddress) {
             throw new TransferError({
               code: 'TRANSFER_INVALID_INITIAL',

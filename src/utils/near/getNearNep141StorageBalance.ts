@@ -1,4 +1,7 @@
 import { z } from 'zod';
+
+import { WidgetError } from '@/errors';
+
 import { decodeQueryResult } from './decodeQueryResult';
 import { nearRpcClient } from './rpc';
 
@@ -28,6 +31,6 @@ export const getNearNep141StorageBalance = async ({
 
     return BigInt(parsed?.total ?? '0');
   } catch (err: unknown) {
-    throw new Error('Error fetching balance', { cause: err });
+    throw new WidgetError('Error fetching balance', { cause: err });
   }
 };

@@ -4,6 +4,8 @@ import type {
   SignedMessage,
 } from '@near-wallet-selector/core';
 
+import { WidgetError } from '@/errors';
+
 type Args = {
   getProvider: () => NearWallet;
   walletAddress: string;
@@ -19,7 +21,7 @@ export const createNearWalletSigner = ({
       const nearWallet = getProvider();
 
       if (!nearWallet.signMessage) {
-        throw new Error('Near wallet has no signMessage method exposed');
+        throw new WidgetError('Near wallet has no signMessage method exposed');
       }
 
       let signedMessage: SignedMessage | undefined | void;
@@ -30,11 +32,13 @@ export const createNearWalletSigner = ({
           nonce: Buffer.from(nep413Payload.nonce),
         });
       } catch (e: unknown) {
-        throw new Error('Near wallet failed to sign a message', { cause: e });
+        throw new WidgetError('Near wallet failed to sign a message', {
+          cause: e,
+        });
       }
 
       if (!signedMessage) {
-        throw new Error('Near wallet failed to sign a message');
+        throw new WidgetError('Near wallet failed to sign a message');
       }
 
       return {

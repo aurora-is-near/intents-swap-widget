@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 
 import { EVM_CHAINS } from '@/constants/chains';
+import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
@@ -21,6 +22,7 @@ export type WipgetConfig = {
 
   // Quotes & Transfers
   defaultMaxSlippage: number;
+  enableAutoTokensSwitching?: boolean;
 
   // Tokens filtering
   showIntentTokens: boolean;
@@ -61,6 +63,7 @@ export const defaultConfig: WipgetConfig = {
 
   oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
 
+  enableAutoTokensSwitching: true,
   showIntentTokens: true,
   chainsOrder: [
     'eth',
@@ -130,6 +133,7 @@ export const WipgetConfigProvider = ({
     const next = deepClone(userConfig);
 
     Object.assign(storeRef.current.config, next);
+    resetConfig(next);
   }, [userConfig]);
 
   // add tailwind parent class to portal root
@@ -138,7 +142,9 @@ export const WipgetConfigProvider = ({
   return (
     <QueryClientProvider client={queryClient}>
       <WipgetConfigContext.Provider value={storeRef.current}>
-        <div className="sw">{children}</div>
+        <ErrorBoundary>
+          <div className="sw">{children}</div>
+        </ErrorBoundary>
       </WipgetConfigContext.Provider>
     </QueryClientProvider>
   );

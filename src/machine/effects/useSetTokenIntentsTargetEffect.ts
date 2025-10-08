@@ -52,13 +52,15 @@ export const useSetTokenIntentsTargetEffect = ({
 
     // 2. If source token is BTC/ETH/NEAR select corresponding target token
     if (ctx.sourceToken.assetId in intentDepositTokensMap) {
+      const tkn = tokens.find(
+        (t) =>
+          t.isIntent &&
+          t.assetId === intentDepositTokensMap[sourceToken.assetId],
+      );
+
       fireEvent('tokenSelect', {
         variant: 'target',
-        token: tokens.find(
-          (t) =>
-            t.isIntent &&
-            t.assetId === intentDepositTokensMap[sourceToken.assetId],
-        ),
+        token: tkn,
       });
 
       return;
@@ -79,14 +81,18 @@ export const useSetTokenIntentsTargetEffect = ({
     }
 
     // 4. If no token on NEAR - select token with the same assetId
+    const firstToken = tokens.find(
+      (t) => t.isIntent && t.assetId === sourceToken.assetId,
+    );
+
+    // 5. As a last resort - select USDC on NEAR
+    const secondToken = tokens.find(
+      (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
+    );
+
     fireEvent('tokenSelect', {
       variant: 'target',
-      token:
-        tokens.find((t) => t.isIntent && t.assetId === sourceToken.assetId) ??
-        // 5. As a last resort - select USDC on NEAR
-        tokens.find(
-          (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
-        ),
+      token: firstToken ?? secondToken,
     });
   }, [tokens, ctx.sourceToken]);
 };
