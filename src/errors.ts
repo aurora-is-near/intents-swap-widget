@@ -1,3 +1,5 @@
+import { snapshot } from 'valtio';
+
 import type {
   ErrorType,
   InputValidDryError,
@@ -5,8 +7,23 @@ import type {
   QuoteSuccessDirectTransferError,
   QuoteSuccessTransferError,
 } from '@/machine/errors';
+import { machine } from '@/machine';
+import type { Context } from '@/machine/context';
 
-export class MachineError<E extends ErrorType> extends Error {
+const store = machine.getStore();
+
+export class WidgetError extends Error {
+  context: Context;
+
+  constructor(message: string, meta?: { cause?: unknown }) {
+    super(message);
+    this.name = 'WidgetError';
+    this.cause = meta?.cause;
+    this.context = snapshot(store).context;
+  }
+}
+
+export class MachineError<E extends ErrorType> extends WidgetError {
   data: E;
 
   constructor(data: E) {

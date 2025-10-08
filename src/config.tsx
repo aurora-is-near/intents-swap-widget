@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 
 import { EVM_CHAINS } from '@/constants/chains';
+import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
@@ -138,7 +139,9 @@ export const WipgetConfigProvider = ({
   return (
     <QueryClientProvider client={queryClient}>
       <WipgetConfigContext.Provider value={storeRef.current}>
-        <div className="sw">{children}</div>
+        <ErrorBoundary>
+          <div className="sw">{children}</div>
+        </ErrorBoundary>
       </WipgetConfigContext.Provider>
     </QueryClientProvider>
   );
