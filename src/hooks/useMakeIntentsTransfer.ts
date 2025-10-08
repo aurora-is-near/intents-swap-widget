@@ -7,6 +7,8 @@ import {
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
+import { randomBytes } from 'crypto';
+
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
@@ -22,6 +24,7 @@ import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
 
@@ -59,34 +62,50 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   return ctx.quote.depositAddress;
 };
 
+const getSavedPublicKey = (walletAddress: string) => {
+  return localStorage.getItem(`near-wallet-pk-${walletAddress}`);
+};
+
+const setSavedPublicKey = (walletAddress: string, publicKey: string) => {
+  localStorage.setItem(`near-wallet-pk-${walletAddress}`, publicKey);
+};
+
 const validateNearPublicKey = async (
   nearProvider: NearWallet,
   walletAddress: string,
 ) => {
-  const accounts = await nearProvider.getAccounts();
-  const walletAccounts = accounts.filter((a) => a.accountId === walletAddress);
+  let publicKey = getSavedPublicKey(walletAddress);
 
-  if (walletAccounts.length > 1) {
+  if (!nearProvider.signMessage) {
     throw new TransferError({
       code: 'DIRECT_TRANSFER_ERROR',
-      meta: { message: 'Multiple accounts found for connected Near wallet' },
+      meta: { message: "Your wallet doesn't support signing messages" },
     });
   }
-
-  if (walletAccounts.length === 0) {
-    throw new TransferError({
-      code: 'DIRECT_TRANSFER_ERROR',
-      meta: { message: 'No accounts found for connected Near wallet' },
-    });
-  }
-
-  const { publicKey } = walletAccounts[0]!;
 
   if (!publicKey) {
-    throw new TransferError({
-      code: 'DIRECT_TRANSFER_ERROR',
-      meta: { message: 'No public key found for connected Near wallet' },
-    });
+    try {
+      const res = await nearProvider.signMessage({
+        message: 'Authenticate',
+        recipient: 'intents.near',
+        nonce: randomBytes(32),
+      });
+
+      if (!res) {
+        throw new TransferError({
+          code: 'DIRECT_TRANSFER_ERROR',
+          meta: { message: 'Signing message failed' },
+        });
+      }
+
+      publicKey = res.publicKey;
+      setSavedPublicKey(walletAddress, res.publicKey);
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: "Your wallet doesn't support signing messages" },
+      });
+    }
   }
 
   const accountId = getIntentsAccountId({
