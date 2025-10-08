@@ -16,19 +16,13 @@ const enrichAndRethrow = (ctx: Context) => {
       throw error; // already has context attached
     }
 
-    const enriched =
-      error instanceof Error
-        ? Object.assign(error, {
-            context: ctx,
-            __componentStack__: info.componentStack,
-          })
-        : {
-            context: ctx,
-            original: error,
-            __componentStack__: info.componentStack,
-          };
+    const widgetError = new WidgetError(
+      error instanceof Error ? error.message : 'Unknown error',
+      { cause: error },
+    );
 
-    throw enriched;
+    widgetError.context = ctx;
+    throw widgetError;
   };
 };
 
@@ -36,8 +30,9 @@ type Props = PropsWithChildren<{
   getMeta?: () => Meta;
 }>;
 
-export const ErrorBoundary = ({ children, getMeta }: Props) => {
+export const ErrorBoundary = ({ children }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+
   return (
     <ErrorBoundaryBase
       FallbackComponent={PassthroughFallback}
