@@ -88,6 +88,7 @@ export function useMakeNEARFtTransferCall(
           deposit: '1',
         },
       });
+
       const tx = await wallet.signAndSendTransactions({
         transactions: [
           {
