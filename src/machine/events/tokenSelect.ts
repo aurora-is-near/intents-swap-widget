@@ -1,6 +1,5 @@
 import { snapshot } from 'valtio';
 
-import { logger } from '@/logger';
 import { configStore } from '@/config';
 import { notReachable } from '@/utils/notReachable';
 import type { Token } from '@/types/token';
@@ -19,8 +18,6 @@ export const tokenSelect = (
 ): void => {
   const { variant, token } = payload;
   const { config } = snapshot(configStore);
-
-  logger.warn('---1', config, config.enableAutoTokensSwitching);
 
   switch (variant) {
     case 'source':

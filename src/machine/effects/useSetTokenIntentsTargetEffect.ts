@@ -85,16 +85,14 @@ export const useSetTokenIntentsTargetEffect = ({
       (t) => t.isIntent && t.assetId === sourceToken.assetId,
     );
 
+    // 5. As a last resort - select USDC on NEAR
     const secondToken = tokens.find(
       (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
     );
 
     fireEvent('tokenSelect', {
       variant: 'target',
-      token:
-        firstToken ??
-        // 5. As a last resort - select USDC on NEAR
-        secondToken,
+      token: firstToken ?? secondToken,
     });
   }, [tokens, ctx.sourceToken]);
 };
