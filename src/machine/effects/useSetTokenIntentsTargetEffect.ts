@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 
 import { useTokens } from '@/hooks/useTokens';
 
-import { logger } from '@/logger';
 import { fireEvent } from '@/machine';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
@@ -44,7 +43,6 @@ export const useSetTokenIntentsTargetEffect = ({
 
     // 1. If source token is not set - no target token exists
     if (!ctx.sourceToken) {
-      logger.warn('---2');
       fireEvent('tokenSelect', { variant: 'target', token: undefined });
 
       return;
@@ -60,7 +58,6 @@ export const useSetTokenIntentsTargetEffect = ({
           t.assetId === intentDepositTokensMap[sourceToken.assetId],
       );
 
-      logger.warn('---3', tkn);
       fireEvent('tokenSelect', {
         variant: 'target',
         token: tkn,
@@ -78,7 +75,6 @@ export const useSetTokenIntentsTargetEffect = ({
     );
 
     if (targetTokenOnNear) {
-      logger.warn('---4', targetTokenOnNear);
       fireEvent('tokenSelect', { variant: 'target', token: targetTokenOnNear });
 
       return;
@@ -93,7 +89,6 @@ export const useSetTokenIntentsTargetEffect = ({
       (t) => t.isIntent && t.symbol === 'USDC' && t.blockchain === 'near',
     );
 
-    logger.warn('---5', firstToken, secondToken);
     fireEvent('tokenSelect', {
       variant: 'target',
       token:

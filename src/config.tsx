@@ -22,6 +22,7 @@ export type WipgetConfig = {
 
   // Quotes & Transfers
   defaultMaxSlippage: number;
+  enableAutoTokensSwitching?: boolean;
 
   // Tokens filtering
   showIntentTokens: boolean;
@@ -62,6 +63,7 @@ export const defaultConfig: WipgetConfig = {
 
   oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
 
+  enableAutoTokensSwitching: true,
   showIntentTokens: true,
   chainsOrder: [
     'eth',
@@ -131,6 +133,7 @@ export const WipgetConfigProvider = ({
     const next = deepClone(userConfig);
 
     Object.assign(storeRef.current.config, next);
+    resetConfig(next);
   }, [userConfig]);
 
   // add tailwind parent class to portal root
