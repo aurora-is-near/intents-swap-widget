@@ -82,6 +82,7 @@
     "change-case": "^5.4.4",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
+    "crypto": "^1.0.1",
     "date-fns": "^4.1.0",
     "debounce": "^2.2.0",
     "derive-valtio": "^0.2.0",

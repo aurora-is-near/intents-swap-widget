@@ -161,7 +161,7 @@ export const TokensList = ({
       return (
         <Banner
           variant="info"
-          className="mb-ds-4xl"
+          className="mb-sw-4xl"
           message={t('tokens.list.noBalanceOnApp.label', {
             defaultValue: 'No balances available on {{appName}}',
             appName,
