@@ -1,6 +1,6 @@
 import { ErrorBoundary as ErrorBoundaryBase } from 'react-error-boundary';
 import type { FallbackProps } from 'react-error-boundary';
-import type { ErrorInfo, PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import { WidgetError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -11,7 +11,7 @@ type Meta = Record<string, unknown>;
 const PassthroughFallback = (_: FallbackProps) => null;
 
 const enrichAndRethrow = (ctx: Context) => {
-  return (error: unknown, info: ErrorInfo) => {
+  return (error: unknown) => {
     if (error instanceof WidgetError) {
       throw error; // already has context attached
     }
