@@ -118,7 +118,7 @@ export const TokensList = ({
               minHeight: 200,
               height: tokensCount
                 ? tokensCount * TOKEN_ITEM_HEIGHT +
-                  (areTokensGrouped ? tokensBySection.length * 40 : 0)
+                  (areTokensGrouped ? tokensBySection.length * 62 : 0)
                 : TOKEN_ITEM_HEIGHT * 2,
             }}>
             {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
