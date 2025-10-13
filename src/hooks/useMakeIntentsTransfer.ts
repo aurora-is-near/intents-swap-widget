@@ -6,12 +6,16 @@ import {
 } from '@defuse-protocol/bridge-sdk';
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
+import { snakeCase } from 'change-case';
+import { randomBytes } from 'crypto';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
+import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -21,9 +25,12 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
+import { IntentSignerSolana } from '../utils/intents/signers/solana';
+import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
+
 export type IntentsTransferArgs = {
   providers: {
-    sol?: undefined | null | (() => Promise<Eip1193Provider>);
+    sol?: undefined | null | SolanaWalletAdapter;
     evm?: undefined | null | (() => Promise<Eip1193Provider>);
     near?: undefined | null | (() => NearWallet);
   };
@@ -53,6 +60,96 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   }
 
   return ctx.quote.depositAddress;
+};
+
+const getSavedPublicKey = (walletAddress: string) => {
+  return localStorage.getItem(`near-wallet-pk-${walletAddress}`);
+};
+
+const setSavedPublicKey = (walletAddress: string, publicKey: string) => {
+  localStorage.setItem(`near-wallet-pk-${walletAddress}`, publicKey);
+};
+
+const validateNearPublicKey = async (
+  nearProvider: NearWallet,
+  walletAddress: string,
+) => {
+  let publicKey = getSavedPublicKey(walletAddress);
+
+  if (!nearProvider.signMessage) {
+    throw new TransferError({
+      code: 'DIRECT_TRANSFER_ERROR',
+      meta: { message: "Your wallet doesn't support signing messages" },
+    });
+  }
+
+  if (!publicKey) {
+    try {
+      const res = await nearProvider.signMessage({
+        message: 'Authenticate',
+        recipient: 'intents.near',
+        nonce: randomBytes(32),
+      });
+
+      if (!res) {
+        throw new TransferError({
+          code: 'DIRECT_TRANSFER_ERROR',
+          meta: { message: 'Signing message failed' },
+        });
+      }
+
+      publicKey = res.publicKey;
+      setSavedPublicKey(walletAddress, res.publicKey);
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: "Your wallet doesn't support signing messages" },
+      });
+    }
+  }
+
+  const accountId = getIntentsAccountId({
+    walletAddress,
+    addressType: 'near',
+  });
+
+  const hasPublicKey = await queryContract({
+    contractId: INTENTS_CONTRACT,
+    methodName: 'has_public_key',
+    args: {
+      account_id: accountId,
+      public_key: publicKey,
+    },
+  });
+
+  if (!hasPublicKey) {
+    try {
+      await nearProvider.signAndSendTransactions({
+        transactions: [
+          {
+            receiverId: INTENTS_CONTRACT,
+            signerId: walletAddress,
+            actions: [
+              {
+                type: 'FunctionCall',
+                params: {
+                  methodName: 'add_public_key',
+                  args: { public_key: publicKey },
+                  gas: '100000000000000',
+                  deposit: '1',
+                },
+              },
+            ],
+          },
+        ],
+      });
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: 'Unable to add public key to intents account' },
+      });
+    }
+  }
 };
 
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
@@ -106,20 +203,23 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           providers.evm,
         );
         break;
+
       case 'sol':
         if (!providers.sol) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No EVM provider configured' },
+            meta: { message: 'No SOL provider configured' },
           });
         }
 
-        signer = new IntentSignerPrivy(
+        signer = new IntentSignerSolana(
           { walletAddress: ctx.walletAddress },
           providers.sol,
         );
+
         break;
-      case 'near':
+
+      case 'near': {
         if (!providers.near) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
@@ -127,16 +227,20 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           });
         }
 
+        await validateNearPublicKey(providers.near(), ctx.walletAddress);
+
         signer = createNearWalletSigner({
           walletAddress: ctx.walletAddress,
           getProvider: providers.near,
         });
+
         break;
+      }
       default:
         notReachable(intentsAccountType);
     }
 
-    const sdk = new BridgeSDK({ referral: appName });
+    const sdk = new BridgeSDK({ referral: snakeCase(appName) });
 
     sdk.setIntentSigner(signer);
 

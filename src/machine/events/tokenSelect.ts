@@ -1,8 +1,11 @@
+import { snapshot } from 'valtio';
+
+import { configStore } from '@/config';
 import { notReachable } from '@/utils/notReachable';
 import type { Token } from '@/types/token';
 import type { Context } from '@/machine/context';
+
 import { tokenSelectRotate } from './tokenSelectRotate';
-import { getIsParticipateWidget } from '../computed/getIsParticipateWidget';
 
 export type TokenSelectPayload = {
   variant: 'source' | 'target';
@@ -14,7 +17,7 @@ export const tokenSelect = (
   payload: TokenSelectPayload,
 ): void => {
   const { variant, token } = payload;
-  const isParticipateWidget = getIsParticipateWidget(ctx);
+  const { config } = snapshot(configStore);
 
   switch (variant) {
     case 'source':
@@ -22,7 +25,7 @@ export const tokenSelect = (
         token &&
         token.assetId === ctx.targetToken?.assetId &&
         token.isIntent === ctx.targetToken.isIntent &&
-        !isParticipateWidget
+        config.enableAutoTokensSwitching
       ) {
         if (!ctx.sourceToken) {
           return;
@@ -38,7 +41,7 @@ export const tokenSelect = (
         !ctx.sourceToken &&
         token.assetId === ctx.targetToken?.assetId &&
         token.isIntent === ctx.targetToken.isIntent &&
-        !isParticipateWidget
+        config.enableAutoTokensSwitching
       ) {
         return;
       }
@@ -50,7 +53,7 @@ export const tokenSelect = (
         token &&
         token.assetId === ctx.sourceToken?.assetId &&
         token.isIntent === ctx.sourceToken.isIntent &&
-        !isParticipateWidget
+        config.enableAutoTokensSwitching
       ) {
         if (!ctx.targetToken) {
           return;

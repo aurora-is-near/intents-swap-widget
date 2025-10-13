@@ -4,6 +4,7 @@ import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 
+import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -12,15 +13,13 @@ import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 
 export const useMakeTransfer = ({
+  message,
   providers,
   makeTransfer,
-}: QuoteTransferArgs & IntentsTransferArgs) => {
+}: QuoteTransferArgs & IntentsTransferArgs & { message?: string }) => {
   const { ctx } = useUnsafeSnapshot();
-  const {
-    isNearToIntentsSameAssetTransfer,
-    isParticipateWidget,
-    isDirectNearDeposit,
-  } = useComputedSnapshot();
+  const { isNearToIntentsSameAssetTransfer, isDirectNearDeposit } =
+    useComputedSnapshot();
 
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
@@ -43,8 +42,11 @@ export const useMakeTransfer = ({
 
       if (!ctx.sourceToken?.isIntent) {
         if (isNearToIntentsSameAssetTransfer) {
-          transferResult = await makeNEARFtTransferCall('intents.near');
-        } else if (isParticipateWidget && isDirectNearDeposit) {
+          transferResult = await makeNEARFtTransferCall(
+            INTENTS_CONTRACT,
+            message,
+          );
+        } else if (isDirectNearDeposit) {
           if (!ctx.sendAddress) {
             throw new TransferError({
               code: 'TRANSFER_INVALID_INITIAL',
@@ -52,7 +54,10 @@ export const useMakeTransfer = ({
             });
           }
 
-          transferResult = await makeNEARFtTransferCall(ctx.sendAddress);
+          transferResult = await makeNEARFtTransferCall(
+            ctx.sendAddress,
+            message,
+          );
         } else {
           transferResult = await makeQuoteTransfer();
         }

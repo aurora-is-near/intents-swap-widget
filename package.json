@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget",
-  "version": "1.13.0",
+  "version": "1.14.5",
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "UNLICENSED",
@@ -56,12 +56,12 @@
     "./ext": "./dist/ext/index.js"
   },
   "peerDependencies": {
+    "i18next": ">=25.4.2",
     "react": ">=18",
     "react-dom": ">=18",
+    "react-i18next": ">=15.7.3",
     "valtio": "2.1.7",
-    "valtio-fsm": "1.0.0",
-    "i18next": ">=25.4.2",
-    "react-i18next": ">=15.7.3"
+    "valtio-fsm": "1.0.0"
   },
   "dependencies": {
     "@aurora-is-near/eslint-config": "^1.5.3",
@@ -78,8 +78,11 @@
     "@radix-ui/react-icons": "^1.3.2",
     "@tanstack/react-query": "^5.85.5",
     "axios": "^1.10.0",
+    "bs58": "^6.0.0",
+    "change-case": "^5.4.4",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
+    "crypto": "^1.0.1",
     "date-fns": "^4.1.0",
     "debounce": "^2.2.0",
     "derive-valtio": "^0.2.0",
@@ -92,6 +95,7 @@
     "proxy-memoize": "^3.0.1",
     "qrcode.react": "^4.2.0",
     "qs": "^6.14.0",
+    "react-error-boundary": "^6.0.0",
     "react-imask": "^7.6.1",
     "tailwind-merge": "^3.3.1",
     "viem": "^2.33.3",

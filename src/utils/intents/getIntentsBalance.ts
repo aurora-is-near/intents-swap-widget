@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { INTENTS_CONTRACT } from '@/constants';
 import type { TokenBalances } from '@/types/token';
 import type { BaseTokenInfo } from '@/types/intents';
 
@@ -15,7 +16,7 @@ async function batchBalanceOf({
   tokenIds,
 }: BatchArgs): Promise<bigint[]> {
   const data = await queryContract({
-    contractId: 'intents.near',
+    contractId: INTENTS_CONTRACT,
     methodName: 'mt_batch_balance_of',
     args: {
       account_id: accountId,

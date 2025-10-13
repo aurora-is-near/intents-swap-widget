@@ -147,6 +147,10 @@ export const useSelectedTokensEffect = ({
       return;
     }
 
+    const fallbackToken = tokens.find(
+      (t) => t.isIntent && t.symbol === 'AURORA' && t.blockchain === 'near',
+    );
+
     const timer = setTimeout(() => {
       if (!sourceToken.token) {
         // 1. Intents token if possible
@@ -157,9 +161,8 @@ export const useSelectedTokensEffect = ({
           });
           // 2. Wallet base token if intents not supported
         } else if (walletSupportedChains.length) {
-          fireEvent('tokenSelect', {
-            variant: 'source',
-            token: tokens.find(
+          const tkn =
+            tokens.find(
               (t) =>
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
@@ -167,23 +170,24 @@ export const useSelectedTokensEffect = ({
                   CHAIN_BASE_TOKENS[
                     accountChainMap[intentsAccountType]
                   ]?.toLowerCase(),
-            ),
+            ) ?? fallbackToken;
+
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: tkn,
           });
-          // 3. Fallback to ETH if intents is not supported and wallet is not connected
+          // 3. Fallback if intents is not supported and wallet is not connected
         } else {
           fireEvent('tokenSelect', {
             variant: 'source',
-            token: tokens.find(
-              (t) =>
-                !t.isIntent && t.blockchain === 'eth' && t.symbol === 'ETH',
-            ),
+            token: fallbackToken,
           });
         }
       }
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [tokens]);
+  }, [tokens, sourceToken]);
 
   return { source: ctx.sourceToken, target: ctx.targetToken };
 };

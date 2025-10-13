@@ -26,13 +26,15 @@ export const useTokensIntentsUnique = () => {
     uniqueIntentsTokens: useMemo(() => {
       const nearTokens = tokens.filter(
         (t) =>
+          t.isIntent &&
           t.blockchain === 'near' &&
           !uniqueIntentTokensFilter.hide.includes(t.assetId),
       );
 
-      const nearTokenSymbols = nearTokens.map((t) => t.symbol);
+      const nearTokenSymbols = nearTokens.map((t) => t.isIntent && t.symbol);
       const notNearTokens = tokens.filter((t) => {
         return (
+          t.isIntent &&
           t.blockchain !== 'near' &&
           !nearTokenSymbols.includes(t.symbol) &&
           !uniqueIntentTokensFilter.hide.includes(t.assetId)
