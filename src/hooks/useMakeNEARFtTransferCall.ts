@@ -1,8 +1,11 @@
 import type { Action, Wallet as NearWallet } from '@near-wallet-selector/core';
-import { TransferError } from '@/errors';
+
 import { logger } from '@/logger';
+import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { TransferResult } from '@/types/transfer';
+
 import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
 import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
 import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
@@ -25,7 +28,10 @@ export function useMakeNEARFtTransferCall(
       });
     }
 
-    if (!sourceTokenAddress) {
+    if (
+      !sourceTokenAddress &&
+      ctx.sourceToken?.assetId !== NATIVE_NEAR_DUMB_ASSET_ID
+    ) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No token selected to transfer.' },
@@ -47,7 +53,109 @@ export function useMakeNEARFtTransferCall(
     }
 
     const wallet = nearWallet();
+
+    if (
+      ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+      ctx.targetToken?.assetId !== WNEAR_ASSET_ID
+    ) {
+      const tx = await wallet.signAndSendTransactions({
+        transactions: [
+          {
+            signerId: ctx.walletAddress,
+            receiverId: recipient,
+            actions: [
+              {
+                type: 'Transfer',
+                params: {
+                  deposit: amount, // Amount in yoctoNEAR
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      if (tx && tx.length > 0) {
+        return {
+          hash: tx[0].transaction?.hash ?? '',
+          transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
+          intent: undefined,
+        };
+      }
+
+      return {
+        hash: '',
+        transactionLink: '',
+        intent: undefined,
+      };
+    }
+
     const tokenContractActions: Action[] = [];
+
+    if (
+      ctx.targetToken &&
+      ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+      ctx.targetToken.assetId === WNEAR_ASSET_ID
+    ) {
+      try {
+        tokenContractActions.push({
+          type: 'FunctionCall',
+          params: {
+            methodName: 'near_deposit',
+            gas: FT_DEPOSIT_GAS,
+            deposit: amount,
+            args: {},
+          },
+        });
+
+        tokenContractActions.push({
+          type: 'FunctionCall',
+          params: {
+            methodName: 'ft_transfer_call',
+            deposit: '1', // 1 yocto required by NEP-141
+            gas: FT_TRANSFER_GAS,
+            args: {
+              amount,
+              receiver_id: recipient,
+              msg: msgRecipient ?? '',
+            },
+          },
+        });
+
+        const tx = await wallet.signAndSendTransactions({
+          transactions: [
+            {
+              receiverId: 'wrap.near',
+              actions: tokenContractActions,
+            },
+          ],
+        });
+
+        if (tx?.[0]?.transaction?.hash) {
+          return {
+            hash: tx[0].transaction?.hash ?? '',
+            transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
+            intent: undefined,
+          };
+        }
+
+        throw new TransferError({
+          code: 'NO_DEPOSIT_RESULT',
+        });
+      } catch (err: unknown) {
+        logger.error('[TRANSFER ERROR]', err);
+        throw new TransferError({
+          code: 'DIRECT_TRANSFER_ERROR',
+        });
+      }
+    }
+
+    if (!sourceTokenAddress) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'No token selected to transfer.' },
+      });
+    }
 
     try {
       const [minStorageBalanceResult, userStorageBalanceResult] =
