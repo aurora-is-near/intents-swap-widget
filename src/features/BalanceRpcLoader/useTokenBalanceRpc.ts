@@ -5,7 +5,9 @@ import { isEth } from '@/utils/evm/isEth';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
 import { isEvmBaseToken } from '@/utils/evm/isEvmBaseToken';
+import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { getEvmMainTokenBalance } from '@/utils/evm/getEvmMainTokenBalance';
+import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
 import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
 import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
 import type { ChainRpcUrls } from '@/types/chain';
@@ -35,9 +37,15 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
         token.blockchain === 'near' &&
         walletSupportedChains.includes(token.blockchain)
       ) {
-        return rpcs.near && rpcs.near.length > 0
-          ? getNearTokenBalance(token, walletAddress, rpcs.near)
-          : null;
+        if (!rpcs.near || rpcs.near.length === 0) {
+          return null;
+        }
+
+        if (token.assetId === NATIVE_NEAR_DUMB_ASSET_ID) {
+          return getNativeNearBalance(walletAddress, rpcs.near);
+        }
+
+        return getNearTokenBalance(token, walletAddress, rpcs.near);
       }
 
       // 3. Do not fetch EVM balances if evms are not supported

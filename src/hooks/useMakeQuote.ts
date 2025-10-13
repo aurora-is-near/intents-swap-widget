@@ -12,6 +12,7 @@ import { QuoteError } from '@/errors';
 import { oneClickApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
@@ -108,7 +109,10 @@ export const useMakeQuote = ({ variant }: Props) => {
           : QuoteRequest.swapType.EXACT_INPUT,
 
       // Source
-      originAsset: ctx.sourceToken.assetId,
+      originAsset:
+        ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+          ? WNEAR_ASSET_ID
+          : ctx.sourceToken.assetId,
       amount:
         quoteType === 'exact_out'
           ? ctx.targetTokenAmount
