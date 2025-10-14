@@ -7,6 +7,7 @@ import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 
 import type { ListenerProps } from './types';
 
@@ -34,9 +35,7 @@ export const useMakeQuoteEffect = ({
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote({
-    variant: 'swap',
-  });
+  const { make: makeQuote, cancel } = useMakeQuote();
 
   // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
@@ -55,6 +54,14 @@ export const useMakeQuoteEffect = ({
 
   useEffect(() => {
     if (!shouldRun) {
+      return;
+    }
+
+    // not used for depositing native Near token
+    if (
+      ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+      ctx.targetToken?.assetId === WNEAR_ASSET_ID
+    ) {
       return;
     }
 

@@ -22,9 +22,9 @@ export const createFilterBySearch = (options: Options) => {
     const chainName = CHAINS_LIST[token.blockchain].label.toLocaleLowerCase();
 
     return (
-      // search by chain name
-      chainName.includes(searchLowerCase) ||
-      token.blockchain.includes(searchLowerCase) ||
+      // search by chain name (only for external tokens)
+      (!token.isIntent && chainName.includes(searchLowerCase)) ||
+      (!token.isIntent && token.blockchain.includes(searchLowerCase)) ||
       // by token name
       tokenNameLowerCase.includes(searchLowerCase) ||
       tokenSymbolLowerCase.includes(searchLowerCase) ||
