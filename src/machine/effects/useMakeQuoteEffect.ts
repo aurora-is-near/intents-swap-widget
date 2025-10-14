@@ -35,9 +35,7 @@ export const useMakeQuoteEffect = ({
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote({
-    variant: 'swap',
-  });
+  const { make: makeQuote, cancel } = useMakeQuote();
 
   // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
