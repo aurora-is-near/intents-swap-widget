@@ -67,7 +67,7 @@
     "@aurora-is-near/eslint-config": "^1.5.3",
     "@aurora-is-near/semantic-release-config": "^1.5.4",
     "@defuse-protocol/bridge-sdk": "0.10.3",
-    "@defuse-protocol/internal-utils": "^0.6.0",
+    "@defuse-protocol/internal-utils": "^0.13.0",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
     "@headlessui/react": "^2.2.4",
     "@near-wallet-selector/core": "^9.0.3",
