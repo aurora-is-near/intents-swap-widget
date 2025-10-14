@@ -8,16 +8,13 @@ import { useTokens } from './useTokens';
 //    fails and we need a manual mapping for such cases
 //
 // Tokens: cbBTC (base), cbBTC (eth), wBTC (near), xBTC (sol), wETH (gnosis), wNEAR (near) + ETH (near), BTC (near), NEAR
-const uniqueIntentTokensFilter = {
-  rename: { 'nep141:wrap.near': 'NEAR' } as Record<string, string>,
-  hide: [
-    'nep141:eth-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near', // cbBTC (eth)
-    'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near', // cbBTC (base)
-    'nep141:gnosis-0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1.omft.near', // wETH (gnosis)
-    'nep141:2260fac5e5542a773aa44fbcfedf7c193bc2c599.factory.bridge.near', // wBTC (near)
-    'nep245:v2_1.omni.hot.tg:56_SZzgw3HSudhZcTwPWUTi2RJB19t', // NEAR (bsc)
-  ],
-};
+const uniqueIntentTokensFilter = [
+  'nep141:eth-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near', // cbBTC (eth)
+  'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near', // cbBTC (base)
+  'nep141:gnosis-0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1.omft.near', // wETH (gnosis)
+  'nep141:2260fac5e5542a773aa44fbcfedf7c193bc2c599.factory.bridge.near', // wBTC (near)
+  'nep245:v2_1.omni.hot.tg:56_SZzgw3HSudhZcTwPWUTi2RJB19t', // NEAR (bsc)
+];
 
 export const useTokensIntentsUnique = () => {
   const { tokens } = useTokens();
@@ -28,7 +25,7 @@ export const useTokensIntentsUnique = () => {
         (t) =>
           t.isIntent &&
           t.blockchain === 'near' &&
-          !uniqueIntentTokensFilter.hide.includes(t.assetId),
+          !uniqueIntentTokensFilter.includes(t.assetId),
       );
 
       const nearTokenSymbols = nearTokens.map((t) => t.isIntent && t.symbol);
@@ -37,18 +34,11 @@ export const useTokensIntentsUnique = () => {
           t.isIntent &&
           t.blockchain !== 'near' &&
           !nearTokenSymbols.includes(t.symbol) &&
-          !uniqueIntentTokensFilter.hide.includes(t.assetId)
+          !uniqueIntentTokensFilter.includes(t.assetId)
         );
       });
 
-      return [
-        ...nearTokens,
-        ...notNearTokens.map((t) =>
-          t.assetId in uniqueIntentTokensFilter.rename
-            ? { ...t, symbol: uniqueIntentTokensFilter.rename[t.assetId] }
-            : t,
-        ),
-      ];
+      return [...nearTokens, ...notNearTokens];
     }, [tokens]),
   };
 };

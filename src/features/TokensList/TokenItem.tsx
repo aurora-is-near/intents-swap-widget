@@ -6,7 +6,7 @@ import { TinyNumber } from '@/components/TinyNumber';
 import { getUsdDisplayBalance } from '@/utils/formatters/getUsdDisplayBalance';
 import type { Token, TokenBalance } from '@/types/token';
 
-export const TOKEN_ITEM_HEIGHT = 50;
+export const TOKEN_ITEM_HEIGHT = 58;
 
 type Msg = { type: 'on_select_token'; token: Token };
 

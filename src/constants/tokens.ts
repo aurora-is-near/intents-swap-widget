@@ -5,6 +5,9 @@ type TokenAdditionalData = {
   name: string;
 };
 
+export const NATIVE_NEAR_DUMB_ASSET_ID = 'native-near';
+export const WNEAR_ASSET_ID = 'nep141:wrap.near';
+
 export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
   usdc: {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png',

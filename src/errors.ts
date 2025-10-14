@@ -15,6 +15,8 @@ const store = machine.getStore();
 export class WidgetError extends Error {
   context: Context;
 
+  _is_widget_error = true;
+
   constructor(message: string, meta?: { cause?: unknown }) {
     super(message);
     this.name = 'WidgetError';
@@ -52,3 +54,9 @@ export class TransferError extends MachineError<
     this.name = 'TransferError';
   }
 }
+
+export const isWidgetError = (error: unknown): error is WidgetError =>
+  typeof error === 'object' &&
+  error !== null &&
+  '_is_widget_error' in error &&
+  !!error._is_widget_error;
