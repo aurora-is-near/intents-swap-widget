@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useConfig } from '@/config';
-import { IntentsTransferArgs } from '../../types';
-import { useCompatibilityCheck } from '../../hooks/useCompatibilityCheck';
+import { notReachable } from '@/utils/notReachable';
+import { IntentsTransferArgs } from '@/types';
+import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
+
+type Msg = { type: 'on_sign_out' };
 
 type Props = {
   providers: IntentsTransferArgs['providers'];
-  onSignOut: () => void;
+  onMsg: (msg: Msg) => void;
 };
 
-export function WalletCompatibilityCheck({ onSignOut, providers }: Props) {
+export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<'initial' | 'error'>('initial');
   const { walletAddress } = useConfig();
@@ -62,6 +65,7 @@ export function WalletCompatibilityCheck({ onSignOut, providers }: Props) {
       setIsOpen(false);
     } else {
       setState('error');
+      return;
     }
   }
 
@@ -71,7 +75,7 @@ export function WalletCompatibilityCheck({ onSignOut, providers }: Props) {
 
   function handleSignOut() {
     setIsOpen(false);
-    onSignOut();
+    onMsg({ type: 'on_sign_out' });
   }
 
   if (!isOpen) {
@@ -86,10 +90,24 @@ export function WalletCompatibilityCheck({ onSignOut, providers }: Props) {
     <WalletCompatibilityModal
       state={state}
       isSigning={isSigning}
-      onClose={() => setIsOpen(false)}
-      onCheckCompatibility={handleCompatibilityCheck}
-      onTryAgain={handleTryAgain}
-      onSignOut={handleSignOut}
+      onMsg={(msg) => {
+        switch (msg.type) {
+          case 'on_close':
+            setIsOpen(false);
+            break;
+          case 'on_check_compatibility':
+            handleCompatibilityCheck();
+            break;
+          case 'on_try_again':
+            handleTryAgain();
+            break;
+          case 'on_sign_out':
+            handleSignOut();
+            break;
+          default:
+            notReachable(msg);
+        }
+      }}
     />
   );
 }
