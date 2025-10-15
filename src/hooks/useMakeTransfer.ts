@@ -68,6 +68,7 @@ export const useMakeTransfer = ({
         }
       } else {
         transferResult = await makeIntentsTransfer({
+          message,
           onPending: (reason) => {
             fireEvent('transferSetStatus', {
               status: 'pending',
