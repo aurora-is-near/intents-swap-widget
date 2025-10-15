@@ -28,6 +28,7 @@ export const useTokensFiltered = (options: TokensFilterOptions) => {
   const sorter = createTokenSorter(
     mergedBalance,
     options.walletSupportedChains,
+    options.search,
   );
 
   const filteredTokens = tokens

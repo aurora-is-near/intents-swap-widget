@@ -9,6 +9,7 @@ import type { Context } from '@/machine/context';
 import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
@@ -126,11 +127,16 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
+  const nativeNearDeposit =
+    ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+    ctx.targetToken?.assetId === WNEAR_ASSET_ID;
+
   const getMainLabel = () => {
     if (
       isDirectTransfer ||
       isNearToIntentsSameAssetTransfer ||
-      isDirectNearDeposit
+      isDirectNearDeposit ||
+      nativeNearDeposit
     ) {
       return t('submit.active.transfer', 'Transfer');
     }
@@ -225,7 +231,8 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
     !ctx.quote &&
     !isDirectTransfer &&
     !isNearToIntentsSameAssetTransfer &&
-    !isDirectNearDeposit
+    !isDirectNearDeposit &&
+    !nativeNearDeposit
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
