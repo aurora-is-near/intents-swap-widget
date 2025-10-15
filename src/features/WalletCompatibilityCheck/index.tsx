@@ -65,6 +65,7 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
       setIsOpen(false);
     } else {
       setState('error');
+
       return;
     }
   }
@@ -90,13 +91,13 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     <WalletCompatibilityModal
       state={state}
       isSigning={isSigning}
-      onMsg={(msg) => {
+      onMsg={async (msg) => {
         switch (msg.type) {
           case 'on_close':
             setIsOpen(false);
             break;
           case 'on_check_compatibility':
-            handleCompatibilityCheck();
+            await handleCompatibilityCheck();
             break;
           case 'on_try_again':
             handleTryAgain();

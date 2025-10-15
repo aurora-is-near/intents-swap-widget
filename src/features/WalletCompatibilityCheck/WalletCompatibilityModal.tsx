@@ -83,7 +83,7 @@ export const WalletCompatibilityModal = ({
               isErrorState
                 ? 'walletCompatibility.modal.title.error'
                 : 'walletCompatibility.modal.title.initial',
-              isErrorState ? 'Unable to verify' : 'Signature check required'
+              isErrorState ? 'Unable to verify' : 'Signature check required',
             )}
           </h2>
 
@@ -95,7 +95,7 @@ export const WalletCompatibilityModal = ({
                 : 'walletCompatibility.modal.description.initial',
               isErrorState
                 ? "The check couldn't be completed. Try again or choose another sign-in option to continue."
-                : 'To keep your account secure, we need to verify that your device is compatible with Calyx.'
+                : 'To keep your account secure, we need to verify that your device is compatible with Calyx.',
             )}
           </p>
         </div>
@@ -104,14 +104,39 @@ export const WalletCompatibilityModal = ({
         <div className="mb-8 flex flex-col gap-[10px]">
           {isErrorState ? (
             <>
-              <ErrorItem text={t('walletCompatibility.modal.error.interrupted', 'The verification was interrupted or canceled')} />
-              <ErrorItem text={t('walletCompatibility.modal.error.incompatible', 'Some wallets (or devices) are incompatible with the platform')} />
+              <ErrorItem
+                text={t(
+                  'walletCompatibility.modal.error.interrupted',
+                  'The verification was interrupted or canceled',
+                )}
+              />
+              <ErrorItem
+                text={t(
+                  'walletCompatibility.modal.error.incompatible',
+                  'Some wallets (or devices) are incompatible with the platform',
+                )}
+              />
             </>
           ) : (
             <>
-              <FeatureItem text={t('walletCompatibility.modal.feature.secureTransactions', 'Secure transactions and transfers')} />
-              <FeatureItem text={t('walletCompatibility.modal.feature.fullAccess', 'Full access to all Calyx features')} />
-              <FeatureItem text={t('walletCompatibility.modal.feature.fundProtection', 'Protection for your funds')} />
+              <FeatureItem
+                text={t(
+                  'walletCompatibility.modal.feature.secureTransactions',
+                  'Secure transactions and transfers',
+                )}
+              />
+              <FeatureItem
+                text={t(
+                  'walletCompatibility.modal.feature.fullAccess',
+                  'Full access to all Calyx features',
+                )}
+              />
+              <FeatureItem
+                text={t(
+                  'walletCompatibility.modal.feature.fundProtection',
+                  'Protection for your funds',
+                )}
+              />
             </>
           )}
         </div>
@@ -134,7 +159,10 @@ export const WalletCompatibilityModal = ({
               state={isSigning ? 'loading' : 'default'}
               onClick={() => onMsg({ type: 'on_check_compatibility' })}
               className="h-12 w-full rounded-[10px] bg-sw-gray-50 text-sw-mauve-975 hover:bg-sw-gray-100 hover:text-sw-mauve-975">
-              {t('walletCompatibility.modal.button.checkCompatibility', 'Check compatibility')}
+              {t(
+                'walletCompatibility.modal.button.checkCompatibility',
+                'Check compatibility',
+              )}
             </Button>
           )}
 
