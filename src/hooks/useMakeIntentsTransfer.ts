@@ -39,6 +39,7 @@ export type IntentsTransferArgs = {
 };
 
 type MakeArgs = {
+  message?: string;
   onPending: (reason: 'WAITING_CONFIRMATION' | 'PROCESSING') => void;
 };
 
@@ -160,6 +161,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
+    message,
     onPending,
   }: MakeArgs): Promise<TransferResult | undefined> => {
     if (!ctx.walletAddress) {
@@ -254,12 +256,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
     ) {
       routeConfig = undefined;
     } else if (isDirectTransfer) {
-      routeConfig = createNearWithdrawalRoute(
-        getIntentsAccountId({
-          walletAddress: ctx.walletAddress,
-          addressType: intentsAccountType,
-        }) ?? undefined,
-      );
+      routeConfig = createNearWithdrawalRoute(message ?? undefined);
     } else {
       routeConfig = createInternalTransferRoute();
     }
