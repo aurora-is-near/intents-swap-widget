@@ -8,7 +8,6 @@ import {
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
-import { randomBytes } from 'crypto';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
@@ -41,6 +40,14 @@ export type IntentsTransferArgs = {
 type MakeArgs = {
   message?: string;
   onPending: (reason: 'WAITING_CONFIRMATION' | 'PROCESSING') => void;
+};
+
+const randomBytes = (length: number): Buffer => {
+  const array = new Uint8Array(length);
+
+  crypto.getRandomValues(array);
+
+  return Buffer.from(array);
 };
 
 const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
