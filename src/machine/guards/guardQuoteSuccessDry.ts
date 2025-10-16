@@ -10,7 +10,6 @@ export const guardQuoteSuccessDry = (
     ctx.quoteStatus === 'success' &&
     ctx.transferStatus.status === 'idle' &&
     !ctx.sendAddress &&
-    !ctx.walletAddress &&
     !!ctx.sourceToken &&
     !!ctx.targetToken &&
     isNotEmptyAmount(ctx.sourceTokenAmount)
