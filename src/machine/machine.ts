@@ -31,6 +31,7 @@ export const machine = createMachine<MachineState, Context>(
         'initial_dry',
         'input_valid_internal',
         'input_valid_external',
+        'input_valid_dry',
       ],
     },
 
