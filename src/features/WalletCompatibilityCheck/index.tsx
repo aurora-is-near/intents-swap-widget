@@ -35,17 +35,17 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     }
   }, [walletAddress]);
 
-  //   useEffect(() => {
-  //     if (isOpen) {
-  //       window.document.body.style.overflow = 'hidden';
-  //     } else {
-  //       window.document.body.style.overflow = 'auto';
-  //     }
+  useEffect(() => {
+    if (isOpen) {
+      window.document.body.style.overflow = 'hidden';
+    } else {
+      window.document.body.style.overflow = 'auto';
+    }
 
-  //     return () => {
-  //       window.document.body.style.overflow = 'auto';
-  //     };
-  //   }, [isOpen]);
+    return () => {
+      window.document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
 
   async function handleCompatibilityCheck() {
     const isValid = await handleSign();
