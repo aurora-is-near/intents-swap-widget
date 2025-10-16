@@ -8,8 +8,6 @@ import {
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
-import { randomBytes } from 'crypto';
-
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
@@ -27,6 +25,7 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+import { generateRandomBytes } from '../utils/near/getRandomBytes';
 
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
@@ -84,7 +83,7 @@ const validateNearPublicKey = async (
       const res = await nearProvider.signMessage({
         message: 'Authenticate',
         recipient: 'intents.near',
-        nonce: randomBytes(32),
+        nonce: Buffer.from(generateRandomBytes(32)),
       });
 
       if (!res) {

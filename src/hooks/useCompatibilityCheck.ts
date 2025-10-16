@@ -129,11 +129,12 @@ export function useCompatibilityCheck({ providers }: Props) {
 
       // Handle NEAR public key storage
       if (isValid && intentsAccountType === 'near' && walletAddress) {
-        const existingPublicKey =
-          localStorageTyped.getItem('nearWalletsPk')[walletAddress];
+        const allKeys = localStorageTyped.getItem('nearWalletsPk') ?? {};
+        const existingPublicKey = allKeys[walletAddress];
 
         if (!existingPublicKey && signature.type === 'NEP413') {
           localStorageTyped.setItem('nearWalletsPk', {
+            ...allKeys,
             [walletAddress]: signature.signatureData.publicKey,
           });
         }
