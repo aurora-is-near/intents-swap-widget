@@ -8,8 +8,13 @@ import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
+<<<<<<< HEAD
 import type { Quote } from '@/types/quote';
 
+=======
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
+>>>>>>> 3e4d742 (feat: dry quote on insufficient balance)
 import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
@@ -30,7 +35,13 @@ export const useMakeQuoteEffect = ({
     isDirectNearDeposit,
   } = useComputedSnapshot();
 
+<<<<<<< HEAD
   const isDry = !ctx.walletAddress;
+=======
+  const isDry =
+    !ctx.walletAddress ||
+    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
+>>>>>>> 3e4d742 (feat: dry quote on insufficient balance)
 
   const shouldRun =
     isEnabled &&
