@@ -16,6 +16,7 @@ import { TransferError } from '@/errors';
 import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
@@ -65,19 +66,11 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   return ctx.quote.depositAddress;
 };
 
-const getSavedPublicKey = (walletAddress: string) => {
-  return localStorage.getItem(`near-wallet-pk-${walletAddress}`);
-};
-
-const setSavedPublicKey = (walletAddress: string, publicKey: string) => {
-  localStorage.setItem(`near-wallet-pk-${walletAddress}`, publicKey);
-};
-
 const validateNearPublicKey = async (
   nearProvider: NearWallet,
   walletAddress: string,
 ) => {
-  let publicKey = getSavedPublicKey(walletAddress);
+  let publicKey = localStorageTyped.getItem('nearWalletsPk')[walletAddress];
 
   if (!nearProvider.signMessage) {
     throw new TransferError({
@@ -102,7 +95,9 @@ const validateNearPublicKey = async (
       }
 
       publicKey = res.publicKey;
-      setSavedPublicKey(walletAddress, res.publicKey);
+      localStorageTyped.setItem('nearWalletsPk', {
+        [walletAddress]: res.publicKey,
+      });
     } catch (e: unknown) {
       throw new TransferError({
         code: 'DIRECT_TRANSFER_ERROR',

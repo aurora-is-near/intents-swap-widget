@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
+
 import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
-import { IntentsTransferArgs } from '@/types';
+import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
+import type { IntentsTransferArgs } from '@/types';
+
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
 
 type Msg = { type: 'on_sign_out' };
@@ -23,9 +26,7 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
       return;
     }
 
-    const verifiedWallets = JSON.parse(
-      window.localStorage.getItem('verifiedWallets') ?? '[]',
-    ) as string[];
+    const verifiedWallets = localStorageTyped.getItem('verifiedWallets');
 
     if (!verifiedWallets.includes(walletAddress)) {
       setIsOpen(true);
@@ -34,40 +35,35 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     }
   }, [walletAddress]);
 
-  useEffect(() => {
-    if (isOpen) {
-      window.document.body.style.overflow = 'hidden';
-    } else {
-      window.document.body.style.overflow = 'auto';
-    }
+  //   useEffect(() => {
+  //     if (isOpen) {
+  //       window.document.body.style.overflow = 'hidden';
+  //     } else {
+  //       window.document.body.style.overflow = 'auto';
+  //     }
 
-    return () => {
-      window.document.body.style.overflow = 'auto';
-    };
-  }, [isOpen]);
+  //     return () => {
+  //       window.document.body.style.overflow = 'auto';
+  //     };
+  //   }, [isOpen]);
 
   async function handleCompatibilityCheck() {
     const isValid = await handleSign();
 
-    if (isValid) {
-      const verifiedWallets = JSON.parse(
-        window.localStorage.getItem('verifiedWallets') ?? '[]',
-      ) as string[];
-
-      if (!verifiedWallets.includes(walletAddress!)) {
-        verifiedWallets.push(walletAddress!);
-        window.localStorage.setItem(
-          'verifiedWallets',
-          JSON.stringify(verifiedWallets),
-        );
-      }
-
-      setIsOpen(false);
-    } else {
+    if (!isValid) {
       setState('error');
 
       return;
     }
+
+    const verifiedWallets = localStorageTyped.getItem('verifiedWallets');
+
+    if (!verifiedWallets.includes(walletAddress!)) {
+      verifiedWallets.push(walletAddress!);
+      localStorageTyped.setItem('verifiedWallets', verifiedWallets);
+    }
+
+    setIsOpen(false);
   }
 
   function handleTryAgain() {

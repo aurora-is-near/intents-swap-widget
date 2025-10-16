@@ -53,7 +53,14 @@ function createWalletVerificationMessage(
   // For Tron wallets, we need to add a field to ensure message size compatibility
   // with Tron Ledger app requirements (>225 bytes to avoid signing bugs)
   if (chainType === 'tron') {
-    const tronMessage = JSON.parse(baseMessage.TRON.message);
+    let tronMessage;
+
+    try {
+      tronMessage = JSON.parse(baseMessage.TRON.message);
+    } catch (error) {
+      throw new Error('[WIDGET] Invalid TRON message format');
+    }
+
     const extendedMessage = {
       ...tronMessage,
       message_size_validation:

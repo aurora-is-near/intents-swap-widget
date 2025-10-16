@@ -62,7 +62,7 @@ export const WalletCompatibilityModal = ({
         <button
           type="button"
           onClick={() => onMsg({ type: 'on_close' })}
-          className="absolute top-4 right-4 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-sw-modal-close opacity-60">
+          className="absolute top-4 right-4 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-sw-gray-975 opacity-60">
           <X size={16} strokeWidth={2} />
         </button>
 
