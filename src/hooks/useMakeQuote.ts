@@ -16,6 +16,8 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
+import { isNotEmptyAmount } from '../utils';
+import { isBalanceSufficient } from '../machine/guards/checks/isBalanceSufficient';
 import type { Quote } from '@/types/quote';
 
 type MakeArgs = {
@@ -27,7 +29,7 @@ export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType, oneClickApiQuoteProxyUrl, appName } = useConfig();
 
-  const isDry = !ctx.walletAddress;
+  const isDry = !ctx.walletAddress || (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
     walletAddress: isDry
