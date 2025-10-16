@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { walletMessage } from '@defuse-protocol/internal-utils';
+import { Buffer } from 'buffer';
 import { TransferError } from '@/errors';
 import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
