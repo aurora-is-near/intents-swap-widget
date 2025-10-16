@@ -18,6 +18,10 @@ import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
 
+import { isNotEmptyAmount } from '../utils';
+import { isBalanceSufficient } from '../machine/guards/checks/isBalanceSufficient';
+import type { Quote } from '@/types/quote';
+
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
@@ -42,7 +46,7 @@ export const useMakeQuote = () => {
   const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
     useConfig();
 
-  const isDry = !ctx.walletAddress;
+  const isDry = !ctx.walletAddress || (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
     walletAddress: isDry
