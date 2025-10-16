@@ -73,7 +73,7 @@ export const WalletCompatibilityModal = ({
             {isErrorState ? (
               <ShieldX size={40} className="text-sw-warn-100" />
             ) : (
-              <ShieldQuestionMark size={40} className="text-sw-modal-cyan" />
+              <ShieldQuestionMark size={40} className="text-sw-complete-100" />
             )}
           </div>
 
