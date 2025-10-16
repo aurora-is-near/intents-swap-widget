@@ -3,6 +3,7 @@ import axios from 'axios';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import type { TransferResult } from '@/types/transfer';
 
@@ -55,7 +56,10 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
       const depositResult = await makeTransfer({
         amount: ctx.quote.amountIn,
         address: ctx.quote.depositAddress,
-        tokenAddress: ctx.sourceToken.contractAddress,
+        tokenAddress:
+          ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+            ? NATIVE_NEAR_DUMB_ASSET_ID
+            : ctx.sourceToken.contractAddress,
       });
 
       if (!depositResult) {

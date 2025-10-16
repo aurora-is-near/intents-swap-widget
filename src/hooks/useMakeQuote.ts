@@ -12,29 +12,22 @@ import { QuoteError } from '@/errors';
 import { oneClickApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
 import type { Quote } from '@/types/quote';
-
-import { useTokens } from './useTokens';
-
-type Props = {
-  variant: 'deposit' | 'swap';
-};
 
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
 };
 
-export const useMakeQuote = ({ variant }: Props) => {
+export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType, oneClickApiQuoteProxyUrl, appName } = useConfig();
 
   const isDry = !ctx.walletAddress;
-
-  const { tokens: tokenList } = useTokens();
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
     walletAddress: isDry
@@ -107,8 +100,17 @@ export const useMakeQuote = ({ variant }: Props) => {
           ? QuoteRequest.swapType.EXACT_OUTPUT
           : QuoteRequest.swapType.EXACT_INPUT,
 
+      // Target
+      destinationAsset:
+        ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+          ? WNEAR_ASSET_ID
+          : ctx.targetToken.assetId,
+
       // Source
-      originAsset: ctx.sourceToken.assetId,
+      originAsset:
+        ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+          ? WNEAR_ASSET_ID
+          : ctx.sourceToken.assetId,
       amount:
         quoteType === 'exact_out'
           ? ctx.targetTokenAmount
@@ -126,92 +128,44 @@ export const useMakeQuote = ({ variant }: Props) => {
     }
 
     try {
-      switch (variant) {
-        case 'deposit': {
-          const destinationAsset = tokenList.find(
-            (t) =>
-              t.blockchain === 'near' && t.symbol === ctx.sourceToken.symbol,
-          );
+      if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
+        request.current = requestQuote({
+          ...commonQuoteParams,
+          recipient: intentsAccountId,
+          recipientType: QuoteRequest.recipientType.INTENTS,
+          depositType: QuoteRequest.depositType.INTENTS,
 
-          if (!destinationAsset) {
-            throw new QuoteError({
-              code: 'NO_NEAR_TOKEN_FOUND',
-              meta: { symbol: ctx.sourceToken.symbol },
-            });
-          }
+          // Refund
+          refundTo: intentsAccountId,
+          refundType: QuoteRequest.refundType.INTENTS,
+        });
 
-          request.current = requestQuote({
-            ...commonQuoteParams,
-            recipient: intentsAccountId,
-            recipientType: QuoteRequest.recipientType.INTENTS,
-            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: destinationAsset.assetId,
-
-            // Refund
-            refundTo: targetWalletAddress,
-            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-          });
-
-          quoteResponse = (await request.current).data;
-          break;
-        }
-
-        case 'swap': {
-          if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
-            request.current = requestQuote({
-              ...commonQuoteParams,
-              recipient: intentsAccountId,
-              recipientType: QuoteRequest.recipientType.INTENTS,
-              destinationAsset: ctx.targetToken.assetId,
-              depositType: QuoteRequest.depositType.INTENTS,
-
-              // Refund
-              refundTo: intentsAccountId,
-              refundType: QuoteRequest.refundType.INTENTS,
-            });
-
-            quoteResponse = (await request.current).data;
-            break;
-          }
-
-          request.current = requestQuote({
-            ...commonQuoteParams,
-            recipient:
-              !ctx.targetToken.isIntent && ctx.sendAddress
-                ? ctx.sendAddress
-                : intentsAccountId,
-            recipientType: ctx.targetToken.isIntent
-              ? QuoteRequest.recipientType.INTENTS
-              : QuoteRequest.recipientType.DESTINATION_CHAIN,
-            destinationAsset: ctx.targetToken.assetId,
-            depositType: ctx.sourceToken.isIntent
-              ? QuoteRequest.depositType.INTENTS
-              : QuoteRequest.depositType.ORIGIN_CHAIN,
-
-            // Refund
-            refundTo: ctx.sourceToken.isIntent
-              ? intentsAccountId
-              : targetWalletAddress,
-            refundType: ctx.sourceToken.isIntent
-              ? QuoteRequest.refundType.INTENTS
-              : QuoteRequest.refundType.ORIGIN_CHAIN,
-          });
-
-          quoteResponse = (await request.current).data;
-          break;
-        }
-
-        default: {
-          const msg = 'Unknown swap variant (deposit or swap expected)';
-
-          logger.error(`[WIDGET] ${msg}`);
-
-          throw new QuoteError({
-            code: 'QUOTE_INVALID_INITIAL',
-            meta: { isDry, message: msg },
-          });
-        }
+        quoteResponse = (await request.current).data;
       }
+
+      request.current = requestQuote({
+        ...commonQuoteParams,
+        recipient:
+          !ctx.targetToken.isIntent && ctx.sendAddress
+            ? ctx.sendAddress
+            : intentsAccountId,
+        recipientType: ctx.targetToken.isIntent
+          ? QuoteRequest.recipientType.INTENTS
+          : QuoteRequest.recipientType.DESTINATION_CHAIN,
+        depositType: ctx.sourceToken.isIntent
+          ? QuoteRequest.depositType.INTENTS
+          : QuoteRequest.depositType.ORIGIN_CHAIN,
+
+        // Refund
+        refundTo: ctx.sourceToken.isIntent
+          ? intentsAccountId
+          : targetWalletAddress,
+        refundType: ctx.sourceToken.isIntent
+          ? QuoteRequest.refundType.INTENTS
+          : QuoteRequest.refundType.ORIGIN_CHAIN,
+      });
+
+      quoteResponse = (await request.current).data;
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
         return;

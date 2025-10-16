@@ -3,6 +3,7 @@ import {
   createIntentSignerNEP413,
   createInternalTransferRoute,
   createNearWithdrawalRoute,
+  type RouteConfig,
 } from '@defuse-protocol/bridge-sdk';
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
@@ -21,6 +22,7 @@ import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
@@ -37,6 +39,7 @@ export type IntentsTransferArgs = {
 };
 
 type MakeArgs = {
+  message?: string;
   onPending: (reason: 'WAITING_CONFIRMATION' | 'PROCESSING') => void;
 };
 
@@ -158,6 +161,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
+    message,
     onPending,
   }: MakeArgs): Promise<TransferResult | undefined> => {
     if (!ctx.walletAddress) {
@@ -244,6 +248,19 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
 
     sdk.setIntentSigner(signer);
 
+    let routeConfig: RouteConfig | undefined;
+
+    if (
+      ctx.sourceToken.assetId === WNEAR_ASSET_ID &&
+      ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+    ) {
+      routeConfig = undefined;
+    } else if (isDirectTransfer) {
+      routeConfig = createNearWithdrawalRoute(message ?? undefined);
+    } else {
+      routeConfig = createInternalTransferRoute();
+    }
+
     const withdrawal = sdk.createWithdrawal({
       withdrawalParams: {
         assetId: ctx.sourceToken.assetId,
@@ -251,14 +268,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         destinationAddress: getDestinationAddress(ctx, isDirectTransfer),
         destinationMemo: undefined,
         feeInclusive: false,
-        routeConfig: isDirectTransfer
-          ? createNearWithdrawalRoute(
-              getIntentsAccountId({
-                walletAddress: ctx.walletAddress,
-                addressType: intentsAccountType,
-              }) ?? undefined,
-            )
-          : createInternalTransferRoute(),
+        routeConfig,
       },
     });
 

@@ -5,6 +5,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -34,6 +35,10 @@ export const useMakeTransfer = ({
 
     let transferResult: TransferResult | undefined;
 
+    const nativeNearDeposit =
+      ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+      ctx.targetToken?.assetId === WNEAR_ASSET_ID;
+
     try {
       fireEvent('transferSetStatus', {
         status: 'pending',
@@ -41,7 +46,7 @@ export const useMakeTransfer = ({
       });
 
       if (!ctx.sourceToken?.isIntent) {
-        if (isNearToIntentsSameAssetTransfer) {
+        if (isNearToIntentsSameAssetTransfer || nativeNearDeposit) {
           transferResult = await makeNEARFtTransferCall(
             INTENTS_CONTRACT,
             message,
@@ -63,6 +68,7 @@ export const useMakeTransfer = ({
         }
       } else {
         transferResult = await makeIntentsTransfer({
+          message,
           onPending: (reason) => {
             fireEvent('transferSetStatus', {
               status: 'pending',
