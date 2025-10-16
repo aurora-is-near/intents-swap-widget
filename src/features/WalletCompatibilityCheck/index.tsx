@@ -5,7 +5,6 @@ import { notReachable } from '@/utils/notReachable';
 import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
 import type { IntentsTransferArgs } from '@/types';
-
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
 
 type Msg = { type: 'on_sign_out' };
@@ -23,6 +22,8 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
 
   useEffect(() => {
     if (!walletAddress) {
+      setIsOpen(false);
+
       return;
     }
 
@@ -48,6 +49,12 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
   }, [isOpen]);
 
   async function handleCompatibilityCheck() {
+    if (!walletAddress) {
+      setIsOpen(false);
+
+      return;
+    }
+
     const isValid = await handleSign();
 
     if (!isValid) {
@@ -56,12 +63,11 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
       return;
     }
 
+    // no need to verify if a wallet is already verified, the modal won't show up
     const verifiedWallets = localStorageTyped.getItem('verifiedWallets');
 
-    if (!verifiedWallets.includes(walletAddress!)) {
-      verifiedWallets.push(walletAddress!);
-      localStorageTyped.setItem('verifiedWallets', verifiedWallets);
-    }
+    verifiedWallets.push(walletAddress);
+    localStorageTyped.setItem('verifiedWallets', verifiedWallets);
 
     setIsOpen(false);
   }

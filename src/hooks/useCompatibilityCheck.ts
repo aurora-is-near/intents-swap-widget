@@ -4,6 +4,7 @@ import { TransferError } from '@/errors';
 import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
+import { localStorageTyped } from '@/utils/localstorage';
 import {
   verifyWalletSignature,
   walletVerificationMessageFactory,
@@ -77,22 +78,27 @@ export function useCompatibilityCheck({ providers }: Props) {
       }
 
       case 'near': {
-        if (!providers.near) {
+        const nearProvider = providers.near ? providers.near() : null;
+
+        if (!nearProvider || !nearProvider.signMessage) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
             meta: { message: 'No NEAR provider configured' },
           });
         }
 
-        const signatureData = await providers
-          .near()
-          .signNep413Message(
-            msg.NEP413.message,
-            providers.near().id,
-            msg.NEP413.recipient,
-            Buffer.from(msg.NEP413.nonce),
-            msg.NEP413.callbackUrl,
-          );
+        const signatureData = await nearProvider.signMessage({
+          message: msg.NEP413.message,
+          nonce: Buffer.from(msg.NEP413.nonce),
+          recipient: msg.NEP413.recipient,
+        });
+
+        if (!signatureData) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No public key returned from NEAR wallet' },
+          });
+        }
 
         return {
           type: 'NEP413',
@@ -120,6 +126,18 @@ export function useCompatibilityCheck({ providers }: Props) {
         intentsAccountId!,
         intentsAccountType === 'sol' ? 'solana' : intentsAccountType,
       );
+
+      // Handle NEAR public key storage
+      if (isValid && intentsAccountType === 'near' && walletAddress) {
+        const existingPublicKey =
+          localStorageTyped.getItem('nearWalletsPk')[walletAddress];
+
+        if (!existingPublicKey && signature.type === 'NEP413') {
+          localStorageTyped.setItem('nearWalletsPk', {
+            [walletAddress]: signature.signatureData.publicKey,
+          });
+        }
+      }
 
       return isValid;
     } catch (error) {
