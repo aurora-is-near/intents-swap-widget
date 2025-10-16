@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { noop } from '@/utils/noop';
 import { BalanceRpcLoader } from '@/features/BalanceRpcLoader';
-import { defaultConfig, WipgetConfigProvider } from '@/config';
-import type { WipgetConfig } from '@/config';
+import { defaultConfig, WidgetConfigProvider } from '@/config';
+import type { WidgetConfig } from '@/config';
 
 import { RPCS } from './rpcs';
 import { WidgetSwap } from './Swap';
@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function WidgetPage({ isLoading, walletAddress }: Props) {
-  const config: WipgetConfig = useMemo(
+  const config: WidgetConfig = useMemo(
     () => ({
       ...defaultConfig,
       walletAddress, // reactively pass connected wallet address
@@ -34,7 +34,7 @@ export default function WidgetPage({ isLoading, walletAddress }: Props) {
 
   return (
     <div className="flex h-full w-full justify-center pt-[10vh]">
-      <WipgetConfigProvider config={config}>
+      <WidgetConfigProvider config={config}>
         {!!config.walletAddress && (
           <BalanceRpcLoader rpcs={RPCS} walletAddress={config.walletAddress} />
         )}
@@ -53,7 +53,7 @@ export default function WidgetPage({ isLoading, walletAddress }: Props) {
             );
           })()}
         </section>
-      </WipgetConfigProvider>
+      </WidgetConfigProvider>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
-export type WipgetConfig = {
+export type WidgetConfig = {
   // Application metadata
   appName: string;
   appIcon: string;
@@ -51,7 +51,7 @@ const queryClient = new QueryClient({
 
 const disabledTokens = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
 
-export const defaultConfig: WipgetConfig = {
+export const defaultConfig: WidgetConfig = {
   appName: 'Unknown',
   appIcon:
     'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg',
@@ -100,30 +100,30 @@ export const defaultConfig: WipgetConfig = {
   },
 };
 
-type WipgetConfigContextType = { config: WipgetConfig };
+type WidgetConfigContextType = { config: WidgetConfig };
 
-const WipgetConfigContext = createContext<WipgetConfigContextType>({
+const WidgetConfigContext = createContext<WidgetConfigContextType>({
   config: defaultConfig,
 });
 
-type Props = PropsWithChildren<{ config?: WipgetConfig }>;
+type Props = PropsWithChildren<{ config?: WidgetConfig }>;
 
-export const configStore = proxy<{ config: WipgetConfig }>({
+export const configStore = proxy<{ config: WidgetConfig }>({
   config: defaultConfig,
 });
 
 export const useConfig = () => {
-  const configState = useContext(WipgetConfigContext);
+  const configState = useContext(WidgetConfigContext);
   const store = useSnapshot(configState);
 
   return store.config;
 };
 
-export const resetConfig = (config: WipgetConfig) => {
+export const resetConfig = (config: WidgetConfig) => {
   configStore.config = deepClone(config);
 };
 
-export const WipgetConfigProvider = ({
+export const WidgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
 }: Props) => {
@@ -141,11 +141,11 @@ export const WipgetConfigProvider = ({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WipgetConfigContext.Provider value={storeRef.current}>
+      <WidgetConfigContext.Provider value={storeRef.current}>
         <ErrorBoundary>
           <div className="sw">{children}</div>
         </ErrorBoundary>
-      </WipgetConfigContext.Provider>
+      </WidgetConfigContext.Provider>
     </QueryClientProvider>
   );
 };
