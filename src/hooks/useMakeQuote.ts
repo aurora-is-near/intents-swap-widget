@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   ApiError,
   CancelablePromise,
@@ -18,6 +18,12 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
 import { Quote } from '@/types/quote';
 
+import {
+  buildAuroraDepositParams,
+  buildAuroraOutOfVCParams,
+  buildAuroraIntoVCParams,
+  buildSwapQuoteParams,
+} from '@/utils/aurora';
 import { useTokens } from './useTokens';
 
 type Props = {
@@ -44,7 +50,7 @@ export const useMakeQuote = ({ variant }: Props) => {
     ? DRY_QUOTE_ADDRESSES[intentsAccountType]
     : (ctx.walletAddress ?? '');
 
-  const make = async ({ message }: { message?: string } = {}) => {
+  const make = useCallback(async ({ message }: { message?: string } = {}) => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
@@ -112,23 +118,67 @@ export const useMakeQuote = ({ variant }: Props) => {
               });
             }
 
-            request.current = OneClickService.getQuote({
-              ...commonQuoteParams,
-              recipient: intentsAccountId,
-              recipientType: QuoteRequest.recipientType.INTENTS,
-              depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-              destinationAsset: destinationAsset.assetId,
+            const isAuroraDeposit = ctx.sourceToken.blockchain === 'aurora';
 
-              // Refund
-              refundTo: targetWalletAddress,
-              refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-            });
+            const quoteParams = isAuroraDeposit
+              ? buildAuroraDepositParams({
+                commonQuoteParams,
+                intentsAccountId,
+                destinationAssetId: destinationAsset.assetId,
+                targetWalletAddress,
+              })
+              : {
+                ...commonQuoteParams,
+                recipient: intentsAccountId,
+                recipientType: QuoteRequest.recipientType.INTENTS,
+                depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+                destinationAsset: destinationAsset.assetId,
+                refundTo: targetWalletAddress,
+                refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+              };
+
+            request.current = OneClickService.getQuote(quoteParams);
 
             quoteResponse = await request.current;
             break;
           }
 
           case 'swap': {
+            const isAuroraSource = ctx.sourceToken.blockchain === 'aurora';
+            const isAuroraTarget = ctx.targetToken.blockchain === 'aurora';
+
+            // Handle Out of VC: Aurora to NEAR transfers
+            if (isAuroraSource && ctx.targetToken.blockchain === 'near') {
+              const quoteParams = buildAuroraOutOfVCParams({
+                commonQuoteParams,
+                targetToken: ctx.targetToken,
+                sendAddress: ctx.sendAddress,
+                intentsAccountId,
+                targetWalletAddress,
+              });
+
+              request.current = OneClickService.getQuote(quoteParams);
+              quoteResponse = await request.current;
+              break;
+            }
+
+            // Handle Into VC: NEAR/Intents to Aurora transfers only
+            // External chains → Aurora use regular swap flow
+            if (!isAuroraSource && isAuroraTarget && ctx.sourceToken.isIntent) {
+              const quoteParams = buildAuroraIntoVCParams({
+                commonQuoteParams,
+                targetToken: ctx.targetToken,
+                sendAddress: ctx.sendAddress,
+                targetWalletAddress,
+                intentsAccountId,
+                depositType: QuoteRequest.depositType.INTENTS,
+              });
+
+              request.current = OneClickService.getQuote(quoteParams);
+              quoteResponse = await request.current;
+              break;
+            }
+
             if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
               request.current = OneClickService.getQuote({
                 ...commonQuoteParams,
@@ -146,29 +196,16 @@ export const useMakeQuote = ({ variant }: Props) => {
               break;
             }
 
-            request.current = OneClickService.getQuote({
-              ...commonQuoteParams,
-              recipient:
-                !ctx.targetToken.isIntent && ctx.sendAddress
-                  ? ctx.sendAddress
-                  : intentsAccountId,
-              recipientType: ctx.targetToken.isIntent
-                ? QuoteRequest.recipientType.INTENTS
-                : QuoteRequest.recipientType.DESTINATION_CHAIN,
-              destinationAsset: ctx.targetToken.assetId,
-              depositType: ctx.sourceToken.isIntent
-                ? QuoteRequest.depositType.INTENTS
-                : QuoteRequest.depositType.ORIGIN_CHAIN,
-
-              // Refund
-              refundTo: ctx.sourceToken.isIntent
-                ? intentsAccountId
-                : targetWalletAddress,
-              refundType: ctx.sourceToken.isIntent
-                ? QuoteRequest.refundType.INTENTS
-                : QuoteRequest.refundType.ORIGIN_CHAIN,
+            const swapQuoteParams = buildSwapQuoteParams({
+              commonQuoteParams,
+              sourceToken: ctx.sourceToken,
+              targetToken: ctx.targetToken,
+              intentsAccountId,
+              sendAddress: ctx.sendAddress,
+              targetWalletAddress,
             });
 
+            request.current = OneClickService.getQuote(swapQuoteParams);
             quoteResponse = await request.current;
             break;
           }
@@ -211,7 +248,7 @@ export const useMakeQuote = ({ variant }: Props) => {
       }
     } catch (error: unknown) {
       if (error instanceof ApiError) {
-        const errorMessage = error.body.message ?? error.message;
+        const errorMessage = error.body?.message ?? error.message;
 
         if (errorMessage.includes('Amount is too low')) {
           const match = errorMessage.match(/\d+/);
@@ -279,7 +316,11 @@ export const useMakeQuote = ({ variant }: Props) => {
     }
 
     return result;
-  };
+  }, [ctx, intentsAccountId, isDry, targetWalletAddress, tokenList, variant]);
 
-  return { make, cancel: () => request.current?.cancel() };
+  const cancel = useCallback(() => {
+    request.current?.cancel();
+  }, []);
+
+  return { make, cancel };
 };

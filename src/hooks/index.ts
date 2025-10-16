@@ -9,4 +9,6 @@ export { useTokenInputPair } from './useTokenInputPair';
 export { useTokensFiltered } from './useTokensFiltered';
 export { useTokens } from './useTokens';
 export { useWalletBalance } from './useWalletBalance';
+export { useAuroraExitToNear } from './useAuroraExitToNear';
+export { useAurora } from './useAurora';
 export { useExternalDepositStatus } from './useExternalDepositStatus';

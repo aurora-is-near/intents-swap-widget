@@ -2,12 +2,23 @@ import { Contract, JsonRpcProvider } from 'ethers';
 
 import type { Token } from '@/types/token';
 
+// Singleton providers per RPC URL to reuse connections
+const providerCache = new Map<string, JsonRpcProvider>();
+
+function getProvider(rpcUrl: string): JsonRpcProvider {
+  if (!providerCache.has(rpcUrl)) {
+    providerCache.set(rpcUrl, new JsonRpcProvider(rpcUrl));
+  }
+
+  return providerCache.get(rpcUrl)!;
+}
+
 export const getEvmTokenBalance = async (
   token: Token,
   wallet: string,
   rpcUrl: string,
 ) => {
-  const provider = new JsonRpcProvider(rpcUrl);
+  const provider = getProvider(rpcUrl);
   const erc20Abi = [
     'function balanceOf(address owner) view returns (uint256)',
     'function decimals() view returns (uint8)',

@@ -71,7 +71,7 @@ export const TokenItem = ({
 
         {isTokenSupported && !!ctx.walletAddress && showBalance && (
           <div className="gap-sw-sm flex flex-col items-end">
-            {balance === undefined && !token.isIntent ? (
+            {balance === undefined && !token.isIntent && token.blockchain !== 'aurora' ? (
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
               <span className="h-[16px] text-sw-label-m text-sw-gray-50">

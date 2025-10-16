@@ -1,5 +1,6 @@
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
+import { isAuroraToken } from '@/utils/aurora';
 
 import { guardStates } from '@/machine/guards';
 import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
@@ -50,6 +51,13 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
   const isValidInitialState = guardStates(ctx, ['initial_wallet']);
   const isValidInputsState = guardStates(ctx, ['input_valid_external']);
 
+  console.log(
+    '[DEBUG VALIDATION] validateExternalInputs - isValidInitialState:',
+    isValidInitialState,
+    'isValidInputsState:',
+    isValidInputsState,
+  );
+
   if (!isValidInitialState && !isValidInputsState) {
     return undefined;
   }
@@ -58,6 +66,21 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
   let err: InitialExternalStateError | undefined;
 
   if (isValidInitialState) {
+    console.log('[DEBUG VALIDATION] Checking external inputs...');
+    console.log('[DEBUG VALIDATION] sourceToken:', !!ctx.sourceToken);
+    console.log('[DEBUG VALIDATION] targetToken:', !!ctx.targetToken);
+    console.log(
+      '[DEBUG VALIDATION] targetToken.isIntent:',
+      ctx.targetToken?.isIntent,
+    );
+    console.log('[DEBUG VALIDATION] sourceTokenAmount:', ctx.sourceTokenAmount);
+    console.log('[DEBUG VALIDATION] sendAddress:', ctx.sendAddress);
+    console.log('[DEBUG VALIDATION] sourceBalance:', sourceBalance);
+    console.log(
+      '[DEBUG VALIDATION] isDepositFromExternalWallet:',
+      ctx.isDepositFromExternalWallet,
+    );
+
     if (!ctx.sourceToken) {
       err = { code: 'SOURCE_TOKEN_IS_EMPTY' };
     } else if (!ctx.targetToken) {
@@ -67,14 +90,28 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
     } else if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
       err = { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' };
     } else if (!ctx.sendAddress) {
-      err = { code: 'SEND_ADDRESS_IS_EMPTY' };
+      // Aurora tokens don't require sendAddress (they use wallet address)
+      const isAurora = isAuroraToken(ctx.sourceToken);
+
+      if (!isAurora) {
+        err = { code: 'SEND_ADDRESS_IS_EMPTY' };
+        console.log('[DEBUG VALIDATION] FAILED: SEND_ADDRESS_IS_EMPTY');
+      }
     } else if (!ctx.isDepositFromExternalWallet) {
       if (!sourceBalance || !isValidBigint(sourceBalance)) {
         err = { code: 'INVALID_SOURCE_BALANCE' };
+        console.log('[DEBUG VALIDATION] FAILED: INVALID_SOURCE_BALANCE');
       } else if (!isBalanceSufficient(ctx)) {
         err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+        console.log('[DEBUG VALIDATION] FAILED: SOURCE_BALANCE_INSUFFICIENT');
       }
     }
+  }
+
+  if (err) {
+    console.log('[DEBUG VALIDATION] Validation error:', err.code);
+  } else {
+    console.log('[DEBUG VALIDATION] Validation passed!');
   }
 
   if (!isValidInputsState && err) {

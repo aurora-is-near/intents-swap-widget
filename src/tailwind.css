@@ -4,119 +4,119 @@
 @import './theme-text.css';
 
 @theme {
-    --*: initial;
+  --*: initial;
 
-    /* Custom border radius values */
-    --radius-full: 99999px;
-    --radius-sw-md: var(--sw-radius-md);
-    --radius-sw-xl: var(--sw-radius-xl);
-    --radius-sw-lg: var(--sw-radius-lg);
-    --radius-sw-sm: var(--sw-radius-sm);
+  /* Custom border radius values */
+  --radius-full: 99999px;
+  --radius-sw-md: var(--sw-radius-md);
+  --radius-sw-xl: var(--sw-radius-xl);
+  --radius-sw-lg: var(--sw-radius-lg);
+  --radius-sw-sm: var(--sw-radius-sm);
 
-    /* Colors */
-    --color-sw-gray-50: var(--sw-gray-50);
-    /* 12 */
-    --color-sw-gray-100: var(--sw-gray-100);
-    /* 11 */
-    --color-sw-gray-200: var(--sw-gray-200);
-    /* 10 */
-    --color-sw-gray-300: var(--sw-gray-300);
-    /* 9 */
-    --color-sw-gray-400: var(--sw-gray-400);
-    /* 8 */
-    --color-sw-gray-500: var(--sw-gray-500);
-    /* 7 */
-    --color-sw-gray-600: var(--sw-gray-600);
-    /* 6 */
-    --color-sw-gray-700: var(--sw-gray-700);
-    /* 5 */
-    --color-sw-gray-800: var(--sw-gray-800);
-    /* 4 */
-    --color-sw-gray-900: var(--sw-gray-900);
-    /* 3 */
-    --color-sw-gray-950: var(--sw-gray-950);
-    /* 2 */
-    --color-sw-gray-975: var(--sw-gray-975);
-    /* 1 */
+  /* Colors */
+  --color-sw-gray-50: var(--sw-gray-50);
+  /* 12 */
+  --color-sw-gray-100: var(--sw-gray-100);
+  /* 11 */
+  --color-sw-gray-200: var(--sw-gray-200);
+  /* 10 */
+  --color-sw-gray-300: var(--sw-gray-300);
+  /* 9 */
+  --color-sw-gray-400: var(--sw-gray-400);
+  /* 8 */
+  --color-sw-gray-500: var(--sw-gray-500);
+  /* 7 */
+  --color-sw-gray-600: var(--sw-gray-600);
+  /* 6 */
+  --color-sw-gray-700: var(--sw-gray-700);
+  /* 5 */
+  --color-sw-gray-800: var(--sw-gray-800);
+  /* 4 */
+  --color-sw-gray-900: var(--sw-gray-900);
+  /* 3 */
+  --color-sw-gray-950: var(--sw-gray-950);
+  /* 2 */
+  --color-sw-gray-975: var(--sw-gray-975);
+  /* 1 */
 
-    --color-sw-mauve-50: var(--sw-mauve-50);
-    /* 12 */
-    --color-sw-mauve-100: var(--sw-mauve-100);
-    /* 11 */
-    --color-sw-mauve-200: var(--sw-mauve-200);
-    /* 10 */
-    --color-sw-mauve-300: var(--sw-mauve-300);
-    /* 9 */
-    --color-sw-mauve-400: var(--sw-mauve-400);
-    /* 8 */
-    --color-sw-mauve-500: var(--sw-mauve-500);
-    /* 7 */
-    --color-sw-mauve-600: var(--sw-mauve-600);
-    /* 6 */
-    --color-sw-mauve-700: var(--sw-mauve-700);
-    /* 5 */
-    --color-sw-mauve-800: var(--sw-mauve-800);
-    /* 4 */
-    --color-sw-mauve-900: var(--sw-mauve-900);
-    /* 3 */
-    --color-sw-mauve-950: var(--sw-mauve-950);
-    /* 2 */
-    --color-sw-mauve-975: var(--sw-mauve-975);
-    /* 1 */
+  --color-sw-mauve-50: var(--sw-mauve-50);
+  /* 12 */
+  --color-sw-mauve-100: var(--sw-mauve-100);
+  /* 11 */
+  --color-sw-mauve-200: var(--sw-mauve-200);
+  /* 10 */
+  --color-sw-mauve-300: var(--sw-mauve-300);
+  /* 9 */
+  --color-sw-mauve-400: var(--sw-mauve-400);
+  /* 8 */
+  --color-sw-mauve-500: var(--sw-mauve-500);
+  /* 7 */
+  --color-sw-mauve-600: var(--sw-mauve-600);
+  /* 6 */
+  --color-sw-mauve-700: var(--sw-mauve-700);
+  /* 5 */
+  --color-sw-mauve-800: var(--sw-mauve-800);
+  /* 4 */
+  --color-sw-mauve-900: var(--sw-mauve-900);
+  /* 3 */
+  --color-sw-mauve-950: var(--sw-mauve-950);
+  /* 2 */
+  --color-sw-mauve-975: var(--sw-mauve-975);
+  /* 1 */
 
-    --color-sw-dune-50: var(--sw-dune-50);
-    /* 12 */
-    --color-sw-dune-100: var(--sw-dune-100);
-    /* 11 */
-    --color-sw-dune-200: var(--sw-dune-200);
-    /* 10 */
-    --color-sw-dune-300: var(--sw-dune-300);
-    /* 9 */
-    --color-sw-dune-400: var(--sw-dune-400);
-    /* 8 */
-    --color-sw-dune-500: var(--sw-dune-500);
-    /* 7 */
-    --color-sw-dune-600: var(--sw-dune-600);
-    /* 6 */
-    --color-sw-dune-700: var(--sw-dune-700);
-    /* 5 */
-    --color-sw-dune-800: var(--sw-dune-800);
-    /* 4 */
-    --color-sw-dune-900: var(--sw-dune-900);
-    /* 3 */
-    --color-sw-dune-950: var(--sw-dune-950);
-    /* 2 */
-    --color-sw-dune-975: var(--sw-dune-975);
-    /* 1 */
+  --color-sw-dune-50: var(--sw-dune-50);
+  /* 12 */
+  --color-sw-dune-100: var(--sw-dune-100);
+  /* 11 */
+  --color-sw-dune-200: var(--sw-dune-200);
+  /* 10 */
+  --color-sw-dune-300: var(--sw-dune-300);
+  /* 9 */
+  --color-sw-dune-400: var(--sw-dune-400);
+  /* 8 */
+  --color-sw-dune-500: var(--sw-dune-500);
+  /* 7 */
+  --color-sw-dune-600: var(--sw-dune-600);
+  /* 6 */
+  --color-sw-dune-700: var(--sw-dune-700);
+  /* 5 */
+  --color-sw-dune-800: var(--sw-dune-800);
+  /* 4 */
+  --color-sw-dune-900: var(--sw-dune-900);
+  /* 3 */
+  --color-sw-dune-950: var(--sw-dune-950);
+  /* 2 */
+  --color-sw-dune-975: var(--sw-dune-975);
+  /* 1 */
 
-    --color-sw-alert-100: var(--sw-alert-100);
-    --color-sw-alert-900: var(--sw-alert-900);
+  --color-sw-alert-100: var(--sw-alert-100);
+  --color-sw-alert-900: var(--sw-alert-900);
 
-    --color-sw-success-100: var(--sw-success-100);
-    --color-sw-success-900: var(--sw-success-900);
+  --color-sw-success-100: var(--sw-success-100);
+  --color-sw-success-900: var(--sw-success-900);
 
-    --color-sw-warn-100: var(--sw-warn-100);
-    --color-sw-warn-900: var(--sw-warn-900);
+  --color-sw-warn-100: var(--sw-warn-100);
+  --color-sw-warn-900: var(--sw-warn-900);
 
-    /* Custom spacing values */
-    --spacing-sw-xxs: var(--sw-space-xxs);
-    --spacing-sw-xs: var(--sw-space-xs);
-    --spacing-sw-sm: var(--sw-space-sm);
-    --spacing-sw-md: var(--sw-space-md);
-    --spacing-sw-lg: var(--sw-space-lg);
-    --spacing-sw-xl: var(--sw-space-xl);
-    --spacing-sw-2xl: var(--sw-space-2xl);
-    --spacing-sw-3xl: var(--sw-space-3xl);
-    --spacing-sw-4xl: var(--sw-space-4xl);
-    --spacing-sw-5xl: var(--sw-space-5xl);
-    --spacing-sw-6xl: var(--sw-space-6xl);
-    --spacing-sw-7xl: var(--sw-space-7xl);
-    --spacing-sw-8xl: var(--sw-space-8xl);
-    --spacing-sw-9xl: var(--sw-space-9xl);
-    --spacing-sw-10xl: var(--sw-space-10xl);
-    --spacing-sw-11xl: var(--sw-space-11xl);
-    --spacing-sw-12xl: var(--sw-space-12xl);
-    --spacing-sw-max: var(--sw-space-max);
+  /* Custom spacing values */
+  --spacing-sw-xxs: var(--sw-space-xxs);
+  --spacing-sw-xs: var(--sw-space-xs);
+  --spacing-sw-sm: var(--sw-space-sm);
+  --spacing-sw-md: var(--sw-space-md);
+  --spacing-sw-lg: var(--sw-space-lg);
+  --spacing-sw-xl: var(--sw-space-xl);
+  --spacing-sw-2xl: var(--sw-space-2xl);
+  --spacing-sw-3xl: var(--sw-space-3xl);
+  --spacing-sw-4xl: var(--sw-space-4xl);
+  --spacing-sw-5xl: var(--sw-space-5xl);
+  --spacing-sw-6xl: var(--sw-space-6xl);
+  --spacing-sw-7xl: var(--sw-space-7xl);
+  --spacing-sw-8xl: var(--sw-space-8xl);
+  --spacing-sw-9xl: var(--sw-space-9xl);
+  --spacing-sw-10xl: var(--sw-space-10xl);
+  --spacing-sw-11xl: var(--sw-space-11xl);
+  --spacing-sw-12xl: var(--sw-space-12xl);
+  --spacing-sw-max: var(--sw-space-max);
 }
 
 @layer base {

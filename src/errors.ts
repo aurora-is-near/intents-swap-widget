@@ -35,3 +35,13 @@ export class TransferError extends MachineError<
     this.name = 'TransferError';
   }
 }
+
+// Base error class for custom errors
+export class BaseError<TCode extends string, TMeta = unknown> extends Error {
+  data: { code: TCode; meta?: TMeta };
+
+  constructor(data: { code: TCode; meta?: TMeta }) {
+    super(data.code);
+    this.data = data;
+  }
+}

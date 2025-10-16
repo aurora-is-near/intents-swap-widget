@@ -98,7 +98,7 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
-                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none">
+                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex !max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none overflow-auto">
                 <MenuItem>
                   <ChainItem
                     chain="all"

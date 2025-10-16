@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import type { ListenerProps } from './types';
 
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
@@ -14,8 +15,6 @@ import { fireEvent } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
-
-import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;
@@ -164,9 +163,9 @@ export const useSelectedTokensEffect = ({
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
                 t.symbol.toLowerCase() ===
-                  CHAIN_BASE_TOKENS[
-                    accountChainMap[intentsAccountType]
-                  ]?.toLowerCase(),
+                CHAIN_BASE_TOKENS[
+                  accountChainMap[intentsAccountType]
+                ]?.toLowerCase(),
             ),
           });
           // 3. Fallback to ETH if intents is not supported and wallet is not connected

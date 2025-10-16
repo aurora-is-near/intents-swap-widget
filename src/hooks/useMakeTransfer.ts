@@ -1,3 +1,6 @@
+import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
+import { useAuroraExitToNear } from './useAuroraExitToNear';
+
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
@@ -9,7 +12,7 @@ import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
-import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
+import { isAuroraChain } from '@/utils/aurora';
 
 export const useMakeTransfer = ({
   providers,
@@ -28,6 +31,10 @@ export const useMakeTransfer = ({
     providers?.near,
   );
 
+  const { executeExitToNear } = useAuroraExitToNear({
+    provider: providers?.evm,
+  });
+
   const make = async () => {
     if (!ctx.targetToken) {
       return;
@@ -42,7 +49,36 @@ export const useMakeTransfer = ({
       });
 
       if (!ctx.sourceToken?.isIntent) {
-        if (isNearToIntentsSameAssetTransfer) {
+        // Handle Aurora Out of VC transfers
+        if (
+          ctx.sourceToken &&
+          isAuroraChain(ctx.sourceToken.blockchain) &&
+          ctx.targetToken.blockchain === 'near'
+        ) {
+          const recipientAddress = ctx.sendAddress || ctx.walletAddress;
+
+          if (!recipientAddress) {
+            throw new TransferError({
+              code: 'TRANSFER_INVALID_INITIAL',
+              meta: { message: 'No recipient address for Aurora exit.' },
+            });
+          }
+
+          const txHash = await executeExitToNear({
+            receiver: recipientAddress,
+            amount: ctx.sourceTokenAmount,
+            tokenAddress:
+              ctx.sourceToken.contractAddress === 'native'
+                ? undefined
+                : ctx.sourceToken.contractAddress,
+          });
+
+          transferResult = {
+            hash: txHash,
+            transactionLink: `https://aurorascan.dev/tx/${txHash}`,
+            intent: undefined,
+          };
+        } else if (isNearToIntentsSameAssetTransfer) {
           transferResult = await makeNEARFtTransferCall('intents.near');
         } else if (isParticipateWidget && isDirectNearDeposit) {
           if (!ctx.sendAddress) {

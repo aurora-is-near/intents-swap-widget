@@ -22,6 +22,7 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
 
   return useQuery<string | null>({
     retry: 2,
+    staleTime: 30000, // Cache for 30 seconds to prevent duplicate calls
     enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
     queryKey: ['tokenBalance', token.assetId, walletAddress],
     queryFn: async () => {
