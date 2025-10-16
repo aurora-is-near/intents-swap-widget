@@ -8,7 +8,8 @@ import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
-
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
 import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
@@ -28,7 +29,10 @@ export const useMakeQuoteEffect = ({
     isDirectNearDeposit,
   } = useComputedSnapshot();
 
-  const isDry = !ctx.walletAddress;
+  const isDry =
+    !ctx.walletAddress ||
+    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
+
   const shouldRun =
     isEnabled &&
     !isDirectTransfer &&
@@ -83,7 +87,11 @@ export const useMakeQuoteEffect = ({
 
           fireEvent('quoteSetStatus', 'success');
           fireEvent('quoteSet', quote);
-          fireEvent('errorSet', null);
+
+          if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
+            // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
+            fireEvent('errorSet', null);
+          }
 
           fireEvent('tokenSetAmount', {
             variant: 'target',
