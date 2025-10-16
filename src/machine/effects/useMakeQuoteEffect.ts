@@ -112,7 +112,11 @@ export const useMakeQuoteEffect = ({
 
           fireEvent('quoteSetStatus', 'success');
           fireEvent('quoteSet', quote);
-          fireEvent('errorSet', null);
+
+          if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
+            // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
+            fireEvent('errorSet', null);
+          }
 
           fireEvent('tokenSetAmount', {
             variant: 'target',

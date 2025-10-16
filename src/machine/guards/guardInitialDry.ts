@@ -1,6 +1,6 @@
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-
 import type { Context, InitialDryContext } from '@/machine/context';
+import { isBalanceSufficient } from './checks/isBalanceSufficient';
 
 export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
   return (
@@ -10,6 +10,9 @@ export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
     !ctx.sendAddress &&
     (!ctx.sourceToken ||
       !ctx.targetToken ||
-      !isNotEmptyAmount(ctx.sourceTokenAmount))
+      !isNotEmptyAmount(ctx.sourceTokenAmount) ||
+      (!!ctx.walletAddress &&
+        !isBalanceSufficient(ctx) &&
+        isNotEmptyAmount(ctx.sourceTokenAmount)))
   );
 };
