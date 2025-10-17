@@ -46,6 +46,7 @@
     "./utils.css": "./dist/utils.css",
     "./constants": "./dist/constants/index.js",
     "./components": "./dist/components/index.js",
+    "./components/widgets": "./dist/components/widgets/index.js",
     "./localisation": "./dist/localisation/index.js",
     "./features": "./dist/features/index.js",
     "./machine": "./dist/machine/index.js",
