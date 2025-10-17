@@ -36,6 +36,9 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     }
   }, [walletAddress]);
 
+
+  // Disable scroll when modal is open
+  // make sure to disable only vertical scroll
   useEffect(() => {
     if (isOpen) {
       window.document.body.style.overflowY = 'hidden';
