@@ -7,6 +7,7 @@ export const getIsDirectNonNearWithdrawal = (
 ): boolean => {
   return !!(
     ctx.sourceToken?.isIntent &&
+    !ctx.targetToken?.isIntent &&
     ctx.sourceToken?.blockchain !== 'near' &&
     ctx.sourceToken?.assetId === ctx.targetToken?.assetId
   );
