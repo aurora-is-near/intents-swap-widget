@@ -25,7 +25,7 @@ export function useCompatibilityCheck({ providers }: Props) {
   });
 
   async function handleSignInternal(): Promise<walletMessage.WalletSignatureResult> {
-    if (!intentsAccountId) {
+    if (!intentsAccountId || !walletAddress) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No wallet connected' },
@@ -35,7 +35,7 @@ export function useCompatibilityCheck({ providers }: Props) {
     const authType =
       intentsAccountType === 'sol' ? 'solana' : intentsAccountType;
 
-    const msg = walletVerificationMessageFactory(intentsAccountId, authType);
+    const msg = walletVerificationMessageFactory(walletAddress, authType);
 
     switch (intentsAccountType) {
       case 'evm': {
@@ -124,7 +124,7 @@ export function useCompatibilityCheck({ providers }: Props) {
 
       const isValid = await verifyWalletSignature(
         signature,
-        intentsAccountId!,
+        walletAddress!,
         intentsAccountType === 'sol' ? 'solana' : intentsAccountType,
       );
 
