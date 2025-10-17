@@ -119,6 +119,7 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const {
     isDirectTransfer,
+    isDirectNonNearWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
@@ -134,6 +135,7 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   const getMainLabel = () => {
     if (
       isDirectTransfer ||
+      isDirectNonNearWithdrawal ||
       isNearToIntentsSameAssetTransfer ||
       isDirectNearDeposit ||
       nativeNearDeposit
@@ -230,6 +232,7 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   if (
     !ctx.quote &&
     !isDirectTransfer &&
+    !isDirectNonNearWithdrawal &&
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit &&
     !nativeNearDeposit
