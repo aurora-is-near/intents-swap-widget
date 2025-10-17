@@ -55,6 +55,12 @@
   --sw-success-900: #3e4849;
   --sw-warn-100: #f6e0b3;
   --sw-warn-900: #42403e;
+  --sw-complete-100: #99E2FF;
+  --sw-complete-900: #36424C;
+
+  /* Modal specific colors (additional ones not in existing palette) */
+  --sw-modal-bg: #010714;
+  --sw-modal-item: #151A26;
 
   /* Spacing tokens (optional public surface) */
   --sw-space-xxs: 2px;

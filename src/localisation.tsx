@@ -120,4 +120,17 @@ export type LocalisationKeys =
   // submit - pending
   | 'submit.pending.quote.finalizing'
   | 'submit.pending.transfer.confirmInWallet'
-  | 'submit.pending.transfer.finalizing';
+  | 'submit.pending.transfer.finalizing'
+  // wallet compatibility
+  | 'walletCompatibility.modal.title.initial'
+  | 'walletCompatibility.modal.title.error'
+  | 'walletCompatibility.modal.description.initial'
+  | 'walletCompatibility.modal.description.error'
+  | 'walletCompatibility.modal.feature.secureTransactions'
+  | 'walletCompatibility.modal.feature.fullAccess'
+  | 'walletCompatibility.modal.feature.fundProtection'
+  | 'walletCompatibility.modal.error.interrupted'
+  | 'walletCompatibility.modal.error.incompatible'
+  | 'walletCompatibility.modal.button.checkCompatibility'
+  | 'walletCompatibility.modal.button.tryAgain'
+  | 'walletCompatibility.modal.button.signOut';
