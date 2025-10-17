@@ -19,10 +19,7 @@ import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { useTokenInputPair, useTokens } from '@/hooks';
 import { useConfig } from '@/config';
 
-import {
-  isDebug,
-  notReachable,
-} from '@/utils';
+import { isDebug, notReachable } from '@/utils';
 
 import type {
   IntentsTransferArgs,
@@ -32,12 +29,12 @@ import type {
 } from '@/types';
 
 import { WidgetSkeleton } from './shared';
-import { 
-  TOKEN_MODAL_STATE, 
-  TOKEN_INPUT, 
+import {
   QUOTE_TYPE,
-  type TokenModalState, 
-  type TokenInputType 
+  TOKEN_INPUT,
+  TOKEN_MODAL_STATE,
+  type TokenInputType,
+  type TokenModalState,
 } from './constants';
 
 type Msg =
@@ -50,7 +47,11 @@ export type WidgetSwapProps = QuoteTransferArgs &
     onMsg?: (msg: Msg) => void;
   };
 
-export const WidgetSwap = ({ providers, makeTransfer, onMsg }: WidgetSwapProps) => {
+export const WidgetSwap = ({
+  providers,
+  makeTransfer,
+  onMsg,
+}: WidgetSwapProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
@@ -64,7 +65,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: WidgetSwapProps) 
   >();
 
   const [tokenModalOpen, setTokenModalOpen] = useState<TokenModalState>(
-    TOKEN_MODAL_STATE.NONE
+    TOKEN_MODAL_STATE.NONE,
   );
 
   useEffect(() => {
@@ -88,13 +89,13 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: WidgetSwapProps) 
         'makeQuote',
         {
           message: undefined,
-          type: lastChangedInput === TOKEN_INPUT.TARGET ? QUOTE_TYPE.EXACT_OUT : QUOTE_TYPE.EXACT_IN,
+          type:
+            lastChangedInput === TOKEN_INPUT.TARGET
+              ? QUOTE_TYPE.EXACT_OUT
+              : QUOTE_TYPE.EXACT_IN,
         },
       ],
-      [
-        'setBalancesUsingAlchemyExt',
-        { alchemyApiKey: undefined },
-      ],
+      ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
     ],
   });
 

@@ -89,13 +89,9 @@ export const WidgetDeposit = ({
       'setSourceTokenIntentsTarget',
       ['setDefaultSelectedTokens', { skipIntents: true }],
       ['makeQuote', { message: undefined }],
-      [
-        'setBalancesUsingAlchemyExt',
-        { alchemyApiKey: undefined },
-      ],
+      ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
     ],
   });
-
 
   useEffect(() => {
     onMsg?.({

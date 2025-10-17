@@ -9,25 +9,16 @@ import {
   TokensModal,
 } from '@/features';
 
-import {
-  BlockingError,
-  DirectionSwitcher,
-} from '@/components';
+import { BlockingError, DirectionSwitcher } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
-import {
-  useTokenInputPair,
-  useTokens,
-} from '@/hooks';
+import { useTokenInputPair, useTokens } from '@/hooks';
 import { useConfig } from '@/config';
 
-import {
-  isDebug,
-  notReachable,
-} from '@/utils';
+import { isDebug, notReachable } from '@/utils';
 
 import type {
   IntentsTransferArgs,
@@ -38,12 +29,12 @@ import type {
 
 import { WidgetCard, WidgetHr } from './ui';
 import { WidgetSkeleton } from './shared';
-import { 
-  TOKEN_MODAL_STATE, 
-  TOKEN_INPUT, 
+import {
   QUOTE_TYPE,
-  type TokenModalState, 
-  type TokenInputType 
+  TOKEN_INPUT,
+  TOKEN_MODAL_STATE,
+  type TokenInputType,
+  type TokenModalState,
 } from './constants';
 
 type Msg =
@@ -56,11 +47,7 @@ export type WidgetWithdrawProps = QuoteTransferArgs &
     onMsg?: (msg: Msg) => void;
   };
 
-const TokenInputHeader = ({
-  label,
-}: {
-  label: string;
-}) => (
+const TokenInputHeader = ({ label }: { label: string }) => (
   <header className="gap-sw-lg px-sw-2xl pt-sw-2xl flex flex-col">
     <span className="text-label-m gap-sw-sm flex items-center text-sw-gray-50">
       {label}
@@ -69,7 +56,11 @@ const TokenInputHeader = ({
   </header>
 );
 
-export const WidgetWithdraw = ({ providers, makeTransfer, onMsg }: WidgetWithdrawProps) => {
+export const WidgetWithdraw = ({
+  providers,
+  makeTransfer,
+  onMsg,
+}: WidgetWithdrawProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
@@ -83,7 +74,7 @@ export const WidgetWithdraw = ({ providers, makeTransfer, onMsg }: WidgetWithdra
   >();
 
   const [tokenModalOpen, setTokenModalOpen] = useState<TokenModalState>(
-    TOKEN_MODAL_STATE.NONE
+    TOKEN_MODAL_STATE.NONE,
   );
 
   useEffect(() => {
@@ -110,13 +101,13 @@ export const WidgetWithdraw = ({ providers, makeTransfer, onMsg }: WidgetWithdra
         'makeQuote',
         {
           message: undefined,
-          type: lastChangedInput === TOKEN_INPUT.TARGET ? QUOTE_TYPE.EXACT_OUT : QUOTE_TYPE.EXACT_IN,
+          type:
+            lastChangedInput === TOKEN_INPUT.TARGET
+              ? QUOTE_TYPE.EXACT_OUT
+              : QUOTE_TYPE.EXACT_IN,
         },
       ],
-      [
-        'setBalancesUsingAlchemyExt',
-        { alchemyApiKey: undefined },
-      ],
+      ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
     ],
   });
 
