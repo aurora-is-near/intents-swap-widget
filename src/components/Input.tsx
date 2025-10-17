@@ -12,12 +12,14 @@ type State = 'default' | 'disabled' | 'error';
 export type Props = Omit<InputProps, 'size'> & {
   icon?: LucideIcon;
   defaultValue?: string;
+  focusOnMount?: boolean;
   state?: State;
 };
 
 export const Input = ({
   state = 'default',
   defaultValue = '',
+  focusOnMount = false,
   className,
   onChange,
   children,
@@ -45,6 +47,12 @@ export const Input = ({
   useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
+
+  useEffect(() => {
+    if (focusOnMount) {
+      inputRef.current?.focus();
+    }
+  }, []);
 
   return (
     <UIInput

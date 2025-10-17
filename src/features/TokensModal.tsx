@@ -69,6 +69,7 @@ export const TokensModal = ({
 
       <div className="gap-sw-xl flex items-center">
         <Input
+          focusOnMount
           icon={Icons.Search}
           defaultValue={search}
           className="w-full"
