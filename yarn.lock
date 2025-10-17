@@ -1191,6 +1191,11 @@
   resolved "https://registry.yarnpkg.com/@defuse-protocol/contract-types/-/contract-types-0.0.3.tgz#ed7f8070c80e9cd2ac2fd7f2c4dd6cd4918205a8"
   integrity sha512-N3LJS4tfshw6+kldrx6Hij8c8tzTHbmNPVByhursQ86Apu8p/gOPixfBbUZh21fKCCqktERbjeKzGe5EJV0gWA==
 
+"@defuse-protocol/contract-types@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@defuse-protocol/contract-types/-/contract-types-0.1.1.tgz#7f76beb67d15b7b8bb16766375609fd76bb2ad34"
+  integrity sha512-eIQYskHUB9NNmduS5OGjhhSSzOKd5GmeT6gygylAj4MRlpmXW3tJJGwfmdT2rG725p90Aj2T2yYEcU3wRm5lNQ==
+
 "@defuse-protocol/internal-utils@0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@defuse-protocol/internal-utils/-/internal-utils-0.1.4.tgz#b74e7db3fc6a731adcda12fdad8c73a8e5dcbfd9"
@@ -1209,13 +1214,12 @@
     valibot "^1.0.0"
     viem "^2.0.0"
 
-"@defuse-protocol/internal-utils@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@defuse-protocol/internal-utils/-/internal-utils-0.6.0.tgz#3b8fff5ea28a934703ae9dbf776c034cdf8ee891"
-  integrity sha512-yvHF4+bPmcLY2oDGshQDSCu9NILW+k9Hx8rYvYS0Vs3unhZj9bzskwRDm6wVrHvSwkwBdPJpkb4rdwsztj0Fsw==
+"@defuse-protocol/internal-utils@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@defuse-protocol/internal-utils/-/internal-utils-0.13.0.tgz#bec7ddfb993a5048ec5d1fa22ed58eece36d284f"
+  integrity sha512-WmdyAnVgYRiY8nLy4MxZaVwPE2vK9uyjGpfA9AJh9stZO+mL5HkPNXP3HagU3YuW0YBAXI/sjzhIj2h5v8yuhg==
   dependencies:
-    "@defuse-protocol/contract-types" "0.0.3"
-    "@hot-labs/omni-sdk" "2.8.3"
+    "@defuse-protocol/contract-types" "0.1.1"
     "@lifeomic/attempt" "^3.0.0"
     "@noble/hashes" "^1.7.1"
     "@peculiar/asn1-ecc" "^2.0.0"
@@ -13612,7 +13616,14 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
+strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -14619,7 +14630,16 @@ wordwrap@^1.0.0:
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
   integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
