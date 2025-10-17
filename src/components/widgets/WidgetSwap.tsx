@@ -16,10 +16,7 @@ import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
-import {
-  useTokenInputPair,
-  useTokens,
-} from '@/hooks';
+import { useTokenInputPair, useTokens } from '@/hooks';
 import { useConfig } from '@/config';
 
 import {
@@ -46,7 +43,7 @@ import {
 type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_initialized' };
+  | { type: 'on_transfer_success' };
 
 export type WidgetSwapProps = QuoteTransferArgs &
   IntentsTransferArgs & {
@@ -233,7 +230,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: WidgetSwapProps) 
                   switch (msg.type) {
                     case 'on_successful_transfer':
                       setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_initialized' });
+                      onMsg?.({ type: 'on_transfer_success' });
                       break;
                     default:
                       notReachable(msg.type);

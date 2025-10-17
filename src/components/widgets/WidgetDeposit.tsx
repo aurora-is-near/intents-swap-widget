@@ -10,25 +10,16 @@ import {
   TokensModal,
 } from '@/features';
 
-import {
-  Banner,
-  BlockingError,
-} from '@/components';
+import { Banner, BlockingError } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
-import {
-  useTokenInputPair,
-  useTokens,
-} from '@/hooks';
+import { useTokenInputPair, useTokens } from '@/hooks';
 import { useConfig } from '@/config';
 
-import {
-  isDebug,
-  notReachable,
-} from '@/utils';
+import { isDebug, notReachable } from '@/utils';
 
 import type {
   IntentsTransferArgs,
@@ -39,16 +30,16 @@ import type {
 
 import { VStack } from './ui';
 import { WidgetSkeleton } from './shared';
-import { 
-  TOKEN_MODAL_STATE, 
+import {
   TOKEN_INPUT,
-  type TokenInputType 
+  TOKEN_MODAL_STATE,
+  type TokenInputType,
 } from './constants';
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
-  | { type: 'on_transfer_initialized' }
+  | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type WidgetDepositProps = QuoteTransferArgs &
@@ -56,7 +47,11 @@ export type WidgetDepositProps = QuoteTransferArgs &
     onMsg?: (msg: Msg) => void;
   };
 
-export const WidgetDeposit = ({ providers, onMsg, makeTransfer }: WidgetDepositProps) => {
+export const WidgetDeposit = ({
+  providers,
+  onMsg,
+  makeTransfer,
+}: WidgetDepositProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { chainsFilter, walletAddress } = useConfig();
@@ -101,11 +96,6 @@ export const WidgetDeposit = ({ providers, onMsg, makeTransfer }: WidgetDepositP
     ],
   });
 
-  useEffect(() => {
-    return () => {
-      fireEvent('depositTypeSet', { isExternal: false });
-    };
-  }, []);
 
   useEffect(() => {
     onMsg?.({
@@ -242,7 +232,7 @@ export const WidgetDeposit = ({ providers, onMsg, makeTransfer }: WidgetDepositP
                   switch (msg.type) {
                     case 'on_successful_transfer':
                       setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_initialized' });
+                      onMsg?.({ type: 'on_transfer_success' });
                       break;
                     default:
                       notReachable(msg.type);

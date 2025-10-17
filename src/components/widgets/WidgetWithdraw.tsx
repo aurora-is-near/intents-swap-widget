@@ -48,7 +48,7 @@ import {
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_initialized' }
+  | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type WidgetWithdrawProps = QuoteTransferArgs &
@@ -130,7 +130,7 @@ export const WidgetWithdraw = ({ providers, makeTransfer, onMsg }: WidgetWithdra
         {...transferResult}
         message={[
           'Your withdrawal has been successfully completed,',
-          'and the funds have been sent to specified destination.',
+          'and the funds have been sent to the specified destination.',
         ]}
         onMsg={(msg) => {
           switch (msg.type) {
@@ -258,7 +258,7 @@ export const WidgetWithdraw = ({ providers, makeTransfer, onMsg }: WidgetWithdra
                   switch (msg.type) {
                     case 'on_successful_transfer':
                       setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_initialized' });
+                      onMsg?.({ type: 'on_transfer_success' });
                       break;
                     default:
                       notReachable(msg.type);
