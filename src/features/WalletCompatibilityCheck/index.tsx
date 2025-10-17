@@ -38,13 +38,13 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
 
   useEffect(() => {
     if (isOpen) {
-      window.document.body.style.overflowY = 'hidden';
+      window.document.body.style.overflow = 'hidden';
     } else {
-      window.document.body.style.overflowY = 'auto';
+      window.document.body.style.overflow = 'auto';
     }
 
     return () => {
-      window.document.body.style.overflowY = 'auto';
+      window.document.body.style.overflow = 'auto';
     };
   }, [isOpen]);
 
