@@ -145,6 +145,10 @@ export const useMakeDepositAddress = () => {
             formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken.decimals),
           ) * ctx.targetToken.price
         }`,
+        amountOutFormatted: formatBigToHuman(
+          ctx.targetTokenAmount,
+          ctx.targetToken.decimals,
+        ),
         // dummy values to match quote type
         deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         timeEstimate: 0,
