@@ -57,9 +57,8 @@ export const WidgetDeposit = ({
     TransferResult | undefined
   >();
 
-  const [tokenModalOpen, setTokenModalOpen] = useState<
-    Extract<TokenModalState, 'source' | 'none'>
-  >('none');
+  const [tokenModalOpen, setTokenModalOpen] =
+    useState<Extract<TokenModalState, 'source' | 'none'>>('none');
 
   useEffect(() => {
     onMsg?.({

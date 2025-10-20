@@ -9,7 +9,7 @@ import {
   TokensModal,
 } from '@/features';
 
-import { BlockingError, DirectionSwitcher } from '@/components';
+import { BlockingError, Card, DirectionSwitcher, Hr } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -26,8 +26,6 @@ import type {
   Token,
   TransferResult,
 } from '@/types';
-
-import { Card, Hr } from '@/components';
 import { WidgetSkeleton } from './shared';
 import type { TokenInputType, TokenModalState } from './types';
 
@@ -93,10 +91,7 @@ export const WidgetWithdraw = ({
         'makeQuote',
         {
           message: undefined,
-          type:
-            lastChangedInput === 'target'
-              ? 'exact_out'
-              : 'exact_in',
+          type: lastChangedInput === 'target' ? 'exact_out' : 'exact_in',
         },
       ],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],

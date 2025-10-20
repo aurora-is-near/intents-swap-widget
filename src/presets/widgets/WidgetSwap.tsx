@@ -81,10 +81,7 @@ export const WidgetSwap = ({
         'makeQuote',
         {
           message: undefined,
-          type:
-            lastChangedInput === 'target'
-              ? 'exact_out'
-              : 'exact_in',
+          type: lastChangedInput === 'target' ? 'exact_out' : 'exact_in',
         },
       ],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
