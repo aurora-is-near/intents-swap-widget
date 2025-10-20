@@ -214,8 +214,8 @@ export const WidgetDeposit = ({
               <SubmitButton
                 providers={providers}
                 makeTransfer={makeTransfer}
-                transferLabel={t('submit.active.transfer.withdraw', 'Transfer')}
-                internalSwapLabel={t('submit.active.internal.withdraw', 'Swap')}
+                transferLabel={t('submit.active.transfer.deposit', 'Transfer')}
+                internalSwapLabel={t('submit.active.internal.deposit', 'Swap')}
                 externalSwapLabel={t(
                   'submit.active.external.deposit',
                   'Swap & send',
