@@ -1,4 +1,4 @@
-import glob from "glob";
+import { glob } from "glob";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative, extname } from "node:path";
 
@@ -25,7 +25,7 @@ function isExt(id: string) {
 
 export default defineConfig(({ command }) => {
   const isServe = command === 'serve';
-  
+
   return {
     plugins: [
       svgr({
