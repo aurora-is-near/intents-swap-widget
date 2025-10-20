@@ -100,20 +100,22 @@ export const useTokens = (variant?: 'source' | 'target') => {
     // wNEAR token to get price
     const wnearToken = tokens.find((t) => t.symbol.toLowerCase() === 'wnear');
 
-    // add native NEAR
-    tokensWithoutWNEAR.push({
-      name: 'NEAR',
-      symbol: 'NEAR',
-      chainName: 'Near',
-      blockchain: 'near',
-      assetId: NATIVE_NEAR_DUMB_ASSET_ID,
-      chainIcon: getChainIcon('near'),
-      icon: TOKENS_DATA.near?.icon ?? '',
-      price: wnearToken?.price ?? 0,
-      contractAddress: wnearToken?.contractAddress,
-      isIntent: false,
-      decimals: 24,
-    });
+    // add native NEAR if the original list included wNEAR
+    if (wnearToken) {
+      tokensWithoutWNEAR.push({
+        name: 'NEAR',
+        symbol: 'NEAR',
+        chainName: 'Near',
+        blockchain: 'near',
+        assetId: NATIVE_NEAR_DUMB_ASSET_ID,
+        chainIcon: getChainIcon('near'),
+        icon: TOKENS_DATA.near?.icon ?? '',
+        price: wnearToken?.price ?? 0,
+        contractAddress: wnearToken?.contractAddress,
+        isIntent: false,
+        decimals: 24,
+      });
+    }
 
     return showIntentTokens
       ? [
