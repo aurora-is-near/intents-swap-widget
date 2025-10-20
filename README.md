@@ -68,17 +68,18 @@ variable you can find in `src/theme.css`):
 }
 ```
 
-## Change copies
+## Change copy
 
-To change copies use `LocalisationProvider`. To know all available keys check
-`src/localisation.tsx` file. Localisation object is type safe so you don't make
-a typo :)
+To change copy within the widget you can pass a `localisation` object to the
+`WidgetConfigProvider`, for example:
 
-```jsx
-<LocalisationProvider localisation={{ 'quote.result.maxSlippage.label': 'MAX' }}>
+```tsx
+<WidgetConfigProvider localisation={{ 'quote.result.maxSlippage.label': 'MAX' }}>
   // widget components
-</LocalisationProvider>
+</WidgetConfigProvider>
 ```
+
+The available keys can be found in the `types/localisation.ts` file.
 
 ## Development
 

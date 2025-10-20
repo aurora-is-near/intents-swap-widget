@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
 import { createContext, useContext, useEffect, useRef } from 'react';
@@ -9,6 +10,9 @@ import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
+import { initLocalisation } from './localisation';
+import { LocalisationDict } from './types/localisation';
+import { I18nextProvider } from 'react-i18next';
 
 export type WidgetConfig = {
   // Application metadata
@@ -106,7 +110,10 @@ const WidgetConfigContext = createContext<WidgetConfigContextType>({
   config: defaultConfig,
 });
 
-type Props = PropsWithChildren<{ config?: WidgetConfig }>;
+type Props = PropsWithChildren<{
+  config?: WidgetConfig;
+  localisation?: LocalisationDict;
+}>;
 
 export const configStore = proxy<{ config: WidgetConfig }>({
   config: defaultConfig,
@@ -126,6 +133,7 @@ export const resetConfig = (config: WidgetConfig) => {
 export const WidgetConfigProvider = ({
   children,
   config: userConfig = defaultConfig,
+  localisation,
 }: Props) => {
   const storeRef = useRef(proxy({ config: deepClone(userConfig) }));
 
@@ -136,16 +144,25 @@ export const WidgetConfigProvider = ({
     resetConfig(next);
   }, [userConfig]);
 
+  // Initialise localisation
+  useEffect(() => {
+    if (localisation) {
+      void initLocalisation(localisation);
+    }
+  }, [localisation]);
+
   // add tailwind parent class to portal root
   useAddClassToPortal('headlessui-portal-root', 'sw');
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WidgetConfigContext.Provider value={storeRef.current}>
-        <ErrorBoundary>
-          <div className="sw">{children}</div>
-        </ErrorBoundary>
-      </WidgetConfigContext.Provider>
+      <I18nextProvider i18n={i18n}>
+        <WidgetConfigContext.Provider value={storeRef.current}>
+          <ErrorBoundary>
+            <div className="sw">{children}</div>
+          </ErrorBoundary>
+        </WidgetConfigContext.Provider>
+      </I18nextProvider>
     </QueryClientProvider>
   );
 };
