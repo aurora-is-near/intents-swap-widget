@@ -13,7 +13,6 @@ export const TonWidgetDemo = () => {
   return (
     <>
       <div className="demo-widget-content">
-        {/* Widget Container */}
         <WidgetConfigProvider
           config={{
             ...defaultConfig,
