@@ -31,6 +31,7 @@ import type {
 import { WidgetSkeleton } from './WidgetSkeleton';
 import type { TokenInputType } from './types';
 import { useTokenModal } from '../hooks/useTokenModal';
+import { useTypedTranslation } from '../localisation';
 
 type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
@@ -50,7 +51,7 @@ export const WidgetSwap = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
-
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -209,6 +210,12 @@ export const WidgetSwap = ({
               <SubmitButton
                 providers={providers}
                 makeTransfer={makeTransfer}
+                transferLabel={t('submit.active.transfer.withdraw', 'Transfer')}
+                internalSwapLabel={t('submit.active.internal.withdraw', 'Swap')}
+                externalSwapLabel={t(
+                  'submit.active.external.deposit',
+                  'Swap & send',
+                )}
                 onMsg={(msg) => {
                   switch (msg.type) {
                     case 'on_successful_transfer':

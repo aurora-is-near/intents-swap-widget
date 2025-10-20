@@ -198,6 +198,9 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
             {walletAddress ? (
               <SubmitButton
                 providers={providers}
+                transferLabel="Swap & send"
+                internalSwapLabel="Swap"
+                externalSwapLabel="Swap & send"
                 makeTransfer={makeTransfer}
                 onMsg={(msg) => {
                   switch (msg.type) {

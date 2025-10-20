@@ -41,10 +41,18 @@ export type LocalisationKeys =
   | 'submit.error.quoteFailed.message'
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
-  // submit - active
-  | 'submit.active.transfer'
-  | 'submit.active.internal'
-  | 'submit.active.external'
+  // submit - active (swap)
+  | 'submit.active.transfer.swap'
+  | 'submit.active.internal.swap'
+  | 'submit.active.external.swap'
+  // submit - active (withdraw)
+  | 'submit.active.transfer.withdraw'
+  | 'submit.active.internal.withdraw'
+  | 'submit.active.external.withdraw'
+  // submit - active (deposit)
+  | 'submit.active.transfer.deposit'
+  | 'submit.active.internal.deposit'
+  | 'submit.active.external.deposit'
   // submit - disabled
   | 'submit.disabled.temporary.label'
   | 'submit.disabled.temporary.message'
