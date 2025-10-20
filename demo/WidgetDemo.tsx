@@ -60,7 +60,8 @@ export default function WidgetDemo({
       makeTransfer: () =>
         Promise.resolve({
           hash: '0x1234567890abcdef1234567890abcdef12345678',
-          transactionLink: 'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+          transactionLink:
+            'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
         }),
       onMsg: noop,
     };
