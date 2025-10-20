@@ -41,12 +41,14 @@ type Msg =
 export type WidgetSwapProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
+    isLoading?: boolean;
   };
 
 export const WidgetSwap = ({
   providers,
   makeTransfer,
   onMsg,
+  isLoading,
 }: WidgetSwapProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
@@ -82,7 +84,7 @@ export const WidgetSwap = ({
     ],
   });
 
-  if (!ctx.sourceToken) {
+  if (!!isLoading || !ctx.sourceToken) {
     return <WidgetSkeleton.Swap />;
   }
 

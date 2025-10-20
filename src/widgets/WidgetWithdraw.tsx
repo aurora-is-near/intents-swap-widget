@@ -39,6 +39,7 @@ type Msg =
 export type WidgetWithdrawProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
+    isLoading?: boolean;
   };
 
 const TokenInputHeader = ({ label }: { label: string }) => (
@@ -54,6 +55,7 @@ export const WidgetWithdraw = ({
   providers,
   makeTransfer,
   onMsg,
+  isLoading,
 }: WidgetWithdrawProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
@@ -92,7 +94,7 @@ export const WidgetWithdraw = ({
     ],
   });
 
-  if (!ctx.sourceToken) {
+  if (!!isLoading || !ctx.sourceToken) {
     return <WidgetSkeleton.Withdraw />;
   }
 

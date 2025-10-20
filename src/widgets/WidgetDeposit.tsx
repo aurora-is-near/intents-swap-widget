@@ -42,12 +42,14 @@ type Msg =
 export type WidgetDepositProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
+    isLoading?: boolean;
   };
 
 export const WidgetDeposit = ({
   providers,
   onMsg,
   makeTransfer,
+  isLoading,
 }: WidgetDepositProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
@@ -88,7 +90,7 @@ export const WidgetDeposit = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
-  if (!ctx.sourceToken) {
+  if (!!isLoading || !ctx.sourceToken) {
     return <WidgetSkeleton.Deposit />;
   }
 
