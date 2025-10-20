@@ -58,7 +58,10 @@ export default function WidgetDemo({
     const commonProps = {
       providers: { near: undefined },
       makeTransfer: () =>
-        Promise.resolve('0x1234567890abcdef1234567890abcdef12345678'),
+        Promise.resolve({
+          hash: '0x1234567890abcdef1234567890abcdef12345678',
+          transactionLink: 'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+        }),
       onMsg: noop,
     };
 
