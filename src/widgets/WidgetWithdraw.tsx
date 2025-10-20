@@ -26,8 +26,10 @@ import type {
   Token,
   TransferResult,
 } from '@/types';
-import { WidgetSkeleton } from './shared';
-import type { TokenInputType, TokenModalState } from './types';
+import { WidgetSkeleton } from './WidgetSkeleton';
+import type { TokenInputType } from './types';
+import { useTokenModal } from '../hooks/useTokenModal';
+import { useTypedTranslation } from '../localisation';
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
@@ -56,23 +58,15 @@ export const WidgetWithdraw = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
-
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
-
-  const [tokenModalOpen, setTokenModalOpen] = useState<TokenModalState>('none');
-
-  useEffect(() => {
-    onMsg?.({
-      type: 'on_tokens_modal_toggled',
-      isOpen: tokenModalOpen !== 'none',
-    });
-  }, [tokenModalOpen]);
 
   useEffect(() => {
     fireEvent('reset', null);
@@ -148,7 +142,7 @@ export const WidgetWithdraw = ({
               switch (msg.type) {
                 case 'on_select_token':
                   onChangeToken(tokenModalOpen, msg.token);
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   onMsg?.({
                     type: msg.type,
                     token: msg.token,
@@ -156,7 +150,7 @@ export const WidgetWithdraw = ({
                   });
                   break;
                 case 'on_dismiss_tokens_modal':
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   break;
                 default:
                   notReachable(msg);
@@ -180,7 +174,7 @@ export const WidgetWithdraw = ({
                         onChangeAmount('source', msg.amount);
                         break;
                       case 'on_click_select_token':
-                        setTokenModalOpen('source');
+                        updateTokenModalState('source');
                         break;
                       default:
                         notReachable(msg);
@@ -201,7 +195,7 @@ export const WidgetWithdraw = ({
                         onChangeAmount('target', msg.amount);
                         break;
                       case 'on_click_select_token':
-                        setTokenModalOpen('target');
+                        updateTokenModalState('target');
                         break;
                       default:
                         notReachable(msg);
@@ -232,6 +226,18 @@ export const WidgetWithdraw = ({
               <SubmitButton
                 providers={providers}
                 makeTransfer={makeTransfer}
+                transferLabel={t(
+                  'submit.active.transfer.withdraw',
+                  'Swap & withdraw',
+                )}
+                internalSwapLabel={t(
+                  'submit.active.internal.withdraw',
+                  'Swap & withdraw',
+                )}
+                externalSwapLabel={t(
+                  'submit.active.external.withdraw',
+                  'Swap & withdraw',
+                )}
                 onMsg={(msg) => {
                   switch (msg.type) {
                     case 'on_successful_transfer':
