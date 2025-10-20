@@ -134,6 +134,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "react-i18next": "^15.7.3",
+    "react-router-dom": "^7.9.4",
     "rimraf": "^3.0.2",
     "semantic-release": "^24.0.0",
     "tailwindcss": "^4.1.12",

@@ -14,11 +14,7 @@ export const DemoConnectButton: React.FC<DemoConnectButtonProps> = ({
   return (
     <div
       style={{
-        position: 'absolute',
-        bottom: '-60px',
-        left: '0',
-        right: '0',
-        zIndex: 10,
+        marginTop: 20,
       }}>
       <button
         onClick={onConnect}
