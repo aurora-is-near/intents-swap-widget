@@ -15,12 +15,14 @@ import type { Token } from '@/types/token';
 
 import { TokensList } from './TokensList';
 import { ChainsDropdown } from './ChainsDropdown';
+import { useChains } from '../hooks';
 
 type Msg =
   | { type: 'on_select_token'; token: Token }
   | { type: 'on_dismiss_tokens_modal' };
 
 type Props = {
+  variant: 'source' | 'target';
   groupTokens: boolean;
   showBalances: boolean;
   showChainsSelector: boolean;
@@ -30,6 +32,7 @@ type Props = {
 };
 
 export const TokensModal = ({
+  variant,
   showBalances,
   showChainsSelector,
   chainsFilter,
@@ -42,9 +45,15 @@ export const TokensModal = ({
   const { walletSupportedChains } = useConfig();
 
   const [search, setSearch] = useState('');
+  const chains = useChains(variant);
+
+  // If there is only one chain available, select it by default
+  const defaultChain =
+    chains.length === 1 && chains[0]?.id ? chains[0]?.id : 'all';
+
   const [selectedChain, setSelectedChain] = useState<
     'all' | 'intents' | Chains
-  >('all');
+  >(defaultChain);
 
   // selected chain is not supported by connected wallet
   const chainIsNotSupported =
@@ -78,6 +87,7 @@ export const TokensModal = ({
         />
         {showChainsSelector && (
           <ChainsDropdown
+            variant={variant}
             selected={selectedChain}
             chainsFilter={chainsFilter}
             onMsg={(msg) => {
@@ -104,6 +114,7 @@ export const TokensModal = ({
       )}
 
       <TokensList
+        variant={variant}
         search={search}
         groupTokens={groupTokens}
         showBalances={showBalances}

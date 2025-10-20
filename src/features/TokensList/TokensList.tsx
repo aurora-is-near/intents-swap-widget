@@ -22,6 +22,7 @@ type Msg =
   | { type: 'on_reset_search' };
 
 type Props = {
+  variant: 'source' | 'target';
   search: string;
   groupTokens: boolean;
   showBalances: boolean;
@@ -45,6 +46,7 @@ const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
 };
 
 export const TokensList = ({
+  variant,
   search,
   className,
   groupTokens,
@@ -60,6 +62,7 @@ export const TokensList = ({
   const { mergedBalance } = useMergedBalance();
 
   const filteredTokens = useTokensFiltered({
+    variant,
     search,
     chainsFilter,
     selectedChain,

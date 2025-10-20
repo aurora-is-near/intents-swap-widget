@@ -22,7 +22,7 @@ export type WidgetConfig = {
   // Connected wallet
   intentsAccountType: 'evm' | 'near' | 'sol';
   walletSupportedChains: ReadonlyArray<Chains>;
-  walletAddress: string | undefined | null;
+  walletAddress?: string | null;
 
   // Quotes & Transfers
   defaultMaxSlippage: number;
@@ -30,12 +30,16 @@ export type WidgetConfig = {
 
   // Tokens filtering
   showIntentTokens: boolean;
-  allowedTokensList: string[] | undefined; // assetIDs
+  allowedTokensList?: string[]; // assetIDs
+  allowedSourceTokensList?: string[];
+  allowedTargetTokensList?: string[];
   filterTokens: (token: Token) => boolean;
 
   // Chains filtering
   chainsOrder: Chains[];
-  allowedChainsList: Chains[] | undefined;
+  allowedChainsList?: Chains[];
+  allowedSourceChainsList?: Chains[];
+  allowedTargetChainsList?: Chains[];
   chainsFilter: {
     source: DefaultChainsFilter;
     target: DefaultChainsFilter;

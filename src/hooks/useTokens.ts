@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
-import type { QueryObserverOptions } from '@tanstack/react-query';
 import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
@@ -28,16 +27,16 @@ const getTokenName = (token: TokenResponse) => {
   return TOKENS_DATA[token.symbol]?.name ?? token.symbol;
 };
 
-export const useTokens = (
-  options: Omit<
-    QueryObserverOptions<TokenResponse[]>,
-    'queryKey' | 'queryFn'
-  > = {},
-) => {
-  const { showIntentTokens, allowedTokensList, filterTokens } = useConfig();
+export const useTokens = (variant?: 'source' | 'target') => {
+  const {
+    showIntentTokens,
+    allowedTokensList,
+    allowedSourceTokensList,
+    allowedTargetTokensList,
+    filterTokens,
+  } = useConfig();
 
   const query = useQuery<TokenResponse[]>({
-    ...options,
     queryKey: ['tokens'],
     queryFn: async () => {
       const tokens = await OneClickService.getTokens();
@@ -60,6 +59,22 @@ export const useTokens = (
         }
 
         if (allowedTokensList && !allowedTokensList.includes(token.assetId)) {
+          return null;
+        }
+
+        if (
+          variant === 'source' &&
+          allowedSourceTokensList &&
+          !allowedSourceTokensList.includes(token.assetId)
+        ) {
+          return null;
+        }
+
+        if (
+          variant === 'target' &&
+          allowedTargetTokensList &&
+          !allowedTargetTokensList.includes(token.assetId)
+        ) {
           return null;
         }
 

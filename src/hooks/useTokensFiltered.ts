@@ -11,6 +11,7 @@ import { useIntentsBalance } from './useIntentsBalance';
 import { useTokensIntentsUnique } from './useTokensIntentsUnique';
 
 export type TokensFilterOptions = {
+  variant: 'source' | 'target';
   search: string;
   selectedChain: Chains | 'all' | 'intents';
   chainsFilter: DefaultChainsFilter;
@@ -18,24 +19,33 @@ export type TokensFilterOptions = {
 };
 
 // TODO: memoize
-export const useTokensFiltered = (options: TokensFilterOptions) => {
-  const chains = useChains();
-  const { tokens } = useTokens();
+export const useTokensFiltered = ({
+  variant,
+  search,
+  selectedChain,
+  chainsFilter,
+  walletSupportedChains,
+}: TokensFilterOptions) => {
+  const chains = useChains(variant);
+  const { tokens } = useTokens(variant);
   const { mergedBalance } = useMergedBalance();
   const { intentBalances } = useIntentsBalance();
   const { uniqueIntentsTokens } = useTokensIntentsUnique();
 
   const sorter = createTokenSorter(
     mergedBalance,
-    options.walletSupportedChains,
-    options.search,
+    walletSupportedChains,
+    search,
   );
 
   const filteredTokens = tokens
-    .filter(createFilterBySearch({ ...options, chains }))
+    .filter(createFilterBySearch({ search, chains }))
     .filter(
       createFilterBySelectedChain({
-        ...options,
+        search,
+        selectedChain,
+        chainsFilter,
+        walletSupportedChains,
         intentBalances,
         uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
       }),

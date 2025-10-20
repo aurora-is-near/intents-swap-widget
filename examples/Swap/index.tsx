@@ -108,6 +108,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
       if (tokenModalOpen !== 'none') {
         return (
           <TokensModal
+            variant={tokenModalOpen}
             showBalances
             showChainsSelector
             groupTokens={tokenModalOpen === 'source'}

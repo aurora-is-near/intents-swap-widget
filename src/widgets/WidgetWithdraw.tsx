@@ -133,6 +133,7 @@ export const WidgetWithdraw = ({
         return (
           <TokensModal
             showBalances
+            variant={tokenModalOpen}
             showChainsSelector={tokenModalOpen === 'target'}
             groupTokens={false}
             chainsFilter={

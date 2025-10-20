@@ -124,6 +124,7 @@ export const WidgetSwap = ({
           <TokensModal
             showBalances
             showChainsSelector
+            variant={tokenModalOpen}
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
