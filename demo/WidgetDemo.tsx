@@ -6,7 +6,6 @@ import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
 import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
 import type { WidgetConfig } from '@/config';
-import { WidgetSkeleton } from '@/widgets/WidgetSkeleton';
 import { RPCS } from './rpcs';
 import { DemoConnectButton } from './components/DemoConnectButton';
 
@@ -18,6 +17,12 @@ type Props = {
   walletAddress: string | undefined;
   onConnectWallet: () => void;
 };
+
+const WIDGET_TYPES = {
+  swap: WidgetSwap,
+  deposit: WidgetDeposit,
+  withdraw: WidgetWithdraw,
+} as const;
 
 export default function WidgetDemo({
   widgetType,
@@ -42,32 +47,7 @@ export default function WidgetDemo({
     [walletAddress],
   );
 
-  const WIDGET_CONFIG = {
-    swap: { Component: WidgetSwap, Skeleton: WidgetSkeleton.Swap },
-    deposit: { Component: WidgetDeposit, Skeleton: WidgetSkeleton.Deposit },
-    withdraw: { Component: WidgetWithdraw, Skeleton: WidgetSkeleton.Withdraw },
-  } as const;
-
-  const renderWidget = () => {
-    const widgetConfig = WIDGET_CONFIG[widgetType];
-
-    if (isLoading) {
-      return <widgetConfig.Skeleton />;
-    }
-
-    const commonProps = {
-      providers: { near: undefined },
-      makeTransfer: () =>
-        Promise.resolve({
-          hash: '0x1234567890abcdef1234567890abcdef12345678',
-          transactionLink:
-            'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
-        }),
-      onMsg: noop,
-    };
-
-    return <widgetConfig.Component {...commonProps} />;
-  };
+  const WidgetComponent = WIDGET_TYPES[widgetType];
 
   return (
     <WidgetConfigProvider config={config}>
@@ -75,7 +55,18 @@ export default function WidgetDemo({
         <BalanceRpcLoader rpcs={RPCS} walletAddress={config.walletAddress} />
       )}
       <div style={{ position: 'relative' }}>
-        {renderWidget()}
+        <WidgetComponent
+          isLoading={isLoading}
+          providers={{ near: undefined }}
+          makeTransfer={() =>
+            Promise.resolve({
+              hash: '0x1234567890abcdef1234567890abcdef12345678',
+              transactionLink:
+                'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+            })
+          }
+          onMsg={noop}
+        />
         <DemoConnectButton
           walletAddress={walletAddress}
           onConnect={onConnectWallet}
