@@ -52,7 +52,7 @@ html, body {
   margin-top: 25vh !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 24px !important;
+  gap: 12px !important;
 }
 
 @media (max-width: 768px) {
@@ -73,7 +73,7 @@ html, body {
     padding: 12px !important;
     justify-content: center !important;
   }
-  
+
   .demo-nav-label {
     display: none !important;
   }
@@ -249,7 +249,7 @@ html, body {
 
 /* Token icon styles - make all token symbols rounded */
 .sw img[alt*="ETH"],
-.sw img[alt*="BTC"], 
+.sw img[alt*="BTC"],
 .sw img[alt*="TON"],
 .sw img[alt*="NEAR"],
 .sw img[alt*="USDC"],

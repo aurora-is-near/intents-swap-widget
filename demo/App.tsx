@@ -1,46 +1,24 @@
 import React, { useState } from 'react';
 import WidgetDemo from './WidgetDemo';
+import { useDemoWallet } from './hooks/useDemoWallet';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
 function App() {
-  const [walletAddress, setWalletAddress] = useState<string | undefined>(
-    undefined,
-  );
+  const {
+    address: walletAddress,
+    isConnecting: isLoading,
+    connect: handleConnectWallet,
+    disconnect: handleDisconnectWallet,
+  } = useDemoWallet();
 
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
-  const handleConnectWallet = () => {
-    setIsLoading(true);
-    // Mock wallet connection for demo purposes
-    setTimeout(() => {
-      setWalletAddress('test.near');
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleDisconnectWallet = () => {
-    setWalletAddress(undefined);
-  };
-
-  const widgets = [
-    {
-      id: 'swap' as const,
-      label: 'Swap',
-      iconPath: '/demo/icons/swap.svg',
-    },
-    {
-      id: 'deposit' as const,
-      label: 'Deposit',
-      iconPath: '/demo/icons/deposit.svg',
-    },
-    {
-      id: 'withdraw' as const,
-      label: 'Withdraw',
-      iconPath: '/demo/icons/withdraw.svg',
-    },
-  ];
+  const DEMO_WIDGETS = [
+    { id: 'swap', label: 'Swap', iconPath: '/demo/icons/swap.svg' },
+    { id: 'deposit', label: 'Deposit', iconPath: '/demo/icons/deposit.svg' },
+    { id: 'withdraw', label: 'Withdraw', iconPath: '/demo/icons/withdraw.svg' },
+  ] as const;
 
   return (
     <div className="demo-page-wrapper">
@@ -80,7 +58,7 @@ function App() {
         <div className="demo-widget-content">
           {/* Widget Type Navigation - exact Calyx style */}
           <nav className="demo-nav">
-            {widgets.map((widget) => (
+            {DEMO_WIDGETS.map((widget) => (
               <button
                 key={widget.id}
                 onClick={() => setSelectedWidget(widget.id)}

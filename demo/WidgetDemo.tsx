@@ -8,6 +8,7 @@ import { WidgetWithdraw } from '@/presets/widgets/WidgetWithdraw';
 import { WidgetSkeleton } from '@/presets/widgets/shared/WidgetSkeleton';
 import type { WidgetConfig } from '@/config';
 import { RPCS } from './rpcs';
+import { DemoConnectButton } from './components/DemoConnectButton';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
@@ -41,18 +42,17 @@ export default function WidgetDemo({
     [walletAddress],
   );
 
+  const WIDGET_CONFIG = {
+    swap: { Component: WidgetSwap, Skeleton: WidgetSkeleton.Swap },
+    deposit: { Component: WidgetDeposit, Skeleton: WidgetSkeleton.Deposit },
+    withdraw: { Component: WidgetWithdraw, Skeleton: WidgetSkeleton.Withdraw },
+  } as const;
+
   const renderWidget = () => {
+    const widgetConfig = WIDGET_CONFIG[widgetType];
+
     if (isLoading) {
-      switch (widgetType) {
-        case 'swap':
-          return <WidgetSkeleton.Swap />;
-        case 'deposit':
-          return <WidgetSkeleton.Deposit />;
-        case 'withdraw':
-          return <WidgetSkeleton.Withdraw />;
-        default:
-          return <WidgetSkeleton.Swap />;
-      }
+      return <widgetConfig.Skeleton />;
     }
 
     const commonProps = {
@@ -66,16 +66,7 @@ export default function WidgetDemo({
       onMsg: noop,
     };
 
-    switch (widgetType) {
-      case 'swap':
-        return <WidgetSwap {...commonProps} />;
-      case 'deposit':
-        return <WidgetDeposit {...commonProps} />;
-      case 'withdraw':
-        return <WidgetWithdraw {...commonProps} />;
-      default:
-        return <WidgetSwap {...commonProps} />;
-    }
+    return <widgetConfig.Component {...commonProps} />;
   };
 
   return (
@@ -85,23 +76,10 @@ export default function WidgetDemo({
       )}
       <div style={{ position: 'relative' }}>
         {renderWidget()}
-        {!walletAddress && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-60px',
-              left: '0',
-              right: '0',
-              zIndex: 10,
-            }}>
-            <button
-              onClick={onConnectWallet}
-              className="demo-connect-wallet-button"
-              style={{ width: '100%' }}>
-              Connect Wallet
-            </button>
-          </div>
-        )}
+        <DemoConnectButton
+          walletAddress={walletAddress}
+          onConnect={onConnectWallet}
+        />
       </div>
     </WidgetConfigProvider>
   );
