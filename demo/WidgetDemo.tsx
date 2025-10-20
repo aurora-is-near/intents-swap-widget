@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { noop } from '@/utils/noop';
 import { BalanceRpcLoader } from '@/features/BalanceRpcLoader';
 import { defaultConfig, WidgetConfigProvider } from '@/config';
-import { WidgetSwap } from '@/presets/widgets/WidgetSwap';
-import { WidgetDeposit } from '@/presets/widgets/WidgetDeposit';
-import { WidgetWithdraw } from '@/presets/widgets/WidgetWithdraw';
-import { WidgetSkeleton } from '@/presets/widgets/shared/WidgetSkeleton';
+import { WidgetSwap } from '@/widgets/WidgetSwap';
+import { WidgetDeposit } from '@/widgets/WidgetDeposit';
+import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
 import type { WidgetConfig } from '@/config';
+import { WidgetSkeleton } from '@/widgets/WidgetSkeleton';
 import { RPCS } from './rpcs';
 import { DemoConnectButton } from './components/DemoConnectButton';
 
