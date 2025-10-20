@@ -28,7 +28,7 @@ import type {
   TransferResult,
 } from '@/types';
 
-import { WidgetSkeleton } from './shared';
+import { WidgetSkeleton } from './WidgetSkeleton';
 import type { TokenInputType } from './types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 
