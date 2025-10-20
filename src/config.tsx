@@ -145,11 +145,9 @@ export const WidgetConfigProvider = ({
   }, [userConfig]);
 
   // Initialise localisation
-  useEffect(() => {
-    void initLocalisation(localisation ?? {});
-  }, [localisation]);
+  initLocalisation(localisation ?? {});
 
-  // add tailwind parent class to portal root
+  // Add tailwind parent class to portal root
   useAddClassToPortal('headlessui-portal-root', 'sw');
 
   return (
