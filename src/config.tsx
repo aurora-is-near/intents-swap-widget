@@ -4,6 +4,7 @@ import { proxy, useSnapshot } from 'valtio';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
+import { I18nextProvider } from 'react-i18next';
 
 import { EVM_CHAINS } from '@/constants/chains';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
@@ -12,7 +13,6 @@ import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
-import { I18nextProvider } from 'react-i18next';
 
 export type WidgetConfig = {
   // Application metadata
