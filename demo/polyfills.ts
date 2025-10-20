@@ -15,7 +15,20 @@ if (typeof (globalThis as any).crypto === 'undefined') {
 
 if (typeof (globalThis as any).Buffer === 'undefined') {
   (globalThis as any).Buffer = {
-    from: (data: any) => new Uint8Array(data),
+    from: (data: any) => {
+      const uint8Array = new Uint8Array(data);
+
+      // Add toString method to support base64 encoding
+      (uint8Array as any).toString = (encoding?: string) => {
+        if (encoding === 'base64') {
+          return btoa(String.fromCharCode(...uint8Array));
+        }
+
+        return uint8Array.toString();
+      };
+
+      return uint8Array;
+    },
     isBuffer: () => false,
   };
 }
