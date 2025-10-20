@@ -29,7 +29,8 @@ import type {
 } from '@/types';
 
 import { WidgetSkeleton } from './shared';
-import type { TokenInputType, TokenModalState } from './types';
+import type { TokenInputType } from './types';
+import { useTokenModal } from '../../hooks/useTokenModal';
 
 type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
@@ -51,21 +52,13 @@ export const WidgetSwap = ({
   const { walletAddress, chainsFilter } = useConfig();
 
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
-
-  const [tokenModalOpen, setTokenModalOpen] = useState<TokenModalState>('none');
-
-  useEffect(() => {
-    onMsg?.({
-      type: 'on_tokens_modal_toggled',
-      isOpen: tokenModalOpen !== 'none',
-    });
-  }, [tokenModalOpen]);
 
   useEffect(() => {
     fireEvent('reset', null);
@@ -138,7 +131,7 @@ export const WidgetSwap = ({
               switch (msg.type) {
                 case 'on_select_token':
                   onChangeToken(tokenModalOpen, msg.token);
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   onMsg?.({
                     type: msg.type,
                     token: msg.token,
@@ -146,7 +139,7 @@ export const WidgetSwap = ({
                   });
                   break;
                 case 'on_dismiss_tokens_modal':
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   break;
                 default:
                   notReachable(msg);
@@ -168,7 +161,7 @@ export const WidgetSwap = ({
                       onChangeAmount('source', msg.amount);
                       break;
                     case 'on_click_select_token':
-                      setTokenModalOpen('source');
+                      updateTokenModalState('source');
                       break;
                     default:
                       notReachable(msg);
@@ -186,7 +179,7 @@ export const WidgetSwap = ({
                       onChangeAmount('target', msg.amount);
                       break;
                     case 'on_click_select_token':
-                      setTokenModalOpen('target');
+                      updateTokenModalState('target');
                       break;
                     default:
                       notReachable(msg);
