@@ -2,7 +2,12 @@ import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
 type QuoteResponseShort = Pick<
   QuoteResponse['quote'],
-  'amountIn' | 'amountOut' | 'amountInUsd' | 'amountOutUsd' | 'timeEstimate'
+  | 'amountIn'
+  | 'amountOut'
+  | 'amountInUsd'
+  | 'amountOutUsd'
+  | 'amountOutFormatted'
+  | 'timeEstimate'
 >;
 
 export type QuoteDry = QuoteResponseShort & {
