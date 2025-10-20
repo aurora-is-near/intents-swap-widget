@@ -1,10 +1,10 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { globalStyles } from './globalStyles';
 
 import '../src/tailwind.css';
-import App from './App';
+import { App } from './App';
 
 // Inject styles directly into the document head to bypass Vite's CSS processing
 const styleElement = document.createElement('style');
@@ -23,9 +23,9 @@ if (!container) {
 const root = createRoot(container);
 
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>
-  </React.StrictMode>,
+  </StrictMode>,
 );

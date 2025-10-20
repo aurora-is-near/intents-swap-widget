@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import WidgetDemo from './WidgetDemo';
 import { useDemoWallet } from './hooks/useDemoWallet';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
-function App() {
+export const App = () => {
   const {
     address: walletAddress,
     isConnecting: isLoading,
@@ -89,6 +89,4 @@ function App() {
       </div>
     </div>
   );
-}
-
-export default App;
+};
