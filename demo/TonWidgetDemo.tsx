@@ -23,7 +23,7 @@ export const TonWidgetDemo = () => {
             chainsFilter: {
               target: { intents: 'none', external: 'all' },
               source: {
-                intents: walletAddress ? 'with-balance' : 'all',
+                intents: 'none',
                 external: walletAddress ? 'wallet-supported' : 'all',
               },
             },
