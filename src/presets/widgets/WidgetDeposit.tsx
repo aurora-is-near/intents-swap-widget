@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 
 import {
-  SendAddress,
+  DepositMethodSwitcher,
+  ExternalDeposit,
   SubmitButton,
   SuccessScreen,
-  SwapDirectionSwitcher,
   SwapQuote,
   TokenInput,
   TokensModal,
 } from '@/features';
 
-import { BlockingError } from '@/components';
+import { Banner, BlockingError } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -29,54 +29,51 @@ import type {
 } from '@/types';
 
 import { WidgetSkeleton } from './shared';
-import {
-  QUOTE_TYPE,
-  TOKEN_INPUT,
-  TOKEN_MODAL_STATE,
-  type TokenInputType,
-  type TokenModalState,
-} from './constants';
+import type { TokenInputType, TokenModalState } from './types';
 
 type Msg =
-  | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_success' };
+  | { type: 'on_change_deposit_type'; isExternal: boolean }
+  | { type: 'on_transfer_success' }
+  | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
-export type WidgetSwapProps = QuoteTransferArgs &
+export type WidgetDepositProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
   };
 
-export const WidgetSwap = ({
+export const WidgetDeposit = ({
   providers,
-  makeTransfer,
   onMsg,
-}: WidgetSwapProps) => {
+  makeTransfer,
+}: WidgetDepositProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter } = useConfig();
-
+  const { chainsFilter, walletAddress } = useConfig();
+  const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
-  const { onChangeAmount, onChangeToken, lastChangedInput } =
-    useTokenInputPair();
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
 
-  const [tokenModalOpen, setTokenModalOpen] = useState<TokenModalState>(
-    TOKEN_MODAL_STATE.NONE,
-  );
+  const [tokenModalOpen, setTokenModalOpen] = useState<
+    Extract<TokenModalState, 'source' | 'none'>
+  >('none');
 
   useEffect(() => {
     onMsg?.({
       type: 'on_tokens_modal_toggled',
-      isOpen: tokenModalOpen !== TOKEN_MODAL_STATE.NONE,
+      isOpen: tokenModalOpen !== 'none',
     });
   }, [tokenModalOpen]);
 
   useEffect(() => {
     fireEvent('reset', null);
+
+    return () => {
+      fireEvent('depositTypeSet', { isExternal: false });
+    };
   }, []);
 
   useStoreSideEffects({
@@ -84,23 +81,22 @@ export const WidgetSwap = ({
     listenTo: [
       'checkWalletConnection',
       'setSourceTokenBalance',
-      ['setDefaultSelectedTokens', { skipIntents: false }],
-      [
-        'makeQuote',
-        {
-          message: undefined,
-          type:
-            lastChangedInput === TOKEN_INPUT.TARGET
-              ? QUOTE_TYPE.EXACT_OUT
-              : QUOTE_TYPE.EXACT_IN,
-        },
-      ],
+      'setSourceTokenIntentsTarget',
+      ['setDefaultSelectedTokens', { skipIntents: true }],
+      ['makeQuote', { message: undefined }],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
     ],
   });
 
+  useEffect(() => {
+    onMsg?.({
+      type: 'on_change_deposit_type',
+      isExternal: ctx.isDepositFromExternalWallet,
+    });
+  }, [ctx.isDepositFromExternalWallet]);
+
   if (!ctx.sourceToken) {
-    return <WidgetSkeleton.Swap />;
+    return <WidgetSkeleton.Deposit />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -108,7 +104,7 @@ export const WidgetSwap = ({
       <SuccessScreen
         {...transferResult}
         message={[
-          'Your swap has been successfully completed,',
+          'Your deposit has been successfully completed,',
           'and the funds are now available in your account.',
         ]}
         onMsg={(msg) => {
@@ -134,14 +130,14 @@ export const WidgetSwap = ({
       );
 
     case 'success': {
-      if (tokenModalOpen !== TOKEN_MODAL_STATE.NONE) {
+      if (tokenModalOpen !== 'none') {
         return (
           <TokensModal
             showBalances
             showChainsSelector
-            groupTokens={tokenModalOpen === TOKEN_MODAL_STATE.SOURCE}
+            groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
-              tokenModalOpen === TOKEN_MODAL_STATE.SOURCE
+              tokenModalOpen === 'source'
                 ? chainsFilter.source
                 : chainsFilter.target
             }
@@ -149,7 +145,7 @@ export const WidgetSwap = ({
               switch (msg.type) {
                 case 'on_select_token':
                   onChangeToken(tokenModalOpen, msg.token);
-                  setTokenModalOpen(TOKEN_MODAL_STATE.NONE);
+                  setTokenModalOpen('none');
                   onMsg?.({
                     type: msg.type,
                     token: msg.token,
@@ -157,7 +153,7 @@ export const WidgetSwap = ({
                   });
                   break;
                 case 'on_dismiss_tokens_modal':
-                  setTokenModalOpen(TOKEN_MODAL_STATE.NONE);
+                  setTokenModalOpen('none');
                   break;
                 default:
                   notReachable(msg);
@@ -170,58 +166,54 @@ export const WidgetSwap = ({
       return (
         <div className="gap-sw-2xl flex flex-col">
           <div className="gap-sw-lg relative flex flex-col">
-            <div className="gap-sw-lg relative flex flex-col">
-              <TokenInput.Source
-                isChanging={lastChangedInput === TOKEN_INPUT.SOURCE}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_change_amount':
-                      onChangeAmount(TOKEN_INPUT.SOURCE, msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      setTokenModalOpen(TOKEN_MODAL_STATE.SOURCE);
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
+            <TokenInput.Source
+              showBalance={!ctx.isDepositFromExternalWallet}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_change_amount':
+                    onChangeAmount('source', msg.amount);
+                    break;
+                  case 'on_click_select_token':
+                    setTokenModalOpen('source');
+                    break;
+                  default:
+                    notReachable(msg);
+                }
+              }}
+            />
 
-              <SwapDirectionSwitcher />
+            <DepositMethodSwitcher className="mt-sw-md">
+              {({ isExternal }) =>
+                isExternal ? (
+                  <div className="gap-sw-2xl pb-sw-2xl flex flex-col">
+                    <ExternalDeposit
+                      onMsg={(msg) => {
+                        switch (msg.type) {
+                          case 'on_successful_transfer':
+                            setTransferResult(msg.transferResult);
+                            break;
+                          case 'on_transaction_received':
+                            // Transaction received, no action needed
+                            break;
+                          default:
+                            notReachable(msg);
+                        }
+                      }}
+                    />
+                    {(ctx.state === 'quote_success_internal' ||
+                      ctx.state === 'quote_success_external') && (
+                      <Banner
+                        multiline
+                        variant="warn"
+                        message="Match the token, amount and network entered above in your wallet. Incorrect values will cause the deposit to fail and be refunded."
+                      />
+                    )}
+                  </div>
+                ) : null
+              }
+            </DepositMethodSwitcher>
 
-              <TokenInput.Target
-                isChanging={lastChangedInput === TOKEN_INPUT.TARGET}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_change_amount':
-                      onChangeAmount(TOKEN_INPUT.TARGET, msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      setTokenModalOpen(TOKEN_MODAL_STATE.TARGET);
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
-            </div>
-
-            {!!walletAddress &&
-              ctx.targetToken &&
-              !ctx.targetToken.isIntent && (
-                <SendAddress
-                  onMsg={(msg) => {
-                    switch (msg.type) {
-                      case 'on_change_send_address':
-                        break;
-                      default:
-                        notReachable(msg.type, { throwError: false });
-                    }
-                  }}
-                />
-              )}
-
-            {!isDirectTransfer && <SwapQuote />}
+            {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
             {walletAddress ? (
               <SubmitButton
@@ -248,6 +240,6 @@ export const WidgetSwap = ({
 
     case 'pending':
     default:
-      return <WidgetSkeleton.Swap />;
+      return <WidgetSkeleton.Deposit />;
   }
 };

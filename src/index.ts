@@ -8,3 +8,4 @@ export * from './machine';
 export * from './ext';
 export * from './types';
 export * from './errors';
+export * from './presets';

@@ -16,7 +16,3 @@ export * from './Skeleton';
 export * from './TinyNumber';
 export * from './TokenIcon';
 export * from './StatusWidget';
-
-export * from './widgets/WidgetSwap';
-export * from './widgets/WidgetDeposit';
-export * from './widgets/WidgetWithdraw';
