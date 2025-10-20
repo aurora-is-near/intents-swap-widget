@@ -146,9 +146,7 @@ export const WidgetConfigProvider = ({
 
   // Initialise localisation
   useEffect(() => {
-    if (localisation) {
-      void initLocalisation(localisation);
-    }
+    void initLocalisation(localisation ?? {});
   }, [localisation]);
 
   // add tailwind parent class to portal root

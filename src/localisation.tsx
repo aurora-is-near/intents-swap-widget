@@ -34,8 +34,8 @@ export function useTypedTranslation<
   return { t, ...rest } as TypedUseTranslationResponse<Ns, KPrefix>;
 }
 
-export const initLocalisation = (dict: LocalisationDict) => {
-  return i18n.use(initReactI18next).init({
+export const initLocalisation = (dict: LocalisationDict = {}) => {
+  void i18n.use(initReactI18next).init({
     resources: {
       en: {
         translation: dict,
