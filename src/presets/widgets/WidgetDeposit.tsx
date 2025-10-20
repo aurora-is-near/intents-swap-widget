@@ -29,7 +29,8 @@ import type {
 } from '@/types';
 
 import { WidgetSkeleton } from './shared';
-import type { TokenInputType, TokenModalState } from './types';
+import type { TokenInputType } from './types';
+import { useTokenModal } from '../../hooks/useTokenModal';
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
@@ -52,20 +53,11 @@ export const WidgetDeposit = ({
   const { chainsFilter, walletAddress } = useConfig();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
-
-  const [tokenModalOpen, setTokenModalOpen] =
-    useState<Extract<TokenModalState, 'source' | 'none'>>('none');
-
-  useEffect(() => {
-    onMsg?.({
-      type: 'on_tokens_modal_toggled',
-      isOpen: tokenModalOpen !== 'none',
-    });
-  }, [tokenModalOpen]);
 
   useEffect(() => {
     fireEvent('reset', null);
@@ -144,7 +136,7 @@ export const WidgetDeposit = ({
               switch (msg.type) {
                 case 'on_select_token':
                   onChangeToken(tokenModalOpen, msg.token);
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   onMsg?.({
                     type: msg.type,
                     token: msg.token,
@@ -152,7 +144,7 @@ export const WidgetDeposit = ({
                   });
                   break;
                 case 'on_dismiss_tokens_modal':
-                  setTokenModalOpen('none');
+                  updateTokenModalState('none');
                   break;
                 default:
                   notReachable(msg);
@@ -173,7 +165,7 @@ export const WidgetDeposit = ({
                     onChangeAmount('source', msg.amount);
                     break;
                   case 'on_click_select_token':
-                    setTokenModalOpen('source');
+                    updateTokenModalState('source');
                     break;
                   default:
                     notReachable(msg);
