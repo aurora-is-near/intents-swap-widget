@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 
 import { QuoteError } from '@/errors';
-import { useMakeQuote } from '@/hooks/useMakeQuote';
-
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
+import { useMakeQuote } from '@/hooks/useMakeQuote';
+import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
+import type { Quote } from '@/types/quote';
 
 import type { ListenerProps } from './types';
 
@@ -24,18 +25,28 @@ export const useMakeQuoteEffect = ({
   const { ctx } = useUnsafeSnapshot();
   const {
     isDirectTransfer,
+    isDirectNonNearWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
 
   const isDry = !ctx.walletAddress;
+
   const shouldRun =
     isEnabled &&
     !isDirectTransfer &&
+    !isDirectNonNearWithdrawal &&
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote();
+  const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
+  const { make: makeDepositAddress, cancel: cancelDepositAddress } =
+    useMakeDepositAddress();
+
+  const cancel = () => {
+    cancelQuote();
+    cancelDepositAddress();
+  };
 
   // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
@@ -75,7 +86,14 @@ export const useMakeQuoteEffect = ({
         // do not refetch failed quotes - persist an error instead
         if (isValidState && ctx.quoteStatus === 'idle') {
           fireEvent('quoteSetStatus', 'pending');
-          const quote = await makeQuote({ message, quoteType });
+
+          let quote: Quote | undefined;
+
+          if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+            quote = await makeDepositAddress();
+          } else {
+            quote = await makeQuote({ message, quoteType });
+          }
 
           if (!quote) {
             return;

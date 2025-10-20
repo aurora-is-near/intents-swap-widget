@@ -1,11 +1,11 @@
 import { useMemo, useRef } from 'react';
+import { snakeCase } from 'change-case';
 import {
   QuoteRequest,
   QuoteResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
-import { snakeCase } from 'change-case';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';

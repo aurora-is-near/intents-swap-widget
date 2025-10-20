@@ -1,18 +1,17 @@
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
-export type QuoteDry = Omit<
+type QuoteResponseShort = Pick<
   QuoteResponse['quote'],
-  'deadline' | 'depositAddress'
-> & {
+  'amountIn' | 'amountOut' | 'amountInUsd' | 'amountOutUsd' | 'timeEstimate'
+>;
+
+export type QuoteDry = QuoteResponseShort & {
   dry: true;
   deadline?: never;
   depositAddress?: never;
 };
 
-export type QuoteReal = Omit<
-  QuoteResponse['quote'],
-  'deadline' | 'depositAddress'
-> & {
+export type QuoteReal = QuoteResponseShort & {
   dry: false;
   deadline: string;
   depositAddress: string;

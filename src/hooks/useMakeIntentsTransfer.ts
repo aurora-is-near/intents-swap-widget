@@ -151,7 +151,7 @@ const validateNearPublicKey = async (
 
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectTransfer, isDirectNonNearWithdrawal } = useComputedSnapshot();
   const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
@@ -251,6 +251,8 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       routeConfig = undefined;
     } else if (isDirectTransfer) {
       routeConfig = createNearWithdrawalRoute(message ?? undefined);
+    } else if (isDirectNonNearWithdrawal) {
+      routeConfig = undefined;
     } else {
       routeConfig = createInternalTransferRoute();
     }
@@ -259,7 +261,10 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       withdrawalParams: {
         assetId: ctx.sourceToken.assetId,
         amount: BigInt(ctx.sourceTokenAmount),
-        destinationAddress: getDestinationAddress(ctx, isDirectTransfer),
+        destinationAddress: getDestinationAddress(
+          ctx,
+          isDirectTransfer || isDirectNonNearWithdrawal,
+        ),
         destinationMemo: undefined,
         feeInclusive: false,
         routeConfig,
