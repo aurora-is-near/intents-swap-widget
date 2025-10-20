@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { TokenModalState } from '../presets/widgets/types';
+import { TokenModalState } from '../widgets/types';
 
 export const useTokenModal = ({
   onMsg,

@@ -4,13 +4,12 @@ import {
   SendAddress,
   SubmitButton,
   SuccessScreen,
-  SwapDirectionSwitcher,
   SwapQuote,
   TokenInput,
   TokensModal,
 } from '@/features';
 
-import { BlockingError } from '@/components';
+import { BlockingError, Card, DirectionSwitcher, Hr } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -27,26 +26,34 @@ import type {
   Token,
   TransferResult,
 } from '@/types';
-
 import { WidgetSkeleton } from './WidgetSkeleton';
 import type { TokenInputType } from './types';
-import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTokenModal } from '../hooks/useTokenModal';
 
 type Msg =
-  | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_success' };
+  | { type: 'on_transfer_success' }
+  | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
-export type WidgetSwapProps = QuoteTransferArgs &
+export type WidgetWithdrawProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
   };
 
-export const WidgetSwap = ({
+const TokenInputHeader = ({ label }: { label: string }) => (
+  <header className="gap-sw-lg px-sw-2xl pt-sw-2xl flex flex-col">
+    <span className="text-label-m gap-sw-sm flex items-center text-sw-gray-50">
+      {label}
+    </span>
+    <Hr />
+  </header>
+);
+
+export const WidgetWithdraw = ({
   providers,
   makeTransfer,
   onMsg,
-}: WidgetSwapProps) => {
+}: WidgetWithdrawProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
@@ -69,7 +76,10 @@ export const WidgetSwap = ({
     listenTo: [
       'checkWalletConnection',
       'setSourceTokenBalance',
-      ['setDefaultSelectedTokens', { skipIntents: false }],
+      [
+        'setDefaultSelectedTokens',
+        { skipIntents: false, target: 'same-asset' },
+      ],
       [
         'makeQuote',
         {
@@ -82,7 +92,7 @@ export const WidgetSwap = ({
   });
 
   if (!ctx.sourceToken) {
-    return <WidgetSkeleton.Swap />;
+    return <WidgetSkeleton.Withdraw />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -90,8 +100,8 @@ export const WidgetSwap = ({
       <SuccessScreen
         {...transferResult}
         message={[
-          'Your swap has been successfully completed,',
-          'and the funds are now available in your account.',
+          'Your withdrawal has been successfully completed,',
+          'and the funds have been sent to the specified destination.',
         ]}
         onMsg={(msg) => {
           switch (msg.type) {
@@ -120,8 +130,8 @@ export const WidgetSwap = ({
         return (
           <TokensModal
             showBalances
-            showChainsSelector
-            groupTokens={tokenModalOpen === 'source'}
+            showChainsSelector={tokenModalOpen === 'target'}
+            groupTokens={false}
             chainsFilter={
               tokenModalOpen === 'source'
                 ? chainsFilter.source
@@ -153,39 +163,45 @@ export const WidgetSwap = ({
         <div className="gap-sw-2xl flex flex-col">
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
-              <TokenInput.Source
-                isChanging={lastChangedInput === 'source'}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_change_amount':
-                      onChangeAmount('source', msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      updateTokenModalState('source');
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
+              <Card padding="none">
+                <TokenInputHeader label="Withdraw token" />
+                <TokenInput.Source
+                  isChanging={lastChangedInput === 'source'}
+                  onMsg={(msg) => {
+                    switch (msg.type) {
+                      case 'on_change_amount':
+                        onChangeAmount('source', msg.amount);
+                        break;
+                      case 'on_click_select_token':
+                        updateTokenModalState('source');
+                        break;
+                      default:
+                        notReachable(msg);
+                    }
+                  }}
+                />
+              </Card>
 
-              <SwapDirectionSwitcher />
+              <DirectionSwitcher isEnabled={false} />
 
-              <TokenInput.Target
-                isChanging={lastChangedInput === 'target'}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_change_amount':
-                      onChangeAmount('target', msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      updateTokenModalState('target');
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
+              <Card padding="none">
+                <TokenInputHeader label="Receive token" />
+                <TokenInput.Target
+                  isChanging={lastChangedInput === 'target'}
+                  onMsg={(msg) => {
+                    switch (msg.type) {
+                      case 'on_change_amount':
+                        onChangeAmount('target', msg.amount);
+                        break;
+                      case 'on_click_select_token':
+                        updateTokenModalState('target');
+                        break;
+                      default:
+                        notReachable(msg);
+                    }
+                  }}
+                />
+              </Card>
             </div>
 
             {!!walletAddress &&
@@ -230,6 +246,6 @@ export const WidgetSwap = ({
 
     case 'pending':
     default:
-      return <WidgetSkeleton.Swap />;
+      return <WidgetSkeleton.Withdraw />;
   }
 };
