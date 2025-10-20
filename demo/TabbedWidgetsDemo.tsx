@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { noop } from '@/utils/noop';
 import { BalanceRpcLoader } from '@/features/BalanceRpcLoader';
-import { defaultConfig, WidgetConfigProvider } from '@/config';
+import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
 import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
@@ -95,7 +95,6 @@ export const TabbedWidgetsDemo = () => {
 
           <WidgetConfigProvider
             config={{
-              ...defaultConfig,
               walletAddress,
               walletSupportedChains: ['near'],
               intentsAccountType: 'near',

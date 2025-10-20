@@ -115,7 +115,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextType>({
 });
 
 type Props = PropsWithChildren<{
-  config?: WidgetConfig;
+  config?: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
 }>;
 
@@ -136,13 +136,23 @@ export const resetConfig = (config: WidgetConfig) => {
 
 export const WidgetConfigProvider = ({
   children,
-  config: userConfig = defaultConfig,
+  config: userConfig,
   localisation,
 }: Props) => {
-  const storeRef = useRef(proxy({ config: deepClone(userConfig) }));
+  const storeRef = useRef(
+    proxy({
+      config: deepClone({
+        ...defaultConfig,
+        ...userConfig,
+      }),
+    }),
+  );
 
   useEffect(() => {
-    const next = deepClone(userConfig);
+    const next = deepClone({
+      ...defaultConfig,
+      ...userConfig,
+    });
 
     Object.assign(storeRef.current.config, next);
     resetConfig(next);

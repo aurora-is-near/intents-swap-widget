@@ -1,9 +1,6 @@
-import { useMemo } from 'react';
-
 import { noop } from '@/utils/noop';
 import { BalanceRpcLoader } from '@/features/BalanceRpcLoader';
-import { defaultConfig, WidgetConfigProvider } from '@/config';
-import type { WidgetConfig } from '@/config';
+import { WidgetConfigProvider } from '@/config';
 
 import { RPCS } from './rpcs';
 import { WidgetSwap } from './Swap';
@@ -15,28 +12,23 @@ type Props = {
 };
 
 export default function WidgetPage({ isLoading, walletAddress }: Props) {
-  const config: WidgetConfig = useMemo(
-    () => ({
-      ...defaultConfig,
-      walletAddress, // reactively pass connected wallet address
-      walletSupportedChains: ['near'],
-      intentsAccountType: 'near',
-      chainsFilter: {
-        target: { intents: 'all', external: 'all' },
-        source: {
-          intents: walletAddress ? 'with-balance' : 'all',
-          external: walletAddress ? 'wallet-supported' : 'all',
-        },
-      },
-    }),
-    [walletAddress],
-  );
-
   return (
     <div className="flex h-full w-full justify-center pt-[10vh]">
-      <WidgetConfigProvider config={config}>
-        {!!config.walletAddress && (
-          <BalanceRpcLoader rpcs={RPCS} walletAddress={config.walletAddress} />
+      <WidgetConfigProvider
+        config={{
+          walletAddress, // reactively pass connected wallet address
+          walletSupportedChains: ['near'],
+          intentsAccountType: 'near',
+          chainsFilter: {
+            target: { intents: 'all', external: 'all' },
+            source: {
+              intents: walletAddress ? 'with-balance' : 'all',
+              external: walletAddress ? 'wallet-supported' : 'all',
+            },
+          },
+        }}>
+        {!!walletAddress && (
+          <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
         )}
         <section className="relative w-[456px]">
           {(() => {

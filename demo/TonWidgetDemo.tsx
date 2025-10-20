@@ -1,6 +1,6 @@
 import { useDemoWallet } from './hooks/useDemoWallet';
 import { WidgetSwap } from '../src';
-import { defaultConfig, WidgetConfigProvider } from '../src/config';
+import { WidgetConfigProvider } from '../src/config';
 import { DemoConnectButton } from './components/DemoConnectButton';
 
 export const TonWidgetDemo = () => {
@@ -15,7 +15,6 @@ export const TonWidgetDemo = () => {
       <div className="demo-widget-content">
         <WidgetConfigProvider
           config={{
-            ...defaultConfig,
             allowedTargetChainsList: ['ton'],
             allowedTargetTokensList: ['nep245:v2_1.omni.hot.tg:1117_'],
             walletAddress,
