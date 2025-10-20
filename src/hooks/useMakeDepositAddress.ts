@@ -135,6 +135,10 @@ export const useMakeDepositAddress = () => {
         depositAddress: response.result.address,
         amountIn: ctx.sourceTokenAmount,
         amountOut: ctx.targetTokenAmount,
+        amountOutFormatted: formatBigToHuman(
+          ctx.targetTokenAmount,
+          ctx.targetToken.decimals,
+        ),
         amountInUsd: `${
           parseFloat(
             formatBigToHuman(ctx.sourceTokenAmount, ctx.sourceToken.decimals),
