@@ -23,3 +23,6 @@ spec.json
 
 # Vi
 *.swp
+
+# Environment variables
+.env
