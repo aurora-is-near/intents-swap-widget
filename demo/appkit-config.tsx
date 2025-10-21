@@ -16,7 +16,8 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
-const projectId = process.env.VITE_REOWN_PROJECT_ID ?? 'YOUR_PROJECT_ID_HERE';
+const projectId =
+  process.env.VITE_REOWN_PROJECT_ID ?? '6f521f980a016d4308d6cba8b081bc20';
 
 const appUrl = process.env.VITE_APP_URL ?? 'http://localhost:5173';
 

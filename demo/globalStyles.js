@@ -49,7 +49,7 @@ html, body {
 }
 
 .demo-widget-content {
-  margin-top: 25vh !important;
+  margin-top: 15vh !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
@@ -57,13 +57,13 @@ html, body {
 
 @media (max-width: 768px) {
   .demo-widget-content {
-    margin-top: 15vh !important;
+    margin-top: 10vh !important;
   }
 }
 
 @media (max-width: 480px) {
   .demo-widget-content {
-    margin-top: 10vh !important;
+    margin-top: 5vh !important;
   }
 }
 
