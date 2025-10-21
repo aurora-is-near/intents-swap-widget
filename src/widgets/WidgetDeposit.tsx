@@ -166,6 +166,9 @@ export const WidgetDeposit = ({
               showBalance={!ctx.isDepositFromExternalWallet}
               onMsg={(msg) => {
                 switch (msg.type) {
+                  case 'on_select_token':
+                    onChangeToken('source', msg.token);
+                    break;
                   case 'on_change_amount':
                     onChangeAmount('source', msg.amount);
                     break;

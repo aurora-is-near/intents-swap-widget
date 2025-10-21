@@ -18,6 +18,7 @@ import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
 
 export type Msg =
   | { type: 'on_click_select_token' }
+  | { type: 'on_select_token'; token: Token }
   | { type: 'on_change_amount'; amount: string };
 
 export type Props = {

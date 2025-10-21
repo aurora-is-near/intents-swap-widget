@@ -6,6 +6,7 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { useTokenInputBalance } from './hooks';
+import { useDefaultToken } from '../../hooks/useDefaultToken';
 
 export type Props = {
   isChanging?: boolean;
@@ -20,6 +21,8 @@ export const TokenInputSource = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const sourceTokenBalance = useTokenInputBalance(ctx.sourceToken);
+
+  useDefaultToken('source', onMsg);
 
   const sourceInputState = useMemo(() => {
     if (!isChanging && ctx.quoteStatus === 'pending') {

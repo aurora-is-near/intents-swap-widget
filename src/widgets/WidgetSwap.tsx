@@ -161,6 +161,9 @@ export const WidgetSwap = ({
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
                   switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('source', msg.token);
+                      break;
                     case 'on_change_amount':
                       onChangeAmount('source', msg.amount);
                       break;
@@ -179,6 +182,9 @@ export const WidgetSwap = ({
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
                   switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('target', msg.token);
+                      break;
                     case 'on_change_amount':
                       onChangeAmount('target', msg.amount);
                       break;
