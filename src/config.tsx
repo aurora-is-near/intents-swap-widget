@@ -9,45 +9,10 @@ import { I18nextProvider } from 'react-i18next';
 import { EVM_CHAINS } from '@/constants/chains';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
-import type { Chains, DefaultChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
-
-export type WidgetConfig = {
-  // Application metadata
-  appName: string;
-  appIcon: string;
-
-  // Connected wallet
-  intentsAccountType: 'evm' | 'near' | 'sol';
-  walletSupportedChains: ReadonlyArray<Chains>;
-  walletAddress?: string | null;
-
-  // Quotes & Transfers
-  defaultMaxSlippage: number;
-  enableAutoTokensSwitching?: boolean;
-
-  // Tokens filtering
-  showIntentTokens: boolean;
-  allowedTokensList?: string[]; // assetIDs
-  allowedSourceTokensList?: string[];
-  allowedTargetTokensList?: string[];
-  filterTokens: (token: Token) => boolean;
-
-  // Chains filtering
-  chainsOrder: Chains[];
-  allowedChainsList?: Chains[];
-  allowedSourceChainsList?: Chains[];
-  allowedTargetChainsList?: Chains[];
-  chainsFilter: {
-    source: DefaultChainsFilter;
-    target: DefaultChainsFilter;
-  };
-
-  // 1Click API
-  oneClickApiQuoteProxyUrl: string;
-};
+import { WidgetConfig } from './types/config';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,9 +22,9 @@ const queryClient = new QueryClient({
   },
 });
 
-const disabledTokens = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
+const DISABLED_TOKENS = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
 
-export const defaultConfig: WidgetConfig = {
+const DEFAULT_CONFIG: WidgetConfig = {
   appName: 'Unknown',
   appIcon:
     'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg',
@@ -97,7 +62,7 @@ export const defaultConfig: WidgetConfig = {
   ],
 
   filterTokens: (tkn: Token) =>
-    !disabledTokens.includes(tkn.symbol.toLocaleLowerCase()),
+    !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),
 
   allowedTokensList: undefined,
   allowedChainsList: undefined,
@@ -111,7 +76,7 @@ export const defaultConfig: WidgetConfig = {
 type WidgetConfigContextType = { config: WidgetConfig };
 
 const WidgetConfigContext = createContext<WidgetConfigContextType>({
-  config: defaultConfig,
+  config: DEFAULT_CONFIG,
 });
 
 type Props = PropsWithChildren<{
@@ -120,7 +85,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const configStore = proxy<{ config: WidgetConfig }>({
-  config: defaultConfig,
+  config: DEFAULT_CONFIG,
 });
 
 export const useConfig = () => {
@@ -130,7 +95,7 @@ export const useConfig = () => {
   return store.config;
 };
 
-export const resetConfig = (config: WidgetConfig) => {
+const resetConfig = (config: WidgetConfig) => {
   configStore.config = deepClone(config);
 };
 
@@ -142,7 +107,7 @@ export const WidgetConfigProvider = ({
   const storeRef = useRef(
     proxy({
       config: deepClone({
-        ...defaultConfig,
+        ...DEFAULT_CONFIG,
         ...userConfig,
       }),
     }),
@@ -150,7 +115,7 @@ export const WidgetConfigProvider = ({
 
   useEffect(() => {
     const next = deepClone({
-      ...defaultConfig,
+      ...DEFAULT_CONFIG,
       ...userConfig,
     });
 

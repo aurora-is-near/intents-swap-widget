@@ -1,5 +1,7 @@
 import './tailwind.css'; // import so CSS is emitted in dist
 
+export { WidgetConfigProvider } from './config';
+
 export * from './components';
 export * from './features';
 export * from './hooks';
