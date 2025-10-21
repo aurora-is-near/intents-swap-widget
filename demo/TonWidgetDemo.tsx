@@ -29,6 +29,7 @@ export const TonWidgetDemo = () => {
             },
           }}>
           <WidgetSwap
+            isOneWay
             isLoading={isLoading}
             providers={{ near: undefined }}
             makeTransfer={() => Promise.resolve(undefined)}

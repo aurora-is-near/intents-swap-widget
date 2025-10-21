@@ -42,6 +42,7 @@ export type WidgetSwapProps = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
+    isOneWay?: boolean;
   };
 
 export const WidgetSwap = ({
@@ -49,6 +50,7 @@ export const WidgetSwap = ({
   makeTransfer,
   onMsg,
   isLoading,
+  isOneWay,
 }: WidgetSwapProps) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
@@ -176,7 +178,7 @@ export const WidgetSwap = ({
                 }}
               />
 
-              <SwapDirectionSwitcher />
+              <SwapDirectionSwitcher disabled={isOneWay} />
 
               <TokenInput.Target
                 isChanging={lastChangedInput === 'target'}
