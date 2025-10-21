@@ -34,7 +34,7 @@ function TonWidgetContent() {
           isOneWay
           isLoading={isLoading}
           providers={{ near: undefined }}
-          makeTransfer={() => Promise.resolve(undefined)}
+          makeTransfer={(_args) => Promise.resolve(undefined)}
           onMsg={() => {}}
         />
         <div

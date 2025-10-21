@@ -28,10 +28,18 @@ const metadata = {
   icons: [`${appUrl}/demo/favicon.svg`],
 };
 
-const networks = [mainnet, arbitrum, polygon, bsc, optimism, avalanche, base];
+const evmNetworks = [
+  mainnet,
+  arbitrum,
+  polygon,
+  bsc,
+  optimism,
+  avalanche,
+  base,
+];
 
 export const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: evmNetworks,
   projectId,
   ssr: false,
 });
@@ -49,6 +57,7 @@ export function initializeAppKit() {
 
   modalInstance = createAppKit({
     adapters: [wagmiAdapter, solanaAdapter],
+    // Note: Networks must be inlined (not spread from array) due to TypeScript tuple type requirements
     networks: [
       mainnet,
       arbitrum,
