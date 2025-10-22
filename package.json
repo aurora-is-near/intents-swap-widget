@@ -10,7 +10,7 @@
   "module": "./dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --config vite.config.demo.ts",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "test": "jest",
     "typecheck": "tsc --noEmit",
@@ -19,7 +19,10 @@
     "prepublishOnly": "yarn run build",
     "build:watch": "vite build --watch",
     "build": "vite build",
-    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly"
+    "build:demo": "vite build --config vite.config.demo.ts",
+    "preview:demo": "vite preview --config vite.config.demo.ts",
+    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "docusaurus": "docusaurus"
   },
   "engines": {
     "node": ">=20.18.1"
