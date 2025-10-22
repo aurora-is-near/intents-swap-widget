@@ -95,6 +95,7 @@ export const TabbedWidgetsDemo = () => {
 
           <WidgetConfigProvider
             config={{
+              appName: 'Demo App',
               walletAddress,
               walletSupportedChains: ['near'],
               intentsAccountType: 'near',

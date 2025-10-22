@@ -15,6 +15,7 @@ export const TonWidgetDemo = () => {
       <div className="demo-widget-content">
         <WidgetConfigProvider
           config={{
+            appName: 'Ton Demo App',
             allowedTargetChainsList: ['ton'],
             allowedTargetTokensList: ['nep245:v2_1.omni.hot.tg:1117_'],
             walletAddress,
