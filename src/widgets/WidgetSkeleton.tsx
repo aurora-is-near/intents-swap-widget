@@ -1,7 +1,9 @@
 import { cn } from '@/utils/cn';
 
 const SkeletonBox = ({ className }: { className: string }) => (
-  <div className={cn('animate-pulse rounded-lg bg-sw-gray-800', className)} />
+  <div
+    className={cn('animate-pulse rounded-sw-lg bg-sw-gray-800', className)}
+  />
 );
 
 export const WidgetSkeleton = {

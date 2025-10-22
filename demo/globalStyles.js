@@ -172,29 +172,6 @@ html, body {
   100% { transform: rotate(360deg); }
 }
 
-.sw .text-sw-label-l,
-.sw h2.text-sw-label-l,
-.sw header h2,
-.sw [role="dialog"] h2,
-.sw [role="dialog"] .text-sw-label-l,
-.sw .text-sw-gray-50,
-.sw label {
-  color: #f9fafb;
-}
-
-.sw .text-sw-gray-100,
-.sw .text-sw-gray-200 {
-  color: #d1d5db;
-}
-
-.sw .hover\\:text-sw-gray-50:hover {
-  color: #f9fafb;
-}
-
-.sw input::placeholder {
-  color: #9ca3af;
-}
-
 .wallet-status {
   display: flex;
   align-items: center;
@@ -242,10 +219,6 @@ html, body {
   border-color: #4b5563;
   color: #f9fafb;
 }
-
-.flex { display: flex; }
-.items-center { align-items: center; }
-.gap-3 { gap: 0.75rem; }
 
 /* Demo connect wallet button - matches disabled button style */
 .demo-connect-wallet-button {
