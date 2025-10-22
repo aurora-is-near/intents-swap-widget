@@ -4,7 +4,40 @@ Swap Widget frontend that uses [1Click API](https://docs.near-intents.org/near-i
 
 ![Swap Widget Screenshot](./docs/screenshot.png)
 
-## Package structure
+## Usage
+
+### Widgets
+
+This package exports a number of pre-built widget components, `WidgetSwap`,
+`WidgetDeposit` and `WidgetWithdraw`.
+
+See the `/demo` folder for some examples of how to use these widgets.
+
+#### Making a transfer
+
+To each of these components we should pass in a `makeTransfer` function. When
+the user clicks the relevant submit button this function is called with an
+`args` object that has the following shape:
+
+```ts
+type MakeTransferArgs = {
+  amount: string;
+  address: string;
+  tokenAddress?: string;
+  chain: Chains;
+  evmChainId: number | null;
+};
+```
+
+It is the responsibility of the consuming application to handle this transfer.
+
+## Custom implementation
+
+If your use cases cannot be met using the pre-built widgets described above you
+have the option to roll your own, using the components and hooks exposed by this
+package.
+
+For this purpose, the package structure is as follows:
 
 ### Components
 
@@ -82,7 +115,7 @@ variable you can find in `src/theme.css`):
 }
 ```
 
-## Change copy
+## Localisation
 
 To change copy within the widget you can pass a `localisation` object to the
 `WidgetConfigProvider`, for example:
