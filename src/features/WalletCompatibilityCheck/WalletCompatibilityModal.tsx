@@ -52,7 +52,7 @@ export const WalletCompatibilityModal = ({
   const isErrorState = state === 'error';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="sw fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop - matches Privy */}
       <div className="absolute inset-0 bg-sw-gray-975/70 backdrop-blur-[5px] transition-[backdrop-filter] duration-100" />
 
