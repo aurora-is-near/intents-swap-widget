@@ -247,29 +247,6 @@ html, body {
 .items-center { align-items: center; }
 .gap-3 { gap: 0.75rem; }
 
-/* Token icon styles - make all token symbols rounded */
-.sw img[alt*="ETH"],
-.sw img[alt*="BTC"],
-.sw img[alt*="TON"],
-.sw img[alt*="NEAR"],
-.sw img[alt*="USDC"],
-.sw img[alt*="USDT"],
-.sw img[src*="token"],
-.sw img[src*="coin"],
-.sw [role="img"],
-.sw .token-icon,
-.sw .coin-icon {
-  border-radius: 9999px;
-}
-
-/* Generic token container styling */
-.sw div[style*="width: 28px"],
-.sw div[style*="width: 24px"],
-.sw div[style*="width: 32px"] {
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
 /* Demo connect wallet button - matches disabled button style */
 .demo-connect-wallet-button {
   display: flex;
