@@ -1,30 +1,29 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
-import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
 import { NATIVE_NEAR_DUMB_ASSET_ID, TOKENS_DATA } from '@/constants/tokens';
 import { CHAINS_LIST, DEFAULT_CHAIN_ICON } from '@/constants/chains';
 import { isValidChain } from '@/utils/checkers/isValidChain';
 import type { Chains } from '@/types/chain';
-import type { Token } from '@/types/token';
+import type { SimpleToken, Token } from '@/types/token';
 
-const getTokenIcon = (token: TokenResponse): string => {
-  const tokenSymbol = token.symbol.toLowerCase();
+const getTokenIcon = (tokenSymbol: string): string => {
+  const symbol = tokenSymbol.toLowerCase();
 
-  return TOKENS_DATA[tokenSymbol]?.icon ?? '';
+  return TOKENS_DATA[symbol]?.icon ?? '';
 };
 
 const getChainIcon = (blockchain: Chains): string => {
   return CHAINS_LIST[blockchain].icon ?? DEFAULT_CHAIN_ICON;
 };
 
-const capitalizeChainName = (token: TokenResponse) =>
-  `${token.blockchain?.charAt(0).toUpperCase()}${token.blockchain?.slice(1)}`;
+const capitalizeChainName = (blockchain: string) =>
+  `${blockchain?.charAt(0).toUpperCase()}${blockchain?.slice(1)}`;
 
-const getTokenName = (token: TokenResponse) => {
-  return TOKENS_DATA[token.symbol]?.name ?? token.symbol;
+const getTokenName = (tokenSymbol: string): string => {
+  return TOKENS_DATA[tokenSymbol]?.name ?? tokenSymbol;
 };
 
 export const useTokens = (variant?: 'source' | 'target') => {
@@ -34,14 +33,22 @@ export const useTokens = (variant?: 'source' | 'target') => {
     allowedSourceTokensList,
     allowedTargetTokensList,
     filterTokens,
+    fetchSourceTokens,
+    fetchTargetTokens,
   } = useConfig();
 
-  const query = useQuery<TokenResponse[]>({
-    queryKey: ['tokens'],
+  const query = useQuery<SimpleToken[]>({
+    queryKey: ['tokens', variant],
     queryFn: async () => {
-      const tokens = await OneClickService.getTokens();
+      if (variant === 'source' && fetchSourceTokens) {
+        return fetchSourceTokens();
+      }
 
-      return tokens;
+      if (variant === 'target' && fetchTargetTokens) {
+        return fetchTargetTokens();
+      }
+
+      return OneClickService.getTokens();
     },
   });
 
@@ -51,7 +58,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
     }
 
     const tokens: Token[] = query.data
-      .map((token: TokenResponse) => {
+      .map((token: SimpleToken): Token | null => {
         const blockchain = token.blockchain.toLowerCase();
 
         if (!isValidChain(blockchain)) {
@@ -79,13 +86,16 @@ export const useTokens = (variant?: 'source' | 'target') => {
         }
 
         return {
-          ...token,
+          assetId: token.assetId,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          price: token.price,
           blockchain,
           isIntent: false,
-          icon: getTokenIcon(token),
-          name: getTokenName(token),
+          icon: getTokenIcon(token.symbol),
+          name: getTokenName(token.symbol),
           chainIcon: getChainIcon(blockchain),
-          chainName: capitalizeChainName(token),
+          chainName: capitalizeChainName(token.blockchain),
           contractAddress: token.contractAddress,
         };
       })

@@ -4579,6 +4579,16 @@
     toml "^3.0.0"
     urijs "^1.19.1"
 
+"@ston-fi/omniston-sdk@^0.7.5":
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/@ston-fi/omniston-sdk/-/omniston-sdk-0.7.5.tgz#419ac08ebe0a3ee34c780cac24a710357c5491fb"
+  integrity sha512-K0fAbxekfsMz8fyflG41LCQCAqb81fi1QLF7buv6sTHY6fwjos6rtz+Xqd3TLm9ZzUHM7zqOkaeJzZJOAm9HUA==
+  dependencies:
+    isomorphic-ws "^5.0.0"
+    json-rpc-2.0 "^1.7.0"
+    rxjs "^7.8.1"
+    ws "^8.17.1"
+
 "@storybook/csf@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@storybook/csf/-/csf-0.0.1.tgz#95901507dc02f0bc6f9ac8ee1983e2fc5bb98ce6"
@@ -10019,6 +10029,11 @@ isomorphic-ws@^4.0.1:
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
   integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
 
+isomorphic-ws@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-5.0.0.tgz#e5529148912ecb9b451b46ed44d53dae1ce04bbf"
+  integrity sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==
+
 isows@1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.7.tgz#1c06400b7eed216fbba3bcbd68f12490fc342915"
@@ -10584,6 +10599,11 @@ json-parse-even-better-errors@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-4.0.0.tgz#d3f67bd5925e81d3e31aa466acc821c8375cec43"
   integrity sha512-lR4MXjGNgkJc7tkQ97kb2nuEMnNCyU//XYVH0MKTGcXEiSudQ5MKGKen3C5QubYy0vmq+JGitUg92uuywGEwIA==
+
+json-rpc-2.0@^1.7.0:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/json-rpc-2.0/-/json-rpc-2.0-1.7.1.tgz#f4a5095d0a7e51701bffe153ce19087a8b13418e"
+  integrity sha512-JqZjhjAanbpkXIzFE7u8mE/iFblawwlXtONaCvRqI+pyABVz7B4M1EUNpyVW+dZjqgQ2L5HFmZCmOCgUKm00hg==
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
@@ -15100,7 +15120,7 @@ ws@8.17.1:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
   integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
-ws@8.18.3, ws@^8.18.0, ws@^8.5.0:
+ws@8.18.3, ws@^8.17.1, ws@^8.18.0, ws@^8.5.0:
   version "8.18.3"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
