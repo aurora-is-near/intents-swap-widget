@@ -5,7 +5,9 @@ import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
-import type { TransferResult } from '@/types/transfer';
+import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
+import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
+import { isEvmChain } from '../utils';
 
 type Result = {
   hash: string;
@@ -14,11 +16,7 @@ type Result = {
 };
 
 export type QuoteTransferArgs = {
-  makeTransfer: (args: {
-    amount: string;
-    address: string;
-    tokenAddress: string | undefined;
-  }) => Promise<Result | undefined | null>;
+  makeTransfer: (args: MakeTransferArgs) => Promise<Result | undefined | null>;
 };
 
 export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
@@ -56,6 +54,10 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
       const depositResult = await makeTransfer({
         amount: ctx.quote.amountIn,
         address: ctx.quote.depositAddress,
+        chain: ctx.sourceToken.blockchain,
+        evmChainId: isEvmChain(ctx.sourceToken.blockchain)
+          ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
+          : null,
         tokenAddress:
           ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
             ? NATIVE_NEAR_DUMB_ASSET_ID
