@@ -42,6 +42,20 @@ _Types_ submodule exports domain types such as `Token`, `Chain`, `Quote` etc.
 
 _Ext_ submodule contains various extensions that can be used with the widget but are completely optional. For example, it includes an Alchemy API integration that allows you to easily get token balances. Essentially, these are pre-written pieces of custom code.
 
+## Styling
+
+If you are importing one of our pre-built widget components (e.g. `WidgetSwap`)
+then you don't need to do anything to apply the widget styles.
+
+If you are rolling your own using our components you will need to add the `sw`
+class to some wrapping element, for example:
+
+```tsx
+<div className="sw">
+  {/* Your custom widget */}
+</div>
+```
+
 ## Theming
 
 This package uses Tailwind, but your app doesn't have to. It exposes CSS variables to control styling. Each variable and its corresponding Tailwind token uses the `sw-` prefix to avoid conflicts with your app's theme and variables.

@@ -133,9 +133,7 @@ export const WidgetConfigProvider = ({
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
-          <ErrorBoundary>
-            <div className="sw">{children}</div>
-          </ErrorBoundary>
+          <ErrorBoundary>{children}</ErrorBoundary>
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>
