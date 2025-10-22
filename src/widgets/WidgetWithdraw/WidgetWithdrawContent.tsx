@@ -26,17 +26,17 @@ import type {
   Token,
   TransferResult,
 } from '@/types';
-import { WidgetSkeleton } from './WidgetSkeleton';
-import type { TokenInputType } from './types';
-import { useTokenModal } from '../hooks/useTokenModal';
-import { useTypedTranslation } from '../localisation';
+import type { TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
-export type WidgetWithdrawProps = QuoteTransferArgs &
+export type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
@@ -51,12 +51,12 @@ const TokenInputHeader = ({ label }: { label: string }) => (
   </header>
 );
 
-export const WidgetWithdraw = ({
+export const WidgetWithdrawContent = ({
   providers,
   makeTransfer,
   onMsg,
   isLoading,
-}: WidgetWithdrawProps) => {
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
@@ -95,7 +95,7 @@ export const WidgetWithdraw = ({
   });
 
   if (!!isLoading || !ctx.sourceToken) {
-    return <WidgetSkeleton.Withdraw />;
+    return <WidgetWithdrawSkeleton />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -268,6 +268,6 @@ export const WidgetWithdraw = ({
 
     case 'pending':
     default:
-      return <WidgetSkeleton.Withdraw />;
+      return <WidgetWithdrawSkeleton />;
   }
 };

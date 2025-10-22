@@ -28,30 +28,30 @@ import type {
   TransferResult,
 } from '@/types';
 
-import { WidgetSkeleton } from './WidgetSkeleton';
-import type { TokenInputType } from './types';
-import { useTokenModal } from '../hooks/useTokenModal';
-import { useTypedTranslation } from '../localisation';
+import type { TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' };
 
-export type WidgetSwapProps = QuoteTransferArgs &
+export type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
     isOneWay?: boolean;
   };
 
-export const WidgetSwap = ({
+export const WidgetSwapContent = ({
   providers,
   makeTransfer,
   onMsg,
   isLoading,
   isOneWay,
-}: WidgetSwapProps) => {
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter } = useConfig();
@@ -87,7 +87,7 @@ export const WidgetSwap = ({
   });
 
   if (!!isLoading || !ctx.sourceToken) {
-    return <WidgetSkeleton.Swap />;
+    return <WidgetSwapSkeleton />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -248,6 +248,6 @@ export const WidgetSwap = ({
 
     case 'pending':
     default:
-      return <WidgetSkeleton.Swap />;
+      return <WidgetSwapSkeleton />;
   }
 };

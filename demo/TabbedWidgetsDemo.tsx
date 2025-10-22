@@ -38,7 +38,7 @@ export const TabbedWidgetsDemo = () => {
   return (
     <>
       {/* Elegant wallet connection */}
-      <div className="wallet-connect-container">
+      <div className="demo-nav-bar">
         {walletAddress ? (
           <div className="flex items-center gap-3">
             <div className="wallet-status">
@@ -70,65 +70,64 @@ export const TabbedWidgetsDemo = () => {
 
       {/* Main Content - centered widget */}
       <div className="demo-widget-container">
-        <div className="demo-widget-content">
-          {/* Widget Type Navigation - exact Calyx style */}
-          <nav className="demo-nav">
-            {WIDGET_TABS.map((widget) => (
-              <button
-                key={widget.id}
-                onClick={() => setSelectedWidget(widget.id)}
-                className={`demo-nav-button ${
-                  selectedWidget === widget.id ? 'active' : 'inactive'
-                }`}
-                type="button">
-                <img
-                  src={widget.iconPath}
-                  alt={`${widget.label} icon`}
-                  className="demo-nav-icon"
-                  width={24}
-                  height={24}
-                />
-                <span className="demo-nav-label">{widget.label}</span>
-              </button>
-            ))}
-          </nav>
+        {/* Widget Type Navigation - exact Calyx style */}
+        <nav className="demo-nav">
+          {WIDGET_TABS.map((widget) => (
+            <button
+              key={widget.id}
+              onClick={() => setSelectedWidget(widget.id)}
+              className={`demo-nav-button ${
+                selectedWidget === widget.id ? 'active' : 'inactive'
+              }`}
+              type="button">
+              <img
+                src={widget.iconPath}
+                alt={`${widget.label} icon`}
+                className="demo-nav-icon"
+                width={24}
+                height={24}
+              />
+              <span className="demo-nav-label">{widget.label}</span>
+            </button>
+          ))}
+        </nav>
 
-          <WidgetConfigProvider
-            config={{
-              walletAddress,
-              walletSupportedChains: ['near'],
-              intentsAccountType: 'near',
-              chainsFilter: {
-                target: { intents: 'all', external: 'all' },
-                source: {
-                  intents: walletAddress ? 'with-balance' : 'all',
-                  external: walletAddress ? 'wallet-supported' : 'all',
-                },
+        <WidgetConfigProvider
+          config={{
+            appName: 'Demo App',
+            walletAddress,
+            walletSupportedChains: ['near'],
+            intentsAccountType: 'near',
+            chainsFilter: {
+              target: { intents: 'all', external: 'all' },
+              source: {
+                intents: walletAddress ? 'with-balance' : 'all',
+                external: walletAddress ? 'wallet-supported' : 'all',
               },
-            }}>
-            {!!walletAddress && (
-              <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
-            )}
-            <div style={{ position: 'relative' }}>
-              <WidgetComponent
-                isLoading={isLoading}
-                providers={{ near: undefined }}
-                makeTransfer={() =>
-                  Promise.resolve({
-                    hash: '0x1234567890abcdef1234567890abcdef12345678',
-                    transactionLink:
-                      'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
-                  })
-                }
-                onMsg={noop}
-              />
-              <DemoConnectButton
-                walletAddress={walletAddress}
-                onConnect={handleConnectWallet}
-              />
-            </div>
-          </WidgetConfigProvider>
-        </div>
+            },
+          }}>
+          {!!walletAddress && (
+            <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
+          )}
+          <div style={{ position: 'relative' }}>
+            <WidgetComponent
+              isLoading={isLoading}
+              providers={{ near: undefined }}
+              makeTransfer={() =>
+                Promise.resolve({
+                  hash: '0x1234567890abcdef1234567890abcdef12345678',
+                  transactionLink:
+                    'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+                })
+              }
+              onMsg={noop}
+            />
+            <DemoConnectButton
+              walletAddress={walletAddress}
+              onConnect={handleConnectWallet}
+            />
+          </div>
+        </WidgetConfigProvider>
       </div>
     </>
   );

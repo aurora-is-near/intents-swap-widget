@@ -14,9 +14,10 @@ function TonWidgetContent() {
   } = useMultiChainWallet();
 
   return (
-    <div className="demo-widget-content">
+    <div className="demo-widget-container">
       <WidgetConfigProvider
         config={{
+          appName: 'Ton Demo App',
           allowedTargetChainsList: ['ton'],
           allowedTargetTokensList: ['nep245:v2_1.omni.hot.tg:1117_'],
           walletAddress,

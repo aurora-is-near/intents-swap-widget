@@ -4,7 +4,32 @@ Swap Widget frontend that uses [1Click API](https://docs.near-intents.org/near-i
 
 ![Swap Widget Screenshot](./docs/screenshot.png)
 
-## Package structure
+## Usage
+
+### Widgets
+
+This package exports a number of pre-built widget components, `WidgetSwap`,
+`WidgetDeposit` and `WidgetWithdraw`.
+
+See the `/demo` folder for some examples of how to use these widgets.
+
+#### Making a transfer
+
+To each of these components we should pass in a `makeTransfer` function. When
+the user clicks the relevant submit button this function is called with an
+`args` object that contains details about the transfer, such as the `amount`,
+`address` and, if relevant, the `evmChainId`.
+
+It is currently the responsibility of the consuming application to handle this
+transfer.
+
+## Custom implementation
+
+If your use cases cannot be met using the pre-built widgets described above you
+have the option to roll your own, using the components and hooks exposed by this
+package.
+
+For this purpose, the package structure is as follows:
 
 ### Components
 
@@ -42,6 +67,20 @@ _Types_ submodule exports domain types such as `Token`, `Chain`, `Quote` etc.
 
 _Ext_ submodule contains various extensions that can be used with the widget but are completely optional. For example, it includes an Alchemy API integration that allows you to easily get token balances. Essentially, these are pre-written pieces of custom code.
 
+## Styling
+
+If you are importing one of our pre-built widget components (e.g. `WidgetSwap`)
+then you don't need to do anything to apply the widget styles.
+
+If you are rolling your own using our components you will need to add the `sw`
+class to some wrapping element, for example:
+
+```tsx
+<div className="sw">
+  {/* Your custom widget */}
+</div>
+```
+
 ## Theming
 
 This package uses Tailwind, but your app doesn't have to. It exposes CSS variables to control styling. Each variable and its corresponding Tailwind token uses the `sw-` prefix to avoid conflicts with your app's theme and variables.
@@ -68,7 +107,7 @@ variable you can find in `src/theme.css`):
 }
 ```
 
-## Change copy
+## Localisation
 
 To change copy within the widget you can pass a `localisation` object to the
 `WidgetConfigProvider`, for example:

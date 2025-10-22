@@ -1,5 +1,16 @@
+import { Chains } from './chain';
+
 export type TransferResult = {
   hash: string;
   transactionLink: string;
-  intent: string | undefined;
+  intent?: string;
+};
+
+export type MakeTransferArgs = {
+  amount: string;
+  decimals: number;
+  address: string;
+  tokenAddress?: string;
+  chain: Chains;
+  evmChainId: number | null;
 };

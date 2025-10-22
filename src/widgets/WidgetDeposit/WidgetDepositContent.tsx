@@ -28,10 +28,10 @@ import type {
   TransferResult,
 } from '@/types';
 
-import { WidgetSkeleton } from './WidgetSkeleton';
-import type { TokenInputType } from './types';
-import { useTokenModal } from '../hooks/useTokenModal';
-import { useTypedTranslation } from '../localisation';
+import type { TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 
 type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
@@ -39,18 +39,18 @@ type Msg =
   | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
-export type WidgetDepositProps = QuoteTransferArgs &
+export type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
   };
 
-export const WidgetDeposit = ({
+export const WidgetDepositContent = ({
   providers,
   onMsg,
   makeTransfer,
   isLoading,
-}: WidgetDepositProps) => {
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { chainsFilter, walletAddress } = useConfig();
@@ -91,7 +91,7 @@ export const WidgetDeposit = ({
   }, [ctx.isDepositFromExternalWallet]);
 
   if (!!isLoading || !ctx.sourceToken) {
-    return <WidgetSkeleton.Deposit />;
+    return <WidgetDepositSkeleton />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -245,6 +245,6 @@ export const WidgetDeposit = ({
 
     case 'pending':
     default:
-      return <WidgetSkeleton.Deposit />;
+      return <WidgetDepositSkeleton />;
   }
 };
