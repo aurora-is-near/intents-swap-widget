@@ -12,12 +12,11 @@ html, body {
 }
 
 #root {
-  height: 100%;
+  min-height: 100%;
   background: #24262d;
 }
 
 .demo-widget-container {
-  width: 100%;
   height: 100%;
   max-width: 456px;
   min-width: 270px;
@@ -224,5 +223,21 @@ html, body {
 .wallet-connect-button:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
+}
+
+/* Fix widget text colors to be white */
+.sw .text-sw-gray-50,
+.sw .text-sw-label-m,
+.sw .text-sw-label-l,
+.sw h2 {
+  color: var(--sw-gray-50, #ebedf5) !important;
+}
+
+.sw .text-sw-gray-100 {
+  color: var(--sw-gray-100, #b2b5c1) !important;
+}
+
+.sw .text-sw-gray-200 {
+  color: var(--sw-gray-200, #7c7f8a) !important;
 }
 `;

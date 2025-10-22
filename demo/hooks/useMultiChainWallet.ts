@@ -1,9 +1,20 @@
 import { useCallback, useMemo } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
-import { useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
+import {
+  useIsConnectionRestored,
+  useTonAddress,
+  useTonConnectUI,
+  useTonWallet,
+} from '@tonconnect/ui-react';
 import { useAppKit } from '@reown/appkit/react';
 
 export type ChainType = 'evm' | 'ton' | 'solana' | 'unknown';
+
+export interface MultiChainWallets {
+  evm?: string;
+  ton?: string;
+  solana?: string;
+}
 
 export function useMultiChainWallet() {
   const {
@@ -15,21 +26,45 @@ export function useMultiChainWallet() {
   const { disconnect: disconnectEvm } = useDisconnect();
 
   const tonAddress = useTonAddress();
+  const tonWallet = useTonWallet();
   const [tonConnectUI] = useTonConnectUI();
+  const isTonConnectionRestored = useIsConnectionRestored();
 
   const { open } = useAppKit();
 
-  const { address, chainType } = useMemo(() => {
-    if (tonAddress) {
-      return { address: tonAddress, chainType: 'ton' as ChainType };
+  // Return ALL connected wallets instead of just one
+  const wallets = useMemo<MultiChainWallets>(() => {
+    const result: MultiChainWallets = {};
+
+    // Only include TON address after connection is restored
+    if (isTonConnectionRestored && tonAddress) {
+      result.ton = tonAddress;
     }
 
     if (evmAddress) {
-      return { address: evmAddress, chainType: 'evm' as ChainType };
+      result.evm = evmAddress;
+    }
+
+    return result;
+  }, [tonAddress, tonWallet, evmAddress, isTonConnectionRestored]);
+
+  // Determine primary address and chain type (for backward compatibility)
+  const { address, chainType } = useMemo(() => {
+    // Prefer TON if connected
+    if (wallets.ton) {
+      return { address: wallets.ton, chainType: 'ton' as ChainType };
+    }
+
+    if (wallets.evm) {
+      return { address: wallets.evm, chainType: 'evm' as ChainType };
+    }
+
+    if (wallets.solana) {
+      return { address: wallets.solana, chainType: 'solana' as ChainType };
     }
 
     return { address: undefined, chainType: 'unknown' as ChainType };
-  }, [tonAddress, evmAddress]);
+  }, [wallets]);
 
   const connect = useCallback(async () => {
     try {
@@ -55,13 +90,18 @@ export function useMultiChainWallet() {
     }
   }, [tonAddress, evmAddress, tonConnectUI, disconnectEvm]);
 
+  const hasAnyWallet = !!(wallets.ton ?? wallets.evm ?? wallets.solana);
+
   return {
+    // All connected wallets
+    wallets,
+    // Primary wallet (for backward compatibility)
     address,
     chainType,
     chainId: chain?.id,
     chainName: chain?.name,
-    isConnecting: isEvmConnecting,
-    isConnected: !!address,
+    isConnecting: isEvmConnecting || !isTonConnectionRestored,
+    isConnected: hasAnyWallet,
     connect,
     disconnect,
   };
