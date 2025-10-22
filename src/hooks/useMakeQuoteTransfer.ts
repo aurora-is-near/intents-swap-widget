@@ -53,6 +53,7 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
     try {
       const depositResult = await makeTransfer({
         amount: ctx.quote.amountIn,
+        decimals: ctx.sourceToken.decimals,
         address: ctx.quote.depositAddress,
         chain: ctx.sourceToken.blockchain,
         evmChainId: isEvmChain(ctx.sourceToken.blockchain)

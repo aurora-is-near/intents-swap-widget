@@ -17,19 +17,11 @@ See the `/demo` folder for some examples of how to use these widgets.
 
 To each of these components we should pass in a `makeTransfer` function. When
 the user clicks the relevant submit button this function is called with an
-`args` object that has the following shape:
+`args` object that contains details about the transfer, such as the `amount`,
+`address` and, if relevant, the `evmChainId`.
 
-```ts
-type MakeTransferArgs = {
-  amount: string;
-  address: string;
-  tokenAddress?: string;
-  chain: Chains;
-  evmChainId: number | null;
-};
-```
-
-It is the responsibility of the consuming application to handle this transfer.
+It is currently the responsibility of the consuming application to handle this
+transfer.
 
 ## Custom implementation
 

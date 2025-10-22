@@ -8,6 +8,7 @@ export type TransferResult = {
 
 export type MakeTransferArgs = {
   amount: string;
+  decimals: number;
   address: string;
   tokenAddress?: string;
   chain: Chains;
