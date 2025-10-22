@@ -4,10 +4,6 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100vh;
-  color: var(--foreground);
-  background: #24262d;
-  flex-direction: column;
-  display: flex;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -16,55 +12,17 @@ html, body {
 }
 
 #root {
-  width: 100%;
-  height: 100vh;
-  min-height: 100vh;
+  height: 100%;
   background: #24262d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-.demo-page-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #24262d;
-  display: flex;
-  justify-content: center;
 }
 
 .demo-widget-container {
   width: 100%;
+  height: 100%;
   max-width: 456px;
   min-width: 270px;
   padding: 0 16px;
-}
-
-.demo-widget-content {
-  margin-top: 25vh;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .demo-widget-content {
-    margin-top: 15vh;
-  }
-}
-
-@media (max-width: 480px) {
-  .demo-widget-content {
-    margin-top: 10vh;
-  }
+  margin: 0 auto;
 }
 
 @media (max-width: 420px) {
@@ -79,17 +37,17 @@ html, body {
   }
 }
 
-.wallet-connect-container {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 50;
+.demo-nav-bar {
+  padding: 24px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .demo-nav {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
 .demo-nav-button {
