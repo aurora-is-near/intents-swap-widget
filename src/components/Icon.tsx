@@ -30,13 +30,16 @@ const Wrapper = ({
   isLoaded: boolean;
 }>) => (
   <div
-    style={{ width: `${size}px`, height: `${size}px` }}
+    style={{
+      width: `${size}px`,
+      height: `${size}px`,
+      borderRadius: `${radius}px`,
+    }}
     className={cn('flex items-center justify-center overflow-hidden', {
       'bg-sw-gray-500':
         variant === 'dark' && ((isLoaded && !noLoadedBg) || !isLoaded),
       'bg-sw-gray-200':
         variant === 'light' && ((isLoaded && !noLoadedBg) || !isLoaded),
-      [`rounded-[${radius}px]`]: radius,
     })}>
     {children}
   </div>
