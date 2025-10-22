@@ -11,33 +11,35 @@ export const TonWidgetDemo = () => {
   } = useDemoWallet();
 
   return (
-    <WidgetConfigProvider
-      config={{
-        appName: 'Ton Demo App',
-        allowedTargetChainsList: ['ton'],
-        allowedTargetTokensList: ['nep245:v2_1.omni.hot.tg:1117_'],
-        walletAddress,
-        walletSupportedChains: ['near'],
-        intentsAccountType: 'near',
-        chainsFilter: {
-          target: { intents: 'none', external: 'all' },
-          source: {
-            intents: 'none',
-            external: walletAddress ? 'wallet-supported' : 'all',
+    <div className="demo-widget-container">
+      <WidgetConfigProvider
+        config={{
+          appName: 'Ton Demo App',
+          allowedTargetChainsList: ['ton'],
+          allowedTargetTokensList: ['nep245:v2_1.omni.hot.tg:1117_'],
+          walletAddress,
+          walletSupportedChains: ['near'],
+          intentsAccountType: 'near',
+          chainsFilter: {
+            target: { intents: 'none', external: 'all' },
+            source: {
+              intents: 'none',
+              external: walletAddress ? 'wallet-supported' : 'all',
+            },
           },
-        },
-      }}>
-      <WidgetSwap
-        isOneWay
-        isLoading={isLoading}
-        providers={{ near: undefined }}
-        makeTransfer={() => Promise.resolve(undefined)}
-        onMsg={() => {}}
-      />
-      <DemoConnectButton
-        walletAddress={walletAddress}
-        onConnect={handleConnectWallet}
-      />
-    </WidgetConfigProvider>
+        }}>
+        <WidgetSwap
+          isOneWay
+          isLoading={isLoading}
+          providers={{ near: undefined }}
+          makeTransfer={() => Promise.resolve(undefined)}
+          onMsg={() => {}}
+        />
+        <DemoConnectButton
+          walletAddress={walletAddress}
+          onConnect={handleConnectWallet}
+        />
+      </WidgetConfigProvider>
+    </div>
   );
 };
