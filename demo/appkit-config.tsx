@@ -52,39 +52,29 @@ const solanaAdapter = new SolanaAdapter({
   wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
 });
 
-let modalInstance: ReturnType<typeof createAppKit> | null = null;
-
-export function initializeAppKit() {
-  if (modalInstance) {
-    return modalInstance;
-  }
-
-  modalInstance = createAppKit({
-    adapters: [wagmiAdapter, solanaAdapter],
-    // Networks must be inlined here (not spread from evmNetworks array)
-    // because TypeScript requires a tuple type for AppKit networks
-    networks: [
-      mainnet,
-      arbitrum,
-      polygon,
-      bsc,
-      optimism,
-      avalanche,
-      base,
-      solana,
-    ],
-    projectId,
-    metadata,
-    features: {
-      analytics: false,
-      email: false,
-      socials: false,
-    },
-    themeMode: 'dark',
-    themeVariables: {
-      '--w3m-accent': '#6366f1',
-    },
-  });
-
-  return modalInstance;
-}
+createAppKit({
+  adapters: [wagmiAdapter, solanaAdapter],
+  // Networks must be inlined here (not spread from evmNetworks array)
+  // because TypeScript requires a tuple type for AppKit networks
+  networks: [
+    mainnet,
+    arbitrum,
+    polygon,
+    bsc,
+    optimism,
+    avalanche,
+    base,
+    solana,
+  ],
+  projectId,
+  metadata,
+  features: {
+    analytics: false,
+    email: false,
+    socials: false,
+  },
+  themeMode: 'dark',
+  themeVariables: {
+    '--w3m-accent': '#6366f1',
+  },
+});
