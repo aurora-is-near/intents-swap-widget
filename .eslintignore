@@ -5,5 +5,4 @@ node_modules/**/*
 coverage/
 typings/
 dist/
-dist-demo/
 scripts/
