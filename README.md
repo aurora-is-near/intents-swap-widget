@@ -122,11 +122,18 @@ The available keys can be found in the `types/localisation.ts` file.
 
 ## Development
 
-If you want to make changes to the package and submit PRs, here's how you can link the package to your application locally. This allows you to make changes to the package and see the results in your app:
+If you want to make changes to the package and submit PRs, the repository
+includes a demo application, that you can run with the following command:
 
-```bash
+```sh
+yarn dev
+```
 
-# in a package repo
+You can also link the package to your application locally, allowing you
+to make changes to the package and see the results in your app:
+
+```sh
+# in this repo
 yarn link
 yarn build:watch
 
