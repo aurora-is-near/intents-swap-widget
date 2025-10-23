@@ -72,7 +72,13 @@ function TonWidgetContent() {
       return 'sol';
     }
 
-    return 'near'; // Default for 'ton', 'unknown', or no wallet
+    if (chainType === 'ton') {
+      // TON wallets use NEAR intents infrastructure
+      return 'near';
+    }
+
+    // Default for 'unknown' or no wallet
+    return 'near';
   })();
 
   // Use primary address as the main wallet address

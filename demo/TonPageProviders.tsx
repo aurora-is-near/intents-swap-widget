@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { WagmiProvider } from 'wagmi';
 
@@ -7,8 +7,6 @@ import { initializeAppKit, wagmiAdapter } from './appkit-config';
 interface TonPageProvidersProps {
   children: ReactNode;
 }
-
-initializeAppKit();
 
 // Dynamically construct manifest URL based on current origin
 const getManifestUrl = () => {
@@ -20,6 +18,14 @@ const getManifestUrl = () => {
 };
 
 export function TonPageProviders({ children }: TonPageProvidersProps) {
+  // Initialize AppKit synchronously on client-side
+  // useState with initializer function ensures it only runs once
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      initializeAppKit();
+    }
+  });
+
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       {/*

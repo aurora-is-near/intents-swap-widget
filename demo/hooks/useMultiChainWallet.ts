@@ -92,6 +92,9 @@ export function useMultiChainWallet() {
 
   const hasAnyWallet = !!(wallets.ton ?? wallets.evm ?? wallets.solana);
 
+  // Track TON connecting state: wallet is being connected but address not yet available
+  const isTonConnecting = isTonConnectionRestored && !!tonWallet && !tonAddress;
+
   return {
     // All connected wallets
     wallets,
@@ -100,7 +103,8 @@ export function useMultiChainWallet() {
     chainType,
     chainId: chain?.id,
     chainName: chain?.name,
-    isConnecting: isEvmConnecting || !isTonConnectionRestored,
+    isConnecting:
+      isEvmConnecting || !isTonConnectionRestored || isTonConnecting,
     isConnected: hasAnyWallet,
     connect,
     disconnect,

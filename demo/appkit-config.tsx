@@ -16,10 +16,14 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
-const projectId =
-  process.env.VITE_REOWN_PROJECT_ID ?? '6f521f980a016d4308d6cba8b081bc20';
+if (!import.meta.env.VITE_REOWN_PROJECT_ID) {
+  throw new Error(
+    'VITE_REOWN_PROJECT_ID is required. Get your project ID from https://cloud.reown.com',
+  );
+}
 
-const appUrl = process.env.VITE_APP_URL ?? 'http://localhost:5173';
+const projectId: string = import.meta.env.VITE_REOWN_PROJECT_ID;
+const appUrl = import.meta.env.VITE_APP_URL ?? 'http://localhost:5173';
 
 const metadata = {
   name: 'Intents Swap Widget',
@@ -57,7 +61,8 @@ export function initializeAppKit() {
 
   modalInstance = createAppKit({
     adapters: [wagmiAdapter, solanaAdapter],
-    // Note: Networks must be inlined (not spread from array) due to TypeScript tuple type requirements
+    // Networks must be inlined here (not spread from evmNetworks array)
+    // because TypeScript requires a tuple type for AppKit networks
     networks: [
       mainnet,
       arbitrum,
