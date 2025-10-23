@@ -20,7 +20,7 @@ html, body {
   height: 100%;
   max-width: 456px;
   min-width: 270px;
-  padding: 10% 16px 0;
+  padding: 0 16px 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
