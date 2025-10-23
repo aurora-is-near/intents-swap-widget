@@ -38,4 +38,7 @@ export type WidgetConfig = {
   fetchQuote?: (data: QuoteRequest) => Promise<Quote>;
   fetchSourceTokens?: () => Promise<SimpleToken[]>;
   fetchTargetTokens?: () => Promise<SimpleToken[]>;
+
+  // Balance loading
+  alchemyApiKey?: string;
 };
