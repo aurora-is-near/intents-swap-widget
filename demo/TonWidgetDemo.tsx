@@ -1,6 +1,7 @@
 import {
   OneClickService,
   OpenAPI,
+  QuoteRequest,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import {
   Blockchain,
@@ -9,12 +10,13 @@ import {
   SettlementMethod,
 } from '@ston-fi/omniston-sdk';
 import { useDemoWallet } from './hooks/useDemoWallet';
-import { WidgetConfig, WidgetSwap } from '../src';
+import { SimpleToken, WidgetConfig, WidgetSwap } from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { DemoConnectButton } from './components/DemoConnectButton';
+import { formatBigToHuman } from '../src/utils';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
-const TON_ASSET_ADDRESS = 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs';
+const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 const TARGET_ASSET_ADDRESSES = [
   'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
@@ -27,73 +29,16 @@ const omniston = new Omniston({
 });
 
 /**
- * Fetch a quote base one two swaps.
- *
- * The first swap is done via OneClick, from the selected source asset to TON.
- * The second swap is done via Omniston, from TON to the selected target asset.
+ * Fetch the details of the given assets from the STON.fi API.
  */
-const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
-  const { quote: oneClickQuote } = await OneClickService.getQuote({
-    ...data,
-    destinationAsset: TON_ASSET_ID,
-  });
-
-  // TODO: Make this second quote and somehow return the result in a way that
-  // its display makes sense.
-  await new Promise<OmnistonQuote>((resolve) => {
-    omniston
-      .requestForQuote({
-        settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
-        askAssetAddress: {
-          blockchain: Blockchain.TON,
-          address: data.destinationAsset,
-        },
-        bidAssetAddress: {
-          blockchain: Blockchain.TON,
-          address: TON_ASSET_ADDRESS,
-        },
-        amount: {
-          bidUnits: oneClickQuote.amountOut,
-        },
-      })
-      .subscribe((quoteResponseEvent) => {
-        if (
-          quoteResponseEvent.type === 'quoteUpdated' &&
-          'quote' in quoteResponseEvent
-        ) {
-          resolve(quoteResponseEvent.quote);
-
-          return;
-        }
-      });
-  });
-
-  return {
-    timeEstimate: oneClickQuote.timeEstimate,
-    amountIn: oneClickQuote.amountIn,
-    amountInFormatted: oneClickQuote.amountInFormatted,
-    amountInUsd: oneClickQuote.amountInUsd,
-    minAmountIn: oneClickQuote.minAmountIn,
-
-    // TODO: Replace with the amount out from the Omnistone quote
-    amountOut: oneClickQuote.amountOut,
-    amountOutFormatted: oneClickQuote.amountOutFormatted,
-    amountOutUsd: oneClickQuote.amountOutUsd,
-    minAmountOut: oneClickQuote.minAmountOut,
-  };
-};
-
-/**
- * Fetch the available target tokens.
- */
-const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
+const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
   const res = await fetch('https://api.ston.fi/v1/assets/query', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      unconditional_assets: TARGET_ASSET_ADDRESSES,
+      unconditional_assets: assets,
     }),
   });
 
@@ -112,7 +57,7 @@ const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
   };
 
   return data.asset_list
-    .filter((asset) => TARGET_ASSET_ADDRESSES.includes(asset.contract_address))
+    .filter((asset) => assets.includes(asset.contract_address))
     .map((asset) => ({
       symbol: asset.meta.symbol,
       price: parseFloat(asset.dex_price_usd),
@@ -120,6 +65,86 @@ const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
       assetId: asset.contract_address,
       decimals: asset.meta.decimals,
     }));
+};
+
+/**
+ * Fetch the available target tokens.
+ */
+const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () =>
+  fetchStonFiAssets(TARGET_ASSET_ADDRESSES);
+
+/**
+ * Fetch a two-step quote.
+ *
+ * The first quote is done via OneClick, from the selected source asset to TON.
+ * The second quote is done via Omniston, from TON to the selected target asset.
+ */
+const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
+  const [{ quote: oneClickQuote }, tokens] = await Promise.all([
+    OneClickService.getQuote({
+      ...data,
+      destinationAsset: TON_ASSET_ID,
+      recipientType: QuoteRequest.recipientType.INTENTS,
+    }),
+    fetchStonFiAssets([data.destinationAsset]),
+  ]);
+
+  // Request the second quote, to see how much of the target asset we can get
+  // for the TON we received from OneClick.
+  const omnistonQuote = await new Promise<OmnistonQuote>((resolve) => {
+    omniston
+      .requestForQuote({
+        settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
+        askAssetAddress: {
+          blockchain: Blockchain.TON,
+          address: data.destinationAsset, // The final target asset
+        },
+        bidAssetAddress: {
+          blockchain: Blockchain.TON,
+          address: TON_ASSET_ADDRESS,
+        },
+        amount: {
+          // The amount of TON we got from OneClick
+          bidUnits: oneClickQuote.amountOut,
+        },
+      })
+      .subscribe((quoteResponseEvent) => {
+        if (
+          quoteResponseEvent.type === 'quoteUpdated' &&
+          'quote' in quoteResponseEvent
+        ) {
+          resolve(quoteResponseEvent.quote);
+
+          return;
+        }
+      });
+  });
+
+  const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
+
+  if (!targetToken) {
+    throw new Error('Missing target token info');
+  }
+
+  const { askUnits, params } = omnistonQuote;
+  const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
+  const amountOutHuman = parseFloat(
+    formatBigToHuman(askUnits, targetToken.decimals),
+  );
+
+  const amountOutUsd = amountOutHuman * targetToken.price;
+
+  return {
+    timeEstimate: oneClickQuote.timeEstimate,
+    amountIn: oneClickQuote.amountIn,
+    amountInFormatted: oneClickQuote.amountInFormatted,
+    amountInUsd: oneClickQuote.amountInUsd,
+    minAmountIn: oneClickQuote.minAmountIn,
+    amountOut: askUnits,
+    amountOutFormatted: String(amountOutHuman),
+    amountOutUsd: String(amountOutUsd),
+    minAmountOut: minAskAmount,
+  };
 };
 
 export const TonWidgetDemo = () => {
