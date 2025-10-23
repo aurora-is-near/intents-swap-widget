@@ -38,7 +38,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
   } = useConfig();
 
   const query = useQuery<SimpleToken[]>({
-    queryKey: variant ? ['tokens', variant] : ['tokens'],
+    queryKey: ['tokens', variant].filter(Boolean),
     queryFn: async (): Promise<SimpleToken[]> => {
       if (variant === 'source' && fetchSourceTokens) {
         return fetchSourceTokens();
