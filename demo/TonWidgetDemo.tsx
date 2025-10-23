@@ -11,6 +11,7 @@ import {
   QuoteRequest,
 } from '@defuse-protocol/one-click-sdk-typescript';
 
+import { useMemo } from 'react';
 import { SimpleToken, WidgetConfig, WidgetSwap } from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { BalanceRpcLoader } from '../src/features/BalanceRpcLoader';
@@ -155,12 +156,12 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
 export const TonWidgetContent = () => {
   const {
     wallets,
-    address: primaryAddress,
+    address: walletAddress,
     isConnecting: isLoading,
     chainType,
   } = useMultiChainWallet();
 
-  const walletSupportedChains = (() => {
+  const walletSupportedChains = useMemo(() => {
     const chains: Array<
       | 'ton'
       | 'eth'
@@ -203,9 +204,9 @@ export const TonWidgetContent = () => {
       | 'sol'
       | 'near'
     )[];
-  })();
+  }, [wallets]);
 
-  const intentsAccountType = (() => {
+  const intentsAccountType = useMemo(() => {
     if (chainType === 'evm') {
       return 'evm';
     }
@@ -220,9 +221,7 @@ export const TonWidgetContent = () => {
     }
 
     return 'near';
-  })();
-
-  const walletAddress = primaryAddress;
+  }, [chainType]);
 
   return (
     <div className="demo-widget-container">
