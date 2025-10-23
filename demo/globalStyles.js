@@ -233,19 +233,30 @@ html, body {
   box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
 }
 
-/* Fix widget text colors to be white */
-.sw .text-sw-gray-50,
-.sw .text-sw-label-m,
-.sw .text-sw-label-l,
-.sw h2 {
-  color: var(--sw-gray-50, #ebedf5) !important;
+/* Wallet status container */
+.wallet-status-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
 
-.sw .text-sw-gray-100 {
-  color: var(--sw-gray-100, #b2b5c1) !important;
+.wallet-connected-badge {
+  padding: 8px 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6366f1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.sw .text-sw-gray-200 {
-  color: var(--sw-gray-200, #7c7f8a) !important;
+.wallet-buttons-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 `;

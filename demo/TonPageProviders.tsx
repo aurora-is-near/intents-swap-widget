@@ -8,7 +8,6 @@ interface TonPageProvidersProps {
   children: ReactNode;
 }
 
-// Dynamically construct manifest URL based on current origin
 const getManifestUrl = () => {
   if (typeof window !== 'undefined') {
     return `${window.location.origin}/tonconnect-manifest.json`;

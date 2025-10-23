@@ -16,7 +16,6 @@ function TonWidgetContent() {
     chainType,
   } = useMultiChainWallet();
 
-  // Combine supported chains from ALL connected wallets
   const walletSupportedChains = (() => {
     const chains: Array<
       | 'ton'
@@ -62,7 +61,6 @@ function TonWidgetContent() {
     )[];
   })();
 
-  // Use primary wallet address for intents account type
   const intentsAccountType = (() => {
     if (chainType === 'evm') {
       return 'evm';
@@ -77,11 +75,9 @@ function TonWidgetContent() {
       return 'near';
     }
 
-    // Default for 'unknown' or no wallet
     return 'near';
   })();
 
-  // Use primary address as the main wallet address
   const walletAddress = primaryAddress;
 
   return (
@@ -112,26 +108,9 @@ function TonWidgetContent() {
           makeTransfer={(_args) => Promise.resolve(undefined)}
           onMsg={() => {}}
         />
-        <div
-          style={{
-            marginTop: 20,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-            alignItems: 'center',
-          }}>
+        <div className="wallet-status-container">
           {walletAddress ? (
-            <div
-              style={{
-                padding: '8px 16px',
-                background: 'rgba(99, 102, 241, 0.1)',
-                borderRadius: 8,
-                fontSize: 14,
-                color: '#6366f1',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-              }}>
+            <div className="wallet-connected-badge">
               {!!wallets.ton && <div>✓ TON: {wallets.ton.slice(0, 8)}...</div>}
               {!!wallets.evm && <div>✓ EVM: {wallets.evm.slice(0, 8)}...</div>}
               {!!wallets.solana && (
@@ -139,13 +118,7 @@ function TonWidgetContent() {
               )}
             </div>
           ) : null}
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-            }}>
+          <div className="wallet-buttons-container">
             <TonConnectButton />
             <WalletConnectButton />
           </div>

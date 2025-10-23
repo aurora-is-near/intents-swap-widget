@@ -25,58 +25,7 @@ function isExt(id: string) {
 
 export default defineConfig(({ command }) => {
   const isServe = command === 'serve';
-  const isDemoBuild = process.env.BUILD_TARGET === 'demo';
 
-  // Demo build mode - build demo pages as production SPA
-  if (isDemoBuild) {
-    return {
-      plugins: [
-        svgr({
-          svgrOptions: {
-            ref: true,
-            icon: true,
-            prettier: false,
-            typescript: true,
-          },
-          include: "**/*.svg",
-        }),
-        tailwindcss(),
-        react(),
-        nodePolyfills({
-          include: ['crypto', 'buffer', 'process', 'util'],
-          globals: {
-            Buffer: true,
-            global: true,
-            process: true,
-          },
-        }),
-      ],
-      css: {
-        postcss: "./postcss.config.cjs",
-        modules: false,
-      },
-      resolve: {
-        alias: {
-          "@": resolve(__dirname, "src"),
-        },
-      },
-      define: {
-        global: 'globalThis',
-      },
-      build: {
-        outDir: 'dist-demo',
-        emptyOutDir: true,
-        sourcemap: false,
-        rollupOptions: {
-          input: {
-            main: resolve(__dirname, 'index.html'),
-          },
-        },
-      },
-    };
-  }
-
-  // Standard dev/library build
   return {
     plugins: [
       svgr({
@@ -126,13 +75,6 @@ export default defineConfig(({ command }) => {
     server: isServe ? {
       fs: {
         allow: ['..']
-      },
-      host: true, // Allow access from network
-      cors: true, // Enable CORS for TON Connect
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
       },
     } : undefined,
     build: isServe ? undefined : {

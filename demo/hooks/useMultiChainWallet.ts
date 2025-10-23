@@ -32,7 +32,6 @@ export function useMultiChainWallet() {
 
   const { open } = useAppKit();
 
-  // Return ALL connected wallets instead of just one
   const wallets = useMemo<MultiChainWallets>(() => {
     const result: MultiChainWallets = {};
 
@@ -48,9 +47,7 @@ export function useMultiChainWallet() {
     return result;
   }, [tonAddress, tonWallet, evmAddress, isTonConnectionRestored]);
 
-  // Determine primary address and chain type (for backward compatibility)
   const { address, chainType } = useMemo(() => {
-    // Prefer TON if connected
     if (wallets.ton) {
       return { address: wallets.ton, chainType: 'ton' as ChainType };
     }
@@ -96,9 +93,7 @@ export function useMultiChainWallet() {
   const isTonConnecting = isTonConnectionRestored && !!tonWallet && !tonAddress;
 
   return {
-    // All connected wallets
     wallets,
-    // Primary wallet (for backward compatibility)
     address,
     chainType,
     chainId: chain?.id,
