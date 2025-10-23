@@ -155,6 +155,7 @@ html, body {
   flex-direction: column;
   gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
 .wallet-connected-badge {
@@ -170,8 +171,9 @@ html, body {
 
 .wallet-buttons-container {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
 }
 `;

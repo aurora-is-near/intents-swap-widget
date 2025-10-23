@@ -157,6 +157,7 @@ export const TonWidgetDemo = () => {
     wallets,
     address: walletAddress,
     isConnecting: isLoading,
+    isEvmConnected,
     chainType,
   } = useMultiChainWallet();
 
@@ -262,8 +263,8 @@ export const TonWidgetDemo = () => {
             </div>
           ) : null}
           <div className="wallet-buttons-container">
-            <TonConnectButton />
             <WalletConnectButton connectText="Connect Chain Wallet" />
+            {isEvmConnected && <TonConnectButton />}
           </div>
         </div>
       </WidgetConfigProvider>

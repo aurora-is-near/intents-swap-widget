@@ -16,7 +16,7 @@ export const WalletConnectButton = ({
 
   const displayText =
     isConnected && address
-      ? `${address.slice(0, 6)}...${address.slice(-4)}`
+      ? `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
       : connectText;
 
   return (

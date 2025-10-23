@@ -20,6 +20,7 @@ export function useMultiChainWallet() {
   const {
     address: evmAddress,
     isConnecting: isEvmConnecting,
+    isConnected: isEvmConnected,
     chain,
   } = useAccount();
 
@@ -101,6 +102,7 @@ export function useMultiChainWallet() {
     isConnecting:
       isEvmConnecting || !isTonConnectionRestored || isTonConnecting,
     isConnected: hasAnyWallet,
+    isEvmConnected,
     connect,
     disconnect,
   };
