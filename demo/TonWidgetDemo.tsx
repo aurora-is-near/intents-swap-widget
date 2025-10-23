@@ -15,6 +15,10 @@ import { DemoConnectButton } from './components/DemoConnectButton';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs';
+const TARGET_ASSET_ADDRESSES = [
+  'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
+  'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
+];
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
@@ -83,24 +87,39 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
  * Fetch the available target tokens.
  */
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
-  return [
-    {
-      name: 'Meme Coin One',
-      symbol: 'MEMEONE',
-      price: 0,
-      blockchain: 'ton',
-      assetId: 'meme-one',
-      decimals: 9,
+  const res = await fetch('https://api.ston.fi/v1/assets/query', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-    {
-      name: 'Meme Coin Two',
-      symbol: 'MEMETWO',
-      price: 0,
+    body: JSON.stringify({
+      unconditional_assets: TARGET_ASSET_ADDRESSES,
+    }),
+  });
+
+  const data = (await res.json()) as {
+    asset_list: {
+      contract_address: string;
+      kind: string;
+      dex_price_usd: string;
+      meta: {
+        symbol: string;
+        display_name: string;
+        image_url: string;
+        decimals: number;
+      };
+    }[];
+  };
+
+  return data.asset_list
+    .filter((asset) => TARGET_ASSET_ADDRESSES.includes(asset.contract_address))
+    .map((asset) => ({
+      symbol: asset.meta.symbol,
+      price: parseFloat(asset.dex_price_usd),
       blockchain: 'ton',
-      assetId: 'meme-two',
-      decimals: 9,
-    },
-  ];
+      assetId: asset.contract_address,
+      decimals: asset.meta.decimals,
+    }));
 };
 
 export const TonWidgetDemo = () => {
