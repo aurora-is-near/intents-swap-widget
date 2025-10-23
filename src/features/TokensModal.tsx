@@ -67,7 +67,7 @@ export const TokensModal = ({
       padding="none"
       className={cn('gap-sw-2xl flex flex-col px-sw-2xl pt-sw-2xl', className)}>
       <header className="py-sw-md flex items-center justify-between">
-        <h2 className="text-sw-label-l">Select token</h2>
+        <h2 className="text-sw-label-l text-sw-gray-50">Select token</h2>
         <button
           type="button"
           className="flex cursor-pointer items-center justify-center text-sw-gray-100 transition-colors hover:text-sw-gray-50"
