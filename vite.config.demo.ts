@@ -7,6 +7,7 @@ import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import vercel from 'vite-plugin-vercel';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,6 +26,7 @@ export default defineConfig({
     }),
     tailwindcss(),
     react(),
+    vercel(),
     nodePolyfills({
       include: ['crypto', 'buffer', 'process', 'util'],
       globals: {
