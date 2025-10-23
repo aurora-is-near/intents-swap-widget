@@ -16,7 +16,6 @@ import { SimpleToken, WidgetConfig, WidgetSwap } from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { BalanceRpcLoader } from '../src/features/BalanceRpcLoader';
 import { WalletConnectButton } from './components/WalletConnectButton';
-import { TonPageProviders } from './TonPageProviders';
 import { useMultiChainWallet } from './hooks/useMultiChainWallet';
 import { RPCS } from './rpcs';
 import { formatBigToHuman } from '../src/utils';
@@ -153,7 +152,7 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
   };
 };
 
-export const TonWidgetContent = () => {
+export const TonWidgetDemo = () => {
   const {
     wallets,
     address: walletAddress,
@@ -264,18 +263,10 @@ export const TonWidgetContent = () => {
           ) : null}
           <div className="wallet-buttons-container">
             <TonConnectButton />
-            <WalletConnectButton />
+            <WalletConnectButton connectText="Connect Chain Wallet" />
           </div>
         </div>
       </WidgetConfigProvider>
     </div>
-  );
-};
-
-export const TonWidgetDemo = () => {
-  return (
-    <TonPageProviders>
-      <TonWidgetContent />
-    </TonPageProviders>
   );
 };

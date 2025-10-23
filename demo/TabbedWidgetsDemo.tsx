@@ -5,9 +5,9 @@ import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
 import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
-import { useDemoWallet } from './hooks/useDemoWallet';
 import { RPCS } from './rpcs';
-import { DemoConnectButton } from './components/DemoConnectButton';
+import { useMultiChainWallet } from './hooks/useMultiChainWallet';
+import { WalletConnectButton } from './components/WalletConnectButton';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
@@ -24,12 +24,8 @@ const WIDGET_TYPES = {
 } as const;
 
 export const TabbedWidgetsDemo = () => {
-  const {
-    address: walletAddress,
-    isConnecting: isLoading,
-    connect: handleConnectWallet,
-    disconnect: handleDisconnectWallet,
-  } = useDemoWallet();
+  const { address: walletAddress, isConnecting: isLoading } =
+    useMultiChainWallet();
 
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
@@ -37,37 +33,6 @@ export const TabbedWidgetsDemo = () => {
 
   return (
     <>
-      {/* Elegant wallet connection */}
-      <div className="demo-nav-bar">
-        {walletAddress ? (
-          <div className="flex items-center gap-3">
-            <div className="wallet-status">
-              <div className="wallet-indicator"></div>
-              <span className="wallet-address">{walletAddress}</span>
-            </div>
-            <button
-              onClick={handleDisconnectWallet}
-              className="disconnect-button">
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleConnectWallet}
-            disabled={isLoading}
-            className="connect-button">
-            {isLoading ? (
-              <>
-                <div className="connect-button-spinner"></div>
-                Connecting...
-              </>
-            ) : (
-              'Connect Wallet'
-            )}
-          </button>
-        )}
-      </div>
-
       {/* Main Content - centered widget */}
       <div className="demo-widget-container">
         {/* Widget Type Navigation - exact Calyx style */}
@@ -109,7 +74,7 @@ export const TabbedWidgetsDemo = () => {
           {!!walletAddress && (
             <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
           )}
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             <WidgetComponent
               isLoading={isLoading}
               providers={{ near: undefined }}
@@ -122,10 +87,7 @@ export const TabbedWidgetsDemo = () => {
               }
               onMsg={noop}
             />
-            <DemoConnectButton
-              walletAddress={walletAddress}
-              onConnect={handleConnectWallet}
-            />
+            <WalletConnectButton className="mt-2" />
           </div>
         </WidgetConfigProvider>
       </div>

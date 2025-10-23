@@ -66,7 +66,6 @@ export default defineConfig({
     rollupOptions: {
       external: isExt,
       output: {
-        // inlineDynamicImports: true,
         entryFileNames: "[name].js",
         assetFileNames: (assetInfo) => {
             if (assetInfo.name && assetInfo.name.endsWith('.css')) {

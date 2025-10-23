@@ -44,12 +44,6 @@ html, body {
   }
 }
 
-.demo-nav-bar {
-  padding: 24px;
-  display: flex;
-  justify-content: flex-end;
-}
-
 .demo-nav {
   display: flex;
   align-items: center;
@@ -101,37 +95,6 @@ html, body {
   filter: brightness(0) saturate(100%) invert(85%) sepia(25%) saturate(740%) hue-rotate(215deg) brightness(105%) contrast(97%);
 }
 
-.connect-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #f9fafb;
-  background: #374151;
-  border: 1px solid #4b5563;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.connect-button:hover {
-  background: #4b5563;
-  border-color: #d5b7ff;
-  color: #d5b7ff;
-}
-
-.connect-button-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -148,14 +111,6 @@ html, body {
   backdrop-filter: blur(8px);
 }
 
-.wallet-indicator {
-  width: 8px;
-  height: 8px;
-  background-color: #22c55e;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -165,46 +120,6 @@ html, body {
   font-size: 14px;
   font-weight: 500;
   color: #22c55e;
-}
-
-.disconnect-button {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #9ca3af;
-  background: transparent;
-  border: 1px solid #374151;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.disconnect-button:hover {
-  background: #374151;
-  border-color: #4b5563;
-  color: #f9fafb;
-}
-
-/* Demo connect wallet button - matches disabled button style */
-.demo-connect-wallet-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 0 24px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 12px;
-  border: 1px solid #503c68;
-  background: transparent;
-  color: #7c619f;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.demo-connect-wallet-button:hover {
-  background: rgba(124, 97, 159, 0.1);
-  color: #7c619f;
 }
 
 /* Wallet Connect button for multi-chain wallet connection */
