@@ -1,15 +1,18 @@
 import type { Chains } from './chain';
 
-export type Token = {
-  isIntent: boolean;
+export type SimpleToken = {
+  assetId: string;
   symbol: string;
   blockchain: Chains;
-  chainName: string;
-  contractAddress: string | undefined;
   decimals: number;
-  assetId: string;
-  name: string;
+  contractAddress?: string;
   price: number;
+};
+
+export type Token = SimpleToken & {
+  isIntent: boolean;
+  chainName: string;
+  name: string;
   icon: string;
   chainIcon: string;
 };

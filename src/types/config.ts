@@ -1,5 +1,6 @@
+import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 import { Chains, DefaultChainsFilter } from './chain';
-import { Token } from './token';
+import { SimpleToken, Token } from './token';
 
 export type WidgetConfig = {
   // Application metadata
@@ -32,6 +33,9 @@ export type WidgetConfig = {
     target: DefaultChainsFilter;
   };
 
-  // 1Click API
+  // API
   oneClickApiQuoteProxyUrl: string;
+  fetchQuote?: (data: QuoteRequest) => Promise<Quote>;
+  fetchSourceTokens?: () => Promise<SimpleToken[]>;
+  fetchTargetTokens?: () => Promise<SimpleToken[]>;
 };

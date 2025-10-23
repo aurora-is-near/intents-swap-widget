@@ -22,6 +22,14 @@ html, body {
   min-width: 270px;
   padding: 10% 16px 0;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 @media (max-width: 420px) {
