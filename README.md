@@ -123,7 +123,15 @@ The available keys can be found in the `types/localisation.ts` file.
 ## Development
 
 If you want to make changes to the package and submit PRs, the repository
-includes a demo application, that you can run with the following command:
+includes a demo application that includes various example widget implementations.
+
+To run it you will first need to create an `.env` file:
+
+```sh
+cp .env.example .env
+```
+
+Fill it with the relevant values, then run:
 
 ```sh
 yarn dev

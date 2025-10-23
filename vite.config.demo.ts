@@ -52,7 +52,14 @@ export default defineConfig({
   server: {
     fs: {
       allow: ['..']
-    }
+    },
+    host: true, // Allow access from network
+    cors: true, // Enable CORS for TON Connect
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+    },
   },
   build: {
     outDir: 'build',

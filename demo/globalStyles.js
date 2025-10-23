@@ -12,16 +12,15 @@ html, body {
 }
 
 #root {
-  height: 100%;
+  min-height: 100%;
   background: #24262d;
 }
 
 .demo-widget-container {
-  width: 100%;
   height: 100%;
   max-width: 456px;
   min-width: 270px;
-  padding: 0 16px;
+  padding: 0 16px 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -206,5 +205,58 @@ html, body {
 .demo-connect-wallet-button:hover {
   background: rgba(124, 97, 159, 0.1);
   color: #7c619f;
+}
+
+/* Wallet Connect button for multi-chain wallet connection */
+.wallet-connect-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #3396FF;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.wallet-connect-button.connected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.wallet-connect-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
+}
+
+/* Wallet status container */
+.wallet-status-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.wallet-connected-badge {
+  padding: 8px 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6366f1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallet-buttons-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 `;
