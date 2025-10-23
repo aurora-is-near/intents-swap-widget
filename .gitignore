@@ -28,3 +28,6 @@ spec.json
 # Environment
 .env
 .env.local
+
+# vercel
+.vercel
