@@ -49,18 +49,18 @@ export function useMultiChainWallet() {
 
   const { address, chainType } = useMemo(() => {
     if (wallets.ton) {
-      return { address: wallets.ton, chainType: 'ton' as ChainType };
+      return { address: wallets.ton, chainType: 'ton' };
     }
 
     if (wallets.evm) {
-      return { address: wallets.evm, chainType: 'evm' as ChainType };
+      return { address: wallets.evm, chainType: 'evm' };
     }
 
     if (wallets.solana) {
-      return { address: wallets.solana, chainType: 'solana' as ChainType };
+      return { address: wallets.solana, chainType: 'solana' };
     }
 
-    return { address: undefined, chainType: 'unknown' as ChainType };
+    return { address: undefined, chainType: 'unknown' };
   }, [wallets]);
 
   const connect = useCallback(async () => {
