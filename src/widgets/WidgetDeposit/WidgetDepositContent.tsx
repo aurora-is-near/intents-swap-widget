@@ -53,7 +53,7 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { chainsFilter, walletAddress } = useConfig();
+  const { chainsFilter, walletAddress, alchemyApiKey } = useConfig();
   const { t } = useTypedTranslation();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
@@ -79,7 +79,7 @@ export const WidgetDepositContent = ({
       'setSourceTokenIntentsTarget',
       ['setDefaultSelectedTokens', { skipIntents: true }],
       ['makeQuote', { message: undefined }],
-      ['setBalancesUsingAlchemyExt', { alchemyApiKey: undefined }],
+      ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
 
