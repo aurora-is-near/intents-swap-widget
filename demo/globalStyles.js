@@ -100,26 +100,9 @@ html, body {
   100% { transform: rotate(360deg); }
 }
 
-.wallet-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-}
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
-}
-
-.wallet-address {
-  font-size: 14px;
-  font-weight: 500;
-  color: #22c55e;
 }
 
 /* Wallet Connect button for multi-chain wallet connection */
@@ -148,8 +131,7 @@ html, body {
   box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
 }
 
-/* Wallet status container */
-.wallet-status-container {
+.demo-widget-footer {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
@@ -167,13 +149,5 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.wallet-buttons-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
 }
 `;

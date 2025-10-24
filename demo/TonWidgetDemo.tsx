@@ -252,8 +252,8 @@ export const TonWidgetDemo = () => {
           makeTransfer={(_args) => Promise.resolve(undefined)}
           onMsg={() => {}}
         />
-        <div className="wallet-status-container">
-          {walletAddress ? (
+        <div className="demo-widget-footer">
+          {!!walletAddress && (
             <div className="wallet-connected-badge">
               {!!wallets.ton && <div>✓ TON: {wallets.ton.slice(0, 8)}...</div>}
               {!!wallets.evm && <div>✓ EVM: {wallets.evm.slice(0, 8)}...</div>}
@@ -261,11 +261,9 @@ export const TonWidgetDemo = () => {
                 <div>✓ Solana: {wallets.solana.slice(0, 8)}...</div>
               )}
             </div>
-          ) : null}
-          <div className="wallet-buttons-container">
-            <WalletConnectButton connectText="Connect Chain Wallet" />
-            {isEvmConnected && <TonConnectButton />}
-          </div>
+          )}
+          <WalletConnectButton connectText="Connect Chain Wallet" />
+          {isEvmConnected && <TonConnectButton />}
         </div>
       </WidgetConfigProvider>
     </div>
