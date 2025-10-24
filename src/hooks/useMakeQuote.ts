@@ -98,7 +98,10 @@ export const useMakeQuote = () => {
 
     let quoteResponse: OneClickQuote;
 
-    const commonQuoteParams = {
+    const commonQuoteParams: Omit<
+      QuoteRequest,
+      'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
+    > = {
       // Settings
       dry: isDry,
       slippageTolerance: 100, // 1%
@@ -131,7 +134,6 @@ export const useMakeQuote = () => {
     }
 
     if (appName) {
-      // @ts-expect-error appName is not in the types
       commonQuoteParams.referral = snakeCase(appName);
     }
 
