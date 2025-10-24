@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "examples/**/*", "demo/**/*"],
+  "include": ["src/**/*", "demo/**/*"],
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": ".",
