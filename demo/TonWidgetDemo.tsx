@@ -1,4 +1,4 @@
-import { TonConnectButton } from '@tonconnect/ui-react';
+import { TonConnectButton, TonConnectUIProvider } from '@tonconnect/ui-react';
 import {
   Blockchain,
   Omniston,
@@ -151,7 +151,7 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
   };
 };
 
-export const TonWidgetDemo = () => {
+export const TonWidgetDemoContent = () => {
   const {
     address: appKitWalletAddress,
     chainType,
@@ -227,3 +227,9 @@ export const TonWidgetDemo = () => {
     </div>
   );
 };
+
+export const TonWidgetDemo = () => (
+  <TonConnectUIProvider>
+    <TonWidgetDemoContent />
+  </TonConnectUIProvider>
+);
