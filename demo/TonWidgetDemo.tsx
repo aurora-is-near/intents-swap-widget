@@ -157,7 +157,7 @@ const getTonConnectManifestUrl = () => {
   return '/tonconnect-manifest.json';
 };
 
-export const TonWidgetDemoContent = () => {
+const TonWidgetDemoContent = () => {
   const {
     address: appKitWalletAddress,
     chainType,
