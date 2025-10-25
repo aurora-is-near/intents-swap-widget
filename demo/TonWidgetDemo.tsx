@@ -14,10 +14,8 @@ import {
 import { useMemo } from 'react';
 import { SimpleToken, WidgetConfig, WidgetSwap } from '../src';
 import { WidgetConfigProvider } from '../src/config';
-import { BalanceRpcLoader } from '../src/features/BalanceRpcLoader';
 import { WalletConnectButton } from './components/WalletConnectButton';
 import { useMultiChainWallet } from './hooks/useMultiChainWallet';
-import { RPCS } from './rpcs';
 import { formatBigToHuman } from '../src/utils';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
@@ -229,7 +227,7 @@ export const TonWidgetDemo = () => {
         config={{
           appName: 'Ton Demo App',
           allowedTargetChainsList: ['ton'],
-          walletAddress,
+          walletAddress: wallets.evm,
           walletSupportedChains,
           intentsAccountType,
           fetchQuote,
@@ -242,9 +240,6 @@ export const TonWidgetDemo = () => {
             },
           },
         }}>
-        {!!walletAddress && (
-          <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
-        )}
         <WidgetSwap
           isOneWay
           isLoading={isLoading}

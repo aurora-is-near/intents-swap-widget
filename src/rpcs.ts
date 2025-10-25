@@ -1,9 +1,10 @@
 import type { ChainRpcUrls } from '@/types/chain';
 
-export const RPCS: ChainRpcUrls = {
+export const DEFAULT_RPCS: ChainRpcUrls = {
   xrp: ['https://rpc.xrplevm.org'],
   tron: ['https://tron.drpc.org'],
   ton: ['https://ton.drpc.org'],
+  eth: ['https://eth.drpc.org'],
   bsc: ['https://bsc-dataseed.binance.org/'],
   sui: ['https://sui-mainnet-endpoint.blockvision.org'],
   cardano: ['https://rpc-mainnet-cardano-evm.c1.milkomeda.com'],

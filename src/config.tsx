@@ -13,6 +13,9 @@ import type { Token } from '@/types/token';
 import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
 import { WidgetConfig } from './types/config';
+import { BalanceRpcLoader } from './features';
+import { DEFAULT_RPCS } from './rpcs';
+import { ChainRpcUrls } from './types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +85,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextType>({
 type Props = PropsWithChildren<{
   config?: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
+  rpcs?: ChainRpcUrls;
 }>;
 
 export const configStore = proxy<{ config: WidgetConfig }>({
@@ -103,6 +107,7 @@ export const WidgetConfigProvider = ({
   children,
   config: userConfig,
   localisation,
+  rpcs,
 }: Props) => {
   const storeRef = useRef(
     proxy({
@@ -134,6 +139,12 @@ export const WidgetConfigProvider = ({
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
           <ErrorBoundary>{children}</ErrorBoundary>
+          {!!userConfig?.walletAddress && (
+            <BalanceRpcLoader
+              rpcs={rpcs ?? DEFAULT_RPCS}
+              walletAddress={userConfig.walletAddress}
+            />
+          )}
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>

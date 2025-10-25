@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { noop } from '@/utils/noop';
-import { BalanceRpcLoader } from '@/features/BalanceRpcLoader';
 import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
 import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
-import { RPCS } from './rpcs';
 import { useMultiChainWallet } from './hooks/useMultiChainWallet';
 import { WalletConnectButton } from './components/WalletConnectButton';
 
@@ -70,9 +68,6 @@ export const TabbedWidgetsDemo = () => {
               },
             },
           }}>
-          {!!walletAddress && (
-            <BalanceRpcLoader rpcs={RPCS} walletAddress={walletAddress} />
-          )}
           <div className="relative">
             <WidgetComponent
               isLoading={isLoading}
