@@ -7,7 +7,9 @@ import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
 import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEvmChain } from '../utils';
+import { isEth, isEvmChain } from '../utils';
+import { useMakeEvmTransfer } from './useMakeEvmTransfer';
+import { isEvmAddress } from '../utils/evm/isEvmAddress';
 
 type Result = {
   hash: string;
@@ -16,11 +18,27 @@ type Result = {
 };
 
 export type QuoteTransferArgs = {
-  makeTransfer: (args: MakeTransferArgs) => Promise<Result | undefined | null>;
+  makeTransfer?: (args: MakeTransferArgs) => Promise<Result | undefined | null>;
 };
 
 export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
+  const { make: makeEvmTransfer } = useMakeEvmTransfer();
+
+  const getTransferFunction = (depositAddress: string) => {
+    if (makeTransfer) {
+      return makeTransfer;
+    }
+
+    if (isEvmAddress(depositAddress)) {
+      return makeEvmTransfer;
+    }
+
+    throw new TransferError({
+      code: 'TRANSFER_INVALID_INITIAL',
+      meta: { message: 'No transfer function established.' },
+    });
+  };
 
   const make = async (): Promise<TransferResult | undefined> => {
     if (!ctx.sourceToken) {
@@ -50,20 +68,25 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
       });
     }
 
+    const makeTransferArgs: MakeTransferArgs = {
+      amount: ctx.quote.amountIn,
+      decimals: ctx.sourceToken.decimals,
+      address: ctx.quote.depositAddress,
+      chain: ctx.sourceToken.blockchain,
+      evmChainId: isEvmChain(ctx.sourceToken.blockchain)
+        ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
+        : null,
+      isNativeEthTransfer: !!ctx.sourceToken && isEth(ctx.sourceToken),
+      tokenAddress:
+        ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+          ? NATIVE_NEAR_DUMB_ASSET_ID
+          : ctx.sourceToken.contractAddress,
+    };
+
+    const transferFunction = getTransferFunction(makeTransferArgs.address);
+
     try {
-      const depositResult = await makeTransfer({
-        amount: ctx.quote.amountIn,
-        decimals: ctx.sourceToken.decimals,
-        address: ctx.quote.depositAddress,
-        chain: ctx.sourceToken.blockchain,
-        evmChainId: isEvmChain(ctx.sourceToken.blockchain)
-          ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
-          : null,
-        tokenAddress:
-          ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
-            ? NATIVE_NEAR_DUMB_ASSET_ID
-            : ctx.sourceToken.contractAddress,
-      });
+      const depositResult = await transferFunction(makeTransferArgs);
 
       if (!depositResult) {
         logger.error('[TRANSFER ERROR]', 'No deposit result');

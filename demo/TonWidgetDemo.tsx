@@ -224,7 +224,6 @@ const TonWidgetDemoContent = () => {
           isOneWay
           isLoading={isAppKitConnecting || isTonConnecting}
           providers={{ near: undefined }}
-          makeTransfer={(_args) => Promise.resolve(undefined)}
           onMsg={() => {}}
         />
         <div className="demo-widget-footer">
