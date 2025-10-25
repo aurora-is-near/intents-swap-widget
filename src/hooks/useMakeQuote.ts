@@ -17,11 +17,24 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
-import type { Quote } from '@/types/quote';
 
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
+};
+
+const validateQuoteProperty = (
+  quote: OneClickQuote,
+  property: keyof OneClickQuote,
+) => {
+  if (!(property in quote)) {
+    logger.error(`Missing ${property} in quote response`);
+
+    throw new QuoteError({
+      code: 'QUOTE_INVALID',
+      meta: { isDry: false },
+    });
+  }
 };
 
 export const useMakeQuote = () => {
@@ -223,30 +236,24 @@ export const useMakeQuote = () => {
       });
     }
 
-    let result: Quote;
-
     if (isDry) {
-      result = {
+      return {
         dry: true,
         ...quoteResponse,
         deadline: undefined,
         depositAddress: undefined,
       };
-    } else if (quoteResponse.deadline && quoteResponse.depositAddress) {
-      result = {
-        dry: false,
-        ...quoteResponse,
-        deadline: quoteResponse.deadline,
-        depositAddress: quoteResponse.depositAddress,
-      };
-    } else {
-      throw new QuoteError({
-        code: 'QUOTE_INVALID',
-        meta: { isDry },
-      });
     }
 
-    return result;
+    validateQuoteProperty(quoteResponse, 'deadline');
+    validateQuoteProperty(quoteResponse, 'depositAddress');
+
+    return {
+      dry: false,
+      ...quoteResponse,
+      deadline: quoteResponse.deadline,
+      depositAddress: quoteResponse.depositAddress,
+    };
   };
 
   return {

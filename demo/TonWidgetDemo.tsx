@@ -137,6 +137,8 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
   const amountOutUsd = amountOutHuman * targetToken.price;
 
   return {
+    deadline: oneClickQuote.deadline,
+    depositAddress: oneClickQuote.depositAddress,
     timeEstimate: oneClickQuote.timeEstimate,
     amountIn: oneClickQuote.amountIn,
     amountInFormatted: oneClickQuote.amountInFormatted,
