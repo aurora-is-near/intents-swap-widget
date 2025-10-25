@@ -1,7 +1,5 @@
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { Outlet } from 'react-router-dom';
-import { WagmiProvider } from 'wagmi';
-import { wagmiAdapter } from './appkit-config';
 
 const getManifestUrl = () => {
   if (typeof window !== 'undefined') {
@@ -13,7 +11,7 @@ const getManifestUrl = () => {
 
 export const Layout = () => {
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+    <>
       {/*
         TON Connect manifest is served from public/tonconnect-manifest.json
 
@@ -28,6 +26,6 @@ export const Layout = () => {
       <TonConnectUIProvider manifestUrl={getManifestUrl()}>
         <Outlet />
       </TonConnectUIProvider>
-    </WagmiProvider>
+    </>
   );
 };
