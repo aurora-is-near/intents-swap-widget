@@ -8,7 +8,6 @@ import {
 import {
   OneClickService,
   OpenAPI,
-  QuoteRequest,
 } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useMemo } from 'react';
@@ -88,7 +87,6 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
     OneClickService.getQuote({
       ...data,
       destinationAsset: TON_ASSET_ID,
-      recipientType: QuoteRequest.recipientType.INTENTS,
     }),
     fetchStonFiAssets([data.destinationAsset]),
   ]);
@@ -149,6 +147,14 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
     amountOutUsd: String(amountOutUsd),
     minAmountOut: minAskAmount,
   };
+};
+
+const getTonConnectManifestUrl = () => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/tonconnect-manifest.json`;
+  }
+
+  return '/tonconnect-manifest.json';
 };
 
 export const TonWidgetDemoContent = () => {
@@ -229,7 +235,7 @@ export const TonWidgetDemoContent = () => {
 };
 
 export const TonWidgetDemo = () => (
-  <TonConnectUIProvider>
+  <TonConnectUIProvider manifestUrl={getTonConnectManifestUrl()}>
     <TonWidgetDemoContent />
   </TonConnectUIProvider>
 );
