@@ -1,4 +1,5 @@
 import { createAppKit } from '@reown/appkit/react';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
   arbitrum,
@@ -31,12 +32,30 @@ const metadata = {
   icons: [`${appUrl}/demo/favicon.svg`],
 };
 
+const evmNetworks = [
+  mainnet,
+  arbitrum,
+  polygon,
+  bsc,
+  optimism,
+  avalanche,
+  base,
+];
+
+export const wagmiAdapter = new WagmiAdapter({
+  networks: evmNetworks,
+  projectId,
+  ssr: false,
+});
+
 const solanaAdapter = new SolanaAdapter({
   wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
 });
 
 createAppKit({
-  adapters: [solanaAdapter],
+  adapters: [wagmiAdapter, solanaAdapter],
+  // Networks must be inlined here (not spread from evmNetworks array)
+  // because TypeScript requires a tuple type for AppKit networks
   networks: [
     mainnet,
     arbitrum,
