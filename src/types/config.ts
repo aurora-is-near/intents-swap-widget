@@ -12,6 +12,9 @@ export type WidgetConfig = {
   walletSupportedChains: ReadonlyArray<Chains>;
   walletAddress?: string | null;
 
+  // Destination wallet
+  sendAddress?: string | null;
+
   // Quotes & Transfers
   defaultMaxSlippage: number;
   enableAutoTokensSwitching?: boolean;

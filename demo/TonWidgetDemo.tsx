@@ -228,6 +228,7 @@ export const TonWidgetDemo = () => {
           appName: 'Ton Demo App',
           allowedTargetChainsList: ['ton'],
           walletAddress: wallets.evm,
+          sendAddress: wallets.ton,
           walletSupportedChains,
           intentsAccountType,
           fetchQuote,

@@ -7,7 +7,7 @@ import * as Icons from 'lucide-react';
 
 import { cn } from '@/utils/cn';
 
-type State = 'default' | 'disabled' | 'error';
+type State = 'default' | 'disabled' | 'error' | 'fixed';
 
 export type Props = Omit<InputProps, 'size'> & {
   icon?: LucideIcon;
@@ -54,11 +54,13 @@ export const Input = ({
     }
   }, []);
 
+  const inputDisabled = ['disabled', 'fixed'].includes(state);
+
   return (
     <UIInput
       type="text"
       as={Fragment}
-      disabled={state === 'disabled'}
+      disabled={inputDisabled}
       autoComplete="off"
       className={cn(
         'px-sw-lg py-sw-lg text-sw-label-m rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors',
@@ -70,6 +72,9 @@ export const Input = ({
         {
           'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100':
             state === 'disabled',
+        },
+        {
+          'bg-sw-gray-800 text-sw-gray-100': state === 'fixed',
         },
         { 'text-sw-alert-100 bg-sw-gray-600': state === 'error' },
         className,
@@ -84,14 +89,14 @@ export const Input = ({
             onBlur={handleBlur}
             onFocus={handleFocus}
             onChange={onInputChange}
-            disabled={state === 'disabled'}
+            disabled={inputDisabled}
             placeholder={inputProps.placeholder}
             autoComplete="off"
             className={cn('text-sw-label-m mr-auto w-full outline-none', {
               'cursor-not-allowed': state === 'disabled',
             })}
           />
-          {state !== 'disabled' && (
+          {!inputDisabled && (
             <div className="gap-sw-md relative flex items-center">
               {children}
               {value ? (
