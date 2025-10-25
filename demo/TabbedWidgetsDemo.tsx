@@ -61,7 +61,6 @@ export const TabbedWidgetsDemo = () => {
           config={{
             appName: 'Demo App',
             walletAddress,
-            walletSupportedChains: ['near'],
             intentsAccountType: 'near',
             chainsFilter: {
               target: { intents: 'all', external: 'all' },
