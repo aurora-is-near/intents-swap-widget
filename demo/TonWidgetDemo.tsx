@@ -12,11 +12,12 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useMemo } from 'react';
-import { SimpleToken, WidgetConfig, WidgetSwap } from '../src';
+import { Chains, SimpleToken, WidgetConfig, WidgetSwap } from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { WalletConnectButton } from './components/WalletConnectButton';
-import { useMultiChainWallet } from './hooks/useMultiChainWallet';
+import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { formatBigToHuman } from '../src/utils';
+import { useTonWallet } from './hooks/useTonWallet';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -152,36 +153,22 @@ const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
 
 export const TonWidgetDemo = () => {
   const {
-    wallets,
-    address: walletAddress,
-    isConnecting: isLoading,
-    isEvmConnected,
+    address: appKitWalletAddress,
     chainType,
-  } = useMultiChainWallet();
+    isConnecting: isAppKitConnecting,
+    isConnected: isAppKitConnected,
+  } = useAppKitWallet();
+
+  const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
 
   const walletSupportedChains = useMemo(() => {
-    const chains: Array<
-      | 'ton'
-      | 'eth'
-      | 'arb'
-      | 'pol'
-      | 'bsc'
-      | 'op'
-      | 'avax'
-      | 'base'
-      | 'sol'
-      | 'near'
-    > = [];
+    const chains: Chains[] = ['ton'];
 
-    if (wallets.ton) {
-      chains.push('ton');
-    }
-
-    if (wallets.evm) {
+    if (chainType === 'evm') {
       chains.push('eth', 'arb', 'pol', 'bsc', 'op', 'avax', 'base');
     }
 
-    if (wallets.solana) {
+    if (chainType === 'solana') {
       chains.push('sol');
     }
 
@@ -190,19 +177,8 @@ export const TonWidgetDemo = () => {
       chains.push('near');
     }
 
-    return chains as readonly (
-      | 'ton'
-      | 'eth'
-      | 'arb'
-      | 'pol'
-      | 'bsc'
-      | 'op'
-      | 'avax'
-      | 'base'
-      | 'sol'
-      | 'near'
-    )[];
-  }, [wallets]);
+    return chains;
+  }, [chainType]);
 
   const intentsAccountType = useMemo(() => {
     if (chainType === 'evm') {
@@ -211,11 +187,6 @@ export const TonWidgetDemo = () => {
 
     if (chainType === 'solana') {
       return 'sol';
-    }
-
-    if (chainType === 'ton') {
-      // TON wallets use NEAR intents infrastructure
-      return 'near';
     }
 
     return 'near';
@@ -227,8 +198,8 @@ export const TonWidgetDemo = () => {
         config={{
           appName: 'Ton Demo App',
           allowedTargetChainsList: ['ton'],
-          walletAddress: wallets.evm,
-          sendAddress: wallets.ton,
+          walletAddress: appKitWalletAddress,
+          sendAddress: tonAddress,
           walletSupportedChains,
           intentsAccountType,
           fetchQuote,
@@ -237,29 +208,20 @@ export const TonWidgetDemo = () => {
             target: { intents: 'none', external: 'all' },
             source: {
               intents: 'none',
-              external: walletAddress ? 'wallet-supported' : 'all',
+              external: appKitWalletAddress ? 'wallet-supported' : 'all',
             },
           },
         }}>
         <WidgetSwap
           isOneWay
-          isLoading={isLoading}
+          isLoading={isAppKitConnecting || isTonConnecting}
           providers={{ near: undefined }}
           makeTransfer={(_args) => Promise.resolve(undefined)}
           onMsg={() => {}}
         />
         <div className="demo-widget-footer">
-          {!!walletAddress && (
-            <div className="wallet-connected-badge">
-              {!!wallets.ton && <div>✓ TON: {wallets.ton.slice(0, 8)}...</div>}
-              {!!wallets.evm && <div>✓ EVM: {wallets.evm.slice(0, 8)}...</div>}
-              {!!wallets.solana && (
-                <div>✓ Solana: {wallets.solana.slice(0, 8)}...</div>
-              )}
-            </div>
-          )}
           <WalletConnectButton connectText="Connect Chain Wallet" />
-          {isEvmConnected && <TonConnectButton />}
+          {isAppKitConnected && <TonConnectButton />}
         </div>
       </WidgetConfigProvider>
     </div>

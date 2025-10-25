@@ -4,7 +4,7 @@ import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
 import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
-import { useMultiChainWallet } from './hooks/useMultiChainWallet';
+import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { WalletConnectButton } from './components/WalletConnectButton';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
@@ -22,8 +22,7 @@ const WIDGET_TYPES = {
 } as const;
 
 export const TabbedWidgetsDemo = () => {
-  const { address: walletAddress, isConnecting: isLoading } =
-    useMultiChainWallet();
+  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 

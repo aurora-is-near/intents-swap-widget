@@ -139,15 +139,4 @@ html, body {
   align-items: center;
   width: 100%;
 }
-
-.wallet-connected-badge {
-  padding: 8px 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border-radius: 8px;
-  font-size: 14px;
-  color: #6366f1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 `;

@@ -1,6 +1,5 @@
-import { useAppKit } from '@reown/appkit/react';
-import { useAccount } from 'wagmi';
 import { cn } from '../../src/utils';
+import { useAppKitWallet } from '../hooks/useAppKitWallet';
 
 type WalletConnectButtonProps = {
   connectText?: string;
@@ -11,8 +10,7 @@ export const WalletConnectButton = ({
   connectText = 'Connect Wallet',
   className,
 }: WalletConnectButtonProps) => {
-  const { open } = useAppKit();
-  const { address, isConnected } = useAccount();
+  const { connect, address, isConnected } = useAppKitWallet();
 
   const displayText =
     isConnected && address
@@ -22,7 +20,7 @@ export const WalletConnectButton = ({
   return (
     <button
       type="button"
-      onClick={() => open()}
+      onClick={() => connect()}
       className={cn(
         'wallet-connect-button',
         isConnected && 'connected',
