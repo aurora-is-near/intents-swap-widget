@@ -35,7 +35,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   defaultMaxSlippage: 0.01,
   intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
-  walletAddress: undefined,
 
   oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
 
@@ -66,9 +65,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
 
   filterTokens: (tkn: Token) =>
     !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),
-
-  allowedTokensList: undefined,
-  allowedChainsList: undefined,
 
   chainsFilter: {
     source: { external: 'wallet-supported', intents: 'with-balance' },
