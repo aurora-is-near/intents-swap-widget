@@ -17,12 +17,19 @@ import {
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef } from 'react';
-import { Chains, SimpleToken, WidgetConfig, WidgetSwap } from '../src';
+import {
+  Chains,
+  MakeTransferArgs,
+  SimpleToken,
+  WidgetConfig,
+  WidgetSwap,
+} from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { WalletConnectButton } from './components/WalletConnectButton';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { formatBigToHuman } from '../src/utils';
 import { useTonWallet } from './hooks/useTonWallet';
+import { useMakeEvmTransfer } from '../src/hooks/useMakeEvmTransfer';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -32,12 +39,6 @@ const TARGET_ASSET_ADDRESSES = [
 ];
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
-
-type SwapState = {
-  oneClickDepositAddress?: string;
-  omnistonQuote?: OmnistonQuote;
-  omnistonTxHash?: string;
-};
 
 const omniston = new Omniston({
   apiUrl: 'wss://omni-ws.ston.fi',
@@ -88,6 +89,97 @@ const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () =>
   fetchStonFiAssets(TARGET_ASSET_ADDRESSES);
 
+const performOmnistoneSwap = async (
+  omnistonQuote: OmnistonQuote,
+  tonAddress: string,
+  tonConnect: ReturnType<typeof useTonConnectUI>[0],
+) => {
+  if (!omnistonQuote) {
+    throw new Error('Missing Omniston quote');
+  }
+
+  const tx = await omniston.buildTransfer({
+    quote: omnistonQuote,
+    useRecommendedSlippage: true,
+    sourceAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+    destinationAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+  });
+
+  const messages = tx.ton?.messages ?? [];
+
+  const sendTxRes = await tonConnect.sendTransaction({
+    validUntil: Date.now() + 1000000,
+    messages: messages.map((message) => ({
+      address: message.targetAddress,
+      amount: message.sendAmount,
+      payload: message.payload,
+    })),
+  });
+
+  const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
+
+  const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
+
+  const omnistonTxHash: string = (await response.json()).transaction.hash;
+
+  return omnistonTxHash;
+};
+
+/**
+ * Wait for the Omniston transfer to be settled.
+ */
+const waitForOmnistonSettlement = (
+  quoteId: string,
+  outgoingTxHash: string,
+  tonAddress: string,
+) => {
+  const tradeStatus = omniston.trackTrade({
+    quoteId,
+    traderWalletAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+    outgoingTxHash,
+  });
+
+  return new Promise((resolve) => {
+    tradeStatus.subscribe(({ status }) => {
+      if (status?.tradeSettled) {
+        resolve(null);
+      }
+    });
+  });
+};
+
+/**
+ * Wait for the OneClick transfer to be settled.
+ */
+const waitForOneClickSettlement = async (
+  oneClickDepositAddress: string,
+): Promise<GetExecutionStatusResponse> => {
+  const res = await OneClickService.getExecutionStatus(oneClickDepositAddress);
+
+  if (res.status === GetExecutionStatusResponse.status.SUCCESS) {
+    return res; // ✅ done
+  }
+
+  if (res.status === GetExecutionStatusResponse.status.FAILED) {
+    throw new Error('OneClick transfer failed');
+  }
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+
+  return waitForOneClickSettlement(oneClickDepositAddress);
+};
+
 const getTonConnectManifestUrl = () => {
   if (typeof window !== 'undefined') {
     return `${window.location.origin}/tonconnect-manifest.json`;
@@ -106,17 +198,8 @@ const TonWidgetDemoContent = () => {
 
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
   const [tonConnect] = useTonConnectUI();
-  const swapState = useRef<SwapState>(null);
-
-  const updateSwapState = (newState: Partial<SwapState>) => {
-    swapState.current = {
-      ...swapState.current,
-      ...newState,
-    };
-
-    // eslint-disable-next-line no-console
-    console.debug('swapState', swapState.current);
-  };
+  const omnistonQuote = useRef<OmnistonQuote>(null);
+  const { make: makeEvmTransfer } = useMakeEvmTransfer();
 
   /**
    * Fetch a two-step quote.
@@ -125,9 +208,6 @@ const TonWidgetDemoContent = () => {
    * The second quote is done via Omniston, from TON to the selected target asset.
    */
   const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
-    // Reset the swap state when a new quote is requested.
-    swapState.current = {};
-
     const [{ quote: oneClickQuote }, tokens] = await Promise.all([
       OneClickService.getQuote({
         ...data,
@@ -137,8 +217,9 @@ const TonWidgetDemoContent = () => {
     ]);
 
     // Request the second quote, to see how much of the target asset we can get
-    // for the TON we received from OneClick.
-    const omnistonQuote = await new Promise<OmnistonQuote>((resolve) => {
+    // for the TON we received from OneClick. The quote is stored for later use
+    // when performing the swap.
+    omnistonQuote.current = await new Promise<OmnistonQuote>((resolve) => {
       omniston
         .requestForQuote({
           settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
@@ -177,19 +258,13 @@ const TonWidgetDemoContent = () => {
       throw new Error('Missing target token info');
     }
 
-    const { askUnits, params } = omnistonQuote;
+    const { askUnits, params } = omnistonQuote.current;
     const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
     const amountOutHuman = parseFloat(
       formatBigToHuman(askUnits, targetToken.decimals),
     );
 
     const amountOutUsd = amountOutHuman * targetToken.price;
-
-    // The deposit address will be needed later when monitoring the transfer.
-    updateSwapState({ oneClickDepositAddress: oneClickQuote.depositAddress });
-
-    // Store the Omniston quote for later use when performing the swap.
-    updateSwapState({ omnistonQuote });
 
     return {
       deadline: oneClickQuote.deadline,
@@ -206,114 +281,31 @@ const TonWidgetDemoContent = () => {
     };
   };
 
-  const performOmnistoneSwap = async () => {
-    const { omnistonQuote } = swapState.current ?? {};
-
-    if (!omnistonQuote) {
+  const makeTransfer = async (args: MakeTransferArgs) => {
+    if (!omnistonQuote.current) {
       throw new Error('Missing Omniston quote');
     }
 
-    const tx = await omniston.buildTransfer({
-      quote: omnistonQuote,
-      useRecommendedSlippage: true,
-      sourceAddress: {
-        blockchain: Blockchain.TON,
-        address: tonAddress,
-      },
-      destinationAddress: {
-        blockchain: Blockchain.TON,
-        address: tonAddress,
-      },
-    });
+    // TODO: Support solana transfers
+    await makeEvmTransfer(args);
+    await waitForOneClickSettlement(args.address);
 
-    const messages = tx.ton?.messages ?? [];
-
-    const sendTxRes = await tonConnect.sendTransaction({
-      validUntil: Date.now() + 1000000,
-      messages: messages.map((message) => ({
-        address: message.targetAddress,
-        amount: message.sendAmount,
-        payload: message.payload,
-      })),
-    });
-
-    const externalTxHash = Cell.fromBase64(sendTxRes.boc)
-      .hash()
-      .toString('hex');
-
-    const response = await fetch(
-      `https://tonapi.io/v2/traces/${externalTxHash}`,
+    const omnistonTxHash = await performOmnistoneSwap(
+      omnistonQuote.current,
+      tonAddress,
+      tonConnect,
     );
 
-    const omnistonTxHash = (await response.json()).transaction.hash;
-
-    updateSwapState({ omnistonTxHash });
-  };
-
-  /**
-   * Wait for the OneClick transfer to be settled.
-   */
-  const waitForOneClickSettlement = async () => {
-    const { oneClickDepositAddress } = swapState.current ?? {};
-
-    if (!oneClickDepositAddress) {
-      throw new Error('Missing OneClick deposit address');
-    }
-
-    const res = await OneClickService.getExecutionStatus(
-      oneClickDepositAddress,
+    await waitForOmnistonSettlement(
+      omnistonQuote.current.quoteId,
+      omnistonTxHash,
+      tonAddress,
     );
 
-    // Poll again after a delay if still processing
-    if (res.status === GetExecutionStatusResponse.status.PROCESSING) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 1000);
-      });
-
-      return waitForOneClickSettlement();
-    }
-
-    // TODO: better handle error states
-    if (res.status === GetExecutionStatusResponse.status.FAILED) {
-      throw new Error('OneClick transfer failed');
-    }
-  };
-
-  const waitForOmnistonSettlement = () => {
-    const { omnistonQuote, omnistonTxHash } = swapState.current ?? {};
-
-    if (!omnistonQuote) {
-      throw new Error('Missing Omniston quote');
-    }
-
-    if (!omnistonTxHash) {
-      throw new Error('Missing Omniston transaction hash');
-    }
-
-    const tradeStatus = omniston.trackTrade({
-      quoteId: omnistonQuote.quoteId,
-      traderWalletAddress: {
-        blockchain: Blockchain.TON,
-        address: tonAddress,
-      },
-      outgoingTxHash: omnistonTxHash,
-    });
-
-    return new Promise((resolve) => {
-      tradeStatus.subscribe(({ status }) => {
-        if (status?.tradeSettled) {
-          resolve(null);
-        }
-      });
-    });
-  };
-
-  const processTransfer = async () => {
-    await waitForOneClickSettlement();
-
-    await performOmnistoneSwap();
-
-    await waitForOmnistonSettlement();
+    return {
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    };
   };
 
   const walletSupportedChains = useMemo(() => {
@@ -371,11 +363,7 @@ const TonWidgetDemoContent = () => {
           isOneWay
           isLoading={isAppKitConnecting || isTonConnecting}
           providers={{ near: undefined }}
-          onMsg={(msg) => {
-            if (msg.type === 'on_transfer_success') {
-              void processTransfer();
-            }
-          }}
+          makeTransfer={makeTransfer}
         />
         <div className="demo-widget-footer">
           <WalletConnectButton connectText="Connect Chain Wallet" />
