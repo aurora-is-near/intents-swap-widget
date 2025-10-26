@@ -1,8 +1,8 @@
-import './appkit-config';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createAppKit } from './appkit-config';
 import { globalStyles } from './globalStyles';
 
 import '../src/tailwind.css';
@@ -23,6 +23,8 @@ if (!container) {
 }
 
 const root = createRoot(container);
+
+createAppKit();
 
 root.render(
   <StrictMode>
