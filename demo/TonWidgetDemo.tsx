@@ -166,7 +166,7 @@ const waitForOneClickSettlement = async (
   const res = await OneClickService.getExecutionStatus(oneClickDepositAddress);
 
   if (res.status === GetExecutionStatusResponse.status.SUCCESS) {
-    return res; // ✅ done
+    return res;
   }
 
   if (res.status === GetExecutionStatusResponse.status.FAILED) {
