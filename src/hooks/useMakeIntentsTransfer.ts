@@ -8,14 +8,13 @@ import {
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
-import { randomBytes } from 'crypto';
-
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
 import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
@@ -26,6 +25,7 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+import { generateRandomBytes } from '../utils/near/getRandomBytes';
 
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
@@ -65,19 +65,11 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   return ctx.quote.depositAddress;
 };
 
-const getSavedPublicKey = (walletAddress: string) => {
-  return localStorage.getItem(`near-wallet-pk-${walletAddress}`);
-};
-
-const setSavedPublicKey = (walletAddress: string, publicKey: string) => {
-  localStorage.setItem(`near-wallet-pk-${walletAddress}`, publicKey);
-};
-
 const validateNearPublicKey = async (
   nearProvider: NearWallet,
   walletAddress: string,
 ) => {
-  let publicKey = getSavedPublicKey(walletAddress);
+  let publicKey = localStorageTyped.getItem('nearWalletsPk')[walletAddress];
 
   if (!nearProvider.signMessage) {
     throw new TransferError({
@@ -91,7 +83,7 @@ const validateNearPublicKey = async (
       const res = await nearProvider.signMessage({
         message: 'Authenticate',
         recipient: 'intents.near',
-        nonce: randomBytes(32),
+        nonce: Buffer.from(generateRandomBytes(32)),
       });
 
       if (!res) {
@@ -102,7 +94,9 @@ const validateNearPublicKey = async (
       }
 
       publicKey = res.publicKey;
-      setSavedPublicKey(walletAddress, res.publicKey);
+      localStorageTyped.setItem('nearWalletsPk', {
+        [walletAddress]: res.publicKey,
+      });
     } catch (e: unknown) {
       throw new TransferError({
         code: 'DIRECT_TRANSFER_ERROR',
@@ -157,7 +151,7 @@ const validateNearPublicKey = async (
 
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectTransfer, isDirectNonNearWithdrawal } = useComputedSnapshot();
   const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
@@ -257,6 +251,8 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       routeConfig = undefined;
     } else if (isDirectTransfer) {
       routeConfig = createNearWithdrawalRoute(message ?? undefined);
+    } else if (isDirectNonNearWithdrawal) {
+      routeConfig = undefined;
     } else {
       routeConfig = createInternalTransferRoute();
     }
@@ -265,7 +261,10 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       withdrawalParams: {
         assetId: ctx.sourceToken.assetId,
         amount: BigInt(ctx.sourceTokenAmount),
-        destinationAddress: getDestinationAddress(ctx, isDirectTransfer),
+        destinationAddress: getDestinationAddress(
+          ctx,
+          isDirectTransfer || isDirectNonNearWithdrawal,
+        ),
         destinationMemo: undefined,
         feeInclusive: false,
         routeConfig,

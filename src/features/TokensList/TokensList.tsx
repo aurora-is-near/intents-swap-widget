@@ -1,5 +1,5 @@
 import { VList } from 'virtua';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
@@ -22,6 +22,7 @@ type Msg =
   | { type: 'on_reset_search' };
 
 type Props = {
+  variant: 'source' | 'target';
   search: string;
   groupTokens: boolean;
   showBalances: boolean;
@@ -45,6 +46,7 @@ const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
 };
 
 export const TokensList = ({
+  variant,
   search,
   className,
   groupTokens,
@@ -60,6 +62,7 @@ export const TokensList = ({
   const { mergedBalance } = useMergedBalance();
 
   const filteredTokens = useTokensFiltered({
+    variant,
     search,
     chainsFilter,
     selectedChain,
@@ -123,7 +126,7 @@ export const TokensList = ({
             }}>
             {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
               ({ label, tokens: tokensToDisplay }) => (
-                <>
+                <Fragment key={label ?? 'ungrouped-tokens'}>
                   {tokensToDisplay.length && label ? (
                     <header className="pb-sw-lg flex flex-col">
                       <Hr />
@@ -149,7 +152,7 @@ export const TokensList = ({
                   })}
 
                   {tokensToDisplay.length ? <div className="h-sw-2xl" /> : null}
-                </>
+                </Fragment>
               ),
             )}
           </VList>

@@ -7,7 +7,6 @@ import { getMainTokenByChain } from '@/utils/tokens/getMainTokenByChain';
 import { getDefaultIntentsToken } from '@/utils/tokens/getDefaultIntentsToken';
 import { getTokenWithHighBalance } from '@/utils/tokens/getTokenWithHighBalance';
 import { CHAIN_BASE_TOKENS } from '@/constants/chains';
-import type { WipgetConfig } from '@/config';
 import type { Chains } from '@/types/chain';
 
 import { fireEvent } from '@/machine';
@@ -16,13 +15,14 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
 
 import type { ListenerProps } from './types';
+import { WidgetConfig } from '../../types/config';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;
   target?: 'none' | 'same-asset';
 };
 
-const accountChainMap: Record<WipgetConfig['intentsAccountType'], Chains> = {
+const accountChainMap: Record<WidgetConfig['intentsAccountType'], Chains> = {
   sol: 'sol',
   evm: 'eth',
   near: 'near',

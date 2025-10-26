@@ -1,7 +1,9 @@
 vite.config.ts
+vite.config.demo.ts
 vite-env.d.ts
 node_modules/**/*
 coverage/
 typings/
 dist/
+build/
 scripts/

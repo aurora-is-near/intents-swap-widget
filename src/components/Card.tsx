@@ -25,9 +25,21 @@ export const Card = ({
 }: Props) => {
   const Component = as;
 
+  const handleKeyDown = isClickable
+    ? (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }
+    : undefined;
+
   return (
     <Component
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
       className={cn(
         'rounded-sw-lg bg-sw-gray-900',
         {

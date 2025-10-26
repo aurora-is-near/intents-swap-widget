@@ -1,11 +1,12 @@
 import { useMemo, useRef } from 'react';
+import { snakeCase } from 'change-case';
 import {
+  Quote as OneClickQuote,
   QuoteRequest,
   QuoteResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
-import { snakeCase } from 'change-case';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -16,16 +17,30 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
-import type { Quote } from '@/types/quote';
 
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
 };
 
+const validateQuoteProperty = (
+  quote: OneClickQuote,
+  property: keyof OneClickQuote,
+) => {
+  if (!(property in quote)) {
+    logger.error(`Missing ${property} in quote response`);
+
+    throw new QuoteError({
+      code: 'QUOTE_INVALID',
+      meta: { isDry: false },
+    });
+  }
+};
+
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName } = useConfig();
+  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
+    useConfig();
 
   const isDry = !ctx.walletAddress;
   const intentsAccountId = getIntentsAccountId({
@@ -35,18 +50,24 @@ export const useMakeQuote = () => {
       : (ctx.walletAddress ?? ''),
   });
 
-  const request = useRef<Promise<AxiosResponse<QuoteResponse>>>(null);
+  const request = useRef<Promise<OneClickQuote>>(null);
   const abortController = useRef<AbortController>(new AbortController());
 
   const requestQuote = useMemo(() => {
-    return async (data: QuoteRequest) => {
-      return oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-        oneClickApiQuoteProxyUrl,
-        data,
-        {
-          signal: abortController.current.signal,
-        },
-      );
+    return async (data: QuoteRequest): Promise<OneClickQuote> => {
+      if (fetchQuote) {
+        return fetchQuote(data);
+      }
+
+      return (
+        await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
+          oneClickApiQuoteProxyUrl,
+          data,
+          {
+            signal: abortController.current.signal,
+          },
+        )
+      ).data.quote;
     };
   }, [oneClickApiQuoteProxyUrl, oneClickApi]);
 
@@ -88,9 +109,12 @@ export const useMakeQuote = () => {
       abortController.current = new AbortController();
     }
 
-    let quoteResponse: QuoteResponse;
+    let quoteResponse: OneClickQuote;
 
-    const commonQuoteParams = {
+    const commonQuoteParams: Omit<
+      QuoteRequest,
+      'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
+    > = {
       // Settings
       dry: isDry,
       slippageTolerance: 100, // 1%
@@ -123,7 +147,6 @@ export const useMakeQuote = () => {
     }
 
     if (appName) {
-      // @ts-expect-error appName is not in the types
       commonQuoteParams.referral = snakeCase(appName);
     }
 
@@ -140,7 +163,7 @@ export const useMakeQuote = () => {
           refundType: QuoteRequest.refundType.INTENTS,
         });
 
-        quoteResponse = (await request.current).data;
+        quoteResponse = await request.current;
       }
 
       request.current = requestQuote({
@@ -165,7 +188,7 @@ export const useMakeQuote = () => {
           : QuoteRequest.refundType.ORIGIN_CHAIN,
       });
 
-      quoteResponse = (await request.current).data;
+      quoteResponse = await request.current;
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
         return;
@@ -213,33 +236,24 @@ export const useMakeQuote = () => {
       });
     }
 
-    let result: Quote;
-
     if (isDry) {
-      result = {
+      return {
         dry: true,
-        ...quoteResponse.quote,
+        ...quoteResponse,
         deadline: undefined,
         depositAddress: undefined,
       };
-    } else if (
-      quoteResponse.quote.deadline &&
-      quoteResponse.quote.depositAddress
-    ) {
-      result = {
-        dry: false,
-        ...quoteResponse.quote,
-        deadline: quoteResponse.quote.deadline,
-        depositAddress: quoteResponse.quote.depositAddress,
-      };
-    } else {
-      throw new QuoteError({
-        code: 'QUOTE_INVALID',
-        meta: { isDry },
-      });
     }
 
-    return result;
+    validateQuoteProperty(quoteResponse, 'deadline');
+    validateQuoteProperty(quoteResponse, 'depositAddress');
+
+    return {
+      dry: false,
+      ...quoteResponse,
+      deadline: quoteResponse.deadline,
+      depositAddress: quoteResponse.depositAddress,
+    };
   };
 
   return {

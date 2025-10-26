@@ -5,6 +5,7 @@ node_modules/
 
 # Build
 dist/
+build/
 *.tsbuildinfo
 
 # Logs
@@ -23,3 +24,10 @@ spec.json
 
 # Vi
 *.swp
+
+# Environment
+.env
+.env.local
+
+# vercel
+.vercel

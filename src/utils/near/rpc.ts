@@ -1,8 +1,5 @@
 import { providers } from 'near-api-js';
-import {
-  FailoverRpcProvider,
-  JsonRpcProvider,
-} from 'near-api-js/lib/providers';
+import { type JsonRpcProvider } from 'near-api-js/lib/providers';
 
 const reserveNearRpcUrls = [
   'https://relmn.aurora.dev',
@@ -15,7 +12,7 @@ function createNearFailoverRpcProvider({
 }: {
   providersList: JsonRpcProvider[];
 }) {
-  return new FailoverRpcProvider(providersList);
+  return new providers.FailoverRpcProvider(providersList);
 }
 
 /**
@@ -23,9 +20,11 @@ function createNearFailoverRpcProvider({
  * It creates a failover provider that will automatically switch between the provided RPC endpoints if one fails.
  */
 export function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
-  const providers_ = urls.map((url) => new providers.JsonRpcProvider({ url }));
+  const providersList = urls.map(
+    (url) => new providers.JsonRpcProvider({ url }),
+  );
 
-  return createNearFailoverRpcProvider({ providersList: providers_ });
+  return createNearFailoverRpcProvider({ providersList });
 }
 
 export const nearRpcClient = nearFailoverRpcProvider({

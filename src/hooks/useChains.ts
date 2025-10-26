@@ -21,16 +21,42 @@ function sortChains(items: Chain[], order: ReadonlyArray<Chains>) {
   });
 }
 
-export const useChains = () => {
-  const { chainsOrder, allowedChainsList } = useConfig();
+export const useChains = (variant: 'source' | 'target') => {
+  const {
+    chainsOrder,
+    allowedChainsList,
+    allowedSourceChainsList,
+    allowedTargetChainsList,
+  } = useConfig();
+
   const { tokens } = useTokens();
 
   return useMemo(() => {
     const chainsFromTokens = Array.from(
       new Set(tokens.map((token) => CHAINS_LIST[token.blockchain])),
-    ).filter((chain) =>
-      allowedChainsList ? allowedChainsList.includes(chain.id) : true,
-    );
+    ).filter((chain) => {
+      if (allowedChainsList && !allowedChainsList.includes(chain.id)) {
+        return false;
+      }
+
+      if (
+        variant === 'source' &&
+        allowedSourceChainsList &&
+        !allowedSourceChainsList.includes(chain.id)
+      ) {
+        return false;
+      }
+
+      if (
+        variant === 'target' &&
+        allowedTargetChainsList &&
+        !allowedTargetChainsList.includes(chain.id)
+      ) {
+        return false;
+      }
+
+      return true;
+    });
 
     if (chainsOrder) {
       return sortChains(chainsFromTokens, chainsOrder);

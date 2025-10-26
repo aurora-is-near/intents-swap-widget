@@ -1,48 +1,54 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
-import type { QueryObserverOptions } from '@tanstack/react-query';
-import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
 import { NATIVE_NEAR_DUMB_ASSET_ID, TOKENS_DATA } from '@/constants/tokens';
 import { CHAINS_LIST, DEFAULT_CHAIN_ICON } from '@/constants/chains';
 import { isValidChain } from '@/utils/checkers/isValidChain';
 import type { Chains } from '@/types/chain';
-import type { Token } from '@/types/token';
+import type { SimpleToken, Token } from '@/types/token';
 
-const getTokenIcon = (token: TokenResponse): string => {
-  const tokenSymbol = token.symbol.toLowerCase();
+const getTokenIcon = (tokenSymbol: string): string => {
+  const symbol = tokenSymbol.toLowerCase();
 
-  return TOKENS_DATA[tokenSymbol]?.icon ?? '';
+  return TOKENS_DATA[symbol]?.icon ?? '';
 };
 
 const getChainIcon = (blockchain: Chains): string => {
   return CHAINS_LIST[blockchain].icon ?? DEFAULT_CHAIN_ICON;
 };
 
-const capitalizeChainName = (token: TokenResponse) =>
-  `${token.blockchain?.charAt(0).toUpperCase()}${token.blockchain?.slice(1)}`;
+const capitalizeChainName = (blockchain: string) =>
+  `${blockchain?.charAt(0).toUpperCase()}${blockchain?.slice(1)}`;
 
-const getTokenName = (token: TokenResponse) => {
-  return TOKENS_DATA[token.symbol]?.name ?? token.symbol;
+const getTokenName = (tokenSymbol: string): string => {
+  return TOKENS_DATA[tokenSymbol]?.name ?? tokenSymbol;
 };
 
-export const useTokens = (
-  options: Omit<
-    QueryObserverOptions<TokenResponse[]>,
-    'queryKey' | 'queryFn'
-  > = {},
-) => {
-  const { showIntentTokens, allowedTokensList, filterTokens } = useConfig();
+export const useTokens = (variant?: 'source' | 'target') => {
+  const {
+    showIntentTokens,
+    allowedTokensList,
+    allowedSourceTokensList,
+    allowedTargetTokensList,
+    filterTokens,
+    fetchSourceTokens,
+    fetchTargetTokens,
+  } = useConfig();
 
-  const query = useQuery<TokenResponse[]>({
-    ...options,
-    queryKey: ['tokens'],
-    queryFn: async () => {
-      const tokens = await OneClickService.getTokens();
+  const query = useQuery<SimpleToken[]>({
+    queryKey: ['tokens', variant].filter(Boolean),
+    queryFn: async (): Promise<SimpleToken[]> => {
+      if (variant === 'source' && fetchSourceTokens) {
+        return fetchSourceTokens();
+      }
 
-      return tokens;
+      if (variant === 'target' && fetchTargetTokens) {
+        return fetchTargetTokens();
+      }
+
+      return OneClickService.getTokens();
     },
   });
 
@@ -52,7 +58,7 @@ export const useTokens = (
     }
 
     const tokens: Token[] = query.data
-      .map((token: TokenResponse) => {
+      .map((token: SimpleToken): Token | null => {
         const blockchain = token.blockchain.toLowerCase();
 
         if (!isValidChain(blockchain)) {
@@ -63,14 +69,33 @@ export const useTokens = (
           return null;
         }
 
+        if (
+          variant === 'source' &&
+          allowedSourceTokensList &&
+          !allowedSourceTokensList.includes(token.assetId)
+        ) {
+          return null;
+        }
+
+        if (
+          variant === 'target' &&
+          allowedTargetTokensList &&
+          !allowedTargetTokensList.includes(token.assetId)
+        ) {
+          return null;
+        }
+
         return {
-          ...token,
+          assetId: token.assetId,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          price: token.price,
           blockchain,
           isIntent: false,
-          icon: getTokenIcon(token),
-          name: getTokenName(token),
+          icon: getTokenIcon(token.symbol),
+          name: getTokenName(token.symbol),
           chainIcon: getChainIcon(blockchain),
-          chainName: capitalizeChainName(token),
+          chainName: capitalizeChainName(token.blockchain),
           contractAddress: token.contractAddress,
         };
       })
@@ -85,20 +110,22 @@ export const useTokens = (
     // wNEAR token to get price
     const wnearToken = tokens.find((t) => t.symbol.toLowerCase() === 'wnear');
 
-    // add native NEAR
-    tokensWithoutWNEAR.push({
-      name: 'NEAR',
-      symbol: 'NEAR',
-      chainName: 'Near',
-      blockchain: 'near',
-      assetId: NATIVE_NEAR_DUMB_ASSET_ID,
-      chainIcon: getChainIcon('near'),
-      icon: TOKENS_DATA.near?.icon ?? '',
-      price: wnearToken?.price ?? 0,
-      contractAddress: wnearToken?.contractAddress,
-      isIntent: false,
-      decimals: 24,
-    });
+    // add native NEAR if the original list included wNEAR
+    if (wnearToken) {
+      tokensWithoutWNEAR.push({
+        name: 'NEAR',
+        symbol: 'NEAR',
+        chainName: 'Near',
+        blockchain: 'near',
+        assetId: NATIVE_NEAR_DUMB_ASSET_ID,
+        chainIcon: getChainIcon('near'),
+        icon: TOKENS_DATA.near?.icon ?? '',
+        price: wnearToken?.price ?? 0,
+        contractAddress: wnearToken?.contractAddress,
+        isIntent: false,
+        decimals: 24,
+      });
+    }
 
     return showIntentTokens
       ? [

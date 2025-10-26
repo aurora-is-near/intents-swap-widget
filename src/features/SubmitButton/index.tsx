@@ -18,6 +18,9 @@ type Msg = { type: 'on_successful_transfer'; transfer: TransferResult };
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg: (msg: Msg) => void;
+    externalSwapLabel: string;
+    internalSwapLabel: string;
+    transferLabel: string;
   };
 
 const commonBtnProps = {
@@ -114,11 +117,19 @@ const SubmitButtonError = () => {
   return useGetErrorButton(ctx);
 };
 
-const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
+const SubmitButtonBase = ({
+  providers,
+  makeTransfer,
+  onMsg,
+  internalSwapLabel,
+  externalSwapLabel,
+  transferLabel,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {
     isDirectTransfer,
+    isDirectNonNearWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
@@ -134,16 +145,17 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   const getMainLabel = () => {
     if (
       isDirectTransfer ||
+      isDirectNonNearWithdrawal ||
       isNearToIntentsSameAssetTransfer ||
       isDirectNearDeposit ||
       nativeNearDeposit
     ) {
-      return t('submit.active.transfer', 'Transfer');
+      return transferLabel;
     }
 
     return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? t('submit.active.internal', 'Swap')
-      : t('submit.active.external', 'Swap & send');
+      ? internalSwapLabel
+      : externalSwapLabel;
   };
 
   const onClick = async () => {
@@ -230,6 +242,7 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   if (
     !ctx.quote &&
     !isDirectTransfer &&
+    !isDirectNonNearWithdrawal &&
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit &&
     !nativeNearDeposit
