@@ -65,20 +65,17 @@ export const TabbedWidgetsDemo = () => {
               },
             },
           }}>
-          <div className="relative">
-            <WidgetComponent
-              isLoading={isLoading}
-              providers={{ near: undefined }}
-              makeTransfer={() =>
-                Promise.resolve({
-                  hash: '0x1234567890abcdef1234567890abcdef12345678',
-                  transactionLink:
-                    'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
-                })
-              }
-              onMsg={noop}
-            />
-          </div>
+          <WidgetComponent
+            isLoading={isLoading}
+            makeTransfer={() =>
+              Promise.resolve({
+                hash: '0x1234567890abcdef1234567890abcdef12345678',
+                transactionLink:
+                  'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+              })
+            }
+            onMsg={noop}
+          />
           <div className="demo-widget-footer">
             <WalletConnectButton className="mt-2" />
           </div>

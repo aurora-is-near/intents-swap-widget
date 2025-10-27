@@ -7,25 +7,17 @@ export const SimpleWidgetDemo = () => {
   const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   return (
-    <WidgetConfigProvider
-      config={{
-        appName: 'Demo App',
-        walletAddress,
-        intentsAccountType: 'near',
-        chainsFilter: {
-          target: { intents: 'all', external: 'all' },
-          source: {
-            intents: walletAddress ? 'with-balance' : 'all',
-            external: walletAddress ? 'wallet-supported' : 'all',
-          },
-        },
-      }}>
-      <div className="relative">
+    <div className="demo-widget-container">
+      <WidgetConfigProvider
+        config={{
+          appName: 'Demo App',
+          walletAddress,
+        }}>
         <WidgetSwap isLoading={isLoading} />
-      </div>
-      <div className="demo-widget-footer">
-        <WalletConnectButton className="mt-2" />
-      </div>
-    </WidgetConfigProvider>
+        <div className="demo-widget-footer">
+          <WalletConnectButton className="mt-2" />
+        </div>
+      </WidgetConfigProvider>
+    </div>
   );
 };

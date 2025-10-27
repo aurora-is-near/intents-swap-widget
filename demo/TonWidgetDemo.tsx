@@ -383,7 +383,6 @@ const TonWidgetDemoContent = () => {
         <WidgetSwap
           isOneWay
           isLoading={isAppKitConnecting || isTonConnecting}
-          providers={{ near: undefined }}
           makeTransfer={makeTransfer}
         />
         <div className="demo-widget-footer">
