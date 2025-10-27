@@ -44,8 +44,6 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./vars.css": "./dist/vars.css",
-    "./text.css": "./dist/text.css",
     "./utils.css": "./dist/utils.css",
     "./constants": "./dist/constants/index.js",
     "./components": "./dist/components/index.js",
