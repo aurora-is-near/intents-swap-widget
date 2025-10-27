@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import type { ListenerProps } from './types';
 
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
@@ -8,7 +7,6 @@ import { getMainTokenByChain } from '@/utils/tokens/getMainTokenByChain';
 import { getDefaultIntentsToken } from '@/utils/tokens/getDefaultIntentsToken';
 import { getTokenWithHighBalance } from '@/utils/tokens/getTokenWithHighBalance';
 import { CHAIN_BASE_TOKENS } from '@/constants/chains';
-import type { WipgetConfig } from '@/config';
 import type { Chains } from '@/types/chain';
 
 import { fireEvent } from '@/machine';
@@ -16,12 +14,15 @@ import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
 
+import type { ListenerProps } from './types';
+import { WidgetConfig } from '../../types/config';
+
 export type Props = ListenerProps & {
   skipIntents?: boolean;
   target?: 'none' | 'same-asset';
 };
 
-const accountChainMap: Record<WipgetConfig['intentsAccountType'], Chains> = {
+const accountChainMap: Record<WidgetConfig['intentsAccountType'], Chains> = {
   sol: 'sol',
   evm: 'eth',
   near: 'near',
@@ -146,6 +147,10 @@ export const useSelectedTokensEffect = ({
       return;
     }
 
+    const fallbackToken = tokens.find(
+      (t) => t.isIntent && t.symbol === 'AURORA' && t.blockchain === 'near',
+    );
+
     const timer = setTimeout(() => {
       if (!sourceToken.token) {
         // 1. Intents token if possible
@@ -156,33 +161,33 @@ export const useSelectedTokensEffect = ({
           });
           // 2. Wallet base token if intents not supported
         } else if (walletSupportedChains.length) {
-          fireEvent('tokenSelect', {
-            variant: 'source',
-            token: tokens.find(
+          const tkn =
+            tokens.find(
               (t) =>
                 !t.isIntent &&
                 t.blockchain === accountChainMap[intentsAccountType] &&
                 t.symbol.toLowerCase() ===
-                CHAIN_BASE_TOKENS[
-                  accountChainMap[intentsAccountType]
-                ]?.toLowerCase(),
-            ),
+                  CHAIN_BASE_TOKENS[
+                    accountChainMap[intentsAccountType]
+                  ]?.toLowerCase(),
+            ) ?? fallbackToken;
+
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: tkn,
           });
-          // 3. Fallback to ETH if intents is not supported and wallet is not connected
+          // 3. Fallback if intents is not supported and wallet is not connected
         } else {
           fireEvent('tokenSelect', {
             variant: 'source',
-            token: tokens.find(
-              (t) =>
-                !t.isIntent && t.blockchain === 'eth' && t.symbol === 'ETH',
-            ),
+            token: fallbackToken,
           });
         }
       }
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [tokens]);
+  }, [tokens, sourceToken, skipIntents]);
 
   return { source: ctx.sourceToken, target: ctx.targetToken };
 };

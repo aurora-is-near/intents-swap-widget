@@ -98,6 +98,13 @@
   --color-sw-warn-100: var(--sw-warn-100);
   --color-sw-warn-900: var(--sw-warn-900);
 
+  --color-sw-complete-100: var(--sw-complete-100);
+  --color-sw-complete-900: var(--sw-complete-900);
+
+  /* Modal specific colors */
+  --color-sw-modal-bg: var(--sw-modal-bg);
+  --color-sw-modal-item: var(--sw-modal-item);
+
   /* Custom spacing values */
   --spacing-sw-xxs: var(--sw-space-xxs);
   --spacing-sw-xs: var(--sw-space-xs);

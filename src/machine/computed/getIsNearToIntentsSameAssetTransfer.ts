@@ -9,6 +9,7 @@ export const getIsNearToIntentsSameAssetTransfer = (
     ctx.targetToken &&
     ctx.sourceToken &&
     ctx.targetToken.isIntent &&
+    ctx.targetToken.blockchain === 'near' &&
     ctx.sourceToken.assetId === ctx.targetToken.assetId
   );
 };

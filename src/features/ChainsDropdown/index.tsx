@@ -18,6 +18,7 @@ import { AllNetworksIcon } from './AllNetworksIcon';
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
 
 type Props = {
+  variant: 'source' | 'target';
   chainsFilter: DefaultChainsFilter;
   selected: 'all' | 'intents' | Chains;
   onMsg: (msg: Msg) => void;
@@ -29,15 +30,22 @@ const commonIconProps = {
   variant: 'light' as const,
 };
 
-export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
+export const ChainsDropdown = ({
+  variant,
+  selected,
+  chainsFilter,
+  onMsg,
+}: Props) => {
   const { t } = useTypedTranslation();
 
-  const chains = useChains();
+  const chains = useChains(variant);
   const { appIcon, appName, showIntentTokens } = useConfig();
   const selectedChain = useMemo(
     () => chains.find((item) => item.id === selected),
     [chains, selected],
   );
+
+  const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
 
   return (
     <Menu>
@@ -98,27 +106,29 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
-                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex !max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none overflow-auto">
-                <MenuItem>
-                  <ChainItem
-                    chain="all"
-                    label="All networks"
-                    isSelected={selected === 'all'}
-                    icon={<AllNetworksIcon />}
-                    onMsg={(msg) => {
-                      switch (msg.type) {
-                        case 'on_click_chain':
-                          close();
-                          onMsg(msg);
-                          break;
-                        default:
-                          notReachable(msg.type, { throwError: false });
-                      }
-                    }}
-                  />
-                </MenuItem>
+                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none overflow-auto">
+                {chains.length > 1 && (
+                  <MenuItem>
+                    <ChainItem
+                      chain="all"
+                      label="All networks"
+                      isSelected={selected === 'all'}
+                      icon={<AllNetworksIcon />}
+                      onMsg={(msg) => {
+                        switch (msg.type) {
+                          case 'on_click_chain':
+                            close();
+                            onMsg(msg);
+                            break;
+                          default:
+                            notReachable(msg.type, { throwError: false });
+                        }
+                      }}
+                    />
+                  </MenuItem>
+                )}
 
-                {chainsFilter.intents !== 'none' && (
+                {hasIntentsAccountMenuItem && (
                   <MenuItem>
                     <ChainItem
                       chain="intents"
@@ -139,7 +149,10 @@ export const ChainsDropdown = ({ selected, chainsFilter, onMsg }: Props) => {
                   </MenuItem>
                 )}
 
-                {chains.length > 0 && <Hr className="shrink-0 my-sw-sm" />}
+                {!!chains.length &&
+                  !!(chains.length > 1 || hasIntentsAccountMenuItem) && (
+                    <Hr className="shrink-0 my-sw-sm" />
+                  )}
 
                 {chains.map((chain) => {
                   return (

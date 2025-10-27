@@ -9,11 +9,17 @@ type Options = {
   chainsFilter: DefaultChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
   intentBalances: TokenBalances;
+  uniqueIntentTokenIds: string[];
 };
 
 export const createFilterBySelectedChain = (options: Options) => {
-  const { chainsFilter, selectedChain, intentBalances, walletSupportedChains } =
-    options;
+  const {
+    chainsFilter,
+    selectedChain,
+    intentBalances,
+    walletSupportedChains,
+    uniqueIntentTokenIds,
+  } = options;
 
   return (token: Token) => {
     if (
@@ -24,7 +30,7 @@ export const createFilterBySelectedChain = (options: Options) => {
       return false;
     }
 
-    if (chainsFilter.external === 'none' && !token.isIntent) {
+    if (!token.isIntent && chainsFilter.external === 'none') {
       return false;
     }
 
@@ -34,18 +40,21 @@ export const createFilterBySelectedChain = (options: Options) => {
       return !!balance && balance !== '0';
     }
 
-    if (chainsFilter.external === 'all' && selectedChain === 'all') {
-      return true;
-    }
-
     if (token.isIntent && ['all', 'intents'].includes(selectedChain)) {
-      return true;
+      return uniqueIntentTokenIds.includes(token.assetId);
     }
 
     if (selectedChain === 'all') {
-      // do not show unsupported chain tokens in ALL list
-      if (!walletSupportedChains.includes(token.blockchain)) {
+      if (
+        !token.isIntent &&
+        chainsFilter.external === 'wallet-supported' &&
+        !walletSupportedChains.includes(token.blockchain)
+      ) {
         return false;
+      }
+
+      if (!token.isIntent && chainsFilter.external === 'all') {
+        return true;
       }
 
       return true;

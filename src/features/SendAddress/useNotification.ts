@@ -23,9 +23,13 @@ export const useNotification = (
 ): Notification => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName } = useConfig();
+  const { walletSupportedChains, appName, sendAddress } = useConfig();
 
   return useMemo(() => {
+    if (sendAddress) {
+      return undefined;
+    }
+
     if (ctx.sendAddress && userError) {
       return {
         variant: 'error',

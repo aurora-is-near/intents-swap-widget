@@ -6,7 +6,7 @@ import { TinyNumber } from '@/components/TinyNumber';
 import { getUsdDisplayBalance } from '@/utils/formatters/getUsdDisplayBalance';
 import type { Token, TokenBalance } from '@/types/token';
 
-export const TOKEN_ITEM_HEIGHT = 50;
+export const TOKEN_ITEM_HEIGHT = 58;
 
 type Msg = { type: 'on_select_token'; token: Token };
 
@@ -57,7 +57,7 @@ export const TokenItem = ({
               <span className="text-sw-label-s text-sw-gray-100">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName !== 'Near' ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName !== 'Near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-sw-xs">

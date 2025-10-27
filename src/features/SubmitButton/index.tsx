@@ -9,6 +9,7 @@ import type { Context } from '@/machine/context';
 import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
@@ -17,6 +18,9 @@ type Msg = { type: 'on_successful_transfer'; transfer: TransferResult };
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg: (msg: Msg) => void;
+    externalSwapLabel: string;
+    internalSwapLabel: string;
+    transferLabel: string;
   };
 
 const commonBtnProps = {
@@ -78,6 +82,33 @@ const useGetErrorButton = (ctx: Context) => {
       </div>
     );
   }
+
+  // transfer errors
+  if (ctx.error?.code === 'TRANSFER_INVALID_INITIAL') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.invalidTransferData.label', 'Invalid transfer data')}
+        </Button>
+        {ctx.error.meta?.message ? (
+          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (ctx.error?.code === 'DIRECT_TRANSFER_ERROR') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.transferFailed.label', 'Transfer failed')}
+        </Button>
+        {ctx.error.meta?.message ? (
+          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+        ) : null}
+      </div>
+    );
+  }
 };
 
 const SubmitButtonError = () => {
@@ -86,11 +117,19 @@ const SubmitButtonError = () => {
   return useGetErrorButton(ctx);
 };
 
-const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
+const SubmitButtonBase = ({
+  providers,
+  makeTransfer,
+  onMsg,
+  internalSwapLabel,
+  externalSwapLabel,
+  transferLabel,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {
     isDirectTransfer,
+    isDirectNonNearWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
@@ -99,18 +138,24 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
+  const nativeNearDeposit =
+    ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+    ctx.targetToken?.assetId === WNEAR_ASSET_ID;
+
   const getMainLabel = () => {
     if (
       isDirectTransfer ||
+      isDirectNonNearWithdrawal ||
       isNearToIntentsSameAssetTransfer ||
-      isDirectNearDeposit
+      isDirectNearDeposit ||
+      nativeNearDeposit
     ) {
-      return t('submit.active.transfer', 'Transfer');
+      return transferLabel;
     }
 
     return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? t('submit.active.internal', 'Swap')
-      : t('submit.active.external', 'Swap & send');
+      ? internalSwapLabel
+      : externalSwapLabel;
   };
 
   const onClick = async () => {
@@ -197,8 +242,10 @@ const SubmitButtonBase = ({ providers, makeTransfer, onMsg }: Props) => {
   if (
     !ctx.quote &&
     !isDirectTransfer &&
+    !isDirectNonNearWithdrawal &&
     !isNearToIntentsSameAssetTransfer &&
-    !isDirectNearDeposit
+    !isDirectNearDeposit &&
+    !nativeNearDeposit
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>

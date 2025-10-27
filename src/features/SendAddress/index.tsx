@@ -1,5 +1,5 @@
 import * as Icons from 'lucide-react';
-import type { ChangeEvent } from 'react';
+import { type ChangeEvent, useEffect, useMemo } from 'react';
 
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
@@ -25,7 +25,7 @@ type Props = {
 export const SendAddress = ({ error, className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains } = useConfig();
+  const { walletSupportedChains, sendAddress } = useConfig();
 
   const notification = useNotification(error);
 
@@ -41,12 +41,27 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
     onMsg({ type: 'on_change_send_address', address });
   };
 
+  // Sync fixed sendAddress with machine state
+  useEffect(() => {
+    if (sendAddress && sendAddress !== ctx.sendAddress) {
+      fireEvent('addressSet', sendAddress);
+    }
+  }, [sendAddress, ctx.sendAddress]);
+
+  const inputState = useMemo(() => {
+    if (sendAddress) {
+      return 'fixed' as const;
+    }
+
+    return notification?.state ?? 'default';
+  }, [notification, sendAddress]);
+
   return (
     <Card className={cn('gap-sw-lg flex flex-col', className)}>
       <h5 className="text-sw-label-m text-sw-gray-50">Send to</h5>
       <Input
         defaultValue={ctx.sendAddress}
-        state={notification?.state ?? 'default'}
+        state={inputState}
         placeholder={t(
           'wallet.recipient.placeholder',
           'Enter recipient wallet address',

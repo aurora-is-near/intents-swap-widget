@@ -1,77 +1,93 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { SwapQuote } from '@/features/SwapQuote';
-import { TokenInput } from '@/features/TokenInput';
-import { TokensModal } from '@/features/TokensModal';
-import { SendAddress } from '@/features/SendAddress';
-import { SuccessScreen } from '@/features/SuccessScreen';
-import { SwapDirectionSwitcher } from '@/features/SwapDirectionSwitcher';
-import { SubmitButton } from '@/features/SubmitButton';
+import {
+  SendAddress,
+  SubmitButton,
+  SuccessScreen,
+  SwapDirectionSwitcher,
+  SwapQuote,
+  TokenInput,
+  TokensModal,
+} from '@/features';
 
-import { BlockingError } from '@/components/BlockingError';
+import { BlockingError } from '@/components';
 
-import { useTokens } from '@/hooks/useTokens';
-import { useTokenInputPair } from '@/hooks/useTokenInputPair';
-import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
-import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
-
-import { useConfig } from '@/config';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
 
-import { isDebug } from '@/utils/checkers/isDebug';
-import { notReachable } from '@/utils/notReachable';
+import { useTokenInputPair, useTokens } from '@/hooks';
+import { useConfig } from '@/config';
 
-import type { Token } from '@/types/token';
-import type { TransferResult } from '@/types/transfer';
+import { isDebug, notReachable } from '@/utils';
 
-import { Wrapper } from './Wrapper';
-import { Skeleton } from './Skeleton';
+import type {
+  IntentsTransferArgs,
+  QuoteTransferArgs,
+  Token,
+  TransferResult,
+} from '@/types';
+
+import type { TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 type Msg =
-  | { type: 'on_select_token'; token: Token; variant: 'source' | 'target' }
-  | { type: 'on_transfer_initialized' }
-  | { type: 'on_dismiss_tokens_modal' }
-  | { type: 'on_click_select_token' };
+  | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
+  | { type: 'on_select_token'; token: Token; variant: TokenInputType }
+  | { type: 'on_transfer_success' };
 
 export type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
-    onMsg: (msg: Msg) => void;
+    onMsg?: (msg: Msg) => void;
+    isLoading?: boolean;
+    isOneWay?: boolean;
   };
 
-export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
+export const WidgetSwapContent = ({
+  providers,
+  makeTransfer,
+  onMsg,
+  isLoading,
+  isOneWay,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter } = useConfig();
-
-  const { onChangeAmount, onChangeToken } = useTokenInputPair();
+  const { walletAddress, chainsFilter, alchemyApiKey } = useConfig();
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
+  const { onChangeAmount, onChangeToken, lastChangedInput } =
+    useTokenInputPair();
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
 
-  const [tokenModalOpen, setTokenModalOpen] = useState<
-    'source' | 'target' | 'none'
-  >('none');
+  useEffect(() => {
+    fireEvent('reset', null);
+  }, []);
 
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
       'checkWalletConnection',
       'setSourceTokenBalance',
-      ['makeQuote', { message: undefined }],
       ['setDefaultSelectedTokens', { skipIntents: false }],
       [
-        'setBalancesUsingAlchemyExt',
-        { alchemyApiKey: 'DFfe56HsC5zN0p1yox93f' },
+        'makeQuote',
+        {
+          message: undefined,
+          type: lastChangedInput === 'target' ? 'exact_out' : 'exact_in',
+        },
       ],
+      ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
 
-  // wait for source token to be automatically selected from the list
-  if (!ctx.sourceToken) {
-    return <Skeleton />;
+  if (!!isLoading || !ctx.sourceToken) {
+    return <WidgetSwapSkeleton />;
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -110,6 +126,7 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
           <TokensModal
             showBalances
             showChainsSelector
+            variant={tokenModalOpen}
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
@@ -120,16 +137,15 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
               switch (msg.type) {
                 case 'on_select_token':
                   onChangeToken(tokenModalOpen, msg.token);
-                  setTokenModalOpen('none');
-                  onMsg({
+                  updateTokenModalState('none');
+                  onMsg?.({
                     type: msg.type,
                     token: msg.token,
                     variant: tokenModalOpen,
                   });
                   break;
                 case 'on_dismiss_tokens_modal':
-                  setTokenModalOpen('none');
-                  onMsg(msg);
+                  updateTokenModalState('none');
                   break;
                 default:
                   notReachable(msg);
@@ -140,18 +156,21 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
       }
 
       return (
-        <Wrapper>
+        <div className="gap-sw-2xl flex flex-col">
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <TokenInput.Source
+                isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
                   switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('source', msg.token);
+                      break;
                     case 'on_change_amount':
                       onChangeAmount('source', msg.amount);
                       break;
                     case 'on_click_select_token':
-                      setTokenModalOpen('source');
-                      onMsg(msg);
+                      updateTokenModalState('source');
                       break;
                     default:
                       notReachable(msg);
@@ -159,17 +178,20 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
                 }}
               />
 
-              <SwapDirectionSwitcher />
+              <SwapDirectionSwitcher disabled={isOneWay} />
 
               <TokenInput.Target
+                isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
                   switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('target', msg.token);
+                      break;
                     case 'on_change_amount':
                       onChangeAmount('target', msg.amount);
                       break;
                     case 'on_click_select_token':
-                      setTokenModalOpen('target');
-                      onMsg(msg);
+                      updateTokenModalState('target');
                       break;
                     default:
                       notReachable(msg);
@@ -193,17 +215,23 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
                 />
               )}
 
-            {!isDirectTransfer && <SwapQuote />}
+            {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
             {walletAddress ? (
               <SubmitButton
                 providers={providers}
                 makeTransfer={makeTransfer}
+                transferLabel={t('submit.active.transfer.swap', 'Transfer')}
+                internalSwapLabel={t('submit.active.internal.swap', 'Swap')}
+                externalSwapLabel={t(
+                  'submit.active.external.swap',
+                  'Swap & send',
+                )}
                 onMsg={(msg) => {
                   switch (msg.type) {
                     case 'on_successful_transfer':
                       setTransferResult(msg.transfer);
-                      onMsg({ type: 'on_transfer_initialized' });
+                      onMsg?.({ type: 'on_transfer_success' });
                       break;
                     default:
                       notReachable(msg.type);
@@ -214,12 +242,12 @@ export const WidgetSwap = ({ providers, makeTransfer, onMsg }: Props) => {
               <SubmitButton.Error />
             )}
           </div>
-        </Wrapper>
+        </div>
       );
     }
 
     case 'pending':
     default:
-      return <Skeleton />;
+      return <WidgetSwapSkeleton />;
   }
 };

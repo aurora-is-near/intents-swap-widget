@@ -2,6 +2,7 @@ import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 import { useQuery } from '@tanstack/react-query';
 
 import { logger } from '@/logger';
+import { WidgetError } from '@/errors';
 import { guardStates, useUnsafeSnapshot } from '@/machine';
 
 export const useExternalDepositStatus = (depositAddress: string) => {
@@ -14,7 +15,7 @@ export const useExternalDepositStatus = (depositAddress: string) => {
 
   const pollDepositStatus = async () => {
     if (!isValidState) {
-      throw new Error(
+      throw new WidgetError(
         `Unable to poll deposit status in current state ${ctx.state}`,
       );
     }

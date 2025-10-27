@@ -1,4 +1,4 @@
-import glob from "glob";
+import { glob } from "glob";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative, extname } from "node:path";
 
@@ -8,7 +8,7 @@ import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-import pkg from "./package.json" assert { type: "json" };
+import pkg from "./package.json" with { type: "json" };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,9 +44,10 @@ export default defineConfig({
       rollupTypes: false,
       insertTypesEntry: true,
     }),
-  ],
+  ].filter(Boolean),
   css: {
     postcss: "./postcss.config.cjs",
+    modules: false,
   },
   resolve: {
     alias: {
@@ -65,7 +66,6 @@ export default defineConfig({
     rollupOptions: {
       external: isExt,
       output: {
-        // inlineDynamicImports: true,
         entryFileNames: "[name].js",
         assetFileNames: (assetInfo) => {
             if (assetInfo.name && assetInfo.name.endsWith('.css')) {

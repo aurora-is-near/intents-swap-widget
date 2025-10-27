@@ -1,5 +1,5 @@
 import { VList } from 'virtua';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
@@ -22,11 +22,13 @@ type Msg =
   | { type: 'on_reset_search' };
 
 type Props = {
+  variant: 'source' | 'target';
   search: string;
   groupTokens: boolean;
   showBalances: boolean;
   chainsFilter: DefaultChainsFilter;
   selectedChain: 'all' | 'intents' | Chains;
+  chainIsNotSupported: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
@@ -44,12 +46,14 @@ const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
 };
 
 export const TokensList = ({
+  variant,
   search,
   className,
   groupTokens,
   showBalances,
   chainsFilter,
   selectedChain,
+  chainIsNotSupported,
   onMsg,
 }: Props) => {
   const { t } = useTypedTranslation();
@@ -57,14 +61,8 @@ export const TokensList = ({
   const { walletSupportedChains, appName } = useConfig();
   const { mergedBalance } = useMergedBalance();
 
-  // selected chain is not supported by connected wallet
-  const isNotSelectable =
-    selectedChain !== 'all' &&
-    selectedChain !== 'intents' &&
-    chainsFilter.external !== 'all' &&
-    !walletSupportedChains.includes(selectedChain);
-
   const filteredTokens = useTokensFiltered({
+    variant,
     search,
     chainsFilter,
     selectedChain,
@@ -83,11 +81,11 @@ export const TokensList = ({
     () => [
       { label: `${appName} account`, tokens: filteredTokens.intents },
       {
-        label: isNotSelectable ? null : 'Connected wallet',
+        label: chainIsNotSupported ? null : 'Connected wallet',
         tokens: filteredTokens.wallet,
       },
     ],
-    [filteredTokens.wallet, filteredTokens.intents, isNotSelectable],
+    [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
   );
 
   const tokensCount = useMemo(() => {
@@ -123,12 +121,12 @@ export const TokensList = ({
               minHeight: 200,
               height: tokensCount
                 ? tokensCount * TOKEN_ITEM_HEIGHT +
-                  (areTokensGrouped ? tokensBySection.length * 40 : 0)
+                  (areTokensGrouped ? tokensBySection.length * 62 : 0)
                 : TOKEN_ITEM_HEIGHT * 2,
             }}>
             {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
               ({ label, tokens: tokensToDisplay }) => (
-                <>
+                <Fragment key={label ?? 'ungrouped-tokens'}>
                   {tokensToDisplay.length && label ? (
                     <header className="pb-sw-lg flex flex-col">
                       <Hr />
@@ -144,15 +142,17 @@ export const TokensList = ({
                         token={token}
                         key={tokenBalanceKey}
                         showBalance={showBalances}
-                        isNotSelectable={isNotSelectable && !!ctx.walletAddress}
                         balance={mergedBalance[tokenBalanceKey]}
+                        isNotSelectable={
+                          chainIsNotSupported && !!ctx.walletAddress
+                        }
                         onMsg={onMsg}
                       />
                     );
                   })}
 
                   {tokensToDisplay.length ? <div className="h-sw-2xl" /> : null}
-                </>
+                </Fragment>
               ),
             )}
           </VList>
@@ -164,8 +164,9 @@ export const TokensList = ({
       return (
         <Banner
           variant="info"
+          className="mb-sw-4xl"
           message={t('tokens.list.noBalanceOnApp.label', {
-            defaultValue: 'No balances available on the {{appName}}',
+            defaultValue: 'No balances available on {{appName}}',
             appName,
           })}
         />

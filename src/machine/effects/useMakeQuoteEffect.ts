@@ -1,36 +1,54 @@
 import { useEffect } from 'react';
 
 import { QuoteError } from '@/errors';
-import { useMakeQuote } from '@/hooks/useMakeQuote';
-
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
+import { useMakeQuote } from '@/hooks/useMakeQuote';
+import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
+import type { Quote } from '@/types/quote';
 
 import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   message?: string;
+  type?: 'exact_in' | 'exact_out';
 };
 
-export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
+export const useMakeQuoteEffect = ({
+  isEnabled,
+  message,
+  type: quoteType = 'exact_in',
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const {
     isDirectTransfer,
+    isDirectNonNearWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
 
   const isDry = !ctx.walletAddress;
+
   const shouldRun =
     isEnabled &&
     !isDirectTransfer &&
+    !isDirectNonNearWithdrawal &&
     !isNearToIntentsSameAssetTransfer &&
     !isDirectNearDeposit;
 
-  const { make: makeQuote, cancel } = useMakeQuote({ variant: 'swap' });
+  const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
+  const { make: makeDepositAddress, cancel: cancelDepositAddress } =
+    useMakeDepositAddress();
 
+  const cancel = () => {
+    cancelQuote();
+    cancelDepositAddress();
+  };
+
+  // cancels any ongoing quote request if input becomes invalid
   useEffect(() => {
     const isValidDryInput = guardStates(ctx, ['input_valid_dry']);
     const isValidExternalInput = guardStates(ctx, ['input_valid_external']);
@@ -79,6 +97,14 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
 
     let cancelled = false;
 
+    // not used for depositing native Near token
+    if (
+      ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
+      ctx.targetToken?.assetId === WNEAR_ASSET_ID
+    ) {
+      return;
+    }
+
     const isValidState = isDry
       ? ctx.state === 'input_valid_dry'
       : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
@@ -101,7 +127,14 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
         if (isValidState && ctx.quoteStatus === 'idle') {
           console.log('[DEBUG EFFECT] Triggering quote fetch...');
           fireEvent('quoteSetStatus', 'pending');
-          const quote = await makeQuote({ message });
+
+          let quote: Quote | undefined;
+
+          if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+            quote = await makeDepositAddress();
+          } else {
+            quote = await makeQuote({ message, quoteType });
+          }
 
           if (cancelled || !quote) {
             console.log('[DEBUG EFFECT] Quote cancelled or null');
@@ -140,7 +173,10 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
         console.error('║  🔥 EFFECT CAUGHT QUOTE ERROR                     ║');
         console.error('╚═══════════════════════════════════════════════════╝');
         console.error('[EFFECT ERROR] Error object:', err);
-        console.error('[EFFECT ERROR] Error type:', (err as any)?.constructor?.name);
+        console.error(
+          '[EFFECT ERROR] Error type:',
+          (err as any)?.constructor?.name,
+        );
         console.error('[EFFECT ERROR] Error message:', (err as any)?.message);
 
         if (cancelled) {
@@ -152,7 +188,10 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
         if (err instanceof QuoteError) {
           console.error('[EFFECT ERROR] ⚠️ This is a QuoteError');
           console.error('[EFFECT ERROR] QuoteError code:', err.data.code);
-          console.error('[EFFECT ERROR] QuoteError meta:', (err.data as any).meta);
+          console.error(
+            '[EFFECT ERROR] QuoteError meta:',
+            (err.data as any).meta,
+          );
           console.error('[EFFECT ERROR] Full QuoteError data:', err.data);
 
           if (err.data.code === 'QUOTE_INVALID_INITIAL') {
@@ -170,7 +209,9 @@ export const useMakeQuoteEffect = ({ isEnabled, message }: Props) => {
           fireEvent('errorSet', err.data);
 
           validateInputAndMoveTo(ctx);
-          console.error('╚═══════════════════════════════════════════════════╝');
+          console.error(
+            '╚═══════════════════════════════════════════════════╝',
+          );
 
           return;
         }

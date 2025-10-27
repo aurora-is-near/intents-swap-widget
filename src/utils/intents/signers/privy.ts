@@ -2,6 +2,8 @@ import { utils } from '@defuse-protocol/internal-utils';
 import { createIntentSignerViem } from '@defuse-protocol/bridge-sdk';
 import type { Eip1193Provider } from 'ethers';
 
+import { WidgetError } from '@/errors';
+
 type SignIntentResult = ReturnType<
   ReturnType<typeof createIntentSignerViem>['signIntent']
 >;
@@ -45,7 +47,7 @@ export class IntentSignerPrivy implements IPrivySigner {
     });
 
     if (signature == null) {
-      throw new Error('No signature is returned');
+      throw new WidgetError('No signature is returned');
     }
 
     return {

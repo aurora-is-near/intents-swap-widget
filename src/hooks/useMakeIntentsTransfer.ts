@@ -3,33 +3,43 @@ import {
   createIntentSignerNEP413,
   createInternalTransferRoute,
   createNearWithdrawalRoute,
+  type RouteConfig,
 } from '@defuse-protocol/bridge-sdk';
 import type { Wallet as NearWallet } from '@near-wallet-selector/core';
 import type { Eip1193Provider } from 'ethers';
-
+import { snakeCase } from 'change-case';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
+import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { localStorageTyped } from '@/utils/localstorage';
+import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
+import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+import { generateRandomBytes } from '../utils/near/getRandomBytes';
+
+import { IntentSignerSolana } from '../utils/intents/signers/solana';
+import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
 
 export type IntentsTransferArgs = {
   providers: {
-    sol?: undefined | null | (() => Promise<Eip1193Provider>);
+    sol?: undefined | null | SolanaWalletAdapter;
     evm?: undefined | null | (() => Promise<Eip1193Provider>);
     near?: undefined | null | (() => NearWallet);
   };
 };
 
 type MakeArgs = {
+  message?: string;
   onPending: (reason: 'WAITING_CONFIRMATION' | 'PROCESSING') => void;
 };
 
@@ -55,12 +65,97 @@ const getDestinationAddress = (ctx: Context, isDirectTransfer: boolean) => {
   return ctx.quote.depositAddress;
 };
 
+const validateNearPublicKey = async (
+  nearProvider: NearWallet,
+  walletAddress: string,
+) => {
+  let publicKey = localStorageTyped.getItem('nearWalletsPk')[walletAddress];
+
+  if (!nearProvider.signMessage) {
+    throw new TransferError({
+      code: 'DIRECT_TRANSFER_ERROR',
+      meta: { message: "Your wallet doesn't support signing messages" },
+    });
+  }
+
+  if (!publicKey) {
+    try {
+      const res = await nearProvider.signMessage({
+        message: 'Authenticate',
+        recipient: 'intents.near',
+        nonce: Buffer.from(generateRandomBytes(32)),
+      });
+
+      if (!res) {
+        throw new TransferError({
+          code: 'DIRECT_TRANSFER_ERROR',
+          meta: { message: 'Signing message failed' },
+        });
+      }
+
+      publicKey = res.publicKey;
+      localStorageTyped.setItem('nearWalletsPk', {
+        [walletAddress]: res.publicKey,
+      });
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: "Your wallet doesn't support signing messages" },
+      });
+    }
+  }
+
+  const accountId = getIntentsAccountId({
+    walletAddress,
+    addressType: 'near',
+  });
+
+  const hasPublicKey = await queryContract({
+    contractId: INTENTS_CONTRACT,
+    methodName: 'has_public_key',
+    args: {
+      account_id: accountId,
+      public_key: publicKey,
+    },
+  });
+
+  if (!hasPublicKey) {
+    try {
+      await nearProvider.signAndSendTransactions({
+        transactions: [
+          {
+            receiverId: INTENTS_CONTRACT,
+            signerId: walletAddress,
+            actions: [
+              {
+                type: 'FunctionCall',
+                params: {
+                  methodName: 'add_public_key',
+                  args: { public_key: publicKey },
+                  gas: '100000000000000',
+                  deposit: '1',
+                },
+              },
+            ],
+          },
+        ],
+      });
+    } catch (e: unknown) {
+      throw new TransferError({
+        code: 'DIRECT_TRANSFER_ERROR',
+        meta: { message: 'Unable to add public key to intents account' },
+      });
+    }
+  }
+};
+
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectTransfer, isDirectNonNearWithdrawal } = useComputedSnapshot();
   const { appName, intentsAccountType } = useConfig();
 
   const make = async ({
+    message,
     onPending,
   }: MakeArgs): Promise<TransferResult | undefined> => {
     if (!ctx.walletAddress) {
@@ -106,20 +201,23 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           providers.evm,
         );
         break;
+
       case 'sol':
         if (!providers.sol) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No EVM provider configured' },
+            meta: { message: 'No SOL provider configured' },
           });
         }
 
-        signer = new IntentSignerPrivy(
+        signer = new IntentSignerSolana(
           { walletAddress: ctx.walletAddress },
           providers.sol,
         );
+
         break;
-      case 'near':
+
+      case 'near': {
         if (!providers.near) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
@@ -127,34 +225,49 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           });
         }
 
+        await validateNearPublicKey(providers.near(), ctx.walletAddress);
+
         signer = createNearWalletSigner({
           walletAddress: ctx.walletAddress,
           getProvider: providers.near,
         });
+
         break;
+      }
       default:
         notReachable(intentsAccountType);
     }
 
-    const sdk = new BridgeSDK({ referral: appName });
+    const sdk = new BridgeSDK({ referral: snakeCase(appName) });
 
     sdk.setIntentSigner(signer);
+
+    let routeConfig: RouteConfig | undefined;
+
+    if (
+      ctx.sourceToken.assetId === WNEAR_ASSET_ID &&
+      ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+    ) {
+      routeConfig = undefined;
+    } else if (isDirectTransfer) {
+      routeConfig = createNearWithdrawalRoute(message ?? undefined);
+    } else if (isDirectNonNearWithdrawal) {
+      routeConfig = undefined;
+    } else {
+      routeConfig = createInternalTransferRoute();
+    }
 
     const withdrawal = sdk.createWithdrawal({
       withdrawalParams: {
         assetId: ctx.sourceToken.assetId,
         amount: BigInt(ctx.sourceTokenAmount),
-        destinationAddress: getDestinationAddress(ctx, isDirectTransfer),
+        destinationAddress: getDestinationAddress(
+          ctx,
+          isDirectTransfer || isDirectNonNearWithdrawal,
+        ),
         destinationMemo: undefined,
         feeInclusive: false,
-        routeConfig: isDirectTransfer
-          ? createNearWithdrawalRoute(
-              getIntentsAccountId({
-                walletAddress: ctx.walletAddress,
-                addressType: intentsAccountType,
-              }) ?? undefined,
-            )
-          : createInternalTransferRoute(),
+        routeConfig,
       },
     });
 
