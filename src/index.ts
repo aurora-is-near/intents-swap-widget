@@ -1,5 +1,9 @@
 import './tailwind.css'; // import so CSS is emitted in dist
 
+// Initialize quote handlers
+import { initializeQuoteHandlers } from './utils/quotes/registry';
+initializeQuoteHandlers();
+
 export { WidgetConfigProvider } from './config';
 export { DEFAULT_RPCS } from './rpcs';
 

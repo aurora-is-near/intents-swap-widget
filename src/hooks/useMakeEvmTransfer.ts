@@ -15,6 +15,28 @@ import {
   optimism,
   polygon,
 } from 'viem/chains';
+
+// Aurora chain configuration
+const aurora: Chain = {
+  id: 1313161554,
+  name: 'Aurora Mainnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ethereum',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Aurora Explorer',
+      url: 'https://explorer.aurora.dev',
+    },
+  },
+};
 import { getTransactionLink, isEvmChain } from '../utils';
 import { MakeTransferArgs } from '../types';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
@@ -36,6 +58,7 @@ const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   pol: polygon,
   bera: null,
   avax: null,
+  aurora,
 };
 
 export const useMakeEvmTransfer = () => {

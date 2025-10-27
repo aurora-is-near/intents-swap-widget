@@ -17,6 +17,9 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
+import { getQuoteRegistry } from '@/utils/quotes/registry';
+import type { QuoteBuilderContext } from '@/types/quoteBuilder';
+import type { Quote } from '@/types/quote';
 
 type MakeArgs = {
   message?: string;
@@ -111,83 +114,60 @@ export const useMakeQuote = () => {
 
     let quoteResponse: OneClickQuote;
 
-    const commonQuoteParams: Omit<
-      QuoteRequest,
-      'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
-    > = {
-      // Settings
-      dry: isDry,
-      slippageTolerance: 100, // 1%
-      deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
-      swapType:
-        quoteType === 'exact_out'
-          ? QuoteRequest.swapType.EXACT_OUTPUT
-          : QuoteRequest.swapType.EXACT_INPUT,
-
-      // Target
-      destinationAsset:
-        ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
-          ? WNEAR_ASSET_ID
-          : ctx.targetToken.assetId,
-
-      // Source
-      originAsset:
-        ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+    // Build quote context for dynamic quote building
+    const quoteContext: QuoteBuilderContext = {
+      sourceToken: {
+        ...ctx.sourceToken,
+        assetId: ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? WNEAR_ASSET_ID
           : ctx.sourceToken.assetId,
-      amount:
-        quoteType === 'exact_out'
-          ? ctx.targetTokenAmount
-          : ctx.sourceTokenAmount,
+      },
+      targetToken: {
+        ...ctx.targetToken,
+        assetId: ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
+          ? WNEAR_ASSET_ID
+          : ctx.targetToken.assetId,
+      },
+      sourceTokenAmount: ctx.sourceTokenAmount,
+      targetTokenAmount: ctx.targetTokenAmount,
+      intentsAccountId,
+      targetWalletAddress,
+      sendAddress: ctx.sendAddress,
+      message,
+      quoteType,
+      isDry,
     };
 
-    if (message) {
-      // @ts-expect-error customRecipientMsg is not in the types
-      commonQuoteParams.customRecipientMsg = message;
-    }
-
-    if (appName) {
-      commonQuoteParams.referral = snakeCase(appName);
-    }
-
     try {
-      if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
-        request.current = requestQuote({
-          ...commonQuoteParams,
-          recipient: intentsAccountId,
-          recipientType: QuoteRequest.recipientType.INTENTS,
-          depositType: QuoteRequest.depositType.INTENTS,
+      // Use dynamic quote building system
+      const quoteRegistry = getQuoteRegistry();
+      const quoteParams = quoteRegistry.buildQuoteParams(quoteContext);
 
-          // Refund
-          refundTo: intentsAccountId,
-          refundType: QuoteRequest.refundType.INTENTS,
-        });
+      // Add global settings
+      const finalQuoteParams = {
+        ...quoteParams,
+        dry: isDry,
+        slippageTolerance: quoteParams.slippageTolerance ?? 100, // 1%
+        deadline: quoteParams.deadline ?? new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+        swapType: quoteParams.swapType ?? (
+          quoteType === 'exact_out'
+            ? QuoteRequest.swapType.EXACT_OUTPUT
+            : QuoteRequest.swapType.EXACT_INPUT
+        ),
+      };
 
-        quoteResponse = await request.current;
+      // Add app-specific parameters
+      if (message && !(finalQuoteParams as any).customRecipientMsg) {
+        (finalQuoteParams as any).customRecipientMsg = message;
       }
 
-      request.current = requestQuote({
-        ...commonQuoteParams,
-        recipient:
-          !ctx.targetToken.isIntent && ctx.sendAddress
-            ? ctx.sendAddress
-            : intentsAccountId,
-        recipientType: ctx.targetToken.isIntent
-          ? QuoteRequest.recipientType.INTENTS
-          : QuoteRequest.recipientType.DESTINATION_CHAIN,
-        depositType: ctx.sourceToken.isIntent
-          ? QuoteRequest.depositType.INTENTS
-          : QuoteRequest.depositType.ORIGIN_CHAIN,
+      if (appName) {
+        finalQuoteParams.referral = snakeCase(appName);
+      }
 
-        // Refund
-        refundTo: ctx.sourceToken.isIntent
-          ? intentsAccountId
-          : targetWalletAddress,
-        refundType: ctx.sourceToken.isIntent
-          ? QuoteRequest.refundType.INTENTS
-          : QuoteRequest.refundType.ORIGIN_CHAIN,
-      });
+      logger.debug('[useMakeQuote] Built quote params:', finalQuoteParams);
 
+      request.current = requestQuote(finalQuoteParams as QuoteRequest);
       quoteResponse = await request.current;
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
@@ -238,22 +218,22 @@ export const useMakeQuote = () => {
 
     if (isDry) {
       return {
-        dry: true,
+        dry: true as const,
         ...quoteResponse,
         deadline: undefined,
         depositAddress: undefined,
-      };
+      } as Quote;
     }
 
     validateQuoteProperty(quoteResponse, 'deadline');
     validateQuoteProperty(quoteResponse, 'depositAddress');
 
     return {
-      dry: false,
+      dry: false as const,
       ...quoteResponse,
-      deadline: quoteResponse.deadline,
-      depositAddress: quoteResponse.depositAddress,
-    };
+      deadline: quoteResponse.deadline!,
+      depositAddress: quoteResponse.depositAddress!,
+    } as Quote;
   };
 
   return {
