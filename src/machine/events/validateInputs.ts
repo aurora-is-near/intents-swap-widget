@@ -42,10 +42,9 @@ export const validateDryInputs = (ctx: Context): boolean | undefined => {
     !isTransferError(ctx.error)
   ) {
     fireEvent('errorSet', null);
-  } else if (
-    isValidInputsState &&
-    err?.code === 'SOURCE_BALANCE_INSUFFICIENT'
-  ) {
+  }
+
+  if (isValidInputsState && err?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
     // should be able to fetch dry quote, when insufficient balance
     fireEvent('errorSet', err);
   }

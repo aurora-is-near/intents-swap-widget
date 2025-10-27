@@ -7,12 +7,9 @@ export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
     !ctx.quote &&
     ctx.quoteStatus === 'idle' &&
     ctx.transferStatus.status === 'idle' &&
-    !ctx.sendAddress &&
     (!ctx.sourceToken ||
       !ctx.targetToken ||
       !isNotEmptyAmount(ctx.sourceTokenAmount) ||
-      (!!ctx.walletAddress &&
-        !isBalanceSufficient(ctx) &&
-        isNotEmptyAmount(ctx.sourceTokenAmount)))
+      (!!ctx.walletAddress && !isBalanceSufficient(ctx)))
   );
 };

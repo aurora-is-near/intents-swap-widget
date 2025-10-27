@@ -19,7 +19,6 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
 import { isNotEmptyAmount } from '@/utils';
 import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
-import type { Quote } from '@/types/quote';
 
 type MakeArgs = {
   message?: string;
