@@ -360,38 +360,36 @@ const TonWidgetDemoContent = () => {
   }, [chainType]);
 
   return (
-    <div className="demo-widget-container">
-      <WidgetConfigProvider
-        config={{
-          appName: 'Ton Demo App',
-          allowedTargetChainsList: ['ton'],
-          walletAddress: appKitWalletAddress,
-          sendAddress: tonAddress,
-          walletSupportedChains,
-          intentsAccountType,
-          fetchQuote,
-          fetchTargetTokens,
-          chainsFilter: {
-            target: { intents: 'none', external: 'all' },
-            source: {
-              intents: 'none',
-              external: appKitWalletAddress ? 'wallet-supported' : 'all',
-            },
+    <WidgetConfigProvider
+      config={{
+        appName: 'Ton Demo App',
+        allowedTargetChainsList: ['ton'],
+        walletAddress: appKitWalletAddress,
+        sendAddress: tonAddress,
+        walletSupportedChains,
+        intentsAccountType,
+        fetchQuote,
+        fetchTargetTokens,
+        chainsFilter: {
+          target: { intents: 'none', external: 'all' },
+          source: {
+            intents: 'none',
+            external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
-        }}>
-        <WidgetSwap
-          isOneWay
-          isLoading={isAppKitConnecting || isTonConnecting}
-          makeTransfer={makeTransfer}
-          FooterComponent={
-            <>
-              <WalletConnectButton connectText="Connect Chain Wallet" />
-              <TonConnectButton />
-            </>
-          }
-        />
-      </WidgetConfigProvider>
-    </div>
+        },
+      }}>
+      <WidgetSwap
+        isOneWay
+        isLoading={isAppKitConnecting || isTonConnecting}
+        makeTransfer={makeTransfer}
+        FooterComponent={
+          <>
+            <WalletConnectButton connectText="Connect Chain Wallet" />
+            <TonConnectButton />
+          </>
+        }
+      />
+    </WidgetConfigProvider>
   );
 };
 

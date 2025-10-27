@@ -1,3 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
-export const Layout = () => <Outlet />;
+export const Layout = () => (
+  <div className="demo-widget-container">
+    <Outlet />
+  </div>
+);

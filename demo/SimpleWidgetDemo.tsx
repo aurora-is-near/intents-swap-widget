@@ -7,17 +7,15 @@ export const SimpleWidgetDemo = () => {
   const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   return (
-    <div className="demo-widget-container">
-      <WidgetConfigProvider
-        config={{
-          appName: 'Demo App',
-          walletAddress,
-        }}>
-        <WidgetSwap
-          isLoading={isLoading}
-          FooterComponent={<WalletConnectButton />}
-        />
-      </WidgetConfigProvider>
-    </div>
+    <WidgetConfigProvider
+      config={{
+        appName: 'Demo App',
+        walletAddress,
+      }}>
+      <WidgetSwap
+        isLoading={isLoading}
+        FooterComponent={<WalletConnectButton />}
+      />
+    </WidgetConfigProvider>
   );
 };
