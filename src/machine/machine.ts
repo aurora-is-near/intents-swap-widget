@@ -129,7 +129,7 @@ export const moveTo = <S extends MachineState>(
 
   if (!guardStates(machine.context, [state])) {
     logger.error(
-      `[WIDGET] Invalid context state for transition request with moveTo (from ${machine.current} to ${state})}`,
+      `[WIDGET] Invalid context state for transition request with moveTo (from ${machine.current} to ${state})`,
     );
 
     return;
