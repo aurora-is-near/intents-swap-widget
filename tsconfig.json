@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "demo/**/*"],
+  "include": ["src/**/*", "demo/**/*", "global.d.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": ".",
@@ -22,7 +22,7 @@
     "resolveJsonModule": true,
     "strictPropertyInitialization": false,
     "noUncheckedIndexedAccess": true,
-    "types": ["./typings/global.d.ts"],
+    "types": ["./vite-env.d.ts"],
     "paths": {
       "@/*": ["./src/*"],
     },
