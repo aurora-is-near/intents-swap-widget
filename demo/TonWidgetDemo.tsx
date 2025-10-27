@@ -1,22 +1,35 @@
-import { TonConnectButton, TonConnectUIProvider } from '@tonconnect/ui-react';
+import {
+  TonConnectButton,
+  TonConnectUIProvider,
+  useTonConnectUI,
+} from '@tonconnect/ui-react';
+import { Cell } from '@ton/core';
 import {
   Blockchain,
+  GaslessSettlement,
   Omniston,
   Quote as OmnistonQuote,
   SettlementMethod,
 } from '@ston-fi/omniston-sdk';
 import {
+  GetExecutionStatusResponse,
   OneClickService,
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
-
-import { useMemo } from 'react';
-import { Chains, SimpleToken, WidgetConfig, WidgetSwap } from '../src';
+import { useMemo, useRef } from 'react';
+import {
+  Chains,
+  MakeTransferArgs,
+  SimpleToken,
+  WidgetConfig,
+  WidgetSwap,
+} from '../src';
 import { WidgetConfigProvider } from '../src/config';
 import { WalletConnectButton } from './components/WalletConnectButton';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { formatBigToHuman } from '../src/utils';
 import { useTonWallet } from './hooks/useTonWallet';
+import { useMakeEvmTransfer } from '../src/hooks/useMakeEvmTransfer';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -76,79 +89,95 @@ const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () =>
   fetchStonFiAssets(TARGET_ASSET_ADDRESSES);
 
-/**
- * Fetch a two-step quote.
- *
- * The first quote is done via OneClick, from the selected source asset to TON.
- * The second quote is done via Omniston, from TON to the selected target asset.
- */
-const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
-  const [{ quote: oneClickQuote }, tokens] = await Promise.all([
-    OneClickService.getQuote({
-      ...data,
-      destinationAsset: TON_ASSET_ID,
-    }),
-    fetchStonFiAssets([data.destinationAsset]),
-  ]);
-
-  // Request the second quote, to see how much of the target asset we can get
-  // for the TON we received from OneClick.
-  const omnistonQuote = await new Promise<OmnistonQuote>((resolve) => {
-    omniston
-      .requestForQuote({
-        settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
-        askAssetAddress: {
-          blockchain: Blockchain.TON,
-          address: data.destinationAsset, // The final target asset
-        },
-        bidAssetAddress: {
-          blockchain: Blockchain.TON,
-          address: TON_ASSET_ADDRESS,
-        },
-        amount: {
-          // The amount of TON we got from OneClick
-          bidUnits: oneClickQuote.amountOut,
-        },
-      })
-      .subscribe((quoteResponseEvent) => {
-        if (
-          quoteResponseEvent.type === 'quoteUpdated' &&
-          'quote' in quoteResponseEvent
-        ) {
-          resolve(quoteResponseEvent.quote);
-
-          return;
-        }
-      });
-  });
-
-  const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
-
-  if (!targetToken) {
-    throw new Error('Missing target token info');
+const performOmnistoneSwap = async (
+  omnistonQuote: OmnistonQuote,
+  tonAddress: string,
+  tonConnect: ReturnType<typeof useTonConnectUI>[0],
+) => {
+  if (!omnistonQuote) {
+    throw new Error('Missing Omniston quote');
   }
 
-  const { askUnits, params } = omnistonQuote;
-  const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
-  const amountOutHuman = parseFloat(
-    formatBigToHuman(askUnits, targetToken.decimals),
-  );
+  const tx = await omniston.buildTransfer({
+    quote: omnistonQuote,
+    useRecommendedSlippage: true,
+    sourceAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+    destinationAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+  });
 
-  const amountOutUsd = amountOutHuman * targetToken.price;
+  const messages = tx.ton?.messages ?? [];
 
-  return {
-    deadline: oneClickQuote.deadline,
-    depositAddress: oneClickQuote.depositAddress,
-    timeEstimate: oneClickQuote.timeEstimate,
-    amountIn: oneClickQuote.amountIn,
-    amountInFormatted: oneClickQuote.amountInFormatted,
-    amountInUsd: oneClickQuote.amountInUsd,
-    minAmountIn: oneClickQuote.minAmountIn,
-    amountOut: askUnits,
-    amountOutFormatted: String(amountOutHuman),
-    amountOutUsd: String(amountOutUsd),
-    minAmountOut: minAskAmount,
-  };
+  const sendTxRes = await tonConnect.sendTransaction({
+    validUntil: Date.now() + 1000000,
+    messages: messages.map((message) => ({
+      address: message.targetAddress,
+      amount: message.sendAmount,
+      payload: message.payload,
+    })),
+  });
+
+  const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
+
+  const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
+
+  const omnistonTxHash: string = (await response.json()).transaction.hash;
+
+  return omnistonTxHash;
+};
+
+/**
+ * Wait for the Omniston transfer to be settled.
+ */
+const waitForOmnistonSettlement = (
+  quoteId: string,
+  outgoingTxHash: string,
+  tonAddress: string,
+) => {
+  const tradeStatus = omniston.trackTrade({
+    quoteId,
+    traderWalletAddress: {
+      blockchain: Blockchain.TON,
+      address: tonAddress,
+    },
+    outgoingTxHash,
+  });
+
+  return new Promise((resolve) => {
+    tradeStatus.subscribe(({ status }) => {
+      if (status?.tradeSettled) {
+        resolve(null);
+      }
+    });
+  });
+};
+
+/**
+ * Wait for the OneClick transfer to be settled.
+ */
+const waitForOneClickSettlement = async (
+  oneClickDepositAddress: string,
+): Promise<GetExecutionStatusResponse> => {
+  const res = await OneClickService.getExecutionStatus(oneClickDepositAddress);
+
+  if (res.status === GetExecutionStatusResponse.status.SUCCESS) {
+    return res;
+  }
+
+  if (res.status === GetExecutionStatusResponse.status.FAILED) {
+    throw new Error('OneClick transfer failed');
+  }
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 3000);
+  });
+
+  return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
 const getTonConnectManifestUrl = () => {
@@ -168,6 +197,136 @@ const TonWidgetDemoContent = () => {
   } = useAppKitWallet();
 
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
+  const [tonConnect] = useTonConnectUI();
+  const omnistonQuote = useRef<OmnistonQuote>(null);
+  const { make: makeEvmTransfer } = useMakeEvmTransfer();
+
+  /**
+   * Fetch a two-step quote.
+   *
+   * The first quote is done via OneClick, from the selected source asset to TON.
+   * The second quote is done via Omniston, from TON to the selected target asset.
+   */
+  const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
+    const [{ quote: oneClickQuote }, tokens] = await Promise.all([
+      OneClickService.getQuote({
+        ...data,
+        destinationAsset: TON_ASSET_ID,
+      }),
+      fetchStonFiAssets([data.destinationAsset]),
+    ]);
+
+    console.log(`[DEBUG] OneClick Quote:`, oneClickQuote);
+
+    // Request the second quote, to see how much of the target asset we can get
+    // for the TON we received from OneClick. The quote is stored for later use
+    // when performing the swap.
+    omnistonQuote.current = await new Promise<OmnistonQuote>((resolve) => {
+      omniston
+        .requestForQuote({
+          settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
+          askAssetAddress: {
+            blockchain: Blockchain.TON,
+            address: data.destinationAsset, // The final target asset
+          },
+          bidAssetAddress: {
+            blockchain: Blockchain.TON,
+            address: TON_ASSET_ADDRESS,
+          },
+          amount: {
+            // The amount of TON we got from OneClick
+            bidUnits: oneClickQuote.amountOut,
+          },
+          settlementParams: {
+            gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
+            maxPriceSlippageBps: 500, // 5% slippage
+          },
+        })
+        .subscribe((quoteResponseEvent) => {
+          if (
+            quoteResponseEvent.type === 'quoteUpdated' &&
+            'quote' in quoteResponseEvent
+          ) {
+            resolve(quoteResponseEvent.quote);
+
+            return;
+          }
+        });
+    });
+
+    console.log(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
+
+    const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
+
+    if (!targetToken) {
+      throw new Error('Missing target token info');
+    }
+
+    const { askUnits, params } = omnistonQuote.current;
+    const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
+    const amountOutHuman = parseFloat(
+      formatBigToHuman(askUnits, targetToken.decimals),
+    );
+
+    const amountOutUsd = amountOutHuman * targetToken.price;
+    const quoteResponse = {
+      deadline: oneClickQuote.deadline,
+      depositAddress: oneClickQuote.depositAddress,
+      timeEstimate: oneClickQuote.timeEstimate,
+      amountIn: oneClickQuote.amountIn,
+      amountInFormatted: oneClickQuote.amountInFormatted,
+      amountInUsd: oneClickQuote.amountInUsd,
+      minAmountIn: oneClickQuote.minAmountIn,
+      amountOut: askUnits,
+      amountOutFormatted: String(amountOutHuman),
+      amountOutUsd: String(amountOutUsd),
+      minAmountOut: minAskAmount,
+    };
+
+    console.log(`[DEBUG] Quote response for widget:`, quoteResponse);
+
+    return quoteResponse;
+  };
+
+  const makeTransfer = async (args: MakeTransferArgs) => {
+    if (!omnistonQuote.current) {
+      throw new Error('Missing Omniston quote');
+    }
+
+    console.log(`[DEBUG] Performing transfer with args:`, args);
+
+    // TODO: Support solana transfers
+    await makeEvmTransfer(args);
+
+    console.log(
+      `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
+    );
+
+    await waitForOneClickSettlement(args.address);
+
+    console.log(`[DEBUG] Performing Omnistone swap to address: ${tonAddress}`);
+
+    const omnistonTxHash = await performOmnistoneSwap(
+      omnistonQuote.current,
+      tonAddress,
+      tonConnect,
+    );
+
+    console.log(
+      `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
+    );
+
+    await waitForOmnistonSettlement(
+      omnistonQuote.current.quoteId,
+      omnistonTxHash,
+      tonAddress,
+    );
+
+    return {
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    };
+  };
 
   const walletSupportedChains = useMemo(() => {
     const chains: Chains[] = ['ton'];
@@ -224,7 +383,7 @@ const TonWidgetDemoContent = () => {
           isOneWay
           isLoading={isAppKitConnecting || isTonConnecting}
           providers={{ near: undefined }}
-          onMsg={() => {}}
+          makeTransfer={makeTransfer}
         />
         <div className="demo-widget-footer">
           <WalletConnectButton connectText="Connect Chain Wallet" />
