@@ -216,6 +216,8 @@ const TonWidgetDemoContent = () => {
       fetchStonFiAssets([data.destinationAsset]),
     ]);
 
+    console.log(`[DEBUG] OneClick Quote:`, oneClickQuote);
+
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
     // when performing the swap.
@@ -252,6 +254,8 @@ const TonWidgetDemoContent = () => {
         });
     });
 
+    console.log(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
+
     const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
 
     if (!targetToken) {
@@ -265,8 +269,7 @@ const TonWidgetDemoContent = () => {
     );
 
     const amountOutUsd = amountOutHuman * targetToken.price;
-
-    return {
+    const quoteResponse = {
       deadline: oneClickQuote.deadline,
       depositAddress: oneClickQuote.depositAddress,
       timeEstimate: oneClickQuote.timeEstimate,
@@ -279,6 +282,10 @@ const TonWidgetDemoContent = () => {
       amountOutUsd: String(amountOutUsd),
       minAmountOut: minAskAmount,
     };
+
+    console.log(`[DEBUG] Quote response for widget:`, quoteResponse);
+
+    return quoteResponse;
   };
 
   const makeTransfer = async (args: MakeTransferArgs) => {
@@ -286,14 +293,27 @@ const TonWidgetDemoContent = () => {
       throw new Error('Missing Omniston quote');
     }
 
+    console.log(`[DEBUG] Performing transfer with args:`, args);
+
     // TODO: Support solana transfers
     await makeEvmTransfer(args);
+
+    console.log(
+      `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
+    );
+
     await waitForOneClickSettlement(args.address);
+
+    console.log(`[DEBUG] Performing Omnistone swap to address: ${tonAddress}`);
 
     const omnistonTxHash = await performOmnistoneSwap(
       omnistonQuote.current,
       tonAddress,
       tonConnect,
+    );
+
+    console.log(
+      `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
     );
 
     await waitForOmnistonSettlement(
