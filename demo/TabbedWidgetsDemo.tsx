@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { noop } from '@/utils/noop';
 import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
@@ -74,11 +73,8 @@ export const TabbedWidgetsDemo = () => {
                   'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
               })
             }
-            onMsg={noop}
+            FooterComponent={<WalletConnectButton />}
           />
-          <div className="demo-widget-footer">
-            <WalletConnectButton className="mt-2" />
-          </div>
         </WidgetConfigProvider>
       </div>
     </>

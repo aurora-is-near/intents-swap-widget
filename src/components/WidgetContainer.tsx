@@ -1,9 +1,21 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactElement } from 'react';
 
-export const WidgetContainer = ({ children }: PropsWithChildren) => {
+type WidgetContainerProps = PropsWithChildren<{
+  FooterComponent?: ReactElement;
+}>;
+
+export const WidgetContainer = ({
+  children,
+  FooterComponent,
+}: WidgetContainerProps) => {
   return (
     <div className="sw w-full h-full flex justify-center items-center relative">
       {children}
+      {FooterComponent && (
+        <div className="flex flex-col gap-3 items-center w-full mt-sw-xl">
+          {FooterComponent}
+        </div>
+      )}
     </div>
   );
 };

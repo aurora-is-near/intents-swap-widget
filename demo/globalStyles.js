@@ -130,13 +130,4 @@ html, body {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
 }
-
-.demo-widget-footer {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-}
 `;

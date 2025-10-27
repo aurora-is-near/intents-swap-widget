@@ -194,7 +194,6 @@ const TonWidgetDemoContent = () => {
     address: appKitWalletAddress,
     chainType,
     isConnecting: isAppKitConnecting,
-    isConnected: isAppKitConnected,
   } = useAppKitWallet();
 
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
@@ -384,11 +383,13 @@ const TonWidgetDemoContent = () => {
           isOneWay
           isLoading={isAppKitConnecting || isTonConnecting}
           makeTransfer={makeTransfer}
+          FooterComponent={
+            <>
+              <WalletConnectButton connectText="Connect Chain Wallet" />
+              <TonConnectButton />
+            </>
+          }
         />
-        <div className="demo-widget-footer">
-          <WalletConnectButton connectText="Connect Chain Wallet" />
-          {isAppKitConnected && <TonConnectButton />}
-        </div>
       </WidgetConfigProvider>
     </div>
   );

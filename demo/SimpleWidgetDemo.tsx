@@ -13,10 +13,10 @@ export const SimpleWidgetDemo = () => {
           appName: 'Demo App',
           walletAddress,
         }}>
-        <WidgetSwap isLoading={isLoading} />
-        <div className="demo-widget-footer">
-          <WalletConnectButton className="mt-2" />
-        </div>
+        <WidgetSwap
+          isLoading={isLoading}
+          FooterComponent={<WalletConnectButton />}
+        />
       </WidgetConfigProvider>
     </div>
   );
