@@ -30,9 +30,7 @@ export const TabbedWidgetsDemo = () => {
 
   return (
     <>
-      {/* Main Content - centered widget */}
       <div className="demo-widget-container">
-        {/* Widget Type Navigation - exact Calyx style */}
         <nav className="demo-nav">
           {WIDGET_TABS.map((widget) => (
             <button
