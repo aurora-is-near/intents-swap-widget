@@ -1,4 +1,4 @@
-import { createAppKit } from '@reown/appkit/react';
+import { createAppKit as reownCreateAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
@@ -52,29 +52,31 @@ const solanaAdapter = new SolanaAdapter({
   wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
 });
 
-createAppKit({
-  adapters: [wagmiAdapter, solanaAdapter],
-  // Networks must be inlined here (not spread from evmNetworks array)
-  // because TypeScript requires a tuple type for AppKit networks
-  networks: [
-    mainnet,
-    arbitrum,
-    polygon,
-    bsc,
-    optimism,
-    avalanche,
-    base,
-    solana,
-  ],
-  projectId,
-  metadata,
-  features: {
-    analytics: false,
-    email: false,
-    socials: false,
-  },
-  themeMode: 'dark',
-  themeVariables: {
-    '--w3m-accent': '#6366f1',
-  },
-});
+export const createAppKit = () => {
+  reownCreateAppKit({
+    adapters: [wagmiAdapter, solanaAdapter],
+    // Networks must be inlined here (not spread from evmNetworks array)
+    // because TypeScript requires a tuple type for AppKit networks
+    networks: [
+      mainnet,
+      arbitrum,
+      polygon,
+      bsc,
+      optimism,
+      avalanche,
+      base,
+      solana,
+    ],
+    projectId,
+    metadata,
+    features: {
+      analytics: false,
+      email: false,
+      socials: false,
+    },
+    themeMode: 'dark',
+    themeVariables: {
+      '--w3m-accent': '#6366f1',
+    },
+  });
+};
