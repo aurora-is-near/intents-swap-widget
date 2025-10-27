@@ -10,7 +10,7 @@ import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
-import type { Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
 import { TokensList } from './TokensList';
@@ -26,7 +26,7 @@ type Props = {
   groupTokens: boolean;
   showBalances: boolean;
   showChainsSelector: boolean;
-  chainsFilter: DefaultChainsFilter;
+  chainsFilter: ChainsFilter;
   className?: string;
   onMsg: (msg: Msg) => void;
 };

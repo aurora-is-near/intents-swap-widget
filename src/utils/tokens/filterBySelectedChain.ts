@@ -1,4 +1,4 @@
-import type { Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token, TokenBalances } from '@/types/token';
 
 import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
@@ -6,7 +6,7 @@ import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 type Options = {
   search: string;
   selectedChain: Chains | 'all' | 'intents';
-  chainsFilter: DefaultChainsFilter;
+  chainsFilter: ChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
   intentBalances: TokenBalances;
   uniqueIntentTokenIds: string[];

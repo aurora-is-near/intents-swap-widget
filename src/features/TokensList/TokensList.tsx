@@ -11,7 +11,7 @@ import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useTypedTranslation } from '@/localisation';
 import { useConfig } from '@/config';
 
-import type { Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
 
 import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
@@ -26,7 +26,7 @@ type Props = {
   search: string;
   groupTokens: boolean;
   showBalances: boolean;
-  chainsFilter: DefaultChainsFilter;
+  chainsFilter: ChainsFilter;
   selectedChain: 'all' | 'intents' | Chains;
   chainIsNotSupported: boolean;
   className?: string;

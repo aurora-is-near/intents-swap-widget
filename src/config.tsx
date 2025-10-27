@@ -67,8 +67,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
     !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),
 
   chainsFilter: {
-    source: { external: 'wallet-supported', intents: 'with-balance' },
-    target: { external: 'all', intents: 'all' },
+    source: { external: 'wallet-supported', intents: 'none' },
+    target: { external: 'all', intents: 'none' },
   },
 };
 
