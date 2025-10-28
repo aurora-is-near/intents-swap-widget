@@ -22,7 +22,6 @@ import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 
 import { Quote } from '../types';
 
-
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
@@ -77,7 +76,6 @@ export const useMakeQuote = () => {
     message,
     quoteType = 'exact_in',
   }: MakeArgs = {}): Promise<Quote | undefined> => {
-
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
