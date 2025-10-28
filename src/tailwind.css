@@ -4,9 +4,8 @@
 @import './theme-text.css';
 
 @theme {
-    --*: initial;
-
     /* Custom border radius values */
+    --radius-*: initial;
     --radius-full: 99999px;
     --radius-sw-md: var(--sw-radius-md);
     --radius-sw-xl: var(--sw-radius-xl);
@@ -14,6 +13,7 @@
     --radius-sw-sm: var(--sw-radius-sm);
 
     /* Colors */
+    --color-*: initial;
     --color-sw-gray-50: var(--sw-gray-50);
     /* 12 */
     --color-sw-gray-100: var(--sw-gray-100);
@@ -107,6 +107,7 @@
 
 
     /* Custom spacing values */
+    --spacing-*: initial;
     --spacing-sw-xxs: var(--sw-space-xxs);
     --spacing-sw-xs: var(--sw-space-xs);
     --spacing-sw-sm: var(--sw-space-sm);
