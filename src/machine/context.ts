@@ -61,8 +61,8 @@ export type InitialDryContext = {
   targetToken: Token | undefined;
   targetTokenAmount: string;
 
-  sendAddress?: never;
-  walletAddress?: never;
+  sendAddress?: string;
+  walletAddress?: string;
   isDepositFromExternalWallet: boolean;
   error: InitialDryStateError | null;
 
@@ -102,7 +102,7 @@ export type InputValidDryContext = {
   targetTokenAmount: string;
 
   sendAddress?: never;
-  walletAddress?: never;
+  walletAddress?: string;
   isDepositFromExternalWallet: boolean;
   error: InputValidDryError | null;
 

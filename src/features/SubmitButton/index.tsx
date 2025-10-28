@@ -31,14 +31,6 @@ const commonBtnProps = {
 const useGetErrorButton = (ctx: Context) => {
   const { t } = useTypedTranslation();
 
-  if (ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
-    return (
-      <Button state="error" {...commonBtnProps}>
-        {t('submit.error.insufficientBalance', 'Insufficient balance')}
-      </Button>
-    );
-  }
-
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
     return (
       <Button state="error" {...commonBtnProps}>
@@ -107,6 +99,14 @@ const useGetErrorButton = (ctx: Context) => {
           <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
         ) : null}
       </div>
+    );
+  }
+
+  if (ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.insufficientBalance', 'Insufficient balance')}
+      </Button>
     );
   }
 };

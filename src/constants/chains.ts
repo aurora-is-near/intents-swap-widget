@@ -72,7 +72,7 @@ export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
 export const DEFAULT_CHAIN_ICON =
   'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg';
 
-export const DRY_QUOTE_ADDRESSES = {
+export const DRY_QUOTE_ZERO_ADDRESSES = {
   evm: '0x0000000000000000000000000000000000000000',
   sol: '11111111111111111111111111111111',
   near: 'system.near',
