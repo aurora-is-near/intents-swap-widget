@@ -1,8 +1,6 @@
 import { moveTo } from '@/machine';
 import type { Context } from '@/machine/context';
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
-
+import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import {
   validateDryInputs,
   validateExternalInputs,
@@ -10,9 +8,7 @@ import {
 } from './validateInputs';
 
 export const validateInputAndMoveTo = (ctx: Context) => {
-  const isDryRun =
-    !ctx.walletAddress ||
-    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
+  const isDryRun = isDryQuote(ctx);
 
   const isInternal = !isDryRun && ctx.targetToken?.isIntent === true;
   const isExternal = !isDryRun && ctx.targetToken?.isIntent === false;

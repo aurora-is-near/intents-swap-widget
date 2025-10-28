@@ -16,8 +16,8 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-import { isDryQuote } from '../machine/guards/checks/isDryQuote';
-import { getDryQuoteAddress } from '../utils/getDryQuoteAddress';
+import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
+import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 
 type MakeArgs = {
   message?: string;
