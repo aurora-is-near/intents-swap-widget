@@ -16,9 +16,8 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-import { DRY_QUOTE_ADDRESSES } from '@/constants/chains';
-import { isNotEmptyAmount } from '@/utils';
-import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
+import { isDryQuote } from '../machine/guards/checks/isDryQuote';
+import { getDryQuoteAddress } from '../utils/getDryQuoteAddress';
 
 type MakeArgs = {
   message?: string;
@@ -44,16 +43,7 @@ export const useMakeQuote = () => {
   const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
     useConfig();
 
-  const isDry =
-    !ctx.walletAddress ||
-    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
-
-  const intentsAccountId = getIntentsAccountId({
-    addressType: intentsAccountType,
-    walletAddress: isDry
-      ? DRY_QUOTE_ADDRESSES[intentsAccountType]
-      : (ctx.walletAddress ?? ''),
-  });
+  const isDry = isDryQuote(ctx);
 
   const request = useRef<Promise<OneClickQuote>>(null);
   const abortController = useRef<AbortController>(new AbortController());
@@ -76,10 +66,6 @@ export const useMakeQuote = () => {
     };
   }, [oneClickApiQuoteProxyUrl, oneClickApi]);
 
-  const targetWalletAddress = isDry
-    ? DRY_QUOTE_ADDRESSES[intentsAccountType]
-    : (ctx.walletAddress ?? '');
-
   const make = async ({ message, quoteType = 'exact_in' }: MakeArgs = {}) => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
@@ -98,7 +84,30 @@ export const useMakeQuote = () => {
       });
     }
 
-    if (!intentsAccountId) {
+    const recipientIntentsAccountId = getIntentsAccountId({
+      addressType: intentsAccountType,
+      walletAddress: isDry
+        ? // address on the target chain should be a dry quote recipient
+          getDryQuoteAddress(ctx.targetToken.blockchain)
+        : (ctx.walletAddress ?? ''),
+    });
+
+    const getRefundToAccountId = () => {
+      if (isDry) {
+        return getDryQuoteAddress(
+          ctx.sourceToken.blockchain,
+          ctx.sourceToken.isIntent,
+        );
+      }
+
+      if (ctx.sourceToken.isIntent && recipientIntentsAccountId) {
+        return recipientIntentsAccountId;
+      }
+
+      return ctx.walletAddress ?? '';
+    };
+
+    if (!recipientIntentsAccountId) {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
@@ -159,12 +168,12 @@ export const useMakeQuote = () => {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
         request.current = requestQuote({
           ...commonQuoteParams,
-          recipient: intentsAccountId,
+          recipient: recipientIntentsAccountId,
           recipientType: QuoteRequest.recipientType.INTENTS,
           depositType: QuoteRequest.depositType.INTENTS,
 
           // Refund
-          refundTo: intentsAccountId,
+          refundTo: recipientIntentsAccountId,
           refundType: QuoteRequest.refundType.INTENTS,
         });
 
@@ -176,7 +185,7 @@ export const useMakeQuote = () => {
         recipient:
           !ctx.targetToken.isIntent && ctx.sendAddress
             ? ctx.sendAddress
-            : intentsAccountId,
+            : recipientIntentsAccountId,
         recipientType: ctx.targetToken.isIntent
           ? QuoteRequest.recipientType.INTENTS
           : QuoteRequest.recipientType.DESTINATION_CHAIN,
@@ -185,9 +194,7 @@ export const useMakeQuote = () => {
           : QuoteRequest.depositType.ORIGIN_CHAIN,
 
         // Refund
-        refundTo: ctx.sourceToken.isIntent
-          ? intentsAccountId
-          : targetWalletAddress,
+        refundTo: getRefundToAccountId(),
         refundType: ctx.sourceToken.isIntent
           ? QuoteRequest.refundType.INTENTS
           : QuoteRequest.refundType.ORIGIN_CHAIN,

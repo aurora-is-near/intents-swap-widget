@@ -9,8 +9,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { Quote } from '@/types/quote';
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
+import { isDryQuote } from '../guards/checks/isDryQuote';
 import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
@@ -31,9 +30,7 @@ export const useMakeQuoteEffect = ({
     isDirectNearDeposit,
   } = useComputedSnapshot();
 
-  const isDry =
-    !ctx.walletAddress ||
-    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx));
+  const isDry = isDryQuote(ctx);
 
   const shouldRun =
     isEnabled &&

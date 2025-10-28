@@ -41,7 +41,7 @@ export const machine = createMachine<MachineState, Context>(
         'initial_dry',
         'initial_wallet',
         'quote_success_dry',
-        'initial_wallet',
+        'input_valid_internal',
       ],
     },
 
