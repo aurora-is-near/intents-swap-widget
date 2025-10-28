@@ -39,7 +39,7 @@ export function useCompatibilityCheck({ providers }: Props) {
 
     switch (intentsAccountType) {
       case 'evm': {
-        if (!providers.evm) {
+        if (!providers?.evm) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
             meta: { message: 'No EVM provider configured' },
@@ -60,7 +60,7 @@ export function useCompatibilityCheck({ providers }: Props) {
       }
 
       case 'sol': {
-        if (!providers.sol) {
+        if (!providers?.sol) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
             meta: { message: 'No SOL provider configured' },
@@ -79,7 +79,7 @@ export function useCompatibilityCheck({ providers }: Props) {
       }
 
       case 'near': {
-        const nearProvider = providers.near ? providers.near() : null;
+        const nearProvider = providers?.near ? providers.near() : null;
 
         if (!nearProvider || !nearProvider.signMessage) {
           throw new TransferError({

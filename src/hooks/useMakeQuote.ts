@@ -16,26 +16,33 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+
+import { Quote } from '../types';
+
 
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
 };
 
-const validateQuoteProperty = (
+const validateQuoteProperties = (
   quote: OneClickQuote,
-  property: keyof OneClickQuote,
-) => {
-  if (!(property in quote)) {
-    logger.error(`Missing ${property} in quote response`);
+): quote is OneClickQuote & {
+  deadline: string;
+  depositAddress: string;
+} => {
+  ['deadline', 'depositAddress'].forEach((property) => {
+    if (!(property in quote)) {
+      logger.error(`Missing ${property} in quote response`);
 
-    throw new QuoteError({
-      code: 'QUOTE_INVALID',
-      meta: { isDry: false },
-    });
-  }
+      return false;
+    }
+  });
+
+  return true;
 };
 
 export const useMakeQuote = () => {
@@ -66,7 +73,11 @@ export const useMakeQuote = () => {
     };
   }, [oneClickApiQuoteProxyUrl, oneClickApi]);
 
-  const make = async ({ message, quoteType = 'exact_in' }: MakeArgs = {}) => {
+  const make = async ({
+    message,
+    quoteType = 'exact_in',
+  }: MakeArgs = {}): Promise<Quote | undefined> => {
+
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
@@ -257,8 +268,12 @@ export const useMakeQuote = () => {
       };
     }
 
-    validateQuoteProperty(quoteResponse, 'deadline');
-    validateQuoteProperty(quoteResponse, 'depositAddress');
+    if (!validateQuoteProperties(quoteResponse)) {
+      throw new QuoteError({
+        code: 'QUOTE_INVALID',
+        meta: { isDry: false },
+      });
+    }
 
     return {
       dry: false,

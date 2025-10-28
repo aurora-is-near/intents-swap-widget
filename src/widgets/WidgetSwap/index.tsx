@@ -3,8 +3,11 @@ import { Props, WidgetSwapContent } from './WidgetSwapContent';
 
 export type WidgetSwapProps = Props;
 
-export const WidgetSwap = (props: WidgetSwapProps) => (
-  <WidgetContainer>
-    <WidgetSwapContent {...props} />
+export const WidgetSwap = ({
+  FooterComponent,
+  ...widgetProps
+}: WidgetSwapProps) => (
+  <WidgetContainer FooterComponent={FooterComponent}>
+    <WidgetSwapContent {...widgetProps} />
   </WidgetContainer>
 );

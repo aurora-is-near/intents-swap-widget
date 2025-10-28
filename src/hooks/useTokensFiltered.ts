@@ -2,7 +2,7 @@ import { createTokenSorter } from '@/utils/tokens/sort';
 import { createFilterByIntents } from '@/utils/tokens/filterByIntents';
 import { createFilterBySearch } from '@/utils/tokens/filterBySearchString';
 import { createFilterBySelectedChain } from '@/utils/tokens/filterBySelectedChain';
-import type { Chains, DefaultChainsFilter } from '@/types/chain';
+import type { Chains, ChainsFilter } from '@/types/chain';
 
 import { useChains } from './useChains';
 import { useTokens } from './useTokens';
@@ -14,7 +14,7 @@ export type TokensFilterOptions = {
   variant: 'source' | 'target';
   search: string;
   selectedChain: Chains | 'all' | 'intents';
-  chainsFilter: DefaultChainsFilter;
+  chainsFilter: ChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
 };
 

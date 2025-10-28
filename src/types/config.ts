@@ -1,5 +1,5 @@
 import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
-import { Chains, DefaultChainsFilter } from './chain';
+import { Chains, ChainsFilter } from './chain';
 import { SimpleToken, Token } from './token';
 
 export type WidgetConfig = {
@@ -32,8 +32,8 @@ export type WidgetConfig = {
   allowedSourceChainsList?: Chains[];
   allowedTargetChainsList?: Chains[];
   chainsFilter: {
-    source: DefaultChainsFilter;
-    target: DefaultChainsFilter;
+    source: ChainsFilter;
+    target: ChainsFilter;
   };
 
   // API

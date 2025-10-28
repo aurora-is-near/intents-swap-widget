@@ -9,7 +9,7 @@ export type Chain = {
   label: string;
 };
 
-export type DefaultChainsFilter = {
+export type ChainsFilter = {
   intents: 'none' | 'all' | 'with-balance';
   external: 'none' | 'all' | 'wallet-supported';
 };

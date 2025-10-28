@@ -30,6 +30,7 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { formatBigToHuman } from '../src/utils';
 import { useTonWallet } from './hooks/useTonWallet';
 import { useMakeEvmTransfer } from '../src/hooks/useMakeEvmTransfer';
+import { logger } from '../src/logger';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -193,7 +194,6 @@ const TonWidgetDemoContent = () => {
     address: appKitWalletAddress,
     chainType,
     isConnecting: isAppKitConnecting,
-    isConnected: isAppKitConnected,
   } = useAppKitWallet();
 
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
@@ -216,7 +216,7 @@ const TonWidgetDemoContent = () => {
       fetchStonFiAssets([data.destinationAsset]),
     ]);
 
-    console.log(`[DEBUG] OneClick Quote:`, oneClickQuote);
+    logger.debug(`[DEBUG] OneClick Quote:`, oneClickQuote);
 
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
@@ -254,7 +254,7 @@ const TonWidgetDemoContent = () => {
         });
     });
 
-    console.log(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
+    logger.debug(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
 
     const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
 
@@ -283,7 +283,7 @@ const TonWidgetDemoContent = () => {
       minAmountOut: minAskAmount,
     };
 
-    console.log(`[DEBUG] Quote response for widget:`, quoteResponse);
+    logger.debug(`[DEBUG] Quote response for widget:`, quoteResponse);
 
     return quoteResponse;
   };
@@ -293,18 +293,18 @@ const TonWidgetDemoContent = () => {
       throw new Error('Missing Omniston quote');
     }
 
-    console.log(`[DEBUG] Performing transfer with args:`, args);
+    logger.debug(`[DEBUG] Performing transfer with args:`, args);
 
     // TODO: Support solana transfers
     await makeEvmTransfer(args);
 
-    console.log(
+    logger.debug(
       `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
     );
 
     await waitForOneClickSettlement(args.address);
 
-    console.log(`[DEBUG] Performing Omnistone swap to address: ${tonAddress}`);
+    logger.debug(`[DEBUG] Performing Omnistone swap to address: ${tonAddress}`);
 
     const omnistonTxHash = await performOmnistoneSwap(
       omnistonQuote.current,
@@ -312,7 +312,7 @@ const TonWidgetDemoContent = () => {
       tonConnect,
     );
 
-    console.log(
+    logger.debug(
       `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
     );
 
@@ -360,37 +360,36 @@ const TonWidgetDemoContent = () => {
   }, [chainType]);
 
   return (
-    <div className="demo-widget-container">
-      <WidgetConfigProvider
-        config={{
-          appName: 'Ton Demo App',
-          allowedTargetChainsList: ['ton'],
-          walletAddress: appKitWalletAddress,
-          sendAddress: tonAddress,
-          walletSupportedChains,
-          intentsAccountType,
-          fetchQuote,
-          fetchTargetTokens,
-          chainsFilter: {
-            target: { intents: 'none', external: 'all' },
-            source: {
-              intents: 'none',
-              external: appKitWalletAddress ? 'wallet-supported' : 'all',
-            },
+    <WidgetConfigProvider
+      config={{
+        appName: 'Ton Demo App',
+        allowedTargetChainsList: ['ton'],
+        walletAddress: appKitWalletAddress,
+        sendAddress: tonAddress,
+        walletSupportedChains,
+        intentsAccountType,
+        fetchQuote,
+        fetchTargetTokens,
+        chainsFilter: {
+          target: { intents: 'none', external: 'all' },
+          source: {
+            intents: 'none',
+            external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
-        }}>
-        <WidgetSwap
-          isOneWay
-          isLoading={isAppKitConnecting || isTonConnecting}
-          providers={{ near: undefined }}
-          makeTransfer={makeTransfer}
-        />
-        <div className="demo-widget-footer">
-          <WalletConnectButton connectText="Connect Chain Wallet" />
-          {isAppKitConnected && <TonConnectButton />}
-        </div>
-      </WidgetConfigProvider>
-    </div>
+        },
+      }}>
+      <WidgetSwap
+        isOneWay
+        isLoading={isAppKitConnecting || isTonConnecting}
+        makeTransfer={makeTransfer}
+        FooterComponent={
+          <>
+            <WalletConnectButton connectText="Connect Chain Wallet" />
+            <TonConnectButton />
+          </>
+        }
+      />
+    </WidgetConfigProvider>
   );
 };
 

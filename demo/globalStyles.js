@@ -95,16 +95,6 @@ html, body {
   filter: brightness(0) saturate(100%) invert(85%) sepia(25%) saturate(740%) hue-rotate(215deg) brightness(105%) contrast(97%);
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
 /* Wallet Connect button for multi-chain wallet connection */
 .wallet-connect-button {
   display: flex;
@@ -129,14 +119,5 @@ html, body {
 .wallet-connect-button:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
-}
-
-.demo-widget-footer {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
 }
 `;

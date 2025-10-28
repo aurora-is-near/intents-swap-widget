@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { noop } from '@/utils/noop';
 import { WidgetConfigProvider } from '@/config';
 import { WidgetSwap } from '@/widgets/WidgetSwap';
 import { WidgetDeposit } from '@/widgets/WidgetDeposit';
@@ -30,62 +29,52 @@ export const TabbedWidgetsDemo = () => {
 
   return (
     <>
-      {/* Main Content - centered widget */}
-      <div className="demo-widget-container">
-        {/* Widget Type Navigation - exact Calyx style */}
-        <nav className="demo-nav">
-          {WIDGET_TABS.map((widget) => (
-            <button
-              key={widget.id}
-              onClick={() => setSelectedWidget(widget.id)}
-              className={`demo-nav-button ${
-                selectedWidget === widget.id ? 'active' : 'inactive'
-              }`}
-              type="button">
-              <img
-                src={widget.iconPath}
-                alt={`${widget.label} icon`}
-                className="demo-nav-icon"
-                width={24}
-                height={24}
-              />
-              <span className="demo-nav-label">{widget.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <WidgetConfigProvider
-          config={{
-            appName: 'Demo App',
-            walletAddress,
-            intentsAccountType: 'near',
-            chainsFilter: {
-              target: { intents: 'all', external: 'all' },
-              source: {
-                intents: walletAddress ? 'with-balance' : 'all',
-                external: walletAddress ? 'wallet-supported' : 'all',
-              },
-            },
-          }}>
-          <div className="relative">
-            <WidgetComponent
-              isLoading={isLoading}
-              providers={{ near: undefined }}
-              makeTransfer={() =>
-                Promise.resolve({
-                  hash: '0x1234567890abcdef1234567890abcdef12345678',
-                  transactionLink:
-                    'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
-                })
-              }
-              onMsg={noop}
+      <nav className="demo-nav">
+        {WIDGET_TABS.map((widget) => (
+          <button
+            key={widget.id}
+            onClick={() => setSelectedWidget(widget.id)}
+            className={`demo-nav-button ${
+              selectedWidget === widget.id ? 'active' : 'inactive'
+            }`}
+            type="button">
+            <img
+              src={widget.iconPath}
+              alt={`${widget.label} icon`}
+              className="demo-nav-icon"
+              width={24}
+              height={24}
             />
-          </div>
-          <div className="demo-widget-footer">
-            <WalletConnectButton className="mt-2" />
-          </div>
-        </WidgetConfigProvider>
-      </div>
+            <span className="demo-nav-label">{widget.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      <WidgetConfigProvider
+        config={{
+          appName: 'Demo App',
+          walletAddress,
+          intentsAccountType: 'near',
+          chainsFilter: {
+            target: { intents: 'all', external: 'all' },
+            source: {
+              intents: walletAddress ? 'with-balance' : 'all',
+              external: walletAddress ? 'wallet-supported' : 'all',
+            },
+          },
+        }}>
+        <WidgetComponent
+          isLoading={isLoading}
+          makeTransfer={() =>
+            Promise.resolve({
+              hash: '0x1234567890abcdef1234567890abcdef12345678',
+              transactionLink:
+                'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
+            })
+          }
+          FooterComponent={<WalletConnectButton />}
+        />
+      </WidgetConfigProvider>
     </>
   );
 };

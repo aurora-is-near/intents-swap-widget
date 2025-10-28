@@ -20,13 +20,8 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type {
-  IntentsTransferArgs,
-  QuoteTransferArgs,
-  Token,
-  TransferResult,
-} from '@/types';
-import type { TokenInputType } from '../types';
+import type { Token, TransferResult } from '@/types';
+import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
 import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
@@ -36,11 +31,7 @@ type Msg =
   | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
-export type Props = QuoteTransferArgs &
-  IntentsTransferArgs & {
-    onMsg?: (msg: Msg) => void;
-    isLoading?: boolean;
-  };
+export type Props = CommonWidgetProps<Msg>;
 
 const TokenInputHeader = ({ label }: { label: string }) => (
   <header className="gap-sw-lg px-sw-2xl pt-sw-2xl flex flex-col">

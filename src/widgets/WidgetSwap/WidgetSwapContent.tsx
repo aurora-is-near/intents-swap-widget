@@ -21,14 +21,9 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type {
-  IntentsTransferArgs,
-  QuoteTransferArgs,
-  Token,
-  TransferResult,
-} from '@/types';
+import type { Token, TransferResult } from '@/types';
 
-import type { TokenInputType } from '../types';
+import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
@@ -38,12 +33,9 @@ type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' };
 
-export type Props = QuoteTransferArgs &
-  IntentsTransferArgs & {
-    onMsg?: (msg: Msg) => void;
-    isLoading?: boolean;
-    isOneWay?: boolean;
-  };
+export type Props = CommonWidgetProps<Msg> & {
+  isOneWay?: boolean;
+};
 
 export const WidgetSwapContent = ({
   providers,

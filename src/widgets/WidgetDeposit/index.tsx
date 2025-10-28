@@ -3,8 +3,11 @@ import { Props, WidgetDepositContent } from './WidgetDepositContent';
 
 export type WidgetDepositProps = Props;
 
-export const WidgetDeposit = (props: WidgetDepositProps) => (
-  <WidgetContainer>
-    <WidgetDepositContent {...props} />
+export const WidgetDeposit = ({
+  FooterComponent,
+  ...widgetProps
+}: WidgetDepositProps) => (
+  <WidgetContainer FooterComponent={FooterComponent}>
+    <WidgetDepositContent {...widgetProps} />
   </WidgetContainer>
 );
