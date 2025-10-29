@@ -2,12 +2,8 @@ import './tailwind.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createAppKit } from './appkit-config';
 import { TonWidgetDemo } from './TonWidgetDemo';
-
-const queryClient = new QueryClient();
 
 const container = document.getElementById('root');
 
@@ -23,10 +19,6 @@ createAppKit();
 
 root.render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TonWidgetDemo />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <TonWidgetDemo />
   </StrictMode>,
 );
