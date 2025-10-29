@@ -69,15 +69,12 @@ _Ext_ submodule contains various extensions that can be used with the widget but
 
 ## Styling
 
-If you are importing one of our pre-built widget components (e.g. `WidgetSwap`)
-then you don't need to do anything to apply the widget styles.
-
-If you are rolling your own using our components you will need to add the `sw`
-class to some wrapping element, for example:
+To apply the package styles you will need to add the `sw` class to some wrapping
+element, for example:
 
 ```tsx
 <div className="sw">
-  {/* Your custom widget */}
+  {/* Your widget */}
 </div>
 ```
 
