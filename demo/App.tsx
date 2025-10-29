@@ -4,6 +4,7 @@ import { TonWidgetDemo } from './TonWidgetDemo';
 import { TabbedWidgetsDemo } from './TabbedWidgetsDemo';
 import { NotFound } from './NotFound';
 import { SimpleWidgetDemo } from './SimpleWidgetDemo';
+import { NearWidgetDemo } from './NearWidgetDemo';
 
 export const App = () => {
   return (
@@ -12,6 +13,7 @@ export const App = () => {
         <Route path="/" element={<SimpleWidgetDemo />} />
         <Route path="/tabs" element={<TabbedWidgetsDemo />} />
         <Route path="/ton" element={<TonWidgetDemo />} />
+        <Route path="/near" element={<NearWidgetDemo />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
