@@ -9,7 +9,7 @@ export const WidgetContainer = ({
   FooterComponent,
 }: WidgetContainerProps) => {
   return (
-    <div className="sw w-full h-full flex justify-center items-center relative">
+    <div className="sw w-full h-full flex flex-col justify-center items-center relative">
       {children}
       {FooterComponent && (
         <div className="flex flex-col gap-3 items-center w-full mt-sw-xl">
