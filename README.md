@@ -124,24 +124,19 @@ The available keys can be found in the `types/localisation.ts` file.
 
 If you want to make changes to the package and submit PRs, the repository
 includes a demo application that includes various example widget implementations.
-
-To run it you will first need to create an `.env` file:
-
-```sh
-cp .env.example .env
-```
-
-Fill it with the relevant values, then run:
+Run it with:
 
 ```sh
 yarn dev
 ```
 
-You can also link the package to your application locally, allowing you
-to make changes to the package and see the results in your app:
+You can also link the `@aurora-is-near/intents-swap-widget` package to your
+application locally, allowing you to make changes to the package and see the
+results in your app:
 
 ```sh
 # in this repo
+cd packages/intents-swap-widget
 yarn link
 yarn build:watch
 
@@ -149,10 +144,6 @@ yarn build:watch
 yarn link @aurora-is-near/intents-swap-widget
 yarn dev
 ```
-
-If you have an error: `valtio-fsm` not found while using `link`. You need
-temporary add valtio to `devDependencies` in @aurora-is-near/intents-swap-widget
-`package.json` and reinstall. Do not commit this!
 
 ### Contribution
 

@@ -16,14 +16,8 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
-if (!import.meta.env.VITE_REOWN_PROJECT_ID) {
-  throw new Error(
-    'VITE_REOWN_PROJECT_ID is required. Get your project ID from https://cloud.reown.com',
-  );
-}
-
-const projectId: string = import.meta.env.VITE_REOWN_PROJECT_ID;
-const appUrl = import.meta.env.VITE_APP_URL ?? 'http://localhost:5173';
+const projectId = '76f61d4322c80976d1a24a1263a9d082';
+const appUrl = 'http://localhost:5173';
 
 const metadata = {
   name: 'Intents Swap Widget',
