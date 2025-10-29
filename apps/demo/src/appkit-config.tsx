@@ -29,7 +29,7 @@ const metadata = {
   name: 'Intents Swap Widget',
   description: 'Cross-chain swap widget powered by Intents',
   url: appUrl,
-  icons: [`${appUrl}/demo/favicon.svg`],
+  icons: [`${appUrl}/favicon.svg`],
 };
 
 const evmNetworks = [
