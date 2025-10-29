@@ -31,7 +31,7 @@ jobs:
       - name: Install
         run: yarn install --frozen-lockfile --non-interactive
       - name: Build
-        run: yarn build
+        run: yarn build --filter=@aurora-is-near/intents-swap-widget
       - name: Release
         run: npx semantic-release
         working-directory: packages/intents-swap-widget
