@@ -31,12 +31,18 @@ export const machine = createMachine<MachineState, Context>(
         'initial_dry',
         'input_valid_internal',
         'input_valid_external',
+        'input_valid_dry',
       ],
     },
 
     // 3. Wallet not connected and user inputs are valid
     input_valid_dry: {
-      transitions: ['initial_dry', 'initial_wallet', 'quote_success_dry'],
+      transitions: [
+        'initial_dry',
+        'initial_wallet',
+        'quote_success_dry',
+        'input_valid_internal',
+      ],
     },
 
     // 4. Wallet connected and user inputs are valid for Intents swap
@@ -46,6 +52,7 @@ export const machine = createMachine<MachineState, Context>(
         'initial_wallet',
         'quote_success_internal',
         'transfer_success',
+        'input_valid_dry',
       ],
     },
 
@@ -56,12 +63,19 @@ export const machine = createMachine<MachineState, Context>(
         'initial_wallet',
         'quote_success_external',
         'transfer_success',
+        'input_valid_dry',
       ],
     },
 
     // 6. Wallet not connected and dry quote fetched
     quote_success_dry: {
-      transitions: ['initial_dry', 'input_valid_dry', 'initial_wallet'],
+      transitions: [
+        'initial_dry',
+        'input_valid_dry',
+        'initial_wallet',
+        'input_valid_external',
+        'input_valid_internal',
+      ],
     },
 
     // 7. Wallet connected and real quote fetched
@@ -72,6 +86,7 @@ export const machine = createMachine<MachineState, Context>(
         'input_valid_internal',
         'input_valid_external',
         'transfer_success',
+        'input_valid_dry',
       ],
     },
 
@@ -82,6 +97,7 @@ export const machine = createMachine<MachineState, Context>(
         'input_valid_internal',
         'input_valid_external',
         'transfer_success',
+        'input_valid_dry',
       ],
     },
 

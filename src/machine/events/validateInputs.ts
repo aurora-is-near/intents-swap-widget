@@ -10,7 +10,6 @@ import type {
   InitialExternalStateError,
   InitialInternalStateError,
 } from '@/machine/errors';
-
 import { fireEvent } from './utils/fireEvent';
 
 export const validateDryInputs = (ctx: Context): boolean | undefined => {
@@ -30,6 +29,8 @@ export const validateDryInputs = (ctx: Context): boolean | undefined => {
       err = { code: 'TARGET_TOKEN_IS_EMPTY' };
     } else if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
       err = { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' };
+    } else if (ctx.walletAddress && !isBalanceSufficient(ctx)) {
+      err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
     }
   }
 
@@ -41,6 +42,11 @@ export const validateDryInputs = (ctx: Context): boolean | undefined => {
     !isTransferError(ctx.error)
   ) {
     fireEvent('errorSet', null);
+  }
+
+  if (isValidInputsState && err?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
+    // should be able to fetch dry quote, when insufficient balance
+    fireEvent('errorSet', err);
   }
 
   return isValidInputsState;
