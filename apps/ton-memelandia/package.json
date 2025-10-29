@@ -1,5 +1,5 @@
 {
-  "name": "demo",
+  "name": "ton-memelandia",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -18,9 +18,11 @@
     "@reown/appkit-adapter-wagmi": "^1.8.11",
     "@solana/wallet-adapter-wallets": "^0.19.37",
     "@solana/web3.js": "^1.98.4",
+    "@ston-fi/omniston-sdk": "^0.7.5",
+    "@ton/core": "^0.62.0",
+    "@tonconnect/ui-react": "^2.3.1",
     "react": "18",
     "react-dom": "18",
-    "react-router-dom": "^7.9.4",
     "wagmi": "^2.18.2"
   }
 }

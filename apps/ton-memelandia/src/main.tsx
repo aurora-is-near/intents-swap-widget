@@ -1,0 +1,37 @@
+import './tailwind.css';
+
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createAppKit } from './appkit-config';
+import { globalStyles } from './globalStyles';
+import { TonWidgetDemo } from './TonWidgetDemo';
+
+// Inject styles directly into the document head to bypass Vite's CSS processing
+const styleElement = document.createElement('style');
+
+styleElement.textContent = globalStyles;
+document.head.appendChild(styleElement);
+
+const queryClient = new QueryClient();
+
+const container = document.getElementById('root');
+
+if (!container) {
+  throw new Error('Root element not found');
+}
+
+const root = createRoot(container);
+
+createAppKit();
+
+root.render(
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <TonWidgetDemo />
+      </BrowserRouter>
+    </QueryClientProvider>
+  </StrictMode>,
+);
