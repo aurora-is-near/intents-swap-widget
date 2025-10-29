@@ -1,5 +1,7 @@
-import { WidgetConfigProvider } from '@/config';
-import { WidgetSwap } from '@/widgets/WidgetSwap';
+import {
+  WidgetConfigProvider,
+  WidgetSwap,
+} from '@aurora-is-near/intents-swap-widget';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { WalletConnectButton } from './components/WalletConnectButton';
 

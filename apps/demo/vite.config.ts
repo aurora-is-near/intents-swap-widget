@@ -1,8 +1,8 @@
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
-import { defineConfig } from "vite";
-import svgr from "vite-plugin-svgr";
+import { defineConfig } from 'vite';
+import svgr from 'vite-plugin-svgr';
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
@@ -51,7 +51,7 @@ export default defineConfig({
   },
   server: {
     fs: {
-      allow: ['..']
+      allow: ['..'],
     },
     host: true, // Allow access from network
     cors: true, // Enable CORS for TON Connect

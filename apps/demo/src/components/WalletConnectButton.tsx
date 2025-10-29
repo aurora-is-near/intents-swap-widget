@@ -1,4 +1,4 @@
-import { cn } from '../../src/utils';
+import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 import { useAppKitWallet } from '../hooks/useAppKitWallet';
 
 type WalletConnectButtonProps = {

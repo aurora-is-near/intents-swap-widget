@@ -1,27 +1,14 @@
 {
-  "name": "@aurora-is-near/intents-swap-widget",
-  "version": "2.18.1",
-  "description": "Provides components and hooks to build your own Intents swap widget",
-  "author": "Maksim Vashchuk",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "source": "src/index.ts",
-  "module": "./dist/index.js",
-  "type": "module",
+  "name": "intents-swap-widget",
+  "private": true,
+  "packageManager": "yarn@1.22.19",
   "scripts": {
-    "dev": "vite --config vite.config.demo.ts",
-    "lint": "eslint . --ext .js,.ts,.tsx",
-    "test": "jest",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "prepublishOnly": "yarn run build",
-    "build:watch": "vite build --watch",
-    "build": "vite build",
-    "build:demo": "vite build --config vite.config.demo.ts",
-    "preview:demo": "vite preview --config vite.config.demo.ts",
-    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly"
+    "build": "turbo run build",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint --parallel",
+    "typecheck": "turbo run typecheck --parallel",
+    "test": "turbo run test"
   },
   "engines": {
     "node": ">=20.18.1"
@@ -31,76 +18,10 @@
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "files": [
-    "src",
-    "dist"
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "sideEffects": [
-    "dist/styles.css"
-  ],
-  "exports": {
-    ".": "./dist/index.js",
-    "./utils.css": "./dist/utils.css",
-    "./constants": "./dist/constants/index.js",
-    "./components": "./dist/components/index.js",
-    "./features": "./dist/features/index.js",
-    "./machine": "./dist/machine/index.js",
-    "./types": "./dist/types/index.js",
-    "./hooks": "./dist/hooks/index.js",
-    "./utils": "./dist/utils/index.js",
-    "./config": "./dist/config.js",
-    "./ext": "./dist/ext/index.js"
-  },
-  "peerDependencies": {
-    "i18next": ">=25.4.2",
-    "react": ">=18",
-    "react-dom": ">=18",
-    "react-i18next": ">=15.7.3",
-    "valtio": "2.1.7",
-    "valtio-fsm": "1.0.0"
-  },
-  "dependencies": {
-    "@aurora-is-near/eslint-config": "^1.5.3",
-    "@aurora-is-near/semantic-release-config": "^1.5.4",
-    "@defuse-protocol/bridge-sdk": "0.10.3",
-    "@defuse-protocol/internal-utils": "^0.13.0",
-    "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
-    "@headlessui/react": "^2.2.4",
-    "@near-wallet-selector/core": "^9.0.3",
-    "@near-wallet-selector/meteor-wallet": "^9.0.3",
-    "@near-wallet-selector/modal-ui": "^9.0.3",
-    "@near-wallet-selector/my-near-wallet": "^9.0.3",
-    "@near-wallet-selector/react-hook": "^9.0.3",
-    "@radix-ui/react-icons": "^1.3.2",
-    "@tanstack/react-query": "^5.85.5",
-    "axios": "^1.10.0",
-    "bs58": "^6.0.0",
-    "change-case": "^5.4.4",
-    "clsx": "^2.1.1",
-    "copy-text-to-clipboard": "^3.2.0",
-    "date-fns": "^4.1.0",
-    "debounce": "^2.2.0",
-    "derive-valtio": "^0.2.0",
-    "ethers": "^6.15.0",
-    "framer-motion": "^12.23.0",
-    "imask": "^7.6.1",
-    "lodash.once": "^4.1.1",
-    "lucide-react": "^0.525.0",
-    "near-api-js": "^6.2.5",
-    "proxy-memoize": "^3.0.1",
-    "qrcode.react": "^4.2.0",
-    "qs": "^6.14.0",
-    "react-error-boundary": "^6.0.0",
-    "react-imask": "^7.6.1",
-    "tailwind-merge": "^3.3.1",
-    "viem": "^2.38.3",
-    "virtua": "^0.41.5",
-    "zod": "^3.25.51"
-  },
   "devDependencies": {
     "@babel/core": "^7.17.10",
     "@babel/plugin-transform-runtime": "^7.17.0",
@@ -144,8 +65,10 @@
     "react-router-dom": "^7.9.4",
     "rimraf": "^3.0.2",
     "semantic-release": "^24.0.0",
+    "semantic-release-monorepo": "^8.0.2",
     "tailwindcss": "^4.1.12",
     "ts-jest": "^29.1.0",
+    "turbo": "^2.5.8",
     "typescript": "^5",
     "valtio": "2.1.7",
     "valtio-fsm": "1.0.0",

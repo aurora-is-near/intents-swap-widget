@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   TonConnectButton,
   TonConnectUIProvider,
@@ -21,16 +22,15 @@ import {
   Chains,
   MakeTransferArgs,
   SimpleToken,
+  useMakeEvmTransfer,
   WidgetConfig,
+  WidgetConfigProvider,
   WidgetSwap,
-} from '../src';
-import { WidgetConfigProvider } from '../src/config';
+} from '@aurora-is-near/intents-swap-widget';
+import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
 import { WalletConnectButton } from './components/WalletConnectButton';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
-import { formatBigToHuman } from '../src/utils';
 import { useTonWallet } from './hooks/useTonWallet';
-import { useMakeEvmTransfer } from '../src/hooks/useMakeEvmTransfer';
-import { logger } from '../src/logger';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -216,7 +216,7 @@ const TonWidgetDemoContent = () => {
       fetchStonFiAssets([data.destinationAsset]),
     ]);
 
-    logger.debug(`[DEBUG] OneClick Quote:`, oneClickQuote);
+    console.debug(`[DEBUG] OneClick Quote:`, oneClickQuote);
 
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
@@ -254,7 +254,7 @@ const TonWidgetDemoContent = () => {
         });
     });
 
-    logger.debug(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
+    console.debug(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
 
     const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
 
@@ -283,7 +283,7 @@ const TonWidgetDemoContent = () => {
       minAmountOut: minAskAmount,
     };
 
-    logger.debug(`[DEBUG] Quote response for widget:`, quoteResponse);
+    console.debug(`[DEBUG] Quote response for widget:`, quoteResponse);
 
     return quoteResponse;
   };
@@ -293,18 +293,20 @@ const TonWidgetDemoContent = () => {
       throw new Error('Missing Omniston quote');
     }
 
-    logger.debug(`[DEBUG] Performing transfer with args:`, args);
+    console.debug(`[DEBUG] Performing transfer with args:`, args);
 
     // TODO: Support solana transfers
     await makeEvmTransfer(args);
 
-    logger.debug(
+    console.debug(
       `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
     );
 
     await waitForOneClickSettlement(args.address);
 
-    logger.debug(`[DEBUG] Performing Omnistone swap to address: ${tonAddress}`);
+    console.debug(
+      `[DEBUG] Performing Omnistone swap to address: ${tonAddress}`,
+    );
 
     const omnistonTxHash = await performOmnistoneSwap(
       omnistonQuote.current,
@@ -312,7 +314,7 @@ const TonWidgetDemoContent = () => {
       tonConnect,
     );
 
-    logger.debug(
+    console.debug(
       `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
     );
 

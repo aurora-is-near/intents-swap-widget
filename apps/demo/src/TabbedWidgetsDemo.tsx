@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { WidgetConfigProvider } from '@/config';
-import { WidgetSwap } from '@/widgets/WidgetSwap';
-import { WidgetDeposit } from '@/widgets/WidgetDeposit';
-import { WidgetWithdraw } from '@/widgets/WidgetWithdraw';
+import {
+  WidgetConfigProvider,
+  WidgetDeposit,
+  WidgetSwap,
+  WidgetWithdraw,
+} from '@aurora-is-near/intents-swap-widget';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { WalletConnectButton } from './components/WalletConnectButton';
 

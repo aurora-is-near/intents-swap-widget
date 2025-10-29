@@ -77,8 +77,8 @@ export function useMakeNEARFtTransferCall(
 
       if (tx && tx.length > 0) {
         return {
-          hash: tx[0].transaction?.hash ?? '',
-          transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
+          hash: tx[0]?.transaction?.hash ?? '',
+          transactionLink: `https://nearblocks.io/txns/${tx[0]?.transaction?.hash}`,
           intent: undefined,
         };
       }
