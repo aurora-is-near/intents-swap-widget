@@ -4,5 +4,4 @@ node_modules/**/*
 coverage/
 typings/
 dist/
-build/
 scripts/
