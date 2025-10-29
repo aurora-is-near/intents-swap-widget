@@ -16,3 +16,4 @@ export * from './Skeleton';
 export * from './TinyNumber';
 export * from './TokenIcon';
 export * from './StatusWidget';
+export * from './WidgetContainer';

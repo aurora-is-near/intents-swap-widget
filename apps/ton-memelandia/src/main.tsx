@@ -15,6 +15,8 @@ if (!container) {
   throw new Error('Root element not found');
 }
 
+container.className = 'sw';
+
 const root = createRoot(container);
 
 createAppKit();

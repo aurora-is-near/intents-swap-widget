@@ -11,6 +11,7 @@ export const SimpleWidgetDemo = () => {
   return (
     <WidgetConfigProvider config={{ walletAddress }}>
       <WidgetSwap
+        isFullPage
         isLoading={isLoading}
         FooterComponent={<WalletConnectButton />}
       />

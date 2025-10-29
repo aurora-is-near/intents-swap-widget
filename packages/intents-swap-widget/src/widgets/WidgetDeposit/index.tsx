@@ -5,9 +5,10 @@ export type WidgetDepositProps = Props;
 
 export const WidgetDeposit = ({
   FooterComponent,
+  isFullPage,
   ...widgetProps
 }: WidgetDepositProps) => (
-  <WidgetContainer FooterComponent={FooterComponent}>
+  <WidgetContainer isFullPage={isFullPage} FooterComponent={FooterComponent}>
     <WidgetDepositContent {...widgetProps} />
   </WidgetContainer>
 );

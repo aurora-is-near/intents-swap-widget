@@ -5,9 +5,10 @@ export type WidgetSwapProps = Props;
 
 export const WidgetSwap = ({
   FooterComponent,
+  isFullPage,
   ...widgetProps
 }: WidgetSwapProps) => (
-  <WidgetContainer FooterComponent={FooterComponent}>
+  <WidgetContainer isFullPage={isFullPage} FooterComponent={FooterComponent}>
     <WidgetSwapContent {...widgetProps} />
   </WidgetContainer>
 );

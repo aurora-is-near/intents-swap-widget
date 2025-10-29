@@ -66,6 +66,7 @@ export const TabbedWidgetsDemo = () => {
           },
         }}>
         <WidgetComponent
+          isFullPage
           isLoading={isLoading}
           FooterComponent={<WalletConnectButton />}
         />

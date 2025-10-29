@@ -10,4 +10,5 @@ export type CommonWidgetProps<Msg> = QuoteTransferArgs &
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
     FooterComponent?: ReactElement;
+    isFullPage?: boolean;
   };

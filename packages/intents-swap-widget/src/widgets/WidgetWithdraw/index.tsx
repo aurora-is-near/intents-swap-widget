@@ -5,9 +5,10 @@ export type WidgetWithdrawProps = Props;
 
 export const WidgetWithdraw = ({
   FooterComponent,
+  isFullPage,
   ...widgetProps
 }: WidgetWithdrawProps) => (
-  <WidgetContainer FooterComponent={FooterComponent}>
+  <WidgetContainer isFullPage={isFullPage} FooterComponent={FooterComponent}>
     <WidgetWithdrawContent {...widgetProps} />
   </WidgetContainer>
 );

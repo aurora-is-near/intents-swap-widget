@@ -382,6 +382,7 @@ const TonWidgetDemoContent = () => {
       }}>
       <WidgetSwap
         isOneWay
+        isFullPage
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
         FooterComponent={
