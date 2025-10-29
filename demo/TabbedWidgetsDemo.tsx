@@ -65,13 +65,6 @@ export const TabbedWidgetsDemo = () => {
         }}>
         <WidgetComponent
           isLoading={isLoading}
-          makeTransfer={() =>
-            Promise.resolve({
-              hash: '0x1234567890abcdef1234567890abcdef12345678',
-              transactionLink:
-                'https://example.com/tx/0x1234567890abcdef1234567890abcdef12345678',
-            })
-          }
           FooterComponent={<WalletConnectButton />}
         />
       </WidgetConfigProvider>
