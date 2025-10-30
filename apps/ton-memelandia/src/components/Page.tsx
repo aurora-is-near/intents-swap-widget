@@ -355,7 +355,8 @@ export const Page = () => {
       config={{
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
-        walletAddress: appKitWalletAddress,
+        walletAddress:
+          appKitWalletAddress && tonAddress ? appKitWalletAddress : undefined,
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
