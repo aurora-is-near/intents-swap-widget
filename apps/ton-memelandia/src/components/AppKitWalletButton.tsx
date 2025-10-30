@@ -10,7 +10,7 @@ export const AppKitWalletButton = () => {
       : 'Connect';
 
   return (
-    <Button fluid variant="primary" size="md" onClick={() => connect()}>
+    <Button fluid variant="primary" size="sm" onClick={() => connect()}>
       {displayText}
     </Button>
   );

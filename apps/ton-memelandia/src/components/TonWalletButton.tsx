@@ -11,7 +11,7 @@ export const TonWalletButton = () => {
   const [tonConnectUI] = useTonConnectUI();
 
   const displayText = address
-    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    ? `${address.slice(0, 4)}...${address.slice(-4)}`
     : 'Connect';
 
   const onClick = () => {
@@ -25,7 +25,7 @@ export const TonWalletButton = () => {
   };
 
   return (
-    <Button fluid variant="primary" size="md" onClick={onClick}>
+    <Button fluid variant="primary" size="sm" onClick={onClick}>
       {displayText}
     </Button>
   );

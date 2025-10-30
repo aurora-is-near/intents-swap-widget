@@ -4,7 +4,7 @@ import * as Icons from 'lucide-react';
 
 import { cn as clsx } from '@/utils/cn';
 
-type Size = 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'tertiary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 type Detail = 'default' | 'dimmed';
@@ -27,6 +27,7 @@ const styles = {
   icon: 'h-sw-xl w-sw-xl',
 
   size: (size: Size) => ({
+    'px-sw-xl py-sw-2md': size === 'sm',
     'px-sw-2xl py-sw-lg': size === 'md',
     'px-sw-3xl py-sw-xl': size === 'lg',
   }),

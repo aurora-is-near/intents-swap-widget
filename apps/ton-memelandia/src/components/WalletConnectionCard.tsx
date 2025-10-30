@@ -1,4 +1,3 @@
-import { TonConnectButton } from '@tonconnect/ui-react';
 import { ReactNode } from 'react';
 import { Card } from '@aurora-is-near/intents-swap-widget';
 import { AppKitWalletButton } from './AppKitWalletButton';
