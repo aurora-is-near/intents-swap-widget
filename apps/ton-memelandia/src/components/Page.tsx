@@ -13,7 +13,7 @@ import {
   OneClickService,
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Chains,
   MakeTransferArgs,
@@ -188,6 +188,7 @@ export const Page = () => {
   const [tonConnect] = useTonConnectUI();
   const omnistonQuote = useRef<OmnistonQuote>(null);
   const { make: makeEvmTransfer } = useMakeEvmTransfer();
+  const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
 
   /**
    * Fetch a two-step quote.
@@ -373,13 +374,20 @@ export const Page = () => {
         isFullPage
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
+        onMsg={(msg) => {
+          if (msg.type === 'on_tokens_modal_toggled') {
+            setIsTokensModalOpen(msg.isOpen);
+          }
+        }}
         HeaderComponent={
-          <>
-            <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-8">
-              Swap to TON from anywhere
-            </h1>
-            <WalletConnectionCard />
-          </>
+          isTokensModalOpen ? undefined : (
+            <>
+              <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-8">
+                Swap to TON from anywhere
+              </h1>
+              <WalletConnectionCard />
+            </>
+          )
         }
       />
     </WidgetConfigProvider>
