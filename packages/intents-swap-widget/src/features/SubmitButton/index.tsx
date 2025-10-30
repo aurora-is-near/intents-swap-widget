@@ -169,6 +169,14 @@ const SubmitButtonBase = ({
     }
   };
 
+  if (!ctx.targetToken) {
+    return (
+      <Button {...commonBtnProps} state="disabled">
+        Select token to receive
+      </Button>
+    );
+  }
+
   if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
     return (
       <Button {...commonBtnProps} state="disabled">
