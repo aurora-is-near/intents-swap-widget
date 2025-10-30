@@ -17,3 +17,5 @@ export * from './TinyNumber';
 export * from './TokenIcon';
 export * from './StatusWidget';
 export * from './WidgetContainer';
+export * from './SwapCard';
+export * from './TokenAmount';

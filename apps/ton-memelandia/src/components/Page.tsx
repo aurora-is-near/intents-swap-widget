@@ -15,18 +15,25 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef, useState } from 'react';
 import {
+  Button,
   Chains,
   MakeTransferArgs,
   SimpleToken,
+  SwapCard,
   useMakeEvmTransfer,
   WidgetConfig,
   WidgetConfigProvider,
+  WidgetContainer,
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
+import clsx from 'clsx';
 import { useAppKitWallet } from '../hooks/useAppKitWallet';
 import { useTonWallet } from '../hooks/useTonWallet';
 import { WalletConnectionCard } from './WalletConnectionCard';
+import { Heading } from './Heading';
+
+type SwapState = 'not-started' | 'in-progress' | 'completed' | 'failed';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -189,6 +196,14 @@ export const Page = () => {
   const omnistonQuote = useRef<OmnistonQuote>(null);
   const { make: makeEvmTransfer } = useMakeEvmTransfer();
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
+  const [makeTransferArgs, setMakeTransferArgs] =
+    useState<MakeTransferArgs | null>(null);
+
+  const [firstSwapState, setFirstSwapState] =
+    useState<SwapState>('not-started');
+
+  const [secondSwapState, setSecondSwapState] =
+    useState<SwapState>('not-started');
 
   /**
    * Fetch a two-step quote.
@@ -204,8 +219,6 @@ export const Page = () => {
       }),
       fetchStonFiAssets([data.destinationAsset]),
     ]);
-
-    console.debug(`[DEBUG] OneClick Quote:`, oneClickQuote);
 
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
@@ -243,8 +256,6 @@ export const Page = () => {
         });
     });
 
-    console.debug(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
-
     const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
 
     if (!targetToken) {
@@ -272,51 +283,13 @@ export const Page = () => {
       minAmountOut: minAskAmount,
     };
 
-    console.debug(`[DEBUG] Quote response for widget:`, quoteResponse);
-
     return quoteResponse;
   };
 
-  const makeTransfer = async (args: MakeTransferArgs) => {
-    if (!omnistonQuote.current) {
-      throw new Error('Missing Omniston quote');
-    }
-
-    console.debug(`[DEBUG] Performing transfer with args:`, args);
-
-    // TODO: Support solana transfers
-    await makeEvmTransfer(args);
-
-    console.debug(
-      `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
-    );
-
-    await waitForOneClickSettlement(args.address);
-
-    console.debug(
-      `[DEBUG] Performing Omnistone swap to address: ${tonAddress}`,
-    );
-
-    const omnistonTxHash = await performOmnistoneSwap(
-      omnistonQuote.current,
-      tonAddress,
-      tonConnect,
-    );
-
-    console.debug(
-      `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
-    );
-
-    await waitForOmnistonSettlement(
-      omnistonQuote.current.quoteId,
-      omnistonTxHash,
-      tonAddress,
-    );
-
-    return {
-      hash: omnistonTxHash,
-      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
-    };
+  const makeTransfer = (args: MakeTransferArgs) => {
+    setFirstSwapState('not-started');
+    setSecondSwapState('not-started');
+    setMakeTransferArgs(args);
   };
 
   const walletSupportedChains = useMemo(() => {
@@ -350,6 +323,71 @@ export const Page = () => {
     return 'near';
   }, [chainType]);
 
+  const confirmFirstSwap = async (args: MakeTransferArgs) => {
+    setFirstSwapState('in-progress');
+
+    try {
+      await makeEvmTransfer(args);
+      await waitForOneClickSettlement(args.address);
+    } catch (error) {
+      setFirstSwapState('failed');
+      console.error('First swap failed:', error);
+
+      return;
+    }
+
+    setFirstSwapState('completed');
+  };
+
+  const confirmSecondSwap = async () => {
+    if (!omnistonQuote.current) {
+      throw new Error('Missing Omniston quote');
+    }
+
+    setSecondSwapState('in-progress');
+
+    try {
+      const omnistonTxHash = await performOmnistoneSwap(
+        omnistonQuote.current,
+        tonAddress,
+        tonConnect,
+      );
+
+      await waitForOmnistonSettlement(
+        omnistonQuote.current.quoteId,
+        omnistonTxHash,
+        tonAddress,
+      );
+    } catch (error) {
+      setSecondSwapState('failed');
+      console.error('Second swap failed:', error);
+
+      return;
+    }
+
+    setSecondSwapState('completed');
+
+    // return {
+    //   hash: omnistonTxHash,
+    //   transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    // };
+  };
+
+  const isSwapInProgress =
+    firstSwapState === 'in-progress' || secondSwapState === 'in-progress';
+
+  const swapButtonText = useMemo(() => {
+    if (isSwapInProgress) {
+      return 'Confirming';
+    }
+
+    if (firstSwapState === 'completed') {
+      return 'Confirm in TON wallet';
+    }
+
+    return 'Confirm in source wallet';
+  }, [secondSwapState]);
+
   return (
     <WidgetConfigProvider
       config={{
@@ -369,28 +407,78 @@ export const Page = () => {
             external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
         },
+      }}
+      localisation={{
+        'submit.active.external.swap': 'Swap now',
       }}>
-      <WidgetSwap
-        isOneWay
-        isFullPage
-        isLoading={isAppKitConnecting || isTonConnecting}
-        makeTransfer={makeTransfer}
-        onMsg={(msg) => {
-          if (msg.type === 'on_tokens_modal_toggled') {
-            setIsTokensModalOpen(msg.isOpen);
+      {makeTransferArgs ? (
+        <WidgetContainer
+          isFullPage
+          HeaderComponent={<Heading className="mb-3">Confirm swaps</Heading>}
+          FooterComponent={
+            <Button
+              variant="primary"
+              size="lg"
+              state={isSwapInProgress ? 'loading' : 'default'}
+              onClick={() => {
+                if (firstSwapState === 'completed') {
+                  void confirmSecondSwap();
+                }
+
+                void confirmFirstSwap(makeTransferArgs);
+              }}>
+              {swapButtonText}
+            </Button>
+          }>
+          <SwapCard
+            state={firstSwapState}
+            title="Swap 1/2"
+            source={{
+              assetId: makeTransferArgs.sourceAssetId,
+              amount: makeTransferArgs.amount,
+            }}
+            target={{
+              assetId: TON_ASSET_ID,
+              amount: '0',
+            }}
+          />
+          <SwapCard
+            state={secondSwapState}
+            title="Swap 2/2"
+            className={clsx('mt-2.5', {
+              'opacity-50': firstSwapState !== 'completed',
+            })}
+            source={{
+              assetId: TON_ASSET_ID,
+              amount: '0',
+            }}
+            target={{
+              assetId: makeTransferArgs.targetAssetId,
+              amount: '0',
+            }}
+          />
+        </WidgetContainer>
+      ) : (
+        <WidgetSwap
+          isOneWay
+          isFullPage
+          isLoading={isAppKitConnecting || isTonConnecting}
+          makeTransfer={makeTransfer}
+          onMsg={(msg) => {
+            if (msg.type === 'on_tokens_modal_toggled') {
+              setIsTokensModalOpen(msg.isOpen);
+            }
+          }}
+          HeaderComponent={
+            isTokensModalOpen ? undefined : (
+              <>
+                <Heading className="mb-8">Swap to TON from anywhere</Heading>
+                <WalletConnectionCard />
+              </>
+            )
           }
-        }}
-        HeaderComponent={
-          isTokensModalOpen ? undefined : (
-            <>
-              <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-8">
-                Swap to TON from anywhere
-              </h1>
-              <WalletConnectionCard />
-            </>
-          )
-        }
-      />
+        />
+      )}
     </WidgetConfigProvider>
   );
 };

@@ -14,4 +14,6 @@ export type MakeTransferArgs = {
   chain: Chains;
   evmChainId: number | null;
   isNativeEthTransfer?: boolean;
+  sourceAssetId: string;
+  targetAssetId: string;
 };

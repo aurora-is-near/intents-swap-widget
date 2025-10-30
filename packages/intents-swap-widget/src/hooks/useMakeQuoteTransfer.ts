@@ -17,8 +17,12 @@ type Result = {
   intent?: string;
 };
 
+type MakeTransferResult = Result | undefined | null | void;
+
 export type QuoteTransferArgs = {
-  makeTransfer?: (args: MakeTransferArgs) => Promise<Result | undefined | null>;
+  makeTransfer?: (
+    args: MakeTransferArgs,
+  ) => Promise<MakeTransferResult> | MakeTransferResult;
 };
 
 export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
@@ -81,6 +85,8 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? NATIVE_NEAR_DUMB_ASSET_ID
           : ctx.sourceToken.contractAddress,
+      sourceAssetId: ctx.sourceToken.assetId,
+      targetAssetId: ctx.targetToken.assetId,
     };
 
     const transferFunction = getTransferFunction(makeTransferArgs.address);
