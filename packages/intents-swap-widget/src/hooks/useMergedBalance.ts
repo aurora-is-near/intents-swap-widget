@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
 
-import { useConfig } from '@/config';
-
 import { useWalletBalance } from './useWalletBalance';
 import { useIntentsBalance } from './useIntentsBalance';
+import { useConfig } from '@/config';
 
 export const useMergedBalance = () => {
   const { walletAddress } = useConfig();

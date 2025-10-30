@@ -1,15 +1,14 @@
 import { Fragment } from 'react';
 
+import { CheckIcon } from './CheckIcon';
+import { CloseButton } from './CloseButton';
+import { SummaryItem } from './SummaryItem';
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import type { TransferResult } from '@/types/transfer';
 
 import { fireEvent, moveTo } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
-
-import { CheckIcon } from './CheckIcon';
-import { CloseButton } from './CloseButton';
-import { SummaryItem } from './SummaryItem';
 
 type Msg = { type: 'on_dismiss_success' };
 

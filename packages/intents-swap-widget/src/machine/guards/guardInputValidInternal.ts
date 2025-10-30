@@ -1,8 +1,7 @@
+import { isBalanceSufficient } from './checks/isBalanceSufficient';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 
 import type { Context, InputValidInternalContext } from '@/machine/context';
-
-import { isBalanceSufficient } from './checks/isBalanceSufficient';
 
 export const guardInputValidInternal = (
   ctx: Context,

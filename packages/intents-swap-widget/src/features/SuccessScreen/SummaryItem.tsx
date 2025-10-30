@@ -1,7 +1,6 @@
+import { ExternalAction } from './ExternalAction';
 import { CopyButton } from '@/components/CopyButton';
 import { formatTxHash } from '@/utils/formatters/formatTxHash';
-
-import { ExternalAction } from './ExternalAction';
 
 type Props = {
   label: string;

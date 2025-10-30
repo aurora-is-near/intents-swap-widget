@@ -1,10 +1,9 @@
-import { isEvmChain } from '@/utils/evm/isEvmChain';
-import { EVM_CHAIN_BASE_TOKENS } from '@/constants/chains';
-import type { Token, TokenBalances } from '@/types/token';
-
 import { CHAINS_MAP } from './types';
 import { revertAlchemyChainsMap } from './utils';
 import type { AlchemyBalanceItem } from './types';
+import { isEvmChain } from '@/utils/evm/isEvmChain';
+import { EVM_CHAIN_BASE_TOKENS } from '@/constants/chains';
+import type { Token, TokenBalances } from '@/types/token';
 
 export const parse = (
   tokensList: Token[],

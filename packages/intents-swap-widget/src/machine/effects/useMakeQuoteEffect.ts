@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { isDryQuote } from '../guards/checks/isDryQuote';
+import type { ListenerProps } from './types';
 import { QuoteError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
@@ -9,8 +11,6 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { Quote } from '@/types/quote';
-import { isDryQuote } from '../guards/checks/isDryQuote';
-import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   message?: string;

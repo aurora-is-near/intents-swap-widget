@@ -3,6 +3,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as Icons from 'lucide-react';
 
+import { ChainItem } from './ChainItem';
+import { AllNetworksIcon } from './AllNetworksIcon';
 import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { Icon } from '@/components/Icon';
@@ -11,9 +13,6 @@ import { CHAINS_LIST } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
 import type { Chains, ChainsFilter } from '@/types/chain';
-
-import { ChainItem } from './ChainItem';
-import { AllNetworksIcon } from './AllNetworksIcon';
 
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
 

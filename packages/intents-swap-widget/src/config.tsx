@@ -6,16 +6,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import { I18nextProvider } from 'react-i18next';
 
-import { EVM_CHAINS } from '@/constants/chains';
-import { ErrorBoundary } from '@/features/ErrorBoundary';
-import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
-import type { Token } from '@/types/token';
 import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
 import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
 import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
+import type { Token } from '@/types/token';
+import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
+import { ErrorBoundary } from '@/features/ErrorBoundary';
+import { EVM_CHAINS } from '@/constants/chains';
 
 const queryClient = new QueryClient({
   defaultOptions: {

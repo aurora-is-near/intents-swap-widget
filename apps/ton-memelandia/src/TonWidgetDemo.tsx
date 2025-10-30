@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
-import {
-  TonConnectButton,
-  TonConnectUIProvider,
-  useTonConnectUI,
-} from '@tonconnect/ui-react';
+import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
 import {
   Blockchain,

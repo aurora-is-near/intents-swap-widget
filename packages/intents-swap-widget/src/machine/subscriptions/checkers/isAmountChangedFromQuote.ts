@@ -1,8 +1,7 @@
+import { isTargetAmountChanged } from './isTargetAmountChanged';
 import { logger } from '@/logger';
 
 import type { Context, ContextChange } from '@/machine/context';
-
-import { isTargetAmountChanged } from './isTargetAmountChanged';
 
 export const isAmountChangedFromQuote = (
   ctx: Context,

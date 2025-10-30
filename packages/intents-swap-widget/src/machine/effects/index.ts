@@ -1,14 +1,6 @@
 import once from 'lodash.once';
 import { useEffect } from 'react';
 
-import { logger } from '@/logger';
-
-import {
-  registerGlobalContextSubscription,
-  registerGlobalStateSubscription,
-} from '@/machine/subscriptions';
-import { registerEvents } from '@/machine/events';
-
 import { useBalancesUpdateEffect } from './useBalancesUpdateEffect';
 import { useSetTokenBalanceEffect } from './useSetTokenBalanceEffect';
 import { useSetTokenIntentsTargetEffect } from './useSetTokenIntentsTargetEffect';
@@ -25,6 +17,12 @@ import {
   type Props as PropsAlchemyBalances,
   useAlchemyBalanceEffect,
 } from './useAlchemyBalanceEffect';
+import {
+  registerGlobalContextSubscription,
+  registerGlobalStateSubscription,
+} from '@/machine/subscriptions';
+import { registerEvents } from '@/machine/events';
+import { logger } from '@/logger';
 
 type EffectMakeQuote = ['makeQuote', Omit<PropsMakeQuote, 'isEnabled'>];
 

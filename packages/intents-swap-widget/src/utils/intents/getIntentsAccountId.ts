@@ -1,8 +1,7 @@
 import { base58, hex } from '@scure/base';
 
-import { logger } from '@/logger';
-
 import { notReachable } from '../notReachable';
+import { logger } from '@/logger';
 
 type Args = {
   walletAddress: string;

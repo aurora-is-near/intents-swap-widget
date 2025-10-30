@@ -5,8 +5,8 @@ import type { IMaskMixinProps } from 'react-imask';
 
 import { Input as UIInput } from '@headlessui/react';
 
-import { cn } from '@/utils/cn';
 import type { Props as InputProps } from './Input';
+import { cn } from '@/utils/cn';
 
 const RawInputAmount = forwardRef<
   InputElement,

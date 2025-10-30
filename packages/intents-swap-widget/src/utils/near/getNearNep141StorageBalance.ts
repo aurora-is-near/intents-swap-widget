@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-import { WidgetError } from '@/errors';
-
 import { decodeQueryResult } from './decodeQueryResult';
 import { nearRpcClient } from './rpc';
+import { WidgetError } from '@/errors';
 
 export const getNearNep141StorageBalance = async ({
   contractId,

@@ -1,11 +1,11 @@
-import { moveTo } from '@/machine';
-import type { Context } from '@/machine/context';
-import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import {
   validateDryInputs,
   validateExternalInputs,
   validateInternalInputs,
 } from './validateInputs';
+import { moveTo } from '@/machine';
+import type { Context } from '@/machine/context';
+import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 
 export const validateInputAndMoveTo = (ctx: Context) => {
   const isDryRun = isDryQuote(ctx);

@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import once from 'lodash.once';
 
-import { logger } from '@/logger';
-
 import { nearFailoverRpcProvider } from './rpc';
 import { decodeQueryResult } from './decodeQueryResult';
+import { logger } from '@/logger';
 
 type Args = {
   accountId: string;

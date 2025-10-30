@@ -15,9 +15,7 @@ export const WidgetContainer = ({
   const jsx = (
     <div className="w-full h-full flex flex-col justify-center items-center relative">
       {HeaderComponent && (
-        <div className="w-full mb-sw-2xl">
-          {HeaderComponent}
-        </div>
+        <div className="w-full mb-sw-2xl">{HeaderComponent}</div>
       )}
       {children}
       {FooterComponent && (
@@ -34,9 +32,7 @@ export const WidgetContainer = ({
 
   return (
     <div className="h-full min-h-full w-full min-w-full px-sw-lg mx-auto flex items-center justify-center fixed top-0 left-0 right-0">
-      <div className='h-full max-w-[456px] min-w-[270px]'>
-        {jsx}
-      </div>
+      <div className="h-full max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>
   );
 };

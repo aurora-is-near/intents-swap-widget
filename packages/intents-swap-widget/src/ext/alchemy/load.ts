@@ -1,12 +1,11 @@
-import { createNetworkClient } from '@/network';
-import type { Chains } from '@/types/chain';
-
 import { CHAINS_MAP, isAlchemySupportedChain } from './types';
 import type {
   AlchemyBalanceItem,
   AlchemyRequestParams,
   AlchemyResponse,
 } from './types';
+import { createNetworkClient } from '@/network';
+import type { Chains } from '@/types/chain';
 
 type ResultPage = {
   pageKey: string | null;

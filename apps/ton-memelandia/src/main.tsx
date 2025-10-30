@@ -2,9 +2,9 @@ import './tailwind.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { createAppKit } from './appkit-config';
 import { TonWidgetDemo } from './TonWidgetDemo';
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
 const container = document.getElementById('root');
 

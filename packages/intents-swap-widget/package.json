@@ -11,7 +11,6 @@
   "type": "module",
   "scripts": {
     "test": "jest",
-    "lint": "eslint . --ext .js,.ts,.tsx",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",

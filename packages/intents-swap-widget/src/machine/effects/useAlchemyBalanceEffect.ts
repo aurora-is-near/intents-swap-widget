@@ -1,8 +1,7 @@
+import type { ListenerProps } from './types';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
-
-import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   alchemyApiKey: string | undefined;

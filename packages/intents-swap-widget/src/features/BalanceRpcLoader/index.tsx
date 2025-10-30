@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 
+import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
-
-import { TokenBalanceLoader } from './TokenBalanceLoader';
 
 type Props = {
   walletAddress: string;

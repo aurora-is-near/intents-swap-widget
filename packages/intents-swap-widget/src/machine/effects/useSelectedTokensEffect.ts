@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from 'react';
 
+import type { ListenerProps } from './types';
+import { WidgetConfig } from '../../types/config';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -13,9 +15,6 @@ import { fireEvent } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
-
-import type { ListenerProps } from './types';
-import { WidgetConfig } from '../../types/config';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;

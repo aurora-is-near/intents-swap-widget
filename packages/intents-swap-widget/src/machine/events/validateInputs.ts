@@ -1,3 +1,4 @@
+import { fireEvent } from './utils/fireEvent';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
 
@@ -10,7 +11,6 @@ import type {
   InitialExternalStateError,
   InitialInternalStateError,
 } from '@/machine/errors';
-import { fireEvent } from './utils/fireEvent';
 
 export const validateDryInputs = (ctx: Context): boolean | undefined => {
   const isValidInitialState = guardStates(ctx, ['initial_dry']);

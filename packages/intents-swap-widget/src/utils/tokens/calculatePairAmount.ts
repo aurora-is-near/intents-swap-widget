@@ -1,7 +1,6 @@
-import type { Token } from '@/types/token';
-
 import { isValidFloat } from '../checkers/isValidFloat';
 import { formatHumanToBig } from '../formatters/formatHumanToBig';
+import type { Token } from '@/types/token';
 
 export const calculatePairAmount = (
   amount: string,

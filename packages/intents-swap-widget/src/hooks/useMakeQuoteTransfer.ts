@@ -1,15 +1,15 @@
 import axios from 'axios';
 
+import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
+import { isEth, isEvmChain } from '../utils';
+import { useMakeEvmTransfer } from './useMakeEvmTransfer';
+import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
-import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEth, isEvmChain } from '../utils';
-import { useMakeEvmTransfer } from './useMakeEvmTransfer';
-import { isEvmAddress } from '../utils/evm/isEvmAddress';
 
 type Result = {
   hash: string;

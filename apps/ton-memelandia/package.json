@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "eslint . --ext .js,.ts,.tsx",
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",

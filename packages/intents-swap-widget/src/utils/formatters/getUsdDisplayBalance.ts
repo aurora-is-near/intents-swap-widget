@@ -1,8 +1,7 @@
 import { formatUnits } from 'ethers';
 
-import type { Token, TokenBalance } from '@/types/token';
-
 import { formatUsdAmount } from './formatUsdAmount';
+import type { Token, TokenBalance } from '@/types/token';
 
 export const getUsdDisplayBalance = (balance: TokenBalance, token: Token) => {
   const balanceParsed = balance ? formatUnits(balance, token.decimals) : '0';

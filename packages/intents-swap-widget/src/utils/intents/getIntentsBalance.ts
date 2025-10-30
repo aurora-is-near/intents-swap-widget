@@ -1,10 +1,9 @@
 import { z } from 'zod';
 
+import { queryContract } from '../near/queryContract';
 import { INTENTS_CONTRACT } from '@/constants';
 import type { TokenBalances } from '@/types/token';
 import type { BaseTokenInfo } from '@/types/intents';
-
-import { queryContract } from '../near/queryContract';
 
 type BatchArgs = {
   accountId: string;

@@ -2,11 +2,10 @@ import { useState } from 'react';
 import * as Icons from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { cn } from '@/utils/cn';
-
 import { Hr } from './Hr';
 import { Card } from './Card';
 import { Badge } from './Badge';
+import { cn } from '@/utils/cn';
 
 type Props = {
   title: ReactNode;

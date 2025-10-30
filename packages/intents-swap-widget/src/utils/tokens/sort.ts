@@ -1,9 +1,8 @@
 import { formatUnits } from 'ethers';
 
+import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 import type { Token, TokenBalances } from '@/types/token';
 import type { Chains } from '@/types/chain';
-
-import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 
 const compareWithSearch = (
   a: Token,

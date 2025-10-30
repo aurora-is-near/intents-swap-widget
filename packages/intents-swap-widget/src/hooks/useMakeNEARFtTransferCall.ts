@@ -1,14 +1,13 @@
 import type { Action, Wallet as NearWallet } from '@near-wallet-selector/core';
 
+import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
+import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
+import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { TransferResult } from '@/types/transfer';
-
-import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
-import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
-import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 
 export function useMakeNEARFtTransferCall(
   nearWallet: null | undefined | (() => NearWallet),

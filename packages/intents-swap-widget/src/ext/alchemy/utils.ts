@@ -9,6 +9,7 @@ export const revertAlchemyChainsMap = <
   return Object.fromEntries(
     Object.entries(chainsMap).map(([key, value]) => [value, key]),
   ) as {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [V in ValueOf<T> & (string | number | symbol)]: keyof typeof chainsMap;
   };
 };

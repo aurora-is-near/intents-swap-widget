@@ -12,8 +12,7 @@ export const WidgetSwap = ({
   <WidgetContainer
     isFullPage={isFullPage}
     HeaderComponent={HeaderComponent}
-    FooterComponent={FooterComponent}
-  >
+    FooterComponent={FooterComponent}>
     <WidgetSwapContent {...widgetProps} />
   </WidgetContainer>
 );
