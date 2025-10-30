@@ -19,6 +19,7 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef } from 'react';
 import {
+  Card,
   Chains,
   MakeTransferArgs,
   SimpleToken,
@@ -181,15 +182,7 @@ const waitForOneClickSettlement = async (
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
-const getTonConnectManifestUrl = () => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/tonconnect-manifest.json`;
-  }
-
-  return '/tonconnect-manifest.json';
-};
-
-const TonWidgetDemoContent = () => {
+export const TonWidgetDemo = () => {
   const {
     address: appKitWalletAddress,
     chainType,
@@ -385,19 +378,29 @@ const TonWidgetDemoContent = () => {
         isFullPage
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
-        FooterComponent={
+        HeaderComponent={
           <>
-            <WalletConnectButton connectText="Connect Chain Wallet" />
-            <TonConnectButton />
+            <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-3">
+              Swap to TON from anywhere
+            </h1>
+            <Card className="text-sw-label-m text-sw-gray-50">
+              <ul>
+                <li className="flex flex-row justify-between items-center w-full">
+                  Connect source wallet
+                  <WalletConnectButton connectText="Connect" />
+                </li>
+                <li className="flex flex-row justify-between items-center w-full">
+                  Connect TON wallet
+                  <TonConnectButton />
+                </li>
+                <li className="flex flex-row justify-between items-center w-full">
+                  Swap and receive tokens on TON
+                </li>
+              </ul>
+            </Card>
           </>
         }
       />
     </WidgetConfigProvider>
   );
 };
-
-export const TonWidgetDemo = () => (
-  <TonConnectUIProvider manifestUrl={getTonConnectManifestUrl()}>
-    <TonWidgetDemoContent />
-  </TonConnectUIProvider>
-);

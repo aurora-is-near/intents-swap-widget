@@ -9,6 +9,7 @@ export type CommonWidgetProps<Msg> = QuoteTransferArgs &
   IntentsTransferArgs & {
     onMsg?: (msg: Msg) => void;
     isLoading?: boolean;
+    HeaderComponent?: ReactElement;
     FooterComponent?: ReactElement;
     isFullPage?: boolean;
   };

@@ -1,17 +1,24 @@
 import { PropsWithChildren, ReactElement } from 'react';
 
 type WidgetContainerProps = PropsWithChildren<{
+  HeaderComponent?: ReactElement;
   FooterComponent?: ReactElement;
   isFullPage?: boolean;
 }>;
 
 export const WidgetContainer = ({
   children,
+  HeaderComponent,
   FooterComponent,
   isFullPage,
 }: WidgetContainerProps) => {
   const jsx = (
     <div className="w-full h-full flex flex-col justify-center items-center relative">
+      {HeaderComponent && (
+        <div className="w-full mb-sw-2xl">
+          {HeaderComponent}
+        </div>
+      )}
       {children}
       {FooterComponent && (
         <div className="flex flex-col gap-3 items-center w-full mt-sw-xl">
