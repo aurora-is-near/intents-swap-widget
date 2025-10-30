@@ -3,31 +3,5 @@
 
 #root {
   height: 100vh;
-  background: #24262d;
-}
-
-/* Wallet Connect button for multi-chain wallet connection */
-.wallet-connect-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: #3396FF;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.wallet-connect-button.connected {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.wallet-connect-button:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(51, 150, 255, 0.4);
+  background: #1E2337;
 }

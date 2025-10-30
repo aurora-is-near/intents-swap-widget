@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react';
+import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
 import {
   Blockchain,
@@ -15,7 +15,6 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef } from 'react';
 import {
-  Card,
   Chains,
   MakeTransferArgs,
   SimpleToken,
@@ -25,9 +24,9 @@ import {
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
-import { WalletConnectButton } from './components/WalletConnectButton';
-import { useAppKitWallet } from './hooks/useAppKitWallet';
-import { useTonWallet } from './hooks/useTonWallet';
+import { useAppKitWallet } from '../hooks/useAppKitWallet';
+import { useTonWallet } from '../hooks/useTonWallet';
+import { WalletConnectionCard } from './WalletConnectionCard';
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -178,7 +177,7 @@ const waitForOneClickSettlement = async (
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
-export const TonWidgetDemo = () => {
+export const Page = () => {
   const {
     address: appKitWalletAddress,
     chainType,
@@ -376,24 +375,10 @@ export const TonWidgetDemo = () => {
         makeTransfer={makeTransfer}
         HeaderComponent={
           <>
-            <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-3">
+            <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-8">
               Swap to TON from anywhere
             </h1>
-            <Card className="text-sw-label-m text-sw-gray-50">
-              <ul>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Connect source wallet
-                  <WalletConnectButton connectText="Connect" />
-                </li>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Connect TON wallet
-                  <TonConnectButton />
-                </li>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Swap and receive tokens on TON
-                </li>
-              </ul>
-            </Card>
+            <WalletConnectionCard />
           </>
         }
       />

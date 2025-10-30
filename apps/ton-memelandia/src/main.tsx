@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { createAppKit } from './appkit-config';
-import { TonWidgetDemo } from './TonWidgetDemo';
+import { Page } from './components/Page';
 
 const container = document.getElementById('root');
 
@@ -29,7 +29,7 @@ const getTonConnectManifestUrl = () => {
 root.render(
   <StrictMode>
     <TonConnectUIProvider manifestUrl={getTonConnectManifestUrl()}>
-      <TonWidgetDemo />
+      <Page />
     </TonConnectUIProvider>
   </StrictMode>,
 );
