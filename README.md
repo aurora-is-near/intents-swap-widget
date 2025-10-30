@@ -11,7 +11,7 @@ Swap Widget frontend that uses [1Click API](https://docs.near-intents.org/near-i
 This package exports a number of pre-built widget components, `WidgetSwap`,
 `WidgetDeposit` and `WidgetWithdraw`.
 
-See the `/demo` folder for some examples of how to use these widgets.
+See the `/apps/demo` folder for some examples of how to use these widgets.
 
 #### Making a transfer
 
@@ -69,15 +69,12 @@ _Ext_ submodule contains various extensions that can be used with the widget but
 
 ## Styling
 
-If you are importing one of our pre-built widget components (e.g. `WidgetSwap`)
-then you don't need to do anything to apply the widget styles.
-
-If you are rolling your own using our components you will need to add the `sw`
-class to some wrapping element, for example:
+To apply the package styles you will need to add the `sw` class to some wrapping
+element, for example:
 
 ```tsx
 <div className="sw">
-  {/* Your custom widget */}
+  {/* Your widget */}
 </div>
 ```
 
@@ -124,24 +121,19 @@ The available keys can be found in the `types/localisation.ts` file.
 
 If you want to make changes to the package and submit PRs, the repository
 includes a demo application that includes various example widget implementations.
-
-To run it you will first need to create an `.env` file:
-
-```sh
-cp .env.example .env
-```
-
-Fill it with the relevant values, then run:
+Run it with:
 
 ```sh
 yarn dev
 ```
 
-You can also link the package to your application locally, allowing you
-to make changes to the package and see the results in your app:
+You can also link the `@aurora-is-near/intents-swap-widget` package to your
+application locally, allowing you to make changes to the package and see the
+results in your app:
 
 ```sh
 # in this repo
+cd packages/intents-swap-widget
 yarn link
 yarn build:watch
 
@@ -149,10 +141,6 @@ yarn build:watch
 yarn link @aurora-is-near/intents-swap-widget
 yarn dev
 ```
-
-If you have an error: `valtio-fsm` not found while using `link`. You need
-temporary add valtio to `devDependencies` in @aurora-is-near/intents-swap-widget
-`package.json` and reinstall. Do not commit this!
 
 ### Contribution
 

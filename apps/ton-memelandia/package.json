@@ -1,0 +1,28 @@
+{
+  "name": "ton-memelandia",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aurora-is-near/intents-swap-widget": "*",
+    "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
+    "@reown/appkit": "^1.8.10",
+    "@reown/appkit-adapter-solana": "^1.8.10",
+    "@reown/appkit-adapter-wagmi": "^1.8.11",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "^1.98.4",
+    "@ston-fi/omniston-sdk": "^0.7.5",
+    "@ton/core": "^0.62.0",
+    "@tonconnect/ui-react": "^2.3.1",
+    "react": "18",
+    "react-dom": "18",
+    "wagmi": "^2.18.2"
+  }
+}
