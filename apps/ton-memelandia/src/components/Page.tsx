@@ -234,7 +234,7 @@ export const Page = () => {
 
       prev[key].status = status;
 
-      return prev;
+      return { ...prev };
     });
   };
 
