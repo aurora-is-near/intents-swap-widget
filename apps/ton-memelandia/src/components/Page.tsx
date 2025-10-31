@@ -495,6 +495,7 @@ export const Page = () => {
         intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
+        alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {
