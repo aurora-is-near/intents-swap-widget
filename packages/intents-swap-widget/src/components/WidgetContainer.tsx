@@ -1,8 +1,8 @@
 import { PropsWithChildren, ReactElement } from 'react';
 
 type WidgetContainerProps = PropsWithChildren<{
-  HeaderComponent?: ReactElement;
-  FooterComponent?: ReactElement;
+  HeaderComponent?: ReactElement | false | null;
+  FooterComponent?: ReactElement | false | null;
   isFullPage?: boolean;
 }>;
 
@@ -19,7 +19,7 @@ export const WidgetContainer = ({
       )}
       {children}
       {FooterComponent && (
-        <div className="flex flex-col gap-3 items-center w-full mt-sw-xl">
+        <div className="flex flex-col gap-3 items-center w-full mt-sw-2xl">
           {FooterComponent}
         </div>
       )}

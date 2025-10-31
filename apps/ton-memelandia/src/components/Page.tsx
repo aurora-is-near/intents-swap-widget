@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
+import * as Icons from 'lucide-react';
 import {
   Blockchain,
   GaslessSettlement,
@@ -19,6 +20,7 @@ import {
   Chains,
   MakeTransferArgs,
   SimpleToken,
+  SuccessScreen,
   SwapCard,
   useMakeEvmTransfer,
   WidgetConfig,
@@ -205,6 +207,12 @@ export const Page = () => {
   const [secondSwapState, setSecondSwapState] =
     useState<SwapState>('not-started');
 
+  const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
+    useState<{
+      hash: string;
+      transactionLink: string;
+    } | null>();
+
   /**
    * Fetch a two-step quote.
    *
@@ -346,8 +354,10 @@ export const Page = () => {
 
     setSecondSwapState('in-progress');
 
+    let omnistonTxHash: string;
+
     try {
-      const omnistonTxHash = await performOmnistoneSwap(
+      omnistonTxHash = await performOmnistoneSwap(
         omnistonQuote.current,
         tonAddress,
         tonConnect,
@@ -366,11 +376,10 @@ export const Page = () => {
     }
 
     setSecondSwapState('completed');
-
-    // return {
-    //   hash: omnistonTxHash,
-    //   transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
-    // };
+    setSuccessfulTransactionDetails({
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    });
   };
 
   const isSwapInProgress =
@@ -387,6 +396,39 @@ export const Page = () => {
 
     return 'Confirm in source wallet';
   }, [secondSwapState]);
+
+  if (successfulTransactionDetails) {
+    return (
+      <WidgetContainer
+        isFullPage
+        HeaderComponent={
+          <div className="flex flex-row items-center mb-1">
+            <div className="bg-sw-success-100 text-sw-gray-975 flex h-[40px] w-[40px] items-center justify-center rounded-full">
+              <Icons.Check size={24} />
+            </div>
+            <Heading className="ml-4">All done</Heading>
+          </div>
+        }
+        FooterComponent={
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              setSuccessfulTransactionDetails(null);
+              setMakeTransferArgs(null);
+            }}>
+            Go back
+          </Button>
+        }>
+        <SuccessScreen
+          hideHeader
+          hash={successfulTransactionDetails.hash}
+          transactionLink={successfulTransactionDetails.transactionLink}
+          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+        />
+      </WidgetContainer>
+    );
+  }
 
   return (
     <WidgetConfigProvider

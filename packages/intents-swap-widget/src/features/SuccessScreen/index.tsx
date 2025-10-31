@@ -14,7 +14,8 @@ type Msg = { type: 'on_dismiss_success' };
 
 type Props = TransferResult & {
   message: string | string[];
-  onMsg: (msg: Msg) => void;
+  onMsg?: (msg: Msg) => void;
+  hideHeader?: boolean;
 };
 
 export const SuccessScreen = ({
@@ -23,6 +24,7 @@ export const SuccessScreen = ({
   hash: txHash,
   message,
   onMsg,
+  hideHeader,
 }: Props) => {
   const { t } = useTypedTranslation();
   const lines = Array.isArray(message) ? message : [message];
@@ -30,16 +32,20 @@ export const SuccessScreen = ({
   const onDismiss = () => {
     fireEvent('reset', null);
     moveTo('initial_dry');
-    onMsg({ type: 'on_dismiss_success' });
+    onMsg?.({ type: 'on_dismiss_success' });
   };
 
   return (
     <Card>
-      <header className="flex justify-between">
-        <CheckIcon />
-        <CloseButton onClick={onDismiss} />
-      </header>
-      <span className="text-sw-label-l text-sw-gray-50">All done</span>
+      {!hideHeader && (
+        <>
+          <header className="flex justify-between">
+            <CheckIcon />
+            <CloseButton onClick={onDismiss} />
+          </header>
+          <span className="text-sw-label-l text-sw-gray-50">All done</span>
+        </>
+      )}
       <p className="mt-sw-sm text-sw-p-s text-sw-gray-100">
         {lines.map((line, idx) => (
           <Fragment key={idx}>
