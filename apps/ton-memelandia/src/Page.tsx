@@ -30,10 +30,10 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
 import clsx from 'clsx';
-import { useAppKitWallet } from '../hooks/useAppKitWallet';
-import { useTonWallet } from '../hooks/useTonWallet';
-import { WalletConnectionCard } from './WalletConnectionCard';
-import { Heading } from './Heading';
+import { useAppKitWallet } from './hooks/useAppKitWallet';
+import { useTonWallet } from './hooks/useTonWallet';
+import { WalletConnectionCard } from './components/WalletConnectionCard';
+import { Heading } from './components/Heading';
 
 type SwapStatus = 'not-started' | 'in-progress' | 'completed' | 'failed';
 
