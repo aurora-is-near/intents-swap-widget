@@ -35,7 +35,24 @@ import { useTonWallet } from '../hooks/useTonWallet';
 import { WalletConnectionCard } from './WalletConnectionCard';
 import { Heading } from './Heading';
 
-type SwapState = 'not-started' | 'in-progress' | 'completed' | 'failed';
+type SwapStatus = 'not-started' | 'in-progress' | 'completed' | 'failed';
+
+type SwapDetails = {
+  status: SwapStatus;
+  source: {
+    assetId: string;
+    amount: string;
+  };
+  target: {
+    assetId: string;
+    amount: string;
+  };
+};
+
+type SwapState = {
+  firstSwap: SwapDetails;
+  secondSwap: SwapDetails;
+};
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -201,17 +218,29 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [firstSwapState, setFirstSwapState] =
-    useState<SwapState>('not-started');
-
-  const [secondSwapState, setSecondSwapState] =
-    useState<SwapState>('not-started');
+  const [swapState, setSwapState] = useState<SwapState | null>(null);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
     useState<{
       hash: string;
       transactionLink: string;
     } | null>();
+
+  const updateSwapStatus = (key: keyof SwapState, state: SwapStatus) => {
+    setSwapState((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [key]: {
+          ...prev[key],
+          state,
+        },
+      };
+    });
+  };
 
   /**
    * Fetch a two-step quote.
@@ -291,12 +320,35 @@ export const Page = () => {
       minAmountOut: minAskAmount,
     };
 
+    setSwapState({
+      firstSwap: {
+        status: 'not-started',
+        source: {
+          assetId: data.originAsset,
+          amount: quoteResponse.amountIn,
+        },
+        target: {
+          assetId: TON_ASSET_ID,
+          amount: oneClickQuote.amountOut,
+        },
+      },
+      secondSwap: {
+        status: 'not-started',
+        source: {
+          assetId: TON_ASSET_ID,
+          amount: oneClickQuote.amountOut,
+        },
+        target: {
+          assetId: data.destinationAsset,
+          amount: quoteResponse.amountOut,
+        },
+      },
+    });
+
     return quoteResponse;
   };
 
   const makeTransfer = (args: MakeTransferArgs) => {
-    setFirstSwapState('not-started');
-    setSecondSwapState('not-started');
     setMakeTransferArgs(args);
   };
 
@@ -332,19 +384,19 @@ export const Page = () => {
   }, [chainType]);
 
   const confirmFirstSwap = async (args: MakeTransferArgs) => {
-    setFirstSwapState('in-progress');
+    updateSwapStatus('firstSwap', 'in-progress');
 
     try {
       await makeEvmTransfer(args);
       await waitForOneClickSettlement(args.address);
     } catch (error) {
-      setFirstSwapState('failed');
+      updateSwapStatus('firstSwap', 'failed');
       console.error('First swap failed:', error);
 
       return;
     }
 
-    setFirstSwapState('completed');
+    updateSwapStatus('firstSwap', 'completed');
   };
 
   const confirmSecondSwap = async () => {
@@ -352,7 +404,7 @@ export const Page = () => {
       throw new Error('Missing Omniston quote');
     }
 
-    setSecondSwapState('in-progress');
+    updateSwapStatus('secondSwap', 'in-progress');
 
     let omnistonTxHash: string;
 
@@ -369,13 +421,13 @@ export const Page = () => {
         tonAddress,
       );
     } catch (error) {
-      setSecondSwapState('failed');
+      updateSwapStatus('secondSwap', 'failed');
       console.error('Second swap failed:', error);
 
       return;
     }
 
-    setSecondSwapState('completed');
+    updateSwapStatus('secondSwap', 'completed');
     setSuccessfulTransactionDetails({
       hash: omnistonTxHash,
       transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
@@ -383,19 +435,20 @@ export const Page = () => {
   };
 
   const isSwapInProgress =
-    firstSwapState === 'in-progress' || secondSwapState === 'in-progress';
+    swapState?.firstSwap.status === 'in-progress' ||
+    swapState?.secondSwap.status === 'in-progress';
 
   const swapButtonText = useMemo(() => {
     if (isSwapInProgress) {
       return 'Confirming';
     }
 
-    if (firstSwapState === 'completed') {
+    if (swapState?.firstSwap.status === 'completed') {
       return 'Confirm in TON wallet';
     }
 
     return 'Confirm in source wallet';
-  }, [secondSwapState]);
+  }, [swapState, isSwapInProgress]);
 
   if (successfulTransactionDetails) {
     return (
@@ -453,7 +506,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {makeTransferArgs ? (
+      {swapState && makeTransferArgs ? (
         <WidgetContainer
           isFullPage
           HeaderComponent={<Heading className="mb-3">Confirm swaps</Heading>}
@@ -463,7 +516,7 @@ export const Page = () => {
               size="lg"
               state={isSwapInProgress ? 'loading' : 'default'}
               onClick={() => {
-                if (firstSwapState === 'completed') {
+                if (swapState.firstSwap.status === 'completed') {
                   void confirmSecondSwap();
                 }
 
@@ -473,31 +526,19 @@ export const Page = () => {
             </Button>
           }>
           <SwapCard
-            state={firstSwapState}
+            state={swapState.firstSwap.status}
             title="Swap 1/2"
-            source={{
-              assetId: makeTransferArgs.sourceAssetId,
-              amount: makeTransferArgs.amount,
-            }}
-            target={{
-              assetId: TON_ASSET_ID,
-              amount: '0',
-            }}
+            source={swapState.firstSwap.source}
+            target={swapState.firstSwap.target}
           />
           <SwapCard
-            state={secondSwapState}
+            state={swapState.secondSwap.status}
             title="Swap 2/2"
             className={clsx('mt-2.5', {
-              'opacity-50': firstSwapState !== 'completed',
+              'opacity-50': swapState.firstSwap.status !== 'completed',
             })}
-            source={{
-              assetId: TON_ASSET_ID,
-              amount: '0',
-            }}
-            target={{
-              assetId: makeTransferArgs.targetAssetId,
-              amount: '0',
-            }}
+            source={swapState.secondSwap.source}
+            target={swapState.secondSwap.target}
           />
         </WidgetContainer>
       ) : (
