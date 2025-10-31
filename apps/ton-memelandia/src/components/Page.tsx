@@ -226,19 +226,15 @@ export const Page = () => {
       transactionLink: string;
     } | null>();
 
-  const updateSwapStatus = (key: keyof SwapState, state: SwapStatus) => {
+  const updateSwapStatus = (key: keyof SwapState, status: SwapStatus) => {
     setSwapState((prev) => {
       if (!prev) {
         return prev;
       }
 
-      return {
-        ...prev,
-        [key]: {
-          ...prev[key],
-          state,
-        },
-      };
+      prev[key].status = status;
+
+      return prev;
     });
   };
 
