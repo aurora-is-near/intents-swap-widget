@@ -242,6 +242,11 @@ export const Page = () => {
     });
   };
 
+  const resetSwapState = () => {
+    setSuccessfulTransactionDetails(null);
+    setMakeTransferArgs(null);
+  };
+
   /**
    * Fetch a two-step quote.
    *
@@ -467,8 +472,7 @@ export const Page = () => {
             variant="primary"
             size="lg"
             onClick={() => {
-              setSuccessfulTransactionDetails(null);
-              setMakeTransferArgs(null);
+              resetSwapState();
             }}>
             Go back
           </Button>
@@ -509,7 +513,19 @@ export const Page = () => {
       {swapState && makeTransferArgs ? (
         <WidgetContainer
           isFullPage
-          HeaderComponent={<Heading className="mb-3">Confirm swaps</Heading>}
+          HeaderComponent={
+            <div className="flex flex-row items-center mb-1">
+              <button
+                type="button"
+                className="bg-sw-gray-900 text-sw-gray-100 flex h-[40px] w-[40px] items-center justify-center rounded-full cursor-pointer"
+                onClick={() => {
+                  resetSwapState();
+                }}>
+                <Icons.ArrowLeft size={20} />
+              </button>
+              <Heading className="ml-4">Confirm swaps</Heading>
+            </div>
+          }
           FooterComponent={
             <Button
               variant="primary"
