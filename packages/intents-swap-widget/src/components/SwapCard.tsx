@@ -1,9 +1,10 @@
 import clsx from 'clsx';
 import * as Icons from 'lucide-react';
-import { useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { TokenAmount } from './TokenAmount';
 import { useTokens } from '../hooks';
 import { Card } from './Card';
+import { cn } from '../utils';
 
 type Props = {
   title?: string;
@@ -52,17 +53,42 @@ export const SwapCard = ({
     (token) => token.assetId === target.assetId,
   );
 
-  const stateText = useMemo(() => {
+  const statusIndicator:
+    | {
+        label: string;
+        labelClassName?: string;
+        icon?: ReactNode;
+      }
+    | undefined = useMemo(() => {
     if (state === 'in-progress') {
-      return 'Waiting';
+      return {
+        label: 'Waiting',
+        icon: <Icons.Loader size={16} className="animate-spin" />,
+      };
     }
 
     if (state === 'completed') {
-      return 'Completed';
+      return {
+        label: 'Completed',
+        labelClassName: 'text-sw-success-100',
+        icon: (
+          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-success-100">
+            <Icons.Check size={9} className="text-sw-gray-900" />
+          </div>
+        ),
+      };
     }
 
     if (state === 'failed') {
-      return 'Failed';
+      return {
+        label: 'Failed',
+        labelClassName: 'text-sw-alert-100',
+        icon: (
+          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-alert-100">
+            <Icons.X size={9} className="text-sw-gray-900" />
+          </div>
+        ),
+      };
     }
   }, [state]);
 
@@ -70,8 +96,17 @@ export const SwapCard = ({
     <Card className={clsx('w-full text-sw-gray-50', className)}>
       <div className="flex justify-between">
         <h2 className="font-medium text-sw-label-m">{title}</h2>
-        {stateText ? (
-          <span className="font-medium text-sw-label-m">{stateText}</span>
+        {statusIndicator ? (
+          <div className="flex flex-row items-center gap-x-sw-sm">
+            {statusIndicator.icon}
+            <span
+              className={cn(
+                'font-medium text-sw-label-m',
+                statusIndicator.labelClassName,
+              )}>
+              {statusIndicator.label}
+            </span>
+          </div>
         ) : (
           <div />
         )}
