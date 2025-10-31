@@ -12,6 +12,10 @@
   "dependencies": {
     "@aurora-is-near/intents-swap-widget": "*",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
+    "@near-wallet-selector/core": "^10.1.0",
+    "@near-wallet-selector/hot-wallet": "^10.1.0",
+    "@near-wallet-selector/meteor-wallet": "^10.1.0",
+    "@near-wallet-selector/modal-ui": "^10.1.0",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
