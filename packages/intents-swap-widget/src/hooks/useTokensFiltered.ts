@@ -1,14 +1,13 @@
-import { createTokenSorter } from '@/utils/tokens/sort';
-import { createFilterByIntents } from '@/utils/tokens/filterByIntents';
-import { createFilterBySearch } from '@/utils/tokens/filterBySearchString';
-import { createFilterBySelectedChain } from '@/utils/tokens/filterBySelectedChain';
-import type { Chains, ChainsFilter } from '@/types/chain';
-
 import { useChains } from './useChains';
 import { useTokens } from './useTokens';
 import { useMergedBalance } from './useMergedBalance';
 import { useIntentsBalance } from './useIntentsBalance';
 import { useTokensIntentsUnique } from './useTokensIntentsUnique';
+import { createTokenSorter } from '@/utils/tokens/sort';
+import { createFilterByIntents } from '@/utils/tokens/filterByIntents';
+import { createFilterBySearch } from '@/utils/tokens/filterBySearchString';
+import { createFilterBySelectedChain } from '@/utils/tokens/filterBySelectedChain';
+import type { Chains, ChainsFilter } from '@/types/chain';
 
 export type TokensFilterOptions = {
   variant: 'source' | 'target';

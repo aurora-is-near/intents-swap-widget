@@ -1,6 +1,6 @@
+import { isBalanceSufficient } from './checks/isBalanceSufficient';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { Context, InitialDryContext } from '@/machine/context';
-import { isBalanceSufficient } from './checks/isBalanceSufficient';
 
 export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
   return (

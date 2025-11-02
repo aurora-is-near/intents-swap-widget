@@ -12,8 +12,7 @@ export const WidgetWithdraw = ({
   <WidgetContainer
     isFullPage={isFullPage}
     HeaderComponent={HeaderComponent}
-    FooterComponent={FooterComponent}
-  >
+    FooterComponent={FooterComponent}>
     <WidgetWithdrawContent {...widgetProps} />
   </WidgetContainer>
 );

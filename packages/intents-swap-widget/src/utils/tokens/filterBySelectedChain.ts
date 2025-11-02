@@ -1,7 +1,6 @@
+import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token, TokenBalances } from '@/types/token';
-
-import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 
 type Options = {
   search: string;

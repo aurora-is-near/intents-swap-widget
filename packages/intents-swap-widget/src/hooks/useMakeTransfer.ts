@@ -1,3 +1,4 @@
+import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
@@ -10,8 +11,6 @@ import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
-
-import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 
 export const useMakeTransfer = ({
   message,

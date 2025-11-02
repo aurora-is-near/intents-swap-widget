@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 
-import { useUnsafeSnapshot } from '@/machine/snap';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { useTokenInputBalance } from './hooks';
 import { useDefaultToken } from '../../hooks/useDefaultToken';
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { useUnsafeSnapshot } from '@/machine/snap';
 
 export type Props = {
   isChanging?: boolean;

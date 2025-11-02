@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+import { useTokens } from './useTokens';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getIntentsBalances } from '@/utils/intents/getIntentsBalance';
 import { notReachable } from '@/utils/notReachable';
 import type { TokenBalances } from '@/types/token';
-
-import { useTokens } from './useTokens';
 
 export const useIntentsBalance = () => {
   const { walletAddress, intentsAccountType } = useConfig();

@@ -1,10 +1,7 @@
 /* eslint-disable no-console */
-import {
-  TonConnectButton,
-  TonConnectUIProvider,
-  useTonConnectUI,
-} from '@tonconnect/ui-react';
+import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
+import * as Icons from 'lucide-react';
 import {
   Blockchain,
   GaslessSettlement,
@@ -17,21 +14,45 @@ import {
   OneClickService,
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
-  Card,
+  Button,
   Chains,
   MakeTransferArgs,
   SimpleToken,
+  SuccessScreen,
+  SwapCard,
   useMakeEvmTransfer,
   WidgetConfig,
   WidgetConfigProvider,
+  WidgetContainer,
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
-import { WalletConnectButton } from './components/WalletConnectButton';
-import { useAppKitWallet } from './hooks/useAppKitWallet';
-import { useTonWallet } from './hooks/useTonWallet';
+import clsx from 'clsx';
+import { useAppKitWallet } from '../hooks/useAppKitWallet';
+import { useTonWallet } from '../hooks/useTonWallet';
+import { WalletConnectionCard } from './WalletConnectionCard';
+import { Heading } from './Heading';
+
+type SwapStatus = 'not-started' | 'in-progress' | 'completed' | 'failed';
+
+type SwapDetails = {
+  status: SwapStatus;
+  source: {
+    assetId: string;
+    amount: string;
+  };
+  target: {
+    assetId: string;
+    amount: string;
+  };
+};
+
+type SwapState = {
+  firstSwap: SwapDetails;
+  secondSwap: SwapDetails;
+};
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
@@ -182,7 +203,7 @@ const waitForOneClickSettlement = async (
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
-export const TonWidgetDemo = () => {
+export const Page = () => {
   const {
     address: appKitWalletAddress,
     chainType,
@@ -193,6 +214,34 @@ export const TonWidgetDemo = () => {
   const [tonConnect] = useTonConnectUI();
   const omnistonQuote = useRef<OmnistonQuote>(null);
   const { make: makeEvmTransfer } = useMakeEvmTransfer();
+  const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
+  const [makeTransferArgs, setMakeTransferArgs] =
+    useState<MakeTransferArgs | null>(null);
+
+  const [swapState, setSwapState] = useState<SwapState | null>(null);
+
+  const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
+    useState<{
+      hash: string;
+      transactionLink: string;
+    } | null>();
+
+  const updateSwapStatus = (key: keyof SwapState, status: SwapStatus) => {
+    setSwapState((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      prev[key].status = status;
+
+      return { ...prev };
+    });
+  };
+
+  const resetSwapState = () => {
+    setSuccessfulTransactionDetails(null);
+    setMakeTransferArgs(null);
+  };
 
   /**
    * Fetch a two-step quote.
@@ -208,8 +257,6 @@ export const TonWidgetDemo = () => {
       }),
       fetchStonFiAssets([data.destinationAsset]),
     ]);
-
-    console.debug(`[DEBUG] OneClick Quote:`, oneClickQuote);
 
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
@@ -247,8 +294,6 @@ export const TonWidgetDemo = () => {
         });
     });
 
-    console.debug(`[DEBUG] Omniston Quote:`, omnistonQuote.current);
-
     const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
 
     if (!targetToken) {
@@ -276,51 +321,36 @@ export const TonWidgetDemo = () => {
       minAmountOut: minAskAmount,
     };
 
-    console.debug(`[DEBUG] Quote response for widget:`, quoteResponse);
+    setSwapState({
+      firstSwap: {
+        status: 'not-started',
+        source: {
+          assetId: data.originAsset,
+          amount: quoteResponse.amountIn,
+        },
+        target: {
+          assetId: TON_ASSET_ID,
+          amount: oneClickQuote.amountOut,
+        },
+      },
+      secondSwap: {
+        status: 'not-started',
+        source: {
+          assetId: TON_ASSET_ID,
+          amount: oneClickQuote.amountOut,
+        },
+        target: {
+          assetId: data.destinationAsset,
+          amount: quoteResponse.amountOut,
+        },
+      },
+    });
 
     return quoteResponse;
   };
 
-  const makeTransfer = async (args: MakeTransferArgs) => {
-    if (!omnistonQuote.current) {
-      throw new Error('Missing Omniston quote');
-    }
-
-    console.debug(`[DEBUG] Performing transfer with args:`, args);
-
-    // TODO: Support solana transfers
-    await makeEvmTransfer(args);
-
-    console.debug(
-      `[DEBUG] Waiting for OneClick settlement for deposit address: ${args.address}`,
-    );
-
-    await waitForOneClickSettlement(args.address);
-
-    console.debug(
-      `[DEBUG] Performing Omnistone swap to address: ${tonAddress}`,
-    );
-
-    const omnistonTxHash = await performOmnistoneSwap(
-      omnistonQuote.current,
-      tonAddress,
-      tonConnect,
-    );
-
-    console.debug(
-      `[DEBUG] Waiting for Omniston settlement for quote ID: ${omnistonQuote.current.quoteId}`,
-    );
-
-    await waitForOmnistonSettlement(
-      omnistonQuote.current.quoteId,
-      omnistonTxHash,
-      tonAddress,
-    );
-
-    return {
-      hash: omnistonTxHash,
-      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
-    };
+  const makeTransfer = (args: MakeTransferArgs) => {
+    setMakeTransferArgs(args);
   };
 
   const walletSupportedChains = useMemo(() => {
@@ -354,17 +384,118 @@ export const TonWidgetDemo = () => {
     return 'near';
   }, [chainType]);
 
+  const confirmFirstSwap = async (args: MakeTransferArgs) => {
+    updateSwapStatus('firstSwap', 'in-progress');
+
+    try {
+      await makeEvmTransfer(args);
+      await waitForOneClickSettlement(args.address);
+    } catch (error) {
+      updateSwapStatus('firstSwap', 'failed');
+      console.error('First swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus('firstSwap', 'completed');
+  };
+
+  const confirmSecondSwap = async () => {
+    if (!omnistonQuote.current) {
+      throw new Error('Missing Omniston quote');
+    }
+
+    updateSwapStatus('secondSwap', 'in-progress');
+
+    let omnistonTxHash: string;
+
+    try {
+      omnistonTxHash = await performOmnistoneSwap(
+        omnistonQuote.current,
+        tonAddress,
+        tonConnect,
+      );
+
+      await waitForOmnistonSettlement(
+        omnistonQuote.current.quoteId,
+        omnistonTxHash,
+        tonAddress,
+      );
+    } catch (error) {
+      updateSwapStatus('secondSwap', 'failed');
+      console.error('Second swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus('secondSwap', 'completed');
+    setSuccessfulTransactionDetails({
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    });
+  };
+
+  const isSwapInProgress =
+    swapState?.firstSwap.status === 'in-progress' ||
+    swapState?.secondSwap.status === 'in-progress';
+
+  const swapButtonText = useMemo(() => {
+    if (isSwapInProgress) {
+      return 'Confirming';
+    }
+
+    if (swapState?.firstSwap.status === 'completed') {
+      return 'Confirm in TON wallet';
+    }
+
+    return 'Confirm in source wallet';
+  }, [swapState, isSwapInProgress]);
+
+  if (successfulTransactionDetails) {
+    return (
+      <WidgetContainer
+        isFullPage
+        HeaderComponent={
+          <div className="flex flex-row items-center mb-1">
+            <div className="bg-sw-success-100 text-sw-gray-975 flex h-[40px] w-[40px] items-center justify-center rounded-full">
+              <Icons.Check size={24} />
+            </div>
+            <Heading className="ml-4">All done</Heading>
+          </div>
+        }
+        FooterComponent={
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              resetSwapState();
+            }}>
+            Go back
+          </Button>
+        }>
+        <SuccessScreen
+          hideHeader
+          hash={successfulTransactionDetails.hash}
+          transactionLink={successfulTransactionDetails.transactionLink}
+          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+        />
+      </WidgetContainer>
+    );
+  }
+
   return (
     <WidgetConfigProvider
       config={{
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
-        walletAddress: appKitWalletAddress,
+        walletAddress:
+          appKitWalletAddress && tonAddress ? appKitWalletAddress : undefined,
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
+        alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {
@@ -372,35 +503,78 @@ export const TonWidgetDemo = () => {
             external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
         },
+      }}
+      localisation={{
+        'submit.active.external.swap': 'Swap now',
       }}>
-      <WidgetSwap
-        isOneWay
-        isFullPage
-        isLoading={isAppKitConnecting || isTonConnecting}
-        makeTransfer={makeTransfer}
-        HeaderComponent={
-          <>
-            <h1 className="text-white font-bold tracking-[-0.5px] text-2xl mb-3">
-              Swap to TON from anywhere
-            </h1>
-            <Card className="text-sw-label-m text-sw-gray-50">
-              <ul>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Connect source wallet
-                  <WalletConnectButton connectText="Connect" />
-                </li>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Connect TON wallet
-                  <TonConnectButton />
-                </li>
-                <li className="flex flex-row justify-between items-center w-full">
-                  Swap and receive tokens on TON
-                </li>
-              </ul>
-            </Card>
-          </>
-        }
-      />
+      {swapState && makeTransferArgs ? (
+        <WidgetContainer
+          isFullPage
+          HeaderComponent={
+            <div className="flex flex-row items-center mb-1">
+              <button
+                type="button"
+                className="bg-sw-gray-900 text-sw-gray-100 flex h-[40px] w-[40px] items-center justify-center rounded-full cursor-pointer"
+                onClick={() => {
+                  resetSwapState();
+                }}>
+                <Icons.ArrowLeft size={20} />
+              </button>
+              <Heading className="ml-4">Confirm swaps</Heading>
+            </div>
+          }
+          FooterComponent={
+            <Button
+              variant="primary"
+              size="lg"
+              state={isSwapInProgress ? 'loading' : 'default'}
+              onClick={() => {
+                if (swapState.firstSwap.status === 'completed') {
+                  void confirmSecondSwap();
+                }
+
+                void confirmFirstSwap(makeTransferArgs);
+              }}>
+              {swapButtonText}
+            </Button>
+          }>
+          <SwapCard
+            state={swapState.firstSwap.status}
+            title="Swap 1/2"
+            source={swapState.firstSwap.source}
+            target={swapState.firstSwap.target}
+          />
+          <SwapCard
+            state={swapState.secondSwap.status}
+            title="Swap 2/2"
+            className={clsx('mt-2.5', {
+              'opacity-50': swapState.firstSwap.status !== 'completed',
+            })}
+            source={swapState.secondSwap.source}
+            target={swapState.secondSwap.target}
+          />
+        </WidgetContainer>
+      ) : (
+        <WidgetSwap
+          isOneWay
+          isFullPage
+          isLoading={isAppKitConnecting || isTonConnecting}
+          makeTransfer={makeTransfer}
+          onMsg={(msg) => {
+            if (msg.type === 'on_tokens_modal_toggled') {
+              setIsTokensModalOpen(msg.isOpen);
+            }
+          }}
+          HeaderComponent={
+            isTokensModalOpen ? undefined : (
+              <>
+                <Heading className="mb-8">Swap to TON from anywhere</Heading>
+                <WalletConnectionCard />
+              </>
+            )
+          }
+        />
+      )}
     </WidgetConfigProvider>
   );
 };

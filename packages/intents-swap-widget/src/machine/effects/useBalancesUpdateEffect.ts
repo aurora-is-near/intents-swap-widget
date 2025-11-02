@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
+import type { ListenerProps } from './types';
 import { guardStates } from '@/machine';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
-
-import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   alchemyApiKey: string | undefined;

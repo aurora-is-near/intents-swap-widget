@@ -1,6 +1,7 @@
 import * as Icons from 'lucide-react';
 import { type ChangeEvent, useEffect, useMemo } from 'react';
 
+import { useNotification } from './useNotification';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
@@ -11,8 +12,6 @@ import { fireEvent } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { cn } from '@/utils';
-
-import { useNotification } from './useNotification';
 
 type Msg = { type: 'on_change_send_address'; address: string };
 

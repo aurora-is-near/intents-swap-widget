@@ -1,6 +1,8 @@
 import { VList } from 'virtua';
 import { Fragment, useMemo } from 'react';
 
+import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
+import { TokensListPlaceholder } from './TokensListPlaceholder';
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { Banner } from '@/components/Banner';
@@ -13,9 +15,6 @@ import { useConfig } from '@/config';
 
 import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
-
-import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
-import { TokensListPlaceholder } from './TokensListPlaceholder';
 
 type Msg =
   | { type: 'on_select_token'; token: Token }

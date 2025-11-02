@@ -1,8 +1,7 @@
 import { isAddress } from 'viem';
 
-import type { Token } from '@/types/token';
-
 import { isEvmChain } from './isEvmChain';
+import type { Token } from '@/types/token';
 
 export const isEvmToken = (token: Token) => {
   return (

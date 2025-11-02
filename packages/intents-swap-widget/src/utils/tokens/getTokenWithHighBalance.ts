@@ -1,10 +1,9 @@
-import type { Token, TokenBalances } from '@/types/token';
-import type { Chains } from '@/types/chain';
-
 import { notReachable } from '../notReachable';
 
 import { getDefaultIntentsToken } from './getDefaultIntentsToken';
 import { createTokenSorter } from './sort';
+import type { Chains } from '@/types/chain';
+import type { Token, TokenBalances } from '@/types/token';
 
 type Args = {
   balances: TokenBalances;

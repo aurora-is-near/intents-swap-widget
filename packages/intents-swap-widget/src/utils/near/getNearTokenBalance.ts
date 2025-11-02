@@ -1,6 +1,5 @@
-import type { Token } from '@/types/token';
-
 import { getNearNep141Balance } from './getNearNep141Balance';
+import type { Token } from '@/types/token';
 
 export const getNearTokenBalance = async (
   token: Token,

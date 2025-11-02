@@ -1,5 +1,10 @@
 import { useId } from 'react';
 
+import { WalletBalance } from './WalletBalance';
+import { getBalancePortion } from './utils/getBalancePortion';
+import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
+import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
+
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -10,11 +15,6 @@ import { Badge } from '@/components/Badge';
 import { TokenIcon } from '@/components/TokenIcon';
 import { InputAmount } from '@/components/InputAmount';
 import type { Token, TokenBalance } from '@/types/token';
-
-import { WalletBalance } from './WalletBalance';
-import { getBalancePortion } from './utils/getBalancePortion';
-import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
-import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
 
 export type Msg =
   | { type: 'on_click_select_token' }

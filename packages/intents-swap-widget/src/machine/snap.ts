@@ -1,6 +1,7 @@
 import { useSnapshot } from 'valtio';
 import { derive } from 'derive-valtio';
 
+import { getIsDirectNearDeposit } from './computed/getIsDirectNearDeposit';
 import { WidgetError } from '@/errors';
 import { machine } from '@/machine/machine';
 import { guardStates } from '@/machine/guards';
@@ -10,8 +11,6 @@ import { getIsDirectNonNearWithdrawal } from '@/machine/computed/getIsDirectNonN
 import { getIsNearToIntentsSameAssetTransfer } from '@/machine/computed/getIsNearToIntentsSameAssetTransfer';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
-
-import { getIsDirectNearDeposit } from './computed/getIsDirectNearDeposit';
 
 const store = machine.getStore();
 

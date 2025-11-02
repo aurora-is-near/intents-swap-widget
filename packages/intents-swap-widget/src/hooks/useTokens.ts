@@ -37,7 +37,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
     fetchTargetTokens,
   } = useConfig();
 
-  const query = useQuery<SimpleToken[]>({
+  const { data: queryData, ...query } = useQuery<SimpleToken[]>({
     queryKey: ['tokens', variant].filter(Boolean),
     queryFn: async (): Promise<SimpleToken[]> => {
       if (variant === 'source' && fetchSourceTokens) {
@@ -53,11 +53,11 @@ export const useTokens = (variant?: 'source' | 'target') => {
   });
 
   const data = useMemo(() => {
-    if (!query.data) {
+    if (!queryData) {
       return [];
     }
 
-    const tokens: Token[] = query.data
+    const tokens: Token[] = queryData
       .map((token: SimpleToken): Token | null => {
         const blockchain = token.blockchain.toLowerCase();
 
@@ -138,7 +138,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
           ),
         ]
       : tokensWithoutWNEAR;
-  }, [query.data, showIntentTokens, filterTokens]);
+  }, [queryData, showIntentTokens, filterTokens]);
 
   return {
     ...query,

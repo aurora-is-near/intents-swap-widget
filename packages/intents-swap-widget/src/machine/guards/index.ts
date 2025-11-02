@@ -1,6 +1,3 @@
-import type { MachineState } from '@/machine/machine';
-import type { Context } from '@/machine/context';
-
 import { guardInitialDry } from './guardInitialDry';
 import { guardInitialWallet } from './guardInitialWallet';
 import { guardInputValidDry } from './guardInputValidDry';
@@ -10,6 +7,8 @@ import { guardQuoteSuccessDry } from './guardQuoteSuccessDry';
 import { guardQuoteSuccessExternal } from './guardQuoteSuccessExternal';
 import { guardQuoteSuccessInternal } from './guardQuoteSuccessInternal';
 import { guardTransferSuccess } from './guardTransferSuccess';
+import type { Context } from '@/machine/context';
+import type { MachineState } from '@/machine/machine';
 
 const guardsMap: Record<MachineState, (ctx: Context) => boolean> = {
   initial_dry: guardInitialDry,

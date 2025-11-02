@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import * as Icons from 'lucide-react';
 
+import { TokensList } from './TokensList';
+import { ChainsDropdown } from './ChainsDropdown';
+import { useChains } from '../hooks';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
@@ -12,10 +15,6 @@ import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
 import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
-
-import { TokensList } from './TokensList';
-import { ChainsDropdown } from './ChainsDropdown';
-import { useChains } from '../hooks';
 
 type Msg =
   | { type: 'on_select_token'; token: Token }

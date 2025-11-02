@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 
+import { useTokens } from './useTokens';
 import { useConfig } from '@/config';
 import { CHAINS_LIST } from '@/constants/chains';
 import type { Chain, Chains } from '@/types/chain';
-
-import { useTokens } from './useTokens';
 
 function sortChains(items: Chain[], order: ReadonlyArray<Chains>) {
   const pos = new Map(order.map((id, i) => [id, i]));

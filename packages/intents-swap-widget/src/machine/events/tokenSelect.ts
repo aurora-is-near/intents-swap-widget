@@ -1,11 +1,10 @@
 import { snapshot } from 'valtio';
 
+import { tokenSelectRotate } from './tokenSelectRotate';
 import { configStore } from '@/config';
 import { notReachable } from '@/utils/notReachable';
 import type { Token } from '@/types/token';
 import type { Context } from '@/machine/context';
-
-import { tokenSelectRotate } from './tokenSelectRotate';
 
 export type TokenSelectPayload = {
   variant: 'source' | 'target';

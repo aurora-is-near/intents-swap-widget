@@ -1,7 +1,6 @@
+import { isEvmChain } from './isEvmChain';
 import { EVM_CHAIN_BASE_TOKENS } from '@/constants/chains';
 import type { Token } from '@/types/token';
-
-import { isEvmChain } from './isEvmChain';
 
 export const isEvmBaseToken = (token: Token) => {
   if (!isEvmChain(token.blockchain)) {

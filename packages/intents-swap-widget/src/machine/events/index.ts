@@ -1,6 +1,3 @@
-import { machine } from '@/machine/machine';
-import type { Context } from '@/machine/context';
-
 import { reset } from './reset';
 import { tokenSelectRotate } from './tokenSelectRotate';
 import { errorSet, type ErrorSetPayload } from './errorSet';
@@ -27,6 +24,8 @@ import {
   transferSetStatus,
   type TransferSetStatusPayload,
 } from './transferSetStatus';
+import type { Context } from '@/machine/context';
+import { machine } from '@/machine/machine';
 
 export type TradeEvents = {
   reset: null;

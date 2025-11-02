@@ -7,6 +7,7 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
+import { Quote } from '../types';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -19,8 +20,6 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
-
-import { Quote } from '../types';
 
 type MakeArgs = {
   message?: string;

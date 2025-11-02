@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 
+import type { ListenerProps } from './types';
 import { useTokens } from '@/hooks/useTokens';
 
 import { fireEvent } from '@/machine';
 import { useUnsafeSnapshot } from '@/machine/snap';
-
-import type { ListenerProps } from './types';
 
 const intentDepositTokensMap: Record<string, string> = {
   // cbBTC (eth)

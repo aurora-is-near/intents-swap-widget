@@ -1,15 +1,15 @@
 import axios from 'axios';
 
+import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
+import { isEth, isEvmChain } from '../utils';
+import { useMakeEvmTransfer } from './useMakeEvmTransfer';
+import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
-import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEth, isEvmChain } from '../utils';
-import { useMakeEvmTransfer } from './useMakeEvmTransfer';
-import { isEvmAddress } from '../utils/evm/isEvmAddress';
 
 type Result = {
   hash: string;
@@ -17,8 +17,12 @@ type Result = {
   intent?: string;
 };
 
+type MakeTransferResult = Result | undefined | null | void;
+
 export type QuoteTransferArgs = {
-  makeTransfer?: (args: MakeTransferArgs) => Promise<Result | undefined | null>;
+  makeTransfer?: (
+    args: MakeTransferArgs,
+  ) => Promise<MakeTransferResult> | MakeTransferResult;
 };
 
 export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
@@ -81,6 +85,8 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? NATIVE_NEAR_DUMB_ASSET_ID
           : ctx.sourceToken.contractAddress,
+      sourceAssetId: ctx.sourceToken.assetId,
+      targetAssetId: ctx.targetToken.assetId,
     };
 
     const transferFunction = getTransferFunction(makeTransferArgs.address);

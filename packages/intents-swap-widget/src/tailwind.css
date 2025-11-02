@@ -112,6 +112,7 @@
     --spacing-sw-xs: var(--sw-space-xs);
     --spacing-sw-sm: var(--sw-space-sm);
     --spacing-sw-md: var(--sw-space-md);
+    --spacing-sw-2md: var(--sw-space-2md);
     --spacing-sw-lg: var(--sw-space-lg);
     --spacing-sw-xl: var(--sw-space-xl);
     --spacing-sw-2xl: var(--sw-space-2xl);

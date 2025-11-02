@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 
+import type { CommonWidgetProps, TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import {
   SendAddress,
   SubmitButton,
@@ -22,11 +26,6 @@ import { useConfig } from '@/config';
 import { isDebug, notReachable } from '@/utils';
 
 import type { Token, TransferResult } from '@/types';
-
-import type { CommonWidgetProps, TokenInputType } from '../types';
-import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
-import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }

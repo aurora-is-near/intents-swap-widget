@@ -12,8 +12,7 @@ export const WidgetDeposit = ({
   <WidgetContainer
     isFullPage={isFullPage}
     HeaderComponent={HeaderComponent}
-    FooterComponent={FooterComponent}
-  >
+    FooterComponent={FooterComponent}>
     <WidgetDepositContent {...widgetProps} />
   </WidgetContainer>
 );

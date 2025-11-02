@@ -4,7 +4,7 @@ import * as Icons from 'lucide-react';
 
 import { cn as clsx } from '@/utils/cn';
 
-type Size = 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'tertiary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 type Detail = 'default' | 'dimmed';
@@ -17,6 +17,7 @@ type Props = {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  fluid?: boolean;
 } & (
   | { icon: LucideIcon; iconPosition?: 'head' | 'tail' }
   | { icon?: never; iconPosition?: never }
@@ -26,6 +27,7 @@ const styles = {
   icon: 'h-sw-xl w-sw-xl',
 
   size: (size: Size) => ({
+    'px-sw-xl py-sw-2md': size === 'sm',
     'px-sw-2xl py-sw-lg': size === 'md',
     'px-sw-3xl py-sw-xl': size === 'lg',
   }),
@@ -41,10 +43,14 @@ const styles = {
     ].includes(state),
   }),
 
+  width: (fluid?: boolean) => ({
+    'w-full': !fluid,
+  }),
+
   common: `
     ring-1 ring-inset ring-transparent
     transition-colors duration-250 ease-in-out
-    w-full rounded-sw-md
+    rounded-sw-md
   `,
 };
 
@@ -84,6 +90,7 @@ const ButtonPrimary = ({
   state = 'default',
   detail = 'default',
   onClick,
+  fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
   return (
@@ -91,6 +98,7 @@ const ButtonPrimary = ({
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
+        styles.width(fluid),
         styles.size(size),
         styles.state(state),
         {
@@ -113,6 +121,7 @@ const ButtonTertiary = ({
   state = 'default',
   detail = 'default',
   onClick,
+  fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
   return (
@@ -120,6 +129,7 @@ const ButtonTertiary = ({
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
+        styles.width(fluid),
         styles.size(size),
         {
           'text-sw-gray-50': state === 'active',
@@ -144,6 +154,7 @@ export const OutlinedButton = ({
   className,
   state = 'default',
   onClick,
+  fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
   return (
@@ -151,6 +162,7 @@ export const OutlinedButton = ({
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
+        styles.width(fluid),
         styles.size(size),
         'ring-1 ring-sw-gray-500 text-sw-gray-50',
         {
