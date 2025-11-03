@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { logger } from '../../logger';
+import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { useConfig } from '@/config';
 import { isEth } from '@/utils/evm/isEth';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
@@ -76,6 +78,14 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
           ? getEvmTokenBalance(token, walletAddress, rpcUrls[0]!)
           : null;
       }
+
+      if (token.blockchain === 'ton' && token.symbol === 'TON') {
+        return getTonTokenBalance(token, walletAddress);
+      }
+
+      logger.warn(
+        `Failed to fetch token balance for ${token.symbol} on ${token.blockchain}`,
+      );
 
       // Add missing chains
       return null;
