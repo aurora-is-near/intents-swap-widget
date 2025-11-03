@@ -1,9 +1,8 @@
 import { createIntentSignerNEP413 } from '@defuse-protocol/bridge-sdk';
 import type {
-  Wallet as NearWallet,
+  NearWalletBase as NearWallet,
   SignedMessage,
-} from '@near-wallet-selector/core';
-
+} from '@hot-labs/near-connect/build/types/wallet';
 import { WidgetError } from '@/errors';
 
 type Args = {
