@@ -45,7 +45,9 @@ const TokenBalanceBaseLoader = memo(
 
     return null;
   },
-  (prevProps, nextProps) => prevProps.token.assetId === nextProps.token.assetId,
+  (prev, next) =>
+    prev.token.assetId === next.token.assetId &&
+    prev.walletAddress === next.walletAddress,
 );
 
 TokenBalanceBaseLoader.displayName = 'TokenBalanceLoader';
