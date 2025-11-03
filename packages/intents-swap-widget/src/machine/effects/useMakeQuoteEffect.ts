@@ -85,13 +85,19 @@ export const useMakeQuoteEffect = ({
       try {
         // do not refetch failed quotes - persist an error instead
         if (isValidState && ctx.quoteStatus === 'idle') {
-          fireEvent('quoteSetStatus', 'pending');
-
           let quote: Quote | undefined;
 
           if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+            if (isDry) {
+              // since here it's not a real quote but just a deposit address generation
+              // we don't want to run it for dry runs
+              return;
+            }
+
+            fireEvent('quoteSetStatus', 'pending');
             quote = await makeDepositAddress();
           } else {
+            fireEvent('quoteSetStatus', 'pending');
             quote = await makeQuote({ message, quoteType });
           }
 
