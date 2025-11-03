@@ -9,8 +9,8 @@ type Props = {
 };
 
 export const BlockingError = ({ message, onClickRetry }: Props) => (
-  <Card>
-    <div className="gap-sw-2xl py-6xl flex min-h-[200px] flex-col items-center justify-center">
+  <Card className="w-full">
+    <div className="gap-sw-2xl py-6xl flex min-h-[200px] flex-col items-center justify-center w-full">
       <div className="gap-sw-md flex flex-col items-center justify-center">
         <header className="gap-sw-md flex items-center">
           <Icons.X strokeWidth={2.5} className="text-sw-mauve-50 h-7 w-7" />

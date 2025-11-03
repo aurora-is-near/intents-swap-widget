@@ -77,7 +77,7 @@ export const WidgetSwapContent = ({
     ],
   });
 
-  if (!!isLoading || !ctx.sourceToken) {
+  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetSwapSkeleton />;
   }
 
