@@ -224,15 +224,9 @@ export const WidgetWithdrawContent = ({
               providers={providers}
               makeTransfer={makeTransfer}
               label="Swap & withdraw"
-              onMsg={(msg) => {
-                switch (msg.type) {
-                  case 'on_successful_transfer':
-                    setTransferResult(msg.transfer);
-                    onMsg?.({ type: 'on_transfer_success' });
-                    break;
-                  default:
-                    notReachable(msg.type);
-                }
+              onSuccess={(transfer) => {
+                setTransferResult(transfer);
+                onMsg?.({ type: 'on_transfer_success' });
               }}
             />
           </div>

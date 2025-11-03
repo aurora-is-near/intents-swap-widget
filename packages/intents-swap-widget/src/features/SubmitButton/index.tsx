@@ -13,11 +13,9 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
-type Msg = { type: 'on_successful_transfer'; transfer: TransferResult };
-
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
-    onMsg: (msg: Msg) => void;
+    onSuccess: (transfer: TransferResult) => void;
   } & (
     | { label: string } // For deposit/withdraw - single label for all scenarios
     | { internalLabel: string; externalLabel: string } // For swap - different labels
@@ -129,7 +127,7 @@ const SubmitButtonError = () => {
 };
 
 const SubmitButtonBase = (props: Props) => {
-  const { providers, makeTransfer, onMsg } = props;
+  const { providers, makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {
@@ -165,10 +163,7 @@ const SubmitButtonBase = (props: Props) => {
     const transferResult = await make();
 
     if (transferResult) {
-      onMsg({
-        type: 'on_successful_transfer',
-        transfer: transferResult,
-      });
+      onSuccess(transferResult);
     }
   };
 
