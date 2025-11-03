@@ -34,7 +34,7 @@ jobs:
         run: yarn build --filter=@aurora-is-near/intents-swap-widget
       - name: Release
         run: npx semantic-release
-        working-directory: packages/intents-swap-widget
         env:
           GITHUB_TOKEN: ${{ secrets.GH_SEMANTIC_RELEASE_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_LEGACY_PEER_DEPS: true

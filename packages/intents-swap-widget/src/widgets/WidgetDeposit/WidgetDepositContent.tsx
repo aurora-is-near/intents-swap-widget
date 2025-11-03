@@ -80,7 +80,7 @@ export const WidgetDepositContent = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
-  if (!!isLoading || !ctx.sourceToken) {
+  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetDepositSkeleton />;
   }
 

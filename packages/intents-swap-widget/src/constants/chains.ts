@@ -159,7 +159,7 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   },
   ton: {
     id: 'ton',
-    label: 'Toncoin',
+    label: 'TON',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ton.svg',
   },
   op: {
