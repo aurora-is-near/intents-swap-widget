@@ -293,6 +293,20 @@ const SubmitButtonBase = ({
   );
 };
 
-export const SubmitButton = Object.assign(SubmitButtonBase, {
-  Error: SubmitButtonError,
-});
+// Wrapper that checks wallet state and delegates to appropriate component
+const SubmitButton = (props: Props) => {
+  const { ctx } = useUnsafeSnapshot();
+
+  // If no wallet connected, show error component (which displays "Connect wallet")
+  if (!ctx.walletAddress) {
+    return <SubmitButtonError />;
+  }
+
+  // If wallet connected, show active button
+  return <SubmitButtonBase {...props} />;
+};
+
+// Attach Error as static property for backward compatibility
+SubmitButton.Error = SubmitButtonError;
+
+export { SubmitButton };

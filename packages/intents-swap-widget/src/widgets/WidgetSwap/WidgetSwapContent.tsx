@@ -208,30 +208,26 @@ export const WidgetSwapContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t('submit.active.transfer.swap', 'Transfer')}
-                internalSwapLabel={t('submit.active.internal.swap', 'Swap')}
-                externalSwapLabel={t(
-                  'submit.active.external.swap',
-                  'Swap & send',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              transferLabel={t('submit.active.transfer.swap', 'Transfer')}
+              internalSwapLabel={t('submit.active.internal.swap', 'Swap')}
+              externalSwapLabel={t(
+                'submit.active.external.swap',
+                'Swap & send',
+              )}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_successful_transfer':
+                    setTransferResult(msg.transfer);
+                    onMsg?.({ type: 'on_transfer_success' });
+                    break;
+                  default:
+                    notReachable(msg.type);
+                }
+              }}
+            />
           </div>
         </div>
       );

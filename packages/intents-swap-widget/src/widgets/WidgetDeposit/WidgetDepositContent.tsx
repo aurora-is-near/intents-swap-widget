@@ -43,7 +43,7 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { chainsFilter, walletAddress, alchemyApiKey } = useConfig();
+  const { chainsFilter, alchemyApiKey } = useConfig();
   const { t } = useTypedTranslation();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
@@ -204,30 +204,26 @@ export const WidgetDepositContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t('submit.active.transfer.deposit', 'Transfer')}
-                internalSwapLabel={t('submit.active.internal.deposit', 'Swap')}
-                externalSwapLabel={t(
-                  'submit.active.external.deposit',
-                  'Swap & send',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              transferLabel={t('submit.active.transfer.deposit', 'Transfer')}
+              internalSwapLabel={t('submit.active.internal.deposit', 'Swap')}
+              externalSwapLabel={t(
+                'submit.active.external.deposit',
+                'Swap & send',
+              )}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_successful_transfer':
+                    setTransferResult(msg.transfer);
+                    onMsg?.({ type: 'on_transfer_success' });
+                    break;
+                  default:
+                    notReachable(msg.type);
+                }
+              }}
+            />
           </div>
         </div>
       );

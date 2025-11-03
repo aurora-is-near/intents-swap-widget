@@ -222,36 +222,32 @@ export const WidgetWithdrawContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t(
-                  'submit.active.transfer.withdraw',
-                  'Swap & withdraw',
-                )}
-                internalSwapLabel={t(
-                  'submit.active.internal.withdraw',
-                  'Swap & withdraw',
-                )}
-                externalSwapLabel={t(
-                  'submit.active.external.withdraw',
-                  'Swap & withdraw',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              transferLabel={t(
+                'submit.active.transfer.withdraw',
+                'Swap & withdraw',
+              )}
+              internalSwapLabel={t(
+                'submit.active.internal.withdraw',
+                'Swap & withdraw',
+              )}
+              externalSwapLabel={t(
+                'submit.active.external.withdraw',
+                'Swap & withdraw',
+              )}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_successful_transfer':
+                    setTransferResult(msg.transfer);
+                    onMsg?.({ type: 'on_transfer_success' });
+                    break;
+                  default:
+                    notReachable(msg.type);
+                }
+              }}
+            />
           </div>
         </div>
       );
