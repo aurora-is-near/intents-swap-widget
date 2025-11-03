@@ -32,8 +32,7 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./styles": "./dist/styles.css",
-    "./utils.css": "./dist/utils.css",
+    "./styles.css": "./dist/styles.css",
     "./constants": "./dist/constants/index.js",
     "./components": "./dist/components/index.js",
     "./features": "./dist/features/index.js",
