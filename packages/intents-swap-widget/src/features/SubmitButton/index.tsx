@@ -113,26 +113,7 @@ const useGetErrorButton = (ctx: Context) => {
 
 const SubmitButtonError = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { t } = useTypedTranslation();
-
-  const errorButton = useGetErrorButton(ctx);
-
-  // If there's a specific error, show it
-  if (errorButton) {
-    return errorButton;
-  }
-
-  // If no wallet is connected, show "Connect wallet" (regardless of input state)
-  if (!ctx.walletAddress) {
-    return (
-      <Button state="disabled" {...commonBtnProps}>
-        {t('submit.error.connectWallet', 'Connect wallet')}
-      </Button>
-    );
-  }
-
-  // For any other case, show nothing
-  return undefined;
+  return useGetErrorButton(ctx) || null;
 };
 
 const SubmitButtonBase = ({
@@ -155,12 +136,6 @@ const SubmitButtonBase = ({
   const { make } = useMakeTransfer({ providers, makeTransfer });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
-
-  // In external deposit (QR code) mode, don't show the button
-  // The user will send funds from their external wallet to the QR address
-  if (ctx.isDepositFromExternalWallet) {
-    return null;
-  }
 
   const nativeNearDeposit =
     ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
@@ -293,16 +268,34 @@ const SubmitButtonBase = ({
   );
 };
 
-// Wrapper that checks wallet state and delegates to appropriate component
+// Wrapper that handles all routing logic
 const SubmitButton = (props: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const { t } = useTypedTranslation();
 
-  // If no wallet connected, show error component (which displays "Connect wallet")
+  // Call ALL hooks first, before any conditional returns
+  const errorButton = useGetErrorButton(ctx);
+
+  // 1. No wallet? Show "Connect wallet" directly
   if (!ctx.walletAddress) {
-    return <SubmitButtonError />;
+    return (
+      <Button state="disabled" {...commonBtnProps}>
+        {t('submit.error.connectWallet', 'Connect wallet')}
+      </Button>
+    );
   }
 
-  // If wallet connected, show active button
+  // 2. External deposit (QR code) mode? Hide button
+  if (ctx.isDepositFromExternalWallet) {
+    return null;
+  }
+
+  // 3. Has actual errors? Show error button
+  if (errorButton) {
+    return errorButton;
+  }
+
+  // 4. All good - show active button
   return <SubmitButtonBase {...props} />;
 };
 
