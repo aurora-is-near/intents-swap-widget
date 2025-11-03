@@ -623,6 +623,8 @@ export const Page = () => {
         fetchQuote,
         fetchTargetTokens,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
+        tonCenterApiKey:
+          'e66b782809dc4b765bf13c55acc18cc4d3ae61dbb1791d03bdcc2477825f8d76',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {

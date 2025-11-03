@@ -3,6 +3,7 @@ import { Token } from '../../types';
 export const getTonTokenBalance = async (
   token: Token,
   walletAddress: string,
+  tonCenterApiKey?: string,
 ): Promise<string | null> => {
   if (token.symbol !== 'TON') {
     return null;
@@ -12,11 +13,15 @@ export const getTonTokenBalance = async (
 
   url.searchParams.append('address', walletAddress);
 
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (tonCenterApiKey) {
+    headers['X-API-Key'] = tonCenterApiKey;
+  }
+
+  const res = await fetch(url, { headers });
 
   const data = (await res.json()) as {
     ok: boolean;
