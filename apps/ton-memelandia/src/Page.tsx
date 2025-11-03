@@ -47,11 +47,8 @@ type SwapDetails = {
     assetId: string;
     amount: string;
   };
-};
-
-type SwapState = {
-  firstSwap: SwapDetails;
-  secondSwap: SwapDetails;
+  swap: () => Promise<void>;
+  swapButtonText: string;
 };
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
@@ -218,7 +215,7 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [swapState, setSwapState] = useState<SwapState | null>(null);
+  const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
     useState<{
@@ -226,13 +223,17 @@ export const Page = () => {
       transactionLink: string;
     } | null>();
 
-  const updateSwapStatus = (key: keyof SwapState, status: SwapStatus) => {
-    setSwapState((prev) => {
+  const updateSwapStatus = (index: number, status: SwapStatus) => {
+    setSwaps((prev) => {
       if (!prev) {
         return prev;
       }
 
-      prev[key].status = status;
+      if (!prev[index]) {
+        throw new Error(`Invalid swap index: ${index}`);
+      }
+
+      prev[index].status = status;
 
       return { ...prev };
     });
@@ -241,6 +242,62 @@ export const Page = () => {
   const resetSwapState = () => {
     setSuccessfulTransactionDetails(null);
     setMakeTransferArgs(null);
+    setSwaps([]);
+  };
+
+  const confirmOneClickSwap = async () => {
+    if (!makeTransferArgs) {
+      throw new Error('Missing OneClick transfer args');
+    }
+
+    updateSwapStatus(0, 'in-progress');
+
+    try {
+      await makeEvmTransfer(makeTransferArgs);
+      await waitForOneClickSettlement(makeTransferArgs.address);
+    } catch (error) {
+      updateSwapStatus(0, 'failed');
+      console.error('One Click swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus(0, 'completed');
+  };
+
+  const confirmOmnistonSwap = async () => {
+    if (!omnistonQuote.current) {
+      throw new Error('Missing Omniston quote');
+    }
+
+    updateSwapStatus(1, 'in-progress');
+
+    let omnistonTxHash: string;
+
+    try {
+      omnistonTxHash = await performOmnistoneSwap(
+        omnistonQuote.current,
+        tonAddress,
+        tonConnect,
+      );
+
+      await waitForOmnistonSettlement(
+        omnistonQuote.current.quoteId,
+        omnistonTxHash,
+        tonAddress,
+      );
+    } catch (error) {
+      updateSwapStatus(1, 'failed');
+      console.error('Omniston swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus(1, 'completed');
+    setSuccessfulTransactionDetails({
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    });
   };
 
   /**
@@ -321,8 +378,8 @@ export const Page = () => {
       minAmountOut: minAskAmount,
     };
 
-    setSwapState({
-      firstSwap: {
+    setSwaps([
+      {
         status: 'not-started',
         source: {
           assetId: data.originAsset,
@@ -332,8 +389,10 @@ export const Page = () => {
           assetId: TON_ASSET_ID,
           amount: oneClickQuote.amountOut,
         },
+        swap: confirmOneClickSwap,
+        swapButtonText: 'Confirm in source wallet',
       },
-      secondSwap: {
+      {
         status: 'not-started',
         source: {
           assetId: TON_ASSET_ID,
@@ -343,8 +402,10 @@ export const Page = () => {
           assetId: data.destinationAsset,
           amount: quoteResponse.amountOut,
         },
+        swap: confirmOmnistonSwap,
+        swapButtonText: 'Confirm in TON wallet',
       },
-    });
+    ]);
 
     return quoteResponse;
   };
@@ -384,72 +445,11 @@ export const Page = () => {
     return 'near';
   }, [chainType]);
 
-  const confirmFirstSwap = async (args: MakeTransferArgs) => {
-    updateSwapStatus('firstSwap', 'in-progress');
+  const isSwapInProgress = !!swaps.find(
+    (swap) => swap.status === 'in-progress',
+  );
 
-    try {
-      await makeEvmTransfer(args);
-      await waitForOneClickSettlement(args.address);
-    } catch (error) {
-      updateSwapStatus('firstSwap', 'failed');
-      console.error('First swap failed:', error);
-
-      return;
-    }
-
-    updateSwapStatus('firstSwap', 'completed');
-  };
-
-  const confirmSecondSwap = async () => {
-    if (!omnistonQuote.current) {
-      throw new Error('Missing Omniston quote');
-    }
-
-    updateSwapStatus('secondSwap', 'in-progress');
-
-    let omnistonTxHash: string;
-
-    try {
-      omnistonTxHash = await performOmnistoneSwap(
-        omnistonQuote.current,
-        tonAddress,
-        tonConnect,
-      );
-
-      await waitForOmnistonSettlement(
-        omnistonQuote.current.quoteId,
-        omnistonTxHash,
-        tonAddress,
-      );
-    } catch (error) {
-      updateSwapStatus('secondSwap', 'failed');
-      console.error('Second swap failed:', error);
-
-      return;
-    }
-
-    updateSwapStatus('secondSwap', 'completed');
-    setSuccessfulTransactionDetails({
-      hash: omnistonTxHash,
-      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
-    });
-  };
-
-  const isSwapInProgress =
-    swapState?.firstSwap.status === 'in-progress' ||
-    swapState?.secondSwap.status === 'in-progress';
-
-  const swapButtonText = useMemo(() => {
-    if (isSwapInProgress) {
-      return 'Confirming';
-    }
-
-    if (swapState?.firstSwap.status === 'completed') {
-      return 'Confirm in TON wallet';
-    }
-
-    return 'Confirm in source wallet';
-  }, [swapState, isSwapInProgress]);
+  const nextSwap = swaps.find((swap) => swap.status === 'not-started');
 
   if (successfulTransactionDetails) {
     return (
@@ -507,7 +507,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {swapState && makeTransferArgs ? (
+      {nextSwap ? (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -528,31 +528,23 @@ export const Page = () => {
               variant="primary"
               size="lg"
               state={isSwapInProgress ? 'loading' : 'default'}
-              onClick={() => {
-                if (swapState.firstSwap.status === 'completed') {
-                  void confirmSecondSwap();
-                }
-
-                void confirmFirstSwap(makeTransferArgs);
-              }}>
-              {swapButtonText}
+              onClick={nextSwap.swap}>
+              {nextSwap.swapButtonText}
             </Button>
           }>
-          <SwapCard
-            state={swapState.firstSwap.status}
-            title="Swap 1/2"
-            source={swapState.firstSwap.source}
-            target={swapState.firstSwap.target}
-          />
-          <SwapCard
-            state={swapState.secondSwap.status}
-            title="Swap 2/2"
-            className={clsx('mt-2.5', {
-              'opacity-50': swapState.firstSwap.status !== 'completed',
-            })}
-            source={swapState.secondSwap.source}
-            target={swapState.secondSwap.target}
-          />
+          {swaps.map((swap, index) => (
+            <SwapCard
+              key={index}
+              state={swap.status}
+              title={`Swap ${index + 1}/${swaps.length}`}
+              className={clsx(index > 0 && 'mt-2.5', {
+                'opacity-50':
+                  index > 0 && swaps[index - 1]?.status !== 'completed',
+              })}
+              source={swap.source}
+              target={swap.target}
+            />
+          ))}
         </WidgetContainer>
       ) : (
         <WidgetSwap
