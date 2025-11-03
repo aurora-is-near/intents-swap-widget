@@ -44,4 +44,8 @@ export type WidgetConfig = {
 
   // Balance loading
   alchemyApiKey?: string;
+
+  // Chain switching (EVM only)
+  getCurrentChainId?: () => Promise<number | null> | number | null;
+  switchChain?: (targetChainId: number) => Promise<void>;
 };

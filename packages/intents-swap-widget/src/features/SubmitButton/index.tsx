@@ -8,6 +8,7 @@ import type { Context } from '@/machine/context';
 
 import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
+import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -138,6 +139,8 @@ const SubmitButtonBase = (props: Props) => {
   } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
+  const { isSwitchingChainRequired, switchChain, isSwitchingChain } =
+    useSwitchChain();
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
@@ -160,6 +163,15 @@ const SubmitButtonBase = (props: Props) => {
   };
 
   const onClick = async () => {
+    // Check if chain switch is needed before transfer
+    if (isSwitchingChainRequired) {
+      const switched = await switchChain();
+
+      if (!switched) {
+        return; // User cancelled or error occurred
+      }
+    }
+
     const transferResult = await make();
 
     if (transferResult) {
@@ -185,6 +197,23 @@ const SubmitButtonBase = (props: Props) => {
 
   if (SubmitErrorButton) {
     return SubmitErrorButton;
+  }
+
+  // Chain switching required
+  if (isSwitchingChainRequired) {
+    if (isSwitchingChain) {
+      return (
+        <Button state="loading" {...commonBtnProps}>
+          {t('submit.pending.switchingChain', 'Switching network...')}
+        </Button>
+      );
+    }
+
+    return (
+      <Button {...commonBtnProps} onClick={onClick}>
+        {t('submit.switchChain', 'Switch Network')}
+      </Button>
+    );
   }
 
   if (ctx.transferStatus.status === 'pending') {
