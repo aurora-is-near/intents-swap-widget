@@ -36,6 +36,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   server: {
+    port: 5173,
     fs: {
       allow: ['..'],
     },

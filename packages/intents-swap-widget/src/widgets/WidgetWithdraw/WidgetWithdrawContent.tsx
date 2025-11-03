@@ -85,7 +85,7 @@ export const WidgetWithdrawContent = ({
     ],
   });
 
-  if (!!isLoading || !ctx.sourceToken) {
+  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetWithdrawSkeleton />;
   }
 
