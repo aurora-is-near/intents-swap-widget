@@ -200,6 +200,67 @@ const waitForOneClickSettlement = async (
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
+const getOneClickSwapDetails = ({
+  sourceAsset,
+  sourceAmount,
+  targetAmount,
+}: {
+  sourceAsset: string;
+  sourceAmount: string;
+  targetAmount: string;
+}): SwapDetails => {
+  return {
+    status: 'not-started',
+    source: {
+      assetId: sourceAsset,
+      amount: sourceAmount,
+    },
+    target: {
+      assetId: TON_ASSET_ID,
+      amount: targetAmount,
+    },
+    swapType: 'oneclick',
+    swapButtonText: 'Confirm in source wallet',
+  };
+};
+
+const getOmnistonSwapDetails = ({
+  sourceAmount,
+  targetAmount,
+  destinationAsset,
+}: {
+  destinationAsset: string;
+  sourceAmount: string;
+  targetAmount: string;
+}): SwapDetails => {
+  return {
+    status: 'not-started',
+    source: {
+      assetId: TON_ASSET_ID,
+      amount: sourceAmount,
+    },
+    target: {
+      assetId: destinationAsset,
+      amount: targetAmount,
+    },
+    swapType: 'omniston',
+    swapButtonText: 'Confirm in TON wallet',
+  };
+};
+
+const findTokenByAssetId = (
+  tokens: SimpleToken[],
+  assetId: string,
+): SimpleToken => {
+  const token = tokens.find((t) => t.assetId === assetId);
+
+  if (!token) {
+    throw new Error(`Token not found for assetId: ${assetId}`);
+  }
+
+  return token;
+};
+
 export const Page = () => {
   const {
     address: appKitWalletAddress,
@@ -296,21 +357,10 @@ export const Page = () => {
     });
   };
 
-  /**
-   * Fetch a two-step quote.
-   *
-   * The first quote is done via OneClick, from the selected source asset to TON.
-   * The second quote is done via Omniston, from TON to the selected target asset.
-   */
-  const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
-    const [{ quote: oneClickQuote }, tokens] = await Promise.all([
-      OneClickService.getQuote({
-        ...data,
-        destinationAsset: TON_ASSET_ID,
-      }),
-      fetchStonFiAssets([data.destinationAsset]),
-    ]);
-
+  const fetchOmnistonQuote = async (
+    destinationAsset: string,
+    bidAmount: string,
+  ) => {
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
     // when performing the swap.
@@ -320,15 +370,14 @@ export const Page = () => {
           settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
           askAssetAddress: {
             blockchain: Blockchain.TON,
-            address: data.destinationAsset, // The final target asset
+            address: destinationAsset,
           },
           bidAssetAddress: {
             blockchain: Blockchain.TON,
             address: TON_ASSET_ADDRESS,
           },
           amount: {
-            // The amount of TON we got from OneClick
-            bidUnits: oneClickQuote.amountOut,
+            bidUnits: bidAmount,
           },
           settlementParams: {
             gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
@@ -347,13 +396,34 @@ export const Page = () => {
         });
     });
 
-    const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
+    return omnistonQuote.current;
+  };
 
-    if (!targetToken) {
-      throw new Error('Missing target token info');
-    }
+  /**
+   * Fetch a two-step quote.
+   *
+   * The first quote is done via OneClick, from the selected source asset to TON.
+   * The second quote is done via Omniston, from TON to the selected target asset.
+   */
+  const fetchDoubleQuote: WidgetConfig['fetchQuote'] = async (data) => {
+    const [{ quote: oneClickQuote }, tokens] = await Promise.all([
+      OneClickService.getQuote({
+        ...data,
+        destinationAsset: TON_ASSET_ID,
+      }),
+      fetchStonFiAssets([data.destinationAsset]),
+    ]);
 
-    const { askUnits, params } = omnistonQuote.current;
+    // Request the second quote, to see how much of the target asset we can get
+    // for the TON we received from OneClick. The quote is stored for later use
+    // when performing the swap.
+    const { askUnits, params } = await fetchOmnistonQuote(
+      data.destinationAsset,
+      oneClickQuote.amountOut,
+    );
+
+    const targetToken = findTokenByAssetId(tokens, data.destinationAsset);
+
     const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
     const amountOutHuman = parseFloat(
       formatBigToHuman(askUnits, targetToken.decimals),
@@ -375,35 +445,86 @@ export const Page = () => {
     };
 
     setSwaps([
-      {
-        status: 'not-started',
-        source: {
-          assetId: data.originAsset,
-          amount: quoteResponse.amountIn,
-        },
-        target: {
-          assetId: TON_ASSET_ID,
-          amount: oneClickQuote.amountOut,
-        },
-        swapType: 'oneclick',
-        swapButtonText: 'Confirm in source wallet',
-      },
-      {
-        status: 'not-started',
-        source: {
-          assetId: TON_ASSET_ID,
-          amount: oneClickQuote.amountOut,
-        },
-        target: {
-          assetId: data.destinationAsset,
-          amount: quoteResponse.amountOut,
-        },
-        swapType: 'omniston',
-        swapButtonText: 'Confirm in TON wallet',
-      },
+      getOneClickSwapDetails({
+        sourceAsset: data.originAsset,
+        sourceAmount: quoteResponse.amountIn,
+        targetAmount: oneClickQuote.amountOut,
+      }),
+      getOmnistonSwapDetails({
+        destinationAsset: data.destinationAsset,
+        sourceAmount: oneClickQuote.amountOut,
+        targetAmount: quoteResponse.amountOut,
+      }),
     ]);
 
     return quoteResponse;
+  };
+
+  /**
+   * Fetch a TON-only quote.
+   */
+  const fetchTonOnlyQuote: WidgetConfig['fetchQuote'] = async (data) => {
+    const [{ bidUnits, askUnits, params, quoteTimestamp }, tokens] =
+      await Promise.all([
+        fetchOmnistonQuote(data.destinationAsset, data.amount),
+        fetchStonFiAssets([data.destinationAsset, TON_ASSET_ADDRESS]),
+      ]);
+
+    const sourceToken = findTokenByAssetId(tokens, TON_ASSET_ADDRESS);
+    const targetToken = findTokenByAssetId(tokens, data.destinationAsset);
+
+    const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
+    const amountOutHuman = parseFloat(
+      formatBigToHuman(askUnits, targetToken.decimals),
+    );
+
+    const amountOutUsd = amountOutHuman * targetToken.price;
+
+    const amountInHuman = parseFloat(
+      formatBigToHuman(bidUnits, sourceToken.decimals),
+    );
+
+    const amountInUsd = amountInHuman * sourceToken.price;
+
+    console.log('quoteTimestamp', quoteTimestamp);
+
+    const quoteResponse = {
+      depositAddress: data.recipient,
+      timeEstimate: quoteTimestamp,
+      amountIn: bidUnits,
+      amountInFormatted: String(amountInHuman),
+      amountInUsd: String(amountInUsd),
+      minAmountIn: bidUnits,
+      amountOut: askUnits,
+      amountOutFormatted: String(amountOutHuman),
+      amountOutUsd: String(amountOutUsd),
+      minAmountOut: minAskAmount,
+    };
+
+    setSwaps([
+      getOmnistonSwapDetails({
+        destinationAsset: data.destinationAsset,
+        sourceAmount: bidUnits,
+        targetAmount: askUnits,
+      }),
+    ]);
+
+    return quoteResponse;
+  };
+
+  /**
+   * Fetch a quote.
+   *
+   * If we are swapping from TON to one of the target memecoins we only need a
+   * single quote via Omniston. Otherwise, we need to do a two-step quote via
+   * OneClick and then Omniston.
+   */
+  const fetchQuote: WidgetConfig['fetchQuote'] = (data) => {
+    if (data.originAsset === TON_ASSET_ID) {
+      return fetchTonOnlyQuote(data);
+    }
+
+    return fetchDoubleQuote(data);
   };
 
   const makeTransfer = (args: MakeTransferArgs) => {
@@ -540,7 +661,9 @@ export const Page = () => {
             <SwapCard
               key={index}
               state={swap.status}
-              title={`Swap ${index + 1}/${swaps.length}`}
+              title={
+                swaps.length > 1 ? `Swap ${index + 1}/${swaps.length}` : 'Swap'
+              }
               className={clsx(index > 0 && 'mt-2.5', {
                 'opacity-50':
                   index > 0 && swaps[index - 1]?.status !== 'completed',
