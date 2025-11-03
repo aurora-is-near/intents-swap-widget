@@ -31,6 +31,7 @@ export type LocalisationKeys =
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
   // submit - errors
+  | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'

@@ -113,8 +113,26 @@ const useGetErrorButton = (ctx: Context) => {
 
 const SubmitButtonError = () => {
   const { ctx } = useUnsafeSnapshot();
+  const { t } = useTypedTranslation();
 
-  return useGetErrorButton(ctx);
+  const errorButton = useGetErrorButton(ctx);
+
+  // If there's a specific error, show it
+  if (errorButton) {
+    return errorButton;
+  }
+
+  // If no wallet is connected, show "Connect wallet" (regardless of input state)
+  if (!ctx.walletAddress) {
+    return (
+      <Button state="disabled" {...commonBtnProps}>
+        {t('submit.error.connectWallet', 'Connect wallet')}
+      </Button>
+    );
+  }
+
+  // For any other case, show nothing
+  return undefined;
 };
 
 const SubmitButtonBase = ({
@@ -137,6 +155,12 @@ const SubmitButtonBase = ({
   const { make } = useMakeTransfer({ providers, makeTransfer });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
+
+  // In external deposit (QR code) mode, don't show the button
+  // The user will send funds from their external wallet to the QR address
+  if (ctx.isDepositFromExternalWallet) {
+    return null;
+  }
 
   const nativeNearDeposit =
     ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
