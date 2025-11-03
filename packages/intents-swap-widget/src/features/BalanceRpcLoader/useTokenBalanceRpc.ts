@@ -80,11 +80,7 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
           : null;
       }
 
-      if (
-        isTonAddress(walletAddress) &&
-        token.blockchain === 'ton' &&
-        token.symbol === 'TON'
-      ) {
+      if (isTonAddress(walletAddress) && token.blockchain === 'ton') {
         return getTonTokenBalance(token, walletAddress, tonCenterApiKey);
       }
 

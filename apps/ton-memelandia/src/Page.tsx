@@ -100,6 +100,7 @@ const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
       blockchain: 'ton',
       assetId: asset.contract_address,
       decimals: asset.meta.decimals,
+      contractAddress: asset.contract_address,
     }));
 };
 
