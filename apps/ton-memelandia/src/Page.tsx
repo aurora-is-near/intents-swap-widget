@@ -47,7 +47,7 @@ type SwapDetails = {
     assetId: string;
     amount: string;
   };
-  swap: () => Promise<void>;
+  swapType: 'oneclick' | 'omniston';
   swapButtonText: string;
 };
 
@@ -224,7 +224,7 @@ export const Page = () => {
     } | null>();
 
   const updateSwapStatus = (index: number, status: SwapStatus) => {
-    setSwaps((prev) => {
+    setSwaps((prev): SwapDetails[] => {
       if (!prev) {
         return prev;
       }
@@ -235,7 +235,7 @@ export const Page = () => {
 
       prev[index].status = status;
 
-      return { ...prev };
+      return [...prev];
     });
   };
 
@@ -245,16 +245,12 @@ export const Page = () => {
     setSwaps([]);
   };
 
-  const confirmOneClickSwap = async () => {
-    if (!makeTransferArgs) {
-      throw new Error('Missing OneClick transfer args');
-    }
-
+  const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus(0, 'in-progress');
 
     try {
-      await makeEvmTransfer(makeTransferArgs);
-      await waitForOneClickSettlement(makeTransferArgs.address);
+      await makeEvmTransfer(args);
+      await waitForOneClickSettlement(args.address);
     } catch (error) {
       updateSwapStatus(0, 'failed');
       console.error('One Click swap failed:', error);
@@ -389,7 +385,7 @@ export const Page = () => {
           assetId: TON_ASSET_ID,
           amount: oneClickQuote.amountOut,
         },
-        swap: confirmOneClickSwap,
+        swapType: 'oneclick',
         swapButtonText: 'Confirm in source wallet',
       },
       {
@@ -402,7 +398,7 @@ export const Page = () => {
           assetId: data.destinationAsset,
           amount: quoteResponse.amountOut,
         },
-        swap: confirmOmnistonSwap,
+        swapType: 'omniston',
         swapButtonText: 'Confirm in TON wallet',
       },
     ]);
@@ -507,7 +503,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {nextSwap ? (
+      {nextSwap && makeTransferArgs ? (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -528,7 +524,15 @@ export const Page = () => {
               variant="primary"
               size="lg"
               state={isSwapInProgress ? 'loading' : 'default'}
-              onClick={nextSwap.swap}>
+              onClick={() => {
+                if (nextSwap.swapType === 'oneclick') {
+                  void confirmOneClickSwap(makeTransferArgs);
+
+                  return;
+                }
+
+                void confirmOmnistonSwap();
+              }}>
               {nextSwap.swapButtonText}
             </Button>
           }>
