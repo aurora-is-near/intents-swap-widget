@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
@@ -44,7 +43,6 @@ export const WidgetDepositContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey } = useConfig();
-  const { t } = useTypedTranslation();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
@@ -207,12 +205,7 @@ export const WidgetDepositContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              transferLabel={t('submit.active.transfer.deposit', 'Transfer')}
-              internalSwapLabel={t('submit.active.internal.deposit', 'Swap')}
-              externalSwapLabel={t(
-                'submit.active.external.deposit',
-                'Swap & send',
-              )}
+              label="Deposit now"
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_successful_transfer':

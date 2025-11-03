@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import {
   SendAddress,
@@ -46,7 +45,6 @@ export const WidgetSwapContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { walletAddress, chainsFilter, alchemyApiKey } = useConfig();
-  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -211,12 +209,8 @@ export const WidgetSwapContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              transferLabel={t('submit.active.transfer.swap', 'Transfer')}
-              internalSwapLabel={t('submit.active.internal.swap', 'Swap')}
-              externalSwapLabel={t(
-                'submit.active.external.swap',
-                'Swap & send',
-              )}
+              internalLabel="Swap"
+              externalLabel="Swap & send"
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_successful_transfer':
