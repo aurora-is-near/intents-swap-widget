@@ -7,7 +7,8 @@ import { QuoteError } from '@/errors';
 import { guardStates } from '@/machine/guards';
 import { bridgeApi, oneClickApi } from '@/network';
 import { useUnsafeSnapshot } from '@/machine/snap';
-import { CHAIN_POA_MAP } from '@/constants/chains';
+import { isEvmChain } from '@/utils/evm/isEvmChain';
+import { CHAIN_POA_MAP, POA_EVM_CHAIN_ID } from '@/constants/chains';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import type { Quote } from '@/types/quote';
@@ -114,13 +115,19 @@ export const useMakeDepositAddress = () => {
       abortController.current = new AbortController();
     }
 
-    const chainId = CHAIN_POA_MAP[ctx.targetToken.blockchain];
+    let chainId = CHAIN_POA_MAP[ctx.targetToken.blockchain];
 
     if (!chainId) {
-      throw new QuoteError({
-        code: 'QUOTE_INVALID_INITIAL',
-        meta: { isDry: false, message: 'Chain is not supported by POA' },
-      });
+      const isEvm = isEvmChain(ctx.targetToken.blockchain);
+
+      if (isEvm) {
+        chainId = POA_EVM_CHAIN_ID;
+      } else {
+        throw new QuoteError({
+          code: 'QUOTE_INVALID_INITIAL',
+          meta: { isDry: false, message: 'Chain is not supported by POA' },
+        });
+      }
     }
 
     try {
