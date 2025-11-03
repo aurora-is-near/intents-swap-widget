@@ -64,7 +64,10 @@ export const TokensModal = ({
   return (
     <Card
       padding="none"
-      className={cn('gap-sw-2xl flex flex-col px-sw-2xl pt-sw-2xl', className)}>
+      className={cn(
+        'w-full gap-sw-2xl flex flex-col px-sw-2xl pt-sw-2xl',
+        className,
+      )}>
       <header className="py-sw-md flex items-center justify-between">
         <h2 className="text-sw-label-l text-sw-gray-50">Select token</h2>
         <button

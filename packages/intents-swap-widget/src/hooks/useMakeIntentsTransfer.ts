@@ -5,7 +5,7 @@ import {
   createNearWithdrawalRoute,
   type RouteConfig,
 } from '@defuse-protocol/bridge-sdk';
-import type { Wallet as NearWallet } from '@near-wallet-selector/core';
+import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
