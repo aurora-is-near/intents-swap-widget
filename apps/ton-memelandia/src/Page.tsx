@@ -625,7 +625,7 @@ export const Page = () => {
         fetchTargetTokens,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         tonCenterApiKey:
-          'e66b782809dc4b765bf13c55acc18cc4d3ae61dbb1791d03bdcc2477825f8d76',
+          '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {
