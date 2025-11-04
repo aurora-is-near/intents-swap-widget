@@ -48,4 +48,5 @@ export type WidgetConfig = {
 
   // UI
   hideSendAddress?: boolean;
+  hideTokenInputHeadings?: boolean;
 };

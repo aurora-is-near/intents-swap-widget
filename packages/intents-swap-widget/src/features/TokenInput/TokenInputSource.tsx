@@ -7,6 +7,8 @@ import { useDefaultToken } from '../../hooks/useDefaultToken';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
+const HEADING = 'Sell';
+
 export type Props = {
   isChanging?: boolean;
   showBalance?: boolean;
@@ -42,11 +44,12 @@ export const TokenInputSource = ({
   }, [isChanging, ctx.error, ctx.quoteStatus]);
 
   if (!ctx.sourceToken) {
-    return <TokenInputEmpty onMsg={onMsg} />;
+    return <TokenInputEmpty heading={HEADING} onMsg={onMsg} />;
   }
 
   return (
     <TokenInputWithToken
+      heading={HEADING}
       token={ctx.sourceToken}
       state={sourceInputState}
       balance={sourceTokenBalance}

@@ -13,11 +13,11 @@ type Props = {
   token?: Token;
 } & Omit<PropsBase, 'token'>;
 
-export const TokenInputBase = ({ token, ...props }: Props) => {
+export const TokenInputBase = ({ token, heading, ...props }: Props) => {
   return token ? (
-    <TokenInputWithToken {...props} token={token} />
+    <TokenInputWithToken {...props} token={token} heading={heading} />
   ) : (
-    <TokenInputEmpty onMsg={props.onMsg} />
+    <TokenInputEmpty onMsg={props.onMsg} heading={heading} />
   );
 };
 

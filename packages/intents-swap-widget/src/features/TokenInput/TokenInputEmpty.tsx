@@ -1,17 +1,20 @@
+import { TokenInputHeading } from './TokenInputHeading';
 import { Card } from '@/components/Card';
 
 type Msg = { type: 'on_click_select_token' };
 
 type Props = {
   onMsg: (msg: Msg) => void;
+  heading: string;
 };
 
-export const TokenInputEmpty = ({ onMsg }: Props) => (
+export const TokenInputEmpty = ({ onMsg, heading }: Props) => (
   <Card
     isClickable
-    className="gap-sw-lg flex flex-col"
+    className="flex flex-col"
     onClick={() => onMsg({ type: 'on_click_select_token' })}>
-    <div className="flex items-center justify-between">
+    <TokenInputHeading>{heading}</TokenInputHeading>
+    <div className="flex items-center justify-between mt-sw-2xl">
       <span
         className="h-[36px] font-medium text-sw-gray-200"
         style={{ fontSize: '32px' }}>
@@ -24,6 +27,6 @@ export const TokenInputEmpty = ({ onMsg }: Props) => (
         <span className="text-sw-label-m text-sw-gray-50">Select token</span>
       </button>
     </div>
-    <div className="h-sw-2xl w-full" />
+    <div className="h-sw-2xl w-full mt-sw-lg" />
   </Card>
 );
