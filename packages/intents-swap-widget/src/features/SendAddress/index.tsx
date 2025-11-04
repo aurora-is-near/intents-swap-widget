@@ -24,7 +24,7 @@ type Props = {
 export const SendAddress = ({ error, className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, sendAddress } = useConfig();
+  const { walletSupportedChains, sendAddress, hideSendAddress } = useConfig();
 
   const notification = useNotification(error);
 
@@ -54,6 +54,10 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
 
     return notification?.state ?? 'default';
   }, [notification, sendAddress]);
+
+  if (hideSendAddress) {
+    return null;
+  }
 
   return (
     <Card className={cn('gap-sw-lg flex flex-col', className)}>
