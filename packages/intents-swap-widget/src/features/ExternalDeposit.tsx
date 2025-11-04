@@ -72,17 +72,7 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
     if (
       depositStatusQuery.status === 'success' &&
       depositStatusQuery.data?.status ===
-        GetExecutionStatusResponse.status.PROCESSING
-    ) {
-      onMsg({ type: 'on_transaction_received' });
-    }
-  }, [depositStatusQuery, onMsg]);
-
-  useEffect(() => {
-    if (
-      depositStatusQuery.status === 'success' &&
-      depositStatusQuery.data?.status ===
-        GetExecutionStatusResponse.status.SUCCESS
+      GetExecutionStatusResponse.status.SUCCESS
     ) {
       const txHash =
         depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
