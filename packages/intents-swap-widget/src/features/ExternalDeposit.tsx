@@ -72,7 +72,7 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
     if (
       depositStatusQuery.status === 'success' &&
       depositStatusQuery.data?.status ===
-      GetExecutionStatusResponse.status.SUCCESS
+        GetExecutionStatusResponse.status.SUCCESS
     ) {
       const txHash =
         depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;

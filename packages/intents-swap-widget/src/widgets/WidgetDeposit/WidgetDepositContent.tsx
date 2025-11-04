@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -50,6 +50,26 @@ export const WidgetDepositContent = ({
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
+
+  const handleExternalDepositMsg = useCallback(
+    (
+      msg:
+        | { type: 'on_transaction_received' }
+        | { type: 'on_successful_transfer'; transferResult: TransferResult },
+    ) => {
+      switch (msg.type) {
+        case 'on_successful_transfer':
+          setTransferResult(msg.transferResult);
+          break;
+        case 'on_transaction_received':
+          // Transaction received, no action needed
+          break;
+        default:
+          notReachable(msg);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     fireEvent('reset', null);
@@ -173,20 +193,7 @@ export const WidgetDepositContent = ({
               {({ isExternal }) =>
                 isExternal ? (
                   <div className="gap-sw-2xl pb-sw-2xl flex flex-col">
-                    <ExternalDeposit
-                      onMsg={(msg) => {
-                        switch (msg.type) {
-                          case 'on_successful_transfer':
-                            setTransferResult(msg.transferResult);
-                            break;
-                          case 'on_transaction_received':
-                            // Transaction received, no action needed
-                            break;
-                          default:
-                            notReachable(msg);
-                        }
-                      }}
-                    />
+                    <ExternalDeposit onMsg={handleExternalDepositMsg} />
                     {(ctx.state === 'quote_success_internal' ||
                       ctx.state === 'quote_success_external') && (
                       <Banner
