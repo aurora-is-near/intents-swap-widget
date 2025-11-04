@@ -617,6 +617,7 @@ export const Page = () => {
       config={{
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
+        hideSendAddress: true,
         walletAddress,
         sendAddress: tonAddress,
         walletSupportedChains,
