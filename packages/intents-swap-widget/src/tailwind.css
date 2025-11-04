@@ -3,6 +3,15 @@
 @import './theme.css';
 @import './theme-text.css';
 
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 @theme {
     /* Custom border radius values */
     --radius-*: initial;
