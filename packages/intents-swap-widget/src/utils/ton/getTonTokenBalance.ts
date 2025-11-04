@@ -1,4 +1,5 @@
 import { Token } from '../../types';
+import { isTonAddress } from './isTonAddress';
 
 type TonJettonWallet = {
   address: string;
@@ -85,7 +86,11 @@ export const getTonTokenBalance = (
   token: Token,
   walletAddress: string,
   tonCenterApiKey?: string,
-): Promise<string | null> => {
+): Promise<string | null> | string => {
+  if (!isTonAddress(walletAddress)) {
+    return '0';
+  }
+
   if (token.symbol === 'TON') {
     return getNativeTonBalance(token, walletAddress, tonCenterApiKey);
   }
