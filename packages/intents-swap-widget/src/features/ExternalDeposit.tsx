@@ -122,10 +122,16 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
         fireEvent('transferSetStatus', { status: 'error' });
         fireEvent('errorSet', { code: 'EXTERNAL_TRANSFER_REFUNDED' });
         break;
+      case GetExecutionStatusResponse.status.PROCESSING:
+      case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
+        // Transaction was received from external wallet
+        fireEvent('externalDepositTxSet', true);
+        onMsg({ type: 'on_transaction_received' });
+        break;
       default:
         break;
     }
-  }, []);
+  }, [depositStatusQuery.data?.status, onMsg]);
 
   if (!isValidState) {
     return <Skeleton />;

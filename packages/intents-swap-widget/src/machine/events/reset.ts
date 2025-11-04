@@ -10,6 +10,8 @@ export const reset = (ctx: Context) => {
 
   ctx.walletAddress = undefined;
   ctx.sendAddress = undefined;
+  ctx.isDepositFromExternalWallet = false;
+  ctx.externalDepositTxReceived = false;
   ctx.error = null;
 
   ctx.quote = undefined;

@@ -269,12 +269,25 @@ const SubmitButtonBase = (props: Props) => {
 
 // Full button logic - only runs when wallet is connected
 const SubmitButtonWithWallet = (props: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const errorButton = useGetErrorButton(ctx);
 
-  // 1. External deposit (QR code) mode? Hide button
+  // 1. External deposit (QR code) mode? Show waiting/processing state
   if (ctx.isDepositFromExternalWallet) {
-    return null;
+    if (ctx.externalDepositTxReceived) {
+      return (
+        <Button state="loading" {...commonBtnProps}>
+          {t('submit.pending.externalDeposit.processing', 'Processing')}
+        </Button>
+      );
+    }
+
+    return (
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.externalDeposit.waiting', 'Waiting for transaction')}
+      </Button>
+    );
   }
 
   // 2. Has errors? Show error button
