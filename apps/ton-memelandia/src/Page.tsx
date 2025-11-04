@@ -697,7 +697,7 @@ export const Page = () => {
               setIsTokensModalOpen(msg.isOpen);
             }
 
-            if (msg.type === 'on_select_token') {
+            if (msg.type === 'on_select_token' && msg.variant === 'source') {
               setSelectedToken(msg.token);
             }
           }}
