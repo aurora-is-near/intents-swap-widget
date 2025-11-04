@@ -60,6 +60,7 @@
     "axios": "^1.10.0",
     "bs58": "^6.0.0",
     "change-case": "^5.4.4",
+    "chroma-js": "^3.1.2",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
     "date-fns": "^4.1.0",
@@ -67,6 +68,7 @@
     "derive-valtio": "^0.2.0",
     "ethers": "^6.15.0",
     "framer-motion": "^12.23.0",
+    "hsluv": "^1.0.1",
     "i18next": "^25.4.2",
     "imask": "^7.6.1",
     "lodash.once": "^4.1.1",
@@ -84,5 +86,8 @@
     "viem": "^2.38.3",
     "virtua": "^0.41.5",
     "zod": "^3.25.51"
+  },
+  "devDependencies": {
+    "@types/chroma-js": "^3.1.2"
   }
 }

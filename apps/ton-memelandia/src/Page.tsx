@@ -625,6 +625,7 @@ export const Page = () => {
         fetchQuote,
         fetchTargetTokens,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
+
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
         chainsFilter: {
@@ -637,6 +638,11 @@ export const Page = () => {
       }}
       localisation={{
         'submit.active.external.swap': 'Swap now',
+      }}
+      theme={{
+        colorScheme: 'dark',
+        primaryColor: '#0098EA',
+        surfaceColor: '#7682B2',
       }}>
       {nextSwap && makeTransferArgs ? (
         <WidgetContainer

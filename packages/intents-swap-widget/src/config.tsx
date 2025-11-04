@@ -12,6 +12,8 @@ import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
 import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
+import { ColorPalette, WidgetTheme } from './types/theme';
+import { createColorPalette } from './theme';
 import type { Token } from '@/types/token';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
@@ -82,6 +84,7 @@ type Props = PropsWithChildren<{
   config?: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
   rpcs?: ChainRpcUrls;
+  theme?: WidgetTheme;
 }>;
 
 export const configStore = proxy<{ config: WidgetConfig }>({
@@ -99,8 +102,35 @@ const resetConfig = (config: WidgetConfig) => {
   configStore.config = deepClone(config);
 };
 
+const setColorVariables = (palette: ColorPalette, colorKey: string) => {
+  Object.entries(palette).forEach(([key, value]) => {
+    [...document.getElementsByClassName('sw')].forEach((el) => {
+      (el as HTMLElement).style.setProperty(
+        `--color-sw-${colorKey}-${key}`,
+        value,
+      );
+    });
+  });
+};
+
+const loadTheme = async ({
+  primaryColor,
+  surfaceColor,
+  colorScheme,
+}: WidgetTheme) => {
+  const primaryPalette = createColorPalette(primaryColor, colorScheme);
+  const surfacePalette = createColorPalette(
+    surfaceColor ?? '#24262D',
+    colorScheme,
+  );
+
+  setColorVariables(surfacePalette, 'gray');
+  setColorVariables(primaryPalette, 'mauve');
+};
+
 export const WidgetConfigProvider = ({
   children,
+  theme,
   config: userConfig,
   localisation,
   rpcs,
@@ -123,6 +153,12 @@ export const WidgetConfigProvider = ({
     Object.assign(storeRef.current.config, next);
     resetConfig(next);
   }, [userConfig]);
+
+  useEffect(() => {
+    if (theme) {
+      void loadTheme(theme);
+    }
+  }, [theme]);
 
   // Initialise localisation
   initLocalisation(localisation ?? {});
