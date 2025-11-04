@@ -45,9 +45,7 @@ export const WidgetSwapContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter, alchemyApiKey, hideSendAddress } =
-    useConfig();
-
+  const { walletAddress, chainsFilter, alchemyApiKey } = useConfig();
   const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
@@ -195,8 +193,7 @@ export const WidgetSwapContent = ({
 
             {!!walletAddress &&
               ctx.targetToken &&
-              !ctx.targetToken.isIntent &&
-              !hideSendAddress && (
+              !ctx.targetToken.isIntent && (
                 <SendAddress
                   onMsg={(msg) => {
                     switch (msg.type) {
