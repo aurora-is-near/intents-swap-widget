@@ -44,4 +44,5 @@ export type WidgetConfig = {
 
   // Balance loading
   alchemyApiKey?: string;
+  tonCenterApiKey?: string;
 };
