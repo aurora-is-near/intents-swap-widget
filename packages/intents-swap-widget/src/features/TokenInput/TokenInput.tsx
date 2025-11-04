@@ -50,6 +50,7 @@ export const TokenInputWithToken = ({
   const inputName = useId();
   const config = useConfig();
   const { t } = useTypedTranslation();
+  const { hideTokenInputHeadings } = useConfig();
 
   const usdAmount = getUsdDisplayAmount(token, value, quoteUsdValue);
 
@@ -62,8 +63,14 @@ export const TokenInputWithToken = ({
 
   return (
     <Card className="flex flex-col">
-      <TokenInputHeading>{heading}</TokenInputHeading>
-      <div className="flex items-center justify-between mt-sw-2xl">
+      {!hideTokenInputHeadings && (
+        <TokenInputHeading>{heading}</TokenInputHeading>
+      )}
+      <div
+        className={cn(
+          'flex items-center justify-between',
+          !hideTokenInputHeadings && 'mt-sw-2xl',
+        )}>
         <InputAmount
           value={value}
           name={inputName}
