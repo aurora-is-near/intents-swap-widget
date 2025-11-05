@@ -316,10 +316,48 @@ export const Page = () => {
     setSwaps([]);
   };
 
+  const switchToChainIfNeeded = async (targetChainId: number) => {
+    if (!window.ethereum) {
+      throw new Error('No Ethereum wallet found');
+    }
+
+    // Get current chain ID
+    const currentChainIdHex = await window.ethereum.request({
+      method: 'eth_chainId',
+    });
+
+    const currentChainId = parseInt(currentChainIdHex as string, 16);
+
+    // Already on correct chain
+    if (currentChainId === targetChainId) {
+      return true;
+    }
+
+    // Switch to target chain
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to switch chain:', error);
+      throw new Error(
+        `Please switch to the correct network (Chain ID: ${targetChainId}) in your wallet`,
+      );
+    }
+  };
+
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus(0, 'in-progress');
 
     try {
+      // Switch chain if needed before making the transfer
+      if (args.evmChainId) {
+        await switchToChainIfNeeded(args.evmChainId);
+      }
+
       await makeEvmTransfer(args);
       await waitForOneClickSettlement(args.address);
     } catch (error) {
@@ -645,7 +683,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {showConfirmSwaps && (
+      {showConfirmSwaps ? (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -694,31 +732,31 @@ export const Page = () => {
             />
           ))}
         </WidgetContainer>
-      )}
-      <WidgetSwap
-        isOneWay
-        isFullPage
-        isLoading={isAppKitConnecting || isTonConnecting}
-        className={showConfirmSwaps ? 'hidden' : undefined}
-        makeTransfer={makeTransfer}
-        onMsg={(msg) => {
-          if (msg.type === 'on_tokens_modal_toggled') {
-            setIsTokensModalOpen(msg.isOpen);
-          }
+      ) : (
+        <WidgetSwap
+          isOneWay
+          isFullPage
+          isLoading={isAppKitConnecting || isTonConnecting}
+          makeTransfer={makeTransfer}
+          onMsg={(msg) => {
+            if (msg.type === 'on_tokens_modal_toggled') {
+              setIsTokensModalOpen(msg.isOpen);
+            }
 
-          if (msg.type === 'on_select_token' && msg.variant === 'source') {
-            setSelectedToken(msg.token);
+            if (msg.type === 'on_select_token' && msg.variant === 'source') {
+              setSelectedToken(msg.token);
+            }
+          }}
+          HeaderComponent={
+            isTokensModalOpen ? undefined : (
+              <>
+                <Heading className="mb-8">Swap to TON from anywhere</Heading>
+                <WalletConnectionCard />
+              </>
+            )
           }
-        }}
-        HeaderComponent={
-          isTokensModalOpen ? undefined : (
-            <>
-              <Heading className="mb-8">Swap to TON from anywhere</Heading>
-              <WalletConnectionCard />
-            </>
-          )
-        }
-      />
+        />
+      )}
     </WidgetConfigProvider>
   );
 };

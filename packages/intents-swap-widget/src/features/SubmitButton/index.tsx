@@ -195,10 +195,6 @@ const SubmitButtonBase = (props: Props) => {
     );
   }
 
-  if (SubmitErrorButton) {
-    return SubmitErrorButton;
-  }
-
   // Chain switching required
   if (isSwitchingChainRequired) {
     if (isSwitchingChain) {
@@ -214,6 +210,10 @@ const SubmitButtonBase = (props: Props) => {
         {t('submit.switchChain', 'Switch Network')}
       </Button>
     );
+  }
+
+  if (SubmitErrorButton) {
+    return SubmitErrorButton;
   }
 
   if (ctx.transferStatus.status === 'pending') {
