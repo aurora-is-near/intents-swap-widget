@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
@@ -43,10 +42,7 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { chainsFilter, walletAddress, alchemyApiKey, refetchQuoteInterval } =
-    useConfig();
-
-  const { t } = useTypedTranslation();
+  const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
@@ -54,6 +50,26 @@ export const WidgetDepositContent = ({
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
+
+  const handleExternalDepositMsg = useCallback(
+    (
+      msg:
+        | { type: 'on_transaction_received' }
+        | { type: 'on_successful_transfer'; transferResult: TransferResult },
+    ) => {
+      switch (msg.type) {
+        case 'on_successful_transfer':
+          setTransferResult(msg.transferResult);
+          break;
+        case 'on_transaction_received':
+          // Transaction received, no action needed
+          break;
+        default:
+          notReachable(msg);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     fireEvent('reset', null);
@@ -156,6 +172,7 @@ export const WidgetDepositContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <TokenInput.Source
               showBalance={!ctx.isDepositFromExternalWallet}
+              heading={t('tokenInput.heading.source.deposit', 'Sell')}
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_select_token':
@@ -177,20 +194,7 @@ export const WidgetDepositContent = ({
               {({ isExternal }) =>
                 isExternal ? (
                   <div className="gap-sw-2xl pb-sw-2xl flex flex-col">
-                    <ExternalDeposit
-                      onMsg={(msg) => {
-                        switch (msg.type) {
-                          case 'on_successful_transfer':
-                            setTransferResult(msg.transferResult);
-                            break;
-                          case 'on_transaction_received':
-                            // Transaction received, no action needed
-                            break;
-                          default:
-                            notReachable(msg);
-                        }
-                      }}
-                    />
+                    <ExternalDeposit onMsg={handleExternalDepositMsg} />
                     {(ctx.state === 'quote_success_internal' ||
                       ctx.state === 'quote_success_external') && (
                       <Banner
@@ -206,30 +210,15 @@ export const WidgetDepositContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t('submit.active.transfer.deposit', 'Transfer')}
-                internalSwapLabel={t('submit.active.internal.deposit', 'Swap')}
-                externalSwapLabel={t(
-                  'submit.active.external.deposit',
-                  'Swap & send',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              label="Deposit now"
+              onSuccess={(transfer) => {
+                setTransferResult(transfer);
+                onMsg?.({ type: 'on_transfer_success' });
+              }}
+            />
           </div>
         </div>
       );

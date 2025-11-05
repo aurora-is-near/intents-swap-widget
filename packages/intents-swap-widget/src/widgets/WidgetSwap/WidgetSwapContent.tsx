@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import {
   SendAddress,
@@ -48,7 +47,6 @@ export const WidgetSwapContent = ({
   const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
     useConfig();
 
-  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -154,6 +152,7 @@ export const WidgetSwapContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <TokenInput.Source
+                heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
                   switch (msg.type) {
@@ -175,6 +174,7 @@ export const WidgetSwapContent = ({
               <SwapDirectionSwitcher disabled={isOneWay} />
 
               <TokenInput.Target
+                heading={t('tokenInput.heading.target.swap', 'Buy')}
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
                   switch (msg.type) {
@@ -211,30 +211,19 @@ export const WidgetSwapContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t('submit.active.transfer.swap', 'Transfer')}
-                internalSwapLabel={t('submit.active.internal.swap', 'Swap')}
-                externalSwapLabel={t(
-                  'submit.active.external.swap',
-                  'Swap & send',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              label={
+                ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
+                  ? 'Swap'
+                  : 'Swap & send'
+              }
+              onSuccess={(transfer) => {
+                setTransferResult(transfer);
+                onMsg?.({ type: 'on_transfer_success' });
+              }}
+            />
           </div>
         </div>
       );

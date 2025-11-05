@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
 import {
   SendAddress,
@@ -13,7 +12,7 @@ import {
   TokensModal,
 } from '@/features';
 
-import { BlockingError, Card, DirectionSwitcher, Hr } from '@/components';
+import { BlockingError, Card, DirectionSwitcher } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -33,15 +32,6 @@ type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-const TokenInputHeader = ({ label }: { label: string }) => (
-  <header className="gap-sw-lg px-sw-2xl pt-sw-2xl flex flex-col">
-    <span className="text-label-m gap-sw-sm flex items-center text-sw-gray-50">
-      {label}
-    </span>
-    <Hr />
-  </header>
-);
-
 export const WidgetWithdrawContent = ({
   providers,
   makeTransfer,
@@ -53,7 +43,6 @@ export const WidgetWithdrawContent = ({
   const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
     useConfig();
 
-  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -162,8 +151,11 @@ export const WidgetWithdrawContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <Card padding="none">
-                <TokenInputHeader label="Withdraw token" />
                 <TokenInput.Source
+                  heading={t(
+                    'tokenInput.heading.source.withdraw',
+                    'Withdraw token',
+                  )}
                   isChanging={lastChangedInput === 'source'}
                   onMsg={(msg) => {
                     switch (msg.type) {
@@ -186,8 +178,11 @@ export const WidgetWithdrawContent = ({
               <DirectionSwitcher isEnabled={false} />
 
               <Card padding="none">
-                <TokenInputHeader label="Receive token" />
                 <TokenInput.Target
+                  heading={t(
+                    'tokenInput.heading.target.withdraw',
+                    'Receive token',
+                  )}
                   isChanging={lastChangedInput === 'target'}
                   onMsg={(msg) => {
                     switch (msg.type) {
@@ -225,36 +220,15 @@ export const WidgetWithdrawContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t(
-                  'submit.active.transfer.withdraw',
-                  'Swap & withdraw',
-                )}
-                internalSwapLabel={t(
-                  'submit.active.internal.withdraw',
-                  'Swap & withdraw',
-                )}
-                externalSwapLabel={t(
-                  'submit.active.external.withdraw',
-                  'Swap & withdraw',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              label="Swap & withdraw"
+              onSuccess={(transfer) => {
+                setTransferResult(transfer);
+                onMsg?.({ type: 'on_transfer_success' });
+              }}
+            />
           </div>
         </div>
       );

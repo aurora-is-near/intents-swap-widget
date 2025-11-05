@@ -7,14 +7,17 @@ import { useDefaultToken } from '../../hooks/useDefaultToken';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 
-const HEADING = 'Buy';
-
 export type Props = {
   isChanging?: boolean;
   onMsg: (msg: Msg) => void;
+  heading: string;
 };
 
-export const TokenInputTarget = ({ isChanging = false, onMsg }: Props) => {
+export const TokenInputTarget = ({
+  isChanging = false,
+  onMsg,
+  heading,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { usdTradeDelta } = useComputedSnapshot();
   const targetTokenBalance = useTokenInputBalance(ctx.targetToken);
@@ -30,12 +33,12 @@ export const TokenInputTarget = ({ isChanging = false, onMsg }: Props) => {
   }, [isChanging, ctx.quoteStatus]);
 
   if (!ctx.targetToken) {
-    return <TokenInputEmpty heading={HEADING} onMsg={onMsg} />;
+    return <TokenInputEmpty heading={heading} onMsg={onMsg} />;
   }
 
   return (
     <TokenInputWithToken
-      heading={HEADING}
+      heading={heading}
       token={ctx.targetToken}
       balance={targetTokenBalance}
       quoteUsdDelta={usdTradeDelta?.percentage}

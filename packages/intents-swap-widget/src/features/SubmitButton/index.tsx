@@ -13,14 +13,10 @@ import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
-type Msg = { type: 'on_successful_transfer'; transfer: TransferResult };
-
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
-    onMsg: (msg: Msg) => void;
-    externalSwapLabel: string;
-    internalSwapLabel: string;
-    transferLabel: string;
+    label: string;
+    onSuccess: (transfer: TransferResult) => void;
   };
 
 const commonBtnProps = {
@@ -111,20 +107,25 @@ const useGetErrorButton = (ctx: Context) => {
   }
 };
 
+// Lightweight "Connect wallet" button with minimal logic
+const ConnectWalletButton = () => {
+  const { t } = useTypedTranslation();
+
+  return (
+    <Button state="disabled" {...commonBtnProps}>
+      {t('submit.error.connectWallet', 'Connect wallet')}
+    </Button>
+  );
+};
+
 const SubmitButtonError = () => {
   const { ctx } = useUnsafeSnapshot();
 
-  return useGetErrorButton(ctx);
+  return useGetErrorButton(ctx) ?? null;
 };
 
-const SubmitButtonBase = ({
-  providers,
-  makeTransfer,
-  onMsg,
-  internalSwapLabel,
-  externalSwapLabel,
-  transferLabel,
-}: Props) => {
+const SubmitButtonBase = (props: Props) => {
+  const { providers, makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {
@@ -142,37 +143,18 @@ const SubmitButtonBase = ({
     ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
     ctx.targetToken?.assetId === WNEAR_ASSET_ID;
 
-  const getMainLabel = () => {
-    if (
-      isDirectTransfer ||
-      isDirectNonNearWithdrawal ||
-      isNearToIntentsSameAssetTransfer ||
-      isDirectNearDeposit ||
-      nativeNearDeposit
-    ) {
-      return transferLabel;
-    }
-
-    return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? internalSwapLabel
-      : externalSwapLabel;
-  };
-
   const onClick = async () => {
     const transferResult = await make();
 
     if (transferResult) {
-      onMsg({
-        type: 'on_successful_transfer',
-        transfer: transferResult,
-      });
+      onSuccess(transferResult);
     }
   };
 
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Select token to receive
+        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
       </Button>
     );
   }
@@ -180,7 +162,7 @@ const SubmitButtonBase = ({
   if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Enter amount
+        {t('submit.disabled.enterAmount', 'Enter amount')}
       </Button>
     );
   }
@@ -210,7 +192,7 @@ const SubmitButtonBase = ({
   if (ctx.transferStatus.status === 'error') {
     return (
       <div className="gap-sw-md flex flex-col">
-        <Button {...commonBtnProps}>{getMainLabel()}</Button>
+        <Button {...commonBtnProps}>{props.label}</Button>
         <ErrorMessage>
           {(() => {
             switch (ctx.error?.code) {
@@ -244,7 +226,7 @@ const SubmitButtonBase = ({
   if (ctx.error) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
@@ -259,18 +241,72 @@ const SubmitButtonBase = ({
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
 
   return (
     <Button {...commonBtnProps} onClick={onClick}>
-      {getMainLabel()}
+      {props.label}
     </Button>
   );
 };
 
-export const SubmitButton = Object.assign(SubmitButtonBase, {
-  Error: SubmitButtonError,
-});
+// Full button logic - only runs when wallet is connected
+const SubmitButtonWithWallet = (props: Props) => {
+  const { t } = useTypedTranslation();
+  const { ctx } = useUnsafeSnapshot();
+  const errorButton = useGetErrorButton(ctx);
+
+  // 1. External deposit (QR code) mode? Show waiting/processing state
+  if (ctx.isDepositFromExternalWallet) {
+    if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+      return (
+        <Button {...commonBtnProps} state="disabled">
+          {t('submit.disabled.enterAmount', 'Enter amount')}
+        </Button>
+      );
+    }
+
+    if (ctx.externalDepositTxReceived) {
+      return (
+        <Button state="loading" {...commonBtnProps}>
+          {t('submit.pending.externalDeposit.processing', 'Processing')}
+        </Button>
+      );
+    }
+
+    return (
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.externalDeposit.waiting', 'Waiting for transaction')}
+      </Button>
+    );
+  }
+
+  // 2. Has errors? Show error button
+  if (errorButton) {
+    return errorButton;
+  }
+
+  // 3. All good - show active button
+  return <SubmitButtonBase {...props} />;
+};
+
+// Performant wrapper - minimal logic when no wallet, full logic when connected
+const SubmitButton = (props: Props) => {
+  const { ctx } = useUnsafeSnapshot();
+
+  // 1. No wallet? Return lightweight button immediately (best performance)
+  if (!ctx.walletAddress) {
+    return <ConnectWalletButton />;
+  }
+
+  // 2. Has wallet - run full logic (call remaining hooks only when needed)
+  return <SubmitButtonWithWallet {...props} />;
+};
+
+// Attach Error as static property for backward compatibility
+SubmitButton.Error = SubmitButtonError;
+
+export { SubmitButton };
