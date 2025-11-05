@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
@@ -44,6 +45,7 @@ export const WidgetDepositContent = ({
   const { isDirectTransfer } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
 

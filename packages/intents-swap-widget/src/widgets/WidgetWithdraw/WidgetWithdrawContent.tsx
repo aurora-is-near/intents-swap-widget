@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
+import { useTypedTranslation } from '../../localisation';
 import {
   SendAddress,
   SubmitButton,
@@ -43,6 +44,7 @@ export const WidgetWithdrawContent = ({
   const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
     useConfig();
 
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
