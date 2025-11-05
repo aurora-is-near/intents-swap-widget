@@ -1,9 +1,11 @@
 import { PropsWithChildren, ReactElement } from 'react';
+import { cn } from '../utils';
 
-type WidgetContainerProps = PropsWithChildren<{
+export type WidgetContainerProps = PropsWithChildren<{
   HeaderComponent?: ReactElement | false | null;
   FooterComponent?: ReactElement | false | null;
   isFullPage?: boolean;
+  className?: string;
 }>;
 
 export const WidgetContainer = ({
@@ -11,9 +13,14 @@ export const WidgetContainer = ({
   HeaderComponent,
   FooterComponent,
   isFullPage,
+  className,
 }: WidgetContainerProps) => {
   const jsx = (
-    <div className="w-full h-full flex flex-col justify-center items-center relative">
+    <div
+      className={cn(
+        'w-full h-full flex flex-col justify-center items-center relative',
+        isFullPage && className,
+      )}>
       {HeaderComponent && (
         <div className="w-full mb-sw-2xl">{HeaderComponent}</div>
       )}
@@ -31,7 +38,11 @@ export const WidgetContainer = ({
   }
 
   return (
-    <div className="h-full min-h-full w-full min-w-full px-sw-lg mx-auto flex items-center justify-center fixed top-0 left-0 right-0">
+    <div
+      className={cn(
+        'h-full min-h-full w-full min-w-full px-sw-lg mx-auto flex items-center justify-center fixed top-0 left-0 right-0',
+        className,
+      )}>
       <div className="w-full h-full max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>
   );

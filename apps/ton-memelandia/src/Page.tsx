@@ -621,6 +621,8 @@ export const Page = () => {
     );
   }
 
+  const showConfirmSwaps = nextSwap && makeTransferArgs;
+
   return (
     <WidgetConfigProvider
       config={{
@@ -648,7 +650,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {nextSwap && makeTransferArgs ? (
+      {showConfirmSwaps && (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -697,31 +699,31 @@ export const Page = () => {
             />
           ))}
         </WidgetContainer>
-      ) : (
-        <WidgetSwap
-          isOneWay
-          isFullPage
-          isLoading={isAppKitConnecting || isTonConnecting}
-          makeTransfer={makeTransfer}
-          onMsg={(msg) => {
-            if (msg.type === 'on_tokens_modal_toggled') {
-              setIsTokensModalOpen(msg.isOpen);
-            }
-
-            if (msg.type === 'on_select_token' && msg.variant === 'source') {
-              setSelectedToken(msg.token);
-            }
-          }}
-          HeaderComponent={
-            isTokensModalOpen ? undefined : (
-              <>
-                <Heading className="mb-8">Swap to TON from anywhere</Heading>
-                <WalletConnectionCard />
-              </>
-            )
-          }
-        />
       )}
+      <WidgetSwap
+        isOneWay
+        isFullPage
+        isLoading={isAppKitConnecting || isTonConnecting}
+        className={showConfirmSwaps ? 'hidden' : undefined}
+        makeTransfer={makeTransfer}
+        onMsg={(msg) => {
+          if (msg.type === 'on_tokens_modal_toggled') {
+            setIsTokensModalOpen(msg.isOpen);
+          }
+
+          if (msg.type === 'on_select_token' && msg.variant === 'source') {
+            setSelectedToken(msg.token);
+          }
+        }}
+        HeaderComponent={
+          isTokensModalOpen ? undefined : (
+            <>
+              <Heading className="mb-8">Swap to TON from anywhere</Heading>
+              <WalletConnectionCard />
+            </>
+          )
+        }
+      />
     </WidgetConfigProvider>
   );
 };
