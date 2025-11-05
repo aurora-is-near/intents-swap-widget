@@ -42,7 +42,7 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { chainsFilter, alchemyApiKey } = useConfig();
+  const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
@@ -86,7 +86,7 @@ export const WidgetDepositContent = ({
       'setSourceTokenBalance',
       'setSourceTokenIntentsTarget',
       ['setDefaultSelectedTokens', { skipIntents: true }],
-      ['makeQuote', { message: undefined }],
+      ['makeQuote', { message: undefined, refetchQuoteInterval }],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
