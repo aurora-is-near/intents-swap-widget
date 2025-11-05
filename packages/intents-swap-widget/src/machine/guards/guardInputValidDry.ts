@@ -10,7 +10,9 @@ export const guardInputValidDry = (
     ctx.quoteStatus !== 'success' &&
     ctx.transferStatus.status === 'idle' &&
     (!ctx.walletAddress ||
-      (!!ctx.walletAddress && !isBalanceSufficient(ctx))) &&
+      (!!ctx.walletAddress &&
+        !isBalanceSufficient(ctx) &&
+        !ctx.isDepositFromExternalWallet)) &&
     !!ctx.sourceToken &&
     !!ctx.targetToken &&
     isNotEmptyAmount(ctx.sourceTokenAmount)
