@@ -209,8 +209,11 @@ export const WidgetSwapContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              internalLabel="Swap"
-              externalLabel="Swap & send"
+              label={
+                ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
+                  ? 'Swap'
+                  : 'Swap & send'
+              }
               onSuccess={(transfer) => {
                 setTransferResult(transfer);
                 onMsg?.({ type: 'on_transfer_success' });

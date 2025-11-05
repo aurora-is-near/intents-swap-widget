@@ -41,7 +41,7 @@ export type TradeEvents = {
   errorSet: ErrorSetPayload;
   quoteSet: QuoteSetPayload;
   depositTypeSet: DepositTypeSetPayload;
-  externalDepositTxSet: boolean;
+  externalDepositTxSet: boolean | undefined;
   quoteSetStatus: QuoteSetStatusPayload;
   transferSetStatus: TransferSetStatusPayload;
   walletAddressSet: WalletAddressSetPayload;

@@ -15,11 +15,9 @@ import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
+    label: string;
     onSuccess: (transfer: TransferResult) => void;
-  } & (
-    | { label: string } // For deposit/withdraw - single label for all scenarios
-    | { internalLabel: string; externalLabel: string } // For swap - different labels
-  );
+  };
 
 const commonBtnProps = {
   size: 'lg' as const,
@@ -145,20 +143,6 @@ const SubmitButtonBase = (props: Props) => {
     ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
     ctx.targetToken?.assetId === WNEAR_ASSET_ID;
 
-  const getMainLabel = () => {
-    // Single label (deposit/withdraw) - always use it
-    if ('label' in props) {
-      return props.label;
-    }
-
-    // Swap labels - decide based on transaction type
-    const { internalLabel, externalLabel } = props;
-
-    return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? internalLabel
-      : externalLabel;
-  };
-
   const onClick = async () => {
     const transferResult = await make();
 
@@ -208,7 +192,7 @@ const SubmitButtonBase = (props: Props) => {
   if (ctx.transferStatus.status === 'error') {
     return (
       <div className="gap-sw-md flex flex-col">
-        <Button {...commonBtnProps}>{getMainLabel()}</Button>
+        <Button {...commonBtnProps}>{props.label}</Button>
         <ErrorMessage>
           {(() => {
             switch (ctx.error?.code) {
@@ -240,7 +224,7 @@ const SubmitButtonBase = (props: Props) => {
   if (ctx.error) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
@@ -255,14 +239,14 @@ const SubmitButtonBase = (props: Props) => {
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
 
   return (
     <Button {...commonBtnProps} onClick={onClick}>
-      {getMainLabel()}
+      {props.label}
     </Button>
   );
 };

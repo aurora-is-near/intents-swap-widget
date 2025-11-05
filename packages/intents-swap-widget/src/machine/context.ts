@@ -20,7 +20,7 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   targetTokenAmount: '',
 
   isDepositFromExternalWallet: false,
-  externalDepositTxReceived: false,
+  externalDepositTxReceived: undefined,
   walletAddress: undefined,
   sendAddress: undefined,
   error: null,
@@ -64,7 +64,7 @@ export type InitialDryContext = {
   sendAddress?: string;
   walletAddress?: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived: boolean | undefined;
   error: InitialDryStateError | null;
 
   quote?: never;
@@ -85,7 +85,7 @@ export type InitialWalletContext = {
   walletAddress: string;
   sendAddress: string | undefined;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived: boolean | undefined;
   error: InitialInternalStateError | InitialExternalStateError | null;
 
   quote?: never;
@@ -106,7 +106,7 @@ export type InputValidDryContext = {
   sendAddress?: never;
   walletAddress?: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived?: never;
   error: InputValidDryError | null;
 
   quote?: never;
@@ -127,7 +127,7 @@ export type InputValidInternalContext = {
   sendAddress?: never;
   walletAddress: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived?: never;
   error: InputValidWalletError | null;
 
   quote?: never;
@@ -148,7 +148,7 @@ export type InputValidExternalContext = {
   sendAddress: string;
   walletAddress: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived: boolean | undefined;
   error: InputValidWalletError | null;
 
   quote?: never;
@@ -169,7 +169,7 @@ export type QuoteSuccessDryContext = {
   sendAddress?: never;
   walletAddress?: never;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
   quote: QuoteDry;
@@ -190,7 +190,7 @@ export type QuoteSuccessInternalContext = {
   sendAddress?: never;
   walletAddress: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
   quote: QuoteReal;
@@ -213,7 +213,7 @@ export type QuoteSuccessExternalContext = {
   sendAddress: string;
   walletAddress: string;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived: boolean | undefined;
   error: QuoteSuccessError | null;
 
   quote: QuoteReal;
@@ -236,7 +236,7 @@ export type TransferSuccessContext = {
   walletAddress: string;
   sendAddress: string | undefined;
   isDepositFromExternalWallet: boolean;
-  externalDepositTxReceived: boolean;
+  externalDepositTxReceived: boolean | undefined;
   error?: never;
 
   quote: Quote | undefined;
