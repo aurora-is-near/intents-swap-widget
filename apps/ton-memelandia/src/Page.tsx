@@ -317,7 +317,7 @@ export const Page = () => {
   };
 
   const switchToChainIfNeeded = async (targetChainId: number) => {
-    if (!window.ethereum) {
+    if (typeof window === 'undefined' || !window.ethereum) {
       throw new Error('No Ethereum wallet found');
     }
 
