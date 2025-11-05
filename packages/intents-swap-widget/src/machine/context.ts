@@ -100,7 +100,7 @@ export type InputValidDryContext = {
   targetToken: Token;
   targetTokenAmount: string;
 
-  sendAddress?: never;
+  sendAddress?: string;
   walletAddress?: string;
   isDepositFromExternalWallet: boolean;
   error: InputValidDryError | null;
