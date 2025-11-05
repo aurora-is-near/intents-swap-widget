@@ -54,7 +54,9 @@ type SwapDetails = {
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
 const TON_ASSET_ADDRESS = 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c';
 const TARGET_ASSET_ADDRESSES = [
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c',
   'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
+  'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
 
@@ -70,15 +72,29 @@ const omniston = new Omniston({
 /**
  * Fetch the details of the given assets from the STON.fi API.
  */
-const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
+const fetchStonFiAssets = async ({
+  condition,
+  unconditionalAssets,
+  strict,
+}: {
+  unconditionalAssets: string[];
+  condition?: string;
+  strict?: boolean;
+}): Promise<SimpleToken[]> => {
+  const body = {
+    unconditional_assets: unconditionalAssets,
+  };
+
+  if (condition) {
+    Object.assign(body, { condition });
+  }
+
   const res = await fetch('https://api.ston.fi/v1/assets/query', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      unconditional_assets: assets,
-    }),
+    body: JSON.stringify(body),
   });
 
   const data = (await res.json()) as {
@@ -95,23 +111,32 @@ const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
     }[];
   };
 
-  return data.asset_list
-    .filter((asset) => assets.includes(asset.contract_address))
-    .map((asset) => ({
-      symbol: asset.meta.symbol,
-      price: parseFloat(asset.dex_price_usd),
-      blockchain: 'ton',
-      assetId: asset.contract_address,
-      decimals: asset.meta.decimals,
-      contractAddress: asset.contract_address,
-    }));
+  const assetList = strict
+    ? data.asset_list.filter((asset) =>
+        unconditionalAssets.includes(asset.contract_address),
+      )
+    : data.asset_list;
+
+  return assetList.map((asset) => ({
+    symbol: asset.meta.symbol,
+    price: parseFloat(asset.dex_price_usd),
+    blockchain: 'ton',
+    assetId: asset.contract_address,
+    decimals: asset.meta.decimals,
+    contractAddress: asset.contract_address,
+  }));
 };
 
 /**
  * Fetch the available target tokens.
  */
-const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () =>
-  fetchStonFiAssets(TARGET_ASSET_ADDRESSES);
+const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
+  return fetchStonFiAssets({
+    unconditionalAssets: TARGET_ASSET_ADDRESSES,
+    condition:
+      '(asset:essential | asset:popular | asset:liquidity:medium | asset:liquidity:high | asset:liquidity:very_high | asset:wallet_has_balance) & !(asset:blacklisted | asset:deprecated)',
+  });
+};
 
 const performOmnistoneSwap = async (
   omnistonQuote: OmnistonQuote,
@@ -422,7 +447,10 @@ export const Page = () => {
         destinationAsset: TON_ASSET_ID,
         slippageTolerance: SLIPPAGE_TOLERANCE,
       }),
-      fetchStonFiAssets([data.destinationAsset]),
+      fetchStonFiAssets({
+        unconditionalAssets: [data.destinationAsset],
+        strict: true,
+      }),
     ]);
 
     // Request the second quote, to see how much of the target asset we can get
@@ -478,7 +506,10 @@ export const Page = () => {
     const [{ bidUnits, askUnits, params, quoteTimestamp }, tokens] =
       await Promise.all([
         fetchOmnistonQuote(data.destinationAsset, data.amount),
-        fetchStonFiAssets([data.destinationAsset, TON_ASSET_ADDRESS]),
+        fetchStonFiAssets({
+          unconditionalAssets: [data.destinationAsset, TON_ASSET_ADDRESS],
+          strict: true,
+        }),
       ]);
 
     const sourceToken = findTokenByAssetId(tokens, TON_ASSET_ADDRESS);
