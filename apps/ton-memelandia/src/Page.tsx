@@ -215,8 +215,9 @@ const waitForOmnistonSettlement = (
   });
 
   return new Promise((resolve) => {
-    tradeStatus.subscribe(({ status }) => {
+    const { unsubscribe } = tradeStatus.subscribe(({ status }) => {
       if (status?.tradeSettled) {
+        unsubscribe();
         resolve(null);
       }
     });
@@ -442,35 +443,36 @@ export const Page = () => {
     // for the TON we received from OneClick. The quote is stored for later use
     // when performing the swap.
     omnistonQuote.current = await new Promise<OmnistonQuote>((resolve) => {
-      omniston
-        .requestForQuote({
-          settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
-          askAssetAddress: {
-            blockchain: Blockchain.TON,
-            address: destinationAsset,
-          },
-          bidAssetAddress: {
-            blockchain: Blockchain.TON,
-            address: TON_ASSET_ADDRESS,
-          },
-          amount: {
-            bidUnits: bidAmount,
-          },
-          settlementParams: {
-            gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
-            maxPriceSlippageBps: SLIPPAGE_TOLERANCE,
-          },
-        })
-        .subscribe((quoteResponseEvent) => {
-          if (
-            quoteResponseEvent.type === 'quoteUpdated' &&
-            'quote' in quoteResponseEvent
-          ) {
-            resolve(quoteResponseEvent.quote);
+      const rfq = omniston.requestForQuote({
+        settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
+        askAssetAddress: {
+          blockchain: Blockchain.TON,
+          address: destinationAsset,
+        },
+        bidAssetAddress: {
+          blockchain: Blockchain.TON,
+          address: TON_ASSET_ADDRESS,
+        },
+        amount: {
+          bidUnits: bidAmount,
+        },
+        settlementParams: {
+          gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
+          maxPriceSlippageBps: SLIPPAGE_TOLERANCE,
+        },
+      });
 
-            return;
-          }
-        });
+      const { unsubscribe } = rfq.subscribe((quoteResponseEvent) => {
+        if (
+          quoteResponseEvent.type === 'quoteUpdated' &&
+          'quote' in quoteResponseEvent
+        ) {
+          unsubscribe();
+          resolve(quoteResponseEvent.quote);
+
+          return;
+        }
+      });
     });
 
     return omnistonQuote.current;
