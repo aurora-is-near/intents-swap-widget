@@ -179,25 +179,19 @@ const SubmitButtonBase = (props: Props) => {
     );
   }
 
-  // Chain switching required - check BEFORE showing balance errors
-  // because balance is checked on the current chain, not target chain
-  if (isSwitchingChainRequired) {
-    if (isSwitchingChain) {
-      return (
-        <Button state="loading" {...commonBtnProps}>
-          {t('submit.pending.switchingChain', 'Switching network...')}
-        </Button>
-      );
-    }
-
+  // Show switching state while chain is being switched
+  if (isSwitchingChain) {
     return (
-      <Button {...commonBtnProps} onClick={onClick}>
-        {t('submit.switchChain', 'Switch Network')}
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.switchingChain', 'Switching network...')}
       </Button>
     );
   }
 
-  if (SubmitErrorButton) {
+  // Chain switching required - skip error checks
+  // because balance/errors are checked on current chain, not target chain
+  // The onClick handler will automatically switch the chain before proceeding
+  if (!isSwitchingChainRequired && SubmitErrorButton) {
     return SubmitErrorButton;
   }
 
