@@ -59,6 +59,7 @@ const TARGET_ASSET_ADDRESSES = [
 ];
 
 const SLIPPAGE_TOLERANCE = 500; // 5%
+const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
@@ -632,6 +633,7 @@ export const Page = () => {
         intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
+        refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',

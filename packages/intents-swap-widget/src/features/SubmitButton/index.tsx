@@ -234,7 +234,9 @@ const SubmitButtonBase = ({
   if (ctx.quoteStatus === 'pending') {
     return (
       <Button state="loading" {...commonBtnProps}>
-        {t('submit.pending.quote.finalizing', 'Finalizing quote')}
+        {ctx.quote
+          ? t('submit.pending.quote.refreshing', 'Refreshing quote')
+          : t('submit.pending.quote.finalizing', 'Finalizing quote')}
       </Button>
     );
   }

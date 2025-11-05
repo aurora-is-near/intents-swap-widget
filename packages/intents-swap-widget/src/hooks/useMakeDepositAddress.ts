@@ -66,6 +66,8 @@ export const useMakeDepositAddress = () => {
       'input_valid_dry',
       'input_valid_external',
       'input_valid_internal',
+      'quote_success_internal',
+      'quote_success_external',
     ]);
 
     if (!guardCurrentState) {

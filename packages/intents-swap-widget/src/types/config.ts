@@ -18,6 +18,7 @@ export type WidgetConfig = {
   // Quotes & Transfers
   defaultMaxSlippage: number;
   enableAutoTokensSwitching?: boolean;
+  refetchQuoteInterval?: number;
 
   // Tokens filtering
   showIntentTokens: boolean;
