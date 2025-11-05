@@ -13,7 +13,7 @@ import {
   TokensModal,
 } from '@/features';
 
-import { BlockingError, Card, DirectionSwitcher, Hr } from '@/components';
+import { BlockingError, Card, DirectionSwitcher } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -32,15 +32,6 @@ type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type Props = CommonWidgetProps<Msg>;
-
-const TokenInputHeader = ({ label }: { label: string }) => (
-  <header className="gap-sw-lg px-sw-2xl pt-sw-2xl flex flex-col">
-    <span className="text-label-m gap-sw-sm flex items-center text-sw-gray-50">
-      {label}
-    </span>
-    <Hr />
-  </header>
-);
 
 export const WidgetWithdrawContent = ({
   providers,
@@ -162,8 +153,11 @@ export const WidgetWithdrawContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <Card padding="none">
-                <TokenInputHeader label="Withdraw token" />
                 <TokenInput.Source
+                  heading={t(
+                    'tokenInput.heading.source.withdraw',
+                    'Withdraw token',
+                  )}
                   isChanging={lastChangedInput === 'source'}
                   onMsg={(msg) => {
                     switch (msg.type) {
@@ -186,8 +180,11 @@ export const WidgetWithdrawContent = ({
               <DirectionSwitcher isEnabled={false} />
 
               <Card padding="none">
-                <TokenInputHeader label="Receive token" />
                 <TokenInput.Target
+                  heading={t(
+                    'tokenInput.heading.target.withdraw',
+                    'Receive token',
+                  )}
                   isChanging={lastChangedInput === 'target'}
                   onMsg={(msg) => {
                     switch (msg.type) {
