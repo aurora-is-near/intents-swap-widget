@@ -59,7 +59,7 @@ const TARGET_ASSET_ADDRESSES = [
 ];
 
 const SLIPPAGE_TOLERANCE = 500; // 5%
-const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
+// const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
