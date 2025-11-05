@@ -58,6 +58,8 @@ const TARGET_ASSET_ADDRESSES = [
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
 
+const SLIPPAGE_TOLERANCE = 500; // 5%
+
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
 const omniston = new Omniston({
@@ -146,8 +148,13 @@ const performOmnistoneSwap = async (
   const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
 
   const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
+  const data = await response.json();
 
-  const omnistonTxHash: string = (await response.json()).transaction.hash;
+  if (data.error) {
+    throw new Error(`Failed to fetch Omniston transaction: ${data.error}`);
+  }
+
+  const omnistonTxHash: string = data.transaction.hash;
 
   return omnistonTxHash;
 };
@@ -383,7 +390,7 @@ export const Page = () => {
           },
           settlementParams: {
             gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
-            maxPriceSlippageBps: 500, // 5% slippage
+            maxPriceSlippageBps: SLIPPAGE_TOLERANCE,
           },
         })
         .subscribe((quoteResponseEvent) => {
@@ -412,6 +419,7 @@ export const Page = () => {
       OneClickService.getQuote({
         ...data,
         destinationAsset: TON_ASSET_ID,
+        slippageTolerance: SLIPPAGE_TOLERANCE,
       }),
       fetchStonFiAssets([data.destinationAsset]),
     ]);
@@ -578,7 +586,7 @@ export const Page = () => {
     return appKitWalletAddress;
   }, [appKitWalletAddress, tonAddress, selectedToken]);
 
-  const nextSwap = swaps.find((swap) => swap.status === 'not-started');
+  const nextSwap = swaps.find((swap) => swap.status !== 'completed');
 
   if (successfulTransactionDetails) {
     return (
