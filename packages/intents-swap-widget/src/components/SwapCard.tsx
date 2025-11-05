@@ -2,9 +2,9 @@ import clsx from 'clsx';
 import * as Icons from 'lucide-react';
 import { ReactNode, useMemo } from 'react';
 import { TokenAmount } from './TokenAmount';
-import { useTokens } from '../hooks';
 import { Card } from './Card';
 import { cn } from '../utils';
+import { useAllTokens } from '../hooks/useAllTokens';
 
 type Props = {
   title?: string;
@@ -27,31 +27,11 @@ export const SwapCard = ({
   source,
   target,
 }: Props) => {
-  const { tokens: defaultTokens } = useTokens();
-  const { tokens: sourceTokens } = useTokens('source');
-  const { tokens: targetTokens } = useTokens('target');
+  const { tokens } = useAllTokens();
 
-  const mergedTokens = useMemo(() => {
-    const tokenMap: Record<string, (typeof defaultTokens)[0]> = {};
+  const sourceToken = tokens.find((token) => token.assetId === source.assetId);
 
-    [
-      ...defaultTokens,
-      ...(sourceTokens || []),
-      ...(targetTokens || []),
-    ].forEach((token) => {
-      tokenMap[token.assetId] = token;
-    });
-
-    return Object.values(tokenMap);
-  }, [defaultTokens, sourceTokens, targetTokens]);
-
-  const sourceToken = mergedTokens.find(
-    (token) => token.assetId === source.assetId,
-  );
-
-  const targetToken = mergedTokens.find(
-    (token) => token.assetId === target.assetId,
-  );
+  const targetToken = tokens.find((token) => token.assetId === target.assetId);
 
   const statusIndicator:
     | {

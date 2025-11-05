@@ -1,7 +1,7 @@
 {
-  "url": "https://intents-swap-widget.vercel.app",
-  "name": "Intents Swap Widget Demo",
-  "iconUrl": "https://ton.org/download/ton_symbol.png",
+  "url": "https://ton-memelandia-widget.vercel.app",
+  "name": "Ton Memelandia Swap",
+  "iconUrl": "https://ton-memelandia-widget.vercel.app/demo/favicon.svg",
   "termsOfUseUrl": "https://github.com/aurora-is-near/intents-swap-widget",
   "privacyPolicyUrl": "https://github.com/aurora-is-near/intents-swap-widget"
 }

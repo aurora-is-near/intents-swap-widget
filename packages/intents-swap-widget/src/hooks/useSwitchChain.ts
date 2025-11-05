@@ -1,33 +1,37 @@
 import { useCallback, useEffect, useState } from 'react';
 import { EVM_CHAIN_IDS_MAP } from '@/constants/chains';
-import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils';
 import { logger } from '@/logger';
 
 export const useSwitchChain = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { getCurrentChainId, switchChain: switchChainConfig } = useConfig();
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const [currentWalletChainId, setCurrentWalletChainId] = useState<
     number | null
   >(null);
 
-  // Get current wallet chain ID
+  // Auto-detect current wallet chain ID from window.ethereum
   useEffect(() => {
-    if (!getCurrentChainId) {
-      return;
-    }
-
     const updateChainId = async () => {
-      const chainId = await getCurrentChainId();
+      if (!window.ethereum) {
+        return;
+      }
 
-      setCurrentWalletChainId(chainId);
+      try {
+        const chainId = await window.ethereum.request({
+          method: 'eth_chainId',
+        });
+
+        setCurrentWalletChainId(parseInt(chainId, 16));
+      } catch (error) {
+        logger.error('Failed to get current chain ID:', error);
+      }
     };
 
     void updateChainId();
 
-    // Listen for chain changes if available
+    // Listen for chain changes
     if (window.ethereum) {
       const handleChainChanged = (chainId: string) => {
         setCurrentWalletChainId(parseInt(chainId, 16));
@@ -39,11 +43,11 @@ export const useSwitchChain = () => {
         window.ethereum?.removeListener?.('chainChanged', handleChainChanged);
       };
     }
-  }, [getCurrentChainId]);
+  }, []);
 
   // Check if chain switching is needed
   const isSwitchingChainRequired = useCallback(() => {
-    if (!ctx.sourceToken || !switchChainConfig) {
+    if (!ctx.sourceToken || !window.ethereum) {
       return false;
     }
 
@@ -59,10 +63,10 @@ export const useSwitchChain = () => {
     }
 
     return currentWalletChainId !== requiredChainId;
-  }, [ctx.sourceToken, switchChainConfig, currentWalletChainId]);
+  }, [ctx.sourceToken, currentWalletChainId]);
 
   const switchChain = useCallback(async () => {
-    if (!ctx.sourceToken || !switchChainConfig) {
+    if (!ctx.sourceToken || !window.ethereum) {
       return false;
     }
 
@@ -78,18 +82,32 @@ export const useSwitchChain = () => {
 
     try {
       setIsSwitchingChain(true);
-      await switchChainConfig(targetChainId);
+
+      // Use standard EIP-3326 wallet_switchEthereumChain method
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+      });
+
       setCurrentWalletChainId(targetChainId);
 
       return true;
-    } catch (error) {
-      logger.error('Failed to switch chain:', error);
+    } catch (error: any) {
+      // Error code 4902 means the chain hasn't been added to the wallet yet
+      if (error.code === 4902) {
+        logger.error(
+          'Chain not available in wallet. User needs to add it manually:',
+          error,
+        );
+      } else {
+        logger.error('Failed to switch chain:', error);
+      }
 
       return false;
     } finally {
       setIsSwitchingChain(false);
     }
-  }, [ctx.sourceToken, switchChainConfig]);
+  }, [ctx.sourceToken]);
 
   return {
     isSwitchingChainRequired: isSwitchingChainRequired(),
