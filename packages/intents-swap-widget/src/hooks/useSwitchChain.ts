@@ -92,9 +92,14 @@ export const useSwitchChain = () => {
       setCurrentWalletChainId(targetChainId);
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Error code 4902 means the chain hasn't been added to the wallet yet
-      if (error.code === 4902) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 4902
+      ) {
         logger.error(
           'Chain not available in wallet. User needs to add it manually:',
           error,

@@ -58,6 +58,9 @@ const TARGET_ASSET_ADDRESSES = [
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
 
+const SLIPPAGE_TOLERANCE = 500; // 5%
+const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
+
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
 const omniston = new Omniston({
@@ -146,8 +149,13 @@ const performOmnistoneSwap = async (
   const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
 
   const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
+  const data = await response.json();
 
-  const omnistonTxHash: string = (await response.json()).transaction.hash;
+  if (data.error) {
+    throw new Error(`Failed to fetch Omniston transaction: ${data.error}`);
+  }
+
+  const omnistonTxHash: string = data.transaction.hash;
 
   return omnistonTxHash;
 };
@@ -277,7 +285,7 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
+  const [_selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
@@ -383,7 +391,7 @@ export const Page = () => {
           },
           settlementParams: {
             gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
-            maxPriceSlippageBps: 500, // 5% slippage
+            maxPriceSlippageBps: SLIPPAGE_TOLERANCE,
           },
         })
         .subscribe((quoteResponseEvent) => {
@@ -412,6 +420,7 @@ export const Page = () => {
       OneClickService.getQuote({
         ...data,
         destinationAsset: TON_ASSET_ID,
+        slippageTolerance: SLIPPAGE_TOLERANCE,
       }),
       fetchStonFiAssets([data.destinationAsset]),
     ]);
@@ -570,10 +579,10 @@ export const Page = () => {
   // The widget will load balances for BOTH walletAddress AND sendAddress
   // so balances won't reset when switching between TON and EVM tokens
   const walletAddress = useMemo(() => {
-    return appKitWalletAddress || tonAddress || undefined;
+    return appKitWalletAddress ?? tonAddress ?? undefined;
   }, [appKitWalletAddress, tonAddress]);
 
-  const nextSwap = swaps.find((swap) => swap.status === 'not-started');
+  const nextSwap = swaps.find((swap) => swap.status !== 'completed');
 
   if (successfulTransactionDetails) {
     return (
@@ -607,17 +616,21 @@ export const Page = () => {
     );
   }
 
+  const showConfirmSwaps = nextSwap && makeTransferArgs;
+
   return (
     <WidgetConfigProvider
       config={{
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
+        hideSendAddress: true,
         walletAddress,
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
+        refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
@@ -632,7 +645,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {nextSwap && makeTransferArgs ? (
+      {showConfirmSwaps && (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -681,31 +694,31 @@ export const Page = () => {
             />
           ))}
         </WidgetContainer>
-      ) : (
-        <WidgetSwap
-          isOneWay
-          isFullPage
-          isLoading={isAppKitConnecting || isTonConnecting}
-          makeTransfer={makeTransfer}
-          onMsg={(msg) => {
-            if (msg.type === 'on_tokens_modal_toggled') {
-              setIsTokensModalOpen(msg.isOpen);
-            }
-
-            if (msg.type === 'on_select_token') {
-              setSelectedToken(msg.token);
-            }
-          }}
-          HeaderComponent={
-            isTokensModalOpen ? undefined : (
-              <>
-                <Heading className="mb-8">Swap to TON from anywhere</Heading>
-                <WalletConnectionCard />
-              </>
-            )
-          }
-        />
       )}
+      <WidgetSwap
+        isOneWay
+        isFullPage
+        isLoading={isAppKitConnecting || isTonConnecting}
+        className={showConfirmSwaps ? 'hidden' : undefined}
+        makeTransfer={makeTransfer}
+        onMsg={(msg) => {
+          if (msg.type === 'on_tokens_modal_toggled') {
+            setIsTokensModalOpen(msg.isOpen);
+          }
+
+          if (msg.type === 'on_select_token' && msg.variant === 'source') {
+            setSelectedToken(msg.token);
+          }
+        }}
+        HeaderComponent={
+          isTokensModalOpen ? undefined : (
+            <>
+              <Heading className="mb-8">Swap to TON from anywhere</Heading>
+              <WalletConnectionCard />
+            </>
+          )
+        }
+      />
     </WidgetConfigProvider>
   );
 };

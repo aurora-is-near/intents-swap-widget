@@ -5,6 +5,7 @@ import { getBalancePortion } from './utils/getBalancePortion';
 import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
 import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
 
+import { TokenInputHeading } from './TokenInputHeading';
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -31,6 +32,7 @@ export type Props = {
   showQuickBalanceActions?: boolean;
   state?: 'default' | 'disabled' | 'error' | 'error-balance';
   onMsg: (msg: Msg) => void;
+  heading: string;
 };
 
 export const TokenInputWithToken = ({
@@ -42,11 +44,13 @@ export const TokenInputWithToken = ({
   state = 'default',
   showBalance = true,
   showQuickBalanceActions = true,
+  heading,
   onMsg,
 }: Props) => {
   const inputName = useId();
   const config = useConfig();
   const { t } = useTypedTranslation();
+  const { hideTokenInputHeadings } = useConfig();
 
   const usdAmount = getUsdDisplayAmount(token, value, quoteUsdValue);
 
@@ -58,8 +62,15 @@ export const TokenInputWithToken = ({
   };
 
   return (
-    <Card className="gap-sw-lg flex flex-col">
-      <div className="flex items-center justify-between">
+    <Card className="flex flex-col">
+      {!hideTokenInputHeadings && (
+        <TokenInputHeading>{heading}</TokenInputHeading>
+      )}
+      <div
+        className={cn(
+          'flex items-center justify-between',
+          !hideTokenInputHeadings && 'mt-sw-2xl',
+        )}>
         <InputAmount
           value={value}
           name={inputName}
@@ -89,7 +100,7 @@ export const TokenInputWithToken = ({
           </span>
         </button>
       </div>
-      <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between">
+      <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between mt-sw-lg">
         <div className="gap-sw-md flex items-center">
           <span className="text-sw-label-s text-sw-gray-100">{usdAmount}</span>
           {quoteUsdDelta ? (

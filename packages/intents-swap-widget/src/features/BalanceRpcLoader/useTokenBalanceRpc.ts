@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
-import { isTonAddress } from '../../utils/ton/isTonAddress';
 import { useConfig } from '@/config';
 import { isEth } from '@/utils/evm/isEth';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
@@ -80,7 +79,7 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
           : null;
       }
 
-      if (isTonAddress(walletAddress) && token.blockchain === 'ton') {
+      if (token.blockchain === 'ton') {
         return getTonTokenBalance(token, walletAddress, tonCenterApiKey);
       }
 
