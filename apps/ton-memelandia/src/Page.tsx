@@ -274,9 +274,7 @@ const waitForOneClickSettlement = async (
     throw new Error('OneClick transfer failed');
   }
 
-  await new Promise((resolve) => {
-    setTimeout(resolve, 3000);
-  });
+  await sleep(3000);
 
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
