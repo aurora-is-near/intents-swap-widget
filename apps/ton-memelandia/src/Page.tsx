@@ -124,6 +124,7 @@ const fetchStonFiAssets = async ({
     assetId: asset.contract_address,
     decimals: asset.meta.decimals,
     contractAddress: asset.contract_address,
+    icon: asset.meta.image_url,
   }));
 };
 

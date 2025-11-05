@@ -92,7 +92,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
           price: token.price,
           blockchain,
           isIntent: false,
-          icon: getTokenIcon(token.symbol),
+          icon: token.icon ?? getTokenIcon(token.symbol),
           name: getTokenName(token.symbol),
           chainIcon: getChainIcon(blockchain),
           chainName:
