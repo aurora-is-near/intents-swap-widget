@@ -10,6 +10,8 @@ export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
     (!ctx.sourceToken ||
       !ctx.targetToken ||
       !isNotEmptyAmount(ctx.sourceTokenAmount) ||
-      (!!ctx.walletAddress && !isBalanceSufficient(ctx)))
+      (!!ctx.walletAddress &&
+        !isBalanceSufficient(ctx) &&
+        !ctx.isDepositFromExternalWallet))
   );
 };

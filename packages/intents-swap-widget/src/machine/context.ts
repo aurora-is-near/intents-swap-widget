@@ -103,7 +103,7 @@ export type InputValidDryContext = {
   targetToken: Token;
   targetTokenAmount: string;
 
-  sendAddress?: never;
+  sendAddress?: string;
   walletAddress?: string;
   isDepositFromExternalWallet: boolean;
   externalDepositTxReceived?: never;

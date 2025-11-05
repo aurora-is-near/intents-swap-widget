@@ -4,7 +4,12 @@ import type { Context } from '@/machine/context';
 
 export const isDryQuote = (ctx: Context): boolean => {
   return (
-    !ctx.walletAddress ||
-    (isNotEmptyAmount(ctx.sourceTokenAmount) && !isBalanceSufficient(ctx))
+    // wallet is not connected
+    (!ctx.walletAddress && isNotEmptyAmount(ctx.sourceTokenAmount)) ||
+    // or insufficient balance for connected wallet
+    (!!ctx.walletAddress &&
+      !ctx.isDepositFromExternalWallet &&
+      isNotEmptyAmount(ctx.sourceTokenAmount) &&
+      !isBalanceSufficient(ctx))
   );
 };
