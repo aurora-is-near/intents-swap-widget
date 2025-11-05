@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
+import { useTypedTranslation } from '../../localisation';
 import {
   SendAddress,
   SubmitButton,

@@ -44,9 +44,8 @@ export const WidgetDepositContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
-
-  const { t } = useTypedTranslation();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
 
