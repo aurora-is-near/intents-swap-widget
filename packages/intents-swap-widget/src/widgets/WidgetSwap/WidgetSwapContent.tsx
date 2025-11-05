@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import {
   SendAddress,
@@ -47,6 +48,7 @@ export const WidgetSwapContent = ({
   const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
     useConfig();
 
+  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -152,6 +154,7 @@ export const WidgetSwapContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <TokenInput.Source
+                heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
                   switch (msg.type) {
@@ -173,6 +176,7 @@ export const WidgetSwapContent = ({
               <SwapDirectionSwitcher disabled={isOneWay} />
 
               <TokenInput.Target
+                heading={t('tokenInput.heading.target.swap', 'Buy')}
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
                   switch (msg.type) {
@@ -212,8 +216,11 @@ export const WidgetSwapContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              internalLabel="Swap"
-              externalLabel="Swap & send"
+              label={
+                ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
+                  ? 'Swap'
+                  : 'Swap & send'
+              }
               onSuccess={(transfer) => {
                 setTransferResult(transfer);
                 onMsg?.({ type: 'on_transfer_success' });

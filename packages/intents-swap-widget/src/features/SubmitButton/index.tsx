@@ -16,11 +16,9 @@ import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
 type Props = QuoteTransferArgs &
   IntentsTransferArgs & {
+    label: string;
     onSuccess: (transfer: TransferResult) => void;
-  } & (
-    | { label: string } // For deposit/withdraw - single label for all scenarios
-    | { internalLabel: string; externalLabel: string } // For swap - different labels
-  );
+  };
 
 const commonBtnProps = {
   size: 'lg' as const,
@@ -148,20 +146,6 @@ const SubmitButtonBase = (props: Props) => {
     ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
     ctx.targetToken?.assetId === WNEAR_ASSET_ID;
 
-  const getMainLabel = () => {
-    // Single label (deposit/withdraw) - always use it
-    if ('label' in props) {
-      return props.label;
-    }
-
-    // Swap labels - decide based on transaction type
-    const { internalLabel, externalLabel } = props;
-
-    return ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-      ? internalLabel
-      : externalLabel;
-  };
-
   const onClick = async () => {
     // Check if chain switch is needed before transfer
     if (isSwitchingChainRequired) {
@@ -182,7 +166,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Select token to receive
+        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
       </Button>
     );
   }
@@ -190,12 +174,13 @@ const SubmitButtonBase = (props: Props) => {
   if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Enter amount
+        {t('submit.disabled.enterAmount', 'Enter amount')}
       </Button>
     );
   }
 
-  // Chain switching required
+  // Chain switching required - check BEFORE showing balance errors
+  // because balance is checked on the current chain, not target chain
   if (isSwitchingChainRequired) {
     if (isSwitchingChain) {
       return (
@@ -237,7 +222,7 @@ const SubmitButtonBase = (props: Props) => {
   if (ctx.transferStatus.status === 'error') {
     return (
       <div className="gap-sw-md flex flex-col">
-        <Button {...commonBtnProps}>{getMainLabel()}</Button>
+        <Button {...commonBtnProps}>{props.label}</Button>
         <ErrorMessage>
           {(() => {
             switch (ctx.error?.code) {
@@ -271,7 +256,7 @@ const SubmitButtonBase = (props: Props) => {
   if (ctx.error) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
@@ -286,26 +271,47 @@ const SubmitButtonBase = (props: Props) => {
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
-        {getMainLabel()}
+        {props.label}
       </Button>
     );
   }
 
   return (
     <Button {...commonBtnProps} onClick={onClick}>
-      {getMainLabel()}
+      {props.label}
     </Button>
   );
 };
 
 // Full button logic - only runs when wallet is connected
 const SubmitButtonWithWallet = (props: Props) => {
+  const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const errorButton = useGetErrorButton(ctx);
 
-  // 1. External deposit (QR code) mode? Hide button
+  // 1. External deposit (QR code) mode? Show waiting/processing state
   if (ctx.isDepositFromExternalWallet) {
-    return null;
+    if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+      return (
+        <Button {...commonBtnProps} state="disabled">
+          {t('submit.disabled.enterAmount', 'Enter amount')}
+        </Button>
+      );
+    }
+
+    if (ctx.externalDepositTxReceived) {
+      return (
+        <Button state="loading" {...commonBtnProps}>
+          {t('submit.pending.externalDeposit.processing', 'Processing')}
+        </Button>
+      );
+    }
+
+    return (
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.externalDeposit.waiting', 'Waiting for transaction')}
+      </Button>
+    );
   }
 
   // 2. Has errors? Show error button

@@ -7,9 +7,8 @@ import { useDefaultToken } from '../../hooks/useDefaultToken';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
-const HEADING = 'Sell';
-
 export type Props = {
+  heading: string;
   isChanging?: boolean;
   showBalance?: boolean;
   onMsg: (msg: Msg) => void;
@@ -19,6 +18,7 @@ export const TokenInputSource = ({
   onMsg,
   isChanging = true,
   showBalance = true,
+  heading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const sourceTokenBalance = useTokenInputBalance(ctx.sourceToken);
@@ -44,12 +44,12 @@ export const TokenInputSource = ({
   }, [isChanging, ctx.error, ctx.quoteStatus]);
 
   if (!ctx.sourceToken) {
-    return <TokenInputEmpty heading={HEADING} onMsg={onMsg} />;
+    return <TokenInputEmpty heading={heading} onMsg={onMsg} />;
   }
 
   return (
     <TokenInputWithToken
-      heading={HEADING}
+      heading={heading}
       token={ctx.sourceToken}
       state={sourceInputState}
       balance={sourceTokenBalance}
