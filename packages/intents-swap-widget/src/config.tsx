@@ -13,7 +13,7 @@ import { BalanceRpcLoader } from './features';
 import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
-import { ThemeProvider } from './theme';
+import { ThemeProvider } from './theme/ThemeProvider';
 import type { Token } from '@/types/token';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';

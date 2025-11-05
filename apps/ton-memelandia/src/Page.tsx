@@ -767,7 +767,9 @@ export const Page = () => {
         'submit.active.external.swap': 'Swap now',
       }}
       theme={{
+        colorScheme: 'dark',
         backgroundColor: '#1E2337',
+        primaryColor: '#0098EA',
       }}>
       {showConfirmSwaps && (
         <WidgetContainer
