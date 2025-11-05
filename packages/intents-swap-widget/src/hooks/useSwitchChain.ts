@@ -13,6 +13,10 @@ export const useSwitchChain = () => {
 
   // Auto-detect current wallet chain ID from window.ethereum
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const updateChainId = async () => {
       if (!window.ethereum) {
         return;
@@ -32,7 +36,7 @@ export const useSwitchChain = () => {
     void updateChainId();
 
     // Listen for chain changes
-    if (window.ethereum) {
+    if (window?.ethereum) {
       const handleChainChanged = (chainId: string) => {
         setCurrentWalletChainId(parseInt(chainId, 16));
       };
@@ -47,7 +51,7 @@ export const useSwitchChain = () => {
 
   // Check if chain switching is needed
   const isSwitchingChainRequired = useCallback(() => {
-    if (!ctx.sourceToken || !window.ethereum) {
+    if (typeof window === 'undefined' || !ctx.sourceToken || !window.ethereum) {
       return false;
     }
 
@@ -66,7 +70,7 @@ export const useSwitchChain = () => {
   }, [ctx.sourceToken, currentWalletChainId]);
 
   const switchChain = useCallback(async () => {
-    if (!ctx.sourceToken || !window.ethereum) {
+    if (typeof window === 'undefined' || !ctx.sourceToken || !window.ethereum) {
       return false;
     }
 

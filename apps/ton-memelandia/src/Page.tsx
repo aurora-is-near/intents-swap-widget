@@ -285,7 +285,7 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [_selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
+  const [selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
@@ -613,12 +613,17 @@ export const Page = () => {
     (swap) => swap.status === 'in-progress',
   );
 
-  // Use a stable wallet address for balance loading
-  // The widget will load balances for BOTH walletAddress AND sendAddress
-  // so balances won't reset when switching between TON and EVM tokens
   const walletAddress = useMemo(() => {
-    return appKitWalletAddress ?? tonAddress ?? undefined;
-  }, [appKitWalletAddress, tonAddress]);
+    if (!appKitWalletAddress || !tonAddress) {
+      return undefined;
+    }
+
+    if (selectedToken?.blockchain === 'ton') {
+      return tonAddress;
+    }
+
+    return appKitWalletAddress;
+  }, [appKitWalletAddress, tonAddress, selectedToken]);
 
   const nextSwap = swaps.find((swap) => swap.status !== 'completed');
 
@@ -683,7 +688,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {showConfirmSwaps ? (
+      {showConfirmSwaps && (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -692,7 +697,10 @@ export const Page = () => {
                 type="button"
                 className="bg-sw-gray-900 text-sw-gray-100 flex h-[40px] w-[40px] items-center justify-center rounded-full cursor-pointer"
                 onClick={() => {
-                  resetSwapState();
+                  // Only clear the state needed to go back to step 1
+                  // Don't call resetSwapState() as it clears too much
+                  setMakeTransferArgs(null);
+                  setSwaps([]);
                 }}>
                 <Icons.ArrowLeft size={20} />
               </button>
@@ -732,7 +740,8 @@ export const Page = () => {
             />
           ))}
         </WidgetContainer>
-      ) : (
+      )}
+      <div className={clsx(showConfirmSwaps ? 'invisible' : 'visible')}>
         <WidgetSwap
           isOneWay
           isFullPage
@@ -756,7 +765,7 @@ export const Page = () => {
             )
           }
         />
-      )}
+      </div>
     </WidgetConfigProvider>
   );
 };
