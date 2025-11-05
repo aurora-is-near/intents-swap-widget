@@ -78,6 +78,12 @@ export type LocalisationKeys =
   | 'walletCompatibility.modal.error.incompatible'
   | 'walletCompatibility.modal.button.checkCompatibility'
   | 'walletCompatibility.modal.button.tryAgain'
-  | 'walletCompatibility.modal.button.signOut';
+  | 'walletCompatibility.modal.button.signOut'
+  // token input
+  | 'tokenInput.heading.source.withdraw'
+  | 'tokenInput.heading.target.withdraw'
+  | 'tokenInput.heading.source.deposit'
+  | 'tokenInput.heading.source.swap'
+  | 'tokenInput.heading.target.swap';
 
 export type LocalisationDict = Partial<Record<LocalisationKeys, string>>;

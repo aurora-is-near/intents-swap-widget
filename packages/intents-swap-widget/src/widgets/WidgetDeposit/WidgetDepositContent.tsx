@@ -172,6 +172,7 @@ export const WidgetDepositContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <TokenInput.Source
               showBalance={!ctx.isDepositFromExternalWallet}
+              heading={t('tokenInput.heading.source.deposit', 'Sell')}
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_select_token':

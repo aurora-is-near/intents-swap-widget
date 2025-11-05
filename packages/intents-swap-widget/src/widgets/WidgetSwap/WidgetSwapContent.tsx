@@ -152,6 +152,7 @@ export const WidgetSwapContent = ({
           <div className="gap-sw-lg relative flex flex-col">
             <div className="gap-sw-lg relative flex flex-col">
               <TokenInput.Source
+                heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
                   switch (msg.type) {
@@ -173,6 +174,7 @@ export const WidgetSwapContent = ({
               <SwapDirectionSwitcher disabled={isOneWay} />
 
               <TokenInput.Target
+                heading={t('tokenInput.heading.target.swap', 'Buy')}
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
                   switch (msg.type) {
