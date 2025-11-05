@@ -765,6 +765,9 @@ export const Page = () => {
       }}
       localisation={{
         'submit.active.external.swap': 'Swap now',
+      }}
+      theme={{
+        backgroundColor: '#1E2337',
       }}>
       {showConfirmSwaps && (
         <WidgetContainer
