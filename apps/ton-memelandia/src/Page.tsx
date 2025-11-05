@@ -834,7 +834,9 @@ export const Page = () => {
         HeaderComponent={
           isTokensModalOpen ? undefined : (
             <>
-              <Heading className="mb-8">Swap to TON from anywhere</Heading>
+              <Heading className="mb-3 sm:mb-8">
+                Swap to TON from anywhere
+              </Heading>
               <WalletConnectionCard />
             </>
           )
