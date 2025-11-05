@@ -80,6 +80,11 @@ const omniston = new Omniston({
   apiUrl: 'wss://omni-ws.ston.fi',
 });
 
+const sleep = async (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
 /**
  * Fetch the details of the given assets from the STON.fi API.
  */
@@ -150,6 +155,35 @@ const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
   });
 };
 
+/**
+ * Fetch the TON transaction hash for the given trace ID.
+ *
+ * Retries up to 5 times if the trace is not found as it sometimes takes a few
+ * seconds for the TonAPI to index the transaction.
+ */
+const fetchTonTransactionHash = async (traceId: string, attempt = 0) => {
+  const res = await fetch(`https://tonapi.io/v2/traces/${traceId}`);
+  const data = await res.json();
+
+  if (res.status === 404) {
+    if (attempt < 5) {
+      await sleep(3000);
+
+      return fetchTonTransactionHash(traceId, attempt + 1);
+    }
+
+    return null;
+  }
+
+  if (data.error) {
+    throw new Error(`Failed to fetch Omniston transaction: ${data.error}`);
+  }
+
+  const txHash: string = data.transaction.hash;
+
+  return txHash;
+};
+
 const performOmnistoneSwap = async (
   omnistonQuote: OmnistonQuote,
   tonAddress: string,
@@ -183,18 +217,18 @@ const performOmnistoneSwap = async (
     })),
   });
 
+  // Wait for a short time to give the TonAPI a chance to index the transaction
+  await sleep(3000);
+
   const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
 
-  const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
-  const data = await response.json();
+  const txHash = await fetchTonTransactionHash(externalTxHash);
 
-  if (data.error) {
-    throw new Error(`Failed to fetch Omniston transaction: ${data.error}`);
+  if (!txHash) {
+    throw new Error('Failed to fetch Omniston transaction hash');
   }
 
-  const omnistonTxHash: string = data.transaction.hash;
-
-  return omnistonTxHash;
+  return txHash;
 };
 
 /**
@@ -439,9 +473,6 @@ export const Page = () => {
       return omnistonQuote.current;
     }
 
-    // Request the second quote, to see how much of the target asset we can get
-    // for the TON we received from OneClick. The quote is stored for later use
-    // when performing the swap.
     omnistonQuote.current = await new Promise<OmnistonQuote>((resolve) => {
       const rfq = omniston.requestForQuote({
         settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
