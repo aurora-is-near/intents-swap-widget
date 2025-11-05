@@ -774,6 +774,7 @@ export const Page = () => {
       {showConfirmSwaps && (
         <WidgetContainer
           isFullPage
+          className="z-10"
           HeaderComponent={
             <div className="flex flex-row items-center mb-1">
               <button
