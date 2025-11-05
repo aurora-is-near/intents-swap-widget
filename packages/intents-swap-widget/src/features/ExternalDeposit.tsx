@@ -69,47 +69,38 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   );
 
   useEffect(() => {
-    if (
-      depositStatusQuery.status === 'success' &&
-      depositStatusQuery.data?.status ===
-        GetExecutionStatusResponse.status.PROCESSING
-    ) {
-      onMsg({ type: 'on_transaction_received' });
+    const status = depositStatusQuery.data?.status;
+
+    if (!depositStatusQuery.data) {
+      return;
     }
-  }, [depositStatusQuery, onMsg]);
 
-  useEffect(() => {
-    if (
-      depositStatusQuery.status === 'success' &&
-      depositStatusQuery.data?.status ===
-        GetExecutionStatusResponse.status.SUCCESS
-    ) {
-      const txHash =
-        depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
+    switch (status) {
+      case GetExecutionStatusResponse.status.SUCCESS: {
+        const txHash =
+          depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
 
-      fireEvent('transferSetStatus', { status: 'success' });
-      moveTo('transfer_success');
+        fireEvent('transferSetStatus', { status: 'success' });
+        moveTo('transfer_success');
 
-      onMsg({
-        type: 'on_successful_transfer',
-        transferResult: {
-          hash: txHash ?? '',
-          intent: depositStatusQuery.data.swapDetails.intentHashes[0],
-          transactionLink:
-            (ctx.sourceToken &&
-              txHash &&
-              getTransactionLink(
-                CHAIN_IDS_MAP[ctx.sourceToken.blockchain],
-                txHash,
-              )) ??
-            '',
-        },
-      });
-    }
-  }, [depositStatusQuery, ctx.sourceToken]);
+        onMsg({
+          type: 'on_successful_transfer',
+          transferResult: {
+            hash: txHash ?? '',
+            intent: depositStatusQuery.data.swapDetails.intentHashes[0],
+            transactionLink:
+              (ctx.sourceToken &&
+                txHash &&
+                getTransactionLink(
+                  CHAIN_IDS_MAP[ctx.sourceToken.blockchain],
+                  txHash,
+                )) ??
+              '',
+          },
+        });
+        break;
+      }
 
-  useEffect(() => {
-    switch (depositStatusQuery.data?.status) {
       case GetExecutionStatusResponse.status.FAILED:
         fireEvent('transferSetStatus', { status: 'error' });
         fireEvent('errorSet', { code: 'EXTERNAL_TRANSFER_FAILED' });
@@ -122,10 +113,20 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
         fireEvent('transferSetStatus', { status: 'error' });
         fireEvent('errorSet', { code: 'EXTERNAL_TRANSFER_REFUNDED' });
         break;
-      default:
+      case GetExecutionStatusResponse.status.PROCESSING:
+      case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
+        // Transaction was received from external wallet
+        fireEvent('externalDepositTxSet', true);
+        onMsg({ type: 'on_transaction_received' });
         break;
+      case GetExecutionStatusResponse.status.PENDING_DEPOSIT:
+      case undefined:
+        // No action needed - waiting for deposit
+        break;
+      default:
+        notReachable(status);
     }
-  }, []);
+  }, [depositStatusQuery.data, ctx.sourceToken, onMsg]);
 
   if (!isValidState) {
     return <Skeleton />;

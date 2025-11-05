@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
 import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
 import {
   SendAddress,
@@ -44,7 +43,6 @@ export const WidgetWithdrawContent = ({
   const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
     useConfig();
 
-  const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
@@ -222,36 +220,15 @@ export const WidgetWithdrawContent = ({
 
             {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
 
-            {walletAddress ? (
-              <SubmitButton
-                providers={providers}
-                makeTransfer={makeTransfer}
-                transferLabel={t(
-                  'submit.active.transfer.withdraw',
-                  'Swap & withdraw',
-                )}
-                internalSwapLabel={t(
-                  'submit.active.internal.withdraw',
-                  'Swap & withdraw',
-                )}
-                externalSwapLabel={t(
-                  'submit.active.external.withdraw',
-                  'Swap & withdraw',
-                )}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_successful_transfer':
-                      setTransferResult(msg.transfer);
-                      onMsg?.({ type: 'on_transfer_success' });
-                      break;
-                    default:
-                      notReachable(msg.type);
-                  }
-                }}
-              />
-            ) : (
-              <SubmitButton.Error />
-            )}
+            <SubmitButton
+              providers={providers}
+              makeTransfer={makeTransfer}
+              label="Swap & withdraw"
+              onSuccess={(transfer) => {
+                setTransferResult(transfer);
+                onMsg?.({ type: 'on_transfer_success' });
+              }}
+            />
           </div>
         </div>
       );

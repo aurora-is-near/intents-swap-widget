@@ -31,6 +31,7 @@ export type LocalisationKeys =
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
   // submit - errors
+  | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'
@@ -56,11 +57,15 @@ export type LocalisationKeys =
   // submit - disabled
   | 'submit.disabled.temporary.label'
   | 'submit.disabled.temporary.message'
+  | 'submit.disabled.selectTokenToReceive'
+  | 'submit.disabled.enterAmount'
   // submit - pending
   | 'submit.pending.quote.finalizing'
   | 'submit.pending.quote.refreshing'
   | 'submit.pending.transfer.confirmInWallet'
   | 'submit.pending.transfer.finalizing'
+  | 'submit.pending.externalDeposit.waiting'
+  | 'submit.pending.externalDeposit.processing'
   // wallet compatibility
   | 'walletCompatibility.modal.title.initial'
   | 'walletCompatibility.modal.title.error'
