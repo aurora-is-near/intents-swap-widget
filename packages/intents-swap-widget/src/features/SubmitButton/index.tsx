@@ -154,7 +154,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Select token to receive
+        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
       </Button>
     );
   }
@@ -162,7 +162,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        Enter amount
+        {t('submit.disabled.enterAmount', 'Enter amount')}
       </Button>
     );
   }
@@ -261,6 +261,14 @@ const SubmitButtonWithWallet = (props: Props) => {
 
   // 1. External deposit (QR code) mode? Show waiting/processing state
   if (ctx.isDepositFromExternalWallet) {
+    if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+      return (
+        <Button {...commonBtnProps} state="disabled">
+          {t('submit.disabled.enterAmount', 'Enter amount')}
+        </Button>
+      );
+    }
+
     if (ctx.externalDepositTxReceived) {
       return (
         <Button state="loading" {...commonBtnProps}>

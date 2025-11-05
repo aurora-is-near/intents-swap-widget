@@ -57,6 +57,8 @@ export type LocalisationKeys =
   // submit - disabled
   | 'submit.disabled.temporary.label'
   | 'submit.disabled.temporary.message'
+  | 'submit.disabled.selectTokenToReceive'
+  | 'submit.disabled.enterAmount'
   // submit - pending
   | 'submit.pending.quote.finalizing'
   | 'submit.pending.quote.refreshing'
