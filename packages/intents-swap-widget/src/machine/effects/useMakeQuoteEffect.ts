@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { isDryQuote } from '../guards/checks/isDryQuote';
 import type { ListenerProps } from './types';
@@ -15,12 +15,14 @@ import type { Quote } from '@/types/quote';
 export type Props = ListenerProps & {
   message?: string;
   type?: 'exact_in' | 'exact_out';
+  refetchQuoteInterval?: number;
 };
 
 export const useMakeQuoteEffect = ({
   isEnabled,
   message,
   type: quoteType = 'exact_in',
+  refetchQuoteInterval,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const {
@@ -43,6 +45,8 @@ export const useMakeQuoteEffect = ({
   const { make: makeDepositAddress, cancel: cancelDepositAddress } =
     useMakeDepositAddress();
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const cancel = () => {
     cancelQuote();
     cancelDepositAddress();
@@ -63,8 +67,105 @@ export const useMakeQuoteEffect = ({
     }
   }, [cancel, isDry, ctx]);
 
+  const run = useCallback(async () => {
+    try {
+      let quote: Quote | undefined;
+
+      if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+        if (isDry) {
+          // since here it's not a real quote but just a deposit address generation
+          // we don't want to run it for dry runs
+          return;
+        }
+
+        fireEvent('quoteSetStatus', 'pending');
+        quote = await makeDepositAddress();
+      } else {
+        fireEvent('quoteSetStatus', 'pending');
+        quote = await makeQuote({ message, quoteType });
+      }
+
+      if (!quote) {
+        return;
+      }
+
+      fireEvent('quoteSetStatus', 'success');
+      fireEvent('quoteSet', quote);
+
+      if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
+        // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
+        fireEvent('errorSet', null);
+      }
+
+      fireEvent('tokenSetAmount', {
+        variant: 'target',
+        amount: quote.amountOut,
+      });
+
+      if (ctx.state === 'input_valid_dry') {
+        moveTo('quote_success_dry');
+
+        return;
+      }
+
+      if (ctx.targetToken?.isIntent) {
+        moveTo('quote_success_internal');
+      } else {
+        moveTo('quote_success_external');
+      }
+    } catch (err) {
+      if (err instanceof QuoteError) {
+        if (err.data.code === 'QUOTE_INVALID_INITIAL') {
+          fireEvent('quoteSetStatus', 'idle');
+          fireEvent('quoteSet', undefined);
+          fireEvent('errorSet', null);
+
+          return;
+        }
+
+        fireEvent('quoteSetStatus', 'error');
+        fireEvent('quoteSet', undefined);
+        fireEvent('errorSet', err.data);
+
+        validateInputAndMoveTo(ctx);
+
+        return;
+      }
+
+      // unhandled error
+      fireEvent('quoteSetStatus', 'error');
+      fireEvent('quoteSet', undefined);
+      fireEvent('errorSet', {
+        code: 'QUOTE_FAILED',
+        meta: { message: 'Unknown error' },
+      });
+    }
+  }, [
+    ctx,
+    isDry,
+    makeDepositAddress,
+    makeQuote,
+    message,
+    quoteType,
+    shouldRun,
+  ]);
+
   useEffect(() => {
     if (!shouldRun) {
+      return;
+    }
+
+    const isValidState = isDry
+      ? ctx.state === 'input_valid_dry'
+      : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
+        (ctx.state === 'input_valid_internal' && ctx.targetToken?.isIntent);
+
+    if (!isValidState) {
+      return;
+    }
+
+    // do not refetch failed quotes - persist an error instead
+    if (ctx.quoteStatus === 'error') {
       return;
     }
 
@@ -76,81 +177,28 @@ export const useMakeQuoteEffect = ({
       return;
     }
 
-    const isValidState = isDry
-      ? ctx.state === 'input_valid_dry'
-      : (ctx.state === 'input_valid_external' && !ctx.targetToken?.isIntent) ||
-        (ctx.state === 'input_valid_internal' && ctx.targetToken?.isIntent);
+    void run();
+  }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
 
-    void (async () => {
-      try {
-        // do not refetch failed quotes - persist an error instead
-        if (isValidState && ctx.quoteStatus === 'idle') {
-          fireEvent('quoteSetStatus', 'pending');
-
-          let quote: Quote | undefined;
-
-          if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
-            quote = await makeDepositAddress();
-          } else {
-            quote = await makeQuote({ message, quoteType });
-          }
-
-          if (!quote) {
-            return;
-          }
-
-          fireEvent('quoteSetStatus', 'success');
-          fireEvent('quoteSet', quote);
-
-          if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
-            // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
-            fireEvent('errorSet', null);
-          }
-
-          fireEvent('tokenSetAmount', {
-            variant: 'target',
-            amount: quote.amountOut,
-          });
-
-          if (ctx.state === 'input_valid_dry') {
-            moveTo('quote_success_dry');
-
-            return;
-          }
-
-          if (ctx.targetToken?.isIntent) {
-            moveTo('quote_success_internal');
-          } else {
-            moveTo('quote_success_external');
-          }
-        }
-      } catch (err) {
-        if (err instanceof QuoteError) {
-          if (err.data.code === 'QUOTE_INVALID_INITIAL') {
-            fireEvent('quoteSetStatus', 'idle');
-            fireEvent('quoteSet', undefined);
-            fireEvent('errorSet', null);
-
-            return;
-          }
-
-          fireEvent('quoteSetStatus', 'error');
-          fireEvent('quoteSet', undefined);
-          fireEvent('errorSet', err.data);
-
-          validateInputAndMoveTo(ctx);
-
-          return;
-        }
-
-        // unhandled error
-        fireEvent('quoteSetStatus', 'error');
-        fireEvent('quoteSet', undefined);
-        fireEvent('errorSet', {
-          code: 'QUOTE_FAILED',
-          meta: { message: 'Unknown error' },
-        });
+  // Refetch if an interval is set and a quote was successful
+  useEffect(() => {
+    const cleanup = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
-    })();
-  }, [ctx, shouldRun, isDry, makeQuote]);
+    };
+
+    if (
+      (ctx.state !== 'quote_success_internal' &&
+        ctx.state !== 'quote_success_external') ||
+      !refetchQuoteInterval
+    ) {
+      return cleanup;
+    }
+
+    intervalRef.current = setInterval(run, refetchQuoteInterval);
+
+    return cleanup;
+  }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
 };

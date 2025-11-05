@@ -18,6 +18,7 @@ export type WidgetConfig = {
   // Quotes & Transfers
   defaultMaxSlippage: number;
   enableAutoTokensSwitching?: boolean;
+  refetchQuoteInterval?: number;
 
   // Tokens filtering
   showIntentTokens: boolean;
@@ -44,4 +45,9 @@ export type WidgetConfig = {
 
   // Balance loading
   alchemyApiKey?: string;
+  tonCenterApiKey?: string;
+
+  // UI
+  hideSendAddress?: boolean;
+  hideTokenInputHeadings?: boolean;
 };

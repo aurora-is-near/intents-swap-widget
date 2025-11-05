@@ -95,7 +95,9 @@ export const useTokens = (variant?: 'source' | 'target') => {
           icon: getTokenIcon(token.symbol),
           name: getTokenName(token.symbol),
           chainIcon: getChainIcon(blockchain),
-          chainName: capitalizeChainName(token.blockchain),
+          chainName:
+            CHAINS_LIST[token.blockchain]?.label ??
+            capitalizeChainName(token.blockchain),
           contractAddress: token.contractAddress,
         };
       })

@@ -95,6 +95,13 @@ export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
       const depositResult = await transferFunction(makeTransferArgs);
 
       if (!depositResult) {
+        // A custom make transfer function may not return a deposit result. We
+        // may choose to defer processing, for example, and show the success
+        // state at some later time.
+        if (makeTransfer) {
+          return;
+        }
+
         logger.error('[TRANSFER ERROR]', 'No deposit result');
         throw new TransferError({
           code: 'NO_DEPOSIT_RESULT',

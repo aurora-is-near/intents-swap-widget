@@ -81,7 +81,7 @@ export function useCompatibilityCheck({ providers }: Props) {
       case 'near': {
         const nearProvider = providers?.near ? providers.near() : null;
 
-        if (!nearProvider || !nearProvider.signMessage) {
+        if (!nearProvider?.signMessage) {
           throw new TransferError({
             code: 'TRANSFER_INVALID_INITIAL',
             meta: { message: 'No NEAR provider configured' },

@@ -45,7 +45,9 @@ export const WidgetSwapContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter, alchemyApiKey } = useConfig();
+  const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
+    useConfig();
+
   const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
@@ -71,13 +73,14 @@ export const WidgetSwapContent = ({
         {
           message: undefined,
           type: lastChangedInput === 'target' ? 'exact_out' : 'exact_in',
+          refetchQuoteInterval,
         },
       ],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
 
-  if (!!isLoading || !ctx.sourceToken) {
+  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetSwapSkeleton />;
   }
 

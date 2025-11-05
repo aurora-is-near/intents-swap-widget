@@ -34,6 +34,9 @@ export const EVM_CHAIN_IDS_MAP_REVERSED: Record<string, EvmChains> =
     Object.entries(EVM_CHAIN_IDS_MAP).map(([chain, id]) => [`${id}`, chain]),
   ) as Record<string, EvmChains>;
 
+export const POA_EVM_CHAIN_ID = 'eth:1';
+
+// for other EVM chains use eth:1
 export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   base: 'eth:8453',
   arb: 'eth:42161',
@@ -159,7 +162,7 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   },
   ton: {
     id: 'ton',
-    label: 'Toncoin',
+    label: 'TON',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ton.svg',
   },
   op: {

@@ -30,10 +30,10 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
 import clsx from 'clsx';
-import { useAppKitWallet } from '../hooks/useAppKitWallet';
-import { useTonWallet } from '../hooks/useTonWallet';
-import { WalletConnectionCard } from './WalletConnectionCard';
-import { Heading } from './Heading';
+import { useAppKitWallet } from './hooks/useAppKitWallet';
+import { useTonWallet } from './hooks/useTonWallet';
+import { WalletConnectionCard } from './components/WalletConnectionCard';
+import { Heading } from './components/Heading';
 
 type SwapStatus = 'not-started' | 'in-progress' | 'completed' | 'failed';
 
@@ -47,11 +47,8 @@ type SwapDetails = {
     assetId: string;
     amount: string;
   };
-};
-
-type SwapState = {
-  firstSwap: SwapDetails;
-  secondSwap: SwapDetails;
+  swapType: 'oneclick' | 'omniston';
+  swapButtonText: string;
 };
 
 const TON_ASSET_ID = 'nep245:v2_1.omni.hot.tg:1117_';
@@ -60,6 +57,9 @@ const TARGET_ASSET_ADDRESSES = [
   'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
+
+const SLIPPAGE_TOLERANCE = 500; // 5%
+const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
@@ -103,6 +103,7 @@ const fetchStonFiAssets = async (assets: string[]): Promise<SimpleToken[]> => {
       blockchain: 'ton',
       assetId: asset.contract_address,
       decimals: asset.meta.decimals,
+      contractAddress: asset.contract_address,
     }));
 };
 
@@ -148,8 +149,13 @@ const performOmnistoneSwap = async (
   const externalTxHash = Cell.fromBase64(sendTxRes.boc).hash().toString('hex');
 
   const response = await fetch(`https://tonapi.io/v2/traces/${externalTxHash}`);
+  const data = await response.json();
 
-  const omnistonTxHash: string = (await response.json()).transaction.hash;
+  if (data.error) {
+    throw new Error(`Failed to fetch Omniston transaction: ${data.error}`);
+  }
+
+  const omnistonTxHash: string = data.transaction.hash;
 
   return omnistonTxHash;
 };
@@ -203,6 +209,67 @@ const waitForOneClickSettlement = async (
   return waitForOneClickSettlement(oneClickDepositAddress);
 };
 
+const getOneClickSwapDetails = ({
+  sourceAsset,
+  sourceAmount,
+  targetAmount,
+}: {
+  sourceAsset: string;
+  sourceAmount: string;
+  targetAmount: string;
+}): SwapDetails => {
+  return {
+    status: 'not-started',
+    source: {
+      assetId: sourceAsset,
+      amount: sourceAmount,
+    },
+    target: {
+      assetId: TON_ASSET_ID,
+      amount: targetAmount,
+    },
+    swapType: 'oneclick',
+    swapButtonText: 'Confirm in source wallet',
+  };
+};
+
+const getOmnistonSwapDetails = ({
+  sourceAmount,
+  targetAmount,
+  destinationAsset,
+}: {
+  destinationAsset: string;
+  sourceAmount: string;
+  targetAmount: string;
+}): SwapDetails => {
+  return {
+    status: 'not-started',
+    source: {
+      assetId: TON_ASSET_ID,
+      amount: sourceAmount,
+    },
+    target: {
+      assetId: destinationAsset,
+      amount: targetAmount,
+    },
+    swapType: 'omniston',
+    swapButtonText: 'Confirm in TON wallet',
+  };
+};
+
+const findTokenByAssetId = (
+  tokens: SimpleToken[],
+  assetId: string,
+): SimpleToken => {
+  const token = tokens.find((t) => t.assetId === assetId);
+
+  if (!token) {
+    throw new Error(`Token not found for assetId: ${assetId}`);
+  }
+
+  return token;
+};
+
 export const Page = () => {
   const {
     address: appKitWalletAddress,
@@ -218,7 +285,8 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [swapState, setSwapState] = useState<SwapState | null>(null);
+  const [selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
+  const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
     useState<{
@@ -226,38 +294,83 @@ export const Page = () => {
       transactionLink: string;
     } | null>();
 
-  const updateSwapStatus = (key: keyof SwapState, status: SwapStatus) => {
-    setSwapState((prev) => {
+  const updateSwapStatus = (index: number, status: SwapStatus) => {
+    setSwaps((prev): SwapDetails[] => {
       if (!prev) {
         return prev;
       }
 
-      prev[key].status = status;
+      if (!prev[index]) {
+        throw new Error(`Invalid swap index: ${index}`);
+      }
 
-      return { ...prev };
+      prev[index].status = status;
+
+      return [...prev];
     });
   };
 
   const resetSwapState = () => {
     setSuccessfulTransactionDetails(null);
     setMakeTransferArgs(null);
+    setSwaps([]);
   };
 
-  /**
-   * Fetch a two-step quote.
-   *
-   * The first quote is done via OneClick, from the selected source asset to TON.
-   * The second quote is done via Omniston, from TON to the selected target asset.
-   */
-  const fetchQuote: WidgetConfig['fetchQuote'] = async (data) => {
-    const [{ quote: oneClickQuote }, tokens] = await Promise.all([
-      OneClickService.getQuote({
-        ...data,
-        destinationAsset: TON_ASSET_ID,
-      }),
-      fetchStonFiAssets([data.destinationAsset]),
-    ]);
+  const confirmOneClickSwap = async (args: MakeTransferArgs) => {
+    updateSwapStatus(0, 'in-progress');
 
+    try {
+      await makeEvmTransfer(args);
+      await waitForOneClickSettlement(args.address);
+    } catch (error) {
+      updateSwapStatus(0, 'failed');
+      console.error('One Click swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus(0, 'completed');
+  };
+
+  const confirmOmnistonSwap = async () => {
+    if (!omnistonQuote.current) {
+      throw new Error('Missing Omniston quote');
+    }
+
+    updateSwapStatus(1, 'in-progress');
+
+    let omnistonTxHash: string;
+
+    try {
+      omnistonTxHash = await performOmnistoneSwap(
+        omnistonQuote.current,
+        tonAddress,
+        tonConnect,
+      );
+
+      await waitForOmnistonSettlement(
+        omnistonQuote.current.quoteId,
+        omnistonTxHash,
+        tonAddress,
+      );
+    } catch (error) {
+      updateSwapStatus(1, 'failed');
+      console.error('Omniston swap failed:', error);
+
+      return;
+    }
+
+    updateSwapStatus(1, 'completed');
+    setSuccessfulTransactionDetails({
+      hash: omnistonTxHash,
+      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
+    });
+  };
+
+  const fetchOmnistonQuote = async (
+    destinationAsset: string,
+    bidAmount: string,
+  ) => {
     // Request the second quote, to see how much of the target asset we can get
     // for the TON we received from OneClick. The quote is stored for later use
     // when performing the swap.
@@ -267,19 +380,18 @@ export const Page = () => {
           settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
           askAssetAddress: {
             blockchain: Blockchain.TON,
-            address: data.destinationAsset, // The final target asset
+            address: destinationAsset,
           },
           bidAssetAddress: {
             blockchain: Blockchain.TON,
             address: TON_ASSET_ADDRESS,
           },
           amount: {
-            // The amount of TON we got from OneClick
-            bidUnits: oneClickQuote.amountOut,
+            bidUnits: bidAmount,
           },
           settlementParams: {
             gaslessSettlement: GaslessSettlement.GASLESS_SETTLEMENT_POSSIBLE,
-            maxPriceSlippageBps: 500, // 5% slippage
+            maxPriceSlippageBps: SLIPPAGE_TOLERANCE,
           },
         })
         .subscribe((quoteResponseEvent) => {
@@ -294,13 +406,35 @@ export const Page = () => {
         });
     });
 
-    const targetToken = tokens.find((t) => t.assetId === data.destinationAsset);
+    return omnistonQuote.current;
+  };
 
-    if (!targetToken) {
-      throw new Error('Missing target token info');
-    }
+  /**
+   * Fetch a two-step quote.
+   *
+   * The first quote is done via OneClick, from the selected source asset to TON.
+   * The second quote is done via Omniston, from TON to the selected target asset.
+   */
+  const fetchDoubleQuote: WidgetConfig['fetchQuote'] = async (data) => {
+    const [{ quote: oneClickQuote }, tokens] = await Promise.all([
+      OneClickService.getQuote({
+        ...data,
+        destinationAsset: TON_ASSET_ID,
+        slippageTolerance: SLIPPAGE_TOLERANCE,
+      }),
+      fetchStonFiAssets([data.destinationAsset]),
+    ]);
 
-    const { askUnits, params } = omnistonQuote.current;
+    // Request the second quote, to see how much of the target asset we can get
+    // for the TON we received from OneClick. The quote is stored for later use
+    // when performing the swap.
+    const { askUnits, params } = await fetchOmnistonQuote(
+      data.destinationAsset,
+      oneClickQuote.amountOut,
+    );
+
+    const targetToken = findTokenByAssetId(tokens, data.destinationAsset);
+
     const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
     const amountOutHuman = parseFloat(
       formatBigToHuman(askUnits, targetToken.decimals),
@@ -321,32 +455,85 @@ export const Page = () => {
       minAmountOut: minAskAmount,
     };
 
-    setSwapState({
-      firstSwap: {
-        status: 'not-started',
-        source: {
-          assetId: data.originAsset,
-          amount: quoteResponse.amountIn,
-        },
-        target: {
-          assetId: TON_ASSET_ID,
-          amount: oneClickQuote.amountOut,
-        },
-      },
-      secondSwap: {
-        status: 'not-started',
-        source: {
-          assetId: TON_ASSET_ID,
-          amount: oneClickQuote.amountOut,
-        },
-        target: {
-          assetId: data.destinationAsset,
-          amount: quoteResponse.amountOut,
-        },
-      },
-    });
+    setSwaps([
+      getOneClickSwapDetails({
+        sourceAsset: data.originAsset,
+        sourceAmount: quoteResponse.amountIn,
+        targetAmount: oneClickQuote.amountOut,
+      }),
+      getOmnistonSwapDetails({
+        destinationAsset: data.destinationAsset,
+        sourceAmount: oneClickQuote.amountOut,
+        targetAmount: quoteResponse.amountOut,
+      }),
+    ]);
 
     return quoteResponse;
+  };
+
+  /**
+   * Fetch a TON-only quote.
+   */
+  const fetchTonOnlyQuote: WidgetConfig['fetchQuote'] = async (data) => {
+    const [{ bidUnits, askUnits, params, quoteTimestamp }, tokens] =
+      await Promise.all([
+        fetchOmnistonQuote(data.destinationAsset, data.amount),
+        fetchStonFiAssets([data.destinationAsset, TON_ASSET_ADDRESS]),
+      ]);
+
+    const sourceToken = findTokenByAssetId(tokens, TON_ASSET_ADDRESS);
+    const targetToken = findTokenByAssetId(tokens, data.destinationAsset);
+
+    const minAskAmount = params?.swap?.minAskAmount ?? askUnits;
+    const amountOutHuman = parseFloat(
+      formatBigToHuman(askUnits, targetToken.decimals),
+    );
+
+    const amountOutUsd = amountOutHuman * targetToken.price;
+
+    const amountInHuman = parseFloat(
+      formatBigToHuman(bidUnits, sourceToken.decimals),
+    );
+
+    const amountInUsd = amountInHuman * sourceToken.price;
+
+    const quoteResponse = {
+      depositAddress: data.recipient,
+      timeEstimate: quoteTimestamp,
+      amountIn: bidUnits,
+      amountInFormatted: String(amountInHuman),
+      amountInUsd: String(amountInUsd),
+      minAmountIn: bidUnits,
+      amountOut: askUnits,
+      amountOutFormatted: String(amountOutHuman),
+      amountOutUsd: String(amountOutUsd),
+      minAmountOut: minAskAmount,
+    };
+
+    setSwaps([
+      getOmnistonSwapDetails({
+        destinationAsset: data.destinationAsset,
+        sourceAmount: bidUnits,
+        targetAmount: askUnits,
+      }),
+    ]);
+
+    return quoteResponse;
+  };
+
+  /**
+   * Fetch a quote.
+   *
+   * If we are swapping from TON to one of the target memecoins we only need a
+   * single quote via Omniston. Otherwise, we need to do a two-step quote via
+   * OneClick and then Omniston.
+   */
+  const fetchQuote: WidgetConfig['fetchQuote'] = (data) => {
+    if (data.originAsset === TON_ASSET_ID) {
+      return fetchTonOnlyQuote(data);
+    }
+
+    return fetchDoubleQuote(data);
   };
 
   const makeTransfer = (args: MakeTransferArgs) => {
@@ -384,72 +571,23 @@ export const Page = () => {
     return 'near';
   }, [chainType]);
 
-  const confirmFirstSwap = async (args: MakeTransferArgs) => {
-    updateSwapStatus('firstSwap', 'in-progress');
+  const isSwapInProgress = !!swaps.find(
+    (swap) => swap.status === 'in-progress',
+  );
 
-    try {
-      await makeEvmTransfer(args);
-      await waitForOneClickSettlement(args.address);
-    } catch (error) {
-      updateSwapStatus('firstSwap', 'failed');
-      console.error('First swap failed:', error);
-
-      return;
+  const walletAddress = useMemo(() => {
+    if (!appKitWalletAddress || !tonAddress) {
+      return undefined;
     }
 
-    updateSwapStatus('firstSwap', 'completed');
-  };
-
-  const confirmSecondSwap = async () => {
-    if (!omnistonQuote.current) {
-      throw new Error('Missing Omniston quote');
+    if (selectedToken?.blockchain === 'ton') {
+      return tonAddress;
     }
 
-    updateSwapStatus('secondSwap', 'in-progress');
+    return appKitWalletAddress;
+  }, [appKitWalletAddress, tonAddress, selectedToken]);
 
-    let omnistonTxHash: string;
-
-    try {
-      omnistonTxHash = await performOmnistoneSwap(
-        omnistonQuote.current,
-        tonAddress,
-        tonConnect,
-      );
-
-      await waitForOmnistonSettlement(
-        omnistonQuote.current.quoteId,
-        omnistonTxHash,
-        tonAddress,
-      );
-    } catch (error) {
-      updateSwapStatus('secondSwap', 'failed');
-      console.error('Second swap failed:', error);
-
-      return;
-    }
-
-    updateSwapStatus('secondSwap', 'completed');
-    setSuccessfulTransactionDetails({
-      hash: omnistonTxHash,
-      transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
-    });
-  };
-
-  const isSwapInProgress =
-    swapState?.firstSwap.status === 'in-progress' ||
-    swapState?.secondSwap.status === 'in-progress';
-
-  const swapButtonText = useMemo(() => {
-    if (isSwapInProgress) {
-      return 'Confirming';
-    }
-
-    if (swapState?.firstSwap.status === 'completed') {
-      return 'Confirm in TON wallet';
-    }
-
-    return 'Confirm in source wallet';
-  }, [swapState, isSwapInProgress]);
+  const nextSwap = swaps.find((swap) => swap.status !== 'completed');
 
   if (successfulTransactionDetails) {
     return (
@@ -483,19 +621,24 @@ export const Page = () => {
     );
   }
 
+  const showConfirmSwaps = nextSwap && makeTransferArgs;
+
   return (
     <WidgetConfigProvider
       config={{
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
-        walletAddress:
-          appKitWalletAddress && tonAddress ? appKitWalletAddress : undefined,
+        hideSendAddress: true,
+        walletAddress,
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
+        refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
+        tonCenterApiKey:
+          '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {
@@ -507,7 +650,7 @@ export const Page = () => {
       localisation={{
         'submit.active.external.swap': 'Swap now',
       }}>
-      {swapState && makeTransferArgs ? (
+      {showConfirmSwaps && (
         <WidgetContainer
           isFullPage
           HeaderComponent={
@@ -529,52 +672,58 @@ export const Page = () => {
               size="lg"
               state={isSwapInProgress ? 'loading' : 'default'}
               onClick={() => {
-                if (swapState.firstSwap.status === 'completed') {
-                  void confirmSecondSwap();
+                if (nextSwap.swapType === 'oneclick') {
+                  void confirmOneClickSwap(makeTransferArgs);
+
+                  return;
                 }
 
-                void confirmFirstSwap(makeTransferArgs);
+                void confirmOmnistonSwap();
               }}>
-              {swapButtonText}
+              {nextSwap.swapButtonText}
             </Button>
           }>
-          <SwapCard
-            state={swapState.firstSwap.status}
-            title="Swap 1/2"
-            source={swapState.firstSwap.source}
-            target={swapState.firstSwap.target}
-          />
-          <SwapCard
-            state={swapState.secondSwap.status}
-            title="Swap 2/2"
-            className={clsx('mt-2.5', {
-              'opacity-50': swapState.firstSwap.status !== 'completed',
-            })}
-            source={swapState.secondSwap.source}
-            target={swapState.secondSwap.target}
-          />
+          {swaps.map((swap, index) => (
+            <SwapCard
+              key={index}
+              state={swap.status}
+              title={
+                swaps.length > 1 ? `Swap ${index + 1}/${swaps.length}` : 'Swap'
+              }
+              className={clsx(index > 0 && 'mt-2.5', {
+                'opacity-50':
+                  index > 0 && swaps[index - 1]?.status !== 'completed',
+              })}
+              source={swap.source}
+              target={swap.target}
+            />
+          ))}
         </WidgetContainer>
-      ) : (
-        <WidgetSwap
-          isOneWay
-          isFullPage
-          isLoading={isAppKitConnecting || isTonConnecting}
-          makeTransfer={makeTransfer}
-          onMsg={(msg) => {
-            if (msg.type === 'on_tokens_modal_toggled') {
-              setIsTokensModalOpen(msg.isOpen);
-            }
-          }}
-          HeaderComponent={
-            isTokensModalOpen ? undefined : (
-              <>
-                <Heading className="mb-8">Swap to TON from anywhere</Heading>
-                <WalletConnectionCard />
-              </>
-            )
-          }
-        />
       )}
+      <WidgetSwap
+        isOneWay
+        isFullPage
+        isLoading={isAppKitConnecting || isTonConnecting}
+        className={showConfirmSwaps ? 'hidden' : undefined}
+        makeTransfer={makeTransfer}
+        onMsg={(msg) => {
+          if (msg.type === 'on_tokens_modal_toggled') {
+            setIsTokensModalOpen(msg.isOpen);
+          }
+
+          if (msg.type === 'on_select_token' && msg.variant === 'source') {
+            setSelectedToken(msg.token);
+          }
+        }}
+        HeaderComponent={
+          isTokensModalOpen ? undefined : (
+            <>
+              <Heading className="mb-8">Swap to TON from anywhere</Heading>
+              <WalletConnectionCard />
+            </>
+          )
+        }
+      />
     </WidgetConfigProvider>
   );
 };

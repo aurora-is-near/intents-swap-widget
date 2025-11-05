@@ -94,6 +94,7 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
     isEnabled: !!makeQuoteListener,
     message: makeQuoteListener?.[1].message,
     type: makeQuoteListener?.[1].type,
+    refetchQuoteInterval: makeQuoteListener?.[1].refetchQuoteInterval,
   });
 
   useWalletConnEffect({

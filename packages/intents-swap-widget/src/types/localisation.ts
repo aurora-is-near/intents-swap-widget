@@ -58,6 +58,7 @@ export type LocalisationKeys =
   | 'submit.disabled.temporary.message'
   // submit - pending
   | 'submit.pending.quote.finalizing'
+  | 'submit.pending.quote.refreshing'
   | 'submit.pending.transfer.confirmInWallet'
   | 'submit.pending.transfer.finalizing'
   // wallet compatibility
