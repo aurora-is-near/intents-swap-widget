@@ -17,6 +17,8 @@ import {
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef, useState } from 'react';
+import { useAppKitProvider } from '@reown/appkit/react';
+import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
 import {
   Button,
   Chains,
@@ -36,6 +38,8 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
+
+const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 type SwapType = 'oneclick' | 'omniston';
 
@@ -357,6 +361,9 @@ export const Page = () => {
   const oneClickQuote = useRef<OneClickQuote>(null);
   const swapStatus = useRef<SwapStatusMap>(DEFAULT_SWAP_STATUS_MAP);
 
+  const { walletProvider: solanaProvider } =
+    useAppKitProvider<SolanaProvider>('solana');
+
   const { make: makeEvmTransfer } = useMakeEvmTransfer();
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
@@ -407,11 +414,92 @@ export const Page = () => {
     swapStatus.current = DEFAULT_SWAP_STATUS_MAP;
   };
 
+  const makeSolanaTransfer = async (args: MakeTransferArgs) => {
+    if (!solanaProvider?.publicKey) {
+      throw new Error('No Solana wallet connected');
+    }
+
+    const { Connection, PublicKey, SystemProgram, Transaction } = await import(
+      '@solana/web3.js'
+    );
+
+    const connection = new Connection(
+      `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+    );
+
+    const fromPubkey = solanaProvider.publicKey;
+    const toPubkey = new PublicKey(args.address);
+
+    if (!args.tokenAddress) {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: BigInt(args.amount),
+        }),
+      );
+
+      const { blockhash } = await connection.getLatestBlockhash();
+
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = fromPubkey;
+
+      const signedTx = await solanaProvider.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(
+        signedTx.serialize(),
+      );
+
+      await connection.confirmTransaction(signature);
+
+      return { hash: signature };
+    }
+
+    const { getAssociatedTokenAddress, createTransferInstruction } =
+      await import('@solana/spl-token');
+
+    const mintPubkey = new PublicKey(args.tokenAddress);
+    const fromTokenAccount = await getAssociatedTokenAddress(
+      mintPubkey,
+      fromPubkey,
+    );
+
+    const toTokenAccount = await getAssociatedTokenAddress(
+      mintPubkey,
+      toPubkey,
+    );
+
+    const transaction = new Transaction().add(
+      createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        fromPubkey,
+        BigInt(args.amount),
+      ),
+    );
+
+    const { blockhash } = await connection.getLatestBlockhash();
+
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+
+    const signedTx = await solanaProvider.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signedTx.serialize());
+
+    await connection.confirmTransaction(signature);
+
+    return { hash: signature };
+  };
+
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus('oneclick', 'in-progress');
 
     try {
-      await makeEvmTransfer(args);
+      if (args.chain === 'sol') {
+        await makeSolanaTransfer(args);
+      } else {
+        await makeEvmTransfer(args);
+      }
+
       await waitForOneClickSettlement(args.address);
     } catch (error) {
       updateSwapStatus('oneclick', 'failed');
@@ -785,7 +873,7 @@ export const Page = () => {
         fetchQuote,
         fetchTargetTokens,
         refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
-        alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
+        alchemyApiKey: ALCHEMY_API_KEY,
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
         chainsFilter: {
