@@ -1,11 +1,6 @@
 @import 'tailwindcss';
 @import '@aurora-is-near/intents-swap-widget/styles.css';
 
-#root {
-  height: 100vh;
-  background: #24262d;
-}
-
 /* Wallet Connect button for multi-chain wallet connection */
 .wallet-connect-button {
   display: flex;

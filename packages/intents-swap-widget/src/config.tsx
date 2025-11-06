@@ -12,6 +12,8 @@ import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
 import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
+import { Theme } from './types/theme';
+import { ThemeProvider } from './theme/ThemeProvider';
 import type { Token } from '@/types/token';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
@@ -82,6 +84,7 @@ type Props = PropsWithChildren<{
   config?: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
   rpcs?: ChainRpcUrls;
+  theme?: Theme;
 }>;
 
 export const configStore = proxy<{ config: WidgetConfig }>({
@@ -104,6 +107,7 @@ export const WidgetConfigProvider = ({
   config: userConfig,
   localisation,
   rpcs,
+  theme,
 }: Props) => {
   const storeRef = useRef(
     proxy({
@@ -134,7 +138,9 @@ export const WidgetConfigProvider = ({
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <ThemeProvider theme={theme}>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </ThemeProvider>
           {!!userConfig?.walletAddress && (
             <BalanceRpcLoader
               rpcs={rpcs ?? DEFAULT_RPCS}
