@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import type { AxiosResponse } from 'axios';
 
@@ -25,6 +26,7 @@ type DepositResult = {
   amount: number;
   address: string;
   account_id: string;
+  created_at: string;
   near_token_id: string;
   status: 'COMPLETED' | 'PENDING' | 'FAILED';
   tx_hash?: string;
@@ -40,6 +42,7 @@ const getMatchedDeposit = (
   response: DepositStatusResponse,
   data: {
     intentsAccountId: string;
+    initiatedAtDate: string;
     depositAddress: string;
     assetId: string;
     chainId: string;
@@ -69,12 +72,18 @@ const getMatchedDeposit = (
     );
   };
 
+  // only consider deposits created after the intent was initiated
+  const isCreatedAfterInitiation = (deposit: DepositResult) => {
+    return new Date(deposit.created_at) >= new Date(data.initiatedAtDate);
+  };
+
   return (response.result.deposits || []).find(
     (deposit) =>
       deposit.chain === data.chainId &&
       deposit.account_id === data.intentsAccountId &&
       deposit.address === data.depositAddress &&
       deposit.near_token_id === nearTokenId &&
+      isCreatedAfterInitiation(deposit) &&
       isAmountMatched(deposit),
   );
 };
@@ -91,6 +100,8 @@ const oneClickBridgeStatusMap: Record<
 export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useConfig();
+
+  const [initiatedAt, setInitiatedAt] = useState<string | null>(null);
 
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
@@ -120,6 +131,12 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
       }
     }
 
+    const initiatedAtDate = initiatedAt ?? new Date().toUTCString();
+
+    if (!initiatedAt) {
+      setInitiatedAt(initiatedAtDate);
+    }
+
     const response = await bridgeApi.post<
       DepositStatusResponse,
       AxiosResponse<DepositStatusResponse>
@@ -137,6 +154,7 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
 
     const matchedDeposit = getMatchedDeposit(response.data, {
       intentsAccountId,
+      initiatedAtDate,
       depositAddress,
       chainId,
       assetId,
