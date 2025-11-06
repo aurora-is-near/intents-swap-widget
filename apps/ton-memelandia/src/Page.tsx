@@ -812,10 +812,7 @@ export const Page = () => {
                 type="button"
                 className="bg-sw-gray-900 text-sw-gray-100 flex h-[40px] w-[40px] items-center justify-center rounded-full cursor-pointer"
                 onClick={() => {
-                  // Only clear the state needed to go back to step 1
-                  // Don't call resetSwapState() as it clears too much
-                  setMakeTransferArgs(null);
-                  setSwaps([]);
+                  resetSwapState();
                 }}>
                 <Icons.ArrowLeft size={20} />
               </button>
