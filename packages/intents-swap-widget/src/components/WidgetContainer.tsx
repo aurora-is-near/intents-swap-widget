@@ -1,5 +1,8 @@
 import { PropsWithChildren, ReactElement } from 'react';
 import { cn } from '../utils';
+import { useTheme } from '../hooks/useTheme';
+
+const DEFAULT_BACKGROUND_COLOR = '#24262d';
 
 export type WidgetContainerProps = PropsWithChildren<{
   HeaderComponent?: ReactElement | false | null;
@@ -15,6 +18,8 @@ export const WidgetContainer = ({
   isFullPage,
   className,
 }: WidgetContainerProps) => {
+  const theme = useTheme();
+
   const jsx = (
     <div
       className={cn(
@@ -40,9 +45,12 @@ export const WidgetContainer = ({
   return (
     <div
       className={cn(
-        'h-full min-h-full w-full min-w-full px-sw-lg mx-auto flex items-center justify-center fixed top-0 left-0 right-0',
+        'sm:h-full min-h-screen w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto flex sm:items-center justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
         className,
-      )}>
+      )}
+      style={{
+        backgroundColor: theme?.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+      }}>
       <div className="w-full h-full max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>
   );

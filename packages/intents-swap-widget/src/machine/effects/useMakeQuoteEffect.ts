@@ -10,7 +10,7 @@ import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
-import type { Quote } from '@/types/quote';
+import type { FetchQuoteOptions, Quote } from '@/types/quote';
 
 export type Props = ListenerProps & {
   message?: string;
@@ -67,88 +67,83 @@ export const useMakeQuoteEffect = ({
     }
   }, [cancel, isDry, ctx]);
 
-  const run = useCallback(async () => {
-    try {
-      let quote: Quote | undefined;
+  const run = useCallback(
+    async (options: FetchQuoteOptions) => {
+      try {
+        let quote: Quote | undefined;
 
-      if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
-        if (isDry) {
-          // since here it's not a real quote but just a deposit address generation
-          // we don't want to run it for dry runs
+        if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+          if (isDry) {
+            // since here it's not a real quote but just a deposit address generation
+            // we don't want to run it for dry runs
+            return;
+          }
+
+          fireEvent('quoteSetStatus', 'pending');
+          quote = await makeDepositAddress();
+        } else {
+          fireEvent('quoteSetStatus', 'pending');
+          quote = await makeQuote({ message, quoteType, options });
+        }
+
+        if (!quote) {
           return;
         }
 
-        fireEvent('quoteSetStatus', 'pending');
-        quote = await makeDepositAddress();
-      } else {
-        fireEvent('quoteSetStatus', 'pending');
-        quote = await makeQuote({ message, quoteType });
-      }
+        fireEvent('quoteSetStatus', 'success');
+        fireEvent('quoteSet', quote);
 
-      if (!quote) {
-        return;
-      }
-
-      fireEvent('quoteSetStatus', 'success');
-      fireEvent('quoteSet', quote);
-
-      if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
-        // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
-        fireEvent('errorSet', null);
-      }
-
-      fireEvent('tokenSetAmount', {
-        variant: 'target',
-        amount: quote.amountOut,
-      });
-
-      if (ctx.state === 'input_valid_dry') {
-        moveTo('quote_success_dry');
-
-        return;
-      }
-
-      if (ctx.targetToken?.isIntent) {
-        moveTo('quote_success_internal');
-      } else {
-        moveTo('quote_success_external');
-      }
-    } catch (err) {
-      if (err instanceof QuoteError) {
-        if (err.data.code === 'QUOTE_INVALID_INITIAL') {
-          fireEvent('quoteSetStatus', 'idle');
-          fireEvent('quoteSet', undefined);
+        if (!isDry && ctx.error?.code !== 'SOURCE_BALANCE_INSUFFICIENT') {
+          // should persist SOURCE_BALANCE_INSUFFICIENT error, if it was set during dry run
           fireEvent('errorSet', null);
+        }
+
+        fireEvent('tokenSetAmount', {
+          variant: 'target',
+          amount: quote.amountOut,
+        });
+
+        if (ctx.state === 'input_valid_dry') {
+          moveTo('quote_success_dry');
 
           return;
         }
 
+        if (ctx.targetToken?.isIntent) {
+          moveTo('quote_success_internal');
+        } else {
+          moveTo('quote_success_external');
+        }
+      } catch (err) {
+        if (err instanceof QuoteError) {
+          if (err.data.code === 'QUOTE_INVALID_INITIAL') {
+            fireEvent('quoteSetStatus', 'idle');
+            fireEvent('quoteSet', undefined);
+            fireEvent('errorSet', null);
+
+            return;
+          }
+
+          fireEvent('quoteSetStatus', 'error');
+          fireEvent('quoteSet', undefined);
+          fireEvent('errorSet', err.data);
+
+          validateInputAndMoveTo(ctx);
+
+          return;
+        }
+
+        // unhandled error
         fireEvent('quoteSetStatus', 'error');
         fireEvent('quoteSet', undefined);
-        fireEvent('errorSet', err.data);
-
-        validateInputAndMoveTo(ctx);
-
-        return;
+        fireEvent('errorSet', {
+          code: 'QUOTE_FAILED',
+          meta: { message: 'Unknown error' },
+        });
       }
-
-      // unhandled error
-      fireEvent('quoteSetStatus', 'error');
-      fireEvent('quoteSet', undefined);
-      fireEvent('errorSet', {
-        code: 'QUOTE_FAILED',
-        meta: { message: 'Unknown error' },
-      });
-    }
-  }, [
-    ctx,
-    isDry,
-    makeDepositAddress,
-    makeQuote,
-    message,
-    quoteType,
-    shouldRun,
-  ]);
+    },
+    [ctx, isDry, makeDepositAddress, makeQuote, message, quoteType, shouldRun],
+  );
 
   useEffect(() => {
     if (!shouldRun) {
@@ -177,7 +172,7 @@ export const useMakeQuoteEffect = ({
       return;
     }
 
-    void run();
+    void run({ isRefetch: false });
   }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
 
   // Refetch if an interval is set and a quote was successful
@@ -197,8 +192,10 @@ export const useMakeQuoteEffect = ({
       return cleanup;
     }
 
-    intervalRef.current = setInterval(run, refetchQuoteInterval);
+    intervalRef.current = setInterval(async () => {
+      await run({ isRefetch: true });
+    }, refetchQuoteInterval);
 
     return cleanup;
-  }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
+  }, [shouldRun, run, cancel, ctx.state]);
 };

@@ -23,3 +23,7 @@ export type QuoteReal = QuoteResponseShort & {
 };
 
 export type Quote = QuoteDry | QuoteReal;
+
+export type FetchQuoteOptions = {
+  isRefetch?: boolean;
+};
