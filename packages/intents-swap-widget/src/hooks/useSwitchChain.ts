@@ -14,10 +14,6 @@ export const useSwitchChain = () => {
 
   // Auto-detect current wallet chain ID from window.ethereum
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
     const updateChainId = async () => {
       if (!window.ethereum) {
         return;
