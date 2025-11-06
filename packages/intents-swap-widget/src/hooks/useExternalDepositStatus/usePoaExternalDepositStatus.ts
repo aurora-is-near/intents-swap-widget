@@ -49,15 +49,33 @@ const getMatchedDeposit = (
   // remove nep141: prefix as Bridge API response doesn't have it
   const nearTokenId = data.assetId.substring(data.assetId.indexOf(':') + 1);
 
+  // API returns amount as a number so if decimals is higher than number's precision some of the digits can be lost
+  // so here we check only that amount starts with the expected value
+  const isAmountMatched = (deposit: DepositResult) => {
+    const normalize = (value: string) =>
+      value.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+
+    const normalizedAmount = normalize(data.amount);
+    const normalizedDepositAmount = normalize(
+      deposit.amount.toLocaleString('en-US', {
+        useGrouping: false,
+        maximumFractionDigits: 20,
+      }),
+    );
+
+    return (
+      normalizedAmount.startsWith(normalizedDepositAmount) ||
+      normalizedDepositAmount.startsWith(normalizedAmount)
+    );
+  };
+
   return (response.result.deposits || []).find(
     (deposit) =>
       deposit.chain === data.chainId &&
       deposit.account_id === data.intentsAccountId &&
       deposit.address === data.depositAddress &&
       deposit.near_token_id === nearTokenId &&
-      // API returns amount as a number so if decimals is higher than number's precision some of the digits can be lost
-      // so here we check only that amount starts with the expected value
-      data.amount.startsWith(deposit.amount.toString()),
+      isAmountMatched(deposit),
   );
 };
 
