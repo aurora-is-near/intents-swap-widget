@@ -32,10 +32,9 @@ type MakeArgs = {
 const validateQuoteProperties = (
   quote: OneClickQuote,
 ): quote is OneClickQuote & {
-  deadline: string;
   depositAddress: string;
 } => {
-  ['deadline', 'depositAddress'].forEach((property) => {
+  ['depositAddress'].forEach((property) => {
     if (!(property in quote)) {
       logger.error(`Missing ${property} in quote response`);
 

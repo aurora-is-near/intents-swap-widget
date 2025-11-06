@@ -18,7 +18,7 @@ export type QuoteDry = QuoteResponseShort & {
 
 export type QuoteReal = QuoteResponseShort & {
   dry: false;
-  deadline: string;
+  deadline?: string;
   depositAddress: string;
 };
 
