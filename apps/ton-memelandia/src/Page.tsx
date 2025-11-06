@@ -371,26 +371,28 @@ export const Page = () => {
       transactionLink: string;
     } | null>();
 
-  const updateSwapStatus = (index: number, status: SwapStatus) => {
+  const updateSwapStatus = (swapType: SwapType, status: SwapStatus) => {
     setSwaps((prev): SwapDetails[] => {
       if (!prev) {
         return prev;
       }
 
-      if (!prev[index]) {
-        throw new Error(`Invalid swap index: ${index}`);
+      const swap = prev.find((s) => s.swapType === swapType);
+
+      if (!swap) {
+        throw new Error(`Invalid swap type: ${swapType}`);
       }
 
-      prev[index].status = status;
+      swap.status = status;
 
       const newSwaps = [...prev];
 
       swapStatus.current = {
         omniston:
-          newSwaps.find((swap) => swap.swapType === 'omniston')?.status ??
+          newSwaps.find((s) => s.swapType === 'omniston')?.status ??
           'not-started',
         oneclick:
-          newSwaps.find((swap) => swap.swapType === 'oneclick')?.status ??
+          newSwaps.find((s) => s.swapType === 'oneclick')?.status ??
           'not-started',
       };
 
@@ -406,19 +408,19 @@ export const Page = () => {
   };
 
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
-    updateSwapStatus(0, 'in-progress');
+    updateSwapStatus('oneclick', 'in-progress');
 
     try {
       await makeEvmTransfer(args);
       await waitForOneClickSettlement(args.address);
     } catch (error) {
-      updateSwapStatus(0, 'failed');
+      updateSwapStatus('oneclick', 'failed');
       console.error('One Click swap failed:', error);
 
       return;
     }
 
-    updateSwapStatus(0, 'completed');
+    updateSwapStatus('oneclick', 'completed');
   };
 
   const confirmOmnistonSwap = async () => {
@@ -426,7 +428,7 @@ export const Page = () => {
       throw new Error('Missing Omniston quote');
     }
 
-    updateSwapStatus(1, 'in-progress');
+    updateSwapStatus('omniston', 'in-progress');
 
     let omnistonTxHash: string;
 
@@ -443,13 +445,13 @@ export const Page = () => {
         tonAddress,
       );
     } catch (error) {
-      updateSwapStatus(1, 'failed');
+      updateSwapStatus('omniston', 'failed');
       console.error('Omniston swap failed:', error);
 
       return;
     }
 
-    updateSwapStatus(1, 'completed');
+    updateSwapStatus('omniston', 'completed');
     setSuccessfulTransactionDetails({
       hash: omnistonTxHash,
       transactionLink: `https://tonviewer.com/transaction/${omnistonTxHash}`,
