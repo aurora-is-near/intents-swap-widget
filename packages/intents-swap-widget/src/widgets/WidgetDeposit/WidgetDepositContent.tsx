@@ -195,7 +195,7 @@ export const WidgetDepositContent = ({
             <DepositMethodSwitcher className="mt-sw-md">
               {({ isExternal }) =>
                 isExternal ? (
-                  <div className="gap-sw-2xl pb-sw-2xl flex flex-col justify-between">
+                  <div className="gap-sw-2xl flex flex-col justify-between">
                     <ExternalDeposit onMsg={handleExternalDepositMsg} />
                     {(ctx.state === 'quote_success_internal' ||
                       ctx.state === 'quote_success_external') && (
