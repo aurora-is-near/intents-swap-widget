@@ -7,13 +7,14 @@ export type SimpleToken = {
   decimals: number;
   contractAddress?: string;
   price: number;
+  icon?: string;
 };
 
-export type Token = SimpleToken & {
+export type Token = Omit<SimpleToken, 'icon'> & {
+  icon: string;
   isIntent: boolean;
   chainName: string;
   name: string;
-  icon: string;
   chainIcon: string;
 };
 

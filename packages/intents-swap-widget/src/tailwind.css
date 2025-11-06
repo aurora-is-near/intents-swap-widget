@@ -133,6 +133,15 @@
   html {
     font-family: var(--sw-font-sans);
   }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+  .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
 }
 
 /* To override default font in the app: */
