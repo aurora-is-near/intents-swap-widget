@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import vercel from 'vite-plugin-vercel';
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig({
   plugins: [
@@ -27,6 +28,11 @@ export default defineConfig({
         process: true,
       },
     }),
+    process.env.SENTRY_AUTH_TOKEN ? sentryVitePlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: "aurora-k2",
+      project: "ton-memelandia",
+    }) : null,
   ].filter(Boolean),
   css: {
     postcss: "./postcss.config.cjs",
@@ -50,5 +56,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    sourcemap: true,
   },
 });

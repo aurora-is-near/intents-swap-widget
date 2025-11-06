@@ -33,3 +33,6 @@ spec.json
 
 # Turbo
 .turbo
+
+# Sentry
+.env.sentry-build-plugin
