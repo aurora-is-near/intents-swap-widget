@@ -45,7 +45,7 @@ export const WidgetContainer = ({
   return (
     <div
       className={cn(
-        'sm:h-full min-h-screen w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto sm:flex sm:items-center sm:justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
+        'sm:h-full min-h-screen w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto flex sm:items-center justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
         className,
       )}
       style={{
