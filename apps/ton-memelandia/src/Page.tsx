@@ -697,10 +697,6 @@ export const Page = () => {
       chains.push('eth', 'arb', 'pol', 'bsc', 'op', 'avax', 'base');
     }
 
-    if (chainType === 'solana') {
-      chains.push('sol');
-    }
-
     // Default to 'near' if no wallets connected
     if (chains.length === 0) {
       chains.push('near');
@@ -712,10 +708,6 @@ export const Page = () => {
   const intentsAccountType = useMemo(() => {
     if (chainType === 'evm') {
       return 'evm';
-    }
-
-    if (chainType === 'solana') {
-      return 'sol';
     }
 
     return 'near';
@@ -788,6 +780,8 @@ export const Page = () => {
         alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
+        // Filter out Solana tokens until full integration is complete
+        filterTokens: (token) => token.blockchain !== 'sol',
         chainsFilter: {
           target: { intents: 'none', external: 'all' },
           source: {

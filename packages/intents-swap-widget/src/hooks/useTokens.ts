@@ -48,7 +48,12 @@ export const useTokens = (variant?: 'source' | 'target') => {
         return fetchTargetTokens();
       }
 
-      return OneClickService.getTokens();
+      const tokens = await OneClickService.getTokens();
+
+      // Filter out tokens with unsupported blockchains (e.g., 'sol')
+      return tokens.filter((token) =>
+        isValidChain(token.blockchain.toLowerCase()),
+      ) as SimpleToken[];
     },
   });
 

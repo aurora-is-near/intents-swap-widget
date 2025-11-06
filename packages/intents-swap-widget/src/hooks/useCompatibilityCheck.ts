@@ -32,10 +32,10 @@ export function useCompatibilityCheck({ providers }: Props) {
       });
     }
 
-    const authType =
-      intentsAccountType === 'sol' ? 'solana' : intentsAccountType;
-
-    const msg = walletVerificationMessageFactory(walletAddress, authType);
+    const msg = walletVerificationMessageFactory(
+      walletAddress,
+      intentsAccountType,
+    );
 
     switch (intentsAccountType) {
       case 'evm': {
@@ -56,25 +56,6 @@ export function useCompatibilityCheck({ providers }: Props) {
           type: 'ERC191',
           signatureData,
           signedData: msg.ERC191,
-        };
-      }
-
-      case 'sol': {
-        if (!providers?.sol) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No SOL provider configured' },
-          });
-        }
-
-        const signatureData = await providers.sol.signMessage({
-          message: msg.SOLANA.message,
-        });
-
-        return {
-          type: 'SOLANA',
-          signatureData,
-          signedData: msg.SOLANA,
         };
       }
 
@@ -125,7 +106,7 @@ export function useCompatibilityCheck({ providers }: Props) {
       const isValid = await verifyWalletSignature(
         signature,
         walletAddress!,
-        intentsAccountType === 'sol' ? 'solana' : intentsAccountType,
+        intentsAccountType,
       );
 
       // Handle NEAR public key storage

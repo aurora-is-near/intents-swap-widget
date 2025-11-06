@@ -46,7 +46,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
     'eth',
     'btc',
     'near',
-    'sol',
     'bsc',
     'base',
     'arb',

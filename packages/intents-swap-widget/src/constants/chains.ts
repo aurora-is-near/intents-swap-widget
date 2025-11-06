@@ -41,7 +41,6 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   base: 'eth:8453',
   arb: 'eth:42161',
   btc: 'btc:mainnet',
-  sol: 'sol:mainnet',
   doge: 'doge:mainnet',
   xrp: 'xrp:mainnet',
   zec: 'zec:mainnet',
@@ -65,7 +64,6 @@ export const NOT_EVM_CHAINS = [
   'tron',
   'ton',
   'near',
-  'sol',
   'zec',
   'cardano',
 ] as const;
@@ -77,7 +75,6 @@ export const DEFAULT_CHAIN_ICON =
 
 export const DRY_QUOTE_ZERO_ADDRESSES = {
   evm: '0x0000000000000000000000000000000000000000',
-  sol: '11111111111111111111111111111111',
   near: 'system.near',
 } as const;
 
@@ -95,7 +92,6 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
 
 export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
   ...EVM_CHAIN_BASE_TOKENS,
-  sol: 'SOL',
   near: 'NEAR',
 };
 
@@ -109,11 +105,6 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'eth',
     label: 'Ethereum',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/eth.svg',
-  },
-  sol: {
-    id: 'sol',
-    label: 'Solana',
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/sol.svg',
   },
   base: {
     id: 'base',

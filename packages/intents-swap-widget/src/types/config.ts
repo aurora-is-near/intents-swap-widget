@@ -9,7 +9,7 @@ export type WidgetConfig = {
   appIcon: string;
 
   // Connected wallet
-  intentsAccountType: 'evm' | 'near' | 'sol';
+  intentsAccountType: 'evm' | 'near';
   walletSupportedChains: ReadonlyArray<Chains>;
   walletAddress?: string | null;
 

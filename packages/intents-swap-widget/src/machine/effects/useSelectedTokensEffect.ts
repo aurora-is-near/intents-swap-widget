@@ -22,7 +22,6 @@ export type Props = ListenerProps & {
 };
 
 const accountChainMap: Record<WidgetConfig['intentsAccountType'], Chains> = {
-  sol: 'sol',
   evm: 'eth',
   near: 'near',
 };

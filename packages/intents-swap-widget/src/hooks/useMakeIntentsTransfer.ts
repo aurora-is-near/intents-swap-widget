@@ -9,8 +9,6 @@ import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/
 import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
-import { IntentSignerSolana } from '../utils/intents/signers/solana';
-import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
@@ -31,7 +29,6 @@ import type { Context } from '@/machine/context';
 
 export type IntentsTransferArgs = {
   providers?: {
-    sol?: undefined | null | SolanaWalletAdapter;
     evm?: undefined | null | (() => Promise<Eip1193Provider>);
     near?: undefined | null | (() => NearWallet);
   };
@@ -199,21 +196,6 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           { walletAddress: ctx.walletAddress },
           providers.evm,
         );
-        break;
-
-      case 'sol':
-        if (!providers?.sol) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No SOL provider configured' },
-          });
-        }
-
-        signer = new IntentSignerSolana(
-          { walletAddress: ctx.walletAddress },
-          providers.sol,
-        );
-
         break;
 
       case 'near': {
