@@ -1,5 +1,12 @@
 import { logger } from '@/logger';
 
+class SwitchChainError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SwitchChainError';
+  }
+}
+
 /**
  * Switches the connected Ethereum wallet to the specified chain.
  * If already on the target chain, returns immediately.
@@ -10,8 +17,8 @@ import { logger } from '@/logger';
 export const switchEthereumChain = async (
   targetChainId: number,
 ): Promise<void> => {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error('No Ethereum wallet found');
+  if (!window.ethereum) {
+    throw new SwitchChainError('No Ethereum wallet found');
   }
 
   try {
@@ -33,7 +40,7 @@ export const switchEthereumChain = async (
       params: [{ chainId: `0x${targetChainId.toString(16)}` }],
     });
 
-    logger.info(
+    logger.debug(
       `Successfully switched chain from ${currentChainId} to ${targetChainId}`,
     );
   } catch (error: unknown) {
@@ -44,17 +51,11 @@ export const switchEthereumChain = async (
       'code' in error &&
       error.code === 4902
     ) {
-      logger.error(
-        'Chain not available in wallet. User needs to add it manually:',
-        error,
-      );
-      throw new Error(
-        `Chain ${targetChainId} is not available in your wallet. Please add it first.`,
-      );
+      throw new SwitchChainError(`Chain ${targetChainId} is not available.`);
     }
 
-    logger.error('Failed to switch chain:', error);
-    throw new Error(
+    logger.error(error);
+    throw new SwitchChainError(
       `Please switch to the correct network (Chain ID: ${targetChainId}) in your wallet`,
     );
   }
