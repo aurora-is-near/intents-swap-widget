@@ -67,7 +67,8 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
       }
 
       // 5. EVM chain's token balance
-      if (isEvmToken(token) ?? isEvmChain(token.blockchain)) {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      if (isEvmToken(token) || isEvmChain(token.blockchain)) {
         const rpcUrls = rpcs[token.blockchain] ?? [];
 
         return rpcUrls.length > 0
