@@ -36,7 +36,7 @@ export const SuccessScreen = ({
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       {!hideHeader && (
         <>
           <header className="flex justify-between">
