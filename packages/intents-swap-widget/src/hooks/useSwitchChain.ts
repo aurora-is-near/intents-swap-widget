@@ -3,6 +3,7 @@ import { EVM_CHAIN_IDS_MAP } from '@/constants/chains';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils';
 import { logger } from '@/logger';
+import { switchEthereumChain } from '@/utils/evm/switchEthereumChain';
 
 export const useSwitchChain = () => {
   const { ctx } = useUnsafeSnapshot();
@@ -87,30 +88,14 @@ export const useSwitchChain = () => {
     try {
       setIsSwitchingChain(true);
 
-      // Use standard EIP-3326 wallet_switchEthereumChain method
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
+      // Use shared utility function for chain switching
+      await switchEthereumChain(targetChainId);
 
       setCurrentWalletChainId(targetChainId);
 
       return true;
     } catch (error: unknown) {
-      // Error code 4902 means the chain hasn't been added to the wallet yet
-      if (
-        error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        error.code === 4902
-      ) {
-        logger.error(
-          'Chain not available in wallet. User needs to add it manually:',
-          error,
-        );
-      } else {
-        logger.error('Failed to switch chain:', error);
-      }
+      logger.error('Failed to switch chain:', error);
 
       return false;
     } finally {

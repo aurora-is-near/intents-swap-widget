@@ -18,6 +18,7 @@ import {
 import { getTransactionLink, isEvmChain } from '../utils';
 import { MakeTransferArgs } from '../types';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
+import { switchEthereumChain } from '../utils/evm/switchEthereumChain';
 import { EVM_CHAINS } from '../constants';
 
 declare global {
@@ -58,6 +59,9 @@ export const useMakeEvmTransfer = () => {
     if (!window.ethereum) {
       throw new Error('No injected Ethereum wallet found.');
     }
+
+    // Automatically switch to the correct chain if needed
+    await switchEthereumChain(evmChainId);
 
     // Create wallet client from injected wallet (e.g. MetaMask)
     const walletClient = createWalletClient({

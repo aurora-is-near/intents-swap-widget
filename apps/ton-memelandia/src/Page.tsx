@@ -405,48 +405,10 @@ export const Page = () => {
     swapStatus.current = DEFAULT_SWAP_STATUS_MAP;
   };
 
-  const switchToChainIfNeeded = async (targetChainId: number) => {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('No Ethereum wallet found');
-    }
-
-    // Get current chain ID
-    const currentChainIdHex = await window.ethereum.request({
-      method: 'eth_chainId',
-    });
-
-    const currentChainId = parseInt(currentChainIdHex as string, 16);
-
-    // Already on correct chain
-    if (currentChainId === targetChainId) {
-      return true;
-    }
-
-    // Switch to target chain
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Failed to switch chain:', error);
-      throw new Error(
-        `Please switch to the correct network (Chain ID: ${targetChainId}) in your wallet`,
-      );
-    }
-  };
-
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus(0, 'in-progress');
 
     try {
-      // Switch chain if needed before making the transfer
-      if (args.evmChainId) {
-        await switchToChainIfNeeded(args.evmChainId);
-      }
-
       await makeEvmTransfer(args);
       await waitForOneClickSettlement(args.address);
     } catch (error) {
