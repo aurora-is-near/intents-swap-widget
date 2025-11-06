@@ -43,7 +43,7 @@ export const useExternalDepositStatus = ({
         case 'poa':
           return await pollPoaDepositStatus({
             amount: ctx.sourceTokenAmount,
-            assetId: ctx.sourceToken?.assetId,
+            assetId: ctx.sourceToken.assetId,
             blockchain: ctx.targetToken.blockchain,
           });
         default:
