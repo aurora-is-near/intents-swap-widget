@@ -66,6 +66,9 @@ export type LocalisationKeys =
   | 'submit.pending.transfer.finalizing'
   | 'submit.pending.externalDeposit.waiting'
   | 'submit.pending.externalDeposit.processing'
+  | 'submit.pending.switchingChain'
+  // submit - chain switching
+  | 'submit.switchChain'
   // wallet compatibility
   | 'walletCompatibility.modal.title.initial'
   | 'walletCompatibility.modal.title.error'

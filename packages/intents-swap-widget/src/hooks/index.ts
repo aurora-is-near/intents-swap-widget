@@ -6,6 +6,7 @@ export { useMakeTransfer } from './useMakeTransfer';
 export { useMakeEvmTransfer } from './useMakeEvmTransfer';
 export { useMakeQuoteTransfer } from './useMakeQuoteTransfer';
 export { useMergedBalance } from './useMergedBalance';
+export { useSwitchChain } from './useSwitchChain';
 export { useTokenInputPair } from './useTokenInputPair';
 export { useTokensFiltered } from './useTokensFiltered';
 export { useTokens } from './useTokens';

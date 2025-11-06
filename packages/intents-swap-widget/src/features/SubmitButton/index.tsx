@@ -8,6 +8,7 @@ import type { Context } from '@/machine/context';
 
 import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
+import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -136,6 +137,8 @@ const SubmitButtonBase = (props: Props) => {
   } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
+  const { isSwitchingChainRequired, switchChain, isSwitchingChain } =
+    useSwitchChain();
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 
@@ -144,6 +147,15 @@ const SubmitButtonBase = (props: Props) => {
     ctx.targetToken?.assetId === WNEAR_ASSET_ID;
 
   const onClick = async () => {
+    // Check if chain switch is needed before transfer
+    if (isSwitchingChainRequired) {
+      const switched = await switchChain();
+
+      if (!switched) {
+        return; // User cancelled or error occurred
+      }
+    }
+
     const transferResult = await make();
 
     if (transferResult) {
@@ -167,7 +179,19 @@ const SubmitButtonBase = (props: Props) => {
     );
   }
 
-  if (SubmitErrorButton) {
+  // Show switching state while chain is being switched
+  if (isSwitchingChain) {
+    return (
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.switchingChain', 'Switching network...')}
+      </Button>
+    );
+  }
+
+  // Chain switching required - skip error checks
+  // because balance/errors are checked on current chain, not target chain
+  // The onClick handler will automatically switch the chain before proceeding
+  if (!isSwitchingChainRequired && SubmitErrorButton) {
     return SubmitErrorButton;
   }
 

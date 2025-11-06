@@ -854,10 +854,10 @@ export const Page = () => {
         </WidgetContainer>
       )}
       <WidgetSwap
+        className={showConfirmSwaps ? 'hidden' : undefined}
         isOneWay
         isFullPage
         isLoading={isAppKitConnecting || isTonConnecting}
-        className={showConfirmSwaps ? 'hidden' : undefined}
         makeTransfer={makeTransfer}
         onMsg={(msg) => {
           if (msg.type === 'on_tokens_modal_toggled') {
