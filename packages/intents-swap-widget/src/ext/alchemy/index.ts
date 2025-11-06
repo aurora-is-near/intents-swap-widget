@@ -5,6 +5,7 @@ import { parse } from './parse';
 import { createLoader } from './load';
 import { isAlchemySupportedChain } from './types';
 import type { AlchemyResponse } from './types';
+import { WalletAddresses } from '../../types';
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
 import { useTokens } from '@/hooks/useTokens';
@@ -15,13 +16,13 @@ import { useWalletBalance } from '@/hooks/useWalletBalance';
 type Args = {
   isEnabled: boolean;
   alchemyApiKey: string;
-  walletAddress: string | null | undefined;
+  connectedWallets: WalletAddresses;
 };
 
 const MAX_PAGES_DEPTH = 3;
 
 export const useAlchemyBalanceIntegration = ({
-  walletAddress,
+  connectedWallets,
   alchemyApiKey,
   ...args
 }: Args) => {
@@ -29,19 +30,21 @@ export const useAlchemyBalanceIntegration = ({
 
   const { tokens } = useTokens();
   const { walletSupportedChains } = useConfig();
-  const { setWalletBalance } = useWalletBalance(ctx.walletAddress);
+  const { setWalletBalance } = useWalletBalance(connectedWallets);
 
   const isEnabled =
-    args.isEnabled && !!walletAddress && walletSupportedChains.length > 0;
+    args.isEnabled &&
+    !!Object.values(connectedWallets).length &&
+    walletSupportedChains.length > 0;
 
   const query = useInfiniteQuery<AlchemyResponse>({
     initialPageParam: null,
-    enabled: isEnabled && !!walletAddress && !!alchemyApiKey,
-    queryKey: ['walletTokensBalance', walletAddress],
+    enabled: !!isEnabled && !!alchemyApiKey,
+    queryKey: ['walletTokensBalance', connectedWallets],
     queryFn: async ({ pageParam }) =>
       createLoader({ alchemyApiKey })({
         pageParam: pageParam ? `${pageParam as string}` : null,
-        walletAddress,
+        connectedWallets,
         walletSupportedChains,
       }),
     getNextPageParam: (lastPage, allPages) => {
@@ -95,8 +98,8 @@ export const useAlchemyBalanceIntegration = ({
   useEffect(() => {
     const validState = guardStates(ctx, ['initial_wallet']);
 
-    if (validState) {
-      setWalletBalance(ctx.walletAddress, balancesMap);
+    if (validState && connectedWallets) {
+      setWalletBalance(connectedWallets, balancesMap);
 
       if (
         ctx.sourceToken &&

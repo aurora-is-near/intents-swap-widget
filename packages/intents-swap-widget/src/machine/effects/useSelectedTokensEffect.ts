@@ -35,12 +35,8 @@ export const useSelectedTokensEffect = ({
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
-  const {
-    walletSupportedChains,
-    chainsFilter,
-    walletAddress,
-    intentsAccountType,
-  } = useConfig();
+  const { walletSupportedChains, chainsFilter, intentsAccountType } =
+    useConfig();
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
@@ -50,7 +46,7 @@ export const useSelectedTokensEffect = ({
   });
 
   const [sourceToken, targetToken] = useMemo(() => {
-    if (!walletAddress && !skipIntents) {
+    if (!ctx.walletAddress && !skipIntents) {
       const defaultIntentsToken = getDefaultIntentsToken({ tokens });
 
       return [
@@ -86,7 +82,7 @@ export const useSelectedTokensEffect = ({
     tokens,
     skipIntents,
     chainsFilter,
-    walletAddress,
+    ctx.walletAddress,
     highestIntentsToken,
     walletSupportedChains,
     state,

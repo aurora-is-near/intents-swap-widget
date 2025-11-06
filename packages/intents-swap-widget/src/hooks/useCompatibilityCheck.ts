@@ -14,11 +14,12 @@ import { localStorageTyped } from '@/utils/localstorage';
 
 type Props = {
   providers: IntentsTransferArgs['providers'];
+  walletAddress?: string;
 };
 
-export function useCompatibilityCheck({ providers }: Props) {
+export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   const [isSigning, setIsSigning] = useState(false);
-  const { intentsAccountType, walletAddress } = useConfig();
+  const { intentsAccountType } = useConfig();
   const intentsAccountId = getIntentsAccountId({
     walletAddress: walletAddress ?? '',
     addressType: intentsAccountType,

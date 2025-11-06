@@ -362,7 +362,6 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
@@ -725,18 +724,6 @@ export const Page = () => {
     (swap) => swap.status === 'in-progress',
   );
 
-  const walletAddress = useMemo(() => {
-    if (!appKitWalletAddress || !tonAddress) {
-      return undefined;
-    }
-
-    if (selectedToken?.blockchain === 'ton') {
-      return tonAddress;
-    }
-
-    return appKitWalletAddress;
-  }, [appKitWalletAddress, tonAddress, selectedToken]);
-
   if (successfulTransactionDetails) {
     return (
       <WidgetContainer
@@ -778,7 +765,10 @@ export const Page = () => {
         appName: 'Ton Demo App',
         allowedTargetChainsList: ['ton'],
         hideSendAddress: true,
-        walletAddress,
+        connectedWallets: {
+          default: appKitWalletAddress,
+          ton: tonAddress,
+        },
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
@@ -864,10 +854,6 @@ export const Page = () => {
         onMsg={(msg) => {
           if (msg.type === 'on_tokens_modal_toggled') {
             setIsTokensModalOpen(msg.isOpen);
-          }
-
-          if (msg.type === 'on_select_token' && msg.variant === 'source') {
-            setSelectedToken(msg.token);
           }
         }}
         HeaderComponent={

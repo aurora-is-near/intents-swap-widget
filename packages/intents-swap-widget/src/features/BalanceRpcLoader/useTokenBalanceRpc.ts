@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { WalletAddresses } from '../../types';
+import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { useConfig } from '@/config';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
@@ -17,16 +19,17 @@ import type { Token } from '@/types/token';
 type Args = {
   token: Token;
   rpcs: ChainRpcUrls;
-  walletAddress: string | undefined;
+  connectedWallets: WalletAddresses;
 };
 
-export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
+export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
   const { walletSupportedChains, tonCenterApiKey } = useConfig();
+  const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
   return useQuery<string | null>({
     retry: 2,
     enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
-    queryKey: ['tokenBalance', token.assetId, walletAddress],
+    queryKey: ['tokenBalance', token.assetId, connectedWallets],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
       if (!walletAddress) {

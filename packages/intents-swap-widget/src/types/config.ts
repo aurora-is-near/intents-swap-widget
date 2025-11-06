@@ -3,6 +3,8 @@ import { Chains, ChainsFilter } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
 
+export type WalletAddresses = Partial<Record<Chains | 'default', string>>;
+
 export type WidgetConfig = {
   // Application metadata
   appName: string;
@@ -11,7 +13,7 @@ export type WidgetConfig = {
   // Connected wallet
   intentsAccountType: 'evm' | 'near' | 'sol';
   walletSupportedChains: ReadonlyArray<Chains>;
-  walletAddress?: string | null;
+  connectedWallets: WalletAddresses;
 
   // Destination wallet
   sendAddress?: string | null;
@@ -50,6 +52,7 @@ export type WidgetConfig = {
   // Balance loading
   alchemyApiKey?: string;
   tonCenterApiKey?: string;
+  loadBalancesForSendAddress?: boolean;
 
   // UI
   hideSendAddress?: boolean;
