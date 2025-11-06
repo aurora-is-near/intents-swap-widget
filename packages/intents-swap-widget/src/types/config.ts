@@ -3,7 +3,9 @@ import { Chains, ChainsFilter } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
 
-export type WalletAddresses = Partial<Record<Chains | 'default', string>>;
+export type WalletAddresses = Partial<
+  Record<Chains | 'default', string | null>
+>;
 
 export type WidgetConfig = {
   // Application metadata
