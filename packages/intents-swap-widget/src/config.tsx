@@ -147,13 +147,6 @@ export const WidgetConfigProvider = ({
               walletAddress={userConfig.walletAddress}
             />
           )}
-          {!!userConfig?.sendAddress &&
-            userConfig.sendAddress !== userConfig.walletAddress && (
-              <BalanceRpcLoader
-                rpcs={rpcs ?? DEFAULT_RPCS}
-                walletAddress={userConfig.sendAddress}
-              />
-            )}
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>
