@@ -8,6 +8,9 @@ import { switchEthereumChain } from '@/utils/evm/switchEthereumChain';
 export const useSwitchChain = () => {
   const { ctx } = useUnsafeSnapshot();
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
+  const [isSwitchingChainRequired, setIsSwitchingChainRequired] =
+    useState(false);
+
   const [currentWalletChainId, setCurrentWalletChainId] = useState<
     number | null
   >(null);
@@ -47,8 +50,8 @@ export const useSwitchChain = () => {
   }, []);
 
   // Check if chain switching is needed
-  const isSwitchingChainRequired = useCallback(() => {
-    if (typeof window === 'undefined' || !ctx.sourceToken || !window.ethereum) {
+  const checkIfSwitchingIsRequired = useCallback(() => {
+    if (!ctx.sourceToken || !window.ethereum) {
       return false;
     }
 
@@ -67,7 +70,7 @@ export const useSwitchChain = () => {
   }, [ctx.sourceToken, currentWalletChainId]);
 
   const switchChain = useCallback(async () => {
-    if (typeof window === 'undefined' || !ctx.sourceToken || !window.ethereum) {
+    if (!ctx.sourceToken || !window.ethereum) {
       return false;
     }
 
@@ -99,14 +102,13 @@ export const useSwitchChain = () => {
     }
   }, [ctx.sourceToken]);
 
+  useEffect(() => {
+    setIsSwitchingChainRequired(checkIfSwitchingIsRequired());
+  }, [checkIfSwitchingIsRequired]);
+
   return {
-    isSwitchingChainRequired: isSwitchingChainRequired(),
+    isSwitchingChainRequired,
     switchChain,
     isSwitchingChain,
-    currentWalletChainId,
-    requiredChainId:
-      ctx.sourceToken && isEvmChain(ctx.sourceToken.blockchain)
-        ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
-        : null,
   };
 };

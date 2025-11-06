@@ -10,7 +10,7 @@ import { logger } from '@/logger';
 export const switchEthereumChain = async (
   targetChainId: number,
 ): Promise<void> => {
-  if (typeof window === 'undefined' || !window.ethereum) {
+  if (!window.ethereum) {
     throw new Error('No Ethereum wallet found');
   }
 
@@ -33,7 +33,7 @@ export const switchEthereumChain = async (
       params: [{ chainId: `0x${targetChainId.toString(16)}` }],
     });
 
-    logger.info(
+    logger.debug(
       `Successfully switched chain from ${currentChainId} to ${targetChainId}`,
     );
   } catch (error: unknown) {
