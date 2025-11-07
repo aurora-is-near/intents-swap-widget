@@ -16,7 +16,7 @@
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
     "@sentry/react": "^10.23.0",
-    "@sentry/vite-plugin": "^4.6.0",
+    "@solana/spl-token": "^0.4.14",
     "@solana/wallet-adapter-wallets": "^0.19.37",
     "@solana/web3.js": "^1.98.4",
     "@ston-fi/omniston-sdk": "^0.7.5",
@@ -27,5 +27,8 @@
     "react": "18",
     "react-dom": "18",
     "wagmi": "^2.18.2"
+  },
+  "devDependencies": {
+    "@sentry/vite-plugin": "^4.6.0"
   }
 }

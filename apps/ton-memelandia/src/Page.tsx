@@ -17,6 +17,8 @@ import {
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef, useState } from 'react';
+import { useAppKitProvider } from '@reown/appkit/react';
+import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
 import {
   Button,
   Chains,
@@ -36,6 +38,10 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
+
+// Client-side Alchemy API key - safe to expose in frontend code
+// This key is rate-limited and domain-restricted by Alchemy
+const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 type SwapType = 'oneclick' | 'omniston';
 
@@ -421,6 +427,9 @@ export const Page = () => {
   const oneClickQuote = useRef<OneClickQuote>(null);
   const swapStatus = useRef<SwapStatusMap>(DEFAULT_SWAP_STATUS_MAP);
 
+  const { walletProvider: solanaProvider } =
+    useAppKitProvider<SolanaProvider>('solana');
+
   const { make: makeEvmTransfer } = useMakeEvmTransfer();
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
@@ -470,11 +479,116 @@ export const Page = () => {
     swapStatus.current = DEFAULT_SWAP_STATUS_MAP;
   };
 
+  const makeSolanaTransfer = async (args: MakeTransferArgs) => {
+    if (!solanaProvider?.publicKey) {
+      throw new Error('No Solana wallet connected');
+    }
+
+    const { Connection, PublicKey, SystemProgram, Transaction } = await import(
+      '@solana/web3.js'
+    );
+
+    const connection = new Connection(
+      `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+    );
+
+    const fromPubkey = solanaProvider.publicKey;
+    const toPubkey = new PublicKey(args.address);
+
+    if (!args.tokenAddress) {
+      // Validate amount
+      const lamports = BigInt(args.amount);
+
+      if (lamports <= 0n) {
+        throw new Error('Transfer amount must be positive');
+      }
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports,
+        }),
+      );
+
+      const { blockhash } = await connection.getLatestBlockhash();
+
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = fromPubkey;
+
+      const signedTx = await solanaProvider.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(
+        signedTx.serialize(),
+        {
+          skipPreflight: false,
+          maxRetries: 3,
+        },
+      );
+
+      // Don't wait for confirmation - just return the signature
+      // The 1Click API will handle monitoring the transaction
+      return { hash: signature };
+    }
+
+    const { getAssociatedTokenAddress, createTransferInstruction } =
+      await import('@solana/spl-token');
+
+    // Validate amount
+    const tokenAmount = BigInt(args.amount);
+
+    if (tokenAmount <= 0n) {
+      throw new Error('Transfer amount must be positive');
+    }
+
+    const mintPubkey = new PublicKey(args.tokenAddress);
+    const fromTokenAccount = await getAssociatedTokenAddress(
+      mintPubkey,
+      fromPubkey,
+    );
+
+    const toTokenAccount = await getAssociatedTokenAddress(
+      mintPubkey,
+      toPubkey,
+    );
+
+    const transaction = new Transaction().add(
+      createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        fromPubkey,
+        tokenAmount,
+      ),
+    );
+
+    const { blockhash } = await connection.getLatestBlockhash();
+
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+
+    const signedTx = await solanaProvider.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(
+      signedTx.serialize(),
+      {
+        skipPreflight: false,
+        maxRetries: 3,
+      },
+    );
+
+    // Don't wait for confirmation - just return the signature
+    // The 1Click API will handle monitoring the transaction
+    return { hash: signature };
+  };
+
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus('oneclick', 'in-progress');
 
     try {
-      await makeEvmTransfer(args);
+      if (args.chain === 'sol') {
+        await makeSolanaTransfer(args);
+      } else {
+        await makeEvmTransfer(args);
+      }
+
       await waitForOneClickSettlement(args.address);
     } catch (error) {
       updateSwapStatus('oneclick', 'failed');
@@ -845,7 +959,7 @@ export const Page = () => {
         fetchQuote,
         fetchTargetTokens,
         refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
-        alchemyApiKey: 'CiIIxly0Hi8oQYcQvzgsI',
+        alchemyApiKey: ALCHEMY_API_KEY,
         tonCenterApiKey:
           '90bffeaa9a8ba0248d8bd642a7321e1d46b3a5ae11510f0e61da5cdc44d83eba',
         chainsFilter: {
@@ -949,7 +1063,7 @@ export const Page = () => {
                 d="M10 3.96351C10.6038 3.96351 11.1464 4.29892 11.4164 4.83878L15.8695 13.7449C16.1166 14.2392 16.0907 14.815 15.8004 15.2854C15.5097 15.7558 15.0062 16.0365 14.4535 16.0365H5.5469C4.99425 16.0365 4.49072 15.7558 4.20002 15.2854C3.90932 14.815 3.88337 14.2392 4.13054 13.7449L8.58365 4.83878C8.85358 4.29892 9.39624 3.96351 10 3.96351ZM10 2.875C8.98775 2.875 8.06295 3.44681 7.61013 4.35203L3.15702 13.2581C2.74294 14.0863 2.78726 15.0702 3.27402 15.8576C3.76078 16.6454 4.6209 17.125 5.5469 17.125H14.4531C15.3791 17.125 16.2392 16.6454 16.726 15.8576C17.2127 15.0698 17.2571 14.0863 16.843 13.2581L12.3899 4.35203C11.9375 3.44681 11.0123 2.875 10 2.875Z"
                 fill="#EBEDF5"
                 stroke="#EBEDF5"
-                stroke-width="0.5"
+                strokeWidth="0.5"
               />
             </svg>
             <span className="text-sw-gray-50">Aurora Labs</span>
