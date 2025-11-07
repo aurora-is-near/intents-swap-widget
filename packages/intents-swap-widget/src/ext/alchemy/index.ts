@@ -98,7 +98,7 @@ export const useAlchemyBalanceIntegration = ({
   useEffect(() => {
     const validState = guardStates(ctx, ['initial_wallet']);
 
-    if (validState && connectedWallets) {
+    if (validState) {
       setWalletBalance(connectedWallets, balancesMap);
 
       if (
