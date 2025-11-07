@@ -1,5 +1,5 @@
+import { useMemo } from 'react';
 import { useSnapshot } from 'valtio';
-import { derive } from 'derive-valtio';
 
 import { getIsDirectNearDeposit } from './computed/getIsDirectNearDeposit';
 import { WidgetError } from '@/errors';
@@ -14,19 +14,22 @@ import type { Context } from '@/machine/context';
 
 const store = machine.getStore();
 
-// Fix: Access store first, then .context inside the callback to avoid initialization issues
-const computed = derive({
-  usdTradeDelta: (get) => getUsdTradeDelta(get(store).context),
-  isDirectTransfer: (get) => getIsDirectTransfer(get(store).context),
-  isNearToIntentsSameAssetTransfer: (get) =>
-    getIsNearToIntentsSameAssetTransfer(get(store).context),
-  isDirectNearDeposit: (get) => getIsDirectNearDeposit(get(store).context),
-  isDirectNonNearWithdrawal: (get) =>
-    getIsDirectNonNearWithdrawal(get(store).context),
-});
-
+// Remove derive-valtio and compute values on-demand with useMemo for performance
 export const useComputedSnapshot = () => {
-  return useSnapshot(computed);
+  const snap = useSnapshot(store);
+
+  return useMemo(
+    () => ({
+      usdTradeDelta: getUsdTradeDelta(snap.context),
+      isDirectTransfer: getIsDirectTransfer(snap.context),
+      isNearToIntentsSameAssetTransfer: getIsNearToIntentsSameAssetTransfer(
+        snap.context,
+      ),
+      isDirectNearDeposit: getIsDirectNearDeposit(snap.context),
+      isDirectNonNearWithdrawal: getIsDirectNonNearWithdrawal(snap.context),
+    }),
+    [snap.context],
+  );
 };
 
 export const useUnsafeSnapshot = () => {
