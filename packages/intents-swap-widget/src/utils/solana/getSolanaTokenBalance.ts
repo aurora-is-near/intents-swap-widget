@@ -1,3 +1,4 @@
+import { logger } from '../../logger';
 import { Token } from '../../types';
 import { isSolanaAddress } from './isSolanaAddress';
 
@@ -40,12 +41,8 @@ type GetTokenAccountsResult = {
 
 const getNativeSolanaBalance = async (
   walletAddress: string,
-  alchemyApiKey?: string,
+  alchemyApiKey: string,
 ): Promise<string | null> => {
-  if (!alchemyApiKey) {
-    return null;
-  }
-
   const rpcUrl = `${ALCHEMY_SOLANA_RPC_BASE}/${alchemyApiKey}`;
 
   try {
@@ -70,6 +67,8 @@ const getNativeSolanaBalance = async (
 
     return data.result?.value?.toString() ?? '0';
   } catch (error) {
+    logger.error('Failed to fetch native Solana balance:', error);
+
     return null;
   }
 };
@@ -77,13 +76,9 @@ const getNativeSolanaBalance = async (
 const getSolanaSplTokenBalance = async (
   token: Token,
   walletAddress: string,
-  alchemyApiKey?: string,
+  alchemyApiKey: string,
 ): Promise<string | null> => {
   if (!token.contractAddress) {
-    return null;
-  }
-
-  if (!alchemyApiKey) {
     return null;
   }
 
@@ -122,12 +117,21 @@ const getSolanaSplTokenBalance = async (
       return '0';
     }
 
-    const tokenAccount = data.result.value[0];
+    // Sum balances across all associated token accounts
+    // A user can have multiple token accounts for the same mint
+    const total = data.result.value.reduce<bigint>((acc, { account }) => {
+      const raw = account?.data?.parsed?.info?.tokenAmount?.amount;
 
-    return (
-      tokenAccount?.account?.data?.parsed?.info?.tokenAmount?.amount ?? '0'
-    );
+      return raw ? acc + BigInt(raw) : acc;
+    }, 0n);
+
+    return total.toString();
   } catch (error) {
+    logger.error(
+      `Failed to fetch SPL token balance for ${token.symbol}:`,
+      error,
+    );
+
     return null;
   }
 };
@@ -135,7 +139,7 @@ const getSolanaSplTokenBalance = async (
 export const getSolanaTokenBalance = (
   token: Token,
   walletAddress: string,
-  alchemyApiKey?: string,
+  alchemyApiKey: string,
 ): Promise<string | null> | null => {
   if (!isSolanaAddress(walletAddress)) {
     return null;
