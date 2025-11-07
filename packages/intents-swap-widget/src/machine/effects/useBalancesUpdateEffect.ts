@@ -21,7 +21,7 @@ export const useBalancesUpdateEffect = ({
 
   const { refetch: refetchIntentsBalances } = useIntentsBalance();
   const { refetch: refetchAlchemyBalances } = useAlchemyBalanceIntegration({
-    isEnabled,
+    isEnabled: false, // Don't enable Alchemy integration here, only use refetch
     walletAddress: ctx.walletAddress,
     alchemyApiKey: alchemyApiKey ?? '',
   });
