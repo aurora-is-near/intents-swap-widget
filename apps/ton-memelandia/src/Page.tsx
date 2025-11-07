@@ -937,7 +937,7 @@ export const Page = () => {
           )
         }
         FooterComponent={
-          <div className="inline-flex items-center gap-1 rounded-full text-sm font-medium py-1.5 px-3 bg-sw-gray-900 text-sw-gray-100 sm:fixed sm:bottom-6">
+          <div className="inline-flex items-center gap-1 rounded-full text-sm font-medium py-1.5 px-3 bg-sw-gray-900 text-sw-gray-100">
             Powered by
             <svg
               width="20"
