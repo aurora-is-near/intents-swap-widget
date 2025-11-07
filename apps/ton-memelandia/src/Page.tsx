@@ -797,7 +797,7 @@ export const Page = () => {
    * single quote via Omniston. Otherwise, we need to do a two-step quote via
    * OneClick and then Omniston.
    */
-  const fetchQuote: WidgetConfig['fetchQuote'] = (data, options) => {
+  const fetchQuote: WidgetConfig['fetchQuote'] = async (data, options) => {
     if (data.originAsset === TON_ASSET_ID) {
       return fetchTonOnlyQuote(data, options);
     }
