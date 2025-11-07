@@ -68,9 +68,13 @@ export const useMakeEvmTransfer = () => {
       transport: custom(window.ethereum),
     });
 
-    // Request addresses first (needed for AppKit/WalletConnect)
-    const addresses = await walletClient.requestAddresses();
-    const from = addresses[0];
+    // Try to get addresses without prompting first (works for MetaMask and already-connected wallets)
+    let [from] = await walletClient.getAddresses();
+
+    // Fallback: If no address found, request addresses (needed for AppKit/WalletConnect)
+    if (!from) {
+      [from] = await walletClient.requestAddresses();
+    }
 
     if (!from) {
       throw new Error('No EVM account found in the injected wallet.');
