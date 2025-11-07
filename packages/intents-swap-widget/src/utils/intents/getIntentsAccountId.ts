@@ -1,36 +1,30 @@
 import { base58, hex } from '@scure/base';
 
 import { notReachable } from '../notReachable';
+import { IntentsAccountType } from '../../types';
 import { isTonAddress } from '../ton/isTonAddress';
 import { logger } from '@/logger';
 
 type Args = {
-  walletAddress: string;
-  addressType: 'evm' | 'near' | 'sol';
+  walletAddress?: string;
+  addressType?: IntentsAccountType;
 };
 
 // For EVM and NEAR wallets, the account ID is the wallet address in lowercase
 // this hook is here to extend it in the future with other wallet types
 export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
-  // Early return for empty or invalid addresses
-  if (!walletAddress || walletAddress.trim() === '') {
-    logger.error(
-      '[getIntentsAccountId] Empty wallet address provided',
-      'addressType:',
-      addressType,
-    );
+  // Early return if either parameter is missing
+  if (!walletAddress || !addressType) {
+    return;
+  }
 
+  // Early return for empty addresses (this is normal when no wallet is connected)
+  if (walletAddress.trim() === '') {
     return;
   }
 
   // Filter out zero addresses (EVM placeholder addresses)
   if (walletAddress === '0x0000000000000000000000000000000000000000') {
-    logger.error(
-      '[getIntentsAccountId] Zero address provided',
-      'addressType:',
-      addressType,
-    );
-
     return;
   }
 

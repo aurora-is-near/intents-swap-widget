@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from 'react';
 
 import type { ListenerProps } from './types';
-import { WidgetConfig } from '../../types/config';
+import { IntentsAccountType } from '../../types/config';
+import { isSolanaAddress } from '../../utils/solana/isSolanaAddress';
+import { isEvmAddress } from '../../utils/evm/isEvmAddress';
+import { isNearAddress } from '../../utils/near/isNearAddress';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -21,7 +24,7 @@ export type Props = ListenerProps & {
   target?: 'none' | 'same-asset';
 };
 
-const accountChainMap: Record<WidgetConfig['intentsAccountType'], Chains> = {
+const accountChainMap: Record<IntentsAccountType, Chains> = {
   sol: 'sol',
   evm: 'eth',
   near: 'near',
@@ -112,6 +115,12 @@ export const useSelectedTokensEffect = ({
 
         if (target === 'same-asset') {
           if (sourceToken.token?.isIntent) {
+            if (!intentsAccountType) {
+              throw new Error(
+                'Intents account type is required to select same-asset target token',
+              );
+            }
+
             tkn = tokens.find(
               (t) =>
                 !t.isIntent &&
@@ -132,6 +141,25 @@ export const useSelectedTokensEffect = ({
       }
     }
   }, [ctx, sourceToken, targetToken, isEnabled]);
+
+  const setTokenForIntentsAccountType = (
+    accountType: IntentsAccountType,
+    fallbackToken?: Token,
+  ) => {
+    const tkn =
+      tokens.find(
+        (t) =>
+          !t.isIntent &&
+          t.blockchain === accountChainMap[accountType] &&
+          t.symbol.toLowerCase() ===
+            CHAIN_BASE_TOKENS[accountChainMap[accountType]]?.toLowerCase(),
+      ) ?? fallbackToken;
+
+    fireEvent('tokenSelect', {
+      variant: 'source',
+      token: tkn,
+    });
+  };
 
   // in case we cannot load intents balances we eventually set default token
   // based on wallet supported chains to avoid infinite loading state
@@ -155,23 +183,18 @@ export const useSelectedTokensEffect = ({
             token: highestIntentsToken,
           });
           // 2. Wallet base token if intents not supported
-        } else if (walletSupportedChains.length) {
-          const tkn =
-            tokens.find(
-              (t) =>
-                !t.isIntent &&
-                t.blockchain === accountChainMap[intentsAccountType] &&
-                t.symbol.toLowerCase() ===
-                  CHAIN_BASE_TOKENS[
-                    accountChainMap[intentsAccountType]
-                  ]?.toLowerCase(),
-            ) ?? fallbackToken;
-
-          fireEvent('tokenSelect', {
-            variant: 'source',
-            token: tkn,
-          });
-          // 3. Fallback if intents is not supported and wallet is not connected
+        } else if (walletSupportedChains.length && intentsAccountType) {
+          setTokenForIntentsAccountType(intentsAccountType, fallbackToken);
+          // 3. Select base token by detecting Solana wallet address
+        } else if (ctx.walletAddress && isSolanaAddress(ctx.walletAddress)) {
+          setTokenForIntentsAccountType('sol', fallbackToken);
+          // 4. Select base token by detecting EVM wallet address
+        } else if (ctx.walletAddress && isEvmAddress(ctx.walletAddress)) {
+          setTokenForIntentsAccountType('evm', fallbackToken);
+          // 5. Select base token by detecting NEAR wallet address
+        } else if (ctx.walletAddress && isNearAddress(ctx.walletAddress)) {
+          setTokenForIntentsAccountType('near', fallbackToken);
+          // 6. Fallback if intents is not supported and wallet is not connected
         } else {
           fireEvent('tokenSelect', {
             variant: 'source',

@@ -863,39 +863,11 @@ export const Page = () => {
   };
 
   const connectedWallets = useMemo(() => {
-    const wallets: Record<string, string | undefined> = {
+    return {
+      default: appKitWalletAddress,
       ton: tonAddress,
     };
-
-    if (chainType === 'evm' && appKitWalletAddress) {
-      // For EVM, set the address for all EVM chains
-      wallets.eth = appKitWalletAddress;
-      wallets.arb = appKitWalletAddress;
-      wallets.pol = appKitWalletAddress;
-      wallets.bsc = appKitWalletAddress;
-      wallets.op = appKitWalletAddress;
-      wallets.avax = appKitWalletAddress;
-      wallets.base = appKitWalletAddress;
-      // Set as default only if no TON address (single wallet scenario)
-      if (!tonAddress) {
-        wallets.default = appKitWalletAddress;
-      }
-    } else if (chainType === 'solana' && appKitWalletAddress) {
-      // For Solana, set specifically to 'sol'
-      wallets.sol = appKitWalletAddress;
-      // Set as default only if no TON address (single wallet scenario)
-      if (!tonAddress) {
-        wallets.default = appKitWalletAddress;
-      }
-    }
-
-    // If only TON wallet is connected, set it as default
-    if (tonAddress && !appKitWalletAddress) {
-      wallets.default = tonAddress;
-    }
-
-    return wallets;
-  }, [chainType, appKitWalletAddress, tonAddress]);
+  }, [appKitWalletAddress, tonAddress]);
 
   const walletSupportedChains = useMemo(() => {
     const chains: Chains[] = ['ton'];
@@ -914,18 +886,6 @@ export const Page = () => {
     }
 
     return chains;
-  }, [chainType]);
-
-  const intentsAccountType = useMemo(() => {
-    if (chainType === 'evm') {
-      return 'evm';
-    }
-
-    if (chainType === 'solana') {
-      return 'sol';
-    }
-
-    return 'near';
   }, [chainType]);
 
   const isSwapInProgress = !!swaps.find(
@@ -976,7 +936,6 @@ export const Page = () => {
         connectedWallets,
         sendAddress: tonAddress,
         walletSupportedChains,
-        intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
         refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,
@@ -1072,7 +1031,7 @@ export const Page = () => {
           )
         }
         FooterComponent={
-          <div className="inline-flex items-center gap-1 rounded-full text-sm font-medium py-1.5 px-3 bg-sw-gray-900 text-sw-gray-100 sm:fixed sm:bottom-6">
+          <div className="inline-flex items-center gap-1 rounded-full text-sm font-medium py-1.5 px-3 bg-sw-gray-900 text-sw-gray-100 mt-3 sm:mt-6">
             Powered by
             <svg
               width="20"

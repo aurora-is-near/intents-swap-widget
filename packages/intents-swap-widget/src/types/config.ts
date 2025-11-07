@@ -7,13 +7,15 @@ export type WalletAddresses = Partial<
   Record<Chains | 'default', string | null>
 >;
 
+export type IntentsAccountType = 'evm' | 'near' | 'sol';
+
 export type WidgetConfig = {
   // Application metadata
   appName: string;
   appIcon: string;
 
   // Connected wallet
-  intentsAccountType: 'evm' | 'near' | 'sol';
+  intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
 

@@ -21,7 +21,7 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   const [isSigning, setIsSigning] = useState(false);
   const { intentsAccountType } = useConfig();
   const intentsAccountId = getIntentsAccountId({
-    walletAddress: walletAddress ?? '',
+    walletAddress,
     addressType: intentsAccountType,
   });
 
@@ -30,6 +30,13 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No wallet connected' },
+      });
+    }
+
+    if (!intentsAccountType) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Intents account type is not defined' },
       });
     }
 
@@ -118,6 +125,10 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   }
 
   const handleSign = async (): Promise<boolean> => {
+    if (!intentsAccountType) {
+      return false;
+    }
+
     try {
       setIsSigning(true);
 

@@ -22,7 +22,7 @@ export const useIntentsBalance = () => {
     .map((token) => token.assetId);
 
   const intentsAccountId = getIntentsAccountId({
-    walletAddress: walletAddress ?? '',
+    walletAddress,
     addressType: intentsAccountType,
   });
 
