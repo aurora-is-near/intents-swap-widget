@@ -65,7 +65,6 @@
     "copy-text-to-clipboard": "^3.2.0",
     "date-fns": "^4.1.0",
     "debounce": "^2.2.0",
-    "derive-valtio": "^0.2.0",
     "ethers": "^6.15.0",
     "framer-motion": "^12.23.0",
     "hsluv": "^1.0.1",
