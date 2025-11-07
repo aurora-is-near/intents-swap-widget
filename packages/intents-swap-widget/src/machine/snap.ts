@@ -14,18 +14,26 @@ import type { Context } from '@/machine/context';
 
 const store = machine.getStore();
 
-const computed = derive({
-  usdTradeDelta: (get) => getUsdTradeDelta(get(store.context)),
-  isDirectTransfer: (get) => getIsDirectTransfer(get(store.context)),
-  isNearToIntentsSameAssetTransfer: (get) =>
-    getIsNearToIntentsSameAssetTransfer(get(store.context)),
-  isDirectNearDeposit: (get) => getIsDirectNearDeposit(get(store.context)),
-  isDirectNonNearWithdrawal: (get) =>
-    getIsDirectNonNearWithdrawal(get(store.context)),
-});
+let computed: ReturnType<typeof derive> | undefined;
+
+const getComputed = () => {
+  if (!computed) {
+    computed = derive({
+      usdTradeDelta: (get) => getUsdTradeDelta(get(store.context)),
+      isDirectTransfer: (get) => getIsDirectTransfer(get(store.context)),
+      isNearToIntentsSameAssetTransfer: (get) =>
+        getIsNearToIntentsSameAssetTransfer(get(store.context)),
+      isDirectNearDeposit: (get) => getIsDirectNearDeposit(get(store.context)),
+      isDirectNonNearWithdrawal: (get) =>
+        getIsDirectNonNearWithdrawal(get(store.context)),
+    });
+  }
+
+  return computed;
+};
 
 export const useComputedSnapshot = () => {
-  return useSnapshot(computed);
+  return useSnapshot(getComputed());
 };
 
 export const useUnsafeSnapshot = () => {
