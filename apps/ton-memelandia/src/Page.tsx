@@ -279,15 +279,6 @@ const performOmnistoneSwap = async (
 
   const messages = tx.ton?.messages ?? [];
 
-  console.log('[performOmnistoneSwap] Transaction messages:');
-  messages.forEach((m, i) => {
-    console.log(`  Message ${i + 1}:`, {
-      targetAddress: m.targetAddress,
-      sendAmount: m.sendAmount,
-      sendAmountInTON: Number(m.sendAmount) / 1e9,
-    });
-  });
-
   const sendTxRes = await tonConnect.sendTransaction({
     validUntil: Date.now() + 1000000,
     messages: messages.map((message) => ({
@@ -445,6 +436,7 @@ export const Page = () => {
     provider: solanaProvider,
     alchemyApiKey: ALCHEMY_API_KEY,
   });
+
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -583,8 +575,6 @@ export const Page = () => {
       return omnistonQuote.current;
     }
 
-    console.log('[fetchOmnistonQuote] Requesting quote with bidAmount:', bidAmount);
-
     omnistonQuote.current = await new Promise<OmnistonQuote>((resolve) => {
       const rfq = omniston.requestForQuote({
         settlementMethods: [SettlementMethod.SETTLEMENT_METHOD_SWAP],
@@ -610,10 +600,6 @@ export const Page = () => {
           quoteResponseEvent.type === 'quoteUpdated' &&
           'quote' in quoteResponseEvent
         ) {
-          console.log('[fetchOmnistonQuote] Received quote:', {
-            bidUnits: quoteResponseEvent.quote.bidUnits,
-            askUnits: quoteResponseEvent.quote.askUnits,
-          });
           unsubscribe();
           resolve(quoteResponseEvent.quote);
 
@@ -791,8 +777,6 @@ export const Page = () => {
     data,
     { isRefetch },
   ) => {
-    console.log('[fetchTonOnlyQuote] Widget provided data.amount:', data.amount);
-
     const [{ bidUnits, askUnits, params, quoteTimestamp }, tokens] =
       await Promise.all([
         fetchOmnistonQuote(data.destinationAsset, data.amount, isRefetch),
