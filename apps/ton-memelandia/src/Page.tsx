@@ -456,10 +456,14 @@ export const Page = () => {
       const signedTx = await solanaProvider.signTransaction(transaction);
       const signature = await connection.sendRawTransaction(
         signedTx.serialize(),
+        {
+          skipPreflight: false,
+          maxRetries: 3,
+        },
       );
 
-      await connection.confirmTransaction(signature, 'confirmed');
-
+      // Don't wait for confirmation - just return the signature
+      // The 1Click API will handle monitoring the transaction
       return { hash: signature };
     }
 
@@ -499,10 +503,16 @@ export const Page = () => {
     transaction.feePayer = fromPubkey;
 
     const signedTx = await solanaProvider.signTransaction(transaction);
-    const signature = await connection.sendRawTransaction(signedTx.serialize());
+    const signature = await connection.sendRawTransaction(
+      signedTx.serialize(),
+      {
+        skipPreflight: false,
+        maxRetries: 3,
+      },
+    );
 
-    await connection.confirmTransaction(signature, 'confirmed');
-
+    // Don't wait for confirmation - just return the signature
+    // The 1Click API will handle monitoring the transaction
     return { hash: signature };
   };
 
