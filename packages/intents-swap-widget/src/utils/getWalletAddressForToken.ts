@@ -13,8 +13,6 @@ export const getWalletAddressForToken = (
   // Select the wallet provided for the specific chain
   if (blockchain && blockchain in walletAddress) {
     return walletAddress[blockchain] ?? undefined;
-
-    return;
   }
 
   // Fallback to the default wallet, if provided

@@ -640,6 +640,12 @@ export const Page = () => {
       ...data,
       destinationAsset: TON_ASSET_ID,
       slippageTolerance: SLIPPAGE_TOLERANCE,
+      appFees: [
+        {
+          recipient: 'calyx_widget_fees.near',
+          fee: 25, // 0.25%
+        },
+      ],
     });
 
     oneClickQuote.current = res.quote;
@@ -876,7 +882,7 @@ export const Page = () => {
   return (
     <WidgetConfigProvider
       config={{
-        appName: 'Ton Demo App',
+        appName: 'Ton Intents',
         allowedTargetChainsList: ['ton'],
         hideSendAddress: true,
         connectedWallets: {
