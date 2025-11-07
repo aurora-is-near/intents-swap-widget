@@ -17,7 +17,7 @@ import {
 } from '@solana/wallet-adapter-wallets';
 
 const projectId = '76f61d4322c80976d1a24a1263a9d082';
-const appUrl = 'https://ton-memelandia-widget.vercel.app';
+const appUrl = 'https://www.ton-intents.com';
 
 const metadata = {
   name: 'Intents Swap Widget',
