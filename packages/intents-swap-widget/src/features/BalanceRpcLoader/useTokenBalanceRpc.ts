@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
 import { WalletAddresses } from '../../types';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { useConfig } from '@/config';
@@ -23,7 +24,7 @@ type Args = {
 };
 
 export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
-  const { walletSupportedChains, tonCenterApiKey } = useConfig();
+  const { walletSupportedChains, tonCenterApiKey, alchemyApiKey } = useConfig();
   const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
   return useQuery<string | null>({
@@ -79,8 +80,17 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
           : null;
       }
 
+      // 6. TON token balance
       if (token.blockchain === 'ton') {
         return getTonTokenBalance(token, walletAddress, tonCenterApiKey);
+      }
+
+      // 7. Solana token balance
+      if (
+        token.blockchain === 'sol' &&
+        walletSupportedChains.includes(token.blockchain)
+      ) {
+        return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
       }
 
       logger.warn(
