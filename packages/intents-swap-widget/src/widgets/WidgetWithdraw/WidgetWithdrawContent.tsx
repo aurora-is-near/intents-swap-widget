@@ -41,8 +41,7 @@ export const WidgetWithdrawContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
-    useConfig();
+  const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
 
   const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
@@ -205,7 +204,7 @@ export const WidgetWithdrawContent = ({
               </Card>
             </div>
 
-            {!!walletAddress &&
+            {!!ctx.walletAddress &&
               ctx.targetToken &&
               !ctx.targetToken.isIntent && (
                 <SendAddress

@@ -1,13 +1,14 @@
 import { memo, useEffect } from 'react';
 
 import { useTokenBalanceRpc } from './useTokenBalanceRpc';
+import { WalletAddresses } from '../../types';
 import type { Token, TokenBalances } from '@/types/token';
 import type { ChainRpcUrls } from '@/types/chain';
 
 type Props = {
   token: Token;
   rpcs: ChainRpcUrls;
-  walletAddress: string | undefined;
+  connectedWallets: WalletAddresses;
   onBalancesLoaded: (balances: TokenBalances) => void;
 };
 
@@ -15,7 +16,7 @@ const TokenBalanceZeroLoader = ({
   rpcs,
   token,
   onBalancesLoaded,
-}: Omit<Props, 'walletAddress'>) => {
+}: Omit<Props, 'connectedWallets'>) => {
   useEffect(() => {
     if (token.isIntent || !Object.keys(rpcs).includes(token.blockchain)) {
       return;
@@ -29,11 +30,11 @@ const TokenBalanceZeroLoader = ({
 };
 
 const TokenBalanceBaseLoader = memo(
-  ({ rpcs, token, walletAddress, onBalancesLoaded }: Props) => {
+  ({ rpcs, token, connectedWallets, onBalancesLoaded }: Props) => {
     const { data: balance } = useTokenBalanceRpc({
       rpcs,
       token,
-      walletAddress,
+      connectedWallets,
     });
 
     useEffect(() => {
@@ -47,7 +48,7 @@ const TokenBalanceBaseLoader = memo(
   },
   (prev, next) =>
     prev.token.assetId === next.token.assetId &&
-    prev.walletAddress === next.walletAddress,
+    prev.connectedWallets === next.connectedWallets,
 );
 
 TokenBalanceBaseLoader.displayName = 'TokenBalanceLoader';

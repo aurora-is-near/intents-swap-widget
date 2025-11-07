@@ -1,23 +1,24 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { TokenBalances } from '../types/token';
+import { WalletAddresses } from '../types';
 
-export const useWalletBalance = (walletAddress: string | null | undefined) => {
+export const useWalletBalance = (walletAddresses: WalletAddresses) => {
   const queryClient = useQueryClient();
   const { data } = useQuery<TokenBalances>({
-    queryKey: ['walletBalances', walletAddress],
+    queryKey: ['walletBalances', walletAddresses],
     queryFn: async () => {
       return (
         queryClient.getQueryData<TokenBalances>([
           'walletBalances',
-          walletAddress,
+          walletAddresses,
         ]) ?? {}
       );
     },
   });
 
   const setWalletBalance = (
-    userWalletAddress: string,
+    userWalletAddress: WalletAddresses,
     newBalances: TokenBalances,
   ) => {
     queryClient.setQueryData<TokenBalances>(

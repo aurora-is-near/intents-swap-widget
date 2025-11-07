@@ -1,3 +1,4 @@
+import { WalletAddresses } from '../../types';
 import type { Chains } from '@/types/chain';
 import type { ValueOf } from '@/types/utils';
 
@@ -32,5 +33,5 @@ export type AlchemyResponse = {
 export type AlchemyRequestParams = {
   pageParam: string | null;
   walletSupportedChains: ReadonlyArray<Chains>;
-  walletAddress: string | null | undefined;
+  connectedWallets: WalletAddresses;
 };

@@ -6,6 +6,7 @@ import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
 import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
 
 import { TokenInputHeading } from './TokenInputHeading';
+import { useUnsafeSnapshot } from '../../machine';
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -48,7 +49,7 @@ export const TokenInputWithToken = ({
   onMsg,
 }: Props) => {
   const inputName = useId();
-  const config = useConfig();
+  const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const { hideTokenInputHeadings } = useConfig();
 
@@ -114,7 +115,7 @@ export const TokenInputWithToken = ({
           ) : null}
         </div>
         <div className="gap-sw-sm flex items-center">
-          {token && !!config.walletAddress && showBalance && (
+          {token && !!ctx.walletAddress && showBalance && (
             <WalletBalance
               token={token}
               balance={balance}

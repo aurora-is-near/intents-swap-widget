@@ -55,7 +55,7 @@ export const TabbedWidgetsDemo = () => {
       <WidgetConfigProvider
         config={{
           appName: 'Demo App',
-          walletAddress,
+          connectedWallets: { default: walletAddress },
           intentsAccountType: 'near',
           chainsFilter: {
             target: { intents: 'all', external: 'all' },

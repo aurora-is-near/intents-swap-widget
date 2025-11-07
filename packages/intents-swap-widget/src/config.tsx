@@ -37,6 +37,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   defaultMaxSlippage: 0.01,
   intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
+  connectedWallets: {},
 
   oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
 
@@ -81,7 +82,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextType>({
 });
 
 type Props = PropsWithChildren<{
-  config?: Partial<WidgetConfig>;
+  config: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
   rpcs?: ChainRpcUrls;
   theme?: Theme;
@@ -141,12 +142,10 @@ export const WidgetConfigProvider = ({
           <ThemeProvider theme={theme}>
             <ErrorBoundary>{children}</ErrorBoundary>
           </ThemeProvider>
-          {!!userConfig?.walletAddress && (
-            <BalanceRpcLoader
-              rpcs={rpcs ?? DEFAULT_RPCS}
-              walletAddress={userConfig.walletAddress}
-            />
-          )}
+          <BalanceRpcLoader
+            rpcs={rpcs ?? DEFAULT_RPCS}
+            connectedWallets={userConfig.connectedWallets ?? {}}
+          />
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>
