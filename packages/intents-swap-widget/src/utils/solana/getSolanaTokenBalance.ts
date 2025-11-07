@@ -5,7 +5,11 @@ const ALCHEMY_SOLANA_RPC_BASE = 'https://solana-mainnet.g.alchemy.com/v2';
 
 type SolanaRpcResponse<T> = {
   jsonrpc: string;
-  result: T;
+  result?: T;
+  error?: {
+    code: number;
+    message: string;
+  };
   id: number;
 };
 
@@ -44,22 +48,30 @@ const getNativeSolanaBalance = async (
 
   const rpcUrl = `${ALCHEMY_SOLANA_RPC_BASE}/${alchemyApiKey}`;
 
-  const response = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'getBalance',
-      params: [walletAddress],
-    }),
-  });
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getBalance',
+        params: [walletAddress],
+      }),
+    });
 
-  const data = (await response.json()) as SolanaRpcResponse<GetBalanceResult>;
+    const data = (await response.json()) as SolanaRpcResponse<GetBalanceResult>;
 
-  return data.result?.value?.toString() ?? '0';
+    if (data.error) {
+      return null;
+    }
+
+    return data.result?.value?.toString() ?? '0';
+  } catch (error) {
+    return null;
+  }
 };
 
 const getSolanaSplTokenBalance = async (
@@ -77,37 +89,47 @@ const getSolanaSplTokenBalance = async (
 
   const rpcUrl = `${ALCHEMY_SOLANA_RPC_BASE}/${alchemyApiKey}`;
 
-  const response = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'getTokenAccountsByOwner',
-      params: [
-        walletAddress,
-        {
-          mint: token.contractAddress,
-        },
-        {
-          encoding: 'jsonParsed',
-        },
-      ],
-    }),
-  });
+  try {
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getTokenAccountsByOwner',
+        params: [
+          walletAddress,
+          {
+            mint: token.contractAddress,
+          },
+          {
+            encoding: 'jsonParsed',
+          },
+        ],
+      }),
+    });
 
-  const data =
-    (await response.json()) as SolanaRpcResponse<GetTokenAccountsResult>;
+    const data =
+      (await response.json()) as SolanaRpcResponse<GetTokenAccountsResult>;
 
-  if (!data.result?.value || data.result.value.length === 0) {
-    return '0';
+    if (data.error) {
+      return null;
+    }
+
+    if (!data.result?.value || data.result.value.length === 0) {
+      return '0';
+    }
+
+    const tokenAccount = data.result.value[0];
+
+    return (
+      tokenAccount?.account?.data?.parsed?.info?.tokenAmount?.amount ?? '0'
+    );
+  } catch (error) {
+    return null;
   }
-
-  const tokenAccount = data.result.value[0];
-
-  return tokenAccount?.account?.data?.parsed?.info?.tokenAmount?.amount ?? '0';
 };
 
 export const getSolanaTokenBalance = (

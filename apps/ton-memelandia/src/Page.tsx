@@ -39,6 +39,8 @@ import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
 
+// Client-side Alchemy API key - safe to expose in frontend code
+// This key is rate-limited and domain-restricted by Alchemy
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 type SwapType = 'oneclick' | 'omniston';
@@ -431,11 +433,18 @@ export const Page = () => {
     const toPubkey = new PublicKey(args.address);
 
     if (!args.tokenAddress) {
+      // Validate amount
+      const lamports = BigInt(args.amount);
+
+      if (lamports <= 0n) {
+        throw new Error('Transfer amount must be positive');
+      }
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey,
           toPubkey,
-          lamports: BigInt(args.amount),
+          lamports,
         }),
       );
 
@@ -449,13 +458,20 @@ export const Page = () => {
         signedTx.serialize(),
       );
 
-      await connection.confirmTransaction(signature);
+      await connection.confirmTransaction(signature, 'confirmed');
 
       return { hash: signature };
     }
 
     const { getAssociatedTokenAddress, createTransferInstruction } =
       await import('@solana/spl-token');
+
+    // Validate amount
+    const tokenAmount = BigInt(args.amount);
+
+    if (tokenAmount <= 0n) {
+      throw new Error('Transfer amount must be positive');
+    }
 
     const mintPubkey = new PublicKey(args.tokenAddress);
     const fromTokenAccount = await getAssociatedTokenAddress(
@@ -473,7 +489,7 @@ export const Page = () => {
         fromTokenAccount,
         toTokenAccount,
         fromPubkey,
-        BigInt(args.amount),
+        tokenAmount,
       ),
     );
 
@@ -485,7 +501,7 @@ export const Page = () => {
     const signedTx = await solanaProvider.signTransaction(transaction);
     const signature = await connection.sendRawTransaction(signedTx.serialize());
 
-    await connection.confirmTransaction(signature);
+    await connection.confirmTransaction(signature, 'confirmed');
 
     return { hash: signature };
   };
