@@ -71,6 +71,66 @@ const TARGET_ASSET_ADDRESSES = [
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
 
+const TARGET_ASSET_BLACKLISTED_ADDRESSES = [
+  'EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA',
+  'EQDNhy-nxYFgUqzfUzImBEP67JqsyMIcyk2S5_RwNNEYku0k',
+  'EQA1R_LuQCLHlMgOo1S4G7Y7W1cd0FrAkbA10Zq7rddKxi9k',
+  'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
+  'EQDc_nrm5oOVCVQM8GRJ5q_hr1jgpNQjsGkIGE-uztt26_Ep',
+  'EQC98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav',
+  'EQDPdq8xjAhytYqfGSX8KcFWIReCufsB9Wdg0pLlYSO_h76w',
+  'EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT',
+  'EQD-cvR0Nz6XAyRBvbhz-abTrRC6sI5tvHvvpeQraV9UAAD7',
+  'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
+  'EQCAj5oiRRrXokYsg_B-e0KG9xMwh5upr5I8HQzErm0_BLUM',
+  'EQBKMfjX_a_dsOLm-juxyVZytFP7_KKnzGv6J01kGc72gVBp',
+  'EQAjl-ne1M3Mq2qYIT-jRzjFLE7S0VR7qnMgpU6VjsPSrDIX',
+  'EQBYnUrIlwBrWqp_rl-VxeSBvTR2VmTfC4ManQ657n_BUILD',
+  'EQCuPm01HldiduQ55xaBF_1kaW_WAUy5DHey8suqzU_MAJOR',
+  'EQBsosmcZrD6FHijA7qWGLw5wo_aH8UN435hi935jJ_STORM',
+  'EQD0laik0FgHV8aNfRhebi8GDG2rpDyKGXem0MBfya_Ew1-8',
+  'EQBE_gBrU3mPI9hHjlJoR_kYyrhQgyCFD6EUWfa42W8T7EBP',
+  'EQA1R_LuQCLHlMgOo1S4G7Y7W1cd0FrAkbA10Zq7rddKxi9k',
+  'EQB4zZusHsbU2vVTPqjhlokIOoiZhEdCMT703CWEzhTOo__X',
+  'EQB2ONl9nfzoGfeRFhvKTLX28MOD_nvT8cfI41-FylvNvvHm',
+  'EQAQXlWJvGbbFfE8F3oS8s87lIgdovS455IsWFaRdmJetTon',
+  'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE',
+  'EQDwpFzHxJm7ekUcmjcvfoCa_XikggHbn8wlpuAheiRfSSm8',
+  'EQAIb6KmdfdDR7CN1GBqVJuP25iCnLKCvBlJ07Evuu2dzP5f',
+  'EQDQ5UUyPHrLcQJlPAczd_fjxn8SLrlNQwolBznxCdSlfQwr',
+  'EQAJ8uWd7EBqsmpSWaRdf_I-8R8-XHwh3gsNKhy-UrdrPcUo',
+  'EQCRWpQQmfSglpLp6D5Xebix50AStBxjfQQNkssFP_IsiQc3',
+  'EQBIzvHeNGl1CCALgCa_iC-OiK_4lFhs_TBKtRNjP6fi0024',
+  'EQAVfEY2iKSpEkUhgFLFWAgHeSz2NH2XV-MvDuiKF5plSbsU',
+  'EQDQEUr0LPi8m6D6F0Wrvuok7tZbAcr0yn2Y7hK291MMzMjM',
+  'EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O',
+  'EQBhKT4-OaSZaxBBcvDE4u8s3L1v8u_6cHxSJQWcztld6AFt',
+  'EQB420yQsZobGcy0VYDfSKHpG2QQlw-j1f_tPu1J488I__PX',
+  'EQD4P32U10snNoIavoq6cYPTQR82ewAjO20epigrWRAup54_',
+  'EQCWDj49HFInSwSk49eAo476E1YBywLoFuSZ6OO3x7jmP2jn',
+  'EQAQfNrwhA5sEywrLTtsxpyQFeKRfEpLdZREZILP9z9iUjAH',
+  'EQDNDv54v_TEU5t26rFykylsdPQsv5nsSZaH_v7JSJPtMitv',
+  'EQACLXDwit01stiqK9FvYiJo15luVzfD5zU8uwDSq6JXxbP8',
+  'EQAQZEf6A-BfN8wYVnjdyPWpCXwkTSjhfF5ZWP7AjReM4eEI',
+  'EQCdb8hvMDDZcqpPGH-cCj3iMuom9P57mMyrdoHNNyXHM9Fs',
+  'EQCFVNlRb-NHHDQfv3Q9xvDXBLJlay855_xREsq5ZDX6KN-w',
+  'EQCJbp0kBpPwPoBG-U5C-cWfP_jnksvotGfArPF50Q9Qiv9h',
+  'EQCN2dkvaosVjpa9XozzN0wm1MBcI2GTN71CWvRzIsSH7IRH',
+  'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
+  'EQAEuikLQVh2lDMrV99nTHqFL_TXEyCEJ1xKMuPT60tfvdps',
+  'EQBtcL4JA-PdPiUkB8utHcqdaftmUSTqdL8Z1EeXePLti_nK',
+  'EQAj680BapntDEm6parX4BfX_S1Jcb1qpF63BREiHZYBGENE',
+  'EQDCb2loMIB8YS53GEo2r2ggS9AW1Dz-zX_as4DtxXV1u8XY',
+  'EQCl0S4xvoeGeFGijTzicSA8j6GiiugmJW5zxQbZTUntre-1',
+  'EQCbKMTmEAdSnzsK85LOpaDkDH3HjujEbTePMSeirvEaNq-U',
+  'EQBv2cEJ-T-1GNRdzaY_JYoJvpAISuFHOKmJZPQnoUqEHTlU',
+  'EQCQZpelevHNsbw5IUtwSa4Cs8kqWww0KsYeDri9kwS18eCz',
+  'EQCBdxpECfEPH2wUxi1a6QiOkSf-5qDjUWqLCUuKtD-GLINT',
+  'EQBxo4huVJXaf1ZOdwnnDdxa9OVoyNGhXMsJVzobmxSWITCH',
+  'EQDu9ijk44grAHe3Dy9qYOy-hic-vJr4d1CH3HNyN-gT5LyL',
+  'EQAZwJdXCZoO9JIbwBTL2a_zzOAPheLICa4YG7lNIlDZzMmx',
+];
+
 const SLIPPAGE_TOLERANCE = 500; // 5%
 const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
 
@@ -148,11 +208,15 @@ const fetchStonFiAssets = async ({
  * Fetch the available target tokens.
  */
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
-  return fetchStonFiAssets({
+  const assets = await fetchStonFiAssets({
     unconditionalAssets: TARGET_ASSET_ADDRESSES,
     condition:
       '(asset:essential | asset:popular | asset:liquidity:medium | asset:liquidity:high | asset:liquidity:very_high | asset:wallet_has_balance) & !(asset:blacklisted | asset:deprecated)',
   });
+
+  return assets.filter(
+    ({ assetId }) => !TARGET_ASSET_BLACKLISTED_ADDRESSES.includes(assetId),
+  );
 };
 
 /**
