@@ -9,7 +9,8 @@ export const SimpleWidgetDemo = () => {
   const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   return (
-    <WidgetConfigProvider config={{ walletAddress }}>
+    <WidgetConfigProvider
+      config={{ connectedWallets: { default: walletAddress } }}>
       <WidgetSwap
         isFullPage
         isLoading={isLoading}

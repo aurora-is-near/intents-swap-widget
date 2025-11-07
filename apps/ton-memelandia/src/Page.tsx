@@ -77,6 +77,66 @@ const TARGET_ASSET_ADDRESSES = [
   'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
 ];
 
+const TARGET_ASSET_BLACKLISTED_ADDRESSES = [
+  'EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA',
+  'EQDNhy-nxYFgUqzfUzImBEP67JqsyMIcyk2S5_RwNNEYku0k',
+  'EQA1R_LuQCLHlMgOo1S4G7Y7W1cd0FrAkbA10Zq7rddKxi9k',
+  'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
+  'EQDc_nrm5oOVCVQM8GRJ5q_hr1jgpNQjsGkIGE-uztt26_Ep',
+  'EQC98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav',
+  'EQDPdq8xjAhytYqfGSX8KcFWIReCufsB9Wdg0pLlYSO_h76w',
+  'EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT',
+  'EQD-cvR0Nz6XAyRBvbhz-abTrRC6sI5tvHvvpeQraV9UAAD7',
+  'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
+  'EQCAj5oiRRrXokYsg_B-e0KG9xMwh5upr5I8HQzErm0_BLUM',
+  'EQBKMfjX_a_dsOLm-juxyVZytFP7_KKnzGv6J01kGc72gVBp',
+  'EQAjl-ne1M3Mq2qYIT-jRzjFLE7S0VR7qnMgpU6VjsPSrDIX',
+  'EQBYnUrIlwBrWqp_rl-VxeSBvTR2VmTfC4ManQ657n_BUILD',
+  'EQCuPm01HldiduQ55xaBF_1kaW_WAUy5DHey8suqzU_MAJOR',
+  'EQBsosmcZrD6FHijA7qWGLw5wo_aH8UN435hi935jJ_STORM',
+  'EQD0laik0FgHV8aNfRhebi8GDG2rpDyKGXem0MBfya_Ew1-8',
+  'EQBE_gBrU3mPI9hHjlJoR_kYyrhQgyCFD6EUWfa42W8T7EBP',
+  'EQA1R_LuQCLHlMgOo1S4G7Y7W1cd0FrAkbA10Zq7rddKxi9k',
+  'EQB4zZusHsbU2vVTPqjhlokIOoiZhEdCMT703CWEzhTOo__X',
+  'EQB2ONl9nfzoGfeRFhvKTLX28MOD_nvT8cfI41-FylvNvvHm',
+  'EQAQXlWJvGbbFfE8F3oS8s87lIgdovS455IsWFaRdmJetTon',
+  'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE',
+  'EQDwpFzHxJm7ekUcmjcvfoCa_XikggHbn8wlpuAheiRfSSm8',
+  'EQAIb6KmdfdDR7CN1GBqVJuP25iCnLKCvBlJ07Evuu2dzP5f',
+  'EQDQ5UUyPHrLcQJlPAczd_fjxn8SLrlNQwolBznxCdSlfQwr',
+  'EQAJ8uWd7EBqsmpSWaRdf_I-8R8-XHwh3gsNKhy-UrdrPcUo',
+  'EQCRWpQQmfSglpLp6D5Xebix50AStBxjfQQNkssFP_IsiQc3',
+  'EQBIzvHeNGl1CCALgCa_iC-OiK_4lFhs_TBKtRNjP6fi0024',
+  'EQAVfEY2iKSpEkUhgFLFWAgHeSz2NH2XV-MvDuiKF5plSbsU',
+  'EQDQEUr0LPi8m6D6F0Wrvuok7tZbAcr0yn2Y7hK291MMzMjM',
+  'EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O',
+  'EQBhKT4-OaSZaxBBcvDE4u8s3L1v8u_6cHxSJQWcztld6AFt',
+  'EQB420yQsZobGcy0VYDfSKHpG2QQlw-j1f_tPu1J488I__PX',
+  'EQD4P32U10snNoIavoq6cYPTQR82ewAjO20epigrWRAup54_',
+  'EQCWDj49HFInSwSk49eAo476E1YBywLoFuSZ6OO3x7jmP2jn',
+  'EQAQfNrwhA5sEywrLTtsxpyQFeKRfEpLdZREZILP9z9iUjAH',
+  'EQDNDv54v_TEU5t26rFykylsdPQsv5nsSZaH_v7JSJPtMitv',
+  'EQACLXDwit01stiqK9FvYiJo15luVzfD5zU8uwDSq6JXxbP8',
+  'EQAQZEf6A-BfN8wYVnjdyPWpCXwkTSjhfF5ZWP7AjReM4eEI',
+  'EQCdb8hvMDDZcqpPGH-cCj3iMuom9P57mMyrdoHNNyXHM9Fs',
+  'EQCFVNlRb-NHHDQfv3Q9xvDXBLJlay855_xREsq5ZDX6KN-w',
+  'EQCJbp0kBpPwPoBG-U5C-cWfP_jnksvotGfArPF50Q9Qiv9h',
+  'EQCN2dkvaosVjpa9XozzN0wm1MBcI2GTN71CWvRzIsSH7IRH',
+  'EQBX6K9aXVl3nXINCyPPL86C4ONVmQ8vK360u6dykFKXpHCa',
+  'EQAEuikLQVh2lDMrV99nTHqFL_TXEyCEJ1xKMuPT60tfvdps',
+  'EQBtcL4JA-PdPiUkB8utHcqdaftmUSTqdL8Z1EeXePLti_nK',
+  'EQAj680BapntDEm6parX4BfX_S1Jcb1qpF63BREiHZYBGENE',
+  'EQDCb2loMIB8YS53GEo2r2ggS9AW1Dz-zX_as4DtxXV1u8XY',
+  'EQCl0S4xvoeGeFGijTzicSA8j6GiiugmJW5zxQbZTUntre-1',
+  'EQCbKMTmEAdSnzsK85LOpaDkDH3HjujEbTePMSeirvEaNq-U',
+  'EQBv2cEJ-T-1GNRdzaY_JYoJvpAISuFHOKmJZPQnoUqEHTlU',
+  'EQCQZpelevHNsbw5IUtwSa4Cs8kqWww0KsYeDri9kwS18eCz',
+  'EQCBdxpECfEPH2wUxi1a6QiOkSf-5qDjUWqLCUuKtD-GLINT',
+  'EQBxo4huVJXaf1ZOdwnnDdxa9OVoyNGhXMsJVzobmxSWITCH',
+  'EQDu9ijk44grAHe3Dy9qYOy-hic-vJr4d1CH3HNyN-gT5LyL',
+  'EQAZwJdXCZoO9JIbwBTL2a_zzOAPheLICa4YG7lNIlDZzMmx',
+];
+
 const SLIPPAGE_TOLERANCE = 500; // 5%
 const REFETCH_QUOTE_INTERVAL = 10_000; // 10 seconds
 
@@ -154,11 +214,15 @@ const fetchStonFiAssets = async ({
  * Fetch the available target tokens.
  */
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
-  return fetchStonFiAssets({
+  const assets = await fetchStonFiAssets({
     unconditionalAssets: TARGET_ASSET_ADDRESSES,
     condition:
       '(asset:essential | asset:popular | asset:liquidity:medium | asset:liquidity:high | asset:liquidity:very_high | asset:wallet_has_balance) & !(asset:blacklisted | asset:deprecated)',
   });
+
+  return assets.filter(
+    ({ assetId }) => !TARGET_ASSET_BLACKLISTED_ADDRESSES.includes(assetId),
+  );
 };
 
 /**
@@ -371,7 +435,6 @@ export const Page = () => {
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
-  const [selectedToken, setSelectedToken] = useState<SimpleToken | null>(null);
   const [swaps, setSwaps] = useState<SwapDetails[]>([]);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
@@ -641,6 +704,12 @@ export const Page = () => {
       ...data,
       destinationAsset: TON_ASSET_ID,
       slippageTolerance: SLIPPAGE_TOLERANCE,
+      appFees: [
+        {
+          recipient: 'calyx_widget_fees.near',
+          fee: 25, // 0.25%
+        },
+      ],
     });
 
     oneClickQuote.current = res.quote;
@@ -839,18 +908,6 @@ export const Page = () => {
     (swap) => swap.status === 'in-progress',
   );
 
-  const walletAddress = useMemo(() => {
-    if (!appKitWalletAddress || !tonAddress) {
-      return undefined;
-    }
-
-    if (selectedToken?.blockchain === 'ton') {
-      return tonAddress;
-    }
-
-    return appKitWalletAddress;
-  }, [appKitWalletAddress, tonAddress, selectedToken]);
-
   if (successfulTransactionDetails) {
     return (
       <WidgetContainer
@@ -889,10 +946,13 @@ export const Page = () => {
   return (
     <WidgetConfigProvider
       config={{
-        appName: 'Ton Demo App',
+        appName: 'Ton Intents',
         allowedTargetChainsList: ['ton'],
         hideSendAddress: true,
-        walletAddress,
+        connectedWallets: {
+          default: appKitWalletAddress,
+          ton: tonAddress,
+        },
         sendAddress: tonAddress,
         walletSupportedChains,
         intentsAccountType,
@@ -979,10 +1039,6 @@ export const Page = () => {
           if (msg.type === 'on_tokens_modal_toggled') {
             setIsTokensModalOpen(msg.isOpen);
           }
-
-          if (msg.type === 'on_select_token' && msg.variant === 'source') {
-            setSelectedToken(msg.token);
-          }
         }}
         HeaderComponent={
           isTokensModalOpen ? undefined : (
@@ -993,6 +1049,25 @@ export const Page = () => {
               <WalletConnectionCard />
             </>
           )
+        }
+        FooterComponent={
+          <div className="inline-flex items-center gap-1 rounded-full text-sm font-medium py-1.5 px-3 bg-sw-gray-900 text-sw-gray-100 sm:fixed sm:bottom-6">
+            Powered by
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M10 3.96351C10.6038 3.96351 11.1464 4.29892 11.4164 4.83878L15.8695 13.7449C16.1166 14.2392 16.0907 14.815 15.8004 15.2854C15.5097 15.7558 15.0062 16.0365 14.4535 16.0365H5.5469C4.99425 16.0365 4.49072 15.7558 4.20002 15.2854C3.90932 14.815 3.88337 14.2392 4.13054 13.7449L8.58365 4.83878C8.85358 4.29892 9.39624 3.96351 10 3.96351ZM10 2.875C8.98775 2.875 8.06295 3.44681 7.61013 4.35203L3.15702 13.2581C2.74294 14.0863 2.78726 15.0702 3.27402 15.8576C3.76078 16.6454 4.6209 17.125 5.5469 17.125H14.4531C15.3791 17.125 16.2392 16.6454 16.726 15.8576C17.2127 15.0698 17.2571 14.0863 16.843 13.2581L12.3899 4.35203C11.9375 3.44681 11.0123 2.875 10 2.875Z"
+                fill="#EBEDF5"
+                stroke="#EBEDF5"
+                strokeWidth="0.5"
+              />
+            </svg>
+            <span className="text-sw-gray-50">Aurora Labs</span>
+          </div>
         }
       />
     </WidgetConfigProvider>

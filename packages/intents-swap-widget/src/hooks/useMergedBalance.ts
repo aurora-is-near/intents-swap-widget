@@ -5,9 +5,9 @@ import { useIntentsBalance } from './useIntentsBalance';
 import { useConfig } from '@/config';
 
 export const useMergedBalance = () => {
-  const { walletAddress } = useConfig();
+  const { connectedWallets } = useConfig();
   const { intentBalances } = useIntentsBalance();
-  const { walletBalance } = useWalletBalance(walletAddress);
+  const { walletBalance } = useWalletBalance(connectedWallets);
 
   const mergedBalance = useMemo(
     () => ({ ...walletBalance, ...intentBalances }),

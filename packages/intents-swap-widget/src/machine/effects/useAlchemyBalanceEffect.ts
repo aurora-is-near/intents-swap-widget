@@ -1,7 +1,6 @@
 import type { ListenerProps } from './types';
+import { useConfig } from '../../config';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
-
-import { useUnsafeSnapshot } from '@/machine/snap';
 
 export type Props = ListenerProps & {
   alchemyApiKey: string | undefined;
@@ -11,11 +10,11 @@ export const useAlchemyBalanceEffect = ({
   isEnabled,
   alchemyApiKey,
 }: Props) => {
-  const { ctx } = useUnsafeSnapshot();
+  const { connectedWallets } = useConfig();
 
   useAlchemyBalanceIntegration({
     isEnabled,
-    walletAddress: ctx.walletAddress,
+    connectedWallets,
     alchemyApiKey: alchemyApiKey ?? '',
   });
 };

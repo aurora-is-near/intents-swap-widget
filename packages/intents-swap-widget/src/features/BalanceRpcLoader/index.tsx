@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
+import { WalletAddresses } from '../../types';
 import { useConfig } from '@/config';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
@@ -9,7 +10,7 @@ import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
 
 type Props = {
-  walletAddress: string;
+  connectedWallets: WalletAddresses;
   rpcs: ChainRpcUrls;
 };
 
@@ -64,10 +65,10 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
   });
 };
 
-export const BalanceRpcLoader = ({ rpcs, walletAddress }: Props) => {
+export const BalanceRpcLoader = ({ rpcs, connectedWallets }: Props) => {
   const { tokens } = useAllTokens();
   const { walletSupportedChains } = useConfig();
-  const { setWalletBalance } = useWalletBalance(walletAddress);
+  const { setWalletBalance } = useWalletBalance(connectedWallets);
   const sortedTokens = useMemo(() => sortTokensByPriority(tokens), [tokens]);
 
   return sortedTokens.map((tkn) => {
@@ -76,10 +77,10 @@ export const BalanceRpcLoader = ({ rpcs, walletAddress }: Props) => {
         <TokenBalanceLoader
           rpcs={rpcs}
           token={tkn}
-          walletAddress={walletAddress}
+          connectedWallets={connectedWallets}
           key={getTokenBalanceKey(tkn)}
           onBalancesLoaded={(balance) =>
-            setWalletBalance(walletAddress, balance)
+            setWalletBalance(connectedWallets, balance)
           }
         />
       );
@@ -90,7 +91,9 @@ export const BalanceRpcLoader = ({ rpcs, walletAddress }: Props) => {
         rpcs={rpcs}
         token={tkn}
         key={getTokenBalanceKey(tkn)}
-        onBalancesLoaded={(balance) => setWalletBalance(walletAddress, balance)}
+        onBalancesLoaded={(balance) =>
+          setWalletBalance(connectedWallets, balance)
+        }
       />
     );
   });
