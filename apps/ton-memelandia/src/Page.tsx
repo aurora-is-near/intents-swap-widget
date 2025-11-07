@@ -212,6 +212,26 @@ const fetchStonFiAssets = async ({
 };
 
 /**
+ * Get the block explorer URL for a transaction on a given chain.
+ */
+const getExplorerUrl = (chain: string, txHash: string): string => {
+  const explorerMap: Record<string, string> = {
+    sol: 'https://solscan.io/tx/',
+    eth: 'https://etherscan.io/tx/',
+    bsc: 'https://bscscan.com/tx/',
+    pol: 'https://polygonscan.com/tx/',
+    arb: 'https://arbiscan.io/tx/',
+    op: 'https://optimistic.etherscan.io/tx/',
+    avax: 'https://snowtrace.io/tx/',
+    base: 'https://basescan.org/tx/',
+  };
+
+  const baseUrl = explorerMap[chain] ?? explorerMap.eth;
+
+  return `${baseUrl}${txHash}`;
+};
+
+/**
  * Fetch the available target tokens.
  */
 const fetchTargetTokens: WidgetConfig['fetchTargetTokens'] = async () => {
@@ -513,14 +533,9 @@ export const Page = () => {
 
     // If this was the only swap (e.g., SOL/EVM → native TON), show success
     if (swaps.length === 1) {
-      const explorerUrl =
-        args.chain === 'sol'
-          ? `https://solscan.io/tx/${txHash}`
-          : `https://etherscan.io/tx/${txHash}`;
-
       setSuccessfulTransactionDetails({
         hash: txHash,
-        transactionLink: explorerUrl,
+        transactionLink: getExplorerUrl(args.chain, txHash),
       });
     }
   };
