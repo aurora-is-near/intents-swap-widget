@@ -892,18 +892,6 @@ export const Page = () => {
     return chains;
   }, [chainType]);
 
-  const intentsAccountType = useMemo(() => {
-    if (chainType === 'evm') {
-      return 'evm';
-    }
-
-    if (chainType === 'solana') {
-      return 'sol';
-    }
-
-    return 'near';
-  }, [chainType]);
-
   const isSwapInProgress = !!swaps.find(
     (swap) => swap.status === 'in-progress',
   );
@@ -955,7 +943,6 @@ export const Page = () => {
         },
         sendAddress: tonAddress,
         walletSupportedChains,
-        intentsAccountType,
         fetchQuote,
         fetchTargetTokens,
         refetchQuoteInterval: REFETCH_QUOTE_INTERVAL,

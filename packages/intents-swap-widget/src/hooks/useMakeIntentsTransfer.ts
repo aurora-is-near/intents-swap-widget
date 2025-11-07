@@ -186,6 +186,13 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       | ReturnType<typeof createIntentSignerNEP413>
       | undefined;
 
+    if (!intentsAccountType) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Intents account type is not defined' },
+      });
+    }
+
     switch (intentsAccountType) {
       case 'evm':
         if (!providers?.evm) {

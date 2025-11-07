@@ -105,7 +105,7 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
 
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
-    walletAddress: ctx.walletAddress ?? '',
+    walletAddress: ctx.walletAddress,
   });
 
   const pollDepositStatus = async ({
