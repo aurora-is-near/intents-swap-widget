@@ -762,7 +762,7 @@ export const Page = () => {
   return (
     <WidgetConfigProvider
       config={{
-        appName: 'Ton Demo App',
+        appName: 'Ton Intents',
         allowedTargetChainsList: ['ton'],
         hideSendAddress: true,
         connectedWallets: {
