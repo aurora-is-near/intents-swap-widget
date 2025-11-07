@@ -1,4 +1,5 @@
-import { proxy, useSnapshot } from 'valtio';
+import { useSnapshot } from 'valtio';
+import { derive } from 'derive-valtio';
 
 import { getIsDirectNearDeposit } from './computed/getIsDirectNearDeposit';
 import { WidgetError } from '@/errors';
@@ -13,23 +14,15 @@ import type { Context } from '@/machine/context';
 
 const store = machine.getStore();
 
-// Using object getters instead of derive (recommended approach per Valtio maintainers)
-const computed = proxy({
-  get usdTradeDelta() {
-    return getUsdTradeDelta(store.context);
-  },
-  get isDirectTransfer() {
-    return getIsDirectTransfer(store.context);
-  },
-  get isNearToIntentsSameAssetTransfer() {
-    return getIsNearToIntentsSameAssetTransfer(store.context);
-  },
-  get isDirectNearDeposit() {
-    return getIsDirectNearDeposit(store.context);
-  },
-  get isDirectNonNearWithdrawal() {
-    return getIsDirectNonNearWithdrawal(store.context);
-  },
+// Fix: Access store first, then .context inside the callback to avoid initialization issues
+const computed = derive({
+  usdTradeDelta: (get) => getUsdTradeDelta(get(store).context),
+  isDirectTransfer: (get) => getIsDirectTransfer(get(store).context),
+  isNearToIntentsSameAssetTransfer: (get) =>
+    getIsNearToIntentsSameAssetTransfer(get(store).context),
+  isDirectNearDeposit: (get) => getIsDirectNearDeposit(get(store).context),
+  isDirectNonNearWithdrawal: (get) =>
+    getIsDirectNonNearWithdrawal(get(store).context),
 });
 
 export const useComputedSnapshot = () => {
