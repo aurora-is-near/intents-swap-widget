@@ -799,11 +799,11 @@ export const Page = () => {
     return fetchDoubleQuote(data, options);
   };
 
-  const makeTransfer = (args: MakeTransferArgs) => {
+  const makeTransfer = (args: MakeTransferArgs): void => {
     setMakeTransferArgs(args);
   };
 
-  const walletSupportedChains = useMemo(() => {
+  const walletSupportedChains = useMemo((): Chains[] => {
     const chains: Chains[] = ['ton'];
 
     if (chainType === 'evm') {
@@ -822,7 +822,7 @@ export const Page = () => {
     return chains;
   }, [chainType]);
 
-  const intentsAccountType = useMemo(() => {
+  const intentsAccountType = useMemo((): 'evm' | 'near' | 'sol' => {
     if (chainType === 'evm') {
       return 'evm';
     }
