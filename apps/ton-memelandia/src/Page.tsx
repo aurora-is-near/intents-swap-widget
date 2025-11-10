@@ -1053,7 +1053,12 @@ export const Page = () => {
                 strokeWidth="0.5"
               />
             </svg>
-            <span className="text-sw-gray-50">Aurora Labs</span>
+            <span className="text-sw-gray-50">
+              Aurora Labs &
+              <a href="https://ston.fi/" className="ml-1 hover:underline">
+                STON.fi
+              </a>
+            </span>
           </div>
         }
       />
