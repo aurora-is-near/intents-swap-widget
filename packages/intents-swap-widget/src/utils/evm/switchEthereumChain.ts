@@ -1,3 +1,4 @@
+import { Eip1193Provider } from 'ethers';
 import { logger } from '@/logger';
 
 class SwitchChainError extends Error {
@@ -16,14 +17,11 @@ class SwitchChainError extends Error {
  */
 export const switchEthereumChain = async (
   targetChainId: number,
+  provider: Eip1193Provider,
 ): Promise<void> => {
-  if (!window.ethereum) {
-    throw new SwitchChainError('No Ethereum wallet found');
-  }
-
   try {
     // Get current chain ID
-    const currentChainIdHex = await window.ethereum.request({
+    const currentChainIdHex = await provider.request({
       method: 'eth_chainId',
     });
 
@@ -35,7 +33,7 @@ export const switchEthereumChain = async (
     }
 
     // Switch to target chain
-    await window.ethereum.request({
+    await provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: `0x${targetChainId.toString(16)}` }],
     });

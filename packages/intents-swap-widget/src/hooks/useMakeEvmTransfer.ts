@@ -2,7 +2,6 @@ import {
   Chain,
   createWalletClient,
   custom,
-  EIP1193Provider,
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
@@ -21,12 +20,6 @@ import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { switchEthereumChain } from '../utils/evm/switchEthereumChain';
 import { EVM_CHAINS } from '../constants';
 import { Providers } from '../types/providers';
-
-declare global {
-  interface Window {
-    ethereum?: EIP1193Provider;
-  }
-}
 
 const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   eth: mainnet,
@@ -54,9 +47,7 @@ export const useMakeEvmTransfer = ({
     chain: chainKey,
   }: MakeTransferArgs) => {
     const injectedProvider =
-      typeof provider === 'function'
-        ? await provider()
-        : (provider ?? window.ethereum);
+      typeof provider === 'function' ? await provider() : provider;
 
     if (!isEvmAddress(address)) {
       throw new Error(`Invalid EVM address: ${address}`);
@@ -71,7 +62,7 @@ export const useMakeEvmTransfer = ({
     }
 
     // Automatically switch to the correct chain if needed
-    await switchEthereumChain(evmChainId);
+    await switchEthereumChain(evmChainId, injectedProvider);
 
     // Create wallet client from injected wallet (e.g. MetaMask, AppKit)
     const walletClient = createWalletClient({
