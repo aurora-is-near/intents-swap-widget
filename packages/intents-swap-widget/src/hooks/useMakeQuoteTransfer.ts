@@ -4,6 +4,7 @@ import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
 import { isEth, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
+import { Providers } from '../types/providers';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -23,11 +24,17 @@ export type QuoteTransferArgs = {
   makeTransfer?: (
     args: MakeTransferArgs,
   ) => Promise<MakeTransferResult> | MakeTransferResult;
+  providers: Providers;
 };
 
-export const useMakeQuoteTransfer = ({ makeTransfer }: QuoteTransferArgs) => {
+export const useMakeQuoteTransfer = ({
+  makeTransfer,
+  providers,
+}: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { make: makeEvmTransfer } = useMakeEvmTransfer();
+  const { make: makeEvmTransfer } = useMakeEvmTransfer({
+    provider: providers.evm,
+  });
 
   const getTransferFunction = (depositAddress: string) => {
     if (makeTransfer) {

@@ -22,7 +22,11 @@ export const useMakeTransfer = ({
     useComputedSnapshot();
 
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
-  const { make: makeQuoteTransfer } = useMakeQuoteTransfer({ makeTransfer });
+  const { make: makeQuoteTransfer } = useMakeQuoteTransfer({
+    makeTransfer,
+    providers,
+  });
+
   const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(
     providers?.near,
   );

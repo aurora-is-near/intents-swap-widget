@@ -20,6 +20,7 @@ import { MakeTransferArgs } from '../types';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { switchEthereumChain } from '../utils/evm/switchEthereumChain';
 import { EVM_CHAINS } from '../constants';
+import { Providers } from '../types/providers';
 
 declare global {
   interface Window {
@@ -39,7 +40,11 @@ const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   avax: null,
 };
 
-export const useMakeEvmTransfer = () => {
+export const useMakeEvmTransfer = ({
+  provider,
+}: {
+  provider?: Providers['evm'];
+}) => {
   const make = async ({
     address,
     amount,
@@ -48,6 +53,11 @@ export const useMakeEvmTransfer = () => {
     isNativeEthTransfer,
     chain: chainKey,
   }: MakeTransferArgs) => {
+    const injectedProvider =
+      typeof provider === 'function'
+        ? await provider()
+        : (provider ?? window.ethereum);
+
     if (!isEvmAddress(address)) {
       throw new Error(`Invalid EVM address: ${address}`);
     }
@@ -56,7 +66,7 @@ export const useMakeEvmTransfer = () => {
       throw new Error('EVM chain ID is required for EVM transfers.');
     }
 
-    if (!window.ethereum) {
+    if (!injectedProvider) {
       throw new Error('No injected Ethereum wallet found.');
     }
 
@@ -65,7 +75,7 @@ export const useMakeEvmTransfer = () => {
 
     // Create wallet client from injected wallet (e.g. MetaMask, AppKit)
     const walletClient = createWalletClient({
-      transport: custom(window.ethereum),
+      transport: custom(injectedProvider),
     });
 
     // Try to get addresses without prompting first (works for MetaMask and already-connected wallets)

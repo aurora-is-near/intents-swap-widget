@@ -17,8 +17,6 @@ import {
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef, useState } from 'react';
-import { useAppKitProvider } from '@reown/appkit/react';
-import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
 import {
   Button,
   Chains,
@@ -38,6 +36,7 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
+import { useProviders } from './hooks/useProviders';
 
 // Client-side Alchemy API key - safe to expose in frontend code
 // This key is rate-limited and domain-restricted by Alchemy
@@ -421,16 +420,17 @@ export const Page = () => {
     isConnecting: isAppKitConnecting,
   } = useAppKitWallet();
 
+  const providers = useProviders();
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
   const [tonConnect] = useTonConnectUI();
   const omnistonQuote = useRef<OmnistonQuote>(null);
   const oneClickQuote = useRef<OneClickQuote>(null);
   const swapStatus = useRef<SwapStatusMap>(DEFAULT_SWAP_STATUS_MAP);
 
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana');
+  const { make: makeEvmTransfer } = useMakeEvmTransfer({
+    provider: providers.evm,
+  });
 
-  const { make: makeEvmTransfer } = useMakeEvmTransfer();
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -480,7 +480,7 @@ export const Page = () => {
   };
 
   const makeSolanaTransfer = async (args: MakeTransferArgs) => {
-    if (!solanaProvider?.publicKey) {
+    if (!providers.sol?.publicKey) {
       throw new Error('No Solana wallet connected');
     }
 
@@ -492,7 +492,7 @@ export const Page = () => {
       `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
     );
 
-    const fromPubkey = solanaProvider.publicKey;
+    const fromPubkey = providers.sol.publicKey;
     const toPubkey = new PublicKey(args.address);
 
     if (!args.tokenAddress) {
@@ -516,7 +516,7 @@ export const Page = () => {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
 
-      const signedTx = await solanaProvider.signTransaction(transaction);
+      const signedTx = await providers.sol.signTransaction(transaction);
       const signature = await connection.sendRawTransaction(
         signedTx.serialize(),
         {
@@ -565,7 +565,7 @@ export const Page = () => {
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = fromPubkey;
 
-    const signedTx = await solanaProvider.signTransaction(transaction);
+    const signedTx = await providers.sol.signTransaction(transaction);
     const signature = await connection.sendRawTransaction(
       signedTx.serialize(),
       {
@@ -1020,6 +1020,7 @@ export const Page = () => {
         className={showConfirmSwaps ? 'hidden' : undefined}
         isOneWay
         isFullPage
+        providers={providers}
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
         onMsg={(msg) => {

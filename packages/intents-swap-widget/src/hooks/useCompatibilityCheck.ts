@@ -54,7 +54,11 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
           });
         }
 
-        const provider = await providers.evm();
+        const provider =
+          typeof providers.evm === 'function'
+            ? await providers.evm()
+            : providers.evm;
+
         const signatureData = await provider.request({
           method: 'personal_sign',
           params: [msg.ERC191.message, intentsAccountId],
