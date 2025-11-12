@@ -1,0 +1,99 @@
+# Getting Started
+
+The **Intents Swap Widget** lets you integrate a fully functional, cross-chain
+swap interface into your application in just a few lines of code.
+
+## 1. Installation
+
+Install the widget package using your preferred package manager:
+
+```bash
+npm install @aurora-is-near/intents-swap-widget
+
+# or
+
+yarn add @aurora-is-near/intents-swap-widget
+```
+
+## 2. Setup
+
+Wrap your app, or just the area where the widget appears, with the `WidgetConfigProvider`,
+then render one of our prebuilt widgets within it.
+
+For example, the snippet below shows how to render the swap widget.
+
+```tsx
+import {
+  WidgetConfigProvider,
+  WidgetSwap,
+} from '@aurora-is-near/intents-swap-widget';
+
+export default function App() {
+  return (
+    <WidgetConfigProvider config={{ appName: 'MyApp' }}>
+      <WidgetSwap />
+    </WidgetConfigProvider>
+  );
+}
+```
+
+There are also `WidgetTransfer` and `WidgetWithdraw` widgets.
+
+For a full list of configuration options see the [Configuration](./configuration.md) page.
+
+### 3. Styling
+
+To apply the package styles you will need to add the `sw` class to some wrapping
+element within your app, for example:
+
+```tsx
+<div className="sw">
+  <h1>My Amazing Widget</h1>
+  <WidgetSwap />
+</div>
+```
+
+You will also need to import the package styles into your apps stylesheet, for example:
+
+```css
+@import '@aurora-is-near/intents-swap-widget/styles.css';
+
+.my-class {
+  background-color: #fff;
+}
+```
+
+For more details about the available theming options see the [Theming](./theming.md) page.
+
+### 4. Connect a wallet
+
+Use your existing wallet integration (e.g. AppKit, Provy, TonConnect, etc.)
+and pass the connected address via the `connectedWallets` config option.
+
+Here is an example that assumes you are using [AppKit](https://docs.reown.com/appkit/overview)
+and have a hook for providing the wallet address and a button for connecting.
+
+```tsx
+import {
+  WidgetConfigProvider,
+  WidgetSwap,
+} from '@aurora-is-near/intents-swap-widget';
+import { useAppKitWallet } from './hooks/useAppKitWallet';
+import { WalletConnectButton } from './components/WalletConnectButton';
+
+export const SimpleWidgetDemo = () => {
+  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
+
+  return (
+    <WidgetConfigProvider
+      config={{ connectedWallets: { default: walletAddress } }}
+    >
+      <WidgetSwap
+        isFullPage
+        isLoading={isLoading}
+        FooterComponent={<WalletConnectButton />}
+      />
+    </WidgetConfigProvider>
+  );
+};
+```

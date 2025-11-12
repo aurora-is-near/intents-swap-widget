@@ -67,17 +67,6 @@ _Types_ submodule exports domain types such as `Token`, `Chain`, `Quote` etc.
 
 _Ext_ submodule contains various extensions that can be used with the widget but are completely optional. For example, it includes an Alchemy API integration that allows you to easily get token balances. Essentially, these are pre-written pieces of custom code.
 
-## Styling
-
-To apply the package styles you will need to add the `sw` class to some wrapping
-element, for example:
-
-```tsx
-<div className="sw">
-  {/* Your widget */}
-</div>
-```
-
 ## Development
 
 If you want to make changes to the package and submit PRs, the repository
