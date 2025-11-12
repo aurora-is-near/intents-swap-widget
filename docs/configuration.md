@@ -112,8 +112,12 @@ It will only be possible to select tokens from this list in the target input.
 
 ### `filterTokens`
 
-A custom filter function applied to tokens in both the source and target lists.
-Return `true` to include the token, or `false` to exclude it.
+A filter function applied to tokens in both the source and target lists. Return
+`true` to include the token, or `false` to exclude it.
+
+This can be useful when we want to exclude, rather than include particular tokens.
+If you want to include particlar tokens the `allowedTokensList` option might
+be more suitable.
 
 ### `chainsOrder`
 
