@@ -47,8 +47,13 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, appName, fetchQuote, slippageTolerance } =
-    useConfig();
+  const {
+    intentsAccountType,
+    appName,
+    appFees,
+    fetchQuote,
+    slippageTolerance,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -181,6 +186,10 @@ export const useMakeQuote = () => {
 
     if (appName) {
       commonQuoteParams.referral = snakeCase(appName);
+    }
+
+    if (appFees) {
+      commonQuoteParams.appFees = [...appFees];
     }
 
     try {

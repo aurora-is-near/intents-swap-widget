@@ -26,6 +26,10 @@ export type WidgetConfig = {
   slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
+  appFees?: {
+    recipient: string;
+    fee: number;
+  }[];
 
   // Tokens filtering
   showIntentTokens: boolean;

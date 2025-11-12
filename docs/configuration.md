@@ -180,10 +180,12 @@ Default:
 ### `fetchQuote`
 
 Used to provide a custom quote function to override the default of calling the
-[1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api).
+[1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api)
+quote endpoint.
 
-For example, you might want to proxy quotes via your own endpoint, as in the
-following example.
+For example, you might want to use this proxy quotes via your own endpoint.
+
+#### Example
 
 ```ts
 const fetchQuote = async (data, { signal }) => {
@@ -195,4 +197,33 @@ const fetchQuote = async (data, { signal }) => {
 
   return res.data;
 };
+```
+
+### `appFees` [object[]]
+
+Default: `undefined`
+
+A list of recipients and their associated fees that will be applied to each swap
+or transfer.
+
+#### Properties
+
+- **`recipient` [string]**
+  Account ID within Intents to which this fee will be transferred.
+
+- **`fee` [number]**
+  Fee for this recipient as part of amountIn in basis points (1/100th of a percent),
+  for example, 100 for a 1% fee.
+
+#### Example
+
+```ts
+const config = {
+  appFees: [
+    {
+      recipient: 'recipient.near',
+      fee: 100,
+    }
+  ]
+}
 ```
