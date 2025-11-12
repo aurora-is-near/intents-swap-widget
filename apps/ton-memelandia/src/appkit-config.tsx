@@ -36,7 +36,7 @@ const evmNetworks = [
   base,
 ];
 
-export const wagmiAdapter = new WagmiAdapter({
+const wagmiAdapter = new WagmiAdapter({
   networks: evmNetworks,
   projectId,
   ssr: false,
