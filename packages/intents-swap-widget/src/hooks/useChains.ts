@@ -57,10 +57,6 @@ export const useChains = (variant: 'source' | 'target') => {
       return true;
     });
 
-    if (chainsOrder) {
-      return sortChains(chainsFromTokens, chainsOrder);
-    }
-
-    return chainsFromTokens;
+    return sortChains(chainsFromTokens, chainsOrder);
   }, [tokens, chainsOrder, allowedChainsList]);
 };
