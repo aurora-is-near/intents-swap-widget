@@ -13,16 +13,6 @@ This package exports a number of pre-built widget components, `WidgetSwap`,
 
 See the `/apps/demo` folder for some examples of how to use these widgets.
 
-#### Making a transfer
-
-To each of these components we should pass in a `makeTransfer` function. When
-the user clicks the relevant submit button this function is called with an
-`args` object that contains details about the transfer, such as the `amount`,
-`address` and, if relevant, the `evmChainId`.
-
-It is currently the responsibility of the consuming application to handle this
-transfer.
-
 ## Custom implementation
 
 If your use cases cannot be met using the pre-built widgets described above you
