@@ -78,32 +78,6 @@ element, for example:
 </div>
 ```
 
-## Theming
-
-This package uses Tailwind, but your app doesn't have to. It exposes CSS variables to control styling. Each variable and its corresponding Tailwind token uses the `sw-` prefix to avoid conflicts with your app's theme and variables.
-
-To adjust theme, override CSS variables on your app's side (full list of defined
-variable you can find in `src/theme.css`):
-
-```css
-@import '@aurora-is-near/intents-swap-widget/styles.css';
-
-:root {
-    /* colors */
-    --sw-success-100: #0f0;
-    ...
-
-    /* spacing */
-    --sw-space-xs: 2px;
-    ...
-
-    /* texts */
-    .text-sw-label-s {
-        ...
-    }
-}
-```
-
 ## Localisation
 
 To change copy within the widget you can pass a `localisation` object to the
