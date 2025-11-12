@@ -38,8 +38,9 @@ const getFileDiff = async (commitHash) =>
  * This is so that we do not generate a new package release any time one of the
  * apps changes.
  */
-const analyzeCommits = async (pluginConfig, { commits }) => {
-  // Filter commits that touched /packages/**
+const analyzeCommits = async (pluginConfig, context) => {
+  const { commits } = context;
+
   const filteredCommits = [];
 
   await Promise.all(
