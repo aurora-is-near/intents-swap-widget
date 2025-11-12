@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import vercel from 'vite-plugin-vercel';
 
 export default defineConfig({
@@ -19,14 +18,6 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vercel(),
-    nodePolyfills({
-      include: ['crypto', 'buffer', 'process', 'util'],
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
-    }),
   ].filter(Boolean),
   css: {
     postcss: "./postcss.config.cjs",
