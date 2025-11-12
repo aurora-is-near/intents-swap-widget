@@ -52,7 +52,8 @@ Tailwind token using the `sw-` prefix to avoid conflicts with your app's theme
 and variables.
 
 To adjust theme, override these CSS variables in your app's stylesheet. The full
-list of available variables can be found at `packages/intents-swap-widget/src/theme.css`
+list of available variables can be found at
+[`packages/intents-swap-widget/src/theme.css`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/packages/intents-swap-widget/src/theme.css)
 
 ### Example
 

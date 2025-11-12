@@ -78,19 +78,6 @@ element, for example:
 </div>
 ```
 
-## Localisation
-
-To change copy within the widget you can pass a `localisation` object to the
-`WidgetConfigProvider`, for example:
-
-```tsx
-<WidgetConfigProvider localisation={{ 'quote.result.maxSlippage.label': 'MAX' }}>
-  // widget components
-</WidgetConfigProvider>
-```
-
-The available keys can be found in the `types/localisation.ts` file.
-
 ## Development
 
 If you want to make changes to the package and submit PRs, the repository

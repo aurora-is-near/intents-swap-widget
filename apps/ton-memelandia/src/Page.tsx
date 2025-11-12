@@ -958,7 +958,7 @@ export const Page = () => {
         },
       }}
       localisation={{
-        'submit.active.external.swap': 'Swap now',
+        'submit.active.swap': 'Swap now',
       }}
       theme={{
         colorScheme: 'dark',
