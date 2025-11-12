@@ -59,7 +59,6 @@ export type WidgetConfig = {
   // Balance loading
   alchemyApiKey?: string;
   tonCenterApiKey?: string;
-  loadBalancesForSendAddress?: boolean;
 
   // UI
   hideSendAddress?: boolean;
