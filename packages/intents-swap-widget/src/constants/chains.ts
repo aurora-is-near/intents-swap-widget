@@ -242,3 +242,26 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
   397: 'https://nearblocks.io/txns/',
 };
+
+export const DEFAULT_CHAINS_ORDER: Chains[] = [
+  'eth',
+  'btc',
+  'near',
+  'sol',
+  'bsc',
+  'base',
+  'arb',
+  'cardano',
+  'sui',
+  'ton',
+  'pol',
+  'op',
+  'zec',
+  'tron',
+  'xrp',
+  'avax',
+  'bera',
+  'xrp',
+  'gnosis',
+  'doge',
+];

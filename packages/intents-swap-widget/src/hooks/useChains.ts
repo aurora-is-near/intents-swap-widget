@@ -2,10 +2,16 @@ import { useMemo } from 'react';
 
 import { useTokens } from './useTokens';
 import { useConfig } from '@/config';
-import { CHAINS_LIST } from '@/constants/chains';
+import { CHAINS_LIST, DEFAULT_CHAINS_ORDER } from '@/constants/chains';
 import type { Chain, Chains } from '@/types/chain';
 
-function sortChains(items: Chain[], order: ReadonlyArray<Chains>) {
+function sortChains(items: Chain[], chainsOrder: ReadonlyArray<Chains>) {
+  // Sort by any custom `chainsOrder` first, falling back to the default order
+  // for any chains not specified there.
+  const order = Array.from(
+    new Set([...(chainsOrder ?? []), ...DEFAULT_CHAINS_ORDER]),
+  );
+
   const pos = new Map(order.map((id, i) => [id, i]));
 
   return [...items].sort((a, b) => {

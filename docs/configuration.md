@@ -61,8 +61,7 @@ execute NEAR Intents transactions.
 
 ### `walletSupportedChains`
 
-A list of blockchain networks supported, or expected to be supported, by the
-connected wallet(s).
+A list of blockchain networks supported by the connected wallet(s).
 
 ### `connectedWallets`
 
@@ -76,8 +75,10 @@ source wallet address as the receiver, by default.
 
 ### `slippageTolerance`
 
-The slippage tolerance for a swap. This value is defined in basis points
-(1/100th of a percent), for example, 100 for 1% slippage.
+The slippage tolerance for a transfer.
+
+This value is defined in basis points (1/100th of a percent). For example, 100
+for 1% slippage, or 50 for 0.5% slippage.
 
 ### `enableAutoTokensSwitching`
 
@@ -95,18 +96,18 @@ Controls whether NEAR Intents tokens appear in token lists.
 
 ### `allowedTokensList`
 
-Used to specify the available tokens by their NEAR intents asset IDs. It will
+Specifies the available tokens by their NEAR intents asset IDs. It will
 only be possible to select tokens from this list in both the source and the
 target inputs.
 
 ### `allowedSourceTokensList`
 
-Used to specify the available **source** tokens by their NEAR intents asset IDs.
+Specifies the available **source** tokens by their NEAR intents asset IDs.
 It will only be possible to select tokens from this list in the source input.
 
 ### `allowedTargetTokensList`
 
-Used to specify the available **target** tokens by their NEAR intents asset IDs.
+Specifies the available **target** tokens by their NEAR intents asset IDs.
 It will only be possible to select tokens from this list in the target input.
 
 ### `filterTokens`
@@ -116,19 +117,54 @@ Return `true` to include the token, or `false` to exclude it.
 
 ### `chainsOrder`
 
-Defines the display order of supported chains in dropdowns and routing logic.
+Defines the order in which supported chains are displayed.
+
+Can be used to bring particular chains to the top of the list. Any chains not
+specified here will be sorted according to a default order.
+
+#### Example
+
+```ts
+const config = {
+  chainsOrder: ['eth', 'btc', 'near'],
+}
+```
 
 ### `allowedChainsList`
 
 Restricts which chains that can be used when selecting source or target tokens.
 
+#### Example
+
+```ts
+const config = {
+  allowedChainsList: ['base', 'eth', 'ton'],
+}
+```
+
 ### `allowedSourceChainsList`
 
 Restricts which chains can be used when selecting **source** tokens.
 
+#### Example
+
+```ts
+const config = {
+  allowedSourceChainsList: ['base', 'eth'],
+}
+```
+
 ### `allowedTargetChainsList`
 
 Restricts which chains can be used when selecting **target** tokens.
+
+#### Example
+
+```ts
+const config = {
+  allowedTargetChainsList: ['ton'],
+}
+```
 
 ### `chainsFilter`
 
@@ -149,8 +185,8 @@ const config = {
 ### `fetchQuote`
 
 A function used to implement custom quote fetching behaviour, overriding the
-default of calling the [1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api)
-quote endpoint.
+default of calling the
+[1Click API quote endpoint](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api#post-v0-quote).
 
 For example, you might want to use this proxy quotes via your own API endpoint
 and insert some additional data based on your backend logic.

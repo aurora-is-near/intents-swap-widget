@@ -17,7 +17,7 @@ import { ThemeProvider } from './theme/ThemeProvider';
 import type { Token } from '@/types/token';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
-import { EVM_CHAINS } from '@/constants/chains';
+import { DEFAULT_CHAINS_ORDER, EVM_CHAINS } from '@/constants/chains';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,28 +41,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
 
   enableAutoTokensSwitching: true,
   showIntentTokens: true,
-  chainsOrder: [
-    'eth',
-    'btc',
-    'near',
-    'sol',
-    'bsc',
-    'base',
-    'arb',
-    'cardano',
-    'sui',
-    'ton',
-    'pol',
-    'op',
-    'zec',
-    'tron',
-    'xrp',
-    'avax',
-    'bera',
-    'xrp',
-    'gnosis',
-    'doge',
-  ],
+  chainsOrder: DEFAULT_CHAINS_ORDER,
 
   filterTokens: (tkn: Token) =>
     !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),
