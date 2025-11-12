@@ -46,91 +46,91 @@ export default function App() {
 
 ## Options
 
-### `appName` [string]
+### `appName`
 
 The name used to refer to your app when making NEAR Intents transfers.
 
-### `appIcon` [string]
+### `appIcon`
 
-URL or path to your app’s icon, shown in the chain selection dropdown, for example.
+URL to your app's icon. Shown in the chain selection dropdown.
 
-### `intentsAccountType` ['evm' | 'near' | 'sol']
+### `intentsAccountType`
 
 Determines which wallet provider (EVM, NEAR, or Solana) is used to sign and
 execute NEAR Intents transactions.
 
-### `walletSupportedChains` [ReadonlyArray<Chains>]
+### `walletSupportedChains`
 
 A list of blockchain networks supported, or expected to be supported, by the
 connected wallet(s).
 
-### `connectedWallets` [Partial<Record<Chains | 'default', string | null>>]
+### `connectedWallets`
 
 A map of connected wallet addresses keyed by chain. Used to determine which
 accounts can send or receive tokens on each network.
 
-### `sendAddress` [string | null]
+### `sendAddress`
 
 Optional fixed destination wallet. If not specified the widget will use the
 source wallet address as the receiver, by default.
 
-### `slippageTolerance` [number]
+### `slippageTolerance`
 
 The slippage tolerance for a swap. This value is defined in basis points
 (1/100th of a percent), for example, 100 for 1% slippage.
 
-### `enableAutoTokensSwitching` [boolean]
+### `enableAutoTokensSwitching`
 
 When enabled, the widget automatically rotates the source and target tokens if
 the user selects the same token on both sides.
 
-### `refetchQuoteInterval` [number]
+### `refetchQuoteInterval`
 
 The interval in milliseconds at which new quotes are fetched automatically.
 Useful for keeping market prices updated in volatile conditions.
 
-### `showIntentTokens` [boolean]
+### `showIntentTokens`
 
 Controls whether NEAR Intents tokens appear in token lists.
 
-### `allowedTokensList` [string[]]
+### `allowedTokensList`
 
 Used to specify the available tokens by their NEAR intents asset IDs. It will
 only be possible to select tokens from this list in both the source and the
 target inputs.
 
-### `allowedSourceTokensList` [string[]]
+### `allowedSourceTokensList`
 
 Used to specify the available **source** tokens by their NEAR intents asset IDs.
 It will only be possible to select tokens from this list in the source input.
 
-### `allowedTargetTokensList` [string[]]
+### `allowedTargetTokensList`
 
 Used to specify the available **target** tokens by their NEAR intents asset IDs.
 It will only be possible to select tokens from this list in the target input.
 
-### `filterTokens` [(token: Token) => boolean]
+### `filterTokens`
 
 A custom filter function applied to tokens in both the source and target lists.
 Return `true` to include the token, or `false` to exclude it.
 
-### `chainsOrder` [Chains[]]
+### `chainsOrder`
 
 Defines the display order of supported chains in dropdowns and routing logic.
 
-### `allowedChainsList` [Chains[]]
+### `allowedChainsList`
 
 Restricts which chains that can be used when selecting source or target tokens.
 
-### `allowedSourceChainsList` [Chains[]]
+### `allowedSourceChainsList`
 
 Restricts which chains can be used when selecting **source** tokens.
 
-### `allowedTargetChainsList` [Chains[]]
+### `allowedTargetChainsList`
 
 Restricts which chains can be used when selecting **target** tokens.
 
-### `chainsFilter` [{ source: ChainsFilter; target: ChainsFilter }]
+### `chainsFilter`
 
 Specify high-level categories of chains that should be displayed when selecting
 the source or target token.
@@ -148,11 +148,12 @@ const config = {
 
 ### `fetchQuote`
 
-Used to provide a custom quote function to override the default of calling the
-[1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api)
+A function used to implement custom quote fetching behaviour, overriding the
+default of calling the [1Click API](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api)
 quote endpoint.
 
-For example, you might want to use this proxy quotes via your own endpoint.
+For example, you might want to use this proxy quotes via your own API endpoint
+and insert some additional data based on your backend logic.
 
 #### Example
 
@@ -170,7 +171,43 @@ const config = {
 }
 ```
 
-### `appFees` [{ recipient: string, fee: number }[]]
+### `fetchSourceTokens`
+
+A function used to fetch a list of custom **source** tokens.
+
+For example, you might want to make a call to some API endpoint.
+
+#### Example
+
+```ts
+const config = {
+  fetchSourceTokens: async () => {
+    const res = await fetch('https://example.com/tokens');
+
+    return res.json();
+  },
+}
+```
+
+### `fetchTargetTokens`
+
+A function used to fetch a list of custom **target** tokens.
+
+For example, you might want to make a call to some API endpoint.
+
+#### Example
+
+```ts
+const config = {
+  fetchTargetTokens: async () => {
+    const res = await fetch('https://example.com/tokens');
+
+    return res.json();
+  },
+}
+```
+
+### `appFees`
 
 A list of recipients and their associated fees that will be applied to each swap
 or transfer.
@@ -196,3 +233,23 @@ const config = {
   ]
 }
 ```
+
+### `alchemyApiKey`
+
+An API key for integrating with [Alchemy](alchemy.com).
+
+This is useful for enabling more reliable balance fetching for EVM chains.
+
+### `tonCenterApiKey`
+
+An API key for integrating with [TON Center](https://toncenter.com/).
+
+This is useful for fetching balances for the TON chain.
+
+### `hideSendAddress`
+
+Used to hide the send address when swapping or withdrawing.
+
+### `hideTokenInputHeadings`
+
+Used to hide the headings on the token input boxes.
