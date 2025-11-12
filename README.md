@@ -86,14 +86,14 @@ To adjust theme, override CSS variables on your app's side (full list of defined
 variable you can find in `src/theme.css`):
 
 ```css
-@import '@aurora-is-near/intents-swap-widget/styles';
+@import '@aurora-is-near/intents-swap-widget/styles.css';
 
 :root {
     /* colors */
     --sw-success-100: #0f0;
     ...
 
-    /* spaces */
+    /* spacing */
     --sw-space-xs: 2px;
     ...
 
