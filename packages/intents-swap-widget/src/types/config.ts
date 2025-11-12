@@ -45,7 +45,6 @@ export type WidgetConfig = {
   };
 
   // API
-  oneClickApiQuoteProxyUrl: string;
   fetchQuote?: (
     data: QuoteRequest,
     options: FetchQuoteOptions,

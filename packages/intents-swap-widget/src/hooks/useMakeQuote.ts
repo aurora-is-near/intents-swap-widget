@@ -47,13 +47,8 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const {
-    intentsAccountType,
-    oneClickApiQuoteProxyUrl,
-    appName,
-    fetchQuote,
-    slippageTolerance,
-  } = useConfig();
+  const { intentsAccountType, appName, fetchQuote, slippageTolerance } =
+    useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -65,21 +60,24 @@ export const useMakeQuote = () => {
       data: QuoteRequest,
       metadata: { isRefetch?: boolean },
     ): Promise<OneClickQuote> => {
+      const { signal } = abortController.current;
+
       if (fetchQuote) {
-        return fetchQuote(data, metadata);
+        return fetchQuote(data, {
+          ...metadata,
+          signal,
+        });
       }
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          oneClickApiQuoteProxyUrl,
+          'https://1click.chaindefuser.com/v0/quote',
           data,
-          {
-            signal: abortController.current.signal,
-          },
+          { signal },
         )
       ).data.quote;
     };
-  }, [oneClickApiQuoteProxyUrl, oneClickApi]);
+  }, [oneClickApi]);
 
   const make = async ({
     message,

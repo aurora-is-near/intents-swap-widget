@@ -39,8 +39,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   walletSupportedChains: EVM_CHAINS,
   connectedWallets: {},
 
-  oneClickApiQuoteProxyUrl: 'https://1click.chaindefuser.com/v0/quote',
-
   enableAutoTokensSwitching: true,
   showIntentTokens: true,
   chainsOrder: [
