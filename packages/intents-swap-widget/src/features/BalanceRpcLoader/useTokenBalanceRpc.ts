@@ -88,7 +88,8 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       // 7. Solana token balance
       if (
         token.blockchain === 'sol' &&
-        walletSupportedChains.includes(token.blockchain)
+        walletSupportedChains.includes(token.blockchain) &&
+        alchemyApiKey
       ) {
         return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
       }

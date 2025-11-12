@@ -4,6 +4,7 @@ export { useMakeIntentsTransfer } from './useMakeIntentsTransfer';
 export { useMakeQuote } from './useMakeQuote';
 export { useMakeTransfer } from './useMakeTransfer';
 export { useMakeEvmTransfer } from './useMakeEvmTransfer';
+export { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
 export { useMakeQuoteTransfer } from './useMakeQuoteTransfer';
 export { useMergedBalance } from './useMergedBalance';
 export { useSwitchChain } from './useSwitchChain';

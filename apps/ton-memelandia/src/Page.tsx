@@ -25,6 +25,7 @@ import {
   SuccessScreen,
   SwapCard,
   useMakeEvmTransfer,
+  useMakeSolanaTransfer,
   WidgetConfig,
   WidgetConfigProvider,
   WidgetContainer,
@@ -207,6 +208,26 @@ const fetchStonFiAssets = async ({
     contractAddress: asset.contract_address,
     icon: asset.meta.image_url,
   }));
+};
+
+/**
+ * Get the block explorer URL for a transaction on a given chain.
+ */
+const getExplorerUrl = (chain: string, txHash: string): string => {
+  const explorerMap: Record<string, string> = {
+    sol: 'https://solscan.io/tx/',
+    eth: 'https://etherscan.io/tx/',
+    bsc: 'https://bscscan.com/tx/',
+    pol: 'https://polygonscan.com/tx/',
+    arb: 'https://arbiscan.io/tx/',
+    op: 'https://optimistic.etherscan.io/tx/',
+    avax: 'https://snowtrace.io/tx/',
+    base: 'https://basescan.org/tx/',
+  };
+
+  const baseUrl = explorerMap[chain] ?? explorerMap.eth;
+
+  return `${baseUrl}${txHash}`;
 };
 
 /**
@@ -431,6 +452,11 @@ export const Page = () => {
     provider: providers.evm,
   });
 
+  const { make: makeSolanaTransfer } = useMakeSolanaTransfer({
+    provider: solanaProvider,
+    alchemyApiKey: ALCHEMY_API_KEY,
+  });
+
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -479,114 +505,20 @@ export const Page = () => {
     swapStatus.current = DEFAULT_SWAP_STATUS_MAP;
   };
 
-  const makeSolanaTransfer = async (args: MakeTransferArgs) => {
-    if (!providers.sol?.publicKey) {
-      throw new Error('No Solana wallet connected');
-    }
-
-    const { Connection, PublicKey, SystemProgram, Transaction } = await import(
-      '@solana/web3.js'
-    );
-
-    const connection = new Connection(
-      `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-    );
-
-    const fromPubkey = providers.sol.publicKey;
-    const toPubkey = new PublicKey(args.address);
-
-    if (!args.tokenAddress) {
-      // Validate amount
-      const lamports = BigInt(args.amount);
-
-      if (lamports <= 0n) {
-        throw new Error('Transfer amount must be positive');
-      }
-
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports,
-        }),
-      );
-
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = fromPubkey;
-
-      const signedTx = await providers.sol.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(
-        signedTx.serialize(),
-        {
-          skipPreflight: false,
-          maxRetries: 3,
-        },
-      );
-
-      // Don't wait for confirmation - just return the signature
-      // The 1Click API will handle monitoring the transaction
-      return { hash: signature };
-    }
-
-    const { getAssociatedTokenAddress, createTransferInstruction } =
-      await import('@solana/spl-token');
-
-    // Validate amount
-    const tokenAmount = BigInt(args.amount);
-
-    if (tokenAmount <= 0n) {
-      throw new Error('Transfer amount must be positive');
-    }
-
-    const mintPubkey = new PublicKey(args.tokenAddress);
-    const fromTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      fromPubkey,
-    );
-
-    const toTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      toPubkey,
-    );
-
-    const transaction = new Transaction().add(
-      createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        fromPubkey,
-        tokenAmount,
-      ),
-    );
-
-    const { blockhash } = await connection.getLatestBlockhash();
-
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = fromPubkey;
-
-    const signedTx = await providers.sol.signTransaction(transaction);
-    const signature = await connection.sendRawTransaction(
-      signedTx.serialize(),
-      {
-        skipPreflight: false,
-        maxRetries: 3,
-      },
-    );
-
-    // Don't wait for confirmation - just return the signature
-    // The 1Click API will handle monitoring the transaction
-    return { hash: signature };
-  };
-
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {
     updateSwapStatus('oneclick', 'in-progress');
 
+    let txHash: string;
+
     try {
       if (args.chain === 'sol') {
-        await makeSolanaTransfer(args);
+        const result = await makeSolanaTransfer(args);
+
+        txHash = result.hash;
       } else {
-        await makeEvmTransfer(args);
+        const result = await makeEvmTransfer(args);
+
+        txHash = result.hash;
       }
 
       await waitForOneClickSettlement(args.address);
@@ -598,6 +530,14 @@ export const Page = () => {
     }
 
     updateSwapStatus('oneclick', 'completed');
+
+    // If this was the only swap (e.g., SOL/EVM → native TON), show success
+    if (swaps.length === 1) {
+      setSuccessfulTransactionDetails({
+        hash: txHash,
+        transactionLink: getExplorerUrl(args.chain, txHash),
+      });
+    }
   };
 
   const confirmOmnistonSwap = async () => {
@@ -722,11 +662,59 @@ export const Page = () => {
    *
    * The first quote is done via OneClick, from the selected source asset to TON.
    * The second quote is done via Omniston, from TON to the selected target asset.
+   *
+   * If the destination is native TON, only the OneClick quote is needed.
    */
   const fetchDoubleQuote: WidgetConfig['fetchQuote'] = async (
     data,
     { isRefetch },
   ) => {
+    // If swapping to native TON, we only need OneClick (no Omniston swap)
+    // Check both asset ID and contract address to handle different formats
+    if (
+      data.destinationAsset === TON_ASSET_ID ||
+      data.destinationAsset === TON_ASSET_ADDRESS
+    ) {
+      const {
+        deadline,
+        depositAddress,
+        timeEstimate,
+        amountIn,
+        amountInFormatted,
+        amountInUsd,
+        minAmountIn,
+        amountOut,
+        amountOutFormatted,
+        amountOutUsd,
+      } = await fetchOneClickQuote(data, isRefetch);
+
+      const quoteResponse = {
+        deadline,
+        depositAddress,
+        timeEstimate,
+        amountIn,
+        amountInFormatted,
+        amountInUsd,
+        minAmountIn,
+        amountOut,
+        amountOutFormatted,
+        amountOutUsd,
+        minAmountOut: amountOut,
+      };
+
+      setSwaps([
+        getOneClickSwapDetails({
+          status: swapStatus.current.oneclick,
+          sourceAsset: data.originAsset,
+          sourceAmount: quoteResponse.amountIn,
+          targetAmount: amountOut,
+        }),
+      ]);
+
+      return quoteResponse;
+    }
+
+    // For non-TON destinations, we need both OneClick and Omniston
     const [
       {
         deadline,
@@ -873,6 +861,13 @@ export const Page = () => {
     setMakeTransferArgs(args);
   };
 
+  const connectedWallets = useMemo(() => {
+    return {
+      default: appKitWalletAddress,
+      ton: tonAddress,
+    };
+  }, [appKitWalletAddress, tonAddress]);
+
   const walletSupportedChains = useMemo(() => {
     const chains: Chains[] = ['ton'];
 
@@ -937,10 +932,7 @@ export const Page = () => {
         appName: 'Ton Intents',
         allowedTargetChainsList: ['ton'],
         hideSendAddress: true,
-        connectedWallets: {
-          default: appKitWalletAddress,
-          ton: tonAddress,
-        },
+        connectedWallets,
         sendAddress: tonAddress,
         walletSupportedChains,
         fetchQuote,
