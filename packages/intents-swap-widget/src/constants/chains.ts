@@ -55,6 +55,7 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   sui: 'sui:mainnet',
   ton: 'ton:mainnet',
   cardano: 'cardano:mainnet',
+  ltc: 'ltc:mainnet',
 };
 
 export const NOT_EVM_CHAINS = [
@@ -67,6 +68,7 @@ export const NOT_EVM_CHAINS = [
   'near',
   'sol',
   'zec',
+  'ltc',
   'cardano',
 ] as const;
 
@@ -194,6 +196,11 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'cardano',
     label: 'Cardano',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/cardano.svg',
+  },
+  ltc: {
+    id: 'ltc',
+    label: 'Litecoin',
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ltc.svg',
   },
 };
 
