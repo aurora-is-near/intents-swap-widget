@@ -285,4 +285,28 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/34150.png',
     name: 'NearKat',
   },
+  itlx: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/itlx.svg',
+    name: 'ITLX',
+  },
+  ltc: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ltc.svg',
+    name: 'LTC',
+  },
+  aster: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/aster.svg',
+    name: 'ASTER',
+  },
+  spx: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/spx.svg',
+    name: 'SPX',
+  },
+  eure: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/eure.svg',
+    name: 'EURe',
+  },
+  gbpe: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/gbpe.svg',
+    name: 'GBPE',
+  },
 };
