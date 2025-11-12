@@ -19,7 +19,7 @@ const getCurrentChainId = async (provider: Eip1193Provider) => {
   return parseInt(chainId, 16);
 };
 
-export const useSwitchChain = ({ providers }: { providers: Providers }) => {
+export const useSwitchChain = ({ providers }: { providers?: Providers }) => {
   const { ctx } = useUnsafeSnapshot();
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const [isSwitchingChainRequired, setIsSwitchingChainRequired] =
@@ -28,9 +28,9 @@ export const useSwitchChain = ({ providers }: { providers: Providers }) => {
   // Check if chain switching is needed
   const checkIfSwitchingIsRequired = useCallback(async () => {
     const provider =
-      typeof providers.evm === 'function'
+      typeof providers?.evm === 'function'
         ? await providers.evm()
-        : providers.evm;
+        : providers?.evm;
 
     if (!ctx.sourceToken || !provider) {
       return false;
@@ -54,9 +54,9 @@ export const useSwitchChain = ({ providers }: { providers: Providers }) => {
 
   const switchChain = useCallback(async () => {
     const provider =
-      typeof providers.evm === 'function'
+      typeof providers?.evm === 'function'
         ? await providers.evm()
-        : providers.evm;
+        : providers?.evm;
 
     if (!ctx.sourceToken || !provider) {
       return false;

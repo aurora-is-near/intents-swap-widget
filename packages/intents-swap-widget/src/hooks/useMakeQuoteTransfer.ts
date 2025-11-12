@@ -24,7 +24,7 @@ export type QuoteTransferArgs = {
   makeTransfer?: (
     args: MakeTransferArgs,
   ) => Promise<MakeTransferResult> | MakeTransferResult;
-  providers: Providers;
+  providers?: Providers;
 };
 
 export const useMakeQuoteTransfer = ({
@@ -33,7 +33,7 @@ export const useMakeQuoteTransfer = ({
 }: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { make: makeEvmTransfer } = useMakeEvmTransfer({
-    provider: providers.evm,
+    provider: providers?.evm,
   });
 
   const getTransferFunction = (depositAddress: string) => {
