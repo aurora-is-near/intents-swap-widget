@@ -5,6 +5,9 @@ import { isEth, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { Providers } from '../types/providers';
+import { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
+import { useConfig } from '../config';
+import { isSolanaAddress } from '../utils/solana/isSolanaAddress';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -32,8 +35,14 @@ export const useMakeQuoteTransfer = ({
   providers,
 }: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
+  const { alchemyApiKey } = useConfig();
   const { make: makeEvmTransfer } = useMakeEvmTransfer({
     provider: providers?.evm,
+  });
+
+  const { make: makeSolanaTransfer } = useMakeSolanaTransfer({
+    provider: providers?.sol,
+    alchemyApiKey,
   });
 
   const getTransferFunction = (depositAddress: string) => {
@@ -43,6 +52,10 @@ export const useMakeQuoteTransfer = ({
 
     if (isEvmAddress(depositAddress)) {
       return makeEvmTransfer;
+    }
+
+    if (isSolanaAddress(depositAddress)) {
+      return makeSolanaTransfer;
     }
 
     throw new TransferError({

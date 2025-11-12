@@ -25,6 +25,7 @@ import {
   SuccessScreen,
   SwapCard,
   useMakeEvmTransfer,
+  useMakeSolanaTransfer,
   WidgetConfig,
   WidgetConfigProvider,
   WidgetContainer,
@@ -431,6 +432,11 @@ export const Page = () => {
     provider: providers.evm,
   });
 
+  const { make: makeSolanaTransfer } = useMakeSolanaTransfer({
+    provider: providers?.sol,
+    alchemyApiKey: ALCHEMY_API_KEY,
+  });
+
   const [isTokensModalOpen, setIsTokensModalOpen] = useState(false);
   const [makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -477,106 +483,6 @@ export const Page = () => {
     setMakeTransferArgs(null);
     setSwaps([]);
     swapStatus.current = DEFAULT_SWAP_STATUS_MAP;
-  };
-
-  const makeSolanaTransfer = async (args: MakeTransferArgs) => {
-    if (!providers.sol?.publicKey) {
-      throw new Error('No Solana wallet connected');
-    }
-
-    const { Connection, PublicKey, SystemProgram, Transaction } = await import(
-      '@solana/web3.js'
-    );
-
-    const connection = new Connection(
-      `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-    );
-
-    const fromPubkey = providers.sol.publicKey;
-    const toPubkey = new PublicKey(args.address);
-
-    if (!args.tokenAddress) {
-      // Validate amount
-      const lamports = BigInt(args.amount);
-
-      if (lamports <= 0n) {
-        throw new Error('Transfer amount must be positive');
-      }
-
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports,
-        }),
-      );
-
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = fromPubkey;
-
-      const signedTx = await providers.sol.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(
-        signedTx.serialize(),
-        {
-          skipPreflight: false,
-          maxRetries: 3,
-        },
-      );
-
-      // Don't wait for confirmation - just return the signature
-      // The 1Click API will handle monitoring the transaction
-      return { hash: signature };
-    }
-
-    const { getAssociatedTokenAddress, createTransferInstruction } =
-      await import('@solana/spl-token');
-
-    // Validate amount
-    const tokenAmount = BigInt(args.amount);
-
-    if (tokenAmount <= 0n) {
-      throw new Error('Transfer amount must be positive');
-    }
-
-    const mintPubkey = new PublicKey(args.tokenAddress);
-    const fromTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      fromPubkey,
-    );
-
-    const toTokenAccount = await getAssociatedTokenAddress(
-      mintPubkey,
-      toPubkey,
-    );
-
-    const transaction = new Transaction().add(
-      createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        fromPubkey,
-        tokenAmount,
-      ),
-    );
-
-    const { blockhash } = await connection.getLatestBlockhash();
-
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = fromPubkey;
-
-    const signedTx = await providers.sol.signTransaction(transaction);
-    const signature = await connection.sendRawTransaction(
-      signedTx.serialize(),
-      {
-        skipPreflight: false,
-        maxRetries: 3,
-      },
-    );
-
-    // Don't wait for confirmation - just return the signature
-    // The 1Click API will handle monitoring the transaction
-    return { hash: signature };
   };
 
   const confirmOneClickSwap = async (args: MakeTransferArgs) => {

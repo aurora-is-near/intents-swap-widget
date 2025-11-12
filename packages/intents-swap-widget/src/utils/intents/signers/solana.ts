@@ -1,12 +1,7 @@
 import { utils } from '@defuse-protocol/internal-utils';
 import { createIntentSignerViem } from '@defuse-protocol/bridge-sdk';
 import bs58 from 'bs58';
-import type { PublicKey } from '@solana/web3.js';
-
-export interface SolanaWalletAdapter {
-  publicKey?: Uint8Array | PublicKey | null;
-  signMessage: ({ message }: { message: Uint8Array }) => Promise<Uint8Array>;
-}
+import { SolanaProvider } from '../../../types/providers';
 
 type SignIntentResult = ReturnType<
   ReturnType<typeof createIntentSignerViem>['signIntent']
@@ -20,7 +15,7 @@ export class IntentSignerSolana
 {
   constructor(
     private account: { walletAddress: string },
-    private solanaWallet: SolanaWalletAdapter,
+    private solanaWallet: SolanaProvider,
   ) {}
 
   async signIntent(intent: SignIntentPayload): SignIntentResult {
