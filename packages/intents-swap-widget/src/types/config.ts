@@ -23,9 +23,13 @@ export type WidgetConfig = {
   sendAddress?: string | null;
 
   // Quotes & Transfers
-  defaultMaxSlippage: number;
+  slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
+  appFees?: {
+    recipient: string;
+    fee: number;
+  }[];
 
   // Tokens filtering
   showIntentTokens: boolean;
@@ -45,7 +49,6 @@ export type WidgetConfig = {
   };
 
   // API
-  oneClickApiQuoteProxyUrl: string;
   fetchQuote?: (
     data: QuoteRequest,
     options: FetchQuoteOptions,
@@ -56,7 +59,6 @@ export type WidgetConfig = {
   // Balance loading
   alchemyApiKey?: string;
   tonCenterApiKey?: string;
-  loadBalancesForSendAddress?: boolean;
 
   // UI
   hideSendAddress?: boolean;

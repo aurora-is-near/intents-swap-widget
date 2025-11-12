@@ -17,8 +17,6 @@ import {
   OpenAPI,
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useMemo, useRef, useState } from 'react';
-import { useAppKitProvider } from '@reown/appkit/react';
-import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
 import {
   Button,
   Chains,
@@ -39,6 +37,7 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
+import { useProviders } from './hooks/useProviders';
 
 // Client-side Alchemy API key - safe to expose in frontend code
 // This key is rate-limited and domain-restricted by Alchemy
@@ -442,16 +441,17 @@ export const Page = () => {
     isConnecting: isAppKitConnecting,
   } = useAppKitWallet();
 
+  const providers = useProviders();
   const { address: tonAddress, isConnecting: isTonConnecting } = useTonWallet();
   const [tonConnect] = useTonConnectUI();
   const omnistonQuote = useRef<OmnistonQuote>(null);
   const oneClickQuote = useRef<OneClickQuote>(null);
   const swapStatus = useRef<SwapStatusMap>(DEFAULT_SWAP_STATUS_MAP);
 
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana');
+  const { make: makeEvmTransfer } = useMakeEvmTransfer({
+    provider: providers.evm,
+  });
 
-  const { make: makeEvmTransfer } = useMakeEvmTransfer();
   const { make: makeSolanaTransfer } = useMakeSolanaTransfer({
     provider: solanaProvider,
     alchemyApiKey: ALCHEMY_API_KEY,
@@ -950,7 +950,7 @@ export const Page = () => {
         },
       }}
       localisation={{
-        'submit.active.external.swap': 'Swap now',
+        'submit.active.swap': 'Swap now',
       }}
       theme={{
         colorScheme: 'dark',
@@ -1012,6 +1012,7 @@ export const Page = () => {
         className={showConfirmSwaps ? 'hidden' : undefined}
         isOneWay
         isFullPage
+        providers={providers}
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
         onMsg={(msg) => {
@@ -1045,7 +1046,12 @@ export const Page = () => {
                 strokeWidth="0.5"
               />
             </svg>
-            <span className="text-sw-gray-50">Aurora Labs</span>
+            <span className="text-sw-gray-50">
+              Aurora Labs &
+              <a href="https://ston.fi/" className="ml-1 hover:underline">
+                STON.fi
+              </a>
+            </span>
           </div>
         }
       />

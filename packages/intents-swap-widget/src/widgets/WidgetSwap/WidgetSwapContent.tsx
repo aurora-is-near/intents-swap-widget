@@ -217,8 +217,8 @@ export const WidgetSwapContent = ({
               makeTransfer={makeTransfer}
               label={
                 ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-                  ? 'Swap'
-                  : 'Swap & send'
+                  ? t('submit.active.swap', 'Swap')
+                  : t('submit.active.intentsSwap', 'Swap & send')
               }
               onSuccess={(transfer) => {
                 setTransferResult(transfer);

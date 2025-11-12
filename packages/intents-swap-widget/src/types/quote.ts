@@ -26,4 +26,5 @@ export type Quote = QuoteDry | QuoteReal;
 
 export type FetchQuoteOptions = {
   isRefetch?: boolean;
+  signal?: AbortSignal;
 };

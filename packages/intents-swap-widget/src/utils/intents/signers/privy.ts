@@ -1,7 +1,7 @@
 import { utils } from '@defuse-protocol/internal-utils';
 import { createIntentSignerViem } from '@defuse-protocol/bridge-sdk';
-import type { Eip1193Provider } from 'ethers';
 
+import { EvmProvider } from '@/types';
 import { WidgetError } from '@/errors';
 
 type SignIntentResult = ReturnType<
@@ -12,17 +12,17 @@ type SignIntentPayload = Parameters<
 >[0];
 
 interface IPrivySigner extends ReturnType<typeof createIntentSignerViem> {
-  getProvider: () => Promise<Eip1193Provider>;
+  provider: EvmProvider;
 }
 
 export class IntentSignerPrivy implements IPrivySigner {
-  declare getProvider: () => Promise<Eip1193Provider>;
+  declare provider: EvmProvider;
 
   constructor(
     private account: { walletAddress: string },
-    getProvider: () => Promise<Eip1193Provider>,
+    provider: EvmProvider,
   ) {
-    this.getProvider = getProvider;
+    this.provider = provider;
   }
 
   async signIntent(intent: SignIntentPayload): SignIntentResult {
@@ -39,9 +39,16 @@ export class IntentSignerPrivy implements IPrivySigner {
         }),
     });
 
-    const provider = await this.getProvider();
-    const accounts = await provider.request({ method: 'eth_requestAccounts' });
-    const signature = await provider.request({
+    const resolvedProvider =
+      typeof this.provider === 'function'
+        ? await this.provider()
+        : this.provider;
+
+    const accounts = await resolvedProvider.request({
+      method: 'eth_requestAccounts',
+    });
+
+    const signature = await resolvedProvider.request({
       method: 'personal_sign',
       params: [message, accounts[0]],
     });

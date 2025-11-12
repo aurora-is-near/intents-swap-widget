@@ -1,59 +1,42 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Eip1193Provider } from 'ethers';
+import { Providers } from '../types';
 import { EVM_CHAIN_IDS_MAP } from '@/constants/chains';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils';
 import { logger } from '@/logger';
 import { switchEthereumChain } from '@/utils/evm/switchEthereumChain';
 
-export const useSwitchChain = () => {
+const getCurrentChainId = async (provider: Eip1193Provider) => {
+  if (!provider) {
+    return;
+  }
+
+  const chainId = await provider.request({
+    method: 'eth_chainId',
+  });
+
+  return parseInt(chainId, 16);
+};
+
+export const useSwitchChain = ({ providers }: { providers?: Providers }) => {
   const { ctx } = useUnsafeSnapshot();
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const [isSwitchingChainRequired, setIsSwitchingChainRequired] =
     useState(false);
 
-  const [currentWalletChainId, setCurrentWalletChainId] = useState<
-    number | null
-  >(null);
-
-  // Auto-detect current wallet chain ID from window.ethereum
-  useEffect(() => {
-    const updateChainId = async () => {
-      if (!window.ethereum) {
-        return;
-      }
-
-      try {
-        const chainId = await window.ethereum.request({
-          method: 'eth_chainId',
-        });
-
-        setCurrentWalletChainId(parseInt(chainId, 16));
-      } catch (error) {
-        logger.error('Failed to get current chain ID:', error);
-      }
-    };
-
-    void updateChainId();
-
-    // Listen for chain changes
-    if (window?.ethereum) {
-      const handleChainChanged = (chainId: string) => {
-        setCurrentWalletChainId(parseInt(chainId, 16));
-      };
-
-      window.ethereum.on?.('chainChanged', handleChainChanged);
-
-      return () => {
-        window.ethereum?.removeListener?.('chainChanged', handleChainChanged);
-      };
-    }
-  }, []);
-
   // Check if chain switching is needed
-  const checkIfSwitchingIsRequired = useCallback(() => {
-    if (!ctx.sourceToken || !window.ethereum) {
+  const checkIfSwitchingIsRequired = useCallback(async () => {
+    const provider =
+      typeof providers?.evm === 'function'
+        ? await providers.evm()
+        : providers?.evm;
+
+    if (!ctx.sourceToken || !provider) {
       return false;
     }
+
+    const currentWalletChainId = await getCurrentChainId(provider);
 
     // Only for EVM chains
     if (!isEvmChain(ctx.sourceToken.blockchain)) {
@@ -67,10 +50,15 @@ export const useSwitchChain = () => {
     }
 
     return currentWalletChainId !== requiredChainId;
-  }, [ctx.sourceToken, currentWalletChainId]);
+  }, [ctx.sourceToken, providers]);
 
   const switchChain = useCallback(async () => {
-    if (!ctx.sourceToken || !window.ethereum) {
+    const provider =
+      typeof providers?.evm === 'function'
+        ? await providers.evm()
+        : providers?.evm;
+
+    if (!ctx.sourceToken || !provider) {
       return false;
     }
 
@@ -88,9 +76,7 @@ export const useSwitchChain = () => {
       setIsSwitchingChain(true);
 
       // Use shared utility function for chain switching
-      await switchEthereumChain(targetChainId);
-
-      setCurrentWalletChainId(targetChainId);
+      await switchEthereumChain(targetChainId, provider);
 
       return true;
     } catch (error: unknown) {
@@ -100,10 +86,10 @@ export const useSwitchChain = () => {
     } finally {
       setIsSwitchingChain(false);
     }
-  }, [ctx.sourceToken]);
+  }, [ctx.sourceToken, providers]);
 
   useEffect(() => {
-    setIsSwitchingChainRequired(checkIfSwitchingIsRequired());
+    void checkIfSwitchingIsRequired().then(setIsSwitchingChainRequired);
   }, [checkIfSwitchingIsRequired]);
 
   return {

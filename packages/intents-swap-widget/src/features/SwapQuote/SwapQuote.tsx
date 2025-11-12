@@ -14,7 +14,7 @@ type Props = {
 
 export const SwapQuote = ({ className }: Props) => {
   const { t } = useTypedTranslation();
-  const { defaultMaxSlippage } = useConfig();
+  const { slippageTolerance } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
   const price =
@@ -50,7 +50,7 @@ export const SwapQuote = ({ className }: Props) => {
       <Notes>
         <Notes.Item
           label={t('quote.result.maxSlippage.label', 'Max slippage')}
-          value={`${(defaultMaxSlippage * 100).toFixed(2)}%`}
+          value={`${(slippageTolerance / 100).toFixed(2)}%`}
         />
         {!!ctx.walletAddress && (
           <Notes.Item

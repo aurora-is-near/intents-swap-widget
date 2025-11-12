@@ -2,7 +2,6 @@ import {
   Chain,
   createWalletClient,
   custom,
-  EIP1193Provider,
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
@@ -20,12 +19,7 @@ import { MakeTransferArgs } from '../types';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { switchEthereumChain } from '../utils/evm/switchEthereumChain';
 import { EVM_CHAINS } from '../constants';
-
-declare global {
-  interface Window {
-    ethereum?: EIP1193Provider;
-  }
-}
+import { Providers } from '../types/providers';
 
 const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   eth: mainnet,
@@ -39,7 +33,11 @@ const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   avax: null,
 };
 
-export const useMakeEvmTransfer = () => {
+export const useMakeEvmTransfer = ({
+  provider,
+}: {
+  provider?: Providers['evm'];
+}) => {
   const make = async ({
     address,
     amount,
@@ -48,6 +46,9 @@ export const useMakeEvmTransfer = () => {
     isNativeEthTransfer,
     chain: chainKey,
   }: MakeTransferArgs) => {
+    const injectedProvider =
+      typeof provider === 'function' ? await provider() : provider;
+
     if (!isEvmAddress(address)) {
       throw new Error(`Invalid EVM address: ${address}`);
     }
@@ -56,21 +57,25 @@ export const useMakeEvmTransfer = () => {
       throw new Error('EVM chain ID is required for EVM transfers.');
     }
 
-    if (!window.ethereum) {
+    if (!injectedProvider) {
       throw new Error('No injected Ethereum wallet found.');
     }
 
     // Automatically switch to the correct chain if needed
-    await switchEthereumChain(evmChainId);
+    await switchEthereumChain(evmChainId, injectedProvider);
 
     // Create wallet client from injected wallet (e.g. MetaMask, AppKit)
     const walletClient = createWalletClient({
-      transport: custom(window.ethereum),
+      transport: custom(injectedProvider),
     });
 
-    // Request addresses first (needed for AppKit/WalletConnect)
-    const addresses = await walletClient.requestAddresses();
-    const from = addresses[0];
+    // Try to get addresses without prompting first (works for MetaMask and already-connected wallets)
+    let [from] = await walletClient.getAddresses();
+
+    // Fallback: If no address found, request addresses (needed for AppKit/WalletConnect)
+    if (!from) {
+      [from] = await walletClient.requestAddresses();
+    }
 
     if (!from) {
       throw new Error('No EVM account found in the injected wallet.');

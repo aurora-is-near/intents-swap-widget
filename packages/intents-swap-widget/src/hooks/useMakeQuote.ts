@@ -47,8 +47,13 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
-    useConfig();
+  const {
+    intentsAccountType,
+    appName,
+    appFees,
+    fetchQuote,
+    slippageTolerance,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -60,21 +65,24 @@ export const useMakeQuote = () => {
       data: QuoteRequest,
       metadata: { isRefetch?: boolean },
     ): Promise<OneClickQuote> => {
+      const { signal } = abortController.current;
+
       if (fetchQuote) {
-        return fetchQuote(data, metadata);
+        return fetchQuote(data, {
+          ...metadata,
+          signal,
+        });
       }
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          oneClickApiQuoteProxyUrl,
+          'https://1click.chaindefuser.com/v0/quote',
           data,
-          {
-            signal: abortController.current.signal,
-          },
+          { signal },
         )
       ).data.quote;
     };
-  }, [oneClickApiQuoteProxyUrl, oneClickApi]);
+  }, [oneClickApi]);
 
   const make = async ({
     message,
@@ -147,7 +155,7 @@ export const useMakeQuote = () => {
     > = {
       // Settings
       dry: isDry,
-      slippageTolerance: 100, // 1%
+      slippageTolerance,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
       swapType:
         quoteType === 'exact_out'
@@ -178,6 +186,10 @@ export const useMakeQuote = () => {
 
     if (appName) {
       commonQuoteParams.referral = snakeCase(appName);
+    }
+
+    if (appFees) {
+      commonQuoteParams.appFees = [...appFees];
     }
 
     try {

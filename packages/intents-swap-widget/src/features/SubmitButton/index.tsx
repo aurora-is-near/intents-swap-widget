@@ -138,7 +138,7 @@ const SubmitButtonBase = (props: Props) => {
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
   const { isSwitchingChainRequired, switchChain, isSwitchingChain } =
-    useSwitchChain();
+    useSwitchChain({ providers });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
 

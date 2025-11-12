@@ -31,7 +31,11 @@ export const WidgetContainer = ({
       )}
       {children}
       {FooterComponent && (
-        <div className="flex flex-col gap-3 items-center w-full mt-sw-2xl">
+        <div
+          className={cn(
+            'flex flex-col gap-3 items-center w-full mt-sw-2xl',
+            isFullPage && 'mb-sw-2xl',
+          )}>
           {FooterComponent}
         </div>
       )}
@@ -45,13 +49,13 @@ export const WidgetContainer = ({
   return (
     <div
       className={cn(
-        'sm:h-full min-h-screen w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto flex sm:items-center justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
+        'sm:h-full min-h-screen sm:max-h-screen sm:overflow-auto w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto flex sm:items-center justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
         className,
       )}
       style={{
         backgroundColor: theme?.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
       }}>
-      <div className="w-full h-full max-w-[456px] min-w-[270px]">{jsx}</div>
+      <div className="w-ful max-h-full max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>
   );
 };
