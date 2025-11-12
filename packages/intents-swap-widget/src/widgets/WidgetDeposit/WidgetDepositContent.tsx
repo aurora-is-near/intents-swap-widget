@@ -215,7 +215,7 @@ export const WidgetDepositContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              label="Deposit now"
+              label={t('submit.active.deposit', 'Deposit now')}
               onSuccess={(transfer) => {
                 setTransferResult(transfer);
                 onMsg?.({ type: 'on_transfer_success' });

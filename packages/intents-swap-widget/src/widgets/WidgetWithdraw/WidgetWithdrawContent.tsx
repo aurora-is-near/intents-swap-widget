@@ -224,7 +224,7 @@ export const WidgetWithdrawContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              label="Swap & withdraw"
+              label={t('submit.active.withdraw', 'Swap & withdraw')}
               onSuccess={(transfer) => {
                 setTransferResult(transfer);
                 onMsg?.({ type: 'on_transfer_success' });
