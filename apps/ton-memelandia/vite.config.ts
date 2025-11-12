@@ -3,6 +3,7 @@ import svgr from 'vite-plugin-svgr';
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import vercel from 'vite-plugin-vercel';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 export default defineConfig({
@@ -19,6 +20,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vercel(),
+    nodePolyfills(),
     process.env.SENTRY_AUTH_TOKEN ? sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: "aurora-k2",
