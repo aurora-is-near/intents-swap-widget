@@ -23,7 +23,7 @@ export type WidgetConfig = {
   sendAddress?: string | null;
 
   // Quotes & Transfers
-  defaultMaxSlippage: number;
+  slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
 

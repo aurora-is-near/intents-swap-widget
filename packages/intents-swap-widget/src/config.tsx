@@ -34,7 +34,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   appIcon:
     'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg',
 
-  defaultMaxSlippage: 0.01,
+  slippageTolerance: 100, // 1%
   intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
   connectedWallets: {},

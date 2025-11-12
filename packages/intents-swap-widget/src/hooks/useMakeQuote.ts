@@ -47,8 +47,13 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
-    useConfig();
+  const {
+    intentsAccountType,
+    oneClickApiQuoteProxyUrl,
+    appName,
+    fetchQuote,
+    slippageTolerance,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -147,7 +152,7 @@ export const useMakeQuote = () => {
     > = {
       // Settings
       dry: isDry,
-      slippageTolerance: 100, // 1%
+      slippageTolerance,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
       swapType:
         quoteType === 'exact_out'
