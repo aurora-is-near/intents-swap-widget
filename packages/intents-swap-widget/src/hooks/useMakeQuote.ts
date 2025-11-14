@@ -48,6 +48,7 @@ const validateQuoteProperties = (
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const {
+    walletSupportedChains,
     intentsAccountType,
     appName,
     appFees,
@@ -116,6 +117,11 @@ export const useMakeQuote = () => {
         : (ctx.walletAddress ?? ''),
     });
 
+    const isRefundToIntentAccount =
+      recipientIntentsAccountId &&
+      (ctx.sourceToken.isIntent ||
+        !walletSupportedChains.includes(ctx.sourceToken.blockchain));
+
     const getRefundToAccountId = () => {
       if (isDry) {
         return getDryQuoteAddress(
@@ -124,7 +130,7 @@ export const useMakeQuote = () => {
         );
       }
 
-      if (ctx.sourceToken.isIntent && recipientIntentsAccountId) {
+      if (isRefundToIntentAccount) {
         return recipientIntentsAccountId;
       }
 
@@ -227,7 +233,7 @@ export const useMakeQuote = () => {
 
           // Refund
           refundTo: getRefundToAccountId(),
-          refundType: ctx.sourceToken.isIntent
+          refundType: isRefundToIntentAccount
             ? QuoteRequest.refundType.INTENTS
             : QuoteRequest.refundType.ORIGIN_CHAIN,
         },
