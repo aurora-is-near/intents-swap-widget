@@ -1,4 +1,4 @@
-import { reset } from './reset';
+import { reset, type ResetPayload } from './reset';
 import { tokenSelectRotate } from './tokenSelectRotate';
 import { errorSet, type ErrorSetPayload } from './errorSet';
 import { quoteSet, type QuoteSetPayload } from './quoteSet';
@@ -30,7 +30,7 @@ import type { Context } from '@/machine/context';
 import type { Machine } from '@/machine/machine';
 
 export type TradeEvents = {
-  reset: null;
+  reset: ResetPayload;
   tokenSelectRotate: null;
   validateDryInputs: null;
   validateExternalInputs: null;
