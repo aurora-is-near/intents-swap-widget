@@ -55,6 +55,7 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   sui: 'sui:mainnet',
   ton: 'ton:mainnet',
   cardano: 'cardano:mainnet',
+  ltc: 'ltc:mainnet',
 };
 
 export const NOT_EVM_CHAINS = [
@@ -67,6 +68,7 @@ export const NOT_EVM_CHAINS = [
   'near',
   'sol',
   'zec',
+  'ltc',
   'cardano',
 ] as const;
 
@@ -195,6 +197,11 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     label: 'Cardano',
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/cardano.svg',
   },
+  ltc: {
+    id: 'ltc',
+    label: 'Litecoin',
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ltc.svg',
+  },
 };
 
 export const CHAIN_EXPLORERS: Record<number, string> = {
@@ -235,3 +242,26 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
   397: 'https://nearblocks.io/txns/',
 };
+
+export const DEFAULT_CHAINS_ORDER: Chains[] = [
+  'eth',
+  'btc',
+  'near',
+  'sol',
+  'bsc',
+  'base',
+  'arb',
+  'cardano',
+  'sui',
+  'ton',
+  'pol',
+  'op',
+  'zec',
+  'tron',
+  'xrp',
+  'avax',
+  'bera',
+  'xrp',
+  'gnosis',
+  'doge',
+];

@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
+import { WalletAddresses } from '../../types';
+import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { useConfig } from '@/config';
-import { isEth } from '@/utils/evm/isEth';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
 import { isEvmBaseToken } from '@/utils/evm/isEvmBaseToken';
@@ -18,16 +20,17 @@ import type { Token } from '@/types/token';
 type Args = {
   token: Token;
   rpcs: ChainRpcUrls;
-  walletAddress: string | undefined;
+  connectedWallets: WalletAddresses;
 };
 
-export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
-  const { walletSupportedChains, tonCenterApiKey } = useConfig();
+export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
+  const { walletSupportedChains, tonCenterApiKey, alchemyApiKey } = useConfig();
+  const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
   return useQuery<string | null>({
     retry: 2,
     enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
-    queryKey: ['tokenBalance', token.assetId, walletAddress],
+    queryKey: ['tokenBalance', token.assetId, connectedWallets],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
       if (!walletAddress) {
@@ -58,8 +61,8 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
         return null;
       }
 
-      // 4. Eth balance on EVM chain
-      if (isEvmChain(token.blockchain) && isEth(token)) {
+      // 4. Fetch EVM native token balance (e.g., ETH, BNB, POL, etc.)
+      if (isEvmChain(token.blockchain) && isEvmBaseToken(token)) {
         const rpcUrls = rpcs[token.blockchain] ?? [];
 
         return rpcUrls.length > 0
@@ -68,10 +71,8 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
       }
 
       // 5. EVM chain's token balance
-      if (
-        isEvmToken(token) ??
-        (isEvmBaseToken(token) && isEvmChain(token.blockchain))
-      ) {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      if (isEvmToken(token) || isEvmChain(token.blockchain)) {
         const rpcUrls = rpcs[token.blockchain] ?? [];
 
         return rpcUrls.length > 0
@@ -79,8 +80,17 @@ export function useTokenBalanceRpc({ rpcs, token, walletAddress }: Args) {
           : null;
       }
 
+      // 6. TON token balance
       if (token.blockchain === 'ton') {
         return getTonTokenBalance(token, walletAddress, tonCenterApiKey);
+      }
+
+      // 7. Solana token balance
+      if (
+        token.blockchain === 'sol' &&
+        walletSupportedChains.includes(token.blockchain)
+      ) {
+        return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
       }
 
       logger.warn(

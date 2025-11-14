@@ -5,6 +5,7 @@ import { dirname, resolve, relative, extname } from "node:path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import svgr from "vite-plugin-svgr";
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -43,6 +44,14 @@ export default defineConfig({
       copyDtsFiles: false,
       rollupTypes: false,
       insertTypesEntry: true,
+    }),
+    nodePolyfills({
+      include: ['crypto', 'buffer', 'process', 'util'],
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
     }),
   ].filter(Boolean),
   css: {

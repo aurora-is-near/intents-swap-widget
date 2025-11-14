@@ -64,9 +64,13 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
     'quote_success_internal',
   ]);
 
-  const depositStatusQuery = useExternalDepositStatus(
-    isValidState ? ctx.quote.depositAddress : '',
-  );
+  const isBridgePoaDeposit =
+    ctx.sourceToken?.assetId === ctx.targetToken?.assetId;
+
+  const depositStatusQuery = useExternalDepositStatus({
+    depositAddress: isValidState ? ctx.quote.depositAddress : '',
+    depositAddressType: isBridgePoaDeposit ? 'poa' : 'one_click',
+  });
 
   useEffect(() => {
     const status = depositStatusQuery.data?.status;

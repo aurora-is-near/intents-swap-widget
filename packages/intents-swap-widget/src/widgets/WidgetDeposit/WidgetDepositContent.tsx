@@ -195,7 +195,7 @@ export const WidgetDepositContent = ({
             <DepositMethodSwitcher className="mt-sw-md">
               {({ isExternal }) =>
                 isExternal ? (
-                  <div className="gap-sw-2xl pb-sw-2xl flex flex-col">
+                  <div className="gap-sw-2xl flex flex-col justify-between">
                     <ExternalDeposit onMsg={handleExternalDepositMsg} />
                     {(ctx.state === 'quote_success_internal' ||
                       ctx.state === 'quote_success_external') && (
@@ -215,7 +215,7 @@ export const WidgetDepositContent = ({
             <SubmitButton
               providers={providers}
               makeTransfer={makeTransfer}
-              label="Deposit now"
+              label={t('submit.active.deposit', 'Deposit now')}
               onSuccess={(transfer) => {
                 setTransferResult(transfer);
                 onMsg?.({ type: 'on_transfer_success' });

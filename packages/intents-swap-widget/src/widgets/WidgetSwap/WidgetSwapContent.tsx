@@ -45,8 +45,7 @@ export const WidgetSwapContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectTransfer } = useComputedSnapshot();
-  const { walletAddress, chainsFilter, alchemyApiKey, refetchQuoteInterval } =
-    useConfig();
+  const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
 
   const { t } = useTypedTranslation();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
@@ -196,7 +195,7 @@ export const WidgetSwapContent = ({
               />
             </div>
 
-            {!!walletAddress &&
+            {!!ctx.walletAddress &&
               ctx.targetToken &&
               !ctx.targetToken.isIntent && (
                 <SendAddress
@@ -218,8 +217,8 @@ export const WidgetSwapContent = ({
               makeTransfer={makeTransfer}
               label={
                 ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent
-                  ? 'Swap'
-                  : 'Swap & send'
+                  ? t('submit.active.swap', 'Swap')
+                  : t('submit.active.intentsSwap', 'Swap & send')
               }
               onSuccess={(transfer) => {
                 setTransferResult(transfer);

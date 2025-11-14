@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
-import { useConfig } from '@/config';
+import { useUnsafeSnapshot } from '../../machine';
 import { notReachable } from '@/utils/notReachable';
 import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
@@ -17,8 +17,14 @@ type Props = {
 export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState<'initial' | 'error'>('initial');
-  const { walletAddress } = useConfig();
-  const { handleSign, isSigning } = useCompatibilityCheck({ providers });
+  const {
+    ctx: { walletAddress },
+  } = useUnsafeSnapshot();
+
+  const { handleSign, isSigning } = useCompatibilityCheck({
+    providers,
+    walletAddress,
+  });
 
   useEffect(() => {
     if (!walletAddress) {

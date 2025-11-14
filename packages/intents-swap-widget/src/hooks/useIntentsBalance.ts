@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { useTokens } from './useTokens';
+import { useUnsafeSnapshot } from '../machine';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -10,7 +11,10 @@ import { notReachable } from '@/utils/notReachable';
 import type { TokenBalances } from '@/types/token';
 
 export const useIntentsBalance = () => {
-  const { walletAddress, intentsAccountType } = useConfig();
+  const { intentsAccountType } = useConfig();
+  const {
+    ctx: { walletAddress },
+  } = useUnsafeSnapshot();
 
   const { tokens } = useTokens();
   const tokenIds = tokens
@@ -18,7 +22,7 @@ export const useIntentsBalance = () => {
     .map((token) => token.assetId);
 
   const intentsAccountId = getIntentsAccountId({
-    walletAddress: walletAddress ?? '',
+    walletAddress,
     addressType: intentsAccountType,
   });
 

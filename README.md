@@ -13,16 +13,6 @@ This package exports a number of pre-built widget components, `WidgetSwap`,
 
 See the `/apps/demo` folder for some examples of how to use these widgets.
 
-#### Making a transfer
-
-To each of these components we should pass in a `makeTransfer` function. When
-the user clicks the relevant submit button this function is called with an
-`args` object that contains details about the transfer, such as the `amount`,
-`address` and, if relevant, the `evmChainId`.
-
-It is currently the responsibility of the consuming application to handle this
-transfer.
-
 ## Custom implementation
 
 If your use cases cannot be met using the pre-built widgets described above you
@@ -66,56 +56,6 @@ _Types_ submodule exports domain types such as `Token`, `Chain`, `Quote` etc.
 > `import { useAlchemyBalanceIntegration } from '@aurora-is-near/intents-swap-widget/ext'`
 
 _Ext_ submodule contains various extensions that can be used with the widget but are completely optional. For example, it includes an Alchemy API integration that allows you to easily get token balances. Essentially, these are pre-written pieces of custom code.
-
-## Styling
-
-To apply the package styles you will need to add the `sw` class to some wrapping
-element, for example:
-
-```tsx
-<div className="sw">
-  {/* Your widget */}
-</div>
-```
-
-## Theming
-
-This package uses Tailwind, but your app doesn't have to. It exposes CSS variables to control styling. Each variable and its corresponding Tailwind token uses the `sw-` prefix to avoid conflicts with your app's theme and variables.
-
-To adjust theme, override CSS variables on your app's side (full list of defined
-variable you can find in `src/theme.css`):
-
-```css
-@import '@aurora-is-near/intents-swap-widget/styles';
-
-:root {
-    /* colors */
-    --sw-success-100: #0f0;
-    ...
-
-    /* spaces */
-    --sw-space-xs: 2px;
-    ...
-
-    /* texts */
-    .text-sw-label-s {
-        ...
-    }
-}
-```
-
-## Localisation
-
-To change copy within the widget you can pass a `localisation` object to the
-`WidgetConfigProvider`, for example:
-
-```tsx
-<WidgetConfigProvider localisation={{ 'quote.result.maxSlippage.label': 'MAX' }}>
-  // widget components
-</WidgetConfigProvider>
-```
-
-The available keys can be found in the `types/localisation.ts` file.
 
 ## Development
 

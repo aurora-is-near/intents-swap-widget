@@ -18,8 +18,13 @@ export type QuoteDry = QuoteResponseShort & {
 
 export type QuoteReal = QuoteResponseShort & {
   dry: false;
-  deadline: string;
+  deadline?: string;
   depositAddress: string;
 };
 
 export type Quote = QuoteDry | QuoteReal;
+
+export type FetchQuoteOptions = {
+  isRefetch?: boolean;
+  signal?: AbortSignal;
+};

@@ -1,6 +1,13 @@
 import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 import { Chains, ChainsFilter } from './chain';
 import { SimpleToken, Token } from './token';
+import { FetchQuoteOptions } from './quote';
+
+export type WalletAddresses = Partial<
+  Record<Chains | 'default', string | null>
+>;
+
+export type IntentsAccountType = 'evm' | 'near' | 'sol';
 
 export type WidgetConfig = {
   // Application metadata
@@ -8,17 +15,21 @@ export type WidgetConfig = {
   appIcon: string;
 
   // Connected wallet
-  intentsAccountType: 'evm' | 'near' | 'sol';
+  intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;
-  walletAddress?: string | null;
+  connectedWallets: WalletAddresses;
 
   // Destination wallet
   sendAddress?: string | null;
 
   // Quotes & Transfers
-  defaultMaxSlippage: number;
+  slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
+  appFees?: {
+    recipient: string;
+    fee: number;
+  }[];
 
   // Tokens filtering
   showIntentTokens: boolean;
@@ -38,8 +49,10 @@ export type WidgetConfig = {
   };
 
   // API
-  oneClickApiQuoteProxyUrl: string;
-  fetchQuote?: (data: QuoteRequest) => Promise<Quote>;
+  fetchQuote?: (
+    data: QuoteRequest,
+    options: FetchQuoteOptions,
+  ) => Promise<Quote>;
   fetchSourceTokens?: () => Promise<SimpleToken[]>;
   fetchTargetTokens?: () => Promise<SimpleToken[]>;
 

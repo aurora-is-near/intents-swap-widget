@@ -24,15 +24,17 @@ import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 type MakeArgs = {
   message?: string;
   quoteType?: 'exact_in' | 'exact_out';
+  options?: {
+    isRefetch?: boolean;
+  };
 };
 
 const validateQuoteProperties = (
   quote: OneClickQuote,
 ): quote is OneClickQuote & {
-  deadline: string;
   depositAddress: string;
 } => {
-  ['deadline', 'depositAddress'].forEach((property) => {
+  ['depositAddress'].forEach((property) => {
     if (!(property in quote)) {
       logger.error(`Missing ${property} in quote response`);
 
@@ -45,8 +47,14 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, oneClickApiQuoteProxyUrl, appName, fetchQuote } =
-    useConfig();
+  const {
+    walletSupportedChains,
+    intentsAccountType,
+    appName,
+    appFees,
+    fetchQuote,
+    slippageTolerance,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -54,26 +62,33 @@ export const useMakeQuote = () => {
   const abortController = useRef<AbortController>(new AbortController());
 
   const requestQuote = useMemo(() => {
-    return async (data: QuoteRequest): Promise<OneClickQuote> => {
+    return async (
+      data: QuoteRequest,
+      metadata: { isRefetch?: boolean },
+    ): Promise<OneClickQuote> => {
+      const { signal } = abortController.current;
+
       if (fetchQuote) {
-        return fetchQuote(data);
+        return fetchQuote(data, {
+          ...metadata,
+          signal,
+        });
       }
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          oneClickApiQuoteProxyUrl,
+          'https://1click.chaindefuser.com/v0/quote',
           data,
-          {
-            signal: abortController.current.signal,
-          },
+          { signal },
         )
       ).data.quote;
     };
-  }, [oneClickApiQuoteProxyUrl, oneClickApi]);
+  }, [oneClickApi]);
 
   const make = async ({
     message,
     quoteType = 'exact_in',
+    options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
@@ -102,6 +117,11 @@ export const useMakeQuote = () => {
         : (ctx.walletAddress ?? ''),
     });
 
+    const isRefundToIntentAccount =
+      recipientIntentsAccountId &&
+      (ctx.sourceToken.isIntent ||
+        !walletSupportedChains.includes(ctx.sourceToken.blockchain));
+
     const getRefundToAccountId = () => {
       if (isDry) {
         return getDryQuoteAddress(
@@ -110,7 +130,7 @@ export const useMakeQuote = () => {
         );
       }
 
-      if (ctx.sourceToken.isIntent && recipientIntentsAccountId) {
+      if (isRefundToIntentAccount) {
         return recipientIntentsAccountId;
       }
 
@@ -141,7 +161,7 @@ export const useMakeQuote = () => {
     > = {
       // Settings
       dry: isDry,
-      slippageTolerance: 100, // 1%
+      slippageTolerance,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
       swapType:
         quoteType === 'exact_out'
@@ -174,41 +194,51 @@ export const useMakeQuote = () => {
       commonQuoteParams.referral = snakeCase(appName);
     }
 
+    if (appFees) {
+      commonQuoteParams.appFees = [...appFees];
+    }
+
     try {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
-        request.current = requestQuote({
-          ...commonQuoteParams,
-          recipient: recipientIntentsAccountId,
-          recipientType: QuoteRequest.recipientType.INTENTS,
-          depositType: QuoteRequest.depositType.INTENTS,
+        request.current = requestQuote(
+          {
+            ...commonQuoteParams,
+            recipient: recipientIntentsAccountId,
+            recipientType: QuoteRequest.recipientType.INTENTS,
+            depositType: QuoteRequest.depositType.INTENTS,
 
-          // Refund
-          refundTo: recipientIntentsAccountId,
-          refundType: QuoteRequest.refundType.INTENTS,
-        });
+            // Refund
+            refundTo: recipientIntentsAccountId,
+            refundType: QuoteRequest.refundType.INTENTS,
+          },
+          options,
+        );
 
         quoteResponse = await request.current;
       }
 
-      request.current = requestQuote({
-        ...commonQuoteParams,
-        recipient:
-          !ctx.targetToken.isIntent && ctx.sendAddress
-            ? ctx.sendAddress
-            : recipientIntentsAccountId,
-        recipientType: ctx.targetToken.isIntent
-          ? QuoteRequest.recipientType.INTENTS
-          : QuoteRequest.recipientType.DESTINATION_CHAIN,
-        depositType: ctx.sourceToken.isIntent
-          ? QuoteRequest.depositType.INTENTS
-          : QuoteRequest.depositType.ORIGIN_CHAIN,
+      request.current = requestQuote(
+        {
+          ...commonQuoteParams,
+          recipient:
+            !ctx.targetToken.isIntent && ctx.sendAddress
+              ? ctx.sendAddress
+              : recipientIntentsAccountId,
+          recipientType: ctx.targetToken.isIntent
+            ? QuoteRequest.recipientType.INTENTS
+            : QuoteRequest.recipientType.DESTINATION_CHAIN,
+          depositType: ctx.sourceToken.isIntent
+            ? QuoteRequest.depositType.INTENTS
+            : QuoteRequest.depositType.ORIGIN_CHAIN,
 
-        // Refund
-        refundTo: getRefundToAccountId(),
-        refundType: ctx.sourceToken.isIntent
-          ? QuoteRequest.refundType.INTENTS
-          : QuoteRequest.refundType.ORIGIN_CHAIN,
-      });
+          // Refund
+          refundTo: getRefundToAccountId(),
+          refundType: isRefundToIntentAccount
+            ? QuoteRequest.refundType.INTENTS
+            : QuoteRequest.refundType.ORIGIN_CHAIN,
+        },
+        options,
+      );
 
       quoteResponse = await request.current;
     } catch (error: unknown) {

@@ -14,13 +14,14 @@ import { localStorageTyped } from '@/utils/localstorage';
 
 type Props = {
   providers: IntentsTransferArgs['providers'];
+  walletAddress?: string;
 };
 
-export function useCompatibilityCheck({ providers }: Props) {
+export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   const [isSigning, setIsSigning] = useState(false);
-  const { intentsAccountType, walletAddress } = useConfig();
+  const { intentsAccountType } = useConfig();
   const intentsAccountId = getIntentsAccountId({
-    walletAddress: walletAddress ?? '',
+    walletAddress,
     addressType: intentsAccountType,
   });
 
@@ -29,6 +30,13 @@ export function useCompatibilityCheck({ providers }: Props) {
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'No wallet connected' },
+      });
+    }
+
+    if (!intentsAccountType) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Intents account type is not defined' },
       });
     }
 
@@ -46,7 +54,11 @@ export function useCompatibilityCheck({ providers }: Props) {
           });
         }
 
-        const provider = await providers.evm();
+        const provider =
+          typeof providers.evm === 'function'
+            ? await providers.evm()
+            : providers.evm;
+
         const signatureData = await provider.request({
           method: 'personal_sign',
           params: [msg.ERC191.message, intentsAccountId],
@@ -117,6 +129,10 @@ export function useCompatibilityCheck({ providers }: Props) {
   }
 
   const handleSign = async (): Promise<boolean> => {
+    if (!intentsAccountType) {
+      return false;
+    }
+
     try {
       setIsSigning(true);
 

@@ -1,6 +1,7 @@
+import type { Machine } from '@/machine';
 import type { Context } from '@/machine/context';
 
-export const reset = (ctx: Context) => {
+export const reset = (ctx: Context, _payload: null, m: Machine) => {
   ctx.sourceToken = undefined;
   ctx.sourceTokenBalance = undefined;
   ctx.sourceTokenAmount = '';
@@ -17,4 +18,6 @@ export const reset = (ctx: Context) => {
   ctx.quote = undefined;
   ctx.quoteStatus = 'idle';
   ctx.transferStatus = { status: 'idle' };
+
+  return m;
 };

@@ -43,17 +43,12 @@ export type LocalisationKeys =
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
   // submit - active (swap)
-  | 'submit.active.transfer.swap'
-  | 'submit.active.internal.swap'
-  | 'submit.active.external.swap'
+  | 'submit.active.swap'
+  | 'submit.active.intentsSwap'
   // submit - active (withdraw)
-  | 'submit.active.transfer.withdraw'
-  | 'submit.active.internal.withdraw'
-  | 'submit.active.external.withdraw'
+  | 'submit.active.withdraw'
   // submit - active (deposit)
-  | 'submit.active.transfer.deposit'
-  | 'submit.active.internal.deposit'
-  | 'submit.active.external.deposit'
+  | 'submit.active.deposit'
   // submit - disabled
   | 'submit.disabled.temporary.label'
   | 'submit.disabled.temporary.message'
@@ -66,6 +61,7 @@ export type LocalisationKeys =
   | 'submit.pending.transfer.finalizing'
   | 'submit.pending.externalDeposit.waiting'
   | 'submit.pending.externalDeposit.processing'
+  | 'submit.pending.switchingChain'
   // wallet compatibility
   | 'walletCompatibility.modal.title.initial'
   | 'walletCompatibility.modal.title.error'

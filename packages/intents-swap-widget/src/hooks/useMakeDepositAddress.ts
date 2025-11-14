@@ -26,7 +26,7 @@ type DepositAddressResponse = {
 
 export const useMakeDepositAddress = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType, oneClickApiQuoteProxyUrl } = useConfig();
+  const { intentsAccountType } = useConfig();
 
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
@@ -59,7 +59,7 @@ export const useMakeDepositAddress = () => {
         },
       );
     };
-  }, [oneClickApiQuoteProxyUrl, oneClickApi]);
+  }, [oneClickApi]);
 
   const make = async (): Promise<Quote | undefined> => {
     const guardCurrentState = guardStates(ctx, [

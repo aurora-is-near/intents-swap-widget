@@ -6,11 +6,10 @@ import {
   type RouteConfig,
 } from '@defuse-protocol/bridge-sdk';
 import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
-import type { Eip1193Provider } from 'ethers';
 import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
-import type { SolanaWalletAdapter } from '../utils/intents/signers/solana';
+import { Providers } from '../types/providers';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
@@ -30,11 +29,7 @@ import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
 export type IntentsTransferArgs = {
-  providers?: {
-    sol?: undefined | null | SolanaWalletAdapter;
-    evm?: undefined | null | (() => Promise<Eip1193Provider>);
-    near?: undefined | null | (() => NearWallet);
-  };
+  providers?: Providers;
 };
 
 type MakeArgs = {
@@ -185,6 +180,13 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       | IntentSignerPrivy
       | ReturnType<typeof createIntentSignerNEP413>
       | undefined;
+
+    if (!intentsAccountType) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Intents account type is not defined' },
+      });
+    }
 
     switch (intentsAccountType) {
       case 'evm':

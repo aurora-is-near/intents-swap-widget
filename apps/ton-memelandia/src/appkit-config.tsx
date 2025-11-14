@@ -17,7 +17,7 @@ import {
 } from '@solana/wallet-adapter-wallets';
 
 const projectId = '76f61d4322c80976d1a24a1263a9d082';
-const appUrl = 'http://localhost:5173';
+const appUrl = 'https://www.ton-intents.com';
 
 const metadata = {
   name: 'Intents Swap Widget',
@@ -36,7 +36,7 @@ const evmNetworks = [
   base,
 ];
 
-export const wagmiAdapter = new WagmiAdapter({
+const wagmiAdapter = new WagmiAdapter({
   networks: evmNetworks,
   projectId,
   ssr: false,
