@@ -25,8 +25,9 @@ import {
   transferSetStatus,
   type TransferSetStatusPayload,
 } from './transferSetStatus';
-import type { Context } from '@/machine/context';
 import { machine } from '@/machine/machine';
+import type { Context } from '@/machine/context';
+import type { Machine } from '@/machine/machine';
 
 export type TradeEvents = {
   reset: null;
@@ -49,9 +50,11 @@ export type TradeEvents = {
 
 const onEvent = <E extends keyof TradeEvents>(
   event: E,
-  handler: (ctx: Context, payload: TradeEvents[E]) => void,
+  handler: (ctx: Context, payload: TradeEvents[E], m: Machine) => void,
 ) => {
-  machine.on(event, (ctx, payload) => handler(ctx, payload as TradeEvents[E]));
+  return machine.on(event, (ctx, payload) =>
+    handler(ctx, payload as TradeEvents[E], machine),
+  );
 };
 
 export const registerEvents = () => {

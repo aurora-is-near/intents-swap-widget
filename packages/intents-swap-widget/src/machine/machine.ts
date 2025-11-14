@@ -142,3 +142,5 @@ export const moveTo = <S extends MachineState>(
     onMoved?.(state);
   }
 };
+
+export type Machine = typeof machine;

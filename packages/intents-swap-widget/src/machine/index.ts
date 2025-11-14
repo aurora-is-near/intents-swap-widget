@@ -1,4 +1,4 @@
-export type { MachineState } from './machine';
+export type { MachineState, Machine } from './machine';
 export type { Context } from './context';
 
 export {
