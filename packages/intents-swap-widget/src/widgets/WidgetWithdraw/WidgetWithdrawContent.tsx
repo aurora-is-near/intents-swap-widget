@@ -54,7 +54,7 @@ export const WidgetWithdrawContent = ({
   >();
 
   useEffect(() => {
-    fireEvent('reset', null);
+    fireEvent('reset', { clearWalletAddress: true });
   }, []);
 
   useStoreSideEffects({

@@ -74,7 +74,7 @@ export const WidgetDepositContent = ({
   );
 
   useEffect(() => {
-    fireEvent('reset', null);
+    fireEvent('reset', { clearWalletAddress: true });
 
     return () => {
       fireEvent('depositTypeSet', { isExternal: false });

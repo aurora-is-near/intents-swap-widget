@@ -7,7 +7,7 @@ import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import type { TransferResult } from '@/types/transfer';
 
-import { fireEvent, moveTo } from '@/machine';
+import { fireEvent, useUnsafeSnapshot } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
 
 type Msg = { type: 'on_dismiss_success' };
@@ -26,12 +26,14 @@ export const SuccessScreen = ({
   onMsg,
   hideHeader,
 }: Props) => {
+  const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const lines = Array.isArray(message) ? message : [message];
 
   const onDismiss = () => {
-    fireEvent('reset', null);
-    moveTo('initial_dry');
+    fireEvent('reset', { clearWalletAddress: false }).moveTo(
+      ctx.walletAddress ? 'initial_wallet' : 'initial_dry',
+    );
     onMsg?.({ type: 'on_dismiss_success' });
   };
 
