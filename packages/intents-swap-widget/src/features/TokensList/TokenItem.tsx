@@ -57,7 +57,7 @@ export const TokenItem = ({
               <span className="text-sw-label-s text-sw-gray-100">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName !== 'Near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-sw-xs">

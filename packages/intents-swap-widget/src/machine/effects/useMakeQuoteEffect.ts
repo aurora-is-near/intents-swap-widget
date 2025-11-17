@@ -28,6 +28,7 @@ export const useMakeQuoteEffect = ({
   const {
     isDirectTransfer,
     isDirectNonNearWithdrawal,
+    isSameAssetDiffChainWithdrawal,
     isNearToIntentsSameAssetTransfer,
     isDirectNearDeposit,
   } = useComputedSnapshot();
@@ -35,11 +36,11 @@ export const useMakeQuoteEffect = ({
   const isDry = isDryQuote(ctx);
 
   const shouldRun =
-    isEnabled &&
-    !isDirectTransfer &&
-    !isDirectNonNearWithdrawal &&
-    !isNearToIntentsSameAssetTransfer &&
-    !isDirectNearDeposit;
+    (isEnabled && isSameAssetDiffChainWithdrawal) ||
+    (!isDirectTransfer &&
+      !isDirectNonNearWithdrawal &&
+      !isNearToIntentsSameAssetTransfer &&
+      !isDirectNearDeposit);
 
   const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
   const { make: makeDepositAddress, cancel: cancelDepositAddress } =
