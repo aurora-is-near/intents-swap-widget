@@ -90,12 +90,19 @@ export const TokenInputWithToken = ({
               : () => onMsg({ type: 'on_click_select_token' })
           }
           className={cn(
-            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500 transition-colors',
+            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md transition-colors',
             {
               'animate-pulse cursor-default': state === 'disabled',
+              'bg-sw-gray-600 hover:bg-sw-gray-500': !token.isIntent,
+              'bg-sw-mauve-600 hover:bg-sw-mauve-500': token.isIntent,
             },
           )}>
-          <TokenIcon chainShowIcon={!token.isIntent} {...token} />
+          <TokenIcon
+            chainShowIcon={
+              !token.isIntent || token.chainName.toLowerCase() !== 'near'
+            }
+            {...token}
+          />
           <span className="text-sw-label-m text-sw-gray-50">
             {token.symbol}
           </span>
@@ -107,7 +114,6 @@ export const TokenInputWithToken = ({
           {quoteUsdDelta ? (
             <Badge
               size="sm"
-              detail="dimmed"
               isClickable={false}
               variant={getPercentageDeltaColor(quoteUsdDelta)}>
               {`${quoteUsdDelta > 0 ? '+' : ''}${quoteUsdDelta.toFixed(2)}%`}

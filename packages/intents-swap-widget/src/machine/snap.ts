@@ -8,6 +8,7 @@ import { guardStates } from '@/machine/guards';
 import { getUsdTradeDelta } from '@/machine/computed/getUsdTradeDelta';
 import { getIsDirectTransfer } from '@/machine/computed/getIsDirectTransfer';
 import { getIsDirectNonNearWithdrawal } from '@/machine/computed/getIsDirectNonNearWithdrawal';
+import { getIsSameAssetDiffChainWithdrawal } from '@/machine/computed/getIsSameAssetDiffChainWithdrawal';
 import { getIsNearToIntentsSameAssetTransfer } from '@/machine/computed/getIsNearToIntentsSameAssetTransfer';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
@@ -22,6 +23,8 @@ const computed = derive({
   isDirectNearDeposit: (get) => getIsDirectNearDeposit(get(store.context)),
   isDirectNonNearWithdrawal: (get) =>
     getIsDirectNonNearWithdrawal(get(store.context)),
+  isSameAssetDiffChainWithdrawal: (get) =>
+    getIsSameAssetDiffChainWithdrawal(get(store.context)),
 });
 
 export const useComputedSnapshot = () => {
