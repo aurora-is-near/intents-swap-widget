@@ -103,6 +103,7 @@ export const useMakeQuote = () => {
 
       logger.error(`[WIDGET] ${msg}`);
 
+      console.log('---0007');
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
@@ -142,6 +143,7 @@ export const useMakeQuote = () => {
 
       logger.error(`[WIDGET] ${msg}`);
 
+      console.log('---0008');
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },

@@ -1,7 +1,9 @@
 import type { Context } from '../context';
 import type { DeepReadonly } from '@/types/utils';
 
-export const getIsDirectTransfer = (ctx: DeepReadonly<Context>): boolean => {
+export const getIsDirectNearTokenWithdrawal = (
+  ctx: DeepReadonly<Context>,
+): boolean => {
   return !!(
     ctx.sourceToken &&
     ctx.targetToken &&

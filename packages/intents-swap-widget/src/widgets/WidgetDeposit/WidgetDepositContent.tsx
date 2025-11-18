@@ -42,7 +42,7 @@ export const WidgetDepositContent = ({
   isLoading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { t } = useTypedTranslation();
@@ -210,7 +210,7 @@ export const WidgetDepositContent = ({
               }
             </DepositMethodSwitcher>
 
-            {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
+            {!isDirectNearTokenWithdrawal && <SwapQuote className="mt-sw-md" />}
 
             <SubmitButton
               providers={providers}
