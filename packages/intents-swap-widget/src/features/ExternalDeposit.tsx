@@ -8,7 +8,13 @@ import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
-import { fireEvent, guardStates, moveTo, useUnsafeSnapshot } from '@/machine';
+import {
+  fireEvent,
+  guardStates,
+  moveTo,
+  useComputedSnapshot,
+  useUnsafeSnapshot,
+} from '@/machine';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
@@ -58,6 +64,7 @@ const Skeleton = () => {
 export const ExternalDeposit = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
 
   const isValidState = guardStates(ctx, [
     'quote_success_external',
@@ -65,7 +72,9 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   ]);
 
   const isBridgePoaDeposit =
-    ctx.sourceToken?.assetId === ctx.targetToken?.assetId;
+    (isNativeNearDeposit && ctx.isDepositFromExternalWallet) ||
+    (!isNativeNearDeposit &&
+      ctx.sourceToken?.assetId === ctx.targetToken?.assetId);
 
   const depositStatusQuery = useExternalDepositStatus({
     depositAddress: isValidState ? ctx.quote.depositAddress : '',

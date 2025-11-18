@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { notReachable } from '../../utils';
 import { useOneClickExternalDepositStatus } from './useOneClickExternalDepositStatus';
 import { usePoaExternalDepositStatus } from './usePoaExternalDepositStatus';
+import { WNEAR_ASSET_ID } from '@/constants/tokens';
 import { guardStates, useUnsafeSnapshot } from '@/machine';
+import { useComputedSnapshot } from '@/machine/snap';
 import { WidgetError } from '@/errors';
 import { logger } from '@/logger';
 
@@ -17,6 +19,7 @@ export const useExternalDepositStatus = ({
   depositAddressType,
 }: Args) => {
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
 
   const isValidState = guardStates(ctx, [
     'quote_success_external',
@@ -43,8 +46,10 @@ export const useExternalDepositStatus = ({
         case 'poa':
           return await pollPoaDepositStatus({
             amount: ctx.sourceTokenAmount,
-            assetId: ctx.sourceToken.assetId,
             blockchain: ctx.targetToken.blockchain,
+            assetId: isNativeNearDeposit
+              ? WNEAR_ASSET_ID
+              : ctx.sourceToken.assetId,
           });
         default:
           return notReachable(depositAddressType);
@@ -61,5 +66,6 @@ export const useExternalDepositStatus = ({
     enabled: !!depositAddress && isValidState,
     refetchInterval: 3000,
     retry: 3,
+    gcTime: 0, // do not cache!!!
   });
 };
