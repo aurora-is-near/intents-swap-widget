@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-redundant-type-constituents */
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
 import * as Icons from 'lucide-react';
