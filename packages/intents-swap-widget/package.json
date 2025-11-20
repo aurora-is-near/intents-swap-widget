@@ -17,7 +17,9 @@
     "prepublishOnly": "yarn run build",
     "build:watch": "vite build --watch",
     "build": "vite build",
-    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly"
+    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "test:generate-styles": "tailwindcss -i ./src/tailwind.css -o ./tests/tailwind.css",
+    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.js"
   },
   "publishConfig": {
     "access": "public",
