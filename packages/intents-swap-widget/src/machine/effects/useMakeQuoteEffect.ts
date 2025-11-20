@@ -29,6 +29,7 @@ export const useMakeQuoteEffect = ({
     isDirectNonNearWithdrawal,
     isDirectTokenOnNearDeposit,
     isDirectNearTokenWithdrawal,
+    isDirectTokenOnNearTransfer,
     isSameAssetDiffChainWithdrawal,
   } = useComputedSnapshot();
 
@@ -41,7 +42,8 @@ export const useMakeQuoteEffect = ({
         ctx.isDepositFromExternalWallet) ||
       (!isDirectNearTokenWithdrawal &&
         !isDirectNonNearWithdrawal &&
-        !isDirectTokenOnNearDeposit));
+        !isDirectTokenOnNearDeposit &&
+        !isDirectTokenOnNearTransfer));
 
   const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
   const { make: makeDepositAddress, cancel: cancelDepositAddress } =
