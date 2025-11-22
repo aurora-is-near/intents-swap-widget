@@ -1,4 +1,5 @@
-import { glob } from 'glob';
+// @ts-expect-error no glob package types
+import glob from 'glob';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative, extname } from 'node:path';
 
@@ -90,6 +91,7 @@ export default defineConfig({
       },
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
+        // @ts-expect-error file has type any
         glob.sync('src/**/*.{ts,tsx}').map((file) => [
           // 1. The name of the entry point
           // lib/nested/foo.js becomes nested/foo

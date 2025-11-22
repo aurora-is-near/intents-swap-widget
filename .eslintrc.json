@@ -1,9 +1,9 @@
 {
   "extends": "@aurora-is-near/eslint-config",
   "parserOptions": {
-  "project": [
-    "./apps/*/tsconfig.json",
-    "./packages/*/tsconfig.json"
-  ]
-}
+    "project": [
+      "./apps/*/tsconfig.json",
+      "./packages/*/tsconfig.json"
+    ]
+  }
 }

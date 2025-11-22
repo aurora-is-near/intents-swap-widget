@@ -34,7 +34,7 @@ const QrCode = ({ address }: { address: string }) => (
       <QRCodeSVG size={156} value={address} fgColor="#31343d" />
     </div>
     <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-md bg-sw-gray-600">
-      <span className="text-label-m text-sw-gray-100">
+      <span className="text-sw-label-m text-sw-gray-100">
         {formatAddressTruncate(address, 42)}
       </span>
       <CopyButton value={address} />
@@ -51,7 +51,7 @@ const Skeleton = () => {
       <div className="bg-sw-gray-600 h-[180px] w-[180px] animate-pulse rounded-md" />
       <div className="bg-sw-gray-600 h-[44px] w-full animate-pulse rounded-md flex items-center justify-center gap-sw-sm">
         <Icons.Loader className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
-        <span className="text-sw-gray-100 text-label-s">
+        <span className="text-sw-gray-100 text-sw-label-s">
           {!isNotEmptyAmount(ctx.sourceTokenAmount)
             ? t('deposit.external.loading.waiting', 'Waiting for token amount')
             : t('deposit.external.loading.fetching', 'Fetching new address')}

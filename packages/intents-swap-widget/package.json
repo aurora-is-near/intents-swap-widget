@@ -86,5 +86,8 @@
     "viem": "^2.38.3",
     "virtua": "^0.41.5",
     "zod": "^3.25.51"
+  },
+  "devDependencies": {
+    "@types/glob": "^9.0.0"
   }
 }
