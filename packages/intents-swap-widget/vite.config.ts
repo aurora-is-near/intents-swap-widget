@@ -1,5 +1,5 @@
 // @ts-expect-error no glob package types
-import glob from 'glob';
+import { glob } from 'glob';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative, extname } from 'node:path';
 
