@@ -56,6 +56,7 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   ton: 'ton:mainnet',
   cardano: 'cardano:mainnet',
   ltc: 'ltc:mainnet',
+  near: 'near:mainnet',
 };
 
 export const NOT_EVM_CHAINS = [

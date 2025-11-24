@@ -102,7 +102,6 @@ export const useMakeQuote = () => {
       const msg = `Unable to run quote in current state ${ctx.state}`;
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
@@ -141,7 +140,6 @@ export const useMakeQuote = () => {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },

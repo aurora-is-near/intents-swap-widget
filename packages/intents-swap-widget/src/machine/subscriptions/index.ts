@@ -41,7 +41,7 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
 
     // if wallet was disconnected - clean the state
     if (isWalletDisconnected(ctx, changes)) {
-      fireEvent('reset', null);
+      fireEvent('reset', { clearWalletAddress: true });
       moveTo('initial_dry');
 
       return;

@@ -5,7 +5,7 @@ import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageB
 import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
-import { useUnsafeSnapshot } from '@/machine/snap';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { TransferResult } from '@/types/transfer';
 
@@ -13,6 +13,7 @@ export function useMakeNEARFtTransferCall(
   nearWallet: null | undefined | (() => NearWallet),
 ) {
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
   const sourceTokenAddress = ctx.sourceToken?.contractAddress;
   const amount = ctx.quote?.amountIn ?? ctx.sourceTokenAmount;
 
@@ -91,11 +92,7 @@ export function useMakeNEARFtTransferCall(
 
     const tokenContractActions: Action[] = [];
 
-    if (
-      ctx.targetToken &&
-      ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
-      ctx.targetToken.assetId === WNEAR_ASSET_ID
-    ) {
+    if (ctx.targetToken && isNativeNearDeposit) {
       try {
         tokenContractActions.push({
           type: 'FunctionCall',

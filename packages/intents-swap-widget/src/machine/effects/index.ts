@@ -52,7 +52,9 @@ type Args = {
 
 export const registerStoreEvents = once(({ debug }: { debug: boolean }) => {
   if (debug) {
-    logger.debug('[WIDGET] Debug mode is enabled');
+    logger.debug(
+      `[WIDGET] Debug mode is enabled (package version: ${import.meta.env.SWAP_WIDGET_VERSION ?? 'unknown'})`,
+    );
   }
 
   registerEvents();

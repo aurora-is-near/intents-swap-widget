@@ -23,7 +23,6 @@ import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
-import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
@@ -145,8 +144,12 @@ const validateNearPublicKey = async (
 
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer, isDirectNonNearWithdrawal } = useComputedSnapshot();
   const { appName, intentsAccountType } = useConfig();
+  const {
+    isNativeNearDeposit,
+    isDirectNearTokenWithdrawal,
+    isDirectNonNearWithdrawal,
+  } = useComputedSnapshot();
 
   const make = async ({
     message,
@@ -245,12 +248,9 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
 
     let routeConfig: RouteConfig | undefined;
 
-    if (
-      ctx.sourceToken.assetId === WNEAR_ASSET_ID &&
-      ctx.targetToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
-    ) {
+    if (isNativeNearDeposit) {
       routeConfig = undefined;
-    } else if (isDirectTransfer) {
+    } else if (isDirectNearTokenWithdrawal) {
       routeConfig = createNearWithdrawalRoute(message ?? undefined);
     } else if (isDirectNonNearWithdrawal) {
       routeConfig = undefined;
@@ -264,7 +264,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         amount: BigInt(ctx.sourceTokenAmount),
         destinationAddress: getDestinationAddress(
           ctx,
-          isDirectTransfer || isDirectNonNearWithdrawal,
+          isDirectNearTokenWithdrawal || isDirectNonNearWithdrawal,
         ),
         destinationMemo: undefined,
         feeInclusive: false,

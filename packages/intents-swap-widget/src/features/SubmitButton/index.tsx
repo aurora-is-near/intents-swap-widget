@@ -10,7 +10,6 @@ import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
@@ -130,10 +129,10 @@ const SubmitButtonBase = (props: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {
-    isDirectTransfer,
+    isNativeNearDeposit,
     isDirectNonNearWithdrawal,
-    isNearToIntentsSameAssetTransfer,
-    isDirectNearDeposit,
+    isDirectTokenOnNearDeposit,
+    isDirectNearTokenWithdrawal,
   } = useComputedSnapshot();
 
   const { make } = useMakeTransfer({ providers, makeTransfer });
@@ -141,10 +140,6 @@ const SubmitButtonBase = (props: Props) => {
     useSwitchChain({ providers });
 
   const SubmitErrorButton = useGetErrorButton(ctx);
-
-  const nativeNearDeposit =
-    ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
-    ctx.targetToken?.assetId === WNEAR_ASSET_ID;
 
   const onClick = async () => {
     // Check if chain switch is needed before transfer
@@ -257,11 +252,10 @@ const SubmitButtonBase = (props: Props) => {
 
   if (
     !ctx.quote &&
-    !isDirectTransfer &&
     !isDirectNonNearWithdrawal &&
-    !isNearToIntentsSameAssetTransfer &&
-    !isDirectNearDeposit &&
-    !nativeNearDeposit
+    !isDirectTokenOnNearDeposit &&
+    !isDirectNearTokenWithdrawal &&
+    !isNativeNearDeposit
   ) {
     return (
       <Button state="disabled" {...commonBtnProps}>
