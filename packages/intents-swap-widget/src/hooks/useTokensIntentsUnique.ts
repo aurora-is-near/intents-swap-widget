@@ -14,6 +14,7 @@ const uniqueIntentTokensFilter = [
   'nep141:gnosis-0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1.omft.near', // wETH (gnosis)
   'nep141:2260fac5e5542a773aa44fbcfedf7c193bc2c599.factory.bridge.near', // wBTC (near)
   'nep245:v2_1.omni.hot.tg:56_SZzgw3HSudhZcTwPWUTi2RJB19t', // NEAR (bsc)
+  'nep141:sol-c634d063ceff771aff0c972ec396fd915a6bbd0e.omft.near', // SPX (sol)
 ];
 
 export const useTokensIntentsUnique = () => {
