@@ -22,7 +22,7 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 
 const config: WidgetConfig = {
-  appName: 'Intents Demo App',
+  appName: 'Intents Demo',
   connectedWallets: {
     default: '0x...',
     ton: 'ABC123',

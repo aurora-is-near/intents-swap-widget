@@ -1,16 +1,15 @@
-import { Route, Routes } from 'react-router-dom';
-import { Layout } from './Layout';
+import { Outlet, Route, Routes } from 'react-router-dom';
+
 import { TabbedWidgetsDemo } from './TabbedWidgetsDemo';
-import { NotFound } from './NotFound';
 import { SimpleWidgetDemo } from './SimpleWidgetDemo';
 
 export const App = () => {
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<Outlet />}>
         <Route path="/" element={<SimpleWidgetDemo />} />
         <Route path="/tabs" element={<TabbedWidgetsDemo />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<SimpleWidgetDemo />} />
       </Route>
     </Routes>
   );

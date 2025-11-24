@@ -27,15 +27,15 @@ export const WalletConnectButton = ({
         className,
       )}>
       <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg">
-        <circle cx="5.5" cy="4" r="3.5" fill="white" />
-        <circle cx="14.5" cy="4" r="3.5" fill="white" />
-        <circle cx="5.5" cy="16" r="3.5" fill="white" />
-        <circle cx="14.5" cy="16" r="3.5" fill="white" />
+        <circle cx="4.5" cy="4" r="2.5" fill="white" />
+        <circle cx="11.5" cy="4" r="2.5" fill="white" />
+        <circle cx="4.5" cy="12" r="2.5" fill="white" />
+        <circle cx="11.5" cy="12" r="2.5" fill="white" />
       </svg>
 
       {displayText}

@@ -28,7 +28,9 @@ const FeatureItem = ({ text }: { text: string }) => (
     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-sw-complete-900">
       <Check size={13} strokeWidth={4} className="text-sw-complete-100" />
     </div>
-    <p className="text-label-m ml-sw-md font-medium text-sw-gray-50">{text}</p>
+    <p className="text-sw-label-m ml-sw-md font-medium text-sw-gray-50">
+      {text}
+    </p>
   </div>
 );
 
@@ -37,7 +39,7 @@ const ErrorItem = ({ text }: { text: string }) => (
     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sw-warn-900">
       <Minus size={13} className="text-sw-warn-100" strokeWidth={4} />
     </div>
-    <p className="text-label-m ml-sw-md leading-4 font-medium text-sw-gray-50">
+    <p className="text-sw-label-m ml-sw-md leading-4 font-medium text-sw-gray-50">
       {text}
     </p>
   </div>
