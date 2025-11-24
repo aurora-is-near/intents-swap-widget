@@ -95,12 +95,7 @@ export const TokenInputWithToken = ({
               'animate-pulse cursor-default': state === 'disabled',
             },
           )}>
-          <TokenIcon
-            chainShowIcon={
-              !token.isIntent || token.chainName.toLowerCase() !== 'near'
-            }
-            {...token}
-          />
+          <TokenIcon chainShowIcon={!token.isIntent} {...token} />
           <span className="text-sw-label-m text-sw-gray-50">
             {token.symbol}
           </span>

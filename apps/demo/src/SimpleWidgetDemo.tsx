@@ -7,14 +7,18 @@ import { PageHeader } from './components/PageHeader';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 
 export const SimpleWidgetDemo = () => {
-  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
+  const {
+    providers,
+    address: walletAddress,
+    isConnecting: isLoading,
+  } = useAppKitWallet();
 
   return (
     <>
       <PageHeader />
       <WidgetConfigProvider
         config={{ connectedWallets: { default: walletAddress } }}>
-        <WidgetSwap isFullPage isLoading={isLoading} />
+        <WidgetSwap isFullPage isLoading={isLoading} providers={providers} />
       </WidgetConfigProvider>
     </>
   );
