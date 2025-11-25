@@ -11,7 +11,7 @@ function App() {
         <Header />
         <div className="flex-1 flex flex-grow mt-sw-2xl gap-sw-2xl">
           <section className="flex-grow bg-sw-gray-950 rounded-sw-lg">
-            <aside className="mt-[46px]">
+            <aside className="mt-[46px] sw">
               <Widget />
             </aside>
           </section>

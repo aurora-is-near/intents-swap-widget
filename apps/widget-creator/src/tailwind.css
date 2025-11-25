@@ -3,7 +3,6 @@
 @import './theme.css';
 @import '@aurora-is-near/intents-swap-widget/styles.css';
 
-
 #root {
     height: 100vh;
 }

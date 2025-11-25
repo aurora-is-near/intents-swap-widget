@@ -67,7 +67,6 @@ export function Widget({ config }: WidgetProps) {
   return (
     <WidgetConfigProvider config={defaultConfig}>
       <WidgetSwap
-        isFullPage
         makeTransfer={handleMakeTransfer}
         providers={
           {
