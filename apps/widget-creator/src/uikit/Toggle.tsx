@@ -25,7 +25,7 @@ export function Toggle({
     <div className="flex items-center justify-between">
       <div className="flex flex-col gap-1.5">
         {label && (
-          <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-50">
+          <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
             {label}
           </p>
         )}

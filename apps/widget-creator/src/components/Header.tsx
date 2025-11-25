@@ -18,15 +18,15 @@ export function Header() {
               WIDGET STUDIO
             </span>
           </a>
-          <a href="#" className="flex gap-2 items-center">
+          <a href="#" className="flex gap-sw-md items-center">
             <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-sw-gray-200 whitespace-nowrap">
               DOCS
             </span>
-            <ArrowUpRight className="w-4 h-4 text-sw-gray-200" />
+            <ArrowUpRight className="w-sw-xl h-sw-xl text-sw-gray-200" />
           </a>
         </nav>
       </aside>
-      
+
       {/* Actions */}
       <aside className="flex gap-2.5 items-center">
         <OutlinedButton size="md" fluid>

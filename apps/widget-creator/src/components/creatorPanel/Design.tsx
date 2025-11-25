@@ -6,29 +6,17 @@ export function Design() {
   const { state, dispatch } = useCreator();
 
   return (
-    <>
+    <div className='space-y-sw-2xl text-sw-gray-200'>
       {/* Mode Section */}
       <ConfigSection title="Mode">
-            <div className="flex items-center gap-sw-2xl justify-between">
-              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-800">
-                Allow to toggle modes
-              </span>
-              <button
-                onClick={() => dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: !state.allowToggleModes })}
-                className={`w-9 h-5 rounded-full transition-colors flex items-center ${
-                  state.allowToggleModes ? 'bg-sw-accent-500' : 'bg-sw-gray-800'
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                    state.allowToggleModes ? 'translate-x-[18px]' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
+            <Toggle
+              label="Allow to toggle modes"
+              isEnabled={state.allowToggleModes}
+              onChange={(enabled) => dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: enabled })}
+            />
 
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-800">
+              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
                 Default mode
               </span>
               <div className="flex items-center gap-2.5">
@@ -70,7 +58,7 @@ export function Design() {
       {/* Style Section */}
       <ConfigSection title="Style">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-800">
+              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
                 Style preset
               </span>
               <div className="flex items-center gap-2.5">
@@ -98,7 +86,7 @@ export function Design() {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-800">
+              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
                 Corner radius
               </span>
               <div className="flex items-center gap-2">
@@ -120,23 +108,11 @@ export function Design() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between h-9">
-              <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-800">
-                Show container wrapper
-              </span>
-              <button
-                onClick={() => dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: !state.showContainerWrapper })}
-                className={`w-9 h-5 rounded-full transition-colors flex items-center ${
-                  state.showContainerWrapper ? 'bg-sw-accent-500' : 'bg-sw-gray-800'
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                    state.showContainerWrapper ? 'translate-x-[18px]' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
+            <Toggle
+              label="Show container wrapper"
+              isEnabled={state.showContainerWrapper}
+              onChange={(enabled) => dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: enabled })}
+            />
       </ConfigSection>
 
       {/* Colors Section */}
@@ -174,7 +150,7 @@ export function Design() {
           disabled
         />
       </ConfigSection>
-    </>
+    </div>
   );
 }
 
@@ -191,7 +167,7 @@ function ColorInput({ label, value, onChange, hasInfo, disabled }: ColorInputPro
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5 flex-1">
         <span className={`font-semibold text-sm leading-4 tracking-[-0.4px] ${
-          disabled ? 'text-sw-gray-600' : 'text-sw-gray-800'
+          disabled ? 'text-sw-gray-600' : 'text-sw-gray-200'
         }`}>
           {label}
         </span>

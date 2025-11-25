@@ -3,6 +3,11 @@
 @import './theme.css';
 @import '@aurora-is-near/intents-swap-widget/styles.css';
 
+
+#root {
+    height: 100vh;
+}
+
 @theme {
     --spacing-*: initial;
     --radius-*: initial;
@@ -148,9 +153,4 @@
         line-height: 1rem;
         letter-spacing: -0.025rem;
     }
-}
-
-
-#root {
-    height: 100vh;
 }

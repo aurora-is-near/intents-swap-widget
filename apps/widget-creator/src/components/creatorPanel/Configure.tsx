@@ -1,4 +1,4 @@
-import { ExternalLink, Edit } from 'lucide-react';
+import { ExternalLink, Edit, X } from 'lucide-react';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
@@ -45,7 +45,7 @@ export function Configure() {
                 </p>
                 <a
                   href="#"
-                  className="flex items-center gap-1 text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
+                  className="flex items-center gap-sw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
                   <span>Learn more</span>
                   <ExternalLink className="w-sw-xl h-sw-xl" />
                 </a>
@@ -77,52 +77,59 @@ export function Configure() {
       <ConfigSection title="Networks">
         <div className="space-y-2.5">
           <div className="flex gap-2.5 items-center">
-            <div className="bg-[rgba(213,183,255,0.1)] px-2.5 py-2.5 rounded-[10px] flex-1">
+            <div className="bg-[rgba(213,183,255,0.1)] p-sw-2md rounded-[10px] flex-1">
               <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
                 {state.selectedNetworksCount} networks selected
               </p>
             </div>
-            <OutlinedButton size="md">
+            <OutlinedButton size="md" fluid>
               Deselect all
             </OutlinedButton>
           </div>
-          <p className="text-xs leading-4 tracking-[-0.4px] text-gray-300">
-            Selected networks apply to all chosen networks.
-          </p>
         </div>
       </ConfigSection>
 
       {/* Tokens */}
       <ConfigSection title="Tokens">
-        <div className="space-y-5">
-          <div className="space-y-2.5">
-            <p className="text-sm leading-5 tracking-[-0.4px] text-gray-300">
+        <div className="space-y-sw-2xl">
+          <div className="space-y-sw-sm font-medium text-sw-gray-300">
+            <p className="text-sm leading-5 tracking-[-0.4px]">
               Selected tokens apply to all chosen networks.
             </p>
             <a
               href="#"
-              className="flex items-center gap-1 text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
+              className="flex items-center gap-sw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-sw-gray-300 hover:text-sw-gray-300">
               <span>Check docs for more granularity</span>
-              <ExternalLink className="w-sw-xl h-sw-xl" />
+              <ExternalLink className="w-sw-xl h-sw-xl text-sw-gray-300 font-semibold" />
             </a>
           </div>
 
           <div className="flex gap-2.5 items-center">
-            <div className="bg-[rgba(213,183,255,0.1)] px-2.5 py-2.5 rounded-[10px] flex-1">
+            <div className="bg-[rgba(213,183,255,0.1)] p-sw-2md rounded-[10px] flex-1 flex-grow w-full">
               <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
                 {state.selectedTokensCount} tokens selected
               </p>
             </div>
-            <OutlinedButton size="md">
+            <OutlinedButton size="md" fluid>
               <Edit className="w-sw-xl h-sw-xl" />
               Edit
             </OutlinedButton>
           </div>
 
-          <div className="border-t border-[#caccd3]" />
+          <div className="border-t border-sw-gray-800" />
 
+          <Toggle
+            label="Auto-select top balance token"
+            isEnabled={state.autoSelectTopBalanceToken}
+            onChange={(enabled) =>
+              dispatch({
+                type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
+                payload: enabled,
+              })
+            }
+          />
           {/* Set default sell token */}
-          <div className="space-y-3">
+          <div className="space-y-sw-xl">
             <Toggle
               label="Set default sell token"
               isEnabled={state.enableSellToken}
@@ -130,26 +137,14 @@ export function Configure() {
                 dispatch({ type: 'SET_ENABLE_SELL_TOKEN', payload: enabled })
               }
             />
-
-            <Toggle
-              label="Auto-select top balance token"
-              isEnabled={state.autoSelectTopBalanceToken}
-              onChange={(enabled) =>
-                dispatch({
-                  type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
-                  payload: enabled,
-                })
-              }
-            />
-
             {state.enableSellToken && (
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-gray-300">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
                   Default sell token
                 </p>
-                <div className="bg-sw-gray-800 px-2 py-1 rounded-sw-md flex items-center gap-1.5">
-                  <div className="w-7 h-7 bg-gray-400 rounded-md flex-shrink-0" />
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-950">
+                <div className="bg-sw-gray-800 p-sw-xs rounded-sw-md flex items-center gap-sw-sm">
+                  <div className="w-7 h-7 bg-blue-400 rounded-md flex-shrink-0" />
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-50">
                     {state.defaultSellToken}
                   </p>
                 </div>
@@ -157,10 +152,10 @@ export function Configure() {
             )}
           </div>
 
-          <div className="border-t border-[#caccd3]" />
+          <div className="border-t border-sw-gray-800" />
 
           {/* Set default buy token */}
-          <div className="space-y-3">
+          <div className="space-y-sw-xl">
             <Toggle
               label="Set default buy token"
               isEnabled={state.enableBuyToken}
@@ -171,13 +166,13 @@ export function Configure() {
 
             {state.enableBuyToken && (
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#41444f]">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
                   Default buy token
                 </p>
-                <div className="bg-[#caccd3] px-2 py-1 rounded-[10px] flex items-center gap-1.5">
+                <div className="bg-sw-gray-800 p-sw-xs rounded-sw-md flex items-center gap-sw-sm">
                   <div className="w-7 h-7 bg-blue-400 rounded-md flex-shrink-0" />
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#24262d]">
-                    {state.defaultBuyToken}
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-50">
+                    {state.defaultSellToken}
                   </p>
                 </div>
               </div>
@@ -188,7 +183,7 @@ export function Configure() {
 
       {/* Fee collection */}
       <ConfigSection title="Fee collection">
-        <div className="space-y-4">
+        <div className="space-y-sw-xl text-sw-gray-200">
           <Toggle
             label="Enable custom fees"
             isEnabled={state.enableCustomFees}
@@ -200,10 +195,10 @@ export function Configure() {
           {state.enableCustomFees && (
             <>
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#41444f]">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
                   Fee percentage (max 1%)
                 </p>
-                <div className="bg-[#caccd3] px-2.5 py-2.5 rounded-[10px]">
+                <div className="bg-sw-gray-800 p-sw-2md rounded-sw-md">
                   <input
                     type="text"
                     value={state.feePercentage}
@@ -213,22 +208,28 @@ export function Configure() {
                         payload: e.target.value,
                       })
                     }
-                    className="bg-transparent w-10 font-semibold text-sm leading-4 tracking-[-0.4px] text-[#24262d] outline-none text-center"
+                    className="bg-transparent w-10 font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-center text-sw-gray-50"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#41444f]">
+              <div className="space-y-sw-xl text-sw-gray-200">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
                   Collector address (Intents account)
                 </p>
-                <div className="bg-[#caccd3] px-3 py-3 rounded-[10px] flex items-center justify-between">
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#24262d] truncate">
-                    {state.collectorAddress}
-                  </p>
-                  <button className="text-[#41444f] hover:text-[#24262d]">
-                    ✕
-                  </button>
+                <div className="bg-sw-gray-800 p-sw-2md rounded-sw-md flex justify-between items-center">
+                    <input
+                      type="text"
+                      value={state.collectorAddress}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'SET_COLLECTOR_ADDRESS',
+                          payload: e.target.value,
+                        })
+                      }
+                      className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-sw-gray-50"
+                    />
+                  <X className="w-[16px] h-[16px]" />
                 </div>
               </div>
             </>

@@ -34,7 +34,7 @@ export function CreatorPanel() {
             Design
           </button>
           <OutlinedButton onClick={handleReset} size="md" className="ml-auto">
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-sw-lg h-sw-lg" />
             Reset
           </OutlinedButton>
         </div>
