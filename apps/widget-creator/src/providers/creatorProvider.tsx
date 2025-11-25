@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 
-// 1. Define the shape of your state
 type CreatorState = {
   // Configure - User authentication
   userAuthMode: 'standalone' | 'dapp';
@@ -36,9 +35,7 @@ type CreatorState = {
   alertColor: string;
 };
 
-// 2. Initial state
 const initialState: CreatorState = {
-  // Configure
   userAuthMode: 'standalone',
   accountAbstractionMode: 'enabled',
   selectedNetworksCount: 15,
@@ -65,7 +62,6 @@ const initialState: CreatorState = {
   alertColor: '#FFB8BE',
 };
 
-// 3. Define action types
 type Action =
   // Configure - User authentication
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
@@ -130,6 +126,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, feePercentage: action.payload };
     case 'SET_COLLECTOR_ADDRESS':
       return { ...state, collectorAddress: action.payload };
+
     // Design
     case 'SET_ALLOW_TOGGLE_MODES':
       return { ...state, allowToggleModes: action.payload };
@@ -175,15 +172,15 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
   }
 }
 
-// 5. Create Context
 type CreatorContextType = {
   state: CreatorState;
   dispatch: React.Dispatch<Action>;
 };
 
-export const CreatorContext = createContext<CreatorContextType | undefined>(undefined);
+export const CreatorContext = createContext<CreatorContextType | undefined>(
+  undefined,
+);
 
-// 6. Provider Component
 type CreatorProviderProps = {
   children: ReactNode;
 };

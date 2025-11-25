@@ -1,18 +1,18 @@
-
 import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
+import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
 import { Design } from './Design';
 import { Configure } from './Configure';
-import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
+
 export function CreatorPanel() {
-  const [activeTab, setActiveTab] = useState<'configure' | 'design'>('configure');
+  const [activeTab, setActiveTab] = useState<'configure' | 'design'>(
+    'configure',
+  );
 
-  function handleReset() {
+  function handleReset() {}
 
-  }
   return (
     <div className="px-sw-2xl pt-[22px] pb-sw-2xl">
-      {/* Header */}
       <aside>
         <div className="flex items-center gap-sw-2xl mb-[22px]">
           <button

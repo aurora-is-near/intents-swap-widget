@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import {
-  WidgetConfigProvider,
-  WidgetSwap,
-  WidgetContainer,
-  SuccessScreen,
   Button,
-  type WidgetConfig,
   type MakeTransferArgs,
+  SuccessScreen,
+  type WidgetConfig,
+  WidgetConfigProvider,
+  WidgetContainer,
+  WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
@@ -16,20 +16,23 @@ interface WidgetProps {
 }
 
 export function Widget({ config }: WidgetProps) {
-  const [_makeTransferArgs, setMakeTransferArgs] = useState<MakeTransferArgs | null>(null);
-  const [successfulTransactionDetails, setSuccessfulTransactionDetails] = useState<{
-    hash: string;
-    transactionLink: string;
-  } | null>(null);
+  const [_makeTransferArgs, setMakeTransferArgs] =
+    useState<MakeTransferArgs | null>(null);
+
+  const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
+    useState<{
+      hash: string;
+      transactionLink: string;
+    } | null>(null);
 
   const defaultConfig = useMemo(
-    () => ({
-      appName: 'Widget Creator',
-      allowedTargetChainsList: ['near'] as const,
-      alchemyApiKey: ALCHEMY_API_KEY,
-      ...config,
-
-    } as WidgetConfig),
+    () =>
+      ({
+        appName: 'Widget Creator',
+        allowedTargetChainsList: ['near'] as const,
+        alchemyApiKey: ALCHEMY_API_KEY,
+        ...config,
+      }) as WidgetConfig,
     [config],
   );
 
@@ -66,9 +69,11 @@ export function Widget({ config }: WidgetProps) {
       <WidgetSwap
         isFullPage
         makeTransfer={handleMakeTransfer}
-        providers={{
-          // Add providers as needed
-        }}
+        providers={
+          {
+            // Add providers as needed
+          }
+        }
       />
     </WidgetConfigProvider>
   );

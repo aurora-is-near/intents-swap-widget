@@ -1,8 +1,9 @@
 import { Header } from './components/Header';
 import { CreatorPanel } from './components/creatorPanel/CreatorPanel';
-import { Widget } from './components/widget/Widget'
+import { Widget } from './components/widget/Widget';
 import { CreatorProvider } from './providers';
 import '@aurora-is-near/intents-swap-widget/styles.css';
+
 function App() {
   return (
     <CreatorProvider>
@@ -10,7 +11,7 @@ function App() {
         <Header />
         <div className="flex-1 flex flex-grow mt-sw-2xl gap-sw-2xl">
           <section className="flex-grow bg-sw-gray-950 rounded-sw-lg">
-            <aside className='mt-[46px]'>
+            <aside className="mt-[46px]">
               <Widget />
             </aside>
           </section>

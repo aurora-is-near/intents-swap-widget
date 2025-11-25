@@ -1,17 +1,15 @@
-import { Save, Code, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Code, Save } from 'lucide-react';
+import { Button, OutlinedButton } from '@aurora-is-near/intents-swap-widget';
 import CalyxLogo from '../assets/logo.svg?react';
-import { Button, OutlinedButton } from '@aurora-is-near/intents-swap-widget'
 
 export function Header() {
   return (
     <header className="backdrop-blur-[20px] backdrop-filter bg-sw-gray-950 rounded-sw-lg w-full flex items-center justify-between px-sw-2xl py-[11px]">
-      {/* Logo */}
       <aside className="flex gap-[44px] items-center">
         <div className="w-[102px] h-[34px]">
           <CalyxLogo />
         </div>
 
-        {/* Navigation */}
         <nav className="flex gap-sw-5xl items-center">
           <a href="#" className="flex gap-2.5 items-center justify-center">
             <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-sw-accent-50 whitespace-nowrap">
@@ -27,13 +25,12 @@ export function Header() {
         </nav>
       </aside>
 
-      {/* Actions */}
       <aside className="flex gap-2.5 items-center">
         <OutlinedButton size="md" fluid>
           <Save className="w-4 h-4" />
           Copy config link
         </OutlinedButton>
-        <Button variant="primary" size="md" fluid >
+        <Button variant="primary" size="md" fluid>
           <Code className="w-4 h-4" />
           Export
         </Button>

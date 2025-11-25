@@ -1,15 +1,15 @@
-import { ExternalLink, Edit, X } from 'lucide-react';
+import { Edit, ExternalLink, X } from 'lucide-react';
+import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
-import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
+
 export function Configure() {
   const { state, dispatch } = useCreator();
 
   return (
     <div className="flex flex-col gap-sw-2xl">
-      {/* User authentication */}
       <ConfigSection title="User authentication">
         <div className="space-y-sw-2md">
           <RadioButton
@@ -31,7 +31,6 @@ export function Configure() {
         </div>
       </ConfigSection>
 
-      {/* Account abstraction */}
       <ConfigSection title="Account abstraction">
         <div className="space-y-sw-2md">
           <RadioButton
@@ -73,7 +72,6 @@ export function Configure() {
         </div>
       </ConfigSection>
 
-      {/* Networks */}
       <ConfigSection title="Networks">
         <div className="space-y-2.5">
           <div className="flex gap-2.5 items-center">
@@ -89,7 +87,6 @@ export function Configure() {
         </div>
       </ConfigSection>
 
-      {/* Tokens */}
       <ConfigSection title="Tokens">
         <div className="space-y-sw-2xl">
           <div className="space-y-sw-sm font-medium text-sw-gray-300">
@@ -128,7 +125,7 @@ export function Configure() {
               })
             }
           />
-          {/* Set default sell token */}
+
           <div className="space-y-sw-xl">
             <Toggle
               label="Set default sell token"
@@ -154,7 +151,6 @@ export function Configure() {
 
           <div className="border-t border-sw-gray-800" />
 
-          {/* Set default buy token */}
           <div className="space-y-sw-xl">
             <Toggle
               label="Set default buy token"
@@ -181,7 +177,6 @@ export function Configure() {
         </div>
       </ConfigSection>
 
-      {/* Fee collection */}
       <ConfigSection title="Fee collection">
         <div className="space-y-sw-xl text-sw-gray-200">
           <Toggle
@@ -218,17 +213,17 @@ export function Configure() {
                   Collector address (Intents account)
                 </p>
                 <div className="bg-sw-gray-800 p-sw-2md rounded-sw-md flex justify-between items-center">
-                    <input
-                      type="text"
-                      value={state.collectorAddress}
-                      onChange={(e) =>
-                        dispatch({
-                          type: 'SET_COLLECTOR_ADDRESS',
-                          payload: e.target.value,
-                        })
-                      }
-                      className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-sw-gray-50"
-                    />
+                  <input
+                    type="text"
+                    value={state.collectorAddress}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_COLLECTOR_ADDRESS',
+                        payload: e.target.value,
+                      })
+                    }
+                    className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-sw-gray-50"
+                  />
                   <X className="w-[16px] h-[16px]" />
                 </div>
               </div>
