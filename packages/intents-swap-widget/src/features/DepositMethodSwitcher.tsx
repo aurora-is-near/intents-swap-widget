@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine';
 
 const activeBtnProps = {
@@ -17,11 +17,6 @@ const notActiveBtnProps = {
   state: 'default',
 } as const;
 
-const disabledBtnProps = {
-  variant: 'outlined',
-  state: 'disabled',
-} as const;
-
 type Props = {
   className?: string;
   children: ({ isExternal }: { isExternal: boolean }) => React.ReactNode;
@@ -29,27 +24,22 @@ type Props = {
 
 export const DepositMethodSwitcher = ({ children, className }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isNearToIntentsSameAssetTransfer } = useComputedSnapshot();
 
   const onToggle = (isExternal: boolean) => {
     fireEvent('depositTypeSet', { isExternal });
   };
 
   const state = useMemo(() => {
-    if (isNearToIntentsSameAssetTransfer) {
-      return disabledBtnProps;
-    }
-
     if (ctx.isDepositFromExternalWallet) {
       return activeBtnProps;
     }
 
     return notActiveBtnProps;
-  }, [ctx.isDepositFromExternalWallet, isNearToIntentsSameAssetTransfer]);
+  }, [ctx.isDepositFromExternalWallet]);
 
   return (
     <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
-      <span className="text-label-m text-sw-gray-50">
+      <span className="text-sw-label-m text-sw-gray-50">
         Select deposit method
       </span>
       <div className="flex gap-sw-lg">

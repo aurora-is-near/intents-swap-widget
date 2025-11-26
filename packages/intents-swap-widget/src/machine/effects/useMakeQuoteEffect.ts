@@ -9,7 +9,6 @@ import { useMakeQuote } from '@/hooks/useMakeQuote';
 import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
-import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { FetchQuoteOptions, Quote } from '@/types/quote';
 
 export type Props = ListenerProps & {
@@ -26,20 +25,25 @@ export const useMakeQuoteEffect = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const {
-    isDirectTransfer,
+    isNativeNearDeposit,
     isDirectNonNearWithdrawal,
-    isNearToIntentsSameAssetTransfer,
-    isDirectNearDeposit,
+    isDirectTokenOnNearDeposit,
+    isDirectNearTokenWithdrawal,
+    isDirectTokenOnNearTransfer,
+    isSameAssetDiffChainWithdrawal,
   } = useComputedSnapshot();
 
   const isDry = isDryQuote(ctx);
 
   const shouldRun =
     isEnabled &&
-    !isDirectTransfer &&
-    !isDirectNonNearWithdrawal &&
-    !isNearToIntentsSameAssetTransfer &&
-    !isDirectNearDeposit;
+    (isSameAssetDiffChainWithdrawal ||
+      ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&
+        ctx.isDepositFromExternalWallet) ||
+      (!isDirectNearTokenWithdrawal &&
+        !isDirectNonNearWithdrawal &&
+        !isDirectTokenOnNearDeposit &&
+        !isDirectTokenOnNearTransfer));
 
   const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
   const { make: makeDepositAddress, cancel: cancelDepositAddress } =
@@ -72,7 +76,10 @@ export const useMakeQuoteEffect = ({
       try {
         let quote: Quote | undefined;
 
-        if (ctx.sourceToken?.assetId === ctx.targetToken?.assetId) {
+        if (
+          ctx.sourceToken?.assetId === ctx.targetToken?.assetId ||
+          (isNativeNearDeposit && ctx.isDepositFromExternalWallet)
+        ) {
           if (isDry) {
             // since here it's not a real quote but just a deposit address generation
             // we don't want to run it for dry runs
@@ -164,11 +171,8 @@ export const useMakeQuoteEffect = ({
       return;
     }
 
-    // not used for depositing native Near token
-    if (
-      ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
-      ctx.targetToken?.assetId === WNEAR_ASSET_ID
-    ) {
+    // not used for depositing native Near token without QR code
+    if (isNativeNearDeposit && !ctx.isDepositFromExternalWallet) {
       return;
     }
 

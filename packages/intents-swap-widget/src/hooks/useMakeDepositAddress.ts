@@ -6,8 +6,8 @@ import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
 import { guardStates } from '@/machine/guards';
 import { bridgeApi, oneClickApi } from '@/network';
-import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { CHAIN_POA_MAP, POA_EVM_CHAIN_ID } from '@/constants/chains';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -27,6 +27,7 @@ type DepositAddressResponse = {
 export const useMakeDepositAddress = () => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useConfig();
+  const { isNativeNearDeposit } = useComputedSnapshot();
 
   const intentsAccountId = getIntentsAccountId({
     addressType: intentsAccountType,
@@ -74,14 +75,17 @@ export const useMakeDepositAddress = () => {
       const msg = `Unable to run quote in current state ${ctx.state}`;
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry: false, message: msg },
       });
     }
 
-    if (ctx.sourceToken.assetId !== ctx.targetToken.assetId) {
+    if (
+      (isNativeNearDeposit && !ctx.isDepositFromExternalWallet) ||
+      (!isNativeNearDeposit &&
+        ctx.sourceToken.assetId !== ctx.targetToken.assetId)
+    ) {
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: {
@@ -101,11 +105,24 @@ export const useMakeDepositAddress = () => {
       });
     }
 
+    if (
+      !ctx.isDepositFromExternalWallet &&
+      ctx.sourceToken.blockchain === 'near'
+    ) {
+      throw new QuoteError({
+        code: 'QUOTE_INVALID_INITIAL',
+        meta: {
+          isDry: false,
+          message:
+            'Use transfer call. POA for tokens on Near only used for external deposits',
+        },
+      });
+    }
+
     if (!intentsAccountId) {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry: false, message: msg },

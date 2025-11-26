@@ -90,7 +90,7 @@ export const TokenInputWithToken = ({
               : () => onMsg({ type: 'on_click_select_token' })
           }
           className={cn(
-            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500 transition-colors',
+            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500',
             {
               'animate-pulse cursor-default': state === 'disabled',
             },
@@ -107,7 +107,6 @@ export const TokenInputWithToken = ({
           {quoteUsdDelta ? (
             <Badge
               size="sm"
-              detail="dimmed"
               isClickable={false}
               variant={getPercentageDeltaColor(quoteUsdDelta)}>
               {`${quoteUsdDelta > 0 ? '+' : ''}${quoteUsdDelta.toFixed(2)}%`}
@@ -141,7 +140,7 @@ export const TokenInputWithToken = ({
 
           {!showBalance && (
             <div className="rounded-full bg-sw-gray-700 py-sw-xs px-sw-sm flex items-center justify-center">
-              <span className="text-sw-gray-100 text-label-s">
+              <span className="text-sw-gray-100 text-sw-label-s">
                 {t('tokens.input.externalBalance.label', 'External balance')}
               </span>
             </div>

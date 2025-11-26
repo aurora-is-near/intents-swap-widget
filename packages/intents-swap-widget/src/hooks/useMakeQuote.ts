@@ -48,6 +48,7 @@ const validateQuoteProperties = (
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const {
+    walletSupportedChains,
     intentsAccountType,
     appName,
     appFees,
@@ -101,7 +102,6 @@ export const useMakeQuote = () => {
       const msg = `Unable to run quote in current state ${ctx.state}`;
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
@@ -116,6 +116,11 @@ export const useMakeQuote = () => {
         : (ctx.walletAddress ?? ''),
     });
 
+    const isRefundToIntentAccount =
+      recipientIntentsAccountId &&
+      (ctx.sourceToken.isIntent ||
+        !walletSupportedChains.includes(ctx.sourceToken.blockchain));
+
     const getRefundToAccountId = () => {
       if (isDry) {
         return getDryQuoteAddress(
@@ -124,7 +129,7 @@ export const useMakeQuote = () => {
         );
       }
 
-      if (ctx.sourceToken.isIntent && recipientIntentsAccountId) {
+      if (isRefundToIntentAccount) {
         return recipientIntentsAccountId;
       }
 
@@ -135,7 +140,6 @@ export const useMakeQuote = () => {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
-
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
@@ -227,7 +231,7 @@ export const useMakeQuote = () => {
 
           // Refund
           refundTo: getRefundToAccountId(),
-          refundType: ctx.sourceToken.isIntent
+          refundType: isRefundToIntentAccount
             ? QuoteRequest.refundType.INTENTS
             : QuoteRequest.refundType.ORIGIN_CHAIN,
         },

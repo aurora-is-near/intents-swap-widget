@@ -6,7 +6,6 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
-import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
@@ -18,8 +17,11 @@ export const useMakeTransfer = ({
   makeTransfer,
 }: QuoteTransferArgs & IntentsTransferArgs & { message?: string }) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isNearToIntentsSameAssetTransfer, isDirectNearDeposit } =
-    useComputedSnapshot();
+  const {
+    isDirectTokenOnNearDeposit,
+    isDirectTokenOnNearTransfer,
+    isNativeNearDeposit,
+  } = useComputedSnapshot();
 
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({
@@ -38,10 +40,6 @@ export const useMakeTransfer = ({
 
     let transferResult: TransferResult | undefined;
 
-    const nativeNearDeposit =
-      ctx.sourceToken?.assetId === NATIVE_NEAR_DUMB_ASSET_ID &&
-      ctx.targetToken?.assetId === WNEAR_ASSET_ID;
-
     try {
       fireEvent('transferSetStatus', {
         status: 'pending',
@@ -49,16 +47,20 @@ export const useMakeTransfer = ({
       });
 
       if (!ctx.sourceToken?.isIntent) {
-        if (isNearToIntentsSameAssetTransfer || nativeNearDeposit) {
+        if (
+          (isNativeNearDeposit || isDirectTokenOnNearDeposit) &&
+          !ctx.isDepositFromExternalWallet
+        ) {
+          // sendAddress can be used to deposit into another intents account here
           transferResult = await makeNEARFtTransferCall(
-            INTENTS_CONTRACT,
+            ctx.sendAddress ?? INTENTS_CONTRACT,
             message,
           );
-        } else if (isDirectNearDeposit) {
+        } else if (isDirectTokenOnNearTransfer) {
           if (!ctx.sendAddress) {
             throw new TransferError({
               code: 'TRANSFER_INVALID_INITIAL',
-              meta: { message: 'No recipient address to transfer.' },
+              meta: { message: 'No recipient address to transfer' },
             });
           }
 

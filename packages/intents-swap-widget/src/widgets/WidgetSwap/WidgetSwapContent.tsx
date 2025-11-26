@@ -44,7 +44,7 @@ export const WidgetSwapContent = ({
   isOneWay,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
 
   const { t } = useTypedTranslation();
@@ -58,7 +58,7 @@ export const WidgetSwapContent = ({
   >();
 
   useEffect(() => {
-    fireEvent('reset', null);
+    fireEvent('reset', { clearWalletAddress: true });
   }, []);
 
   useStoreSideEffects({
@@ -210,7 +210,7 @@ export const WidgetSwapContent = ({
                 />
               )}
 
-            {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
+            {!isDirectNearTokenWithdrawal && <SwapQuote className="mt-sw-md" />}
 
             <SubmitButton
               providers={providers}

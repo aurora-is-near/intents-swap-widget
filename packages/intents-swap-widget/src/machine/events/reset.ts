@@ -1,6 +1,11 @@
+import type { Machine } from '@/machine';
 import type { Context } from '@/machine/context';
 
-export const reset = (ctx: Context) => {
+export type ResetPayload = {
+  clearWalletAddress: boolean;
+};
+
+export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
   ctx.sourceToken = undefined;
   ctx.sourceTokenBalance = undefined;
   ctx.sourceTokenAmount = '';
@@ -8,7 +13,6 @@ export const reset = (ctx: Context) => {
   ctx.targetToken = undefined;
   ctx.targetTokenAmount = '';
 
-  ctx.walletAddress = undefined;
   ctx.sendAddress = undefined;
   ctx.isDepositFromExternalWallet = false;
   ctx.externalDepositTxReceived = undefined;
@@ -17,4 +21,10 @@ export const reset = (ctx: Context) => {
   ctx.quote = undefined;
   ctx.quoteStatus = 'idle';
   ctx.transferStatus = { status: 'idle' };
+
+  if (payload.clearWalletAddress) {
+    ctx.walletAddress = undefined;
+  }
+
+  return m;
 };

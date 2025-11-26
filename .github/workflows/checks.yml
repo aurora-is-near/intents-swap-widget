@@ -12,6 +12,8 @@ jobs:
           node-version-file: package.json
       - name: Install
         run: yarn install --frozen-lockfile --non-interactive
+      - name: Build
+        run: yarn build --filter=@aurora-is-near/intents-swap-widget
       - name: Lint
         run: yarn lint
       - name: Check types

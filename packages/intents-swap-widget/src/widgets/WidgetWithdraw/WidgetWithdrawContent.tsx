@@ -40,7 +40,7 @@ export const WidgetWithdrawContent = ({
   isLoading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectTransfer } = useComputedSnapshot();
+  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
 
   const { t } = useTypedTranslation();
@@ -54,7 +54,7 @@ export const WidgetWithdrawContent = ({
   >();
 
   useEffect(() => {
-    fireEvent('reset', null);
+    fireEvent('reset', { clearWalletAddress: true });
   }, []);
 
   useStoreSideEffects({
@@ -219,7 +219,7 @@ export const WidgetWithdrawContent = ({
                 />
               )}
 
-            {!isDirectTransfer && <SwapQuote className="mt-sw-md" />}
+            {!isDirectNearTokenWithdrawal && <SwapQuote className="mt-sw-md" />}
 
             <SubmitButton
               providers={providers}

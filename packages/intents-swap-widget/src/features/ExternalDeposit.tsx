@@ -8,7 +8,13 @@ import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
-import { fireEvent, guardStates, moveTo, useUnsafeSnapshot } from '@/machine';
+import {
+  fireEvent,
+  guardStates,
+  moveTo,
+  useComputedSnapshot,
+  useUnsafeSnapshot,
+} from '@/machine';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
@@ -28,7 +34,7 @@ const QrCode = ({ address }: { address: string }) => (
       <QRCodeSVG size={156} value={address} fgColor="#31343d" />
     </div>
     <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-md bg-sw-gray-600">
-      <span className="text-label-m text-sw-gray-100">
+      <span className="text-sw-label-m text-sw-gray-100">
         {formatAddressTruncate(address, 42)}
       </span>
       <CopyButton value={address} />
@@ -45,7 +51,7 @@ const Skeleton = () => {
       <div className="bg-sw-gray-600 h-[180px] w-[180px] animate-pulse rounded-md" />
       <div className="bg-sw-gray-600 h-[44px] w-full animate-pulse rounded-md flex items-center justify-center gap-sw-sm">
         <Icons.Loader className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
-        <span className="text-sw-gray-100 text-label-s">
+        <span className="text-sw-gray-100 text-sw-label-s">
           {!isNotEmptyAmount(ctx.sourceTokenAmount)
             ? t('deposit.external.loading.waiting', 'Waiting for token amount')
             : t('deposit.external.loading.fetching', 'Fetching new address')}
@@ -58,6 +64,7 @@ const Skeleton = () => {
 export const ExternalDeposit = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
 
   const isValidState = guardStates(ctx, [
     'quote_success_external',
@@ -65,7 +72,9 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   ]);
 
   const isBridgePoaDeposit =
-    ctx.sourceToken?.assetId === ctx.targetToken?.assetId;
+    (isNativeNearDeposit && ctx.isDepositFromExternalWallet) ||
+    (!isNativeNearDeposit &&
+      ctx.sourceToken?.assetId === ctx.targetToken?.assetId);
 
   const depositStatusQuery = useExternalDepositStatus({
     depositAddress: isValidState ? ctx.quote.depositAddress : '',

@@ -1,14 +1,15 @@
 import type { Context } from '../context';
 import type { DeepReadonly } from '@/types/utils';
 
-export const getIsNearToIntentsSameAssetTransfer = (
+export const getIsDirectTokenOnNearDeposit = (
   ctx: DeepReadonly<Context>,
 ): boolean => {
   return !!(
-    ctx.targetToken &&
     ctx.sourceToken &&
+    ctx.targetToken &&
     ctx.targetToken.isIntent &&
-    ctx.targetToken.blockchain === 'near' &&
-    ctx.sourceToken.assetId === ctx.targetToken.assetId
+    !ctx.sourceToken.isIntent &&
+    ctx.targetToken.assetId === ctx.sourceToken.assetId &&
+    ctx.targetToken.blockchain === 'near'
   );
 };
