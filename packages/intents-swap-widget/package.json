@@ -19,7 +19,7 @@
     "build": "vite build",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "test:generate-styles": "tailwindcss -i ./src/tailwind.css -o ./tests/tailwind.css",
-    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.js"
+    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.cjs"
   },
   "publishConfig": {
     "access": "public",
@@ -65,6 +65,7 @@
     "chroma-js": "^3.1.2",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
+    "cryptr": "^6.4.0",
     "date-fns": "^4.1.0",
     "debounce": "^2.2.0",
     "derive-valtio": "^0.2.0",
@@ -73,6 +74,7 @@
     "hsluv": "^1.0.1",
     "i18next": "^25.4.2",
     "imask": "^7.6.1",
+    "is-ci": "^4.1.0",
     "jest-react-hooks-shallow": "^1.5.1",
     "lodash.once": "^4.1.1",
     "lucide-react": "^0.525.0",
@@ -98,6 +100,7 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/puppeteer": "^7.0.4",

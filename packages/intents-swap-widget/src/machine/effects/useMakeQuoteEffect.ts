@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { logger } from '../../logger';
 import { isDryQuote } from '../guards/checks/isDryQuote';
 import type { ListenerProps } from './types';
 import { QuoteError } from '@/errors';
@@ -141,6 +142,7 @@ export const useMakeQuoteEffect = ({
         }
 
         // unhandled error
+        logger.error('Unhandled error in useMakeQuoteEffect:', err);
         fireEvent('quoteSetStatus', 'error');
         fireEvent('quoteSet', undefined);
         fireEvent('errorSet', {
