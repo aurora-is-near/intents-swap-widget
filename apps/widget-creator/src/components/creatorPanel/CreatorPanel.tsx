@@ -1,26 +1,30 @@
 import { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
-import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
+import { OutlinedButton } from '../../uikit/Button';
 import { Design } from './Design';
 import { Configure } from './Configure';
+import { useCreator } from '../../hooks/useCreatorConfig';
 
 export function CreatorPanel() {
   const [activeTab, setActiveTab] = useState<'configure' | 'design'>(
     'configure',
   );
+  const { dispatch } = useCreator();
 
-  function handleReset() {}
+  function handleReset() {
+    dispatch({ type: 'RESET_ALL' });
+  }
 
   return (
-    <div className="px-sw-2xl pt-[22px] pb-sw-2xl">
+    <div className="px-csw-2xl pt-[22px] pb-csw-2xl">
       <aside>
-        <div className="flex items-center gap-sw-2xl mb-[22px]">
+        <div className="flex items-center gap-csw-2xl mb-[22px]">
           <button
             onClick={() => setActiveTab('configure')}
             className={`font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors ${
               activeTab === 'configure'
-                ? 'text-sw-gray-50 border-b-sw-gray-50'
-                : 'text-sw-gray-200 border-b-transparent'
+                ? 'text-csw-gray-50 border-b-csw-gray-50'
+                : 'text-csw-gray-200 border-b-transparent cursor-pointer'
             }`}>
             Configure
           </button>
@@ -28,13 +32,17 @@ export function CreatorPanel() {
             onClick={() => setActiveTab('design')}
             className={`font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors ${
               activeTab === 'design'
-                ? 'text-sw-gray-50 border-b-sw-gray-50'
-                : 'text-sw-gray-200 border-b-transparent'
+                ? 'text-csw-gray-50 border-b-csw-gray-50'
+                : 'text-csw-gray-200 border-b-transparent cursor-pointer'
             }`}>
             Design
           </button>
-          <OutlinedButton onClick={handleReset} size="md" className="ml-auto">
-            <RotateCcw className="w-sw-lg h-sw-lg" />
+          <OutlinedButton
+            onClick={handleReset}
+            size="sm"
+            fluid
+            className="ml-auto">
+            <RotateCcw className="w-csw-lg h-csw-lg" />
             Reset
           </OutlinedButton>
         </div>

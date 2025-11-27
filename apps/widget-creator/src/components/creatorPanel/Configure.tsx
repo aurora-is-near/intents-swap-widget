@@ -1,236 +1,357 @@
 import { Edit, ExternalLink, X } from 'lucide-react';
-import { OutlinedButton } from '@aurora-is-near/intents-swap-widget';
+import { useState } from 'react';
+import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
+import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
+import { useChains } from '../../hooks/useChains';
+import { TokenSelectionModal } from './TokenSelectionModal';
+import { isTokenAvailable, useTokens } from '../../hooks/useTokens';
+
+const handleNetworksChange = (
+  newNetworks: string[],
+  allTokens: any[],
+  dispatch: any,
+) => {
+  dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
+
+  // Auto-select tokens that are available for the chosen networks
+  const availableTokens = allTokens.filter((token: any) =>
+    isTokenAvailable(token, newNetworks),
+  );
+  const availableTokenSymbols = availableTokens.map((token: any) => token.symbol);
+  dispatch({
+    type: 'SET_SELECTED_TOKEN_SYMBOLS',
+    payload: availableTokenSymbols,
+  });
+};
 
 export function Configure() {
   const { state, dispatch } = useCreator();
+  const chains = useChains();
+  const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
+  const allTokens = useTokens();
 
   return (
-    <div className="flex flex-col gap-sw-2xl">
-      <ConfigSection title="User authentication">
-        <div className="space-y-sw-2md">
-          <RadioButton
-            label="Standalone"
-            description="Use the built-in wallet connector."
-            isSelected={state.userAuthMode === 'standalone'}
-            onChange={() =>
-              dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'standalone' })
-            }
-          />
-          <RadioButton
-            label="Dapp"
-            description="Use your own wallet connector. Some networks may not be supported."
-            isSelected={state.userAuthMode === 'dapp'}
-            onChange={() =>
-              dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'dapp' })
-            }
-          />
-        </div>
-      </ConfigSection>
-
-      <ConfigSection title="Account abstraction">
-        <div className="space-y-sw-2md">
-          <RadioButton
-            label="Enabled"
-            description={
-              <div className="space-y-1.5">
-                <p>
-                  Users can deposit to or withdraw from their chain abstracted
-                  intents balance in addition to using their connected wallet
-                  balances.
-                </p>
-                <a
-                  href="#"
-                  className="flex items-center gap-sw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
-                  <span>Learn more</span>
-                  <ExternalLink className="w-sw-xl h-sw-xl" />
-                </a>
-              </div>
-            }
-            isSelected={state.accountAbstractionMode === 'enabled'}
-            onChange={() =>
-              dispatch({
-                type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                payload: 'enabled',
-              })
-            }
-          />
-          <RadioButton
-            label="Disabled"
-            description="Users can only use assets in their connected wallet."
-            isSelected={state.accountAbstractionMode === 'disabled'}
-            onChange={() =>
-              dispatch({
-                type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                payload: 'disabled',
-              })
-            }
-          />
-        </div>
-      </ConfigSection>
-
-      <ConfigSection title="Networks">
-        <div className="space-y-2.5">
-          <div className="flex gap-2.5 items-center">
-            <div className="bg-[rgba(213,183,255,0.1)] p-sw-2md rounded-[10px] flex-1">
-              <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
-                {state.selectedNetworksCount} networks selected
-              </p>
-            </div>
-            <OutlinedButton size="md" fluid>
-              Deselect all
-            </OutlinedButton>
-          </div>
-        </div>
-      </ConfigSection>
-
-      <ConfigSection title="Tokens">
-        <div className="space-y-sw-2xl">
-          <div className="space-y-sw-sm font-medium text-sw-gray-300">
-            <p className="text-sm leading-5 tracking-[-0.4px]">
-              Selected tokens apply to all chosen networks.
-            </p>
-            <a
-              href="#"
-              className="flex items-center gap-sw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-sw-gray-300 hover:text-sw-gray-300">
-              <span>Check docs for more granularity</span>
-              <ExternalLink className="w-sw-xl h-sw-xl text-sw-gray-300 font-semibold" />
-            </a>
-          </div>
-
-          <div className="flex gap-2.5 items-center">
-            <div className="bg-[rgba(213,183,255,0.1)] p-sw-2md rounded-[10px] flex-1 flex-grow w-full">
-              <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
-                {state.selectedTokensCount} tokens selected
-              </p>
-            </div>
-            <OutlinedButton size="md" fluid>
-              <Edit className="w-sw-xl h-sw-xl" />
-              Edit
-            </OutlinedButton>
-          </div>
-
-          <div className="border-t border-sw-gray-800" />
-
-          <Toggle
-            label="Auto-select top balance token"
-            isEnabled={state.autoSelectTopBalanceToken}
-            onChange={(enabled) =>
-              dispatch({
-                type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
-                payload: enabled,
-              })
-            }
-          />
-
-          <div className="space-y-sw-xl">
-            <Toggle
-              label="Set default sell token"
-              isEnabled={state.enableSellToken}
-              onChange={(enabled) =>
-                dispatch({ type: 'SET_ENABLE_SELL_TOKEN', payload: enabled })
+    <>
+      <TokenSelectionModal
+        isOpen={isTokenModalOpen}
+        onClose={() => setIsTokenModalOpen(false)}
+      />
+      <div className="flex flex-col gap-csw-2xl">
+        <ConfigSection title="User authentication">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Standalone"
+              description="Use the built-in wallet connector."
+              isSelected={state.userAuthMode === 'standalone'}
+              onChange={() =>
+                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'standalone' })
               }
             />
-            {state.enableSellToken && (
-              <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
-                  Default sell token
-                </p>
-                <div className="bg-sw-gray-800 p-sw-xs rounded-sw-md flex items-center gap-sw-sm">
-                  <div className="w-7 h-7 bg-blue-400 rounded-md flex-shrink-0" />
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-50">
-                    {state.defaultSellToken}
-                  </p>
-                </div>
-              </div>
-            )}
+            <RadioButton
+              label="Dapp"
+              description="Use your own wallet connector. Some networks may not be supported."
+              isSelected={state.userAuthMode === 'dapp'}
+              onChange={() =>
+                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'dapp' })
+              }
+            />
           </div>
+        </ConfigSection>
 
-          <div className="border-t border-sw-gray-800" />
+        <ConfigSection title="Account abstraction">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Enabled"
+              description={
+                <div className="space-y-1.5">
+                  <p>
+                    Users can deposit to or withdraw from their chain abstracted
+                    intents balance in addition to using their connected wallet
+                    balances.
+                  </p>
+                  <a
+                    href="#"
+                    className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
+                    <span>Learn more</span>
+                    <ExternalLink className="w-csw-xl h-csw-xl" />
+                  </a>
+                </div>
+              }
+              isSelected={state.accountAbstractionMode === 'enabled'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                  payload: 'enabled',
+                })
+              }
+            />
+            <RadioButton
+              label="Disabled"
+              description="Users can only use assets in their connected wallet."
+              isSelected={state.accountAbstractionMode === 'disabled'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                  payload: 'disabled',
+                })
+              }
+            />
+          </div>
+        </ConfigSection>
 
-          <div className="space-y-sw-xl">
+        <ConfigSection title="Networks">
+          <div className="space-y-csw-xl">
+            <div className="flex gap-csw-md items-center">
+              <div className="bg-[rgba(213,183,255,0.1)] p-csw-2md rounded-[10px] flex-1">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
+                  {state.selectedNetworks.length} networks selected
+                </p>
+              </div>
+              <OutlinedButton
+                size="sm"
+                fluid
+                onClick={() => {
+                  const allSelected =
+                    chains &&
+                    chains.length > 0 &&
+                    state.selectedNetworks.length === chains.length;
+
+                  const newNetworks = allSelected
+                    ? []
+                    : chains?.map((chain) => chain.id) || [];
+
+                  handleNetworksChange(newNetworks, allTokens, dispatch);
+                }}>
+                {chains &&
+                chains.length > 0 &&
+                state.selectedNetworks.length === chains.length
+                  ? 'Deselect all'
+                  : 'Select all'}
+              </OutlinedButton>
+            </div>
+            <div className="flex flex-wrap gap-csw-md">
+              {chains &&
+                chains.length > 0 &&
+                chains.map((chain) => (
+                  <button
+                    key={chain.id}
+                    onClick={() => {
+                      const isSelected = state.selectedNetworks?.includes(
+                        chain.id,
+                      );
+                      const newNetworks = isSelected
+                        ? state.selectedNetworks.filter(
+                            (n: string) => n !== chain.id,
+                          )
+                        : [...(state.selectedNetworks || []), chain.id];
+
+                      handleNetworksChange(newNetworks, allTokens, dispatch);
+                    }}
+                    className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all ${
+                      state.selectedNetworks?.includes(chain.id)
+                        ? 'bg-csw-accent-500 border-2 border-csw-accent-600'
+                        : 'bg-csw-gray-800 border-2 border-csw-gray-700 hover:border-csw-gray-600'
+                    }`}>
+                    <img
+                      src={chain.icon}
+                      alt={chain.label}
+                      className="w-6 h-6"
+                    />
+                  </button>
+                ))}
+            </div>
+          </div>
+        </ConfigSection>
+
+        <ConfigSection title="Tokens">
+          <div className="space-y-csw-2xl">
+            <div className="space-y-csw-sm font-medium text-csw-gray-200">
+              <p className="text-sm leading-5 tracking-[-0.4px]">
+                Selected tokens apply to all chosen networks.
+              </p>
+              <a
+                href="#"
+                className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-csw-gray-300 hover:text-csw-gray-300">
+                <span>Check docs for more granularity</span>
+                <ExternalLink className="w-csw-xl h-csw-xl text-csw-gray-300 font-semibold" />
+              </a>
+            </div>
+
+            <div className="flex gap-csw-2md items-center">
+              <div className="bg-[rgba(213,183,255,0.1)] p-csw-2md rounded-[10px] flex-1 flex-grow w-full">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
+                  {state.selectedTokenSymbols.length} tokens selected
+                </p>
+              </div>
+              <OutlinedButton
+                size="sm"
+                fluid
+                onClick={() => setIsTokenModalOpen(true)}>
+                <Edit className="w-csw-xl h-csw-xl" />
+                Edit
+              </OutlinedButton>
+            </div>
+
+            <div className="border-t border-csw-gray-800" />
+
             <Toggle
-              label="Set default buy token"
-              isEnabled={state.enableBuyToken}
+              label="Auto-select top balance token"
+              isEnabled={state.autoSelectTopBalanceToken}
               onChange={(enabled) =>
-                dispatch({ type: 'SET_ENABLE_BUY_TOKEN', payload: enabled })
+                dispatch({
+                  type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
+                  payload: enabled,
+                })
               }
             />
 
-            {state.enableBuyToken && (
-              <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-200">
-                  Default buy token
-                </p>
-                <div className="bg-sw-gray-800 p-sw-xs rounded-sw-md flex items-center gap-sw-sm">
-                  <div className="w-7 h-7 bg-blue-400 rounded-md flex-shrink-0" />
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-sw-gray-50">
-                    {state.defaultSellToken}
+            <div className="space-y-csw-xl">
+              <Toggle
+                label="Set default sell token"
+                isEnabled={state.enableSellToken}
+                onChange={(enabled) =>
+                  dispatch({ type: 'SET_ENABLE_SELL_TOKEN', payload: enabled })
+                }
+              />
+              {state.enableSellToken && (
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                    Default sell token
                   </p>
+                  {(() => {
+                    const sellToken = allTokens.find(
+                      (token: any) => token.symbol === state.defaultSellToken,
+                    );
+                    return (
+                      <TokenTag
+                        tokenIcon={
+                          sellToken?.icon ? (
+                            <img
+                              src={sellToken.icon}
+                              alt={sellToken.symbol}
+                              className="size-full rounded-full"
+                            />
+                          ) : undefined
+                        }
+                        tokenSymbol={state.defaultSellToken}
+                      />
+                    );
+                  })()}
                 </div>
-              </div>
+              )}
+            </div>
+
+            <div className="border-t border-csw-gray-800" />
+
+            <div className="space-y-csw-xl">
+              <Toggle
+                label="Set default buy token"
+                isEnabled={state.enableBuyToken}
+                onChange={(enabled) =>
+                  dispatch({ type: 'SET_ENABLE_BUY_TOKEN', payload: enabled })
+                }
+              />
+
+              {state.enableBuyToken && (
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                    Default buy token
+                  </p>
+                  {(() => {
+                    const buyToken = allTokens.find(
+                      (token: any) => token.symbol === state.defaultBuyToken,
+                    );
+                    return (
+                      <TokenTag
+                        tokenIcon={
+                          buyToken?.icon ? (
+                            <img
+                              src={buyToken.icon}
+                              alt={buyToken.symbol}
+                              className="size-full rounded-full"
+                            />
+                          ) : undefined
+                        }
+                        tokenSymbol={state.defaultBuyToken}
+                      />
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </ConfigSection>
+
+        <ConfigSection title="Fee collection">
+          <div className="space-y-csw-xl text-csw-gray-200">
+            <Toggle
+              label="Enable custom fees"
+              isEnabled={state.enableCustomFees}
+              onChange={(enabled) =>
+                dispatch({ type: 'SET_ENABLE_CUSTOM_FEES', payload: enabled })
+              }
+            />
+
+            {state.enableCustomFees && (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
+                    Fee percentage (max 1%)
+                  </p>
+                  <div className="bg-csw-gray-800 p-csw-2md rounded-csw-md flex items-center gap-csw-sm">
+                    <input
+                      type="text"
+                      value={state.feePercentage}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'SET_FEE_PERCENTAGE',
+                          payload: e.target.value.replace('%', ''),
+                        })
+                      }
+                      className="flex-shrink-1 bg-transparent max-w-[25px] font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-center text-csw-gray-50"
+                    />
+                    <span className="flex-grow-1 font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200 flex-shrink-0">
+                      %
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-csw-xl text-csw-gray-200">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
+                    Collector address (Intents account)
+                  </p>
+                  <div className="bg-csw-gray-800 p-csw-2md rounded-csw-md flex justify-between items-center">
+                    <input
+                      type="text"
+                      value={state.collectorAddress}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'SET_COLLECTOR_ADDRESS',
+                          payload: e.target.value,
+                        })
+                      }
+                      className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-csw-gray-5 w-full"
+                    />
+                    <X
+                      className="w-[16px] h-[16px] cursor-pointer hover:opacity-70 transition-opacity"
+                      onClick={() =>
+                        dispatch({
+                          type: 'SET_COLLECTOR_ADDRESS',
+                          payload: '',
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
-        </div>
-      </ConfigSection>
-
-      <ConfigSection title="Fee collection">
-        <div className="space-y-sw-xl text-sw-gray-200">
-          <Toggle
-            label="Enable custom fees"
-            isEnabled={state.enableCustomFees}
-            onChange={(enabled) =>
-              dispatch({ type: 'SET_ENABLE_CUSTOM_FEES', payload: enabled })
-            }
-          />
-
-          {state.enableCustomFees && (
-            <>
-              <div className="flex items-center justify-between">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  Fee percentage (max 1%)
-                </p>
-                <div className="bg-sw-gray-800 p-sw-2md rounded-sw-md">
-                  <input
-                    type="text"
-                    value={state.feePercentage}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_FEE_PERCENTAGE',
-                        payload: e.target.value,
-                      })
-                    }
-                    className="bg-transparent w-10 font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-center text-sw-gray-50"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-sw-xl text-sw-gray-200">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  Collector address (Intents account)
-                </p>
-                <div className="bg-sw-gray-800 p-sw-2md rounded-sw-md flex justify-between items-center">
-                  <input
-                    type="text"
-                    value={state.collectorAddress}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_COLLECTOR_ADDRESS',
-                        payload: e.target.value,
-                      })
-                    }
-                    className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-sw-gray-50"
-                  />
-                  <X className="w-[16px] h-[16px]" />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </ConfigSection>
-    </div>
+        </ConfigSection>
+      </div>
+    </>
   );
 }

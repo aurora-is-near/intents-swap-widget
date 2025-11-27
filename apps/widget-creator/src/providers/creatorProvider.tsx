@@ -7,9 +7,9 @@ type CreatorState = {
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
-  selectedNetworksCount: number;
+  selectedNetworks: string[];
   // Configure - Tokens
-  selectedTokensCount: number;
+  selectedTokenSymbols: string[];
   enableSellToken: boolean;
   autoSelectTopBalanceToken: boolean;
   defaultSellToken: string;
@@ -38,8 +38,8 @@ type CreatorState = {
 const initialState: CreatorState = {
   userAuthMode: 'standalone',
   accountAbstractionMode: 'enabled',
-  selectedNetworksCount: 15,
-  selectedTokensCount: 48,
+  selectedNetworks: [],
+  selectedTokenSymbols: [],
   enableSellToken: true,
   autoSelectTopBalanceToken: false,
   defaultSellToken: 'USDT',
@@ -68,9 +68,9 @@ type Action =
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
   // Configure - Networks
-  | { type: 'SET_SELECTED_NETWORKS_COUNT'; payload: number }
+  | { type: 'SET_SELECTED_NETWORKS'; payload: string[] }
   // Configure - Tokens
-  | { type: 'SET_SELECTED_TOKENS_COUNT'; payload: number }
+  | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
   | { type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN'; payload: boolean }
   | { type: 'SET_DEFAULT_SELL_TOKEN'; payload: string }
@@ -106,10 +106,10 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, userAuthMode: action.payload };
     case 'SET_ACCOUNT_ABSTRACTION_MODE':
       return { ...state, accountAbstractionMode: action.payload };
-    case 'SET_SELECTED_NETWORKS_COUNT':
-      return { ...state, selectedNetworksCount: action.payload };
-    case 'SET_SELECTED_TOKENS_COUNT':
-      return { ...state, selectedTokensCount: action.payload };
+    case 'SET_SELECTED_NETWORKS':
+      return { ...state, selectedNetworks: action.payload };
+    case 'SET_SELECTED_TOKEN_SYMBOLS':
+      return { ...state, selectedTokenSymbols: Array.from(new Set(action.payload)) };
     case 'SET_ENABLE_SELL_TOKEN':
       return { ...state, enableSellToken: action.payload };
     case 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN':

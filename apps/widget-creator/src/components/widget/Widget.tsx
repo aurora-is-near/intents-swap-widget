@@ -8,6 +8,7 @@ import {
   WidgetContainer,
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
+import { useCreator } from '../../hooks/useCreatorConfig';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
@@ -16,6 +17,7 @@ interface WidgetProps {
 }
 
 export function Widget({ config }: WidgetProps) {
+  const { state } = useCreator();
   const [_makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
 
@@ -31,6 +33,10 @@ export function Widget({ config }: WidgetProps) {
         appName: 'Widget Creator',
         allowedTargetChainsList: ['near'] as const,
         alchemyApiKey: ALCHEMY_API_KEY,
+        // allowedChainsList: ,
+        // allowedTokensList:
+        // showIntentTokens:
+        // appFees
         ...config,
       }) as WidgetConfig,
     [config],
@@ -47,7 +53,7 @@ export function Widget({ config }: WidgetProps) {
 
   if (successfulTransactionDetails) {
     return (
-      <WidgetContainer isFullPage>
+      <WidgetContainer>
         <SuccessScreen
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}
@@ -64,8 +70,27 @@ export function Widget({ config }: WidgetProps) {
     );
   }
 
+  const getColorScheme = () => {
+    if (state.defaultMode === 'auto') {
+      // Check system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+    return state.defaultMode;
+  };
+
+  const colorScheme = getColorScheme();
+
   return (
-    <WidgetConfigProvider config={defaultConfig}>
+    <WidgetConfigProvider
+      config={defaultConfig}
+      theme={{
+        primaryColor: (state.primaryColor ?? '#D5B7FF') as `#${string}`,
+        surfaceColor: (state.pageBackgroundColor ?? '#24262D') as `#${string}`,
+        colorScheme: colorScheme ?? 'dark',
+      }}
+    >
       <WidgetSwap
         makeTransfer={handleMakeTransfer}
         providers={

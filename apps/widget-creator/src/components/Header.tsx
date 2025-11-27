@@ -1,40 +1,71 @@
 import { ArrowUpRight, Code, Save } from 'lucide-react';
-import { Button, OutlinedButton } from '@aurora-is-near/intents-swap-widget';
+import { useEffect, useState } from 'react';
+import { Button, OutlinedButton } from '../uikit/Button';
+import { ExportModal } from './ExportModal';
+import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
 import CalyxLogo from '../assets/logo.svg?react';
 
 export function Header() {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const { copyConfigLink } = useConfigLink();
+  const { decodeConfigLink } = useDecodeConfigLink();
+
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    const params = new URLSearchParams(window.location.search);
+
+    // Check if there are any config parameters in the URL
+    if (params.toString()) {
+      decodeConfigLink(currentUrl);
+    }
+  }, []);
+
   return (
-    <header className="backdrop-blur-[20px] backdrop-filter bg-sw-gray-950 rounded-sw-lg w-full flex items-center justify-between px-sw-2xl py-[11px]">
-      <aside className="flex gap-[44px] items-center">
-        <div className="w-[102px] h-[34px]">
-          <CalyxLogo />
-        </div>
+    <>
+      <header className="backdrop-blur-[20px] backdrop-filter bg-csw-gray-950 rounded-csw-lg w-full flex items-center justify-between px-csw-2xl py-[11px]">
+        <aside className="flex gap-[20px] md:gap-[44px] items-center">
+          <div className="w-[102px] h-[34px]">
+            <CalyxLogo />
+          </div>
 
-        <nav className="flex gap-sw-5xl items-center">
-          <a href="#" className="flex gap-2.5 items-center justify-center">
-            <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-sw-accent-50 whitespace-nowrap">
-              WIDGET STUDIO
-            </span>
-          </a>
-          <a href="#" className="flex gap-sw-md items-center">
-            <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-sw-gray-200 whitespace-nowrap">
-              DOCS
-            </span>
-            <ArrowUpRight className="w-sw-xl h-sw-xl text-sw-gray-200" />
-          </a>
-        </nav>
-      </aside>
+          <nav className="gap-csw-xl md:gap-csw-5xl items-center hidden md:flex">
+            <a href="#" className="flex gap-2.5 items-center justify-center">
+              <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-accent-50 whitespace-nowrap">
+                WIDGET STUDIO
+              </span>
+            </a>
+            <a href="#" className="flex gap-csw-md items-center">
+              <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-gray-200 whitespace-nowrap">
+                DOCS
+              </span>
+              <ArrowUpRight className="w-csw-xl h-csw-xl text-csw-gray-200" />
+            </a>
+          </nav>
+        </aside>
 
-      <aside className="flex gap-2.5 items-center">
-        <OutlinedButton size="md" fluid>
-          <Save className="w-4 h-4" />
-          Copy config link
-        </OutlinedButton>
-        <Button variant="primary" size="md" fluid>
-          <Code className="w-4 h-4" />
-          Export
-        </Button>
-      </aside>
-    </header>
+        <aside className="flex gap-csw-2md items-center">
+          <OutlinedButton size="sm" fluid onClick={copyConfigLink}>
+            <Save className="w-[16px] h-[16px]" />
+            <span className="text-sm font-medium leading-4 text-csw-gray-50 hidden md:inline">
+              Copy config link
+            </span>
+          </OutlinedButton>
+          <Button
+            variant="primary"
+            size="sm"
+            fluid
+            onClick={() => setIsExportModalOpen(true)}>
+            <Code className="w-[16px] h-[16px]" />
+            <span className="text-sm font-medium leading-4 text-csw-gray-950 hidden md:inline">
+              Export code
+            </span>
+          </Button>
+        </aside>
+      </header>
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
+    </>
   );
 }
