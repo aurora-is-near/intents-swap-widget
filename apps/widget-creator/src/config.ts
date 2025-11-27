@@ -103,8 +103,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   },
 };
 
-
-export const TOKENS_DATA: Record<string, {icon:string | undefined, name:string}> = {
+export const TOKENS_DATA: Record<
+  string,
+  { icon: string | undefined; name: string }
+> = {
   usdc: {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png',
     name: 'USD Coin',

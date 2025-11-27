@@ -9,6 +9,7 @@ export function CreatorPanel() {
   const [activeTab, setActiveTab] = useState<'configure' | 'design'>(
     'configure',
   );
+
   const { dispatch } = useCreator();
 
   function handleReset() {

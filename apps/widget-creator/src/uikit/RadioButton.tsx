@@ -20,7 +20,9 @@ export function RadioButton({
       onClick={onChange}
       disabled={disabled}
       className={`w-full flex gap-csw-lg items-base p-csw-lg rounded-csw-md border transition-colors ${
-        isSelected ? 'bg-csw-gray-800 border-csw-gray-600' : 'border-csw-gray-700'
+        isSelected
+          ? 'bg-csw-gray-800 border-csw-gray-600'
+          : 'border-csw-gray-700'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
       {/* Radio circle */}
       <div

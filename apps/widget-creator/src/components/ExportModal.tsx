@@ -1,7 +1,7 @@
-import { X, Copy, ExternalLink } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Copy, ExternalLink, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '../uikit/Button';
-import { Highlight, themes } from 'prism-react-renderer'
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -35,6 +35,7 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+
       return () => {
         document.body.style.overflow = 'unset';
       };
@@ -42,23 +43,15 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
   }, [isOpen]);
 
   const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(SAMPLE_CODE);
-      setCopyCodeFeedback(true);
-      setTimeout(() => setCopyCodeFeedback(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy code:', err);
-    }
+    await navigator.clipboard.writeText(SAMPLE_CODE);
+    setCopyCodeFeedback(true);
+    setTimeout(() => setCopyCodeFeedback(false), 2000);
   };
 
   const handleCopyConfigLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopyLinkFeedback(true);
-      setTimeout(() => setCopyLinkFeedback(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-    }
+    await navigator.clipboard.writeText(window.location.href);
+    setCopyLinkFeedback(true);
+    setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
 
   if (!isOpen) {
@@ -115,18 +108,17 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
                 theme={themes.dracula}
                 code={SAMPLE_CODE}
                 language="tsx">
-                {({
-                  className,
-                  style,
-                  tokens,
-                  getLineProps,
-                  getTokenProps,
-                }) => (
+                {({ tokens, getLineProps, getTokenProps }) => (
                   <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
                     {tokens.map((line, i) => {
-                      const { style: lineStyle, className: lineClassName, ...lineOtherProps } = getLineProps({
+                      const {
+                        style: lineStyle,
+                        className: lineClassName,
+                        ...lineOtherProps
+                      } = getLineProps({
                         line,
                       });
+
                       return (
                         <div
                           key={i}
@@ -138,7 +130,12 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
                           </span>
                           <span className="table-cell">
                             {line.map((token, key) => {
-                              const { style: tokenStyle, className: tokenClassName, ...tokenOtherProps } = getTokenProps({ token });
+                              const {
+                                style: tokenStyle,
+                                className: tokenClassName,
+                                ...tokenOtherProps
+                              } = getTokenProps({ token });
+
                               return (
                                 <span
                                   key={key}

@@ -166,8 +166,7 @@ export const OutlinedButton = ({
         styles.size(size),
         'ring-1 ring-csw-gray-500 text-csw-gray-50',
         {
-          'cursor-pointer bg-transparent':
-            state === 'default',
+          'cursor-pointer bg-transparent': state === 'default',
           'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
         },
         className,

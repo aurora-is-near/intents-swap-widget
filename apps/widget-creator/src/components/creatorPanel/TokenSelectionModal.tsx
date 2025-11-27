@@ -1,17 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
-import { X, Search } from 'lucide-react';
-import { ToggleOnly } from '../../uikit/Toggle';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, X } from 'lucide-react';
 import { OutlinedButton } from '../../uikit/Button';
-import { TokenTag } from '../../uikit/TokenTag';
-import { isTokenAvailable, useTokens } from '../../hooks/useTokens';
+import { isTokenAvailable, TokenType, useTokens } from '../../hooks/useTokens';
 import { useCreator } from '../../hooks/useCreatorConfig';
-
-interface Token {
-  id: string;
-  symbol: string;
-  icon?: string;
-  bgColor?: string;
-}
+import { TokenRow } from './TokenRow';
 
 interface TokenSelectionModalProps {
   isOpen: boolean;
@@ -19,8 +11,15 @@ interface TokenSelectionModalProps {
 }
 
 // Sample popular token symbols
-const POPULAR_TOKENS: string[] = ['ETH', 'BTC', 'SOL', 'USDC', 'USDT', 'NEAR', 'AURORA'];
-
+const POPULAR_TOKENS: string[] = [
+  'ETH',
+  'BTC',
+  'SOL',
+  'USDC',
+  'USDT',
+  'NEAR',
+  'AURORA',
+];
 
 export function TokenSelectionModal({
   isOpen,
@@ -40,6 +39,7 @@ export function TokenSelectionModal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflowY = 'hidden';
+
       return () => {
         document.body.style.overflowY = 'unset';
       };
@@ -48,32 +48,27 @@ export function TokenSelectionModal({
 
   // Filter tokens based on search and deduplicate by symbol
   const filteredTokens = useMemo(() => {
-    const seen = new Set<string>();
-    return allTokens.filter((token: any) => {
-      if (seen.has(token.symbol)) {
-        return false;
-      }
-      seen.add(token.symbol);
+    return allTokens.filter((token: TokenType) => {
       return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [searchQuery, allTokens]);
 
   // Separate available and unavailable tokens
-  const availableFilteredTokens = filteredTokens.filter((token: any) =>
+  const availableFilteredTokens = filteredTokens.filter((token: TokenType) =>
     isTokenAvailable(token, state.selectedNetworks),
   );
 
   const unavailableFilteredTokens = filteredTokens.filter(
-    (token: any) => !isTokenAvailable(token, state.selectedNetworks),
+    (token: TokenType) => !isTokenAvailable(token, state.selectedNetworks),
   );
 
   // Separate popular and other tokens
-  const popularAvailable = availableFilteredTokens.filter((token: any) =>
+  const popularAvailable = availableFilteredTokens.filter((token: TokenType) =>
     POPULAR_TOKENS.includes(token.symbol),
   );
 
-  const otherAvailable = availableFilteredTokens.filter((token: any) =>
-    !POPULAR_TOKENS.includes(token.symbol),
+  const otherAvailable = availableFilteredTokens.filter(
+    (token: TokenType) => !POPULAR_TOKENS.includes(token.symbol),
   );
 
   const handleToggleToken = (tokenId: string) => {
@@ -85,7 +80,7 @@ export function TokenSelectionModal({
   };
 
   const handleSelectAll = () => {
-    onTokensChange(availableFilteredTokens.map((t: any) => t.symbol));
+    onTokensChange(availableFilteredTokens.map((t: TokenType) => t.symbol));
   };
 
   const handleDeselectAll = () => {
@@ -155,7 +150,7 @@ export function TokenSelectionModal({
                 </div>
 
                 <div className="flex flex-col gap-csw-md">
-                  {popularAvailable.map((token: any) => (
+                  {popularAvailable.map((token: TokenType) => (
                     <TokenRow
                       key={token.symbol}
                       token={token}
@@ -177,7 +172,7 @@ export function TokenSelectionModal({
               )}
 
               <div className="flex flex-col gap-csw-md">
-                {otherAvailable.map((token: any) => (
+                {otherAvailable.map((token: TokenType) => (
                   <TokenRow
                     key={token.symbol}
                     token={token}
@@ -187,7 +182,7 @@ export function TokenSelectionModal({
                   />
                 ))}
 
-                {unavailableFilteredTokens.map((token: any) => (
+                {unavailableFilteredTokens.map((token: TokenType) => (
                   <TokenRow
                     key={token.symbol}
                     token={token}
@@ -207,44 +202,6 @@ export function TokenSelectionModal({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-interface TokenRowProps {
-  token: Token;
-  isSelected: boolean;
-  onToggle: () => void;
-  isDisabled?: boolean;
-}
-
-function TokenRow({ token, isSelected, onToggle, isDisabled = false }: TokenRowProps) {
-  console.log('isSelected for token', token.symbol, ':', isSelected);
-
-  const tokenIcon = token.icon ? (
-    <img
-      src={token.icon}
-      alt={token.symbol}
-      className="size-full rounded-full"
-    />
-  ) : undefined;
-
-  return (
-    <div
-      className={`flex items-center justify-between px-csw-md py-csw-md bg-csw-gray-800 rounded-csw-md transition-colors ${
-        isDisabled
-          ? 'opacity-40 cursor-not-allowed'
-          : 'hover:bg-csw-gray-700 transition-colors cursor-pointer'
-      }`}
-      onClick={() => !isDisabled && onToggle()}>
-      <TokenTag
-        tokenIcon={tokenIcon}
-        tokenSymbol={token.symbol}
-        className="flex-1 justify-start"
-      />
-
-      {/* Toggle Switch */}
-      <ToggleOnly isEnabled={isSelected} onChange={() => !isDisabled && onToggle()} />
     </div>
   );
 }

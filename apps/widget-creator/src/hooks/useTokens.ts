@@ -1,8 +1,21 @@
-import { OneClickService, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
+import {
+  OneClickService,
+  TokenResponse,
+} from '@defuse-protocol/one-click-sdk-typescript';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { TOKENS_DATA } from '../config';
-import { useCreator } from './useCreatorConfig';
+
+export type TokenType = {
+  assetIds: string[];
+  decimals: number;
+  blockchains: TokenResponse.blockchain[];
+  symbol: string;
+  prices: number[];
+  pricesUpdatedAt: string[];
+  contractAddresses?: string[];
+  icon: string | undefined;
+};
 
 export const getTokenIcon = (tokenSymbol: string): string => {
   const symbol = tokenSymbol.toLowerCase();
@@ -10,8 +23,8 @@ export const getTokenIcon = (tokenSymbol: string): string => {
   return TOKENS_DATA[symbol]?.icon ?? '';
 };
 
-export const useTokens = () => {
-  const { data: queryData, ...query } = useQuery<TokenResponse[]>({
+export const useTokens = (): TokenType[] => {
+  const { data: queryData } = useQuery<TokenResponse[]>({
     queryKey: ['tokens'],
     queryFn: async (): Promise<TokenResponse[]> => {
       return OneClickService.getTokens();
@@ -19,27 +32,60 @@ export const useTokens = () => {
   });
 
   const tokensWithIcons = useMemo(() => {
-    return (queryData ?? []).map((token: any) => ({
-      ...token,
-      icon: getTokenIcon(token.symbol || ''),
-    }));
+    return (queryData ?? []).reduce<Record<string, TokenType>>((acc, token) => {
+      const icon = getTokenIcon(token.symbol);
+
+      if (token.symbol && acc[token.symbol]) {
+        const existing = acc[token.symbol]!;
+
+        existing.assetIds.push(token.assetId);
+        existing.prices.push(token.price);
+        existing.pricesUpdatedAt.push(token.priceUpdatedAt);
+
+        if (!existing.blockchains.includes(token.blockchain)) {
+          existing.blockchains.push(token.blockchain);
+        }
+
+        if (
+          token.contractAddress &&
+          !existing.contractAddresses?.includes(token.contractAddress)
+        ) {
+          existing.contractAddresses = [
+            ...(existing.contractAddresses ?? []),
+            token.contractAddress,
+          ];
+        }
+      } else if (token.symbol && !acc[token.symbol]) {
+        acc[token.symbol] = {
+          assetIds: [token.assetId],
+          decimals: token.decimals,
+          blockchains: [token.blockchain],
+          symbol: token.symbol,
+          prices: [token.price],
+          pricesUpdatedAt: [token.priceUpdatedAt],
+          contractAddresses: token.contractAddress
+            ? [token.contractAddress]
+            : undefined,
+          icon,
+        };
+      }
+
+      return acc;
+    }, {});
   }, [queryData]);
 
-  return tokensWithIcons;
+  return Object.values(tokensWithIcons);
 };
 
-interface Token {
-  symbol: string;
-  blockchain?: string;
-  blockchainId?: string;
-  icon: string;
-}
-
-export const isTokenAvailable = (token: Token, selectedNetworks: string[]): boolean => {
+export const isTokenAvailable = (
+  token: TokenType,
+  selectedNetworks: string[],
+): boolean => {
   if (!selectedNetworks || selectedNetworks.length === 0) {
     return false;
   }
 
-  const tokenBlockchain = token.blockchain || token.blockchainId || '';
-  return selectedNetworks.includes(tokenBlockchain);
+  return token.blockchains.some((blockchain) =>
+    selectedNetworks.includes(blockchain),
+  );
 };

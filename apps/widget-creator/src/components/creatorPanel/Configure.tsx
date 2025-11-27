@@ -9,30 +9,32 @@ import { Toggle } from '../../uikit/Toggle';
 import { useChains } from '../../hooks/useChains';
 import { TokenSelectionModal } from './TokenSelectionModal';
 import { isTokenAvailable, useTokens } from '../../hooks/useTokens';
-
-const handleNetworksChange = (
-  newNetworks: string[],
-  allTokens: any[],
-  dispatch: any,
-) => {
-  dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
-
-  // Auto-select tokens that are available for the chosen networks
-  const availableTokens = allTokens.filter((token: any) =>
-    isTokenAvailable(token, newNetworks),
-  );
-  const availableTokenSymbols = availableTokens.map((token: any) => token.symbol);
-  dispatch({
-    type: 'SET_SELECTED_TOKEN_SYMBOLS',
-    payload: availableTokenSymbols,
-  });
-};
+import type { TokenType } from '../../hooks/useTokens';
 
 export function Configure() {
   const { state, dispatch } = useCreator();
   const chains = useChains();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const allTokens = useTokens();
+
+  const handleNetworksChange = (newNetworks: string[]) => {
+    dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
+
+    // Auto-select tokens that are available for the chosen networks
+    const availableTokens = allTokens.filter((token) =>
+      isTokenAvailable(token, newNetworks),
+    );
+
+    console.log('availableTokens', availableTokens);
+    const availableTokenSymbols = availableTokens.map(
+      (token: TokenType) => token.symbol,
+    );
+
+    dispatch({
+      type: 'SET_SELECTED_TOKEN_SYMBOLS',
+      payload: availableTokenSymbols,
+    });
+  };
 
   return (
     <>
@@ -124,7 +126,7 @@ export function Configure() {
                     ? []
                     : chains?.map((chain) => chain.id) || [];
 
-                  handleNetworksChange(newNetworks, allTokens, dispatch);
+                  handleNetworksChange(newNetworks);
                 }}>
                 {chains &&
                 chains.length > 0 &&
@@ -143,6 +145,7 @@ export function Configure() {
                       const isSelected = state.selectedNetworks?.includes(
                         chain.id,
                       );
+
                       const newNetworks = isSelected
                         ? state.selectedNetworks.filter(
                             (n: string) => n !== chain.id,
@@ -224,8 +227,10 @@ export function Configure() {
                   </p>
                   {(() => {
                     const sellToken = allTokens.find(
-                      (token: any) => token.symbol === state.defaultSellToken,
+                      (token: TokenType) =>
+                        token.symbol === state.defaultSellToken,
                     );
+
                     return (
                       <TokenTag
                         tokenIcon={
@@ -263,8 +268,10 @@ export function Configure() {
                   </p>
                   {(() => {
                     const buyToken = allTokens.find(
-                      (token: any) => token.symbol === state.defaultBuyToken,
+                      (token: TokenType) =>
+                        token.symbol === state.defaultBuyToken,
                     );
+
                     return (
                       <TokenTag
                         tokenIcon={

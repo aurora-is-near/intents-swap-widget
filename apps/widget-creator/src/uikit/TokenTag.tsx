@@ -1,5 +1,5 @@
-import { cn } from '../utils/cn';
 import { HelpCircle } from 'lucide-react';
+import { cn } from '../utils/cn';
 
 interface TokenTagProps {
   tokenIcon?: React.ReactNode;
@@ -39,7 +39,7 @@ export function TokenTag({
         )}
 
         {/* Network Badge */}
-        {networkIcon && (
+        {networkIcon ? (
           <div
             className={cn(
               'relative shrink-0 size-[12px]',
@@ -48,7 +48,7 @@ export function TokenTag({
             )}>
             {networkIcon}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Token Symbol Text */}

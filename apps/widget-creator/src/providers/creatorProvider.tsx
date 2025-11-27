@@ -109,7 +109,10 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     case 'SET_SELECTED_NETWORKS':
       return { ...state, selectedNetworks: action.payload };
     case 'SET_SELECTED_TOKEN_SYMBOLS':
-      return { ...state, selectedTokenSymbols: Array.from(new Set(action.payload)) };
+      return {
+        ...state,
+        selectedTokenSymbols: Array.from(new Set(action.payload)),
+      };
     case 'SET_ENABLE_SELL_TOKEN':
       return { ...state, enableSellToken: action.payload };
     case 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN':

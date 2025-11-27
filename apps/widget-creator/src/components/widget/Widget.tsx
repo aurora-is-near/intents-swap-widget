@@ -77,6 +77,7 @@ export function Widget({ config }: WidgetProps) {
         ? 'dark'
         : 'light';
     }
+
     return state.defaultMode;
   };
 
@@ -89,8 +90,7 @@ export function Widget({ config }: WidgetProps) {
         primaryColor: (state.primaryColor ?? '#D5B7FF') as `#${string}`,
         surfaceColor: (state.pageBackgroundColor ?? '#24262D') as `#${string}`,
         colorScheme: colorScheme ?? 'dark',
-      }}
-    >
+      }}>
       <WidgetSwap
         makeTransfer={handleMakeTransfer}
         providers={

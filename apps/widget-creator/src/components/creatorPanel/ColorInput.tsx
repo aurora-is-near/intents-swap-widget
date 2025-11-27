@@ -15,7 +15,6 @@ export function ColorInput({
   label,
   value,
   onChange,
-  hasInfo,
   isOpen = false,
   onOpen,
   onClose,
@@ -35,9 +34,18 @@ export function ColorInput({
           className={`font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200`}>
           {label}
         </p>
-        <div className={'p-csw-md bg-csw-gray-800 flex items-center gap-csw-md rounded-csw-md cursor-pointer'} onClick={handleOpen}>
-          <div className={"w-[21px] h-[20px] rounded-csw-sm"} style={{ backgroundColor: value }} />
-          <span className={"text-[14px] leading-3 text-csw-gray-50"}>{value}</span>
+        <div
+          className={
+            'p-csw-md bg-csw-gray-800 flex items-center gap-csw-md rounded-csw-md cursor-pointer'
+          }
+          onClick={handleOpen}>
+          <div
+            className={'w-[21px] h-[20px] rounded-csw-sm'}
+            style={{ backgroundColor: value }}
+          />
+          <span className={'text-[14px] leading-3 text-csw-gray-50'}>
+            {value.toUpperCase()}
+          </span>
         </div>
       </div>
       {/* {hasInfo && <Info className="w-3 h-3 text-csw-gray-950 opacity-50" />} */}

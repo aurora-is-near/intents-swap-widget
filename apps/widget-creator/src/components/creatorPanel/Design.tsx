@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+// import { Info } from 'lucide-react';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { Toggle } from '../../uikit/Toggle';
@@ -27,16 +27,18 @@ export function Design() {
               Default mode
             </span>
             <div className="flex items-center gap-csw-2md">
-              {state.allowToggleModes && <OutlinedButton
-                size="sm"
-                onClick={() =>
-                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
-                }
-                className={
-                  state.defaultMode === 'auto' ? 'bg-csw-gray-800' : ''
-                }>
-                Auto
-              </OutlinedButton>}
+              {state.allowToggleModes && (
+                <OutlinedButton
+                  size="sm"
+                  onClick={() =>
+                    dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
+                  }
+                  className={
+                    state.defaultMode === 'auto' ? 'bg-csw-gray-800' : ''
+                  }>
+                  Auto
+                </OutlinedButton>
+              )}
               <OutlinedButton
                 size="sm"
                 onClick={() =>
