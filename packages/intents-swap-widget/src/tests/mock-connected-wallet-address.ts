@@ -7,5 +7,5 @@ export const mockConnectedWalletAddress = (type: 'evm' | 'near' | 'sol') => {
     return 'test-account.near';
   }
 
-  return '0x0000000000000000000000000000000000000000';
+  return '0x1234567890123456789012345678901234567890';
 };

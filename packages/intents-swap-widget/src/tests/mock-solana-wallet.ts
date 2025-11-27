@@ -7,7 +7,7 @@ export const mockSolanaWallet: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signTransaction: () => Promise<any>;
 } = {
-  publicKey: new PublicKey('0x000000000'),
+  publicKey: new PublicKey('11111111111111111111111111111111'),
   signMessage: jest.fn(async () => new Uint8Array()),
   signTransaction: jest.fn(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
