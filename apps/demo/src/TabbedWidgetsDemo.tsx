@@ -53,6 +53,7 @@ export const TabbedWidgetsDemo = () => {
         config={{
           appName: 'Demo App',
           connectedWallets: { default: walletAddress },
+          alchemyApiKey: process.env.ALCHEMY_API_KEY,
           intentsAccountType: 'near',
           chainsFilter: {
             target: {
