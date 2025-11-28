@@ -50,7 +50,7 @@ export function Configure() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
       />
-      {/* <TokenWithChainSelector
+      <TokenWithChainSelector
         isOpen={isTokenSelectorOpen}
         onClose={() => setIsTokenSelectorOpen(false)}
         onSelectToken={(token, chain) => {
@@ -66,7 +66,7 @@ export function Configure() {
             });
           }
         }}
-      /> */}
+      />
       <div className="flex flex-col gap-csw-2xl">
         <ConfigSection title="User authentication">
           <div className="space-y-csw-2md">

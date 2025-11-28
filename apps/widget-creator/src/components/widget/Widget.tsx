@@ -33,13 +33,19 @@ export function Widget({ config }: WidgetProps) {
         appName: 'Widget Creator',
         allowedTargetChainsList: ['near'] as const,
         alchemyApiKey: ALCHEMY_API_KEY,
-        // allowedChainsList: ,
-        // allowedTokensList:
+        allowedChainsList:
+          state.selectedNetworks.length > 0
+            ? state.selectedNetworks
+            : undefined,
+        allowedTokensList:
+          state.selectedTokenSymbols.length > 0
+            ? state.selectedTokenSymbols
+            : undefined,
         // showIntentTokens:
         // appFees
         ...config,
       }) as WidgetConfig,
-    [config],
+    [config, state.selectedNetworks],
   );
 
   const handleMakeTransfer = (args: MakeTransferArgs) => {
