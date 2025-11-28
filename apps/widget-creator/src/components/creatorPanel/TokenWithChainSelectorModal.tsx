@@ -186,10 +186,10 @@ export function TokenWithChainSelector({
                         <img
                           src={token.icon}
                           alt={token.symbol}
-                          className="w-[40px] h-[40px] rounded-full"
+                          className="w-[24px] h-[24px] rounded-full"
                         />
                       ) : (
-                        <div className="w-[40px] h-[40px] rounded-full bg-csw-gray-700" />
+                        <div className="w-[24px] h-[24px] rounded-full bg-csw-gray-700" />
                       )}
                     </div>
 
