@@ -17,9 +17,13 @@ export function Design() {
           <Toggle
             label="Allow to toggle modes"
             isEnabled={state.allowToggleModes}
-            onChange={(enabled) =>
-              dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: enabled })
-            }
+            onChange={(enabled) => {
+              dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: enabled });
+
+              if (!enabled) {
+                dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
+              }
+            }}
           />
 
           <div className="flex items-center justify-between">

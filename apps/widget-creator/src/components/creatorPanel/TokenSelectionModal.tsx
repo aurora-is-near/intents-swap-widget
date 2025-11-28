@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { OutlinedButton } from '../../uikit/Button';
-import { isTokenAvailable, TokenType, useTokens } from '../../hooks/useTokens';
+import {
+  isTokenAvailable,
+  TokenType,
+  useTokensGroupedBySymbol,
+} from '../../hooks/useTokens';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { TokenRow } from './TokenRow';
 
@@ -26,7 +30,7 @@ export function TokenSelectionModal({
   onClose,
 }: TokenSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const allTokens = useTokens();
+  const allTokens = useTokensGroupedBySymbol();
   const { state, dispatch } = useCreator();
 
   const selectedTokens = state.selectedTokenSymbols || [];

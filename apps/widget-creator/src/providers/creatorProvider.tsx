@@ -12,9 +12,9 @@ type CreatorState = {
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
   autoSelectTopBalanceToken: boolean;
-  defaultSellToken: string;
+  defaultSellToken: { tokenSymbol: string; chain?: string };
   enableBuyToken: boolean;
-  defaultBuyToken: string;
+  defaultBuyToken: { tokenSymbol: string; chain?: string };
   // Configure - Fee collection
   enableCustomFees: boolean;
   feePercentage: string;
@@ -42,15 +42,15 @@ const initialState: CreatorState = {
   selectedTokenSymbols: [],
   enableSellToken: true,
   autoSelectTopBalanceToken: false,
-  defaultSellToken: 'USDT',
+  defaultSellToken: { tokenSymbol: 'USDT', chain: undefined },
   enableBuyToken: false,
-  defaultBuyToken: 'ETH',
+  defaultBuyToken: { tokenSymbol: 'ETH', chain: undefined },
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
   // Design
-  allowToggleModes: true,
-  defaultMode: 'auto',
+  allowToggleModes: false,
+  defaultMode: 'dark',
   stylePreset: 'clean',
   cornerRadius: 'm',
   showContainerWrapper: false,
@@ -73,9 +73,15 @@ type Action =
   | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
   | { type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN'; payload: boolean }
-  | { type: 'SET_DEFAULT_SELL_TOKEN'; payload: string }
+  | {
+      type: 'SET_DEFAULT_SELL_TOKEN';
+      payload: { tokenSymbol: string; chain?: string };
+    }
   | { type: 'SET_ENABLE_BUY_TOKEN'; payload: boolean }
-  | { type: 'SET_DEFAULT_BUY_TOKEN'; payload: string }
+  | {
+      type: 'SET_DEFAULT_BUY_TOKEN';
+      payload: { tokenSymbol: string; chain?: string };
+    }
   // Configure - Fee collection
   | { type: 'SET_ENABLE_CUSTOM_FEES'; payload: boolean }
   | { type: 'SET_FEE_PERCENTAGE'; payload: string }
@@ -118,11 +124,17 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     case 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN':
       return { ...state, autoSelectTopBalanceToken: action.payload };
     case 'SET_DEFAULT_SELL_TOKEN':
-      return { ...state, defaultSellToken: action.payload };
+      return {
+        ...state,
+        defaultSellToken: action.payload,
+      };
     case 'SET_ENABLE_BUY_TOKEN':
       return { ...state, enableBuyToken: action.payload };
     case 'SET_DEFAULT_BUY_TOKEN':
-      return { ...state, defaultBuyToken: action.payload };
+      return {
+        ...state,
+        defaultBuyToken: action.payload,
+      };
     case 'SET_ENABLE_CUSTOM_FEES':
       return { ...state, enableCustomFees: action.payload };
     case 'SET_FEE_PERCENTAGE':

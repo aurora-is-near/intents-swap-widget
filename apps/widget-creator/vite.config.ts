@@ -7,4 +7,28 @@ import vercel from 'vite-plugin-vercel';
 
 export default defineConfig({
   plugins: [react(), svgr(), nodePolyfills(), vercel()] as Plugin[],
+  css: {
+    postcss: './postcss.config.cjs',
+    modules: false,
+  },
+  define: {
+    global: 'globalThis',
+  },
+  server: {
+    port: 5174,
+    fs: {
+      allow: ['..'],
+    },
+    host: true, // Allow access from network
+    cors: true, // Enable CORS for TON Connect
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+    },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
 });

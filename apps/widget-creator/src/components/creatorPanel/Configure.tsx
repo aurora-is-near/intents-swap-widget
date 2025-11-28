@@ -8,14 +8,23 @@ import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
 import { useChains } from '../../hooks/useChains';
 import { TokenSelectionModal } from './TokenSelectionModal';
-import { isTokenAvailable, useTokens } from '../../hooks/useTokens';
+import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
+import {
+  isTokenAvailable,
+  useTokensGroupedBySymbol,
+} from '../../hooks/useTokens';
 import type { TokenType } from '../../hooks/useTokens';
 
 export function Configure() {
   const { state, dispatch } = useCreator();
   const chains = useChains();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
-  const allTokens = useTokens();
+  const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
+  const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
+    'sell',
+  );
+
+  const allTokens = useTokensGroupedBySymbol();
 
   const handleNetworksChange = (newNetworks: string[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
@@ -41,6 +50,23 @@ export function Configure() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
       />
+      {/* <TokenWithChainSelector
+        isOpen={isTokenSelectorOpen}
+        onClose={() => setIsTokenSelectorOpen(false)}
+        onSelectToken={(token, chain) => {
+          if (tokenSelectorType === 'sell') {
+            dispatch({
+              type: 'SET_DEFAULT_SELL_TOKEN',
+              payload: { tokenSymbol: token.symbol, chain },
+            });
+          } else {
+            dispatch({
+              type: 'SET_DEFAULT_BUY_TOKEN',
+              payload: { tokenSymbol: token.symbol, chain },
+            });
+          }
+        }}
+      /> */}
       <div className="flex flex-col gap-csw-2xl">
         <ConfigSection title="User authentication">
           <div className="space-y-csw-2md">
@@ -227,22 +253,29 @@ export function Configure() {
                   {(() => {
                     const sellToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultSellToken,
+                        token.symbol === state.defaultSellToken.tokenSymbol,
                     );
 
                     return (
-                      <TokenTag
-                        tokenIcon={
-                          sellToken?.icon ? (
-                            <img
-                              src={sellToken.icon}
-                              alt={sellToken.symbol}
-                              className="size-full rounded-full"
-                            />
-                          ) : undefined
-                        }
-                        tokenSymbol={state.defaultSellToken}
-                      />
+                      <div
+                        onClick={() => {
+                          setTokenSelectorType('sell');
+                          setIsTokenSelectorOpen(true);
+                        }}
+                        className="cursor-pointer">
+                        <TokenTag
+                          tokenIcon={
+                            sellToken?.icon ? (
+                              <img
+                                src={sellToken.icon}
+                                alt={sellToken.symbol}
+                                className="size-full rounded-full"
+                              />
+                            ) : undefined
+                          }
+                          tokenSymbol={state.defaultSellToken.tokenSymbol}
+                        />
+                      </div>
                     );
                   })()}
                 </div>
@@ -268,22 +301,29 @@ export function Configure() {
                   {(() => {
                     const buyToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken,
+                        token.symbol === state.defaultBuyToken.tokenSymbol,
                     );
 
                     return (
-                      <TokenTag
-                        tokenIcon={
-                          buyToken?.icon ? (
-                            <img
-                              src={buyToken.icon}
-                              alt={buyToken.symbol}
-                              className="size-full rounded-full"
-                            />
-                          ) : undefined
-                        }
-                        tokenSymbol={state.defaultBuyToken}
-                      />
+                      <div
+                        onClick={() => {
+                          setTokenSelectorType('buy');
+                          setIsTokenSelectorOpen(true);
+                        }}
+                        className="cursor-pointer">
+                        <TokenTag
+                          tokenIcon={
+                            buyToken?.icon ? (
+                              <img
+                                src={buyToken.icon}
+                                alt={buyToken.symbol}
+                                className="size-full rounded-full"
+                              />
+                            ) : undefined
+                          }
+                          tokenSymbol={state.defaultBuyToken.tokenSymbol}
+                        />
+                      </div>
                     );
                   })()}
                 </div>

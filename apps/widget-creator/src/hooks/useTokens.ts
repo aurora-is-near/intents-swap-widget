@@ -17,13 +17,21 @@ export type TokenType = {
   icon: string | undefined;
 };
 
-export const getTokenIcon = (tokenSymbol: string): string | undefined => {
+export const getTokenIcon = (
+  tokenSymbol: string | undefined,
+): string | undefined => {
+  if (!tokenSymbol) {
+    return undefined;
+  }
+
   const symbol = tokenSymbol.toLowerCase();
 
   return TOKENS_DATA[symbol]?.icon ?? undefined;
 };
 
-export const useTokens = (): TokenType[] => {
+export const useTokens = (): Array<
+  TokenResponse & { icon: string | undefined }
+> => {
   const { data: queryData } = useQuery<TokenResponse[]>({
     queryKey: ['tokens'],
     queryFn: async (): Promise<TokenResponse[]> => {
@@ -31,10 +39,23 @@ export const useTokens = (): TokenType[] => {
     },
   });
 
-  const tokensWithIcons = useMemo(() => {
-    return (queryData ?? []).reduce<Record<string, TokenType>>((acc, token) => {
-      const icon = getTokenIcon(token.symbol);
+  if (!queryData || queryData.length === 0) {
+    return [];
+  }
 
+  const tokensWithIcons = (queryData ?? []).map((token) => ({
+    ...token,
+    icon: getTokenIcon(token.symbol),
+  }));
+
+  return tokensWithIcons;
+};
+
+export const useTokensGroupedBySymbol = (): TokenType[] => {
+  const tokens = useTokens();
+
+  const tokensWithIcons = useMemo(() => {
+    return (tokens ?? []).reduce<Record<string, TokenType>>((acc, token) => {
       if (token.symbol && acc[token.symbol]) {
         const existing = acc[token.symbol]!;
 
@@ -66,13 +87,13 @@ export const useTokens = (): TokenType[] => {
           contractAddresses: token.contractAddress
             ? [token.contractAddress]
             : undefined,
-          icon,
+          icon: token.icon,
         };
       }
 
       return acc;
     }, {});
-  }, [queryData]);
+  }, [tokens]);
 
   return Object.values(tokensWithIcons);
 };

@@ -7,10 +7,8 @@ export function useChains() {
   const chainsFromTokens = Array.from(
     new Set(
       tokens
-        .flatMap((token) =>
-          token.blockchains.map(
-            (blockchain) => CHAINS_LIST[blockchain as keyof typeof CHAINS_LIST],
-          ),
+        .map(
+          (token) => CHAINS_LIST[token.blockchain as keyof typeof CHAINS_LIST],
         )
         .filter((chain) => chain),
     ),
