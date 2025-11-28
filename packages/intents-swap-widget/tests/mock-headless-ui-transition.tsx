@@ -1,29 +1,30 @@
-import React from "react"
+import React from 'react';
+import type { FC } from 'react';
 
 const TransitionRoot = ({
   children,
   className,
   show = true,
 }: {
-  children: React.ReactNode
-  className?: string
-  show?: boolean
-}) => (show ? <div className={className}>{children}</div> : null)
+  children: React.ReactNode;
+  className?: string;
+  show?: boolean;
+}) => (show ? <div className={className}>{children}</div> : null);
 
 const ReturnChildren = ({
   children,
   className,
 }: {
-  children: React.ReactNode | ((data: object) => React.ReactNode)
-  className?: string | ((data: object) => string)
+  children: React.ReactNode | ((data: object) => React.ReactNode);
+  className?: string | ((data: object) => string);
 }) => (
-  <div className={typeof className === "function" ? className({}) : className}>
-    {typeof children === "function" ? children({}) : children}
+  <div className={typeof className === 'function' ? className({}) : className}>
+    {typeof children === 'function' ? children({}) : children}
   </div>
-)
+);
 
 export const headlessUITransitionMock = (
-  originalModule: Record<string, any>,
+  originalModule: Record<string, FC>,
 ) => ({
   ...originalModule,
   Dialog: TransitionRoot,
@@ -35,4 +36,4 @@ export const headlessUITransitionMock = (
   ListboxOption: ReturnChildren,
   Transition: TransitionRoot,
   TransitionChild: ReturnChildren,
-})
+});
