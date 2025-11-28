@@ -293,6 +293,10 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ltc.svg',
     name: 'LTC',
   },
+  mon: {
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/mon.svg',
+    name: 'Monad',
+  },
   aster: {
     icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/aster.svg',
     name: 'ASTER',

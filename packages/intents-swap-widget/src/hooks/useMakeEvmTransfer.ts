@@ -31,6 +31,7 @@ const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   pol: polygon,
   bera: null,
   avax: null,
+  monad: null,
 };
 
 export const useMakeEvmTransfer = ({
