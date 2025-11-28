@@ -8,7 +8,7 @@ import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
 import { useChains } from '../../hooks/useChains';
 import { TokenSelectionModal } from './TokenSelectionModal';
-import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
+// import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 import {
   isTokenAvailable,
   useTokensGroupedBySymbol,
@@ -19,10 +19,10 @@ export function Configure() {
   const { state, dispatch } = useCreator();
   const chains = useChains();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
-  const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
-  const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
-    'sell',
-  );
+  // const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
+  // const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
+  //   'sell',
+  // );
 
   const allTokens = useTokensGroupedBySymbol();
 
@@ -50,7 +50,7 @@ export function Configure() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
       />
-      <TokenWithChainSelector
+      {/* <TokenWithChainSelector
         isOpen={isTokenSelectorOpen}
         onClose={() => setIsTokenSelectorOpen(false)}
         onSelectToken={(token, chain) => {
@@ -66,7 +66,7 @@ export function Configure() {
             });
           }
         }}
-      />
+      /> */}
       <div className="flex flex-col gap-csw-2xl">
         <ConfigSection title="User authentication">
           <div className="space-y-csw-2md">
@@ -258,10 +258,10 @@ export function Configure() {
 
                     return (
                       <div
-                        onClick={() => {
-                          setTokenSelectorType('sell');
-                          setIsTokenSelectorOpen(true);
-                        }}
+                        // onClick={() => {
+                        //   setTokenSelectorType('sell');
+                        //   setIsTokenSelectorOpen(true);
+                        // }}
                         className="cursor-pointer">
                         <TokenTag
                           tokenIcon={
@@ -306,10 +306,10 @@ export function Configure() {
 
                     return (
                       <div
-                        onClick={() => {
-                          setTokenSelectorType('buy');
-                          setIsTokenSelectorOpen(true);
-                        }}
+                        // onClick={() => {
+                        //   setTokenSelectorType('buy');
+                        //   setIsTokenSelectorOpen(true);
+                        // }}
                         className="cursor-pointer">
                         <TokenTag
                           tokenIcon={

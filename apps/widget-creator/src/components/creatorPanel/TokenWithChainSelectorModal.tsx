@@ -7,9 +7,9 @@ import { useChains } from '../../hooks/useChains';
 interface TokenWithChainSelectorProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectToken?: (
-    token: TokenResponse & { icon: string | undefined },
-    selectedChain: string,
+  onSelectToken: (
+    token: (TokenResponse & { icon: string | undefined }) | undefined,
+    selectedChain: string | null | undefined,
   ) => void;
 }
 
@@ -19,7 +19,7 @@ export function TokenWithChainSelector({
   onSelectToken,
 }: TokenWithChainSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedChain, setSelectedChain] = useState<string>('all');
+  const [selectedChain, setSelectedChain] = useState<string | null>();
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false);
 
   const allTokens = useTokens();
@@ -43,7 +43,6 @@ export function TokenWithChainSelector({
         <div
           className="relative z-50 mx-4 w-full max-w-[456px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
           <div className="px-csw-2xl pt-csw-2xl">
             <header className="py-csw-md flex items-center justify-between">
               <h2 className="font-semibold text-base leading-4 tracking-[-0.4px] text-csw-gray-50">
@@ -57,9 +56,7 @@ export function TokenWithChainSelector({
             </header>
           </div>
 
-          {/* Search and Chain Selector */}
           <div className="px-csw-2xl gap-csw-xl flex items-center">
-            {/* Search Input */}
             <div className="relative flex-1">
               <div className="px-csw-lg py-csw-lg rounded-csw-md ring-transparent ring-1 ring-inset bg-csw-gray-800 hover:bg-csw-gray-700 transition-colors flex items-center justify-between">
                 <Search size={16} className="mr-csw-md text-csw-gray-100" />
@@ -82,13 +79,12 @@ export function TokenWithChainSelector({
               </div>
             </div>
 
-            {/* Chain Dropdown */}
             {allChains.length > 1 && (
               <div className="relative">
                 <div
                   onClick={() => setIsChainDropdownOpen(!isChainDropdownOpen)}
                   className="py-csw-sm px-csw-md gap-csw-md flex h-[40px] cursor-pointer items-center rounded-csw-md bg-csw-gray-600 hover:bg-csw-gray-500">
-                  {selectedChain === 'all' ? (
+                  {!selectedChain ? (
                     <div className="flex items-center gap-csw-md">
                       <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-500 flex items-center justify-center">
                         <div className="w-[12px] h-[12px] rounded-full border-2 border-csw-gray-100" />
@@ -118,18 +114,17 @@ export function TokenWithChainSelector({
                   )}
                 </div>
 
-                {/* Dropdown Menu */}
                 {isChainDropdownOpen && (
                   <div
                     className="absolute top-full right-[0px] mt-csw-sm gap-csw-xxs p-csw-md z-[10] flex max-h-[400px] min-w-[200px] flex-col rounded-csw-lg bg-csw-gray-900 shadow-lg ring-1 ring-inset ring-csw-gray-600 overflow-y-auto hide-scrollbar"
                     style={{ marginTop: '8px' }}>
                     <button
                       onClick={() => {
-                        setSelectedChain('all');
+                        setSelectedChain(null);
                         setIsChainDropdownOpen(false);
                       }}
                       className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-600 transition-colors ${
-                        selectedChain === 'all' ? 'bg-csw-gray-600' : ''
+                        !selectedChain ? 'bg-csw-gray-600' : ''
                       }`}>
                       <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-500 flex items-center justify-center flex-shrink-0">
                         <div className="w-[12px] h-[12px] rounded-full border-2 border-csw-gray-100" />
@@ -166,7 +161,6 @@ export function TokenWithChainSelector({
             )}
           </div>
 
-          {/* Token List */}
           <div
             className="flex-1 overflow-y-auto hide-scrollbar px-csw-2xl"
             style={{ maxHeight: '450px', minHeight: '200px' }}>
@@ -174,9 +168,8 @@ export function TokenWithChainSelector({
               {allTokens.length > 0 ? (
                 allTokens
                   .filter((token) => {
-                    // Filter by selected chain
-                    if (selectedChain !== 'all') {
-                      return token.blockchain === selectedChain;
+                    if (selectedChain) {
+                      return String(token.blockchain) === selectedChain;
                     }
 
                     return true;
@@ -185,7 +178,7 @@ export function TokenWithChainSelector({
                     <div
                       key={token.assetId}
                       onClick={() => {
-                        onSelectToken?.(token, selectedChain);
+                        onSelectToken(token, selectedChain);
                         onClose();
                       }}
                       className="gap-csw-lg p-csw-lg flex cursor-pointer justify-between rounded-csw-md transition-colors hover:bg-csw-gray-600">
@@ -202,7 +195,6 @@ export function TokenWithChainSelector({
                         )}
                       </div>
 
-                      {/* Token Info */}
                       <div className="gap-csw-sm mr-auto flex flex-col">
                         <span className="font-medium text-sm leading-4 text-csw-gray-50">
                           {token.symbol}
