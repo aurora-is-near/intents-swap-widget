@@ -63,7 +63,7 @@ export const TokenInputWithToken = ({
   };
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col" aria-label={heading}>
       {!hideTokenInputHeadings && (
         <TokenInputHeading>{heading}</TokenInputHeading>
       )}

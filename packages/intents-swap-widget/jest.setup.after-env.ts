@@ -29,6 +29,7 @@ afterAll(() => {
 });
 
 if (typeof global.requestAnimationFrame === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
   global.requestAnimationFrame = (callback) => setTimeout(callback, 0);
 }
 

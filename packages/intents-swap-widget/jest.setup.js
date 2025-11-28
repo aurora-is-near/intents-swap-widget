@@ -1,6 +1,6 @@
 const {
   headlessUITransitionMock,
-} = require('./tests/mock-headless-ui-transition');
+} = require('./src/tests/mock-headless-ui-transition');
 
 jest.mock('cryptr', () => ({
   __esModule: true,

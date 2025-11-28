@@ -41,12 +41,13 @@ export const useAlchemyBalanceIntegration = ({
     initialPageParam: null,
     enabled: !!isEnabled && !!alchemyApiKey,
     queryKey: ['walletTokensBalance', connectedWallets],
-    queryFn: async ({ pageParam }) =>
-      createLoader({ alchemyApiKey })({
+    queryFn: async ({ pageParam }) => {
+      return createLoader({ alchemyApiKey })({
         pageParam: pageParam ? `${pageParam as string}` : null,
         connectedWallets,
         walletSupportedChains,
-      }),
+      });
+    },
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.pageKey) {
         return undefined;
