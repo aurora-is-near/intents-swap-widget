@@ -24,9 +24,9 @@ export function useConfigLink() {
       'autoSelectTopBalanceToken',
       state.autoSelectTopBalanceToken.toString(),
     );
-    params.append('defaultSellToken', state.defaultSellToken);
+    params.append('defaultSellToken', state.defaultSellToken.tokenSymbol);
     params.append('enableBuyToken', state.enableBuyToken.toString());
-    params.append('defaultBuyToken', state.defaultBuyToken);
+    params.append('defaultBuyToken', state.defaultBuyToken.tokenSymbol);
 
     // Configure - Fee collection
     params.append('enableCustomFees', state.enableCustomFees.toString());
@@ -126,7 +126,7 @@ export function useDecodeConfigLink() {
     const defaultSellToken = params.get('defaultSellToken');
 
     if (defaultSellToken) {
-      dispatch({ type: 'SET_DEFAULT_SELL_TOKEN', payload: defaultSellToken });
+      dispatch({ type: 'SET_DEFAULT_SELL_TOKEN', payload: { tokenSymbol: defaultSellToken, chain: undefined } });
     }
 
     const enableBuyToken = params.get('enableBuyToken');
@@ -141,7 +141,7 @@ export function useDecodeConfigLink() {
     const defaultBuyToken = params.get('defaultBuyToken');
 
     if (defaultBuyToken) {
-      dispatch({ type: 'SET_DEFAULT_BUY_TOKEN', payload: defaultBuyToken });
+      dispatch({ type: 'SET_DEFAULT_BUY_TOKEN', payload: { tokenSymbol: defaultBuyToken, chain: undefined } });
     }
 
     // Configure - Fee collection
