@@ -9,7 +9,7 @@ import { TOKENS_DATA } from '../config';
 export type TokenType = {
   assetIds: string[];
   decimals: number;
-  blockchains: TokenResponse.blockchain[];
+  blockchains: TokenResponse['blockchain'][];
   symbol: string;
   prices: number[];
   pricesUpdatedAt: string[];
@@ -17,10 +17,10 @@ export type TokenType = {
   icon: string | undefined;
 };
 
-export const getTokenIcon = (tokenSymbol: string): string => {
+export const getTokenIcon = (tokenSymbol: string): string | undefined => {
   const symbol = tokenSymbol.toLowerCase();
 
-  return TOKENS_DATA[symbol]?.icon ?? '';
+  return TOKENS_DATA[symbol]?.icon ?? undefined;
 };
 
 export const useTokens = (): TokenType[] => {

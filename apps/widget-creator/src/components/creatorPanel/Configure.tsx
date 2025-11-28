@@ -25,7 +25,6 @@ export function Configure() {
       isTokenAvailable(token, newNetworks),
     );
 
-    console.log('availableTokens', availableTokens);
     const availableTokenSymbols = availableTokens.map(
       (token: TokenType) => token.symbol,
     );
@@ -152,7 +151,7 @@ export function Configure() {
                           )
                         : [...(state.selectedNetworks || []), chain.id];
 
-                      handleNetworksChange(newNetworks, allTokens, dispatch);
+                      handleNetworksChange(newNetworks);
                     }}
                     className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all ${
                       state.selectedNetworks?.includes(chain.id)
