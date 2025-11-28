@@ -1,19 +1,22 @@
 import { useState } from 'react';
+import { DownloadIcon, RepeatIcon, SendIcon } from 'lucide-react';
 import {
   WidgetConfigProvider,
   WidgetDeposit,
   WidgetSwap,
   WidgetWithdraw,
 } from '@aurora-is-near/intents-swap-widget';
+
+import { Toggle } from './components/Toggle';
+import { PageHeader } from './components/PageHeader';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
-import { WalletConnectButton } from './components/WalletConnectButton';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
 const WIDGET_TABS = [
-  { id: 'swap', label: 'Swap', iconPath: '/demo/icons/swap.svg' },
-  { id: 'deposit', label: 'Deposit', iconPath: '/demo/icons/deposit.svg' },
-  { id: 'withdraw', label: 'Withdraw', iconPath: '/demo/icons/withdraw.svg' },
+  { id: 'swap', label: 'Swap', icon: RepeatIcon },
+  { id: 'deposit', label: 'Deposit', icon: DownloadIcon },
+  { id: 'withdraw', label: 'Withdraw', icon: SendIcon },
 ] as const;
 
 const WIDGET_TYPES = {
@@ -23,7 +26,14 @@ const WIDGET_TYPES = {
 } as const;
 
 export const TabbedWidgetsDemo = () => {
-  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
+  const {
+    providers,
+    address: walletAddress,
+    isConnecting: isLoading,
+  } = useAppKitWallet();
+
+  const [showAppBalance, setShowAppBalance] = useState(true);
+  const appBalanceMode = walletAddress ? 'with-balance' : 'all';
 
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
@@ -31,26 +41,13 @@ export const TabbedWidgetsDemo = () => {
 
   return (
     <>
-      <nav className="demo-nav">
-        {WIDGET_TABS.map((widget) => (
-          <button
-            key={widget.id}
-            onClick={() => setSelectedWidget(widget.id)}
-            className={`demo-nav-button ${
-              selectedWidget === widget.id ? 'active' : 'inactive'
-            }`}
-            type="button">
-            <img
-              src={widget.iconPath}
-              alt={`${widget.label} icon`}
-              className="demo-nav-icon"
-              width={24}
-              height={24}
-            />
-            <span className="demo-nav-label">{widget.label}</span>
-          </button>
-        ))}
-      </nav>
+      <PageHeader>
+        <PageHeader.Nav
+          tabs={WIDGET_TABS}
+          activeTab={selectedWidget}
+          onClick={(tab) => setSelectedWidget(tab)}
+        />
+      </PageHeader>
 
       <WidgetConfigProvider
         config={{
@@ -58,9 +55,12 @@ export const TabbedWidgetsDemo = () => {
           connectedWallets: { default: walletAddress },
           intentsAccountType: 'near',
           chainsFilter: {
-            target: { intents: 'all', external: 'all' },
+            target: {
+              intents: showAppBalance ? 'all' : 'none',
+              external: 'all',
+            },
             source: {
-              intents: walletAddress ? 'with-balance' : 'all',
+              intents: showAppBalance ? appBalanceMode : 'none',
               external: walletAddress ? 'wallet-supported' : 'all',
             },
           },
@@ -68,7 +68,14 @@ export const TabbedWidgetsDemo = () => {
         <WidgetComponent
           isFullPage
           isLoading={isLoading}
-          FooterComponent={<WalletConnectButton />}
+          providers={providers}
+          HeaderComponent={
+            <Toggle
+              isOn={showAppBalance}
+              label="Show app balance"
+              onToggle={setShowAppBalance}
+            />
+          }
         />
       </WidgetConfigProvider>
     </>

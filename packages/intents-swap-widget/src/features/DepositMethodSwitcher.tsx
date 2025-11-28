@@ -39,7 +39,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
 
   return (
     <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
-      <span className="text-label-m text-sw-gray-50">
+      <span className="text-sw-label-m text-sw-gray-50">
         Select deposit method
       </span>
       <div className="flex gap-sw-lg">
