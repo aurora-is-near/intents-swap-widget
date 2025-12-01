@@ -90,7 +90,7 @@ export function TokenSelectionModal({
 
     const allPopularSymbols = popularAvailable.map((t: TokenType) => t.symbol);
     const newTokens = selectedTokens.filter(
-      (t) => !allPopularSymbols.includes(t)
+      (t) => !allPopularSymbols.includes(t),
     );
 
     if (currentPopularSelected.length === popularAvailable.length) {
@@ -109,7 +109,7 @@ export function TokenSelectionModal({
 
     const allOtherSymbols = otherAvailable.map((t: TokenType) => t.symbol);
     const newTokens = selectedTokens.filter(
-      (t) => !allOtherSymbols.includes(t)
+      (t) => !allOtherSymbols.includes(t),
     );
 
     if (currentOtherSelected.length === otherAvailable.length) {
@@ -206,7 +206,7 @@ export function TokenSelectionModal({
             )}
 
             <div className="bg-csw-gray-800 h-[1px]" />
-            
+
             <div>
               {(otherAvailable.length > 0 ||
                 unavailableFilteredTokens.length > 0) && (

@@ -11,8 +11,8 @@ export function Header() {
   const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
   const { decodeConfigLink } = useDecodeConfigLink();
 
-  const copyConfigLink = () => {
-    originalCopyConfigLink();
+  const copyConfigLink = async () => {
+    await originalCopyConfigLink();
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
