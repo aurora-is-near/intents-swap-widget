@@ -76,7 +76,7 @@ export function TokenWithChainSelector({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="text-sm font-medium leading-4 mr-auto w-full outline-none bg-transparent text-csw-gray-50 placeholder-csw-gray-300"
-                  autoFocus
+                  autoFocus={false}
                 />
                 {searchQuery ? (
                   <button
