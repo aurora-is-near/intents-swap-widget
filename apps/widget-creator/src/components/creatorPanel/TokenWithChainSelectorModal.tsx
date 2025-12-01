@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
 import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { useTokens } from '../../hooks/useTokens';
 import { useChains } from '../../hooks/useChains';
@@ -25,6 +25,16 @@ export function TokenWithChainSelector({
   const allTokens = useTokens();
   const allChains = useChains();
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -44,7 +54,7 @@ export function TokenWithChainSelector({
           className="relative z-50 mx-4 w-full max-w-[456px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}>
           <div className="px-csw-2xl pt-csw-2xl">
-            <header className="py-csw-md flex items-center justify-between">
+            <header className="py-csw-md flex items-center justify-between mb-[14px]">
               <h2 className="font-semibold text-base leading-4 tracking-[-0.4px] text-csw-gray-50">
                 Select token
               </h2>
@@ -86,25 +96,19 @@ export function TokenWithChainSelector({
                   className="py-csw-sm px-csw-md gap-csw-md flex h-[40px] cursor-pointer items-center rounded-csw-md bg-csw-gray-600 hover:bg-csw-gray-500">
                   {!selectedChain ? (
                     <div className="flex items-center gap-csw-md">
-                      <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-500 flex items-center justify-center">
-                        <div className="w-[12px] h-[12px] rounded-full border-2 border-csw-gray-100" />
+                      <div className="w-[28px] h-[28px] rounded-[10px] bg-[#CDC0AA] flex items-center justify-center">
+                        <Target className="w-[14px] h-[14px]" />
                       </div>
-                      <span className="font-medium text-sm leading-4 text-csw-gray-50">
-                        All networks
-                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-csw-md">
-                      <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-700 flex items-center justify-center overflow-hidden">
+                      <div className="w-[28px] h-[28px] rounded-[10px] bg-csw-gray-700 flex items-center justify-center overflow-hidden">
                         <img
                           src={selectedChainData?.icon}
                           alt={selectedChainData?.label}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="font-medium text-sm leading-4 text-csw-gray-50">
-                        {selectedChainData?.label}
-                      </span>
                     </div>
                   )}
                   {isChainDropdownOpen ? (
@@ -115,55 +119,53 @@ export function TokenWithChainSelector({
                 </div>
 
                 {isChainDropdownOpen && (
-                  <div
-                    className="absolute top-full right-[0px] mt-csw-sm gap-csw-xxs p-csw-md z-[10] flex max-h-[400px] min-w-[200px] flex-col rounded-csw-lg bg-csw-gray-900 shadow-lg ring-1 ring-inset ring-csw-gray-600 overflow-y-auto hide-scrollbar"
-                    style={{ marginTop: '8px' }}>
-                    <button
-                      onClick={() => {
-                        setSelectedChain(null);
-                        setIsChainDropdownOpen(false);
-                      }}
-                      className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-600 transition-colors ${
-                        !selectedChain ? 'bg-csw-gray-600' : ''
-                      }`}>
-                      <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-500 flex items-center justify-center flex-shrink-0">
-                        <div className="w-[12px] h-[12px] rounded-full border-2 border-csw-gray-100" />
-                      </div>
-                      <span className="font-medium text-sm leading-4 text-csw-gray-50">
-                        All networks
-                      </span>
-                    </button>
-                    {allChains.map((chain) => (
+                  <div className="absolute top-full right-[0px] mt-csw-sm gap-csw-xxs z-[10] flex max-h-[400px] min-w-[200px] flex-col rounded-csw-lg bg-[#31343D] border border-[#444650] overflow-y-auto hide-scrollbar mt-[12px]">
+                    <div className="p-csw-sm flex gap-[2px] flex-col">
                       <button
-                        key={chain.id}
                         onClick={() => {
-                          setSelectedChain(chain.id);
+                          setSelectedChain(null);
                           setIsChainDropdownOpen(false);
                         }}
-                        className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-600 transition-colors ${
-                          selectedChain === chain.id ? 'bg-csw-gray-600' : ''
+                        className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-600 transition-colors cursor-pointer ${
+                          !selectedChain ? 'bg-csw-gray-600' : ''
                         }`}>
-                        <div className="w-[20px] h-[20px] rounded-[10px] bg-csw-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          <img
-                            src={chain.icon}
-                            alt={chain.label}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-[28px] h-[28px] rounded-[10px] bg-[#CDC0AA] flex items-center justify-center">
+                          <Target className="w-[14px] h-[14px]" />
                         </div>
                         <span className="font-medium text-sm leading-4 text-csw-gray-50">
-                          {chain.label}
+                          All networks
                         </span>
                       </button>
-                    ))}
+                      {allChains.map((chain) => (
+                        <button
+                          key={chain.id}
+                          onClick={() => {
+                            setSelectedChain(chain.id);
+                            setIsChainDropdownOpen(false);
+                          }}
+                          className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-700 transition-colors cursor-pointer ${
+                            selectedChain === chain.id ? 'bg-csw-gray-700' : ''
+                          }`}>
+                          <div className="w-[28px] h-[28px] rounded-[10px] bg-csw-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <img
+                              src={chain.icon}
+                              alt={chain.label}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span className="font-medium text-sm text-csw-gray-50 text-start">
+                            {chain.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          <div
-            className="flex-1 overflow-y-auto hide-scrollbar px-csw-2xl"
-            style={{ maxHeight: '450px', minHeight: '200px' }}>
+          <div className="flex-1 overflow-y-auto hide-scrollbar px-csw-2xl max-h-[450px] min-h-[200px] mt-[20px]">
             <div className="flex flex-col">
               {allTokens.length > 0 ? (
                 allTokens
@@ -174,46 +176,64 @@ export function TokenWithChainSelector({
 
                     return true;
                   })
+                  .filter((token) => {
+                    if (searchQuery) {
+                      return token.symbol
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase());
+                    }
+
+                    return true;
+                  })
                   .map((token) => (
                     <div
                       key={token.assetId}
                       onClick={() => {
-                        onSelectToken(token, selectedChain);
+                        onSelectToken(token, token.blockchain);
                         onClose();
                       }}
-                      className="gap-csw-lg p-csw-lg flex cursor-pointer justify-between rounded-csw-md transition-colors hover:bg-csw-gray-600">
+                      className="gap-[6px] px-[12px] py-[10px] flex cursor-pointer items-center rounded-csw-md transition-colors hover:bg-csw-gray-600">
                       {/* Token Icon */}
-                      <div className="relative flex-shrink-0">
+                      <div className="relative h-full">
                         {token.icon ? (
                           <img
                             src={token.icon}
                             alt={token.symbol}
-                            className="w-[24px] h-[24px] rounded-full"
+                            className="w-[28px] h-[28px] rounded-full"
                           />
                         ) : (
-                          <div className="w-[24px] h-[24px] rounded-full bg-csw-gray-700" />
+                          <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700" />
                         )}
+                        {(() => {
+                          const chain = allChains.find(
+                            (c) => c.id === token.blockchain,
+                          );
+
+                          return chain ? (
+                            // <div className=''>
+                            <img
+                              src={chain.icon}
+                              alt={chain.label}
+                              className="absolute right-[0px] bottom-[0px] w-[12px] h-[12px] rounded-[4px] border border-[#444650]"
+                            />
+                          ) : // </div>
+                          null;
+                        })()}
                       </div>
 
-                      <div className="gap-csw-sm mr-auto flex flex-col">
-                        <span className="font-medium text-sm leading-4 text-csw-gray-50">
-                          {token.symbol}
-                        </span>
-                        <div className="flex items-center gap-csw-xs">
-                          <span className="font-medium text-sm leading-4 text-csw-gray-100">
-                            {token.symbol}
-                          </span>
-                          <span className="font-medium text-sm leading-4 text-csw-gray-200">
-                            on{' '}
-                            {(() => {
-                              const chain = allChains.find(
-                                (c) => c.id === token.blockchain,
-                              );
+                      <div className="gap-[6px] mr-auto flex flex-col">
+                        <p className="text-sm text-csw-gray-50">
+                          {(() => {
+                            const chain = allChains.find(
+                              (c) => c.id === token.blockchain,
+                            );
 
-                              return chain?.label ?? token.blockchain;
-                            })()}
-                          </span>
-                        </div>
+                            return chain?.label ?? token.blockchain;
+                          })()}
+                        </p>
+                        <p className="text-sm text-csw-gray-200 text-[12px]">
+                          {token.symbol}
+                        </p>
                       </div>
                     </div>
                   ))

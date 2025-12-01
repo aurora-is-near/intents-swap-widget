@@ -2,34 +2,40 @@ import { Copy, ExternalLink, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '../uikit/Button';
+import { useCreator } from '../hooks/useCreatorConfig';
 
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const SAMPLE_CODE = `import { WidgetDeposit } from '@aurora-is-near/intents-swap-widget';
+export function ExportModal({ isOpen, onClose }: ExportModalProps) {
+  const { state } = useCreator();
+  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
+  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
+
+  const SAMPLE_CODE = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
 export function App() {
-  const handleTransfer = async (args, type) => {
+  const handleTransfer = async (args) => {
     // Handle transfer logic
   };
 
   return (
-    <WidgetDeposit
-      isLoading={false}
+    <WidgetSwap
+      makeTransfer={handleTransfer}
       providers={[]}
-      makeTransfer={(args) => handleTransfer(args, 'deposit')}
+      theme={{
+        primaryColor: '${state.primaryColor ?? '#D5B7FF'}',
+        surfaceColor: '${state.pageBackgroundColor ?? '#24262D'}',
+        colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
+      }}
       onMsg={async (msg) => {
         console.log('Widget message:', msg);
       }}
     />
   );
 }`;
-
-export function ExportModal({ isOpen, onClose }: ExportModalProps) {
-  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
-  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
   // Prevent scroll when modal is open
   useEffect(() => {

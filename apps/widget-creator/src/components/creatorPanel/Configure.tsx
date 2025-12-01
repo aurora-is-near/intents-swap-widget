@@ -8,7 +8,7 @@ import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
 import { useChains } from '../../hooks/useChains';
 import { TokenSelectionModal } from './TokenSelectionModal';
-// import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
+import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 import {
   isTokenAvailable,
   useTokensGroupedBySymbol,
@@ -19,10 +19,10 @@ export function Configure() {
   const { state, dispatch } = useCreator();
   const chains = useChains();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
-  // const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
-  // const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
-  //   'sell',
-  // );
+  const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
+  const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
+    'sell',
+  );
 
   const allTokens = useTokensGroupedBySymbol();
 
@@ -50,10 +50,14 @@ export function Configure() {
         isOpen={isTokenModalOpen}
         onClose={() => setIsTokenModalOpen(false)}
       />
-      {/* <TokenWithChainSelector
+      <TokenWithChainSelector
         isOpen={isTokenSelectorOpen}
         onClose={() => setIsTokenSelectorOpen(false)}
         onSelectToken={(token, chain) => {
+          if (!token || !chain) {
+            return;
+          }
+
           if (tokenSelectorType === 'sell') {
             dispatch({
               type: 'SET_DEFAULT_SELL_TOKEN',
@@ -66,7 +70,7 @@ export function Configure() {
             });
           }
         }}
-      /> */}
+      />
       <div className="flex flex-col gap-csw-2xl">
         <ConfigSection title="User authentication">
           <div className="space-y-csw-2md">
@@ -226,23 +230,22 @@ export function Configure() {
 
             <div className="border-t border-csw-gray-800" />
 
-            <Toggle
-              label="Auto-select top balance token"
-              isEnabled={state.autoSelectTopBalanceToken}
-              onChange={(enabled) =>
-                dispatch({
-                  type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
-                  payload: enabled,
-                })
-              }
-            />
-
             <div className="space-y-csw-xl">
               <Toggle
                 label="Set default sell token"
                 isEnabled={state.enableSellToken}
                 onChange={(enabled) =>
                   dispatch({ type: 'SET_ENABLE_SELL_TOKEN', payload: enabled })
+                }
+              />
+              <Toggle
+                label="Auto-select top balance token"
+                isEnabled={state.autoSelectTopBalanceToken}
+                onChange={(enabled) =>
+                  dispatch({
+                    type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
+                    payload: enabled,
+                  })
                 }
               />
               {state.enableSellToken && (
@@ -256,21 +259,32 @@ export function Configure() {
                         token.symbol === state.defaultSellToken.tokenSymbol,
                     );
 
+                    const sellTokenChain = chains.find(
+                      (chain) => chain.id === state.defaultSellToken.chain,
+                    );
+
                     return (
                       <div
-                        // onClick={() => {
-                        //   setTokenSelectorType('sell');
-                        //   setIsTokenSelectorOpen(true);
-                        // }}
+                        onClick={() => {
+                          setTokenSelectorType('sell');
+                          setIsTokenSelectorOpen(true);
+                        }}
                         className="cursor-pointer">
                         <TokenTag
                           tokenIcon={
                             sellToken?.icon ? (
-                              <img
-                                src={sellToken.icon}
-                                alt={sellToken.symbol}
-                                className="size-full rounded-full"
-                              />
+                              <div>
+                                <img
+                                  src={sellToken.icon}
+                                  alt={sellToken.symbol}
+                                  className="size-full rounded-full"
+                                />
+                                <img
+                                  src={sellTokenChain?.icon}
+                                  alt={sellTokenChain?.label}
+                                  className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
+                                />
+                              </div>
                             ) : undefined
                           }
                           tokenSymbol={state.defaultSellToken.tokenSymbol}
@@ -306,10 +320,10 @@ export function Configure() {
 
                     return (
                       <div
-                        // onClick={() => {
-                        //   setTokenSelectorType('buy');
-                        //   setIsTokenSelectorOpen(true);
-                        // }}
+                        onClick={() => {
+                          setTokenSelectorType('buy');
+                          setIsTokenSelectorOpen(true);
+                        }}
                         className="cursor-pointer">
                         <TokenTag
                           tokenIcon={

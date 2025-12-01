@@ -126,7 +126,10 @@ export function useDecodeConfigLink() {
     const defaultSellToken = params.get('defaultSellToken');
 
     if (defaultSellToken) {
-      dispatch({ type: 'SET_DEFAULT_SELL_TOKEN', payload: { tokenSymbol: defaultSellToken, chain: undefined } });
+      dispatch({
+        type: 'SET_DEFAULT_SELL_TOKEN',
+        payload: { tokenSymbol: defaultSellToken, chain: undefined },
+      });
     }
 
     const enableBuyToken = params.get('enableBuyToken');
@@ -141,7 +144,10 @@ export function useDecodeConfigLink() {
     const defaultBuyToken = params.get('defaultBuyToken');
 
     if (defaultBuyToken) {
-      dispatch({ type: 'SET_DEFAULT_BUY_TOKEN', payload: { tokenSymbol: defaultBuyToken, chain: undefined } });
+      dispatch({
+        type: 'SET_DEFAULT_BUY_TOKEN',
+        payload: { tokenSymbol: defaultBuyToken, chain: undefined },
+      });
     }
 
     // Configure - Fee collection
