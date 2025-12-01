@@ -183,15 +183,15 @@ export function Configure() {
 
                       handleNetworksChange(newNetworks);
                     }}
-                    className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all ${
+                    className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
                       state.selectedNetworks?.includes(chain.id)
-                        ? 'bg-csw-accent-500 border-2 border-csw-accent-600'
-                        : 'bg-csw-gray-800 border-2 border-csw-gray-700 hover:border-csw-gray-600'
+                        ? 'border-2 border-csw-accent-600'
+                        : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
                     }`}>
                     <img
                       src={chain.icon}
                       alt={chain.label}
-                      className="w-6 h-6"
+                      className="w-[28px] h-[28px]"
                     />
                   </button>
                 ))}

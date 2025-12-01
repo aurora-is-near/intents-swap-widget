@@ -83,19 +83,55 @@ export function TokenSelectionModal({
     }
   };
 
-  const handleSelectAll = () => {
-    onTokensChange(availableFilteredTokens.map((t: TokenType) => t.symbol));
+  const handleSelectAllPopular = () => {
+    const currentPopularSelected = popularAvailable
+      .filter((t: TokenType) => selectedTokens.includes(t.symbol))
+      .map((t: TokenType) => t.symbol);
+
+    const allPopularSymbols = popularAvailable.map((t: TokenType) => t.symbol);
+    const newTokens = selectedTokens.filter(
+      (t) => !allPopularSymbols.includes(t)
+    );
+
+    if (currentPopularSelected.length === popularAvailable.length) {
+      // Deselect all popular tokens
+      onTokensChange(newTokens);
+    } else {
+      // Select all popular tokens
+      onTokensChange([...newTokens, ...allPopularSymbols]);
+    }
   };
 
-  const handleDeselectAll = () => {
-    onTokensChange([]);
+  const handleSelectAllOther = () => {
+    const currentOtherSelected = otherAvailable
+      .filter((t: TokenType) => selectedTokens.includes(t.symbol))
+      .map((t: TokenType) => t.symbol);
+
+    const allOtherSymbols = otherAvailable.map((t: TokenType) => t.symbol);
+    const newTokens = selectedTokens.filter(
+      (t) => !allOtherSymbols.includes(t)
+    );
+
+    if (currentOtherSelected.length === otherAvailable.length) {
+      // Deselect all other tokens
+      onTokensChange(newTokens);
+    } else {
+      // Select all other tokens
+      onTokensChange([...newTokens, ...allOtherSymbols]);
+    }
   };
 
   if (!isOpen) {
     return null;
   }
 
-  const allSelected = selectedTokens.length === availableFilteredTokens.length;
+  const allPopularSelected =
+    popularAvailable.length > 0 &&
+    popularAvailable.every((t: TokenType) => selectedTokens.includes(t.symbol));
+
+  const allOtherSelected =
+    otherAvailable.length > 0 &&
+    otherAvailable.every((t: TokenType) => selectedTokens.includes(t.symbol));
 
   return (
     <div className="z-50 w-full h-full fixed top-[0px] right-[0px]">
@@ -107,9 +143,9 @@ export function TokenSelectionModal({
         }}
         onClick={onClose}>
         <div
-          className="relative z-50 mx-4 w-full max-w-[456px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative z-50 mx-4 w-full max-w-[456px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh] px-csw-2xl py-csw-2xl gap-csw-2xl"
           onClick={(e) => e.stopPropagation()}>
-          <div className="border-b border-csw-gray-800 px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg flex-shrink-0">
+          <div className="flex items-start justify-between gap-csw-lg flex-shrink-0">
             <div className="flex flex-col gap-csw-md flex-1">
               <h2 className="font-semibold text-base leading-4 tracking-[-0.4px] text-csw-gray-50">
                 {selectedTokens.length} tokens selected
@@ -125,7 +161,7 @@ export function TokenSelectionModal({
             </button>
           </div>
 
-          <div className="px-csw-2xl py-csw-lg border-b border-csw-gray-800 flex-shrink-0">
+          <div className="flex-shrink-0">
             <div className="flex gap-csw-md items-center bg-csw-gray-800 px-csw-lg py-csw-md rounded-csw-md">
               <Search className="w-csw-lg h-csw-lg text-csw-gray-300 flex-shrink-0" />
               <input
@@ -138,9 +174,11 @@ export function TokenSelectionModal({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto hide-scrollbar">
+          <div className="bg-csw-gray-800 h-[1px]" />
+
+          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-csw-2xl">
             {popularAvailable.length > 0 && (
-              <div className="px-csw-2xl py-csw-lg border-b border-csw-gray-800">
+              <div>
                 <div className="flex items-center justify-between mb-csw-lg">
                   <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
                     Popular tokens
@@ -148,8 +186,8 @@ export function TokenSelectionModal({
                   <OutlinedButton
                     fluid
                     size="sm"
-                    onClick={allSelected ? handleDeselectAll : handleSelectAll}>
-                    {allSelected ? 'Deselect all' : 'Select all'}
+                    onClick={handleSelectAllPopular}>
+                    {allPopularSelected ? 'Deselect all' : 'Select all'}
                   </OutlinedButton>
                 </div>
 
@@ -167,12 +205,29 @@ export function TokenSelectionModal({
               </div>
             )}
 
-            <div className="px-csw-2xl py-csw-lg">
+            <div className="bg-csw-gray-800 h-[1px]" />
+            
+            <div>
               {(otherAvailable.length > 0 ||
                 unavailableFilteredTokens.length > 0) && (
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200 mb-csw-lg">
-                  {popularAvailable.length > 0 ? 'Other tokens' : 'All tokens'}
-                </p>
+                <>
+                  <div className="flex items-center justify-between mb-csw-lg">
+                    <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                      {popularAvailable.length > 0
+                        ? 'Other tokens'
+                        : 'All tokens'}
+                    </p>
+                    {(otherAvailable.length > 0 ||
+                      unavailableFilteredTokens.length > 0) && (
+                      <OutlinedButton
+                        fluid
+                        size="sm"
+                        onClick={handleSelectAllOther}>
+                        {allOtherSelected ? 'Deselect all' : 'Select all'}
+                      </OutlinedButton>
+                    )}
+                  </div>
+                </>
               )}
 
               <div className="flex flex-col gap-csw-md">

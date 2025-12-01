@@ -7,8 +7,15 @@ import CalyxLogo from '../assets/logo.svg?react';
 
 export function Header() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const { copyConfigLink } = useConfigLink();
+  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
+  const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
   const { decodeConfigLink } = useDecodeConfigLink();
+
+  const copyConfigLink = () => {
+    originalCopyConfigLink();
+    setCopyLinkFeedback(true);
+    setTimeout(() => setCopyLinkFeedback(false), 2000);
+  };
 
   useEffect(() => {
     const currentUrl = window.location.href;
@@ -47,7 +54,7 @@ export function Header() {
           <OutlinedButton size="sm" fluid onClick={copyConfigLink}>
             <Save className="w-[16px] h-[16px]" />
             <span className="text-sm font-medium leading-4 text-csw-gray-50 hidden md:inline">
-              Copy config link
+              {copyLinkFeedback ? 'Copied!' : 'Copy config link'}
             </span>
           </OutlinedButton>
           <Button

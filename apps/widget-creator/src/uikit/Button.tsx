@@ -164,8 +164,11 @@ export const OutlinedButton = ({
         styles.common,
         styles.width(fluid),
         styles.size(size),
+        'hover:bg-csw-gray-800',
+
         'ring-1 ring-csw-gray-500 text-csw-gray-50',
         {
+          'bg-csw-gray-800': state === 'active',
           'cursor-pointer bg-transparent': state === 'default',
           'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
         },

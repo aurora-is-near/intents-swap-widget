@@ -28,7 +28,6 @@ export function TokenWithChainSelector({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-
       return () => {
         document.body.style.overflow = 'unset';
       };
@@ -51,7 +50,7 @@ export function TokenWithChainSelector({
         }}
         onClick={onClose}>
         <div
-          className="relative z-50 mx-4 w-full max-w-[456px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative z-50 mx-4 w-full max-w-[456px] h-[670px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh] mx-[10px]"
           onClick={(e) => e.stopPropagation()}>
           <div className="px-csw-2xl pt-csw-2xl">
             <header className="py-csw-md flex items-center justify-between mb-[14px]">
@@ -81,7 +80,7 @@ export function TokenWithChainSelector({
                 {searchQuery ? (
                   <button
                     type="button"
-                    className="cursor-pointer text-csw-gray-100 transition-opacity hover:text-csw-gray-50"
+                    className="cursor-pointer text-csw-gray-200 transition-opacity hover:text-csw-gray-50"
                     onClick={() => setSearchQuery('')}>
                     <X className="h-csw-xl w-csw-xl" />
                   </button>
@@ -93,7 +92,7 @@ export function TokenWithChainSelector({
               <div className="relative">
                 <div
                   onClick={() => setIsChainDropdownOpen(!isChainDropdownOpen)}
-                  className="py-csw-sm px-csw-md gap-csw-md flex h-[40px] cursor-pointer items-center rounded-csw-md bg-csw-gray-600 hover:bg-csw-gray-500">
+                  className="py-csw-sm px-csw-md gap-csw-md flex h-[40px] cursor-pointer items-center rounded-csw-md bg-csw-gray-800 hover:bg-csw-gray-600">
                   {!selectedChain ? (
                     <div className="flex items-center gap-csw-md">
                       <div className="w-[28px] h-[28px] rounded-[10px] bg-[#CDC0AA] flex items-center justify-center">
@@ -126,7 +125,7 @@ export function TokenWithChainSelector({
                           setSelectedChain(null);
                           setIsChainDropdownOpen(false);
                         }}
-                        className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-600 transition-colors cursor-pointer ${
+                        className={`gap-csw-md px-csw-md py-csw-sm rounded-csw-sm flex items-center hover:bg-csw-gray-700 transition-colors cursor-pointer ${
                           !selectedChain ? 'bg-csw-gray-600' : ''
                         }`}>
                         <div className="w-[28px] h-[28px] rounded-[10px] bg-[#CDC0AA] flex items-center justify-center">
@@ -192,7 +191,7 @@ export function TokenWithChainSelector({
                         onSelectToken(token, token.blockchain);
                         onClose();
                       }}
-                      className="gap-[6px] px-[12px] py-[10px] flex cursor-pointer items-center rounded-csw-md transition-colors hover:bg-csw-gray-600">
+                      className="gap-[6px] px-[12px] py-[10px] flex cursor-pointer items-center rounded-csw-md transition-colors hover:bg-csw-gray-700">
                       {/* Token Icon */}
                       <div className="relative h-full">
                         {token.icon ? (

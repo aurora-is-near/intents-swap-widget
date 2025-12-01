@@ -34,32 +34,26 @@ export function Design() {
               {state.allowToggleModes && (
                 <OutlinedButton
                   size="sm"
+                  state={state.defaultMode === 'auto' ? 'active' : 'default'}
                   onClick={() =>
                     dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
-                  }
-                  className={
-                    state.defaultMode === 'auto' ? 'bg-csw-gray-800' : ''
                   }>
                   Auto
                 </OutlinedButton>
               )}
               <OutlinedButton
                 size="sm"
+                state={state.defaultMode === 'dark' ? 'active' : 'default'}
                 onClick={() =>
                   dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' })
-                }
-                className={
-                  state.defaultMode === 'dark' ? 'bg-csw-gray-800' : ''
                 }>
                 Dark
               </OutlinedButton>
               <OutlinedButton
                 size="sm"
+                state={state.defaultMode === 'light' ? 'active' : 'default'}
                 onClick={() =>
                   dispatch({ type: 'SET_DEFAULT_MODE', payload: 'light' })
-                }
-                className={
-                  state.defaultMode === 'light' ? 'bg-csw-gray-800' : ''
                 }>
                 Light
               </OutlinedButton>
@@ -77,21 +71,17 @@ export function Design() {
             <div className="flex items-center gap-csw-2md">
               <OutlinedButton
                 size="sm"
+                state={state.stylePreset === 'clean' ? 'active' : 'default'}
                 onClick={() =>
                   dispatch({ type: 'SET_STYLE_PRESET', payload: 'clean' })
-                }
-                className={
-                  state.stylePreset === 'clean' ? 'bg-csw-gray-800' : ''
                 }>
                 Clean
               </OutlinedButton>
               <OutlinedButton
                 size="sm"
+                state={state.stylePreset === 'bold' ? 'active' : 'default'}
                 onClick={() =>
                   dispatch({ type: 'SET_STYLE_PRESET', payload: 'bold' })
-                }
-                className={
-                  state.stylePreset === 'bold' ? 'bg-csw-gray-800' : ''
                 }>
                 Bold
               </OutlinedButton>
@@ -107,14 +97,12 @@ export function Design() {
                 <OutlinedButton
                   key={radius}
                   size="sm"
+                  state={state.cornerRadius === radius ? 'active' : 'default'}
                   onClick={() =>
                     dispatch({
                       type: 'SET_CORNER_RADIUS',
                       payload: radius as 'none' | 's' | 'm' | 'l',
                     })
-                  }
-                  className={
-                    state.cornerRadius === radius ? 'bg-csw-gray-800' : ''
                   }>
                   {radius === 'none' ? '–' : radius.toUpperCase()}
                 </OutlinedButton>
