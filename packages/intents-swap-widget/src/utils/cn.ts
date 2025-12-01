@@ -13,7 +13,6 @@ const twMerge = extendTailwindMerge({
         'text-sw-body-md',
         'text-sw-body-lg',
         'text-sw-value-lg',
-        'text-sw-display',
       ],
     },
   },

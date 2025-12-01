@@ -8,8 +8,8 @@ import {
   type MaterialSymbolsComponent,
 } from '@material-symbols-svg/react-rounded';
 import { useTimer } from 'use-timer';
-
 import { useEffect } from 'react';
+
 import { useTypedTranslation } from '@/localisation';
 
 import { cn } from '@/utils';
@@ -19,6 +19,7 @@ type Msg = { type: 'on_close' | 'on_check_compatibility' | 'on_sign_out' };
 type MsgError = { type: 'on_close' | 'on_try_again' | 'on_sign_out' };
 
 interface Props {
+  isSigned: boolean;
   isSigning: boolean;
   onMsg: (msg: Msg) => void;
 }
@@ -55,7 +56,7 @@ const FakeButton = ({
   </div>
 );
 
-export const Initial = ({ isSigning, onMsg }: Props) => {
+export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
   const { t } = useTypedTranslation();
 
   const showTimer = useTimer({
@@ -66,12 +67,12 @@ export const Initial = ({ isSigning, onMsg }: Props) => {
   });
 
   useEffect(() => {
-    if (!isSigning) {
+    if (isSigned) {
       showTimer.start();
     } else {
       showTimer.reset();
     }
-  }, [isSigning]);
+  }, [isSigned]);
 
   return (
     <Card className="relative w-full gap-sw-2xl flex flex-col">
@@ -120,7 +121,7 @@ export const Initial = ({ isSigning, onMsg }: Props) => {
         />
       </ul>
 
-      {isSigning ? (
+      {isSigned ? (
         <div className="flex flex-col gap-sw-xl mt-sw-lg w-full">
           <FakeButton
             label={t(
@@ -153,7 +154,12 @@ export const Initial = ({ isSigning, onMsg }: Props) => {
             variant="outlined"
             state={isSigning ? 'loading' : 'default'}
             onClick={() => onMsg({ type: 'on_sign_out' })}>
-            {t('walletCompatibility.modal.button.signOut', 'Sign out')}
+            {isSigning
+              ? t(
+                  'walletCompatibility.modal.button.signing',
+                  'Sign with your wallet',
+                )
+              : t('walletCompatibility.modal.button.signOut', 'Sign out')}
           </Button>
         </div>
       )}

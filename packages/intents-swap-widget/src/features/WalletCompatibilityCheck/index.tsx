@@ -16,6 +16,8 @@ type Props = {
 
 export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
   const [hasError, setHasError] = useState(false);
+  const [isSigned, setIsSinged] = useState(false);
+
   const {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();
@@ -43,6 +45,7 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
 
     verifiedWallets.push(walletAddress);
     localStorageTyped.setItem('verifiedWallets', verifiedWallets);
+    setIsSinged(true);
   }
 
   return hasError ? (
@@ -65,6 +68,7 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     />
   ) : (
     <WalletCompatibilityModal
+      isSigned={isSigned}
       isSigning={isSigning}
       onMsg={async (msg) => {
         switch (msg.type) {
