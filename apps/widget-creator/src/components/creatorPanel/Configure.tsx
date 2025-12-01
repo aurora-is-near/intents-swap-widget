@@ -279,11 +279,13 @@ export function Configure() {
                                   alt={sellToken.symbol}
                                   className="size-full rounded-full"
                                 />
-                                {sellTokenChain ? <img
-                                  src={sellTokenChain?.icon}
-                                  alt={sellTokenChain?.label}
-                                  className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
-                                /> : null}
+                                {sellTokenChain ? (
+                                  <img
+                                    src={sellTokenChain?.icon}
+                                    alt={sellTokenChain?.label}
+                                    className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
+                                  />
+                                ) : null}
                               </div>
                             ) : undefined
                           }
@@ -317,9 +319,11 @@ export function Configure() {
                       (token: TokenType) =>
                         token.symbol === state.defaultBuyToken.tokenSymbol,
                     );
+
                     const buyTokenChain = chains.find(
                       (chain) => chain.id === state.defaultBuyToken.chain,
                     );
+
                     return (
                       <div
                         onClick={() => {
