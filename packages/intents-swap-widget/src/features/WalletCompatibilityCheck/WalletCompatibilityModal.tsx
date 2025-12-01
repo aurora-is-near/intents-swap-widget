@@ -123,7 +123,10 @@ export const Initial = ({ isSigning, onMsg }: Props) => {
       {isSigning ? (
         <div className="flex flex-col gap-sw-xl mt-sw-lg w-full">
           <FakeButton
-            label="Wallet verified"
+            label={t(
+              'walletCompatibility.modal.button.verified',
+              'Wallet verified',
+            )}
             className="bg-sw-status-success text-sw-gray-950"
             icon={CheckCircleFill}
           />
@@ -143,12 +146,7 @@ export const Initial = ({ isSigning, onMsg }: Props) => {
             size="lg"
             variant="primary"
             onClick={() => onMsg({ type: 'on_check_compatibility' })}>
-            {isSigning
-              ? t(
-                  'walletCompatibility.modal.button.signing',
-                  'Sign with your wallet',
-                )
-              : t('walletCompatibility.modal.button.verify', 'Verify wallet')}
+            {t('walletCompatibility.modal.button.verify', 'Verify wallet')}
           </Button>
           <Button
             size="lg"
@@ -167,7 +165,7 @@ interface ErrorProps {
   onMsg: (msg: MsgError) => void;
 }
 
-export const Error = ({ onMsg }: ErrorProps) => {
+export const ErrorView = ({ onMsg }: ErrorProps) => {
   const { t } = useTypedTranslation();
 
   return (
@@ -218,5 +216,5 @@ export const Error = ({ onMsg }: ErrorProps) => {
 };
 
 export const WalletCompatibilityModal = Object.assign(Initial, {
-  Error,
+  Error: ErrorView,
 });

@@ -67,13 +67,13 @@
     --spacing-sw-9xl: 80px;
     --spacing-sw-10xl: 88px;
     --spacing-sw-11xl: 96px;
-    --spacing-sw-12xl: 108px
-    --spacing-sw-max: 128px
+    --spacing-sw-12xl: 108px;
+    --spacing-sw-max: 128px;
 }
 
 @layer base {
   .sw {
-    font-family: var(--sw-font-sans);
+    font-family: var(--font-family-sw);
   }
 
   .hide-scrollbar {

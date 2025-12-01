@@ -113,7 +113,7 @@ export const TokenInputWithToken = ({
               className={cn('text-sw-label-sm text-nowrap', {
                 'text-sw-gray-400': quoteUsdDelta >= -2 && quoteUsdDelta <= 2,
                 'text-sw-status-success': quoteUsdDelta > 2,
-                'text-sw-status-error': quoteUsdDelta < -5,
+                'text-sw-status-error': quoteUsdDelta <= -5,
                 'text-sw-status-warning':
                   quoteUsdDelta < -2 && quoteUsdDelta > -5,
               })}>

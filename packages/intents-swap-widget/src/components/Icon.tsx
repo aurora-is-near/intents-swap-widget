@@ -59,7 +59,7 @@ export const Icon = ({
   const Ico = () => {
     if (!icon) {
       return (
-        <span className="text-sw-label-m text-sw-gray-100">
+        <span className="text-sw-label-md text-sw-gray-100">
           {label?.charAt(0).toUpperCase()}
         </span>
       );

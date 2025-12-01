@@ -72,6 +72,7 @@ export type LocalisationKeys =
   | 'walletCompatibility.modal.feature.secureTransactions'
   | 'walletCompatibility.modal.feature.fullAccess'
   | 'walletCompatibility.modal.feature.fundProtection'
+  | 'walletCompatibility.modal.button.verified'
   | 'walletCompatibility.modal.button.signing'
   | 'walletCompatibility.modal.button.verify'
   | 'walletCompatibility.modal.button.closeTimer'

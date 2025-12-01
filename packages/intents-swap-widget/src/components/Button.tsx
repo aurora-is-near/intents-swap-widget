@@ -86,7 +86,7 @@ const ButtonPrimary = ({
         styles.width(fluid),
         styles.size(size),
         {
-          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-success':
+          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-error':
             state === 'error',
           'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
             state === 'loading' || state === 'disabled',
@@ -119,7 +119,7 @@ const ButtonOutlined = ({
         styles.width(fluid),
         styles.size(size),
         {
-          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-success':
+          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-error':
             state === 'error',
           'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
             state === 'loading' || state === 'disabled',

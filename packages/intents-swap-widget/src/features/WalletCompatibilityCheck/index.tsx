@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
-  const [hasError, setHasError] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();
