@@ -16,7 +16,7 @@ type Props = {
 
 export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
   const [hasError, setHasError] = useState(false);
-  const [isSigned, setIsSinged] = useState(false);
+  const [isSigned, setIsSigned] = useState(false);
 
   const {
     ctx: { walletAddress },
@@ -45,7 +45,7 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
 
     verifiedWallets.push(walletAddress);
     localStorageTyped.setItem('verifiedWallets', verifiedWallets);
-    setIsSinged(true);
+    setIsSigned(true);
   }
 
   return hasError ? (
