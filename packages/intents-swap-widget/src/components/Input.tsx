@@ -63,26 +63,22 @@ export const Input = ({
       disabled={inputDisabled}
       autoComplete="off"
       className={cn(
-        'px-sw-lg py-sw-lg text-sw-label-m rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors',
+        'px-sw-lg py-sw-lg text-sw-label-md rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors bg-sw-gray-800',
         {
-          'bg-sw-gray-600 text-sw-gray-50 hover:bg-sw-gray-500':
-            state === 'default',
-        },
-        { 'ring-sw-gray-400': isFocused && state === 'default' },
-        {
-          'cursor-not-allowed bg-sw-gray-800 text-sw-gray-100':
+          'text-sw-gray-400 bg-sw-gray-800': state === 'fixed',
+          'text-sw-status-error bg-sw-gray-800': state === 'error',
+          'text-sw-gray-50 bg-sw-gray-700': isFocused && state === 'default',
+          'text-sw-gray-50 hover:bg-sw-gray-700':
+            !isFocused && state === 'default',
+          'cursor-not-allowed bg-sw-gray-800 text-sw-gray-400':
             state === 'disabled',
         },
-        {
-          'bg-sw-gray-800 text-sw-gray-100': state === 'fixed',
-        },
-        { 'text-sw-alert-100 bg-sw-gray-600': state === 'error' },
         className,
       )}
       {...inputProps}>
       {() => (
         <div className="flex items-center justify-between">
-          {Icon && <Icon size={16} className="mr-sw-md text-sw-gray-100" />}
+          {Icon && <Icon size={16} className="mr-sw-md text-sw-gray-200" />}
           <input
             value={value}
             ref={inputRef}
@@ -92,7 +88,7 @@ export const Input = ({
             disabled={inputDisabled}
             placeholder={inputProps.placeholder}
             autoComplete="off"
-            className={cn('text-sw-label-m mr-auto w-full outline-none', {
+            className={cn('text-sw-label-md mr-auto w-full outline-none', {
               'cursor-not-allowed': state === 'disabled',
             })}
           />
@@ -103,9 +99,11 @@ export const Input = ({
                 <button
                   type="button"
                   className={cn(
-                    'cursor-default text-sw-gray-100 opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
+                    'cursor-default opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
                     {
                       'cursor-pointer opacity-100': !!value,
+                      'text-sw-gray-200': isFocused,
+                      'text-sw-gray-300': !isFocused,
                     },
                   )}
                   onClick={handleClear}>

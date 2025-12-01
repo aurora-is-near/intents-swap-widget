@@ -11,7 +11,7 @@ export const Skeleton = ({
 }: Props) => (
   // for some reason w-[${width}px] doesn't work so we use inline style
   <div
-    className={`h-[${height}px] animate-pulse rounded-${Number.isInteger(radius) ? `${radius}px` : radius} bg-sw-gray-600`}
+    className={`h-[${height}px] animate-pulse rounded-${Number.isInteger(radius) ? `${radius}px` : radius} bg-sw-gray-800`}
     style={{ width }}
   />
 );

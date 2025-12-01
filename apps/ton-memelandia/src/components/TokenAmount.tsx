@@ -1,6 +1,6 @@
-import { Token } from '../types';
-import { formatBigToHuman } from '../utils';
-import { TokenIcon } from './TokenIcon';
+import { TokenIcon } from '@aurora-is-near/intents-swap-widget';
+import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
+import type { Token } from '@aurora-is-near/intents-swap-widget/types';
 
 type Props = {
   token: Token;
@@ -18,7 +18,7 @@ export const TokenAmount = ({ token, amount }: Props) => {
         chainName={token.blockchain}
       />
 
-      <span className="text-sw-label-m ml-sw-2md font-medium text-sw-gray-50">
+      <span className="text-sw-label-m ml-sw-[10px] font-medium text-sw-gray-50">
         {formatBigToHuman(amount, token.decimals)} {token.symbol}
       </span>
     </div>

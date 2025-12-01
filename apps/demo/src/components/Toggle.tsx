@@ -40,7 +40,7 @@ export const Toggle = ({
         <span className="bg-gray-900 size-[12px] group-data-checked:bg-green-950 group-data-checked:translate-x-[13px] translate-x-[3px] rounded-full transition" />
       </Switch>
       {!!label && (
-        <Label className="text-sw-label-s cursor-pointer">{label}</Label>
+        <Label className="text-sw-label-md cursor-pointer">{label}</Label>
       )}
     </Field>
   );

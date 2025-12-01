@@ -3,7 +3,6 @@ import { useId } from 'react';
 import { WalletBalance } from './WalletBalance';
 import { getBalancePortion } from './utils/getBalancePortion';
 import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
-import { getPercentageDeltaColor } from './utils/getPercentageDeltaColor';
 
 import { TokenInputHeading } from './TokenInputHeading';
 import { useUnsafeSnapshot } from '../../machine';
@@ -90,27 +89,36 @@ export const TokenInputWithToken = ({
               : () => onMsg({ type: 'on_click_select_token' })
           }
           className={cn(
-            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500',
+            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 items-center rounded-sw-md transition-colors bg-sw-gray-800 hover:bg-sw-gray-700 group',
             {
+              'cursor-pointer': state !== 'disabled',
               'animate-pulse cursor-default': state === 'disabled',
             },
           )}>
-          <TokenIcon chainShowIcon={!token.isIntent} {...token} />
-          <span className="text-sw-label-m text-sw-gray-50">
+          <TokenIcon
+            chainShowIcon={!token.isIntent}
+            className="border-sw-gray-800 group-hover:border-sw-gray-700 transition-colors top-[14px]"
+            {...token}
+          />
+          <span className="text-sw-label-md text-sw-gray-50">
             {token.symbol}
           </span>
         </button>
       </div>
       <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between mt-sw-lg">
         <div className="gap-sw-md flex items-center">
-          <span className="text-sw-label-s text-sw-gray-100">{usdAmount}</span>
+          <span className="text-sw-label-sm text-sw-gray-100">{usdAmount}</span>
           {quoteUsdDelta ? (
-            <Badge
-              size="sm"
-              isClickable={false}
-              variant={getPercentageDeltaColor(quoteUsdDelta)}>
+            <span
+              className={cn('text-sw-label-sm text-nowrap', {
+                'text-sw-gray-400': quoteUsdDelta >= -2 && quoteUsdDelta <= 2,
+                'text-sw-status-success': quoteUsdDelta > 2,
+                'text-sw-status-error': quoteUsdDelta < -5,
+                'text-sw-status-warning':
+                  quoteUsdDelta < -2 && quoteUsdDelta > -5,
+              })}>
               {`${quoteUsdDelta > 0 ? '+' : ''}${quoteUsdDelta.toFixed(2)}%`}
-            </Badge>
+            </span>
           ) : null}
         </div>
         <div className="gap-sw-sm flex items-center">
@@ -140,7 +148,7 @@ export const TokenInputWithToken = ({
 
           {!showBalance && (
             <div className="rounded-full bg-sw-gray-700 py-sw-xs px-sw-sm flex items-center justify-center">
-              <span className="text-sw-gray-100 text-sw-label-s">
+              <span className="text-sw-gray-100 text-sw-label-sm">
                 {t('tokens.input.externalBalance.label', 'External balance')}
               </span>
             </div>
