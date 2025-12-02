@@ -100,7 +100,6 @@ const ButtonPrimary = ({
   return (
     <UIButton
       disabled={isDisabled}
-      data-disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
@@ -138,7 +137,6 @@ const ButtonTertiary = ({
   return (
     <UIButton
       disabled={isDisabled}
-      data-disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
@@ -178,7 +176,6 @@ export const OutlinedButton = ({
   return (
     <UIButton
       disabled={isDisabled}
-      data-disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
