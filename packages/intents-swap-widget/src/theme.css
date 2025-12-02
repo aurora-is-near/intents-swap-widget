@@ -5,38 +5,44 @@
     --r-sw-md: 10px;
     --r-sw-lg: 16px;
     --r-sw-xl: 24px;
-
-    --c-sw-gray-50: #24262D;
-    --c-sw-gray-100: #2E3038;
-    --c-sw-gray-200: #41444F;
-    --c-sw-gray-300: #555967;
-    --c-sw-gray-400: #686D7D;
-    --c-sw-gray-500: #7E8396;
-    --c-sw-gray-600: #979BAA;
-    --c-sw-gray-700: #B0B3BF;
-    --c-sw-gray-800: #CACCD3;
-    --c-sw-gray-900: #E4E5E9;
-    --c-sw-gray-950: #F3F3F5;
-
-    --c-sw-accent-50: #280045;
-    --c-sw-accent-100: #400069;
-    --c-sw-accent-200: #7300B7;
-    --c-sw-accent-300: #A528FF;
-    --c-sw-accent-400: #BA7AFF;
-    --c-sw-accent-500: #D5B7FF;
-    --c-sw-accent-600: #DCC4FF;
-    --c-sw-accent-700: #E6D6FF;
-    --c-sw-accent-800: #EEE4FF;
-    --c-sw-accent-900: #F6F1FF;
-    --c-sw-accent-950: #FBF8FF;
-
-    --c-sw-status-success: #00652F;
-    --c-sw-status-warning: #A87A04;
-    --c-sw-status-error: #9F002B;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
+@layer base {
+    body[data-sw-theme="light"] {
+        color-scheme: light;
+
+        --c-sw-gray-50: #24262D;
+        --c-sw-gray-100: #2E3038;
+        --c-sw-gray-200: #41444F;
+        --c-sw-gray-300: #555967;
+        --c-sw-gray-400: #686D7D;
+        --c-sw-gray-500: #7E8396;
+        --c-sw-gray-600: #979BAA;
+        --c-sw-gray-700: #B0B3BF;
+        --c-sw-gray-800: #CACCD3;
+        --c-sw-gray-900: #E4E5E9;
+        --c-sw-gray-950: #F3F3F5;
+
+        --c-sw-accent-50: #280045;
+        --c-sw-accent-100: #400069;
+        --c-sw-accent-200: #7300B7;
+        --c-sw-accent-300: #A528FF;
+        --c-sw-accent-400: #BA7AFF;
+        --c-sw-accent-500: #D5B7FF;
+        --c-sw-accent-600: #DCC4FF;
+        --c-sw-accent-700: #E6D6FF;
+        --c-sw-accent-800: #EEE4FF;
+        --c-sw-accent-900: #F6F1FF;
+        --c-sw-accent-950: #FBF8FF;
+
+        --c-sw-status-success: #00652F;
+        --c-sw-status-warning: #A87A04;
+        --c-sw-status-error: #9F002B;
+    }
+
+    body[data-sw-theme="dark"] {
+        color-scheme: dark;
+
         --c-sw-gray-50: #F3F3F5;
         --c-sw-gray-100: #E4E5E9;
         --c-sw-gray-200: #CACCD3;

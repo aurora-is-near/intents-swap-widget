@@ -30,11 +30,15 @@
     "dist"
   ],
   "sideEffects": [
-    "dist/styles.css"
+    "dist/styles.css",
+    "dist/tailwind.css",
+    "dist/theme.css"
   ],
   "exports": {
     ".": "./dist/index.js",
     "./styles.css": "./dist/styles.css",
+    "./tailwind.css": "./dist/tailwind.css",
+    "./theme.css": "./dist/theme.css",
     "./constants": "./dist/constants/index.js",
     "./components": "./dist/components/index.js",
     "./features": "./dist/features/index.js",
@@ -62,6 +66,7 @@
     "@tanstack/react-query": "^5.85.5",
     "@ton/core": "^0.62.0",
     "axios": "^1.10.0",
+    "browser-or-node": "^3.0.0",
     "bs58": "^6.0.0",
     "change-case": "^5.4.4",
     "chroma-js": "^3.1.2",
@@ -114,6 +119,7 @@
     "jest-transformer-svg": "^2.1.0",
     "puppeteer": "^24.31.0",
     "resize-observer-polyfill": "^1.5.1",
+    "vite-plugin-static-copy": "^3.1.4",
     "ts-jest": "^29.4.5"
   }
 }
