@@ -25,7 +25,7 @@ export const DirectionSwitcher = ({
       )}>
       {isLoading ? (
         <div className="group relative inline-block">
-          <Icons.RefreshCw className="h-sw-2xl w-sw-2xl animate-spin opacity-50 text-accent-500" />
+          <Icons.RefreshCw className="h-sw-2xl w-sw-2xl animate-spin opacity-50 text-sw-accent-500" />
         </div>
       ) : (
         <div className="group relative inline-block">

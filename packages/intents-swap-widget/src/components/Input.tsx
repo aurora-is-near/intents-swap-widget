@@ -93,17 +93,17 @@ export const Input = ({
             })}
           />
           {!inputDisabled && (
-            <div className="gap-sw-md relative flex items-center">
+            <div className="gap-sw-md relative flex items-center justify-end">
               {children}
               {value ? (
                 <button
                   type="button"
                   className={cn(
-                    'cursor-default opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
+                    'opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
                     {
                       'cursor-pointer opacity-100': !!value,
-                      'text-sw-gray-200': isFocused,
-                      'text-sw-gray-300': !isFocused,
+                      'cursor-default text-sw-gray-200': isFocused,
+                      'cursor-default text-sw-gray-300': !isFocused,
                     },
                   )}
                   onClick={handleClear}>

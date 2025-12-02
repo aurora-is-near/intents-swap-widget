@@ -62,7 +62,9 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
 
   return (
     <Card className={cn('flex flex-col', className)}>
-      <h5 className="text-sw-label-md text-sw-gray-50 mb-sw-2xl">Send to</h5>
+      <h5 className="text-sw-label-md text-sw-gray-50 mb-sw-2xl">
+        {t('sendAddress.label', 'Send to')}
+      </h5>
       <Input
         defaultValue={ctx.sendAddress}
         state={inputState}
@@ -74,10 +76,12 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
         onChange={onChange}>
         {!!showMagicButton && (
           <Button
-            className="absolute right-0 flex items-center gap-sw-md"
+            className="absolute right-0 flex items-center gap-sw-md min-w-max cursor-pointer"
             onClick={() => fireEvent('addressSet', ctx.walletAddress ?? '')}>
-            <Icons.Wand2 className="text-accent-50" size={14} />
-            <span className="text-sw-label-md text-accent-50">My wallet</span>
+            <Icons.Wand2 size={14} />
+            <span className="text-sw-label-md">
+              {t('sendAddress.button.magic.label', 'My wallet')}
+            </span>
           </Button>
         )}
       </Input>

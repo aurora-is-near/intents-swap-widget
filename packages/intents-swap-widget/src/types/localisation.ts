@@ -44,6 +44,9 @@ export type LocalisationKeys =
   | 'submit.error.quoteFailed.message'
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
+  // send address
+  | 'sendAddress.label'
+  | 'sendAddress.button.magic.label'
   // submit - active (swap)
   | 'submit.active.swap'
   | 'submit.active.intentsSwap'
