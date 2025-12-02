@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
@@ -116,9 +117,15 @@ export const WidgetConfigProvider = ({
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
-          <ThemeProvider theme={theme}>
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </ThemeProvider>
+          <HelmetProvider>
+            <Helmet>
+              <link rel="preconnect" href="https://rsms.me/" />
+              <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+            </Helmet>
+            <ThemeProvider theme={theme}>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </ThemeProvider>
+          </HelmetProvider>
           <BalanceRpcLoader
             rpcs={rpcs ?? DEFAULT_RPCS}
             connectedWallets={userConfig.connectedWallets ?? {}}

@@ -2,6 +2,7 @@
 @import '@aurora-is-near/intents-swap-widget/styles.css';
 
 body {
+    height: 100dvh;
     background: #24262c;
 }
 
