@@ -48,7 +48,7 @@ type Props<T> = {
 };
 
 const Header = ({ children }: PropsWithChildren) => (
-  <header className="flex justify-between items-center gap-3 py-3 px-4 bg-[#24262c]">
+  <header className="z-1 fixed top-0 left-0 w-full flex justify-between items-center gap-3 py-3 px-4 bg-[#24262c]">
     {children ?? <span />}
     <WalletConnectButton />
   </header>
