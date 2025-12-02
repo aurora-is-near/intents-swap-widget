@@ -102,7 +102,6 @@
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/puppeteer": "^7.0.4",
-    "cryptr": "^6.4.0",
     "glob": "^13.0.0",
     "is-ci": "^4.1.0",
     "jest-environment-jsdom": "^30.2.0",
@@ -112,7 +111,6 @@
     "jest-transform-stub": "^2.0.0",
     "jest-transformer-svg": "^2.1.0",
     "puppeteer": "^24.31.0",
-    "resize-observer-polyfill": "^1.5.1",
-    "ts-jest": "^29.4.5"
+    "resize-observer-polyfill": "^1.5.1"
   }
 }
