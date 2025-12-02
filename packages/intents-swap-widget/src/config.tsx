@@ -4,8 +4,8 @@ import { proxy, useSnapshot } from 'valtio';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { PropsWithChildren } from 'react';
 import { I18nextProvider } from 'react-i18next';
+import type { PropsWithChildren } from 'react';
 
 import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
@@ -15,10 +15,10 @@ import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
 import { ThemeProvider } from './theme/ThemeProvider';
-import type { Token } from '@/types/token';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { DEFAULT_CHAINS_ORDER, EVM_CHAINS } from '@/constants/chains';
+import type { Token } from '@/types/token';
 
 const queryClient = new QueryClient({
   defaultOptions: {
