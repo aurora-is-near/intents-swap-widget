@@ -1,4 +1,7 @@
 import { clsx } from 'clsx';
+import { useToggleTheme } from '@aurora-is-near/intents-swap-widget/hooks';
+
+import * as Icons from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -24,22 +27,68 @@ const Tab = <T extends string>({
     onClick={() => onClick(id)}
     type="button"
     className={clsx(
-      'flex gap-2 items-center cursor-pointer rounded-xl p-3 sm:px-4 group transition-colors',
+      'flex gap-sw-md items-center cursor-pointer rounded-sw-md p-sw-lg sm:px-sw-xl group transition-colors',
       {
-        'bg-gray-200': isActive,
-        'bg-sw-gray-900 text-gray-400 hover:text-gray-200': !isActive,
+        'bg-sw-gray-200': isActive,
+        'bg-sw-gray-900 text-sw-gray-400 hover:text-sw-gray-200': !isActive,
       },
     )}>
     <Icon
       className={clsx('w-[16px] h-[16px]', {
-        'text-gray-900': isActive,
-        'text-gray-400 group-hover:text-gray-200': !isActive,
+        'text-sw-gray-900': isActive,
+        'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
       })}
       strokeWidth={2.5}
     />
-    <span className="text-sm hidden sm:inline-block!">{label}</span>
+    <span
+      className={clsx('text-sw-label-md hidden sm:inline-block!', {
+        'text-sw-gray-900': isActive,
+        'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
+      })}>
+      {label}
+    </span>
   </button>
 );
+
+type ThemeMode = 'light' | 'dark' | 'auto';
+
+const themeLabels: Record<ThemeMode, string> = {
+  light: 'Light',
+  dark: 'Dark',
+  auto: 'Auto',
+};
+
+const themeIcons: Record<ThemeMode, LucideIcon> = {
+  light: Icons.Sun,
+  dark: Icons.Moon,
+  auto: Icons.SunMoon,
+};
+
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useToggleTheme();
+
+  if (!theme) {
+    return (
+      <Tab
+        id="theme"
+        isActive={false}
+        label={themeLabels.dark}
+        icon={themeIcons.dark}
+        onClick={toggleTheme}
+      />
+    );
+  }
+
+  return (
+    <Tab
+      id="theme"
+      isActive={false}
+      label={themeLabels[theme]}
+      icon={themeIcons[theme]}
+      onClick={toggleTheme}
+    />
+  );
+};
 
 type Props<T> = {
   activeTab: T;
@@ -47,15 +96,20 @@ type Props<T> = {
   onClick: (id: T) => void;
 };
 
-const Header = ({ children }: PropsWithChildren) => (
-  <header className="flex justify-between items-center gap-3 py-3 px-4 bg-[#24262c]">
-    {children ?? <span />}
-    <WalletConnectButton />
-  </header>
-);
+const Header = ({ children }: PropsWithChildren) => {
+  return (
+    <header className="z-1 fixed top-0 left-0 w-full flex justify-between items-center gap-sw-lg py-sw-xl px-sw-2xl bg-sw-gray-950">
+      {children ?? <span />}
+      <div className="flex items-center gap-sw-lg">
+        <ThemeToggle />
+        <WalletConnectButton />
+      </div>
+    </header>
+  );
+};
 
 const Nav = <T extends string>({ tabs, activeTab, onClick }: Props<T>) => (
-  <nav className="flex gap-2 sm:gap-3 items-center">
+  <nav className="flex gap-sw-md sm:gap-sw-lg items-center">
     {tabs.map((tab) => (
       <Tab
         {...tab}

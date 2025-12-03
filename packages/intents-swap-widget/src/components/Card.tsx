@@ -41,9 +41,9 @@ export const Card = ({
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={cn(
-        'rounded-sw-lg bg-sw-gray-900',
+        'rounded-sw-lg bg-sw-gray-900 transition-colors',
         {
-          'cursor-pointer hover:bg-sw-gray-800': isClickable,
+          'cursor-pointer': isClickable,
           'p-sw-2xl': padding === 'default',
         },
         className,

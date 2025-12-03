@@ -23,7 +23,6 @@ import {
   MakeTransferArgs,
   SimpleToken,
   SuccessScreen,
-  SwapCard,
   useMakeEvmTransfer,
   useMakeSolanaTransfer,
   WidgetConfig,
@@ -37,6 +36,7 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { useTonWallet } from './hooks/useTonWallet';
 import { WalletConnectionCard } from './components/WalletConnectionCard';
 import { Heading } from './components/Heading';
+import { SwapCard } from './components/SwapCard';
 import { useProviders } from './hooks/useProviders';
 
 // Client-side Alchemy API key - safe to expose in frontend code
@@ -808,7 +808,7 @@ export const Page = () => {
         isFullPage
         HeaderComponent={
           <div className="flex flex-row items-center mb-1">
-            <div className="bg-sw-success-100 text-sw-gray-975 flex h-[40px] w-[40px] items-center justify-center rounded-full">
+            <div className="bg-sw-status-success text-sw-gray-975 flex h-[40px] w-[40px] items-center justify-center rounded-full">
               <Icons.Check size={24} />
             </div>
             <Heading className="ml-4">All done</Heading>

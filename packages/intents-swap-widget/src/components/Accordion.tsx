@@ -34,19 +34,19 @@ export const Accordion = ({
       className={cn('py-sw-lg', className)}
       onClick={() => setIsExpanded((p) => !p)}>
       <header className="align-center flex w-full justify-between">
-        <span className="gap-sw-xs text-sw-label-s mt-sw-xs flex text-center text-sw-gray-50">
+        <span className="gap-sw-xs text-sw-label-md mt-sw-xs flex text-center text-sw-gray-200">
           {title}
         </span>
         {isBadgeLoading ? (
-          <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-700" />
+          <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-800" />
         ) : (
           badge && <Badge>{badge}</Badge>
         )}
         <button type="button" className="ml-sw-lg cursor-pointer">
           {isExpanded ? (
-            <Icons.ChevronUp className="h-sw-2xl w-sw-2xl text-sw-gray-50" />
+            <Icons.ChevronUp className="h-sw-2xl w-sw-2xl text-sw-gray-200" />
           ) : (
-            <Icons.ChevronDown className="h-sw-2xl w-sw-2xl text-sw-gray-50" />
+            <Icons.ChevronDown className="h-sw-2xl w-sw-2xl text-sw-gray-200" />
           )}
         </button>
       </header>

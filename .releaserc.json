@@ -1,4 +1,8 @@
 {
+  "branches": [
+    "main",
+    { "name": "beta", "prerelease": true }
+  ],
   "plugins": [
     "./build-tools/commit-analyzer",
     "@semantic-release/release-notes-generator",

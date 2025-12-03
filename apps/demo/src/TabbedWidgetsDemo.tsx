@@ -9,6 +9,7 @@ import {
 
 import { Toggle } from './components/Toggle';
 import { PageHeader } from './components/PageHeader';
+import { WidgetPageContainer } from './components/WidgetPageContainer';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
@@ -49,35 +50,37 @@ export const TabbedWidgetsDemo = () => {
         />
       </PageHeader>
 
-      <WidgetConfigProvider
-        config={{
-          appName: 'Demo App',
-          connectedWallets: { default: walletAddress },
-          intentsAccountType: 'near',
-          chainsFilter: {
-            target: {
-              intents: showAppBalance ? 'all' : 'none',
-              external: 'all',
+      <WidgetPageContainer>
+        <WidgetConfigProvider
+          config={{
+            appName: 'Demo App',
+            connectedWallets: { default: walletAddress },
+            intentsAccountType: 'near',
+            chainsFilter: {
+              target: {
+                intents: showAppBalance ? 'all' : 'none',
+                external: 'all',
+              },
+              source: {
+                intents: showAppBalance ? appBalanceMode : 'none',
+                external: walletAddress ? 'wallet-supported' : 'all',
+              },
             },
-            source: {
-              intents: showAppBalance ? appBalanceMode : 'none',
-              external: walletAddress ? 'wallet-supported' : 'all',
-            },
-          },
-        }}>
-        <WidgetComponent
-          isFullPage
-          isLoading={isLoading}
-          providers={providers}
-          HeaderComponent={
-            <Toggle
-              isOn={showAppBalance}
-              label="Show app balance"
-              onToggle={setShowAppBalance}
-            />
-          }
-        />
-      </WidgetConfigProvider>
+          }}>
+          <WidgetComponent
+            isFullPage={false}
+            isLoading={isLoading}
+            providers={providers}
+            HeaderComponent={
+              <Toggle
+                isOn={showAppBalance}
+                label="Show app balance"
+                onToggle={setShowAppBalance}
+              />
+            }
+          />
+        </WidgetConfigProvider>
+      </WidgetPageContainer>
     </>
   );
 };
