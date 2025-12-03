@@ -34,10 +34,10 @@ function App() {
             </section>
             <section
               className={cn(
-                ' flex-grow bg-csw-gray-950 rounded-csw-lg',
+                'flex-grow bg-csw-gray-950 rounded-csw-lg',
                 resolutionView === 'mobile'
                   ? 'max-w-full w-full'
-                  : 'max-w-[455px] w-full',
+                  : 'max-w-full w-full md:max-w-[455px] md:w-full',
               )}>
               <CreatorPanel />
             </section>
