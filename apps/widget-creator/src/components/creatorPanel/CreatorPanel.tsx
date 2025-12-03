@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RotateCcw } from 'lucide-react';
+import ResetIcon from '../../assets/icons/reset.svg?react';
 import { OutlinedButton } from '../../uikit/Button';
 import { Design } from './Design';
 import { Configure } from './Configure';
@@ -43,7 +43,7 @@ export function CreatorPanel() {
             size="sm"
             fluid
             className="ml-auto">
-            <RotateCcw className="w-csw-lg h-csw-lg" />
+            <ResetIcon className="w-[16px] h-[16px]" />
             Reset
           </OutlinedButton>
         </div>

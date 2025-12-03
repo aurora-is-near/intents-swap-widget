@@ -19,18 +19,18 @@ export function RadioButton({
     <button
       onClick={onChange}
       disabled={disabled}
-      className={`w-full flex gap-csw-lg items-base p-csw-lg rounded-csw-md border transition-colors ${
+      className={`w-full flex gap-csw-lg items-base p-csw-lg rounded-csw-md border transition-colors group hover:border-csw-gray-600 ${
         isSelected
           ? 'bg-csw-gray-800 border-csw-gray-600'
-          : 'border-csw-gray-700'
+          : 'border-csw-gray-700 bg-transparent'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
       {/* Radio circle */}
       <div
-        className={`w-[18px] h-[18px] bg-transparent border-[2px] rounded-full flex items-center justify-center ${
-          isSelected ? 'border-csw-accent-500' : 'border-csw-gray-600'
+        className={`w-[18px] h-[18px] bg-transparent border-[2px] rounded-full flex items-center justify-center group-hover:border-csw-gray-50 ${
+          isSelected ? 'border-csw-gray-50' : 'border-csw-gray-300'
         }`}>
         {isSelected && (
-          <div className="w-[10px] h-[10px] bg-csw-accent-500 rounded-full" />
+          <div className="w-[10px] h-[10px] bg-csw-gray-50 rounded-full" />
         )}
       </div>
 

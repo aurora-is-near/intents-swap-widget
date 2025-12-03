@@ -24,7 +24,7 @@ export function ToggleOnly({
       onClick={() => onChange(!isEnabled)}
       disabled={disabled}
       className={`relative inline-flex h-[20px] w-[36px] items-center rounded-full transition-colors ${
-        isEnabled ? 'bg-csw-accent-500' : 'bg-csw-gray-700'
+        isEnabled ? 'bg-csw-gray-50' : 'bg-csw-gray-700'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
       <span
         className={`inline-block h-csw-xl w-csw-xl transform rounded-full bg-csw-gray-950 transition-transform ${

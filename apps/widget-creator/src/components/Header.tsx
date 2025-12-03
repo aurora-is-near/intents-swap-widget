@@ -1,5 +1,7 @@
-import { ArrowUpRight, Code, Save } from 'lucide-react';
+import { ArrowUpRight, Code } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import CopyIcon from '../assets/icons/copy.svg?react';
+import CheckIcon from '../assets/icons/check-circle.svg?react';
 import { Button, OutlinedButton } from '../uikit/Button';
 import { ExportModal } from './ExportModal';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
@@ -51,9 +53,18 @@ export function Header() {
         </aside>
 
         <aside className="flex gap-csw-2md items-center">
-          <OutlinedButton size="sm" fluid onClick={copyConfigLink}>
-            <Save className="w-[16px] h-[16px]" />
-            <span className="text-sm font-medium leading-4 text-csw-gray-50 hidden md:inline">
+          <OutlinedButton
+            size="sm"
+            fluid
+            onClick={copyConfigLink}
+            state={copyLinkFeedback ? 'active' : 'default'}>
+            {copyLinkFeedback ? (
+              <CheckIcon className="w-4 h-4" />
+            ) : (
+              <CopyIcon className="w-4 h-4" />
+            )}
+            <span
+              className={`text-sm font-medium leading-4 hidden md:inline ${copyLinkFeedback ? 'text-csw-status-success' : 'text-csw-gray-50'}`}>
               {copyLinkFeedback ? 'Copied!' : 'Copy config link'}
             </span>
           </OutlinedButton>
@@ -62,7 +73,7 @@ export function Header() {
             size="sm"
             fluid
             onClick={() => setIsExportModalOpen(true)}>
-            <Code className="w-[16px] h-[16px]" />
+            <Code className="w-[16px] h-[16px]" strokeWidth={3} />
             <span className="text-sm font-medium leading-4 text-csw-gray-950 hidden md:inline">
               Export code
             </span>

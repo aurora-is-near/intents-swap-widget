@@ -33,11 +33,11 @@ const styles = {
   }),
 
   state: (state: State) => ({
-    'bg-transparent text-csw-accent-500 ring-1 ring-inset ring-csw-accent-700':
+    'bg-transparent text-csw-gray-50 ring-1 ring-inset ring-csw-gray-50':
       state === 'disabled',
-    'bg-csw-accent-700 text-csw-accent-300': state === 'loading',
+    'bg-csw-gray-700 text-csw-gray-300': state === 'loading',
     'bg-csw-alert-900 text-csw-alert-100': state === 'error',
-    'text-csw-accent-975 bg-csw-accent-500 hover:bg-csw-accent-400': [
+    'text-csw-gray-950 bg-csw-gray-50 hover:bg-csw-gray-400': [
       'active',
       'default',
     ].includes(state),
@@ -72,7 +72,7 @@ const ButtonChildren = ({
         );
 
   return (
-    <span className="text-csw-label-m flex w-full items-center justify-center gap-csw-lg">
+    <span className="text-csw-label-m flex w-full items-center justify-center gap-csw-md">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
         <Icon className={styles.icon} />
@@ -136,7 +136,7 @@ const ButtonTertiary = ({
           'bg-csw-gray-700': detail === 'dimmed' && state === 'active',
           'bg-csw-gray-900': detail !== 'dimmed' && state === 'active',
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'hover:text-csw-accent-500 bg-transparent text-csw-gray-100':
+          'hover:text-csw-gray-50 bg-transparent text-csw-gray-100':
             state === 'default',
         },
         className,

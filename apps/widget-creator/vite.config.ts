@@ -6,7 +6,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import vercel from 'vite-plugin-vercel';
 
 export default defineConfig({
-  plugins: [react(), svgr(), nodePolyfills(), vercel()] as Plugin[],
+  plugins: [react(), svgr({}), nodePolyfills(), vercel()] as Plugin[],
   css: {
     postcss: './postcss.config.cjs',
     modules: false,

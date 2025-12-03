@@ -137,8 +137,8 @@ export function Configure() {
         <ConfigSection title="Networks">
           <div className="space-y-csw-xl">
             <div className="flex gap-csw-md items-center">
-              <div className="bg-[rgba(213,183,255,0.1)] p-csw-2md rounded-[10px] flex-1">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
+              <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
                   {state.selectedNetworks.length} networks selected
                 </p>
               </div>
@@ -214,8 +214,8 @@ export function Configure() {
             </div>
 
             <div className="flex gap-csw-2md items-center">
-              <div className="bg-[rgba(213,183,255,0.1)] p-csw-2md rounded-[10px] flex-1 flex-grow w-full">
-                <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-[#d5b7ff]">
+              <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
+                <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
                   {state.selectedTokenSymbols.length} tokens selected
                 </p>
               </div>

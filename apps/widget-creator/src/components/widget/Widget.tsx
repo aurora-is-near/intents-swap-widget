@@ -9,6 +9,8 @@ import {
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from '../../hooks/useCreatorConfig';
+import { useAppKitWallet } from '../../hooks/useAppKitWallet';
+import '@aurora-is-near/intents-swap-widget/styles.css';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
@@ -17,6 +19,10 @@ interface WidgetProps {
 }
 
 export function Widget({ config }: WidgetProps) {
+  const { providers, address: walletAddress } = useAppKitWallet();
+
+  const appBalanceMode = walletAddress ? 'with-balance' : 'all';
+  const showAppBalance = true;
   const { state } = useCreator();
   const [_makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -31,6 +37,18 @@ export function Widget({ config }: WidgetProps) {
     () =>
       ({
         appName: 'Widget Creator',
+        connectedWallets: { default: walletAddress },
+        intentsAccountType: 'near',
+        chainsFilter: {
+          target: {
+            intents: showAppBalance ? 'all' : 'none',
+            external: 'all',
+          },
+          source: {
+            intents: showAppBalance ? appBalanceMode : 'none',
+            external: walletAddress ? 'wallet-supported' : 'all',
+          },
+        },
         allowedTargetChainsList: ['near'] as const,
         alchemyApiKey: ALCHEMY_API_KEY,
         allowedChainsList:
@@ -97,14 +115,7 @@ export function Widget({ config }: WidgetProps) {
         surfaceColor: (state.pageBackgroundColor ?? '#24262D') as `#${string}`,
         colorScheme: colorScheme ?? 'dark',
       }}>
-      <WidgetSwap
-        makeTransfer={handleMakeTransfer}
-        providers={
-          {
-            // Add providers as needed
-          }
-        }
-      />
+      <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
     </WidgetConfigProvider>
   );
 }
