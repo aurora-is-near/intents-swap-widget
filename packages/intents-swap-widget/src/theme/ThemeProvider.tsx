@@ -4,12 +4,7 @@ import { createColorPalette } from './createColorPalette';
 
 const setColorVariables = (palette: ColorPalette, colorKey: string) => {
   Object.entries(palette).forEach(([key, value]) => {
-    [...document.getElementsByClassName('sw')].forEach((el) => {
-      (el as HTMLElement).style.setProperty(
-        `--color-sw-${colorKey}-${key}`,
-        value,
-      );
-    });
+    document.body.style.setProperty(`--c-sw-${colorKey}-${key}`, value);
   });
 };
 
@@ -29,8 +24,12 @@ const setColorPalette = (
   setColorVariables(palette, colorKey);
 };
 
-const loadTheme = ({ primaryColor, surfaceColor, colorScheme }: Theme) => {
-  setColorPalette('mauve', primaryColor, colorScheme);
+const loadTheme = ({
+  primaryColor = '#D5B7FF',
+  surfaceColor = '#7E8396',
+  colorScheme = 'dark',
+}: Theme) => {
+  setColorPalette('accent', primaryColor, colorScheme);
   setColorPalette('gray', surfaceColor, colorScheme);
 };
 
