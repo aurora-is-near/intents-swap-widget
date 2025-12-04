@@ -65,6 +65,22 @@ export const useNotification = (
       };
     }
 
+    // NEAR named account does not exist
+    if (
+      ctx.quoteStatus === 'error' &&
+      ctx.error?.code === 'NEAR_ACCOUNT_NOT_FOUND'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t('wallet.recipient.error.nearAccountNotFound', {
+          defaultValue:
+            'The account "{{accountId}}" is not registered on the NEAR blockchain. Please use a different address.',
+          accountId: ctx.error.meta.accountId,
+        }),
+      };
+    }
+
     const chainLabel = (EVM_CHAINS as ReadonlyArray<string>).includes(
       ctx.targetToken.blockchain,
     )

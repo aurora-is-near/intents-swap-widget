@@ -7,6 +7,7 @@ export type LocalisationKeys =
   | 'wallet.recipient.error.noAddress'
   | 'wallet.recipient.error.tokenNotSelected'
   | 'wallet.recipient.error.invalidAddress'
+  | 'wallet.recipient.error.nearAccountNotFound'
   | 'wallet.recipient.warn.compatibleNetwork'
   | 'wallet.recipient.message.networkVerified'
   | 'wallet.recipient.message.receiveFunds'

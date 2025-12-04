@@ -20,6 +20,8 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+import { isNearNamedAccount } from '@/utils/near/isNearNamedAccount';
+import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 
 type MakeArgs = {
   message?: string;
@@ -144,6 +146,24 @@ export const useMakeQuote = () => {
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
       });
+    }
+
+    // Validate NEAR named account exists (implicit accounts don't need validation)
+    if (
+      !isDry &&
+      ctx.targetToken.blockchain === 'near' &&
+      !ctx.targetToken.isIntent &&
+      ctx.sendAddress &&
+      isNearNamedAccount(ctx.sendAddress)
+    ) {
+      const accountExists = await checkNearAccountExists(ctx.sendAddress);
+
+      if (!accountExists) {
+        throw new QuoteError({
+          code: 'NEAR_ACCOUNT_NOT_FOUND',
+          meta: { accountId: ctx.sendAddress },
+        });
+      }
     }
 
     if (request.current) {

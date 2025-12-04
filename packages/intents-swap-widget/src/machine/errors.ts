@@ -18,6 +18,7 @@ export type InitialExternalStateError =
 export type InputValidDryError =
   | { code: 'NO_NEAR_TOKEN_FOUND'; meta: { symbol: string } }
   | { code: 'TOKEN_IS_NOT_SUPPORTED' }
+  | { code: 'NEAR_ACCOUNT_NOT_FOUND'; meta: { accountId: string } }
   | { code: 'QUOTE_FAILED'; meta: { message: string } }
   | { code: 'QUOTE_INVALID'; meta: { isDry: boolean } }
   | { code: 'QUOTE_INVALID_INITIAL'; meta: { isDry: boolean; message: string } }
@@ -61,6 +62,7 @@ export const QUOTE_ERRORS: Array<
 > = [
   'NO_NEAR_TOKEN_FOUND',
   'TOKEN_IS_NOT_SUPPORTED',
+  'NEAR_ACCOUNT_NOT_FOUND',
   'QUOTE_FAILED',
   'QUOTE_INVALID',
   'QUOTE_INVALID_INITIAL',
