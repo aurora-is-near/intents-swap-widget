@@ -49,11 +49,10 @@ export const useNotification = (
       };
     }
 
-    // known address errors
+    // Known address errors
     if (
-      ctx.error &&
       ctx.quoteStatus === 'error' &&
-      ctx.error.code === 'TOKEN_IS_NOT_SUPPORTED'
+      ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED'
     ) {
       return {
         variant: 'error',
@@ -73,11 +72,10 @@ export const useNotification = (
       return {
         variant: 'error',
         state: 'error',
-        message: t('wallet.recipient.error.nearAccountNotFound', {
-          defaultValue:
-            'The account "{{accountId}}" is not registered on the NEAR blockchain. Please use a different address.',
-          accountId: ctx.error.meta.accountId,
-        }),
+        message: t(
+          'wallet.recipient.error.nearAccountNotFound',
+          'This NEAR account does not exist',
+        ),
       };
     }
 

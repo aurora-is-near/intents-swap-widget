@@ -37,6 +37,7 @@ export type LocalisationKeys =
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'
   | 'submit.error.invalidAddress'
+  | 'submit.error.nearAccountNotFound'
   | 'submit.error.amountTooLow.label'
   | 'submit.error.amountTooLow.message'
   | 'submit.error.quoteFailed.label'

@@ -35,6 +35,14 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  if (ctx.error?.code === 'NEAR_ACCOUNT_NOT_FOUND') {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.nearAccountNotFound', 'Account not found')}
+      </Button>
+    );
+  }
+
   if (ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW') {
     return (
       <div className="gap-sw-md flex flex-col">
