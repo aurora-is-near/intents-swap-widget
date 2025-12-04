@@ -43,6 +43,14 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  if (ctx.error?.code === 'NEAR_ADDRESS_INVALID') {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.nearAddressInvalid', 'Invalid NEAR address')}
+      </Button>
+    );
+  }
+
   if (ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW') {
     return (
       <div className="gap-sw-md flex flex-col">

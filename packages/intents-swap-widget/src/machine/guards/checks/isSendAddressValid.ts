@@ -13,6 +13,7 @@ export const isSendAddressValid = (ctx: Context): boolean => {
     if (ctx.targetToken.blockchain === 'near') {
       return isNearAddress(ctx.sendAddress);
     }
+
     return true;
   }
 

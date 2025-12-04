@@ -79,6 +79,21 @@ export const useNotification = (
       };
     }
 
+    // NEAR address format is invalid
+    if (
+      ctx.quoteStatus === 'error' &&
+      ctx.error?.code === 'NEAR_ADDRESS_INVALID'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t(
+          'wallet.recipient.error.nearAddressInvalid',
+          'Invalid NEAR address format',
+        ),
+      };
+    }
+
     const chainLabel = (EVM_CHAINS as ReadonlyArray<string>).includes(
       ctx.targetToken.blockchain,
     )

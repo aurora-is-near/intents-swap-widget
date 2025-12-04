@@ -20,6 +20,7 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+import { isNearAddress } from '@/utils/near/isNearAddress';
 import { isNearNamedAccount } from '@/utils/near/isNearNamedAccount';
 import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 
@@ -148,21 +149,33 @@ export const useMakeQuote = () => {
       });
     }
 
-    // Validate NEAR named account exists (implicit accounts don't need validation)
+    // Validate NEAR named account exists
     if (
       !isDry &&
       ctx.targetToken.blockchain === 'near' &&
       !ctx.targetToken.isIntent &&
       ctx.sendAddress &&
+      isNearAddress(ctx.sendAddress) &&
       isNearNamedAccount(ctx.sendAddress)
     ) {
-      const accountExists = await checkNearAccountExists(ctx.sendAddress);
+      try {
+        const exists = await checkNearAccountExists(ctx.sendAddress);
 
-      if (!accountExists) {
-        throw new QuoteError({
-          code: 'NEAR_ACCOUNT_NOT_FOUND',
-          meta: { accountId: ctx.sendAddress },
-        });
+        if (!exists) {
+          throw new QuoteError({
+            code: 'NEAR_ACCOUNT_NOT_FOUND',
+            meta: { accountId: ctx.sendAddress },
+          });
+        }
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.message === 'ACCOUNT_CHECK_SUPERSEDED'
+        ) {
+          return;
+        }
+
+        throw err;
       }
     }
 
@@ -300,11 +313,15 @@ export const useMakeQuote = () => {
         throw error;
       }
 
+      const fallbackMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Failed to fetch quote. Please try again.';
+
       throw new QuoteError({
         code: 'QUOTE_FAILED',
         meta: {
-          // @ts-expect-error In case error has a message
-          message: errorMessage ?? 'Failed to fetch quote. Please try again.',
+          message: fallbackMessage,
         },
       });
     }
