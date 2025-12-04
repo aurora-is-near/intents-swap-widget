@@ -9,7 +9,11 @@ const applyThemeDataAttr = (theme: ThemeMode) => {
   }
 };
 
-export const useToggleTheme = (defaultTheme?: ThemeMode) => {
+export const useToggleTheme = (
+  defaultTheme?: ThemeMode,
+  onChange?: (colorPalette: 'light' | 'dark') => void,
+) => {
+  const [colorPalette, setColorPalette] = useState<'light' | 'dark'>();
   const [theme, setTheme] = useState<ThemeMode | undefined>(() => {
     if (isBrowser && defaultTheme === undefined) {
       return (localStorage.getItem('theme') as ThemeMode) || 'dark';
@@ -25,7 +29,11 @@ export const useToggleTheme = (defaultTheme?: ThemeMode) => {
       } else if (theme === 'auto') {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const updateTheme = () => {
-          applyThemeDataAttr(mediaQuery.matches ? 'dark' : 'light');
+          const palette = mediaQuery.matches ? 'dark' : 'light';
+
+          applyThemeDataAttr(palette);
+          setColorPalette(palette);
+          onChange?.(palette);
         };
 
         updateTheme();
@@ -36,6 +44,8 @@ export const useToggleTheme = (defaultTheme?: ThemeMode) => {
       } else {
         localStorage.setItem('theme', theme);
         applyThemeDataAttr(theme);
+        setColorPalette(theme);
+        onChange?.(theme);
       }
     }
   }, [theme]);
@@ -52,6 +62,7 @@ export const useToggleTheme = (defaultTheme?: ThemeMode) => {
 
   return {
     theme,
+    colorPalette,
     toggleTheme,
   };
 };

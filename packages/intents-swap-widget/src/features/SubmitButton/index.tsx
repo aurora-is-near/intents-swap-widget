@@ -6,6 +6,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
+import { useConfig } from '@/config';
 import { useTypedTranslation } from '@/localisation';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
@@ -108,11 +109,11 @@ const useGetErrorButton = (ctx: Context) => {
 };
 
 // Lightweight "Connect wallet" button with minimal logic
-const ConnectWalletButton = () => {
+const ConnectWalletButton = ({ onClick }: { onClick?: () => void }) => {
   const { t } = useTypedTranslation();
 
   return (
-    <Button state="disabled" {...commonBtnProps}>
+    <Button state="disabled" {...commonBtnProps} onClick={onClick}>
       {t('submit.error.connectWallet', 'Connect wallet')}
     </Button>
   );
@@ -314,10 +315,11 @@ const SubmitButtonWithWallet = (props: Props) => {
 // Performant wrapper - minimal logic when no wallet, full logic when connected
 const SubmitButton = (props: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const config = useConfig();
 
   // 1. No wallet? Return lightweight button immediately (best performance)
   if (!ctx.walletAddress) {
-    return <ConnectWalletButton />;
+    return <ConnectWalletButton onClick={config.onWalletSignin} />;
   }
 
   // 2. Has wallet - run full logic (call remaining hooks only when needed)

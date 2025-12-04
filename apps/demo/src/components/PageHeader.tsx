@@ -1,5 +1,8 @@
 import { clsx } from 'clsx';
+import { useState } from 'react';
+import { Input } from '@aurora-is-near/intents-swap-widget';
 import { useToggleTheme } from '@aurora-is-near/intents-swap-widget/hooks';
+import type { HexColor } from '@aurora-is-near/intents-swap-widget';
 
 import * as Icons from 'lucide-react';
 import type { PropsWithChildren } from 'react';
@@ -64,8 +67,12 @@ const themeIcons: Record<ThemeMode, LucideIcon> = {
   auto: Icons.SunMoon,
 };
 
-const ThemeToggle = () => {
-  const { theme, toggleTheme } = useToggleTheme();
+type ThemeToggleProps = {
+  onClick?: (colorPalette: 'light' | 'dark') => void;
+};
+
+const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
+  const { theme = 'dark', toggleTheme } = useToggleTheme('dark', onClick);
 
   if (!theme) {
     return (
@@ -96,12 +103,67 @@ type Props<T> = {
   onClick: (id: T) => void;
 };
 
-const Header = ({ children }: PropsWithChildren) => {
+const defaultPrimaryColor: HexColor = '#D5B7FF';
+const defaultSurfaceColor: HexColor = '#636D9B';
+
+const getThemeColor = (
+  color: string | undefined,
+  defaultColor: HexColor,
+): HexColor => {
+  if (!color) {
+    return defaultColor;
+  }
+
+  return /^#([0-9A-Fa-f]{3}){1,2}$/.test(color)
+    ? (color as unknown as HexColor)
+    : defaultColor;
+};
+
+const Header = ({
+  children,
+  onToggleTheme,
+  onSetColors,
+}: PropsWithChildren<{
+  onToggleTheme?: ThemeToggleProps['onClick'];
+  onSetColors?: (colors: {
+    primaryColor: HexColor;
+    surfaceColor: HexColor;
+  }) => void;
+}>) => {
+  const [primaryColor, setPrimaryColor] = useState<string | undefined>(
+    defaultPrimaryColor,
+  );
+
+  const [surfaceColor, setSurfaceColor] = useState<string | undefined>(
+    defaultSurfaceColor,
+  );
+
+  const setThemeColors = () => {
+    onSetColors?.({
+      primaryColor: getThemeColor(primaryColor, defaultPrimaryColor),
+      surfaceColor: getThemeColor(surfaceColor, defaultSurfaceColor),
+    });
+  };
+
   return (
     <header className="z-1 fixed top-0 left-0 w-full flex justify-between items-center gap-sw-lg py-sw-xl px-sw-2xl bg-sw-gray-950">
       {children ?? <span />}
       <div className="flex items-center gap-sw-lg">
-        <ThemeToggle />
+        <Input
+          className="w-[108px]"
+          placeholder="Accent color"
+          defaultValue={primaryColor}
+          onChange={(e) => setPrimaryColor(e.target.value)}
+          onBlur={setThemeColors}
+        />
+        <Input
+          className="w-[108px]"
+          placeholder="Gray tone"
+          defaultValue={surfaceColor}
+          onChange={(e) => setSurfaceColor(e.target.value)}
+          onBlur={setThemeColors}
+        />
+        <ThemeToggle onClick={onToggleTheme} />
         <WalletConnectButton />
       </div>
     </header>

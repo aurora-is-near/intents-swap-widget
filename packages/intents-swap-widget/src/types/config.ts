@@ -19,6 +19,7 @@ export type WidgetConfig = {
   walletSupportedChains: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
   onWalletSignout?: (walletType?: IntentsAccountType) => void;
+  onWalletSignin?: () => void;
 
   // Destination wallet
   sendAddress?: string | null;

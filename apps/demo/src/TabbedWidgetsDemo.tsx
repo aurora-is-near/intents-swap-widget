@@ -6,6 +6,7 @@ import {
   WidgetSwap,
   WidgetWithdraw,
 } from '@aurora-is-near/intents-swap-widget';
+import type { Theme } from '@aurora-is-near/intents-swap-widget';
 
 import { Toggle } from './components/Toggle';
 import { PageHeader } from './components/PageHeader';
@@ -13,6 +14,12 @@ import { WidgetPageContainer } from './components/WidgetPageContainer';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
+
+const defaultTheme: Theme = {
+  primaryColor: '#D5B7FF',
+  surfaceColor: '#636D9B',
+  colorScheme: 'dark',
+};
 
 const WIDGET_TABS = [
   { id: 'swap', label: 'Swap', icon: RepeatIcon },
@@ -36,13 +43,28 @@ export const TabbedWidgetsDemo = () => {
   const [showAppBalance, setShowAppBalance] = useState(true);
   const appBalanceMode = walletAddress ? 'with-balance' : 'all';
 
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
   const WidgetComponent = WIDGET_TYPES[selectedWidget];
 
   return (
     <>
-      <PageHeader>
+      <PageHeader
+        onSetColors={(colors) =>
+          setTheme((p) => ({
+            colorScheme: p.colorScheme,
+            primaryColor: colors.primaryColor,
+            surfaceColor: colors.surfaceColor,
+          }))
+        }
+        onToggleTheme={(palette) =>
+          setTheme((p) => ({
+            colorScheme: palette,
+            primaryColor: p.primaryColor,
+            surfaceColor: p.surfaceColor,
+          }))
+        }>
         <PageHeader.Nav
           tabs={WIDGET_TABS}
           activeTab={selectedWidget}
@@ -52,6 +74,7 @@ export const TabbedWidgetsDemo = () => {
 
       <WidgetPageContainer>
         <WidgetConfigProvider
+          theme={theme}
           config={{
             appName: 'Demo App',
             connectedWallets: { default: walletAddress },
