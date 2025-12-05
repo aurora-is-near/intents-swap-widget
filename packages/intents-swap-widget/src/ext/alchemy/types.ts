@@ -12,6 +12,7 @@ export const CHAINS_MAP = {
   op: 'opt-mainnet',
   pol: 'matic-mainnet',
   sol: 'solana-mainnet',
+  monad: 'monad-mainnet',
   // btc: 'bitcoin-mainnet'
 } as const satisfies Partial<Record<Chains, string>>;
 
