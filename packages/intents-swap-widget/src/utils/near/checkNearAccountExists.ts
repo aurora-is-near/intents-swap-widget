@@ -50,17 +50,23 @@ const queryAccountExists = async (accountId: string): Promise<boolean> => {
 
     return true;
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '';
+    const pattern =
+      /doesn.t exist|does not exist|UNKNOWN_ACCOUNT|AccountDoesNotExist/i;
 
-    if (/does not exist|UNKNOWN_ACCOUNT|AccountDoesNotExist/i.test(message)) {
+    // Check message and stringify error to catch nested error data
+    const message = err instanceof Error ? err.message : '';
+    const errStr = JSON.stringify(err);
+
+    if (pattern.test(message) || pattern.test(errStr)) {
       sessionCache.set(accountId, false);
 
       return false;
     }
 
+    // RPC/network failures: allow quote, backend will validate
     logger.error(new Error('NEAR RPC check failed', { cause: err }));
 
-    return false;
+    return true;
   }
 };
 
