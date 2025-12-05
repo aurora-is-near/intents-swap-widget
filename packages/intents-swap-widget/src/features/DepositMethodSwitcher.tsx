@@ -6,17 +6,6 @@ import { Button } from '@/components/Button';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine';
 
-const activeBtnProps = {
-  variant: 'tertiary',
-  detail: 'dimmed',
-  state: 'active',
-} as const;
-
-const notActiveBtnProps = {
-  variant: 'outlined',
-  state: 'default',
-} as const;
-
 type Props = {
   className?: string;
   children: ({ isExternal }: { isExternal: boolean }) => React.ReactNode;
@@ -31,29 +20,31 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
 
   const state = useMemo(() => {
     if (ctx.isDepositFromExternalWallet) {
-      return activeBtnProps;
+      return { state: 'default' as const };
     }
 
-    return notActiveBtnProps;
+    return { state: 'disabled' as const };
   }, [ctx.isDepositFromExternalWallet]);
 
   return (
     <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
-      <span className="text-sw-label-m text-sw-gray-50">
+      <span className="text-sw-label-md text-sw-gray-50">
         Select deposit method
       </span>
       <div className="flex gap-sw-lg">
         <Button
           size="md"
+          variant="primary"
           icon={Icons.Wallet2}
           onClick={() => onToggle(false)}
           {...(!ctx.isDepositFromExternalWallet
-            ? activeBtnProps
-            : notActiveBtnProps)}>
+            ? { state: 'default' }
+            : { state: 'active' })}>
           My wallet
         </Button>
         <Button
           size="md"
+          variant="primary"
           icon={Icons.QrCode}
           onClick={() => onToggle(true)}
           {...state}>

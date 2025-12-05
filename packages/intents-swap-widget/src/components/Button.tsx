@@ -5,14 +5,12 @@ import * as Icons from 'lucide-react';
 import { cn as clsx } from '@/utils/cn';
 
 type Size = 'sm' | 'md' | 'lg';
-type Variant = 'primary' | 'tertiary' | 'outlined';
+type Variant = 'primary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
-type Detail = 'default' | 'dimmed';
 
 type Props = {
   size: Size;
   state?: State;
-  detail?: Detail;
   variant: Variant;
   children: React.ReactNode;
   className?: string;
@@ -27,20 +25,9 @@ const styles = {
   icon: 'h-sw-xl w-sw-xl',
 
   size: (size: Size) => ({
-    'px-sw-xl py-sw-2md': size === 'sm',
-    'px-sw-2xl py-sw-lg': size === 'md',
-    'px-sw-3xl py-sw-xl': size === 'lg',
-  }),
-
-  state: (state: State) => ({
-    'bg-transparent text-sw-mauve-400 ring-1 ring-inset ring-sw-mauve-700':
-      state === 'disabled',
-    'bg-sw-mauve-700 text-sw-mauve-300': state === 'loading',
-    'bg-sw-alert-900 text-sw-alert-100': state === 'error',
-    'text-sw-mauve-975 bg-sw-mauve-300 hover:bg-sw-mauve-50': [
-      'active',
-      'default',
-    ].includes(state),
+    'px-sw-xl py-sw-[10px] rounded-sw-sm': size === 'sm',
+    'px-sw-2xl py-sw-sm rounded-sw-md': size === 'md',
+    'px-sw-3xl py-sw-xl rounded-sw-lg': size === 'lg',
   }),
 
   width: (fluid?: boolean) => ({
@@ -49,8 +36,7 @@ const styles = {
 
   common: `
     ring-1 ring-inset ring-transparent
-    transition-colors duration-250 ease-in-out
-    rounded-sw-md
+    transition-all duration-250 ease-in-out
   `,
 };
 
@@ -72,7 +58,7 @@ const ButtonChildren = ({
         );
 
   return (
-    <span className="text-sw-label-m flex w-full items-center justify-center gap-sw-lg">
+    <span className="text-sw-label-md flex w-full items-center justify-center gap-sw-lg py-sw-xs">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
         <Icon className={styles.icon} />
@@ -88,38 +74,6 @@ const ButtonPrimary = ({
   className,
   children,
   state = 'default',
-  detail = 'default',
-  onClick,
-  fluid,
-  ...props
-}: Omit<Props, 'variant'>) => {
-  return (
-    <UIButton
-      onClick={() => state === 'default' && onClick?.()}
-      className={clsx(
-        styles.common,
-        styles.width(fluid),
-        styles.size(size),
-        styles.state(state),
-        {
-          'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'bg-sw-gray-700': detail === 'dimmed',
-        },
-        className,
-      )}>
-      <ButtonChildren state={state} {...props}>
-        {children}
-      </ButtonChildren>
-    </UIButton>
-  );
-};
-
-const ButtonTertiary = ({
-  size,
-  children,
-  className,
-  state = 'default',
-  detail = 'default',
   onClick,
   fluid,
   ...props
@@ -132,12 +86,12 @@ const ButtonTertiary = ({
         styles.width(fluid),
         styles.size(size),
         {
-          'text-sw-gray-50': state === 'active',
-          'bg-sw-gray-700': detail === 'dimmed' && state === 'active',
-          'bg-sw-gray-900': detail !== 'dimmed' && state === 'active',
-          'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'hover:text-sw-mauve-300 bg-transparent text-sw-gray-100':
-            state === 'default',
+          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-error':
+            state === 'error',
+          'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
+            state === 'loading' || state === 'disabled',
+          'text-sw-gray-950 bg-sw-accent-500 hover:bg-sw-accent-400 cursor-pointer':
+            ['active', 'default'].includes(state),
         },
         className,
       )}>
@@ -148,10 +102,10 @@ const ButtonTertiary = ({
   );
 };
 
-export const OutlinedButton = ({
+const ButtonOutlined = ({
   size,
-  children,
   className,
+  children,
   state = 'default',
   onClick,
   fluid,
@@ -164,11 +118,13 @@ export const OutlinedButton = ({
         styles.common,
         styles.width(fluid),
         styles.size(size),
-        'ring-1 ring-sw-gray-500 text-sw-gray-50',
         {
-          'cursor-pointer hover:text-sw-mauve-300 bg-transparent':
-            state === 'default',
-          'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
+          'bg-transparent text-sw-status-error ring-1 ring-inset ring-sw-status-error':
+            state === 'error',
+          'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
+            state === 'loading' || state === 'disabled',
+          'bg-transparent text-sw-gray-50 ring-1 ring-inset ring-sw-gray-600 hover:ring-sw-gray-100 cursor-pointer':
+            ['active', 'default'].includes(state),
         },
         className,
       )}>
@@ -181,10 +137,8 @@ export const OutlinedButton = ({
 
 export const Button = ({ variant, ...restProps }: Props) => {
   switch (variant) {
-    case 'tertiary':
-      return <ButtonTertiary {...restProps} />;
     case 'outlined':
-      return <OutlinedButton {...restProps} />;
+      return <ButtonOutlined {...restProps} />;
     case 'primary':
     default:
       return <ButtonPrimary {...restProps} />;

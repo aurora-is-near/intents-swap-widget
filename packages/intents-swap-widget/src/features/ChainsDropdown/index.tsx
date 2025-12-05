@@ -23,12 +23,6 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-const commonIconProps = {
-  radius: 10,
-  noLoadedBg: true,
-  variant: 'light' as const,
-};
-
 export const ChainsDropdown = ({
   variant,
   selected,
@@ -52,13 +46,13 @@ export const ChainsDropdown = ({
         <div>
           <MenuButton as={Fragment}>
             {({ open: isOpen }) => (
-              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[40px] cursor-pointer items-center rounded-sw-md bg-sw-gray-600 hover:bg-sw-gray-500">
+              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[40px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700">
                 {(() => {
                   switch (selected) {
                     case 'all':
                       return (
                         <Icon
-                          {...commonIconProps}
+                          radius={10}
                           icon={<AllNetworksIcon />}
                           label="All networks"
                         />
@@ -66,7 +60,7 @@ export const ChainsDropdown = ({
                     case 'intents':
                       return showIntentTokens ? (
                         <Icon
-                          {...commonIconProps}
+                          radius={10}
                           icon={appIcon}
                           label={`${appName} account`}
                         />
@@ -74,13 +68,13 @@ export const ChainsDropdown = ({
                     default:
                       return !selectedChain ? (
                         <Icon
-                          {...commonIconProps}
+                          radius={10}
                           icon={<AllNetworksIcon />}
                           label={t('chain.all.label', 'All networks')}
                         />
                       ) : (
                         <Icon
-                          {...commonIconProps}
+                          radius={10}
                           label={selectedChain.label}
                           icon={CHAINS_LIST[selected].icon}
                         />
@@ -105,7 +99,7 @@ export const ChainsDropdown = ({
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
-                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-900 shadow-lg ring-1 ring-inset ring-sw-gray-600 outline-none">
+                className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-800 shadow-[0_6px_48px_0_rgba(36,38,45,0.3)] ring-1 ring-inset ring-sw-gray-700 outline-none">
                 {chains.length > 1 && (
                   <MenuItem>
                     <ChainItem
@@ -150,7 +144,7 @@ export const ChainsDropdown = ({
 
                 {!!chains.length &&
                   !!(chains.length > 1 || hasIntentsAccountMenuItem) && (
-                    <Hr className="shrink-0 my-sw-sm" />
+                    <Hr className="shrink-0 my-sw-sm bg-sw-gray-700" />
                   )}
 
                 {chains.map((chain) => {

@@ -1,11 +1,12 @@
 import * as Icons from 'lucide-react';
-import { type ChangeEvent, useEffect, useMemo } from 'react';
+import { Button } from '@headlessui/react';
+import { useEffect, useMemo } from 'react';
+import type { ChangeEvent } from 'react';
 
 import { useNotification } from './useNotification';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
-import { Badge } from '@/components/Badge';
 
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
@@ -60,26 +61,28 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
   }
 
   return (
-    <Card className={cn('gap-sw-lg flex flex-col', className)}>
-      <h5 className="text-sw-label-m text-sw-gray-50">Send to</h5>
+    <Card className={cn('flex flex-col', className)}>
+      <h5 className="text-sw-label-md text-sw-gray-50 mb-sw-2xl">
+        {t('sendAddress.label', 'Send to')}
+      </h5>
       <Input
         defaultValue={ctx.sendAddress}
         state={inputState}
+        className="mb-sw-xl"
         placeholder={t(
           'wallet.recipient.placeholder',
           'Enter recipient wallet address',
         )}
         onChange={onChange}>
         {!!showMagicButton && (
-          <Badge
-            isClickable
-            size="md"
-            variant="primary"
-            className="absolute right-0"
+          <Button
+            className="absolute right-0 flex items-center gap-sw-md min-w-max cursor-pointer"
             onClick={() => fireEvent('addressSet', ctx.walletAddress ?? '')}>
-            <Icons.Wand2 size={12} />
-            My wallet
-          </Badge>
+            <Icons.Wand2 size={14} />
+            <span className="text-sw-label-md">
+              {t('sendAddress.button.magic.label', 'My wallet')}
+            </span>
+          </Button>
         )}
       </Input>
 
