@@ -38,13 +38,18 @@ export const ChainsDropdown = ({
   const { t } = useTypedTranslation();
 
   const chains = useChains(variant);
-  const { appIcon, appName, showIntentTokens } = useConfig();
+  const { appIcon, appName, showIntentTokens, hideAppNameAccountSuffix } =
+    useConfig();
+
   const selectedChain = useMemo(
     () => chains.find((item) => item.id === selected),
     [chains, selected],
   );
 
   const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
+  const accountLabel = hideAppNameAccountSuffix
+    ? appName
+    : `${appName} account`;
 
   return (
     <Menu>
@@ -68,7 +73,7 @@ export const ChainsDropdown = ({
                         <Icon
                           {...commonIconProps}
                           icon={appIcon}
-                          label={`${appName} account`}
+                          label={accountLabel}
                         />
                       ) : null;
                     default:
@@ -131,7 +136,7 @@ export const ChainsDropdown = ({
                   <MenuItem>
                     <ChainItem
                       chain="intents"
-                      label={`${appName} account`}
+                      label={accountLabel}
                       isSelected={selected === 'intents'}
                       icon={appIcon}
                       onMsg={(msg) => {

@@ -57,7 +57,9 @@ export const TokensList = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName } = useConfig();
+  const { walletSupportedChains, appName, hideAppNameAccountSuffix } =
+    useConfig();
+
   const { mergedBalance } = useMergedBalance();
 
   const filteredTokens = useTokensFiltered({
@@ -67,6 +69,10 @@ export const TokensList = ({
     selectedChain,
     walletSupportedChains,
   });
+
+  const accountLabel = hideAppNameAccountSuffix
+    ? appName
+    : `${appName} account`;
 
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;
   const tokensListState = useListState(filteredTokens.all, search);
@@ -78,13 +84,18 @@ export const TokensList = ({
 
   const tokensBySection = useMemo(
     () => [
-      { label: `${appName} account`, tokens: filteredTokens.intents },
+      { label: accountLabel, tokens: filteredTokens.intents },
       {
         label: chainIsNotSupported ? null : 'Connected wallet',
         tokens: filteredTokens.wallet,
       },
     ],
-    [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
+    [
+      filteredTokens.wallet,
+      filteredTokens.intents,
+      chainIsNotSupported,
+      accountLabel,
+    ],
   );
 
   const tokensCount = useMemo(() => {

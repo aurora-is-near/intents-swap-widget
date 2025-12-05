@@ -293,3 +293,7 @@ Used to hide the send address when swapping or withdrawing.
 ### `hideTokenInputHeadings`
 
 Used to hide the headings on the token input boxes.
+
+### `hideAppNameAccountSuffix`
+
+Used to hide the suffix in the token selection dropdown.
