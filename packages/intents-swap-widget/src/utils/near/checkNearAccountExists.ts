@@ -53,11 +53,11 @@ const queryAccountExists = async (accountId: string): Promise<boolean> => {
     const pattern =
       /doesn.t exist|does not exist|UNKNOWN_ACCOUNT|AccountDoesNotExist/i;
 
-    // Check message and stringify error to catch nested error data
-    const message = err instanceof Error ? err.message : '';
-    const errStr = JSON.stringify(err);
+    // Safe string conversion (JSON.stringify can throw on circular refs)
+    const errText =
+      err instanceof Error ? `${err.message} ${String(err)}` : String(err);
 
-    if (pattern.test(message) || pattern.test(errStr)) {
+    if (pattern.test(errText)) {
       sessionCache.set(accountId, false);
 
       return false;
