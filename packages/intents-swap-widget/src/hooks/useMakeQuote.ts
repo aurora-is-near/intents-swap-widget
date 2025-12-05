@@ -20,6 +20,9 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+import { isNearAddress } from '@/utils/near/isNearAddress';
+import { isNearNamedAccount } from '@/utils/near/isNearNamedAccount';
+import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 
 type MakeArgs = {
   message?: string;
@@ -144,6 +147,36 @@ export const useMakeQuote = () => {
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: msg },
       });
+    }
+
+    // Validate NEAR named account exists
+    if (
+      !isDry &&
+      ctx.targetToken.blockchain === 'near' &&
+      !ctx.targetToken.isIntent &&
+      ctx.sendAddress &&
+      isNearAddress(ctx.sendAddress) &&
+      isNearNamedAccount(ctx.sendAddress)
+    ) {
+      try {
+        const exists = await checkNearAccountExists(ctx.sendAddress);
+
+        if (!exists) {
+          throw new QuoteError({
+            code: 'NEAR_ACCOUNT_NOT_FOUND',
+            meta: { accountId: ctx.sendAddress },
+          });
+        }
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.message === 'ACCOUNT_CHECK_SUPERSEDED'
+        ) {
+          return;
+        }
+
+        throw err;
+      }
     }
 
     if (request.current) {
@@ -280,11 +313,15 @@ export const useMakeQuote = () => {
         throw error;
       }
 
+      const fallbackMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Failed to fetch quote. Please try again.';
+
       throw new QuoteError({
         code: 'QUOTE_FAILED',
         meta: {
-          // @ts-expect-error In case error has a message
-          message: errorMessage ?? 'Failed to fetch quote. Please try again.',
+          message: fallbackMessage,
         },
       });
     }

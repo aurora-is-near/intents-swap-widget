@@ -1,3 +1,5 @@
+import { isNearNamedAccount } from './isNearNamedAccount';
+
 export const isNearAddress = (address?: string | null): boolean => {
   if (!address) {
     return false;
@@ -8,13 +10,5 @@ export const isNearAddress = (address?: string | null): boolean => {
     return true;
   }
 
-  // Named accounts like "alice.near" or "myapp.factory.sub.near"
-  if (
-    /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.near$/i.test(address) ||
-    /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.testnet$/i.test(address)
-  ) {
-    return true;
-  }
-
-  return false;
+  return isNearNamedAccount(address);
 };

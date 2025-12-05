@@ -49,11 +49,10 @@ export const useNotification = (
       };
     }
 
-    // known address errors
+    // Known address errors
     if (
-      ctx.error &&
       ctx.quoteStatus === 'error' &&
-      ctx.error.code === 'TOKEN_IS_NOT_SUPPORTED'
+      ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED'
     ) {
       return {
         variant: 'error',
@@ -62,6 +61,36 @@ export const useNotification = (
           defaultValue: 'Invalid address. Use one on {{network}} network.',
           network: CHAINS_LIST[ctx.targetToken.blockchain]?.label ?? 'selected',
         }),
+      };
+    }
+
+    // NEAR named account does not exist
+    if (
+      ctx.quoteStatus === 'error' &&
+      ctx.error?.code === 'NEAR_ACCOUNT_NOT_FOUND'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t(
+          'wallet.recipient.error.nearAccountNotFound',
+          'This NEAR account does not exist',
+        ),
+      };
+    }
+
+    // NEAR address format is invalid
+    if (
+      ctx.quoteStatus === 'error' &&
+      ctx.error?.code === 'NEAR_ADDRESS_INVALID'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t(
+          'wallet.recipient.error.nearAddressInvalid',
+          'Invalid NEAR address format',
+        ),
       };
     }
 
