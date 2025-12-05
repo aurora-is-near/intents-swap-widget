@@ -93,8 +93,14 @@ const ButtonPrimary = ({
   fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const isDisabled = ['disabled', 'loading', 'error'].includes(state)
+    ? true
+    : undefined;
+
   return (
     <UIButton
+      disabled={isDisabled}
+      data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
@@ -124,8 +130,14 @@ const ButtonTertiary = ({
   fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const isDisabled = ['disabled', 'loading', 'error'].includes(state)
+    ? true
+    : undefined;
+
   return (
     <UIButton
+      disabled={isDisabled}
+      data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
@@ -157,8 +169,14 @@ export const OutlinedButton = ({
   fluid,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const isDisabled = ['disabled', 'loading', 'error'].includes(state)
+    ? true
+    : undefined;
+
   return (
     <UIButton
+      disabled={isDisabled}
+      data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,

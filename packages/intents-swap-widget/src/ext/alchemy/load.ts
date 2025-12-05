@@ -5,17 +5,13 @@ import type {
   AlchemyRequestParams,
   AlchemyResponse,
 } from './types';
-import { createNetworkClient } from '@/network';
+import { alchemyApi } from '@/network';
 import type { Chains } from '@/types/chain';
 
 type ResultPage = {
   pageKey: string | null;
   tokens: AlchemyBalanceItem[];
 };
-
-const alchemyApi = createNetworkClient({
-  baseURL: 'https://api.g.alchemy.com/data/v1',
-});
 
 const mapAlchemyNetworks = (
   walletSupportedChains: ReadonlyArray<Chains>,

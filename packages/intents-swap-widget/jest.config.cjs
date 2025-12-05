@@ -1,11 +1,8 @@
 const nodeModulesToTransform = [
-  'node-fetch',
-  'data-uri-to-buffer',
-  'fetch-blob',
-  'formdata-polyfill',
-  'eventemitter3',
-  'p-queue',
-  'p-timeout',
+  'uuid',
+  'change-case',
+  'copy-text-to-clipboard',
+  'react-error-boundary',
 ].join('|');
 
 module.exports = {
@@ -19,7 +16,24 @@ module.exports = {
     '!**/?(*.)+(visual.spec|visual.test).(js|ts|tsx)',
   ],
   transform: {
-    '^.+\\.(t|j)sx?$': ['@swc/jest'],
+    '^.+\\.(t|j)sx?$': [
+      '@swc/jest',
+      {
+        jsc: {
+          parser: { syntax: 'typescript', tsx: true },
+          transform: {
+            react: { runtime: 'automatic' },
+            optimizer: {
+              globals: {
+                vars: {
+                  'import.meta.env.SWAP_WIDGET_VERSION': 'v1',
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
     '.+\\.(png|jpg)$': 'jest-transform-stub',
     '^.+\\.svg$': 'jest-transformer-svg',
   },

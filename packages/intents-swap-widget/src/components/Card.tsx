@@ -1,19 +1,25 @@
-import type { PropsWithChildren } from 'react';
+import type { HTMLAttributes, PropsWithChildren } from 'react';
 
 import { cn } from '@/utils/cn';
 
 type Tags = 'section' | 'div' | 'ul' | 'li';
 
-type Props = PropsWithChildren<
-  {
-    as?: Tags;
-    className?: string;
-    padding?: 'none' | 'default';
-  } & (
-    | { isClickable: true; onClick: () => void }
-    | { isClickable?: false; onClick?: never }
-  )
->;
+type Props = Partial<
+  Omit<
+    HTMLAttributes<HTMLElement>,
+    'onClick' | 'role' | 'onKeyDown' | 'className' | 'tabIndex'
+  >
+> &
+  PropsWithChildren<
+    {
+      as?: Tags;
+      className?: string;
+      padding?: 'none' | 'default';
+    } & (
+      | { isClickable: true; onClick: () => void }
+      | { isClickable?: false; onClick?: never }
+    )
+  >;
 
 export const Card = ({
   children,
@@ -22,6 +28,7 @@ export const Card = ({
   padding = 'default',
   className,
   as = 'div',
+  ...htmlAttrs
 }: Props) => {
   const Component = as;
 
@@ -47,7 +54,8 @@ export const Card = ({
           'p-sw-2xl': padding === 'default',
         },
         className,
-      )}>
+      )}
+      {...htmlAttrs}>
       {children}
     </Component>
   );

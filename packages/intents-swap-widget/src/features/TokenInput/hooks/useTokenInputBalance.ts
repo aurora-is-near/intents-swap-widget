@@ -25,7 +25,9 @@ export const useTokenInputBalance = (token: Token | undefined) => {
           );
         }, 2000);
       } else {
-        setSourceTokenBalance(existingBalance);
+        timeoutId = setTimeout(() => {
+          setSourceTokenBalance(existingBalance);
+        }, 0);
       }
     }
 
