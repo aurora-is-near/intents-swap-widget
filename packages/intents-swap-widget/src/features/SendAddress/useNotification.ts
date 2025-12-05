@@ -40,7 +40,7 @@ export const useNotification = (
 
     if (!ctx.targetToken) {
       return {
-        variant: 'info' as const,
+        variant: 'warn' as const,
         state: 'disabled' as const,
         message: t(
           'wallet.recipient.info.selectToken',

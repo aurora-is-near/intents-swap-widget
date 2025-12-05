@@ -33,11 +33,17 @@ export const WalletBalance = ({
 
   return (
     <span
-      onClick={onClick}
-      className={clsx('text-sw-label-s', {
-        'text-sw-alert-100': isNotSufficient,
+      onClick={balance ? onClick : undefined}
+      // unable to make border-bottom work via tailwind
+      style={
+        balance
+          ? { borderBottomWidth: '2px', borderStyle: 'dotted' }
+          : undefined
+      }
+      className={clsx('text-sw-label-sm', {
+        'text-sw-status-error': isNotSufficient,
         'text-sw-gray-100': !isNotSufficient,
-        'cursor-pointer': !!onClick,
+        'cursor-pointer': !!balance && !!onClick,
       })}>
       <TinyNumber
         decimals={token.decimals}

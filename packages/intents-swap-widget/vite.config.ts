@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative, extname } from 'node:path';
 
 import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
@@ -55,6 +56,18 @@ export default defineConfig({
         global: true,
         process: true,
       },
+    }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'src/tailwind.css',
+          dest: '.',
+        },
+        {
+          src: 'src/theme.css',
+          dest: '.',
+        },
+      ],
     }),
   ].filter(Boolean),
   css: {

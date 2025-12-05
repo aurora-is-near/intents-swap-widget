@@ -1,10 +1,11 @@
 import clsx from 'clsx';
 import * as Icons from 'lucide-react';
 import { ReactNode, useMemo } from 'react';
+import { Card } from '@aurora-is-near/intents-swap-widget';
+import { cn } from '@aurora-is-near/intents-swap-widget/utils';
+import { useAllTokens } from '@aurora-is-near/intents-swap-widget/hooks';
+
 import { TokenAmount } from './TokenAmount';
-import { Card } from './Card';
-import { cn } from '../utils';
-import { useAllTokens } from '../hooks/useAllTokens';
 
 type Props = {
   title?: string;
@@ -50,9 +51,9 @@ export const SwapCard = ({
     if (state === 'completed') {
       return {
         label: 'Completed',
-        labelClassName: 'text-sw-success-100',
+        labelClassName: 'text-sw-status-success',
         icon: (
-          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-success-100">
+          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-status-success">
             <Icons.Check size={9} className="text-sw-gray-900" />
           </div>
         ),
@@ -62,9 +63,9 @@ export const SwapCard = ({
     if (state === 'failed') {
       return {
         label: 'Failed',
-        labelClassName: 'text-sw-alert-100',
+        labelClassName: 'text-sw-status-error',
         icon: (
-          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-alert-100">
+          <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-status-error">
             <Icons.X size={9} className="text-sw-gray-900" />
           </div>
         ),
@@ -91,7 +92,7 @@ export const SwapCard = ({
           <div />
         )}
       </div>
-      <div className="flex flex-row items-center gap-x-sw-2md mt-sw-xl">
+      <div className="flex flex-row items-center gap-x-sw-[10px] mt-sw-xl">
         {sourceToken && (
           <TokenAmount token={sourceToken} amount={source.amount} />
         )}

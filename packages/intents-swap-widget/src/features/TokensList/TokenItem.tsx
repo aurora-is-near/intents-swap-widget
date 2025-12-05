@@ -36,45 +36,50 @@ export const TokenItem = ({
   const hasBalance = balance !== '0' && balance !== 0 && balance !== undefined;
 
   return (
-    <li className="list-none">
+    <li className="list-none group">
       <div
         className={cn(
-          'gap-sw-lg p-sw-lg flex cursor-pointer justify-between rounded-sw-md transition-colors hover:bg-sw-gray-600',
+          'gap-sw-lg p-sw-lg flex justify-between rounded-sw-md transition-colors',
           {
-            'cursor-not-allowed hover:bg-transparent': isNotSelectable,
+            'cursor-not-allowed': isNotSelectable,
+            'cursor-pointer hover:bg-sw-gray-800': !isNotSelectable,
           },
           className,
         )}
         onClick={() =>
           !isNotSelectable && onMsg({ type: 'on_select_token', token })
         }>
-        <TokenIcon chainShowIcon={!token.isIntent} {...token} />
+        <TokenIcon
+          chainShowIcon={!token.isIntent}
+          className="border-sw-gray-900 group-hover:border-sw-gray-800 transition-colors"
+          {...token}
+        />
 
-        <div className="gap-sw-sm mr-auto flex flex-col">
-          <span className="text-sw-label-m text-sw-gray-50">{token.name}</span>
+        <div className="gap-sw-xs mr-auto flex flex-col">
+          <span className="text-sw-label-md text-sw-gray-50">{token.name}</span>
           {token.isIntent ? (
             <div className="flex items-center gap-sw-xs">
-              <span className="text-sw-label-s text-sw-gray-100">
+              <span className="text-sw-label-md text-sw-gray-300">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-sm text-sw-gray-300">{`on ${appName} ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-sw-xs">
-              <span className="text-sw-label-s text-sw-gray-100">
+              <span className="text-sw-label-md text-sw-gray-300">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-s text-sw-gray-200">{`on ${token.chainName}`}</span>
+              <span className="text-sw-label-sm text-sw-gray-300">{`on ${token.chainName}`}</span>
             </div>
           )}
         </div>
 
         {isTokenSupported && !!ctx.walletAddress && showBalance && (
-          <div className="gap-sw-sm flex flex-col items-end">
+          <div className="gap-sw-xs flex flex-col items-end">
             {balance === undefined && !token.isIntent ? (
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
-              <span className="h-[16px] text-sw-label-m text-sw-gray-50">
+              <span className="h-[16px] text-sw-label-md text-sw-gray-50">
                 {hasBalance && (
                   <TinyNumber
                     decimals={token.decimals}
@@ -84,7 +89,7 @@ export const TokenItem = ({
               </span>
             )}
             {hasBalance && (
-              <span className="text-sw-label-s text-sw-gray-100">
+              <span className="text-sw-label-sm text-sw-gray-300">
                 {displayUsdBalance}
               </span>
             )}

@@ -21,8 +21,8 @@ const RawInputAmount = forwardRef<
       disabled={state === 'disabled'}
       className={cn(
         'font-suisse h-[36px] w-full font-medium text-sw-gray-50 data-focus:outline-none',
-        { 'text-sw-gray-200': state === 'disabled' },
-        { 'text-sw-alert-100': state === 'error' },
+        { 'text-sw-gray-400': state === 'disabled' },
+        { 'text-sw-status-error': state === 'error' },
         className,
       )}
       style={{
