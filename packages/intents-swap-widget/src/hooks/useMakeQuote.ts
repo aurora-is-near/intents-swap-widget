@@ -17,12 +17,8 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
-import { isNearAddress } from '@/utils/near/isNearAddress';
-import { isNearNamedAccount } from '@/utils/near/isNearNamedAccount';
-import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 
 type MakeArgs = {
   message?: string;
@@ -149,36 +145,6 @@ export const useMakeQuote = () => {
       });
     }
 
-    // Validate NEAR named account exists
-    if (
-      !isDry &&
-      ctx.targetToken.blockchain === 'near' &&
-      !ctx.targetToken.isIntent &&
-      ctx.sendAddress &&
-      isNearAddress(ctx.sendAddress) &&
-      isNearNamedAccount(ctx.sendAddress)
-    ) {
-      try {
-        const exists = await checkNearAccountExists(ctx.sendAddress);
-
-        if (!exists) {
-          throw new QuoteError({
-            code: 'NEAR_ACCOUNT_NOT_FOUND',
-            meta: { accountId: ctx.sendAddress },
-          });
-        }
-      } catch (err) {
-        if (
-          err instanceof Error &&
-          err.message === 'ACCOUNT_CHECK_SUPERSEDED'
-        ) {
-          return;
-        }
-
-        throw err;
-      }
-    }
-
     if (request.current) {
       abortController.current.abort('Abort previous quote (auto)');
       abortController.current = new AbortController();
@@ -210,6 +176,7 @@ export const useMakeQuote = () => {
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? WNEAR_ASSET_ID
           : ctx.sourceToken.assetId,
+
       amount:
         quoteType === 'exact_out'
           ? ctx.targetTokenAmount

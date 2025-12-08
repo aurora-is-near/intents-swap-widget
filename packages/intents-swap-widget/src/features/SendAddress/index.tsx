@@ -1,5 +1,6 @@
 import * as Icons from 'lucide-react';
-import { type ChangeEvent, useEffect, useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 
 import { useNotification } from './useNotification';
 import { Card } from '@/components/Card';
@@ -7,11 +8,11 @@ import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
 import { Badge } from '@/components/Badge';
 
+import { cn } from '@/utils';
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
 import { useUnsafeSnapshot } from '@/machine/snap';
-import { cn } from '@/utils';
 
 type Msg = { type: 'on_change_send_address'; address: string };
 
@@ -26,6 +27,9 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains, sendAddress, hideSendAddress } = useConfig();
 
+  const [value, setValue] = useState(ctx.sendAddress ?? '');
+  const [debouncedValue] = useDebounce(value, 700);
+
   const notification = useNotification(error);
 
   const showMagicButton =
@@ -36,8 +40,7 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;
 
-    fireEvent('addressSet', address);
-    onMsg({ type: 'on_change_send_address', address });
+    setValue(address);
   };
 
   // Sync fixed sendAddress with machine state
@@ -46,6 +49,13 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
       fireEvent('addressSet', sendAddress);
     }
   }, [sendAddress, ctx.sendAddress]);
+
+  useEffect(() => {
+    const address = debouncedValue ?? value;
+
+    fireEvent('addressSet', address);
+    onMsg({ type: 'on_change_send_address', address });
+  }, [debouncedValue, value]);
 
   const inputState = useMemo(() => {
     if (sendAddress) {

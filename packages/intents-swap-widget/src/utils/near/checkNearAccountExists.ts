@@ -1,7 +1,9 @@
+import { noop } from '@tanstack/react-query';
+
 import { nearSingleRpcClient } from './rpc';
+import { localStorageTyped } from '@/utils/localstorage';
 import { logger } from '@/logger';
 
-const STORAGE_KEY = 'intents-widget:verified-near-accounts';
 const DEBOUNCE_MS = 300;
 
 const sessionCache = new Map<string, boolean>();
@@ -16,25 +18,11 @@ type PendingCheck = {
 
 let pendingCheck: PendingCheck | null = null;
 
-const getVerifiedAccounts = (): Set<string> => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  } catch {
-    return new Set();
-  }
-};
-
 const addVerifiedAccount = (accountId: string): void => {
-  try {
-    const accounts = getVerifiedAccounts();
+  const accounts = new Set(localStorageTyped.getItem('verifiedNearAccounts'));
 
-    accounts.add(accountId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...accounts]));
-  } catch {
-    // localStorage not available
-  }
+  accounts.add(accountId);
+  localStorageTyped.setItem('verifiedNearAccounts', [...accounts]);
 };
 
 const queryAccountExists = async (accountId: string): Promise<boolean> => {
@@ -80,7 +68,9 @@ export const checkNearAccountExists = async (
     return sessionCache.get(accountId) ?? false;
   }
 
-  if (getVerifiedAccounts().has(accountId)) {
+  if (
+    new Set(localStorageTyped.getItem('verifiedNearAccounts')).has(accountId)
+  ) {
     sessionCache.set(accountId, true);
 
     return true;
@@ -96,8 +86,9 @@ export const checkNearAccountExists = async (
     pendingCheck = null;
   }
 
-  let resolvePromise: (exists: boolean) => void;
-  let rejectPromise: (error: Error) => void;
+  let resolvePromise: (exists: boolean) => void = noop;
+  let rejectPromise: (error: Error) => void = noop;
+
   const promise = new Promise<boolean>((resolve, reject) => {
     resolvePromise = resolve;
     rejectPromise = reject;
@@ -112,8 +103,8 @@ export const checkNearAccountExists = async (
     accountId,
     promise,
     timer,
-    resolve: resolvePromise!,
-    reject: rejectPromise!,
+    resolve: resolvePromise,
+    reject: rejectPromise,
   };
 
   return promise;

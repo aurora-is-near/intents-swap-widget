@@ -1,5 +1,6 @@
-import type { Context } from '@/machine/context';
+import { isAsyncSendAddressValidationError } from '@/machine/errors';
 import { isNearAddress } from '@/utils/near/isNearAddress';
+import type { Context } from '@/machine/context';
 
 export const isSendAddressValid = (ctx: Context): boolean => {
   // Intent tokens don't need a send address
@@ -11,7 +12,10 @@ export const isSendAddressValid = (ctx: Context): boolean => {
   if (ctx.targetToken?.isIntent === false && !!ctx.sendAddress) {
     // For NEAR blockchain, validate address format
     if (ctx.targetToken.blockchain === 'near') {
-      return isNearAddress(ctx.sendAddress);
+      return (
+        isNearAddress(ctx.sendAddress) &&
+        (!ctx.error || !isAsyncSendAddressValidationError(ctx.error))
+      );
     }
 
     return true;

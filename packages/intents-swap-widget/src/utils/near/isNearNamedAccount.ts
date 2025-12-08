@@ -2,7 +2,9 @@
  * Check if an address is a NEAR named account (e.g., "alice.near", "app.factory.near").
  * Does NOT include implicit accounts (64-char hex).
  */
-export const isNearNamedAccount = (address?: string | null): boolean => {
+export const isNearNamedAccount = (
+  address: string | undefined | null,
+): boolean => {
   if (!address) {
     return false;
   }

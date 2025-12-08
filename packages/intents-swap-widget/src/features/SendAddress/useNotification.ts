@@ -64,33 +64,31 @@ export const useNotification = (
       };
     }
 
-    // NEAR named account does not exist
     if (
-      ctx.quoteStatus === 'error' &&
-      ctx.error?.code === 'NEAR_ACCOUNT_NOT_FOUND'
+      ctx.state === 'initial_wallet' &&
+      ctx.error?.code === 'SEND_ADDRESS_IS_NOT_FOUND'
     ) {
       return {
         variant: 'error',
         state: 'error',
-        message: t(
-          'wallet.recipient.error.nearAccountNotFound',
-          'This NEAR account does not exist',
-        ),
+        message: t('wallet.recipient.error.sendAddressNotFound', {
+          defaultValue: 'This {{chain}} account does not exist',
+          chain: ctx.error.meta.chain.toUpperCase(),
+        }),
       };
     }
 
-    // NEAR address format is invalid
     if (
-      ctx.quoteStatus === 'error' &&
-      ctx.error?.code === 'NEAR_ADDRESS_INVALID'
+      ctx.state === 'initial_wallet' &&
+      ctx.error?.code === 'SEND_ADDRESS_IS_INVALID'
     ) {
       return {
         variant: 'error',
         state: 'error',
-        message: t(
-          'wallet.recipient.error.nearAddressInvalid',
-          'Invalid NEAR address format',
-        ),
+        message: t('wallet.recipient.error.sendAddressInvalid', {
+          defaultValue: 'Invalid {{chain}} address format',
+          chain: ctx.error.meta.chain.toUpperCase(),
+        }),
       };
     }
 

@@ -9,8 +9,6 @@ import { useMakeQuote } from '@/hooks/useMakeQuote';
 import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
-import { isNearAddress } from '@/utils/near/isNearAddress';
-import { isNearNamedAccount } from '@/utils/near/isNearNamedAccount';
 import type { FetchQuoteOptions, Quote } from '@/types/quote';
 
 export type Props = ListenerProps & {
@@ -39,6 +37,7 @@ export const useMakeQuoteEffect = ({
 
   const shouldRun =
     isEnabled &&
+    !ctx.areInputsValidating &&
     (isSameAssetDiffChainWithdrawal ||
       ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&
         ctx.isDepositFromExternalWallet) ||
@@ -70,24 +69,10 @@ export const useMakeQuoteEffect = ({
       cancel();
     } else if (!isDry && !ctx.targetToken?.isIntent && !isValidExternalInput) {
       cancel();
+    } else if (ctx.areInputsValidating) {
+      cancel();
     }
   }, [cancel, isDry, ctx]);
-
-  // Set pending immediately for NEAR named accounts (prevents button flash)
-  useEffect(() => {
-    if (
-      !isDry &&
-      ctx.targetToken?.blockchain === 'near' &&
-      !ctx.targetToken?.isIntent &&
-      ctx.sendAddress &&
-      isNearAddress(ctx.sendAddress) &&
-      isNearNamedAccount(ctx.sendAddress) &&
-      ctx.quoteStatus !== 'error'
-    ) {
-      fireEvent('quoteSetStatus', 'pending');
-      fireEvent('quoteSet', undefined);
-    }
-  }, [ctx.sendAddress, ctx.targetToken, isDry]);
 
   const run = useCallback(
     async (options: FetchQuoteOptions) => {
@@ -107,22 +92,6 @@ export const useMakeQuoteEffect = ({
           fireEvent('quoteSetStatus', 'pending');
           quote = await makeDepositAddress();
         } else {
-          // Invalid NEAR address format
-          if (
-            ctx.targetToken?.blockchain === 'near' &&
-            !ctx.targetToken?.isIntent &&
-            ctx.sendAddress &&
-            !isNearAddress(ctx.sendAddress)
-          ) {
-            fireEvent('quoteSetStatus', 'error');
-            fireEvent('errorSet', {
-              code: 'NEAR_ADDRESS_INVALID',
-              meta: { address: ctx.sendAddress },
-            });
-
-            return;
-          }
-
           fireEvent('quoteSetStatus', 'pending');
           quote = await makeQuote({ message, quoteType, options });
         }
