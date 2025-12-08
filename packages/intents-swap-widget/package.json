@@ -19,7 +19,7 @@
     "build": "vite build",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "test:generate-styles": "tailwindcss -i ./src/tailwind.css -o ./tests/tailwind.css",
-    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.js"
+    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.cjs"
   },
   "publishConfig": {
     "access": "public",
@@ -98,10 +98,12 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/puppeteer": "^7.0.4",
     "glob": "^13.0.0",
+    "is-ci": "^4.1.0",
     "jest-environment-jsdom": "^30.2.0",
     "jest-image-snapshot": "^6.5.1",
     "jest-puppeteer": "^11.0.0",
@@ -109,7 +111,6 @@
     "jest-transform-stub": "^2.0.0",
     "jest-transformer-svg": "^2.1.0",
     "puppeteer": "^24.31.0",
-    "resize-observer-polyfill": "^1.5.1",
-    "ts-jest": "^29.4.5"
+    "resize-observer-polyfill": "^1.5.1"
   }
 }
