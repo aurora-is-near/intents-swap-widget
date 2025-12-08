@@ -181,6 +181,9 @@ export const useMakeQuote = () => {
         quoteType === 'exact_out'
           ? ctx.targetTokenAmount
           : ctx.sourceTokenAmount,
+
+      // Experimental
+      quoteWaitingTimeMs: 0,
     };
 
     if (message) {
