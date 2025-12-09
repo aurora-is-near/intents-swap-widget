@@ -17,7 +17,6 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 
@@ -177,6 +176,7 @@ export const useMakeQuote = () => {
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? WNEAR_ASSET_ID
           : ctx.sourceToken.assetId,
+
       amount:
         quoteType === 'exact_out'
           ? ctx.targetTokenAmount
@@ -247,8 +247,11 @@ export const useMakeQuote = () => {
         return;
       }
 
+      logger.error('Quote error: ', error);
+      let errorMessage = error instanceof Error ? error.message : '';
+
       if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data.message || error.message;
+        errorMessage = error.response?.data.message || errorMessage;
 
         if (errorMessage.includes('Amount is too low')) {
           const match = errorMessage.match(/\d+/);
@@ -283,8 +286,7 @@ export const useMakeQuote = () => {
       throw new QuoteError({
         code: 'QUOTE_FAILED',
         meta: {
-          // @ts-expect-error In case error has a message
-          message: errorMessage ?? 'Failed to fetch quote. Please try again.',
+          message: errorMessage || 'Failed to fetch quote. Please try again.',
         },
       });
     }

@@ -35,6 +35,45 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  if (
+    ctx.state === 'initial_wallet' &&
+    ctx.error?.code === 'SEND_ADDRESS_IS_EMPTY'
+  ) {
+    return (
+      <Button state="disabled" {...commonBtnProps}>
+        {t('submit.disabled.enterRecipientAddress', 'Enter recipient address')}
+      </Button>
+    );
+  }
+
+  if (
+    ctx.state === 'initial_wallet' &&
+    ctx.error?.code === 'SEND_ADDRESS_IS_NOT_FOUND'
+  ) {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.sendAddressNotFound', {
+          defaultValue: 'Address not found on {{chain}}',
+          chain: ctx.error.meta.chain.toUpperCase(),
+        })}
+      </Button>
+    );
+  }
+
+  if (
+    ctx.state === 'initial_wallet' &&
+    ctx.error?.code === 'SEND_ADDRESS_IS_INVALID'
+  ) {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.sendAddressInvalid', {
+          defaultValue: 'Invalid {{chain}} address',
+          chain: ctx.error.meta.chain.toUpperCase(),
+        })}
+      </Button>
+    );
+  }
+
   if (ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW') {
     return (
       <div className="gap-sw-md flex flex-col">
@@ -170,6 +209,14 @@ const SubmitButtonBase = (props: Props) => {
     return (
       <Button {...commonBtnProps} state="disabled">
         {t('submit.disabled.enterAmount', 'Enter amount')}
+      </Button>
+    );
+  }
+
+  if (ctx.areInputsValidating) {
+    return (
+      <Button state="loading" {...commonBtnProps}>
+        {t('submit.pending.validating', 'Validating...')}
       </Button>
     );
   }

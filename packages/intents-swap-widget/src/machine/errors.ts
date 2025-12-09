@@ -1,3 +1,5 @@
+import type { Chains } from '@/types/chain';
+
 export type InitialDryStateError =
   | { code: 'SOURCE_TOKEN_IS_EMPTY' }
   | { code: 'TARGET_TOKEN_IS_EMPTY' }
@@ -9,11 +11,26 @@ export type InitialInternalStateError =
   | { code: 'SOURCE_TOKEN_NOT_INTENT' }
   | { code: 'INVALID_SOURCE_BALANCE' };
 
+type SendAddressValidationError =
+  | {
+      code: 'SEND_ADDRESS_IS_NOT_VERIFIED';
+      meta: { address: string; chain: Chains };
+    }
+  | {
+      code: 'SEND_ADDRESS_IS_NOT_FOUND';
+      meta: { address: string; chain: Chains };
+    };
+
 export type InitialExternalStateError =
   | InitialDryStateError
+  | SendAddressValidationError
   | { code: 'SOURCE_TOKEN_IS_INTENT' }
   | { code: 'INVALID_SOURCE_BALANCE' }
-  | { code: 'SEND_ADDRESS_IS_EMPTY' };
+  | { code: 'SEND_ADDRESS_IS_EMPTY' }
+  | {
+      code: 'SEND_ADDRESS_IS_INVALID';
+      meta: { address: string; chain: Chains };
+    };
 
 export type InputValidDryError =
   | { code: 'NO_NEAR_TOKEN_FOUND'; meta: { symbol: string } }
@@ -83,6 +100,10 @@ export const TRANSFER_ERRORS: Array<
   'EXTERNAL_TRANSFER_INCOMPLETE',
 ];
 
+export const SEND_ADDRESS_VALIDATION_ERRORS: Array<
+  SendAddressValidationError['code']
+> = ['SEND_ADDRESS_IS_NOT_VERIFIED', 'SEND_ADDRESS_IS_NOT_FOUND'];
+
 export const isQuoteError = (
   error: ErrorType,
 ): error is InputValidDryError | InputValidWalletError => {
@@ -95,4 +116,11 @@ export const isTransferError = (
 ): error is QuoteSuccessError => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return TRANSFER_ERRORS.includes(error.code as any);
+};
+
+export const isAsyncSendAddressValidationError = (
+  error: ErrorType,
+): error is SendAddressValidationError => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return SEND_ADDRESS_VALIDATION_ERRORS.includes(error.code as any);
 };

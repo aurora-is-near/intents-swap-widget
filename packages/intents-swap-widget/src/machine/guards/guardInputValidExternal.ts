@@ -1,3 +1,4 @@
+import { isSendAddressValid } from './checks/isSendAddressValid';
 import { isBalanceSufficient } from './checks/isBalanceSufficient';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 
@@ -16,6 +17,7 @@ export const guardInputValidExternal = (
     !!ctx.targetToken &&
     !ctx.targetToken.isIntent &&
     (isBalanceSufficient(ctx) || ctx.isDepositFromExternalWallet) &&
-    isNotEmptyAmount(ctx.sourceTokenAmount)
+    isNotEmptyAmount(ctx.sourceTokenAmount) &&
+    isSendAddressValid(ctx)
   );
 };

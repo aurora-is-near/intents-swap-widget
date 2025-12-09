@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget",
-  "version": "3.12.1",
+  "version": "3.13.2",
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "build": "vite build",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "test:generate-styles": "tailwindcss -i ./src/tailwind.css -o ./tests/tailwind.css",
-    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.js"
+    "test:regression": "npm-run-all2 test:generate-styles && PUPPETEER_DISABLE_HEADLESS_WARNING=true JEST_PUPPETEER_CONFIG=jest-puppeteer.config.js npx jest --config=jest.visual.config.cjs"
   },
   "publishConfig": {
     "access": "public",
@@ -85,6 +85,7 @@
     "react-imask": "^7.6.1",
     "resize-observer-polyfill": "^1.5.1",
     "tailwind-merge": "^3.3.1",
+    "use-debounce": "^10.0.6",
     "valtio": "2.1.7",
     "valtio-fsm": "1.0.0",
     "viem": "^2.38.3",
@@ -98,10 +99,12 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/puppeteer": "^7.0.4",
-    "glob": "^13.0.0",
+    "glob": "^10.5.0",
+    "is-ci": "^4.1.0",
     "jest-environment-jsdom": "^30.2.0",
     "jest-image-snapshot": "^6.5.1",
     "jest-puppeteer": "^11.0.0",
@@ -109,7 +112,6 @@
     "jest-transform-stub": "^2.0.0",
     "jest-transformer-svg": "^2.1.0",
     "puppeteer": "^24.31.0",
-    "resize-observer-polyfill": "^1.5.1",
-    "ts-jest": "^29.4.5"
+    "resize-observer-polyfill": "^1.5.1"
   }
 }
