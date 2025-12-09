@@ -15,12 +15,13 @@ const defaultValues: LocalStorage = {
 const isBrowser = typeof window !== 'undefined' && !!window.localStorage;
 
 const KEY_PREFIX = 'sw';
+const getStorageKey = (key: string) => `${KEY_PREFIX}.${key}`;
 
 const getItem = <T extends keyof LocalStorage>(key: T): LocalStorage[T] => {
   if (!isBrowser) {
     if (process.env.NODE_ENV === 'development') {
       logger.debug(
-        `[WIDGET] Attempted to read ${KEY_PREFIX}.${key} from localstorage on server; returning default`,
+        `[WIDGET] Attempted to read ${getStorageKey(key)} from localstorage on server; returning default`,
       );
     }
 
@@ -29,12 +30,12 @@ const getItem = <T extends keyof LocalStorage>(key: T): LocalStorage[T] => {
 
   try {
     const storedValueLegacy = window.localStorage.getItem(key);
-    let storedValue = window.localStorage.getItem(`${KEY_PREFIX}.${key}`);
+    let storedValue = window.localStorage.getItem(getStorageKey(key));
 
     // Migrate legacy key to new namespaced key
     if (storedValueLegacy && !storedValue) {
       storedValue = storedValueLegacy;
-      window.localStorage.setItem(`${KEY_PREFIX}.${key}`, storedValueLegacy);
+      window.localStorage.setItem(getStorageKey(key), storedValueLegacy);
       window.localStorage.removeItem(key);
     }
 
@@ -44,7 +45,7 @@ const getItem = <T extends keyof LocalStorage>(key: T): LocalStorage[T] => {
     );
   } catch (error) {
     logger.warn(
-      `[WIDGET] Failed to parse ${KEY_PREFIX}.${key} from localStorage:`,
+      `[WIDGET] Failed to parse ${getStorageKey(key)} from localStorage:`,
       error,
     );
 
@@ -59,7 +60,7 @@ const setItem = <T extends keyof LocalStorage>(
   if (!isBrowser) {
     if (process.env.NODE_ENV === 'development') {
       logger.debug(
-        `[WIDGET] Attempted to set ${KEY_PREFIX}.${key} on server; skipping`,
+        `[WIDGET] Attempted to set ${getStorageKey(key)} on server; skipping`,
       );
     }
 
@@ -74,10 +75,10 @@ const setItem = <T extends keyof LocalStorage>(
         ? String(value)
         : JSON.stringify(value);
 
-    window.localStorage.setItem(`${KEY_PREFIX}.${key}`, serialized);
+    window.localStorage.setItem(getStorageKey(key), serialized);
   } catch (error) {
     logger.warn(
-      `[WIDGET] Failed to set ${KEY_PREFIX}.${key} in localStorage:`,
+      `[WIDGET] Failed to set ${getStorageKey(key)} in localStorage:`,
       error,
     );
   }
@@ -87,7 +88,7 @@ const removeItem = (key: keyof LocalStorage) => {
   if (!isBrowser) {
     if (process.env.NODE_ENV === 'development') {
       logger.debug(
-        `[WIDGET] Attempted to remove ${KEY_PREFIX}.${key} from localstorage on server; skipping`,
+        `[WIDGET] Attempted to remove ${getStorageKey(key)} from localstorage on server; skipping`,
       );
     }
 
@@ -95,10 +96,10 @@ const removeItem = (key: keyof LocalStorage) => {
   }
 
   try {
-    window.localStorage.removeItem(`${KEY_PREFIX}.${key}`);
+    window.localStorage.removeItem(getStorageKey(key));
   } catch (error) {
     logger.warn(
-      `[WIDGET] Failed to remove ${KEY_PREFIX}.${key} from localStorage:`,
+      `[WIDGET] Failed to remove ${getStorageKey(key)} from localStorage:`,
       error,
     );
   }
