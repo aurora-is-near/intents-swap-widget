@@ -2,11 +2,13 @@ import { logger } from '@/logger';
 
 type LocalStorage = {
   verifiedWallets: string[];
+  verifiedNearAccounts: string[];
   nearWalletsPk: Record<string, string>;
 };
 
 const defaultValues: LocalStorage = {
   verifiedWallets: [],
+  verifiedNearAccounts: [],
   nearWalletsPk: {},
 };
 
