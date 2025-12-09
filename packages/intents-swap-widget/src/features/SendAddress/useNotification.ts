@@ -49,11 +49,10 @@ export const useNotification = (
       };
     }
 
-    // known address errors
+    // Known address errors
     if (
-      ctx.error &&
       ctx.quoteStatus === 'error' &&
-      ctx.error.code === 'TOKEN_IS_NOT_SUPPORTED'
+      ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED'
     ) {
       return {
         variant: 'error',
@@ -61,6 +60,34 @@ export const useNotification = (
         message: t('wallet.recipient.error.invalidAddress', {
           defaultValue: 'Invalid address. Use one on {{network}} network.',
           network: CHAINS_LIST[ctx.targetToken.blockchain]?.label ?? 'selected',
+        }),
+      };
+    }
+
+    if (
+      ctx.state === 'initial_wallet' &&
+      ctx.error?.code === 'SEND_ADDRESS_IS_NOT_FOUND'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t('wallet.recipient.error.sendAddressNotFound', {
+          defaultValue: 'This {{chain}} account does not exist',
+          chain: ctx.error.meta.chain.toUpperCase(),
+        }),
+      };
+    }
+
+    if (
+      ctx.state === 'initial_wallet' &&
+      ctx.error?.code === 'SEND_ADDRESS_IS_INVALID'
+    ) {
+      return {
+        variant: 'error',
+        state: 'error',
+        message: t('wallet.recipient.error.sendAddressInvalid', {
+          defaultValue: 'Invalid {{chain}} address format',
+          chain: ctx.error.meta.chain.toUpperCase(),
         }),
       };
     }

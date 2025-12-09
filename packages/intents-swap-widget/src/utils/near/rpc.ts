@@ -30,3 +30,8 @@ export function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
 export const nearRpcClient = nearFailoverRpcProvider({
   urls: reserveNearRpcUrls,
 });
+
+// Single RPC for precise error messages (failover loses original errors)
+export const nearSingleRpcClient = new JsonRpcProvider({
+  url: reserveNearRpcUrls[0] as string,
+});

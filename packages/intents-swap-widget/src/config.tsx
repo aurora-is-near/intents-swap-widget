@@ -24,6 +24,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 2000 * 60,
+      retry: process.env.NODE_ENV === 'test' ? false : 3,
     },
   },
 });
@@ -62,6 +63,7 @@ const WidgetConfigContext = createContext<WidgetConfigContextType>({
 type Props = PropsWithChildren<{
   config: Partial<WidgetConfig>;
   localisation?: LocalisationDict;
+  balanceViaRpc?: boolean;
   rpcs?: ChainRpcUrls;
   theme?: Theme;
 }>;
@@ -84,6 +86,7 @@ const resetConfig = (config: WidgetConfig) => {
 export const WidgetConfigProvider = ({
   children,
   config: userConfig,
+  balanceViaRpc = true, // you don't usually want to disable it
   localisation,
   rpcs,
   theme,
@@ -123,13 +126,20 @@ export const WidgetConfigProvider = ({
               <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
             </Helmet>
             <ThemeProvider theme={theme}>
-              <ErrorBoundary>{children}</ErrorBoundary>
+              {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
+              {process.env.NODE_ENV === 'test' ? (
+                children
+              ) : (
+                <ErrorBoundary>{children}</ErrorBoundary>
+              )}
             </ThemeProvider>
           </HelmetProvider>
-          <BalanceRpcLoader
-            rpcs={rpcs ?? DEFAULT_RPCS}
-            connectedWallets={userConfig.connectedWallets ?? {}}
-          />
+          {balanceViaRpc && (
+            <BalanceRpcLoader
+              rpcs={rpcs ?? DEFAULT_RPCS}
+              connectedWallets={userConfig.connectedWallets ?? {}}
+            />
+          )}
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>
