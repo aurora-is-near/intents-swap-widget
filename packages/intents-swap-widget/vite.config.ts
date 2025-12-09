@@ -2,9 +2,9 @@ import { glob } from 'glob';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative, extname } from 'node:path';
 
-import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
+import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -13,6 +13,8 @@ import pkg from './package.json' with { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const testFiles = ['**/*.test.tsx', '**/*.test.ts', 'src/tests/**'];
 
 const externals = [
   ...Object.keys(pkg.dependencies ?? {}),
@@ -41,6 +43,7 @@ export default defineConfig({
     react(),
     dts({
       include: ['src'],
+      exclude: testFiles,
       entryRoot: 'src',
       outDir: 'dist',
       tsconfigPath: 'tsconfig.build.json',
@@ -69,6 +72,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [],
   },
+  server: {
+    watch: {
+      ignored: testFiles,
+    },
+  },
+  esbuild: {
+    exclude: testFiles,
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -76,7 +87,7 @@ export default defineConfig({
     },
     copyPublicDir: false,
     rollupOptions: {
-      external: isExt,
+      external: (id) => isExt(id) || id.includes('test.ts'),
       output: {
         entryFileNames: '[name].js',
         assetFileNames: (assetInfo) => {
@@ -90,7 +101,7 @@ export default defineConfig({
       },
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
-        glob.sync('src/**/*.{ts,tsx}').map((file) => [
+        glob.sync('src/**/*.{ts,tsx}', { ignore: testFiles }).map((file) => [
           // 1. The name of the entry point
           // lib/nested/foo.js becomes nested/foo
           relative('src', file.slice(0, file.length - extname(file).length)),
