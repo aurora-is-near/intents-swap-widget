@@ -55,7 +55,7 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
 
     fireEvent('addressSet', address);
     onMsg({ type: 'on_change_send_address', address });
-  }, [debouncedValue, value]);
+  }, [debouncedValue]);
 
   const inputState = useMemo(() => {
     if (sendAddress) {

@@ -24,7 +24,6 @@ const setAsyncError = (err: InitialExternalStateError) => {
   fireEvent('quoteSet', undefined);
   fireEvent('quoteSetStatus', 'idle');
   fireEvent('transferSetStatus', { status: 'idle' });
-  moveTo('initial_wallet');
 };
 
 const asyncValidateSendAddress = async (ctx: Context) => {
@@ -44,6 +43,7 @@ const asyncValidateSendAddress = async (ctx: Context) => {
     });
 
     fireEvent('setInputsValidating', false);
+    moveTo('initial_wallet');
 
     return;
   }
