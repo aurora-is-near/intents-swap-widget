@@ -10,6 +10,7 @@ export const getIsDirectTokenOnNearDeposit = (
     ctx.targetToken.isIntent &&
     !ctx.sourceToken.isIntent &&
     ctx.targetToken.assetId === ctx.sourceToken.assetId &&
-    ctx.targetToken.blockchain === 'near'
+    ctx.targetToken.blockchain === 'near' &&
+    ctx.sourceToken.blockchain === 'near'
   );
 };
