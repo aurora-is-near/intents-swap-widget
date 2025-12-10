@@ -78,7 +78,7 @@ export const TokensList = ({
 
   const tokensBySection = useMemo(
     () => [
-      { label: `${appName} account`, tokens: filteredTokens.intents },
+      { label: appName, tokens: filteredTokens.intents },
       {
         label: chainIsNotSupported ? null : 'Connected wallet',
         tokens: filteredTokens.wallet,
