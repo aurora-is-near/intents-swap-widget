@@ -139,7 +139,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
       default:
         notReachable(status);
     }
-  }, [depositStatusQuery.data, ctx.sourceToken, onMsg]);
+    // do not include onMsg to avoid infinite loop
+  }, [depositStatusQuery.data, ctx.sourceToken]);
 
   if (!isValidState) {
     return <Skeleton />;
