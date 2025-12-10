@@ -53,13 +53,11 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
       onMsg={async (msg) => {
         switch (msg.type) {
           case 'on_close':
-            onMsg({ type: 'on_close' });
+          case 'on_sign_out':
+            onMsg({ type: msg.type });
             break;
           case 'on_try_again':
             setHasError(false);
-            break;
-          case 'on_sign_out':
-            onMsg({ type: 'on_sign_out' });
             break;
           default:
             notReachable(msg.type);
@@ -73,13 +71,11 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
       onMsg={async (msg) => {
         switch (msg.type) {
           case 'on_close':
-            onMsg({ type: 'on_close' });
+          case 'on_sign_out':
+            onMsg({ type: msg.type });
             break;
           case 'on_check_compatibility':
             await handleCompatibilityCheck();
-            break;
-          case 'on_sign_out':
-            onMsg({ type: 'on_sign_out' });
             break;
           default:
             notReachable(msg.type);

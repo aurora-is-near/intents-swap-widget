@@ -65,11 +65,13 @@ export const WidgetSwapContent = ({
     useTokenInputPair();
 
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
-  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(true);
+  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(
+    isCompatibilityCheckRequired,
+  );
 
   useEffect(() => {
-    if (!isCompatibilityCheckRequired) {
-      setIsCompatibilityOpen(false);
+    if (isCompatibilityCheckRequired) {
+      setIsCompatibilityOpen(isCompatibilityCheckRequired);
     }
   }, [isCompatibilityCheckRequired]);
 

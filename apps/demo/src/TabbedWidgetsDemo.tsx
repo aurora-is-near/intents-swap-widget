@@ -78,7 +78,7 @@ export const TabbedWidgetsDemo = () => {
           config={{
             appName: 'Demo App',
             connectedWallets: { default: walletAddress },
-            intentsAccountType: 'near',
+            intentsAccountType: 'evm',
             chainsFilter: {
               target: {
                 intents: showAppBalance ? 'all' : 'none',
