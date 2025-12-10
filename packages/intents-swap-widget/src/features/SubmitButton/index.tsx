@@ -125,6 +125,46 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  if (ctx.error?.code === 'EXTERNAL_TRANSFER_FAILED') {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.externalTransferFailed.label', 'Transfer failed')}
+      </Button>
+    );
+  }
+
+  if (ctx.error?.code === 'EXTERNAL_TRANSFER_INCOMPLETE') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.externalTransferFailed.label', 'Transfer failed')}
+        </Button>
+        <ErrorMessage>
+          {t(
+            'submit.error.externalTransferFailed.incompleteMessage',
+            'Incomplete transfer. Deposited amount will be refunded.',
+          )}
+        </ErrorMessage>
+      </div>
+    );
+  }
+
+  if (ctx.error?.code === 'EXTERNAL_TRANSFER_REFUNDED') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.externalTransferFailed.label', 'Transfer failed')}
+        </Button>
+        <ErrorMessage>
+          {t(
+            'submit.error.externalTransferFailed.refundedMessage',
+            'Deposited amount will be refunded.',
+          )}
+        </ErrorMessage>
+      </div>
+    );
+  }
+
   if (ctx.error?.code === 'DIRECT_TRANSFER_ERROR') {
     return (
       <div className="gap-sw-md flex flex-col">
