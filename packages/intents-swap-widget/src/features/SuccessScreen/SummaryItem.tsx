@@ -16,9 +16,9 @@ export const SummaryItem = ({
   externalUrl,
 }: Props) => (
   <li className="py-sw-md flex items-center justify-between">
-    <span className="text-sw-label-s text-sw-gray-100">{label}</span>
+    <span className="text-sw-label-sm text-sw-gray-100">{label}</span>
     <div className="gap-sw-md flex items-center">
-      <span className="text-sw-label-s text-sw-accent-300">
+      <span className="text-sw-label-sm text-sw-accent-300">
         {formatTxHash(value)}
       </span>
       {!!externalUrl && <ExternalAction url={externalUrl} />}

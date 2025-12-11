@@ -64,6 +64,9 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
     autostart: false,
     timerType: 'DECREMENTAL',
     initialTime: 7,
+    onTimeOver: () => {
+      onMsg({ type: 'on_close' });
+    },
   });
 
   useEffect(() => {

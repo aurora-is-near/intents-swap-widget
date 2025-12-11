@@ -38,7 +38,7 @@ export const SwapQuote = ({ className }: Props) => {
           <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
             {`1 ${ctx.sourceToken.symbol} ≈ `} {formatTinyNumber(price ?? 0)}{' '}
             {`${ctx.targetToken.symbol}`}
-            <span className="text-sw-gray-50">{`(${formatUsdAmount(ctx.sourceToken.price)})`}</span>
+            <span className="text-sw-gray-50">{` (${formatUsdAmount(ctx.sourceToken.price)})`}</span>
           </span>
         ) : (
           <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>

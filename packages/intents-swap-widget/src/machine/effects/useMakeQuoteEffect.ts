@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { logger } from '../../logger';
 import { isDryQuote } from '../guards/checks/isDryQuote';
 import type { ListenerProps } from './types';
 import { QuoteError } from '@/errors';
@@ -37,6 +38,7 @@ export const useMakeQuoteEffect = ({
 
   const shouldRun =
     isEnabled &&
+    !ctx.areInputsValidating &&
     (isSameAssetDiffChainWithdrawal ||
       ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&
         ctx.isDepositFromExternalWallet) ||
@@ -67,6 +69,8 @@ export const useMakeQuoteEffect = ({
     } else if (!isDry && ctx.targetToken?.isIntent && !isValidInternalInput) {
       cancel();
     } else if (!isDry && !ctx.targetToken?.isIntent && !isValidExternalInput) {
+      cancel();
+    } else if (ctx.areInputsValidating) {
       cancel();
     }
   }, [cancel, isDry, ctx]);
@@ -141,6 +145,7 @@ export const useMakeQuoteEffect = ({
         }
 
         // unhandled error
+        logger.error('Unhandled error in useMakeQuoteEffect:', err);
         fireEvent('quoteSetStatus', 'error');
         fireEvent('quoteSet', undefined);
         fireEvent('errorSet', {

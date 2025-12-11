@@ -1,5 +1,5 @@
 import * as Icons from 'lucide-react';
-import { useMemo } from 'react';
+
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -18,14 +18,6 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
     fireEvent('depositTypeSet', { isExternal });
   };
 
-  const state = useMemo(() => {
-    if (ctx.isDepositFromExternalWallet) {
-      return { state: 'default' as const };
-    }
-
-    return { state: 'disabled' as const };
-  }, [ctx.isDepositFromExternalWallet]);
-
   return (
     <Card className={cn('gap-sw-2xl p-sw-2xl flex flex-col', className)}>
       <span className="text-sw-label-md text-sw-gray-50">
@@ -34,20 +26,16 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
       <div className="flex gap-sw-lg">
         <Button
           size="md"
-          variant="primary"
           icon={Icons.Wallet2}
-          onClick={() => onToggle(false)}
-          {...(!ctx.isDepositFromExternalWallet
-            ? { state: 'default' }
-            : { state: 'active' })}>
+          variant={ctx.isDepositFromExternalWallet ? 'outlined' : 'primary'}
+          onClick={() => onToggle(false)}>
           My wallet
         </Button>
         <Button
           size="md"
-          variant="primary"
           icon={Icons.QrCode}
-          onClick={() => onToggle(true)}
-          {...state}>
+          variant={ctx.isDepositFromExternalWallet ? 'primary' : 'outlined'}
+          onClick={() => onToggle(true)}>
           QR / Address
         </Button>
       </div>

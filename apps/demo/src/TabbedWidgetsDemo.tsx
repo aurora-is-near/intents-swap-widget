@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DownloadIcon, RepeatIcon, SendIcon } from 'lucide-react';
 import {
   WidgetConfigProvider,
@@ -46,7 +46,25 @@ export const TabbedWidgetsDemo = () => {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
+  const sourceIntents = (() => {
+    if (selectedWidget === 'deposit') {
+      return 'none';
+    }
+
+    if (selectedWidget === 'withdraw') {
+      return 'with-balance';
+    }
+
+    return showAppBalance ? appBalanceMode : 'none';
+  })();
+
   const WidgetComponent = WIDGET_TYPES[selectedWidget];
+
+  useEffect(() => {
+    if (!showAppBalance) {
+      setSelectedWidget('swap');
+    }
+  }, [showAppBalance]);
 
   return (
     <>
@@ -66,8 +84,8 @@ export const TabbedWidgetsDemo = () => {
           }))
         }>
         <PageHeader.Nav
-          tabs={WIDGET_TABS}
           activeTab={selectedWidget}
+          tabs={showAppBalance ? WIDGET_TABS : [WIDGET_TABS[0]]}
           onClick={(tab) => setSelectedWidget(tab)}
         />
       </PageHeader>
@@ -78,14 +96,14 @@ export const TabbedWidgetsDemo = () => {
           config={{
             appName: 'Demo App',
             connectedWallets: { default: walletAddress },
-            intentsAccountType: 'near',
+            intentsAccountType: 'evm',
             chainsFilter: {
               target: {
                 intents: showAppBalance ? 'all' : 'none',
                 external: 'all',
               },
               source: {
-                intents: showAppBalance ? appBalanceMode : 'none',
+                intents: sourceIntents,
                 external: walletAddress ? 'wallet-supported' : 'all',
               },
             },

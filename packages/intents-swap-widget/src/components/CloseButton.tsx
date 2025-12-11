@@ -12,7 +12,7 @@ export const CloseButton = ({ className, onClick }: Props) => {
     <button
       type="button"
       className={cn(
-        'flex cursor-pointer items-center justify-center text-sw-gray-200 transition-colors hover:text-sw-gray-50 p-sw-md rounded-sw-md bg-sw-gray-950 hover:bg-sw-gray-800',
+        'flex cursor-pointer items-center justify-center text-sw-gray-200 transition-colors hover:text-sw-gray-50 p-sw-md w-[34px] h-[34px] rounded-sw-md bg-sw-gray-950 hover:bg-sw-gray-800',
         className,
       )}
       onClick={onClick}>

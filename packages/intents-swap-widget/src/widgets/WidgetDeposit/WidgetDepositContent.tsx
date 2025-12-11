@@ -62,11 +62,11 @@ export const WidgetDepositContent = ({
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
 
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
-  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(true);
+  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
 
   useEffect(() => {
-    if (!isCompatibilityCheckRequired) {
-      setIsCompatibilityOpen(false);
+    if (isCompatibilityCheckRequired) {
+      setIsCompatibilityOpen(true);
     }
   }, [isCompatibilityCheckRequired]);
 

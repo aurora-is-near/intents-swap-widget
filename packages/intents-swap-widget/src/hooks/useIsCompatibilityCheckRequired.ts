@@ -5,5 +5,5 @@ export const useIsCompatibilityCheckRequired = () => {
   const { ctx } = useUnsafeSnapshot();
   const verifiedWallets = localStorageTyped.getItem('verifiedWallets');
 
-  return ctx.walletAddress && !verifiedWallets.includes(ctx.walletAddress);
+  return !!(ctx.walletAddress && !verifiedWallets.includes(ctx.walletAddress));
 };

@@ -19,3 +19,7 @@ export const bridgeApi = createNetworkClient({
 });
 
 export const oneClickApi = createNetworkClient();
+
+export const alchemyApi = createNetworkClient({
+  baseURL: 'https://api.g.alchemy.com/data/v1',
+});

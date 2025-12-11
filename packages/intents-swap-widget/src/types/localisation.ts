@@ -7,11 +7,14 @@ export type LocalisationKeys =
   | 'wallet.recipient.error.noAddress'
   | 'wallet.recipient.error.tokenNotSelected'
   | 'wallet.recipient.error.invalidAddress'
+  | 'wallet.recipient.error.sendAddressNotFound'
+  | 'wallet.recipient.error.sendAddressInvalid'
   | 'wallet.recipient.warn.compatibleNetwork'
   | 'wallet.recipient.message.networkVerified'
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
   // transfer
+  | 'transfer.success.title'
   | 'transfer.success.hash.label'
   | 'transfer.success.intent.label'
   // quote
@@ -38,12 +41,17 @@ export type LocalisationKeys =
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'
   | 'submit.error.invalidAddress'
+  | 'submit.error.sendAddressNotFound'
+  | 'submit.error.sendAddressInvalid'
   | 'submit.error.amountTooLow.label'
   | 'submit.error.amountTooLow.message'
   | 'submit.error.quoteFailed.label'
   | 'submit.error.quoteFailed.message'
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
+  | 'submit.error.externalTransferFailed.label'
+  | 'submit.error.externalTransferFailed.incompleteMessage'
+  | 'submit.error.externalTransferFailed.refundedMessage'
   // send address
   | 'sendAddress.label'
   | 'sendAddress.button.magic.label'
@@ -58,6 +66,7 @@ export type LocalisationKeys =
   | 'submit.disabled.temporary.label'
   | 'submit.disabled.temporary.message'
   | 'submit.disabled.selectTokenToReceive'
+  | 'submit.disabled.enterRecipientAddress'
   | 'submit.disabled.enterAmount'
   // submit - pending
   | 'submit.pending.quote.finalizing'
@@ -67,6 +76,7 @@ export type LocalisationKeys =
   | 'submit.pending.externalDeposit.waiting'
   | 'submit.pending.externalDeposit.processing'
   | 'submit.pending.switchingChain'
+  | 'submit.pending.validating'
   // wallet compatibility
   | 'walletCompatibility.modal.title.initial'
   | 'walletCompatibility.modal.title.error'
