@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEth, isEvmChain } from '../utils';
+import { isEvmBaseToken, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { Providers } from '../types/providers';
@@ -100,7 +100,7 @@ export const useMakeQuoteTransfer = ({
       evmChainId: isEvmChain(ctx.sourceToken.blockchain)
         ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
         : null,
-      isNativeEthTransfer: !!ctx.sourceToken && isEth(ctx.sourceToken),
+      isNativeEthTransfer: !!ctx.sourceToken && isEvmBaseToken(ctx.sourceToken),
       tokenAddress:
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? NATIVE_NEAR_DUMB_ASSET_ID
