@@ -5,7 +5,6 @@ import CheckIcon from '../assets/icons/check-circle.svg?react';
 import { Button, OutlinedButton } from '../uikit/Button';
 import { ExportModal } from './ExportModal';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
-import CalyxLogo from '../assets/logo.svg?react';
 
 export function Header() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
