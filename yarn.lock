@@ -78,10 +78,10 @@
     eslint-plugin-storybook "^0.8.0"
     eslint-plugin-testing-library "^6.2.2"
 
-"@aurora-is-near/intents-swap-widget@*":
-  version "3.13.4"
-  resolved "https://registry.yarnpkg.com/@aurora-is-near/intents-swap-widget/-/intents-swap-widget-3.13.4.tgz#c5867ae72328be0b32ae1c1e66d786e2f3d1417f"
-  integrity sha512-L43OeNAmM/SZPoa5zg7MvYFHaQkT6JzpDut7QwPQNmbRovMbeHOE7QwK5AFTBsI93xkaPh4EycJ53/01TSMZPA==
+"@aurora-is-near/intents-swap-widget@redesign":
+  version "3.14.0-redesign.3"
+  resolved "https://registry.yarnpkg.com/@aurora-is-near/intents-swap-widget/-/intents-swap-widget-3.14.0-redesign.3.tgz#6f0b31edbc4379e051fadd73c87b2f3a6eb44b47"
+  integrity sha512-qlrTkWRqL347aF51nPPzmJLaQFigwg+g3mxEVjn4ot0NaBjii9Xe3UEq7ZeMSVPhwWB17obxcJG88IAVVl8NPQ==
   dependencies:
     "@aurora-is-near/eslint-config" "^1.5.3"
     "@defuse-protocol/bridge-sdk" "0.10.3"
@@ -89,10 +89,13 @@
     "@defuse-protocol/one-click-sdk-typescript" "^0.1.5"
     "@headlessui/react" "^2.2.4"
     "@hot-labs/near-connect" "^0.6.8"
+    "@material-symbols-svg/react" "^0.1.14"
+    "@material-symbols-svg/react-rounded" "^0.1.14"
     "@radix-ui/react-icons" "^1.3.2"
     "@tanstack/react-query" "^5.85.5"
     "@ton/core" "^0.62.0"
     axios "^1.10.0"
+    browser-or-node "^3.0.0"
     bs58 "^6.0.0"
     change-case "^5.4.4"
     chroma-js "^3.1.2"
@@ -114,11 +117,13 @@
     qrcode.react "^4.2.0"
     qs "^6.14.0"
     react-error-boundary "^6.0.0"
+    react-helmet-async "^2.0.5"
     react-i18next "^15.7.3"
     react-imask "^7.6.1"
     resize-observer-polyfill "^1.5.1"
     tailwind-merge "^3.3.1"
     use-debounce "^10.0.6"
+    use-timer "^2.0.1"
     valtio "2.1.7"
     valtio-fsm "1.0.0"
     viem "^2.38.3"
