@@ -14,6 +14,7 @@ export type LocalisationKeys =
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
   // transfer
+  | 'transfer.success.title'
   | 'transfer.success.hash.label'
   | 'transfer.success.intent.label'
   // quote

@@ -1,10 +1,10 @@
 import { Fragment } from 'react';
 
 import { CheckIcon } from './CheckIcon';
-import { CloseButton } from './CloseButton';
 import { SummaryItem } from './SummaryItem';
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
+import { CloseButton } from '@/components/CloseButton';
 import type { TransferResult } from '@/types/transfer';
 
 import { fireEvent, useUnsafeSnapshot } from '@/machine';
@@ -45,10 +45,12 @@ export const SuccessScreen = ({
             <CheckIcon />
             <CloseButton onClick={onDismiss} />
           </header>
-          <span className="text-sw-label-l text-sw-gray-50">All done</span>
+          <span className="text-sw-label-lg text-sw-gray-50">
+            {t('transfer.success.title', 'All done!')}
+          </span>
         </>
       )}
-      <p className="mt-sw-sm text-sw-p-s text-sw-gray-100">
+      <p className="mt-sw-sm text-sw-body-md text-sw-gray-400">
         {lines.map((line, idx) => (
           <Fragment key={idx}>
             {line}

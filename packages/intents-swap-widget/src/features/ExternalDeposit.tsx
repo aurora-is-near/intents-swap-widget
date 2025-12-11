@@ -30,12 +30,12 @@ type Props = {
 
 const QrCode = ({ address }: { address: string }) => (
   <div className="flex flex-col gap-sw-2xl items-center">
-    <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-md bg-white">
-      <QRCodeSVG size={156} value={address} fgColor="#31343d" />
+    <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
+      <QRCodeSVG size={156} value={address} fgColor="#161926" />
     </div>
-    <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-md bg-sw-gray-600">
+    <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
       <span className="text-sw-label-md text-sw-gray-100">
-        {formatAddressTruncate(address, 42)}
+        {formatAddressTruncate(address, 38)}
       </span>
       <CopyButton value={address} />
     </div>
@@ -48,8 +48,8 @@ const Skeleton = () => {
 
   return (
     <div className="flex flex-col gap-sw-2xl items-center">
-      <div className="bg-sw-gray-600 h-[180px] w-[180px] animate-pulse rounded-md" />
-      <div className="bg-sw-gray-600 h-[44px] w-full animate-pulse rounded-md flex items-center justify-center gap-sw-sm">
+      <div className="bg-sw-gray-800 h-[180px] w-[180px] animate-pulse rounded-sw-md" />
+      <div className="bg-sw-gray-800 h-[44px] w-full animate-pulse rounded-sw-md flex items-center justify-center gap-sw-sm">
         <Icons.Loader className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
         <span className="text-sw-gray-100 text-sw-label-sm">
           {!isNotEmptyAmount(ctx.sourceTokenAmount)
