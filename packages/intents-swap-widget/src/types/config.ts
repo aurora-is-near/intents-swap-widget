@@ -65,4 +65,5 @@ export type WidgetConfig = {
   // UI
   hideSendAddress?: boolean;
   hideTokenInputHeadings?: boolean;
+  themeParentElementSelector?: string;
 };
