@@ -1,5 +1,6 @@
 {
   "include": ["src/**/*", "*.ts", "tests/**/*"],
+  "typeRoots": ["./node_modules/use-timer/lib", "./node_modules/@types"],
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": ".",

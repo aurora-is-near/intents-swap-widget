@@ -18,6 +18,8 @@ export type WidgetConfig = {
   intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
+  onWalletSignout?: (walletType?: IntentsAccountType) => void;
+  onWalletSignin?: () => void;
 
   // Destination wallet
   sendAddress?: string | null;
@@ -63,4 +65,5 @@ export type WidgetConfig = {
   // UI
   hideSendAddress?: boolean;
   hideTokenInputHeadings?: boolean;
+  themeParentElementSelector?: string;
 };
