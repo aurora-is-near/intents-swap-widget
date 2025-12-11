@@ -23,7 +23,11 @@ function App() {
                 ? 'flex-col md:items-center'
                 : 'flex-col md:flex-row',
             )}>
-            <section className="flex-grow bg-[#1d2130] rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full">
+            <section
+              className="flex-grow rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full"
+              style={{
+                background: 'var(--c-sw-gray-800)',
+              }}>
               <ResolutionHeader
                 setResolutionView={setResolutionView}
                 resolutionView={resolutionView}
