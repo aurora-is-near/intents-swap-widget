@@ -112,7 +112,7 @@ export function Widget({ config }: WidgetProps) {
       config={defaultConfig}
       theme={{
         primaryColor: (state.primaryColor ?? '#D5B7FF') as `#${string}`,
-        surfaceColor: (state.pageBackgroundColor ?? '#24262D') as `#${string}`,
+        surfaceColor: (state.pageBackgroundColor ?? '#636D9B') as `#${string}`,
         colorScheme: colorScheme ?? 'dark',
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />

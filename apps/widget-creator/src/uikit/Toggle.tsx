@@ -28,7 +28,7 @@ export function ToggleOnly({
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
       <span
         className={`inline-block h-csw-xl w-csw-xl transform rounded-full bg-csw-gray-950 transition-transform ${
-          isEnabled ? 'translate-x-[18px]' : 'translate-x-0.5'
+          isEnabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
         }`}
       />
     </button>

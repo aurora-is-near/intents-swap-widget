@@ -33,10 +33,6 @@ export function Header() {
     <>
       <header className="backdrop-blur-[20px] backdrop-filter bg-csw-gray-950 rounded-csw-lg w-full flex items-center justify-between px-csw-2xl py-[11px]">
         <aside className="flex gap-[20px] md:gap-[44px] items-center">
-          <div className="w-[102px] h-[34px]">
-            <CalyxLogo />
-          </div>
-
           <nav className="gap-csw-xl md:gap-csw-5xl items-center hidden md:flex">
             <a href="#" className="flex gap-2.5 items-center justify-center">
               <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-accent-50 whitespace-nowrap">

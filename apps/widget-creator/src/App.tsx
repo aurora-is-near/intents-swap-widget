@@ -23,12 +23,12 @@ function App() {
                 ? 'flex-col md:items-center'
                 : 'flex-col md:flex-row',
             )}>
-            <section className="flex-grow bg-csw-gray-950 rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full">
+            <section className="flex-grow bg-[#1d2130] rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full">
               <ResolutionHeader
                 setResolutionView={setResolutionView}
                 resolutionView={resolutionView}
               />
-              <aside className="mt-[46px] max-w-fit m-auto sw">
+              <aside className="mt-[46px] max-w-[420px] m-auto sw">
                 <Widget />
               </aside>
             </section>
