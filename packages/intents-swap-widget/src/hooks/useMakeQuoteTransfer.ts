@@ -100,7 +100,8 @@ export const useMakeQuoteTransfer = ({
       evmChainId: isEvmChain(ctx.sourceToken.blockchain)
         ? EVM_CHAIN_IDS_MAP[ctx.sourceToken.blockchain]
         : null,
-      isNativeEthTransfer: !!ctx.sourceToken && isEvmBaseToken(ctx.sourceToken),
+      isNativeEvmTokenTransfer:
+        !!ctx.sourceToken && isEvmBaseToken(ctx.sourceToken),
       tokenAddress:
         ctx.sourceToken.assetId === NATIVE_NEAR_DUMB_ASSET_ID
           ? NATIVE_NEAR_DUMB_ASSET_ID

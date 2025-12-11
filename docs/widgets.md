@@ -35,7 +35,7 @@ export type MakeTransferArgs = {
   tokenAddress?: string;
   chain: Chains;
   evmChainId: number | null;
-  isNativeEthTransfer?: boolean;
+  isNativeEvmTokenTransfer?: boolean;
   sourceAssetId: string;
   targetAssetId: string;
 };

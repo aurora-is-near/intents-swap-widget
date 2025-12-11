@@ -43,7 +43,7 @@ export const useMakeEvmTransfer = ({
     amount,
     tokenAddress,
     evmChainId,
-    isNativeEthTransfer,
+    isNativeEvmTokenTransfer,
     chain: chainKey,
   }: MakeTransferArgs) => {
     const injectedProvider =
@@ -84,7 +84,7 @@ export const useMakeEvmTransfer = ({
     const chain = isEvmChain(chainKey) ? VIEM_CHAIN_MAP[chainKey] : null;
 
     // Native ETH transfer
-    if (isNativeEthTransfer) {
+    if (isNativeEvmTokenTransfer) {
       const hash = await walletClient.sendTransaction({
         account: from,
         to: address,
