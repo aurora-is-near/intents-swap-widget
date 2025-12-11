@@ -72,7 +72,10 @@ type ThemeToggleProps = {
 };
 
 const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
-  const { theme = 'dark', toggleTheme } = useToggleTheme('dark', onClick);
+  const { theme = 'dark', toggleTheme } = useToggleTheme({
+    defaultTheme: 'dark',
+    onChange: onClick,
+  });
 
   if (!theme) {
     return (
