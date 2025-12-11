@@ -12,7 +12,7 @@ if (!container) {
   throw new Error('Root element not found');
 }
 
-container.className = 'sw';
+container.className = 'sw bg-sw-gray-950';
 
 const root = createRoot(container);
 

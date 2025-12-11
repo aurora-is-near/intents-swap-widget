@@ -17,11 +17,11 @@ const NoteItem = ({
   isLoading?: boolean;
 }) => (
   <li className="flex w-full items-center justify-between">
-    <span className="text-sw-label-s text-sw-gray-100">{label}</span>
+    <span className="text-sw-label-sm text-sw-gray-200">{label}</span>
     {isLoading ? (
-      <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-sw-gray-700" />
+      <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-sw-gray-600" />
     ) : (
-      <span className="text-sw-label-s text-sw-gray-50">{value ?? '—'}</span>
+      <span className="text-sw-label-sm text-sw-gray-50">{value ?? '—'}</span>
     )}
   </li>
 );
