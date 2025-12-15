@@ -21,12 +21,3 @@ const createMockIcon = (displayName) => {
 
   return MockIcon;
 };
-
-jest.mock('@material-symbols-svg/react-rounded', () => ({
-  AccountBalanceWalletFill: createMockIcon('AccountBalanceWalletFill'),
-  ArmingCountdownFill: createMockIcon('ArmingCountdownFill'),
-  BeenhereFill: createMockIcon('BeenhereFill'),
-  CheckCircleFill: createMockIcon('CheckCircleFill'),
-  EncryptedFill: createMockIcon('EncryptedFill'),
-  GppBadFill: createMockIcon('GppBadFill'),
-}));
