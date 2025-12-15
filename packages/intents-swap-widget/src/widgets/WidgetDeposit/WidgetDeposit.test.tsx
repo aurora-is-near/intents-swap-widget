@@ -120,7 +120,7 @@ describe('Deposit', () => {
   });
 
   it('renders deposit widget layout', async () => {
-    const { screen, within, container } = setup(<WidgetDepositSetup />);
+    const { screen, within } = setup(<WidgetDepositSetup />);
 
     // 1. Tokens are fetched
     expect(mockOneClickSDK.getTokens).toHaveBeenCalled();
@@ -138,7 +138,6 @@ describe('Deposit', () => {
     expect(depositMethodLabel).toBeInTheDocument();
 
     const myWalletBtn = screen.getByRole('button', { name: 'My wallet' });
-    screen.debug(container);
     expect(myWalletBtn).toHaveAttribute('data-active');
     expect(myWalletBtn).toBeInTheDocument();
     expect(myWalletBtn).toBeEnabled();
