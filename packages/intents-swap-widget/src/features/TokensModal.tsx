@@ -4,9 +4,11 @@ import * as Icons from 'lucide-react';
 import { TokensList } from './TokensList';
 import { ChainsDropdown } from './ChainsDropdown';
 import { useChains } from '../hooks';
+import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
+import { CloseButton } from '@/components/CloseButton';
 
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
@@ -65,17 +67,14 @@ export const TokensModal = ({
     <Card
       padding="none"
       className={cn(
-        'w-full gap-sw-2xl flex flex-col px-sw-2xl pt-sw-2xl',
+        'w-full gap-sw-xl flex flex-col px-sw-2xl pt-sw-2xl',
         className,
       )}>
-      <header className="py-sw-md flex items-center justify-between">
-        <h2 className="text-sw-label-l text-sw-gray-50">Select token</h2>
-        <button
-          type="button"
-          className="flex cursor-pointer items-center justify-center text-sw-gray-100 transition-colors hover:text-sw-gray-50"
-          onClick={() => onMsg({ type: 'on_dismiss_tokens_modal' })}>
-          <Icons.X size={22} />
-        </button>
+      <header className="flex items-center justify-between">
+        <h2 className="text-sw-label-lg text-sw-gray-50">Select token</h2>
+        <CloseButton
+          onClick={() => onMsg({ type: 'on_dismiss_tokens_modal' })}
+        />
       </header>
 
       <div className="gap-sw-xl flex items-center">
@@ -106,13 +105,16 @@ export const TokensModal = ({
       </div>
 
       {chainIsNotSupported && !!ctx.walletAddress && (
-        <Banner
-          variant="info"
-          message={t(
-            'wallet.connected.error.notSupportedChain',
-            "Your connected wallet doesn't support this chain",
-          )}
-        />
+        <>
+          <Banner
+            variant="error"
+            message={t(
+              'wallet.connected.error.notSupportedChain',
+              'This network isn’t supported by your wallet.',
+            )}
+          />
+          <Hr />
+        </>
       )}
 
       <TokensList

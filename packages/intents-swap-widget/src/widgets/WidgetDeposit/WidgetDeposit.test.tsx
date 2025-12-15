@@ -11,6 +11,7 @@ import { mockAlchemyResponse } from '../../tests/mock-alchemy-response';
 import { mockGetIntentsBalances } from '../../tests/mock-get-intents-balances';
 import { mockConnectedWalletAddress } from '../../tests/mock-connected-wallet-address';
 import { mockOneClickQuote } from '../../tests/mock-one-click-quote';
+import { mockedLocalStorage } from '../../tests/mock-localstorage';
 import { mockOneClickSDK } from '../../tests/mock-one-click-sdk';
 
 import { setup } from '../../tests/setup';
@@ -81,6 +82,11 @@ const targetToken = {
 
 describe('Deposit', () => {
   beforeEach(() => {
+    mockedLocalStorage.setItem(
+      'sw.verifiedWallets',
+      JSON.stringify([mockConnectedWalletAddress('evm')]),
+    );
+
     mockGetIntentsBalances.mockResolvedValue({
       'nep141:eth.bridge.near': 0,
       'nep141:eth.omft.near': 0,

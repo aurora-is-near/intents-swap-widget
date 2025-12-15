@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget",
-  "version": "3.13.5",
+  "version": "3.14.0-redesign.12",
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "MIT",
@@ -30,11 +30,15 @@
     "dist"
   ],
   "sideEffects": [
-    "dist/styles.css"
+    "dist/styles.css",
+    "dist/tailwind.css",
+    "dist/theme.css"
   ],
   "exports": {
     ".": "./dist/index.js",
     "./styles.css": "./dist/styles.css",
+    "./tailwind.css": "./dist/tailwind.css",
+    "./theme.css": "./dist/theme.css",
     "./constants": "./dist/constants/index.js",
     "./components": "./dist/components/index.js",
     "./features": "./dist/features/index.js",
@@ -56,10 +60,13 @@
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
     "@headlessui/react": "^2.2.4",
     "@hot-labs/near-connect": "^0.6.8",
+    "@material-symbols-svg/react": "^0.1.19",
+    "@material-symbols-svg/react-rounded": "^0.1.19",
     "@radix-ui/react-icons": "^1.3.2",
     "@tanstack/react-query": "^5.85.5",
     "@ton/core": "^0.62.0",
     "axios": "^1.10.0",
+    "browser-or-node": "^3.0.0",
     "bs58": "^6.0.0",
     "change-case": "^5.4.4",
     "chroma-js": "^3.1.2",
@@ -81,11 +88,13 @@
     "qrcode.react": "^4.2.0",
     "qs": "^6.14.0",
     "react-error-boundary": "^6.0.0",
+    "react-helmet-async": "^2.0.5",
     "react-i18next": "^15.7.3",
     "react-imask": "^7.6.1",
     "resize-observer-polyfill": "^1.5.1",
     "tailwind-merge": "^3.3.1",
     "use-debounce": "^10.0.6",
+    "use-timer": "^2.0.1",
     "valtio": "2.1.7",
     "valtio-fsm": "1.0.0",
     "viem": "^2.38.3",
@@ -100,6 +109,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/browser-or-node": "^1.3.2",
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/puppeteer": "^7.0.4",
@@ -112,6 +122,7 @@
     "jest-transform-stub": "^2.0.0",
     "jest-transformer-svg": "^2.1.0",
     "puppeteer": "^24.31.0",
-    "resize-observer-polyfill": "^1.5.1"
+    "ts-jest": "^29.4.5",
+    "vite-plugin-static-copy": "^3.1.4"
   }
 }
