@@ -1,12 +1,12 @@
 import { logger } from '@/logger';
 
-type LocalStorage = {
+export type LocalStorage = {
   verifiedWallets: string[];
   verifiedNearAccounts: string[];
   nearWalletsPk: Record<string, string>;
 };
 
-const defaultValues: LocalStorage = {
+export const defaultValues: LocalStorage = {
   verifiedWallets: [],
   verifiedNearAccounts: [],
   nearWalletsPk: {},
