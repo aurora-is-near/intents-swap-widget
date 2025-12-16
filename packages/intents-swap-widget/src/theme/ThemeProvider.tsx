@@ -2,7 +2,7 @@ import { isBrowser } from 'browser-or-node';
 import { createContext, type ReactNode, useEffect, useMemo } from 'react';
 
 import { ColorPalette, ColorScheme, HexColor, Theme } from '../types/theme';
-import { createColorPalette } from './createColorPalette';
+import { ColorStop, createColorPalette } from './createColorPalette';
 import { useConfig } from '@/config';
 
 const setColorVariables = (
@@ -25,13 +25,12 @@ const setColorVariables = (
 
 const setColorPalette = (
   colorKey: string,
+  colorStop: ColorStop,
   parentEl: Element | null,
-  baseColor?: HexColor,
-  colorScheme?: ColorScheme,
+  baseColor: HexColor,
+  colorScheme: ColorScheme,
 ) => {
-  const palette = baseColor
-    ? createColorPalette(baseColor, colorScheme ?? 'dark')
-    : null;
+  const palette = createColorPalette(baseColor, colorScheme, colorStop);
 
   if (!palette) {
     return;
@@ -41,10 +40,15 @@ const setColorPalette = (
 };
 
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
-  const { primaryColor, surfaceColor, colorScheme } = theme;
+  const { primaryColor, surfaceColor, colorScheme = 'dark' } = theme;
 
-  setColorPalette('accent', parentEl, primaryColor, colorScheme);
-  setColorPalette('gray', parentEl, surfaceColor, colorScheme);
+  if (primaryColor) {
+    setColorPalette('accent', 500, parentEl, primaryColor, colorScheme);
+  }
+
+  if (surfaceColor) {
+    setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
+  }
 };
 
 export const ThemeContext = createContext<Theme | undefined>(undefined);
