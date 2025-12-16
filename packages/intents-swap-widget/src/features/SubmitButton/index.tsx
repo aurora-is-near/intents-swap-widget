@@ -75,7 +75,10 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
-  if (ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW') {
+  if (
+    ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW' ||
+    ctx.error?.code === 'MIN_WITHDRAWAL_AMOUNT_ERROR'
+  ) {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
