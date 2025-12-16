@@ -27,6 +27,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
         <Button
           size="md"
           icon={Icons.Wallet2}
+          state={ctx.isDepositFromExternalWallet ? 'default' : 'active'}
           variant={ctx.isDepositFromExternalWallet ? 'outlined' : 'primary'}
           onClick={() => onToggle(false)}>
           My wallet
@@ -34,6 +35,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
         <Button
           size="md"
           icon={Icons.QrCode}
+          state={ctx.isDepositFromExternalWallet ? 'active' : 'default'}
           variant={ctx.isDepositFromExternalWallet ? 'primary' : 'outlined'}
           onClick={() => onToggle(true)}>
           QR / Address

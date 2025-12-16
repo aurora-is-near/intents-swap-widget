@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isBrowser } from 'browser-or-node';
 
-import { useConfig } from '@/config';
-
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const applyThemeDataAttr = (theme: ThemeMode, parentEl: Element | null) => {
@@ -11,11 +9,17 @@ const applyThemeDataAttr = (theme: ThemeMode, parentEl: Element | null) => {
   }
 };
 
-export const useToggleTheme = (
-  defaultTheme?: ThemeMode,
-  onChange?: (colorPalette: 'light' | 'dark') => void,
-) => {
-  const { themeParentElementSelector } = useConfig();
+type Args = {
+  defaultTheme?: ThemeMode;
+  themeParentElementSelector?: string;
+  onChange?: (colorPalette: 'light' | 'dark') => void;
+};
+
+export const useToggleTheme = ({
+  defaultTheme,
+  themeParentElementSelector,
+  onChange,
+}: Args) => {
   const [colorPalette, setColorPalette] = useState<'light' | 'dark'>();
   const [theme, setTheme] = useState<ThemeMode | undefined>(() => {
     if (isBrowser && defaultTheme === undefined) {
