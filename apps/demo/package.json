@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aurora-is-near/intents-swap-widget": "redesign",
+    "@aurora-is-near/intents-swap-widget": "*",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-solana": "^1.8.10",
