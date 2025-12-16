@@ -17,7 +17,7 @@ type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
 const defaultTheme: Theme = {
   primaryColor: '#D5B7FF',
-  surfaceColor: '#636D9B',
+  surfaceColor: '#24262D',
   colorScheme: 'dark',
 };
 

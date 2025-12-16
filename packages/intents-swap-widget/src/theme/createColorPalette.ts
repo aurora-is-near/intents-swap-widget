@@ -2,12 +2,15 @@ import chroma from 'chroma-js';
 import { Hsluv } from 'hsluv';
 import { ColorPalette } from '../types/theme';
 
-const VALUE_STOP = 500;
-
 // All available stops (including 0 and 1000 for calculation)
 const ALL_STOPS = [
   0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 1000,
-];
+] as const;
+
+const LIGHTNESS_MIN = 0;
+const LIGHTNESS_MAX = 100;
+
+export type ColorStop = (typeof ALL_STOPS)[number];
 
 /**
  * Chroma-js based implementation for stable palette generation.
@@ -18,14 +21,8 @@ const ALL_STOPS = [
 export const createColorPalette = (
   baseColor: `#${string}`,
   mode: 'light' | 'dark',
+  colorStop: ColorStop,
 ): ColorPalette => {
-  // 1. Create hue scale
-  const valueStopIndex = ALL_STOPS.indexOf(VALUE_STOP);
-
-  if (valueStopIndex === -1) {
-    throw new Error(`Invalid valueStop: ${VALUE_STOP}`);
-  }
-
   const hueScale = ALL_STOPS.map((stop) => {
     const tweakValue = 0;
 
@@ -49,9 +46,9 @@ export const createColorPalette = (
 
   // Create the three anchor points
   const distributionAnchors = [
-    { stop: 0, tweak: 0 },
-    { stop: VALUE_STOP, tweak: lightnessValue },
-    { stop: 1000, tweak: 100 },
+    { stop: 0, tweak: LIGHTNESS_MAX },
+    { stop: colorStop, tweak: lightnessValue },
+    { stop: 1000, tweak: LIGHTNESS_MIN },
   ];
 
   // Interpolate for missing stops
@@ -67,7 +64,7 @@ export const createColorPalette = (
     let leftAnchor;
     let rightAnchor;
 
-    if (stop < VALUE_STOP) {
+    if (stop < colorStop) {
       [leftAnchor, rightAnchor] = distributionAnchors;
     } else {
       [leftAnchor, rightAnchor] = distributionAnchors.slice(1);
@@ -88,7 +85,7 @@ export const createColorPalette = (
   });
 
   const hexColors = ALL_STOPS.map((stop, stopIndex): string => {
-    if (stop === VALUE_STOP) {
+    if (stop === colorStop) {
       return baseColor.toUpperCase();
     }
 
@@ -126,7 +123,7 @@ export const createColorPalette = (
     return newColor.hex().toUpperCase();
   });
 
-  const themeValues = mode === 'light' ? hexColors : [...hexColors].reverse();
+  const themeValues = mode === 'dark' ? hexColors : [...hexColors].reverse();
 
   const getStopValue = (index: number): string => {
     const value = themeValues[index];
@@ -150,6 +147,5 @@ export const createColorPalette = (
     800: getStopValue(9),
     900: getStopValue(10),
     950: getStopValue(11),
-    975: getStopValue(12),
   };
 };
