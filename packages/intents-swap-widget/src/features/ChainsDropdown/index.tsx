@@ -62,7 +62,7 @@ export const ChainsDropdown = ({
                         <Icon
                           radius={10}
                           icon={appIcon}
-                          label={`${appName} account`}
+                          label={appName}
                         />
                       ) : null;
                     default:
