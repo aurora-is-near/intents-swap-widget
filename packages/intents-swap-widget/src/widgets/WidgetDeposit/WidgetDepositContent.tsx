@@ -15,12 +15,17 @@ import {
 } from '@/features';
 
 import { Banner, BlockingError } from '@/components';
+import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
-import { useTokenInputPair, useTokens } from '@/hooks';
+import {
+  useIsCompatibilityCheckRequired,
+  useTokenInputPair,
+  useTokens,
+} from '@/hooks';
 import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
@@ -42,12 +47,28 @@ export const WidgetDepositContent = ({
   isLoading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
-  const { chainsFilter, alchemyApiKey, refetchQuoteInterval } = useConfig();
-  const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { t } = useTypedTranslation();
+  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
+  const {
+    chainsFilter,
+    alchemyApiKey,
+    refetchQuoteInterval,
+    intentsAccountType,
+    onWalletSignout,
+  } = useConfig();
+
+  const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
+
+  const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
+  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
+
+  useEffect(() => {
+    if (isCompatibilityCheckRequired) {
+      setIsCompatibilityOpen(true);
+    }
+  }, [isCompatibilityCheckRequired]);
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
@@ -102,6 +123,27 @@ export const WidgetDepositContent = ({
 
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetDepositSkeleton />;
+  }
+
+  if (isCompatibilityOpen) {
+    return (
+      <WalletCompatibilityCheck
+        providers={providers}
+        onMsg={(msg) => {
+          switch (msg.type) {
+            case 'on_sign_out':
+              onWalletSignout?.(intentsAccountType);
+              setIsCompatibilityOpen(false);
+              break;
+            case 'on_close':
+              setIsCompatibilityOpen(false);
+              break;
+            default:
+              notReachable(msg.type);
+          }
+        }}
+      />
+    );
   }
 
   if (ctx.state === 'transfer_success' && !!transferResult) {
@@ -171,57 +213,55 @@ export const WidgetDepositContent = ({
 
       return (
         <div className="gap-sw-2xl flex flex-col">
-          <div className="gap-sw-lg relative flex flex-col">
-            <TokenInput.Source
-              showBalance={!ctx.isDepositFromExternalWallet}
-              heading={t('tokenInput.heading.source.deposit', 'Sell')}
-              onMsg={(msg) => {
-                switch (msg.type) {
-                  case 'on_select_token':
-                    onChangeToken('source', msg.token);
-                    break;
-                  case 'on_change_amount':
-                    onChangeAmount('source', msg.amount);
-                    break;
-                  case 'on_click_select_token':
-                    updateTokenModalState('source');
-                    break;
-                  default:
-                    notReachable(msg);
-                }
-              }}
-            />
-
-            <DepositMethodSwitcher className="mt-sw-md">
-              {({ isExternal }) =>
-                isExternal ? (
-                  <div className="gap-sw-2xl flex flex-col justify-between">
-                    <ExternalDeposit onMsg={handleExternalDepositMsg} />
-                    {(ctx.state === 'quote_success_internal' ||
-                      ctx.state === 'quote_success_external') && (
-                      <Banner
-                        multiline
-                        variant="warn"
-                        message="Match the token, amount and network entered above in your wallet. Incorrect values will cause the deposit to fail and be refunded."
-                      />
-                    )}
-                  </div>
-                ) : null
+          <TokenInput.Source
+            showBalance={!ctx.isDepositFromExternalWallet}
+            heading={t('tokenInput.heading.source.deposit', 'Sell')}
+            onMsg={(msg) => {
+              switch (msg.type) {
+                case 'on_select_token':
+                  onChangeToken('source', msg.token);
+                  break;
+                case 'on_change_amount':
+                  onChangeAmount('source', msg.amount);
+                  break;
+                case 'on_click_select_token':
+                  updateTokenModalState('source');
+                  break;
+                default:
+                  notReachable(msg);
               }
-            </DepositMethodSwitcher>
+            }}
+          />
 
-            {!isDirectNearTokenWithdrawal && <SwapQuote className="mt-sw-md" />}
+          <DepositMethodSwitcher className="mt-sw-md">
+            {({ isExternal }) =>
+              isExternal ? (
+                <div className="gap-sw-2xl flex flex-col justify-between">
+                  <ExternalDeposit onMsg={handleExternalDepositMsg} />
+                  {(ctx.state === 'quote_success_internal' ||
+                    ctx.state === 'quote_success_external') && (
+                    <Banner
+                      multiline
+                      variant="warn"
+                      message="Match the token, amount and network entered above in your wallet. Incorrect values will cause the deposit to fail and be refunded."
+                    />
+                  )}
+                </div>
+              ) : null
+            }
+          </DepositMethodSwitcher>
 
-            <SubmitButton
-              providers={providers}
-              makeTransfer={makeTransfer}
-              label={t('submit.active.deposit', 'Deposit now')}
-              onSuccess={(transfer) => {
-                setTransferResult(transfer);
-                onMsg?.({ type: 'on_transfer_success' });
-              }}
-            />
-          </div>
+          {!isDirectNearTokenWithdrawal && <SwapQuote />}
+
+          <SubmitButton
+            providers={providers}
+            makeTransfer={makeTransfer}
+            label={t('submit.active.deposit', 'Deposit now')}
+            onSuccess={(transfer) => {
+              setTransferResult(transfer);
+              onMsg?.({ type: 'on_transfer_success' });
+            }}
+          />
         </div>
       );
     }

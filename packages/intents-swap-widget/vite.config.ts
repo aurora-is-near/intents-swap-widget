@@ -4,10 +4,12 @@ import { dirname, resolve, relative, extname } from 'node:path';
 
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
-import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+
+import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -58,6 +60,18 @@ export default defineConfig({
         global: true,
         process: true,
       },
+    }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'src/tailwind.css',
+          dest: '.',
+        },
+        {
+          src: 'src/theme.css',
+          dest: '.',
+        },
+      ],
     }),
   ].filter(Boolean),
   css: {

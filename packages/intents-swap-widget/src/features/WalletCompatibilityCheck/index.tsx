@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
 import { useUnsafeSnapshot } from '../../machine';
@@ -7,7 +7,7 @@ import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
 import type { IntentsTransferArgs } from '@/types';
 
-type Msg = { type: 'on_sign_out' };
+type Msg = { type: 'on_sign_out' | 'on_close' };
 
 type Props = {
   providers: IntentsTransferArgs['providers'];
@@ -15,8 +15,9 @@ type Props = {
 };
 
 export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [state, setState] = useState<'initial' | 'error'>('initial');
+  const [hasError, setHasError] = useState(false);
+  const [isSigned, setIsSigned] = useState(false);
+
   const {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();
@@ -26,47 +27,15 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
     walletAddress,
   });
 
-  useEffect(() => {
-    if (!walletAddress) {
-      setIsOpen(false);
-
-      return;
-    }
-
-    const verifiedWallets = localStorageTyped.getItem('verifiedWallets');
-
-    if (!verifiedWallets.includes(walletAddress)) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  }, [walletAddress]);
-
-  // Disable scroll when modal is open
-  // make sure to disable only vertical scroll
-  useEffect(() => {
-    if (isOpen) {
-      window.document.body.style.overflowY = 'hidden';
-    } else {
-      window.document.body.style.overflowY = 'auto';
-    }
-
-    return () => {
-      window.document.body.style.overflowY = 'auto';
-    };
-  }, [isOpen]);
-
   async function handleCompatibilityCheck() {
     if (!walletAddress) {
-      setIsOpen(false);
-
       return;
     }
 
     const isValid = await handleSign();
 
     if (!isValid) {
-      setState('error');
+      setHasError(true);
 
       return;
     }
@@ -76,47 +45,40 @@ export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
 
     verifiedWallets.push(walletAddress);
     localStorageTyped.setItem('verifiedWallets', verifiedWallets);
-
-    setIsOpen(false);
+    setIsSigned(true);
   }
 
-  function handleTryAgain() {
-    setState('initial');
-  }
-
-  function handleSignOut() {
-    setIsOpen(false);
-    onMsg({ type: 'on_sign_out' });
-  }
-
-  if (!isOpen) {
-    return null;
-  }
-
-  if (!walletAddress) {
-    return null;
-  }
-
-  return (
+  return hasError ? (
+    <WalletCompatibilityModal.Error
+      onMsg={async (msg) => {
+        switch (msg.type) {
+          case 'on_close':
+          case 'on_sign_out':
+            onMsg({ type: msg.type });
+            break;
+          case 'on_try_again':
+            setHasError(false);
+            break;
+          default:
+            notReachable(msg.type);
+        }
+      }}
+    />
+  ) : (
     <WalletCompatibilityModal
-      state={state}
+      isSigned={isSigned}
       isSigning={isSigning}
       onMsg={async (msg) => {
         switch (msg.type) {
           case 'on_close':
-            setIsOpen(false);
+          case 'on_sign_out':
+            onMsg({ type: msg.type });
             break;
           case 'on_check_compatibility':
             await handleCompatibilityCheck();
             break;
-          case 'on_try_again':
-            handleTryAgain();
-            break;
-          case 'on_sign_out':
-            handleSignOut();
-            break;
           default:
-            notReachable(msg);
+            notReachable(msg.type);
         }
       }}
     />

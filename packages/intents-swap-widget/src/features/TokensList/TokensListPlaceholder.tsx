@@ -1,36 +1,51 @@
-import * as Icons from 'lucide-react';
-
 import { cn } from '@/utils/cn';
 import { Button } from '@/components/Button';
-import { useTypedTranslation } from '@/localisation';
 
 type Props = {
+  heading: string;
+  subHeading?: string;
   className?: string;
-  onResetSearch: () => void;
-};
+} & (
+  | {
+      hasAction?: false;
+      onClick?: never;
+      actionLabel?: never;
+      actionType?: never;
+    }
+  | {
+      hasAction: true;
+      onClick: () => void;
+      actionLabel: string;
+      actionType?: 'primary' | 'outlined';
+    }
+);
 
-export const TokensListPlaceholder = ({ onResetSearch, className }: Props) => {
-  const { t } = useTypedTranslation();
-
-  return (
-    <div
-      className={cn(
-        'py-sw-lg gap-sw-2xl flex flex-col items-center justify-center text-sw-gray-100',
-        className,
-      )}>
-      <div className="gap-sw-md flex items-center">
-        <Icons.SearchX size={16} />
-        <span className="text-sw-label-m">
-          {t('tokens.list.searchEmpty.label', 'No tokens match your search')}
-        </span>
-      </div>
+export const TokensListPlaceholder = ({
+  heading,
+  subHeading,
+  hasAction = false,
+  actionLabel,
+  actionType = 'primary',
+  className,
+  onClick,
+}: Props) => (
+  <div
+    className={cn(
+      'py-sw-lg gap-sw-md flex flex-col items-center justify-center',
+      className,
+    )}>
+    <span className="text-sw-label-md text-sw-gray-50">{heading}</span>
+    <p className="text-sw-body-md text-sw-gray-300 text-center max-w-[265px]">
+      {subHeading}
+    </p>
+    {hasAction && (
       <Button
-        variant="primary"
         size="md"
-        className="w-fit"
-        onClick={onResetSearch}>
-        {t('tokens.list.searchReset.label', 'Reset search')}
+        variant={actionType}
+        className="w-fit mt-sw-lg"
+        onClick={onClick}>
+        {actionLabel}
       </Button>
-    </div>
-  );
-};
+    )}
+  </div>
+);

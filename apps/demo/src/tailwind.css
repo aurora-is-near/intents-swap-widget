@@ -1,8 +1,12 @@
-@import 'tailwindcss';
+/* to use swap widget theme for demo components */
+@import '@aurora-is-near/intents-swap-widget/tailwind.css';
+@import '@aurora-is-near/intents-swap-widget/theme.css';
+
+/* swap widget styles */
 @import '@aurora-is-near/intents-swap-widget/styles.css';
 
 body {
-    background: #24262c;
+    height: 100dvh;
 }
 
 /* Wallet Connect button for multi-chain wallet connection */

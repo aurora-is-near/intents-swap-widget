@@ -5,7 +5,6 @@ import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
-import { Banner } from '@/components/Banner';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { useTokensFiltered } from '@/hooks/useTokensFiltered';
@@ -105,8 +104,16 @@ export const TokensList = ({
     case 'EMPTY_SEARCH':
       return (
         <TokensListPlaceholder
+          hasAction
+          actionType="outlined"
+          actionLabel={t('tokens.list.searchReset.label', 'Clear search')}
+          heading={t('tokens.list.searchEmpty.label', 'No results')}
+          subHeading={t(
+            'tokens.list.searchEmpty.subLabel',
+            'Try another search or check if a specific network is selected.',
+          )}
           className="pt-sw-5xl pb-sw-5xl"
-          onResetSearch={() => onMsg({ type: 'on_reset_search' })}
+          onClick={() => onMsg({ type: 'on_reset_search' })}
         />
       );
 
@@ -129,7 +136,7 @@ export const TokensList = ({
                   {tokensToDisplay.length && label ? (
                     <header className="pb-sw-lg flex flex-col">
                       <Hr />
-                      <span className="text-sw-label-s pt-sw-xl text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
+                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
                     </header>
                   ) : null}
 
@@ -161,11 +168,14 @@ export const TokensList = ({
     case 'NO_TOKENS':
     default:
       return (
-        <Banner
-          variant="info"
-          className="mb-sw-4xl"
-          message={t('tokens.list.noBalanceOnApp.label', {
-            defaultValue: 'No balances available on {{appName}}',
+        <TokensListPlaceholder
+          className="pt-sw-5xl pb-sw-5xl"
+          subHeading={t(
+            'tokens.list.noBalanceOnApp.subLabel',
+            'Deposit funds to get started',
+          )}
+          heading={t('tokens.list.noBalanceOnApp.label', {
+            defaultValue: 'You have no balances on {{appName}}',
             appName,
           })}
         />

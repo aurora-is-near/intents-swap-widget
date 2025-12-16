@@ -1,7 +1,7 @@
 import * as Icons from 'lucide-react';
 
 export const AllNetworksIcon = () => (
-  <div className="bg-sw-dune-300 flex h-[28px] w-[28px] items-center justify-center">
-    <Icons.Target size={16} className="text-sw-mauve-975" />
+  <div className="bg-sw-accent-500 flex h-[28px] w-[28px] items-center justify-center">
+    <Icons.Target size={16} className="text-sw-accent-975" />
   </div>
 );

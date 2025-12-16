@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 type Props = {
   message: string;
   multiline?: boolean;
-  variant: 'error' | 'warn' | 'info' | 'success';
+  variant: 'error' | 'warn' | 'success';
   className?: string;
   onDismiss?: () => void;
 };
@@ -27,20 +27,18 @@ export const Banner = ({
   return (
     <div
       className={cn(
-        'gap-sw-md px-sw-lg py-sw-md relative flex items-center rounded-sw-md',
+        'gap-sw-md relative flex items-center',
         {
-          'bg-sw-warn-900 text-sw-warn-100': variant === 'warn',
-          'bg-sw-mauve-800 text-sw-mauve-100': variant === 'info',
-          'bg-sw-alert-900 text-sw-alert-100': variant === 'error',
-          'bg-sw-success-900 text-sw-success-100': variant === 'success',
+          'text-sw-status-error': variant === 'error',
+          'text-sw-status-warning': variant === 'warn',
+          'text-sw-status-success': variant === 'success',
         },
         className,
       )}>
       {!multiline && icon}
       <span
-        className={cn('text-sw-label-s', {
+        className={cn('text-sw-label-sm', {
           'text-nowrap': !multiline,
-          'leading-[18px]': multiline,
         })}>
         {message}
       </span>
@@ -48,7 +46,7 @@ export const Banner = ({
         <div
           onClick={onDismiss}
           className="ml-auto flex cursor-pointer items-center justify-center transition-all hover:scale-125">
-          <Icons.X size={12} strokeWidth={3} />
+          <Icons.X size={16} strokeWidth={2.5} />
         </div>
       )}
     </div>

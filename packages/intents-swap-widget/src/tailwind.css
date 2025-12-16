@@ -1,137 +1,81 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where([data-sw-theme=dark], [data-sw-theme=dark] *));
+
 @import './theme.css';
-@import './theme-text.css';
 
 @theme {
-    /* Custom border radius values */
-    --radius-*: initial;
-    --radius-full: 99999px;
-    --radius-sw-md: var(--sw-radius-md);
-    --radius-sw-xl: var(--sw-radius-xl);
-    --radius-sw-lg: var(--sw-radius-lg);
-    --radius-sw-sm: var(--sw-radius-sm);
-
-    /* Colors */
-    --color-*: initial;
-    --color-sw-gray-50: var(--sw-gray-50);
-    /* 12 */
-    --color-sw-gray-100: var(--sw-gray-100);
-    /* 11 */
-    --color-sw-gray-200: var(--sw-gray-200);
-    /* 10 */
-    --color-sw-gray-300: var(--sw-gray-300);
-    /* 9 */
-    --color-sw-gray-400: var(--sw-gray-400);
-    /* 8 */
-    --color-sw-gray-500: var(--sw-gray-500);
-    /* 7 */
-    --color-sw-gray-600: var(--sw-gray-600);
-    /* 6 */
-    --color-sw-gray-700: var(--sw-gray-700);
-    /* 5 */
-    --color-sw-gray-800: var(--sw-gray-800);
-    /* 4 */
-    --color-sw-gray-900: var(--sw-gray-900);
-    /* 3 */
-    --color-sw-gray-950: var(--sw-gray-950);
-    /* 2 */
-    --color-sw-gray-975: var(--sw-gray-975);
-    /* 1 */
-
-    --color-sw-mauve-50: var(--sw-mauve-50);
-    /* 12 */
-    --color-sw-mauve-100: var(--sw-mauve-100);
-    /* 11 */
-    --color-sw-mauve-200: var(--sw-mauve-200);
-    /* 10 */
-    --color-sw-mauve-300: var(--sw-mauve-300);
-    /* 9 */
-    --color-sw-mauve-400: var(--sw-mauve-400);
-    /* 8 */
-    --color-sw-mauve-500: var(--sw-mauve-500);
-    /* 7 */
-    --color-sw-mauve-600: var(--sw-mauve-600);
-    /* 6 */
-    --color-sw-mauve-700: var(--sw-mauve-700);
-    /* 5 */
-    --color-sw-mauve-800: var(--sw-mauve-800);
-    /* 4 */
-    --color-sw-mauve-900: var(--sw-mauve-900);
-    /* 3 */
-    --color-sw-mauve-950: var(--sw-mauve-950);
-    /* 2 */
-    --color-sw-mauve-975: var(--sw-mauve-975);
-    /* 1 */
-
-    --color-sw-dune-50: var(--sw-dune-50);
-    /* 12 */
-    --color-sw-dune-100: var(--sw-dune-100);
-    /* 11 */
-    --color-sw-dune-200: var(--sw-dune-200);
-    /* 10 */
-    --color-sw-dune-300: var(--sw-dune-300);
-    /* 9 */
-    --color-sw-dune-400: var(--sw-dune-400);
-    /* 8 */
-    --color-sw-dune-500: var(--sw-dune-500);
-    /* 7 */
-    --color-sw-dune-600: var(--sw-dune-600);
-    /* 6 */
-    --color-sw-dune-700: var(--sw-dune-700);
-    /* 5 */
-    --color-sw-dune-800: var(--sw-dune-800);
-    /* 4 */
-    --color-sw-dune-900: var(--sw-dune-900);
-    /* 3 */
-    --color-sw-dune-950: var(--sw-dune-950);
-    /* 2 */
-    --color-sw-dune-975: var(--sw-dune-975);
-    /* 1 */
-
-    --color-sw-alert-100: var(--sw-alert-100);
-    --color-sw-alert-900: var(--sw-alert-900);
-
-    --color-sw-success-100: var(--sw-success-100);
-    --color-sw-success-900: var(--sw-success-900);
-
-    --color-sw-warn-100: var(--sw-warn-100);
-    --color-sw-warn-900: var(--sw-warn-900);
-
-    --color-sw-complete-100: var(--sw-complete-100);
-    --color-sw-complete-900: var(--sw-complete-900);
-
-    /* Modal specific colors */
-    --color-sw-modal-bg: var(--sw-modal-bg);
-    --color-sw-modal-item: var(--sw-modal-item);
-
-
-    /* Custom spacing values */
     --spacing-*: initial;
-    --spacing-sw-xxs: var(--sw-space-xxs);
-    --spacing-sw-xs: var(--sw-space-xs);
-    --spacing-sw-sm: var(--sw-space-sm);
-    --spacing-sw-md: var(--sw-space-md);
-    --spacing-sw-2md: var(--sw-space-2md);
-    --spacing-sw-lg: var(--sw-space-lg);
-    --spacing-sw-xl: var(--sw-space-xl);
-    --spacing-sw-2xl: var(--sw-space-2xl);
-    --spacing-sw-3xl: var(--sw-space-3xl);
-    --spacing-sw-4xl: var(--sw-space-4xl);
-    --spacing-sw-5xl: var(--sw-space-5xl);
-    --spacing-sw-6xl: var(--sw-space-6xl);
-    --spacing-sw-7xl: var(--sw-space-7xl);
-    --spacing-sw-8xl: var(--sw-space-8xl);
-    --spacing-sw-9xl: var(--sw-space-9xl);
-    --spacing-sw-10xl: var(--sw-space-10xl);
-    --spacing-sw-11xl: var(--sw-space-11xl);
-    --spacing-sw-12xl: var(--sw-space-12xl);
-    --spacing-sw-max: var(--sw-space-max);
+    --radius-*: initial;
+    --color-*: initial;
+
+    /* Fonts */
+    --font-display: var(--font-family-sw);
+
+    /* Radius */
+    --radius-none: 0;
+    --radius-full: 99999px;
+
+    --radius-sw-sm: var(--r-sw-sm);
+    --radius-sw-md: var(--r-sw-md);
+    --radius-sw-lg: var(--r-sw-lg);
+    --radius-sw-xl: var(--r-sw-xl);
+
+    /* Gray tones */
+    --color-sw-gray-50: var(--c-sw-gray-50);
+    --color-sw-gray-100: var(--c-sw-gray-100);
+    --color-sw-gray-200: var(--c-sw-gray-200);
+    --color-sw-gray-300: var(--c-sw-gray-300);
+    --color-sw-gray-400: var(--c-sw-gray-400);
+    --color-sw-gray-500: var(--c-sw-gray-500);
+    --color-sw-gray-600: var(--c-sw-gray-600);
+    --color-sw-gray-700: var(--c-sw-gray-700);
+    --color-sw-gray-800: var(--c-sw-gray-800);
+    --color-sw-gray-900: var(--c-sw-gray-900);
+    --color-sw-gray-950: var(--c-sw-gray-950);
+
+    /* Accent tones */
+    --color-sw-accent-50: var(--c-sw-accent-50);
+    --color-sw-accent-100: var(--c-sw-accent-100);
+    --color-sw-accent-200: var(--c-sw-accent-200);
+    --color-sw-accent-300: var(--c-sw-accent-300);
+    --color-sw-accent-400: var(--c-sw-accent-400);
+    --color-sw-accent-500: var(--c-sw-accent-500);
+    --color-sw-accent-600: var(--c-sw-accent-600);
+    --color-sw-accent-700: var(--c-sw-accent-700);
+    --color-sw-accent-800: var(--c-sw-accent-800);
+    --color-sw-accent-900: var(--c-sw-accent-900);
+    --color-sw-accent-950: var(--c-sw-accent-950);
+
+    /* Status colors */
+    --color-sw-status-success: var(--c-sw-status-success);
+    --color-sw-status-warning: var(--c-sw-status-warning);
+    --color-sw-status-error: var(--c-sw-status-error);
+
+    /* Spaces */
+    --spacing-sw-xxs: 2px;
+    --spacing-sw-xs: 4px;
+    --spacing-sw-sm: 6px;
+    --spacing-sw-md: 8px;
+    --spacing-sw-lg: 12px;
+    --spacing-sw-xl: 16px;
+    --spacing-sw-2xl: 20px;
+    --spacing-sw-3xl: 24px;
+    --spacing-sw-4xl: 32px;
+    --spacing-sw-5xl: 40px;
+    --spacing-sw-6xl: 48px;
+    --spacing-sw-7xl: 64px;
+    --spacing-sw-8xl: 72px;
+    --spacing-sw-9xl: 80px;
+    --spacing-sw-10xl: 88px;
+    --spacing-sw-11xl: 96px;
+    --spacing-sw-12xl: 108px;
+    --spacing-sw-max: 128px;
 }
 
 @layer base {
-  html {
-    font-family: var(--sw-font-sans);
+  .sw {
+    font-family: var(--font-family-sw);
   }
 
   .hide-scrollbar {
@@ -144,24 +88,65 @@
   }
 }
 
-/* To override default font in the app: */
-
-/* @font-face {
-  font-family: 'Suisse Intl';
-  src: url('/fonts/SuisseIntl-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+@utility text-sw-label-lg {
+	@layer components {
+		@apply font-semibold;
+		font-size: 1rem;
+		line-height: 1rem;
+		letter-spacing: -0.025rem;
+	}
 }
 
-@font-face {
-  font-family: 'Suisse Intl';
-  src: url('/fonts/SuisseIntl-Book.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+@utility text-sw-label-md {
+	@layer components {
+		@apply font-semibold;
+		font-size: 0.875rem;
+		line-height: 1rem;
+		letter-spacing: -0.025rem;
+	}
 }
 
-:root {
-  --ui-font-sans: "Suisse Intl", ui-sans-serif, system-ui, sans-serif;
-} */
+@utility text-sw-label-sm {
+	@layer components {
+		@apply font-semibold;
+		font-size: 0.75rem;
+		line-height: 0.875rem;
+		letter-spacing: -0.01875rem;
+	}
+}
+
+@utility text-sw-value-lg {
+	@layer components {
+		@apply font-semibold;
+		font-size: 2rem;
+		line-height: 2.25rem;
+		letter-spacing: -0.0625rem;
+	}
+}
+
+@utility text-sw-body-lg {
+	@layer components {
+		@apply font-medium;
+		font-size: 1rem;
+		line-height: 1.375rem;
+		letter-spacing: -0.025rem;
+	}
+}
+
+@utility text-sw-body-md {
+	@layer components {
+		@apply font-medium;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		letter-spacing: -0.025rem;
+	}
+}
+
+@utility text-sw-body-sm {
+	@layer components {
+		@apply font-medium;
+		font-size: 0.75rem;
+		line-height: 1rem;
+		letter-spacing: -0.025rem;
+	}
+}

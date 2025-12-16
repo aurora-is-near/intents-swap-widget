@@ -14,6 +14,7 @@ export type LocalisationKeys =
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
   // transfer
+  | 'transfer.success.title'
   | 'transfer.success.hash.label'
   | 'transfer.success.intent.label'
   // quote
@@ -24,7 +25,9 @@ export type LocalisationKeys =
   | 'tokens.input.half.label'
   | 'tokens.input.externalBalance.label'
   | 'tokens.list.noBalanceOnApp.label'
+  | 'tokens.list.noBalanceOnApp.subLabel'
   | 'tokens.list.searchEmpty.label'
+  | 'tokens.list.searchEmpty.subLabel'
   | 'tokens.list.searchReset.label'
   // deposit
   | 'deposit.external.error.noStatus'
@@ -49,6 +52,9 @@ export type LocalisationKeys =
   | 'submit.error.externalTransferFailed.label'
   | 'submit.error.externalTransferFailed.incompleteMessage'
   | 'submit.error.externalTransferFailed.refundedMessage'
+  // send address
+  | 'sendAddress.label'
+  | 'sendAddress.button.magic.label'
   // submit - active (swap)
   | 'submit.active.swap'
   | 'submit.active.intentsSwap'
@@ -79,10 +85,12 @@ export type LocalisationKeys =
   | 'walletCompatibility.modal.feature.secureTransactions'
   | 'walletCompatibility.modal.feature.fullAccess'
   | 'walletCompatibility.modal.feature.fundProtection'
-  | 'walletCompatibility.modal.error.interrupted'
-  | 'walletCompatibility.modal.error.incompatible'
-  | 'walletCompatibility.modal.button.checkCompatibility'
+  | 'walletCompatibility.modal.button.verified'
+  | 'walletCompatibility.modal.button.signing'
+  | 'walletCompatibility.modal.button.verify'
+  | 'walletCompatibility.modal.button.closeTimer'
   | 'walletCompatibility.modal.button.tryAgain'
+  | 'walletCompatibility.modal.button.tryAgainDesc'
   | 'walletCompatibility.modal.button.signOut'
   // token input
   | 'tokenInput.heading.source.withdraw'
