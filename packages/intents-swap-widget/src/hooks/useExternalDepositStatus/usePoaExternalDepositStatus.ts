@@ -28,7 +28,7 @@ type DepositResult = {
   account_id: string;
   created_at: string;
   near_token_id: string;
-  status: 'COMPLETED' | 'PENDING' | 'FAILED';
+  status: 'COMPLETED' | 'PENDING' | 'FAILED' | 'CREDITED';
   tx_hash?: string;
 };
 
@@ -92,6 +92,7 @@ const oneClickBridgeStatusMap: Record<
   DepositResult['status'],
   GetExecutionStatusResponse.status
 > = {
+  CREDITED: GetExecutionStatusResponse.status.PROCESSING,
   PENDING: GetExecutionStatusResponse.status.PROCESSING,
   COMPLETED: GetExecutionStatusResponse.status.SUCCESS,
   FAILED: GetExecutionStatusResponse.status.FAILED,

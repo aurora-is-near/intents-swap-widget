@@ -1,4 +1,12 @@
 {
+  "branches": [
+    "main",
+    {
+        "name": "beta/*",
+        "prerelease": "${name.replace(/^beta\\//g, '')}",
+        "channel": "${name.replace(/^beta\\//g, '')}"
+    }
+  ],
   "plugins": [
     "./build-tools/commit-analyzer",
     "@semantic-release/release-notes-generator",

@@ -3,6 +3,8 @@ import {
   createIntentSignerNEP413,
   createInternalTransferRoute,
   createNearWithdrawalRoute,
+  FeeExceedsAmountError,
+  MinWithdrawalAmountError,
   type RouteConfig,
 } from '@defuse-protocol/bridge-sdk';
 import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
@@ -20,6 +22,7 @@ import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
@@ -290,6 +293,25 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       };
     } catch (e: unknown) {
       logger.error('[TRANSFER ERROR]', e);
+
+      if (e instanceof MinWithdrawalAmountError) {
+        throw new TransferError({
+          code: 'MIN_WITHDRAWAL_AMOUNT_ERROR',
+          meta: {
+            minAmount: formatBigToHuman(
+              e.minAmount.toString(),
+              ctx.sourceToken.decimals,
+            ),
+          },
+        });
+      }
+
+      if (e instanceof FeeExceedsAmountError) {
+        throw new TransferError({
+          code: 'TRANSFER_INVALID_INITIAL',
+          meta: { message: 'Fee is above the maximum allowed' },
+        });
+      }
 
       if (e instanceof Error) {
         if (e.message.includes('Fee is not estimated')) {
