@@ -150,6 +150,5 @@ export const createColorPalette = (
     800: getStopValue(9),
     900: getStopValue(10),
     950: getStopValue(11),
-    975: getStopValue(12),
   };
 };
