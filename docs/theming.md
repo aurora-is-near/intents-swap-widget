@@ -23,6 +23,7 @@ export default function App() {
           colorScheme: 'dark',
           backgroundColor: '#1E2337',
           primaryColor: '#0098EA',
+          surfaceColor: '#1E2337',
         },
       }}
     >
@@ -34,11 +35,36 @@ export default function App() {
 
 ### Properties
 
-| Property          | Type                 | Description                                                       |
-| ----------------- | -------------------- | ----------------------------------------------------------------- |
-| `colorScheme`     | `'light'` | `'dark'` | Sets the overall color scheme                                     |
-| `backgroundColor` | `string`             | The background color of the widget                                |
-| `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states |
+| Property          | Type                 | Description                                                                       |
+| ----------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `colorScheme`     | `'light'` \| `'dark'` | Sets the overall color scheme                                                    |
+| `backgroundColor` | `string`             | The background color of the widget (if `isFullscreen` is used)                    |
+| `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states                 |
+| `surfaceColor`    | `string`             | Secondary surface tones used for backgrounds, texts and other non-accent elements |
+
+### Use our theme outside of widget
+
+If you use Tailwind and want to apply the package styles for your custom
+app's elements you will need to add the `sw` class to some wrapping element
+within your app, for example:
+
+```tsx
+<div className="sw">
+  <h1 className="text-sw-gray-500">My Amazing Widget</h1>
+  <WidgetSwap />
+</div>
+```
+
+You also need to import non-bundled theme files as not all the CSS classes are
+prebuilt.
+
+```css
+/* @import '@aurora-is-near/intents-swap-widget/styles.css'; */
+@import '@aurora-is-near/intents-swap-widget/tailwind.css';
+```
+
+By default all theme variables are set to `body` element. You can change it
+by using `themeParentElementSelector` configuration option.
 
 ## CSS Variable Overrides (Advanced)
 
