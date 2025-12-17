@@ -296,8 +296,8 @@ Used to hide the headings on the token input boxes.
 
 ### `onWalletSignin`
 
-Used to trigger wallet connection for main action button. If not set button has
-"Connect wallet" label and it's not clickable.
+Used to trigger wallet connection for main action button. If not set, the button
+has "Connect wallet" label and it's not clickable.
 
 ### `onWalletSignout`
 
@@ -307,4 +307,5 @@ make sure you guide user accordingly if required on your side.
 
 ### `themeParentElementSelector`
 
-HTML element that defines CSS theming variables. If not set `body` is used.
+HTML element that defines CSS theming variables. If not set, the `body` element
+is used.
