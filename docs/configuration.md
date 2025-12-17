@@ -297,7 +297,7 @@ Used to hide the headings on the token input boxes.
 ### `onWalletSignin`
 
 Used to trigger wallet connection for main action button. If not set button has
-"Connect wallet" and it's not clickable.
+"Connect wallet" label and it's not clickable.
 
 ### `onWalletSignout`
 
