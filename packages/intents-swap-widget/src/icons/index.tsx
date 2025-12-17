@@ -47,12 +47,6 @@ export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
 export const CHAIN_ICONS: Record<Chains, React.ReactElement> = {
   arb: <ArbIcon />,
   avax: <AvaxIcon />,
-  //   avax: (
-  //     <AvaxIcon
-  //       style={{ width: '100%', height: '100%' }}
-  //       preserveAspectRatio="xMidYMid meet"
-  //     />
-  //   ),
   base: <BaseIcon />,
   bera: <BeraIcon />,
   bsc: <BscIcon />,
