@@ -35,7 +35,6 @@ export default defineConfig({
     svgr({
       svgrOptions: {
         ref: true,
-        icon: true,
         prettier: false,
         typescript: true,
         exportType: 'default',
