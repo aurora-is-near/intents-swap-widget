@@ -302,7 +302,7 @@ Used to trigger wallet connection for main action button. If not set button has
 ### `onWalletSignout`
 
 Used to sign out user's wallet. Currently used for compatibility check modal if
-a wallet is not compatible. NB: some wallets doesn't support programmatic logout
+a wallet is incompatible. NB: some wallets don't support programmatic logout
 make sure you guide user accordingly if required on your side.
 
 ### `themeParentElementSelector`

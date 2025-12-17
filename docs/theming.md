@@ -37,10 +37,10 @@ export default function App() {
 
 | Property          | Type                 | Description                                                                       |
 | ----------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `colorScheme`     | `'light'` | `'dark'` | Sets the overall color scheme                                                     |
+| `colorScheme`     | `'light'` \| `'dark'` | Sets the overall color scheme                                                    |
 | `backgroundColor` | `string`             | The background color of the widget (if `isFullscreen` is used)                    |
 | `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states                 |
-| `surfaceColor`    | `string`             | Secondary surface tones used for backgrounds, texts and other non accent elements |
+| `surfaceColor`    | `string`             | Secondary surface tones used for backgrounds, texts and other non-accent elements |
 
 ### Use our theme outside of widget
 
@@ -55,7 +55,7 @@ within your app, for example:
 </div>
 ```
 
-You also need to import non bundled theme files as not all the CSS classes are
+You also need to import non-bundled theme files as not all the CSS classes are
 prebuilt. So instead of
 
 ```css
