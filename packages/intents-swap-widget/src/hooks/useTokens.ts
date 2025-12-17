@@ -3,20 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
+import { CHAINS_LIST } from '@/constants/chains';
 import { NATIVE_NEAR_DUMB_ASSET_ID, TOKENS_DATA } from '@/constants/tokens';
-import { CHAINS_LIST, DEFAULT_CHAIN_ICON } from '@/constants/chains';
 import { isValidChain } from '@/utils/checkers/isValidChain';
-import type { Chains } from '@/types/chain';
 import type { SimpleToken, Token } from '@/types/token';
 
 const getTokenIcon = (tokenSymbol: string): string => {
   const symbol = tokenSymbol.toLowerCase();
 
   return TOKENS_DATA[symbol]?.icon ?? '';
-};
-
-const getChainIcon = (blockchain: Chains): string => {
-  return CHAINS_LIST[blockchain].icon ?? DEFAULT_CHAIN_ICON;
 };
 
 const capitalizeChainName = (blockchain: string) =>
@@ -94,7 +89,6 @@ export const useTokens = (variant?: 'source' | 'target') => {
           isIntent: false,
           icon: token.icon ?? getTokenIcon(token.symbol),
           name: getTokenName(token.symbol),
-          chainIcon: getChainIcon(blockchain),
           chainName:
             CHAINS_LIST[token.blockchain]?.label ??
             capitalizeChainName(token.blockchain),
@@ -120,7 +114,6 @@ export const useTokens = (variant?: 'source' | 'target') => {
         chainName: 'Near',
         blockchain: 'near',
         assetId: NATIVE_NEAR_DUMB_ASSET_ID,
-        chainIcon: getChainIcon('near'),
         icon: TOKENS_DATA.near?.icon ?? '',
         price: wnearToken?.price ?? 0,
         contractAddress: wnearToken?.contractAddress,

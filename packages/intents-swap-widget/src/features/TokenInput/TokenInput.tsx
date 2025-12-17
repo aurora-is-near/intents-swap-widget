@@ -96,9 +96,9 @@ export const TokenInputWithToken = ({
             },
           )}>
           <TokenIcon
+            token={token}
             chainShowIcon={!token.isIntent}
             className="border-sw-gray-800 group-hover:border-sw-gray-700 transition-colors top-[14px]"
-            {...token}
           />
           <span className="text-sw-label-md text-sw-gray-50">
             {token.symbol}

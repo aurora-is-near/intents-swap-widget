@@ -38,8 +38,12 @@ export default defineConfig({
         icon: true,
         prettier: false,
         typescript: true,
+        exportType: 'default',
       },
       include: '**/*.svg',
+      esbuildOptions: {
+        loader: 'tsx',
+      },
     }),
     tailwindcss(),
     react(),

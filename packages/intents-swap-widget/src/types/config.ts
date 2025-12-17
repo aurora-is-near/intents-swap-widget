@@ -12,7 +12,7 @@ export type IntentsAccountType = 'evm' | 'near' | 'sol';
 export type WidgetConfig = {
   // Application metadata
   appName: string;
-  appIcon: string;
+  appIcon?: string;
 
   // Connected wallet
   intentsAccountType?: IntentsAccountType;
