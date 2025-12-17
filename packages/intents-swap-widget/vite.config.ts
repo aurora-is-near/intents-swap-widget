@@ -39,6 +39,7 @@ export default defineConfig({
         prettier: false,
         typescript: true,
         exportType: 'default',
+        dimensions: false,
       },
       include: '**/*.svg',
       esbuildOptions: {
