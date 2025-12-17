@@ -97,6 +97,7 @@ export const TabbedWidgetsDemo = () => {
             appName: 'Demo App',
             connectedWallets: { default: walletAddress },
             intentsAccountType: 'evm',
+            hideTokenInputHeadings: true,
             chainsFilter: {
               target: {
                 intents: showAppBalance ? 'all' : 'none',
