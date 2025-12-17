@@ -25,7 +25,7 @@ const Wrapper = ({
 }>) => (
   <div
     className={cn(
-      'flex items-center justify-center overflow-hidden',
+      'flex items-center justify-center overflow-hidden bg-sw-gray-700',
       className,
     )}
     style={{
@@ -49,7 +49,7 @@ export const Icon = ({
   if (typeof icon === 'string' && imageState === 'failed') {
     return (
       <Wrapper size={size} radius={radius} className={className}>
-        <span className="text-sw-label-md text-sw-gray-100">
+        <span className="text-sw-label-sm text-sw-gray-100">
           {label.charAt(0).toUpperCase()}
         </span>
       </Wrapper>
