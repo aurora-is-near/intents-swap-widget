@@ -35,12 +35,12 @@ export default function App() {
 
 ### Properties
 
-| Property          | Type                 | Description                                                          |
-| ----------------- | -------------------- | -------------------------------------------------------------------- |
-| `colorScheme`     | `'light'` | `'dark'` | Sets the overall color scheme                                        |
-| `backgroundColor` | `string`             | The background color of the widget (if `isFullscreen` is used)       |
-| `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states    |
-| `surfaceColor`    | `string`             | Gray tones used for backgrounds, texts and other non accent elements |
+| Property          | Type                 | Description                                                                       |
+| ----------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `colorScheme`     | `'light'` | `'dark'` | Sets the overall color scheme                                                     |
+| `backgroundColor` | `string`             | The background color of the widget (if `isFullscreen` is used)                    |
+| `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states                 |
+| `surfaceColor`    | `string`             | Secondary surface tones used for backgrounds, texts and other non accent elements |
 
 ### Use our theme outside of widget
 
