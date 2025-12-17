@@ -56,7 +56,7 @@ within your app, for example:
 ```
 
 You also need to import non-bundled theme files as not all the CSS classes are
-prebuilt. So instead of
+prebuilt.
 
 ```css
 /* @import '@aurora-is-near/intents-swap-widget/styles.css'; */
