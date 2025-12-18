@@ -233,7 +233,7 @@ export const WidgetDepositContent = ({
             }}
           />
 
-          <DepositMethodSwitcher className="mt-sw-md">
+          <DepositMethodSwitcher>
             {({ isExternal }) =>
               isExternal ? (
                 <div className="gap-sw-2xl flex flex-col justify-between">
