@@ -16,3 +16,4 @@ export { useWalletBalance } from './useWalletBalance';
 export { useExternalDepositStatus } from './useExternalDepositStatus';
 export { useIsCompatibilityCheckRequired } from './useIsCompatibilityCheckRequired';
 export { useToggleTheme } from './useToggleTheme';
+export { useHandleKeyDown } from './useHandleKeyDown';
