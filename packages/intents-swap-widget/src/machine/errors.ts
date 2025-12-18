@@ -48,6 +48,7 @@ export type InputValidWalletError =
   | { code: 'QUOTE_NO_ONE_TIME_ADDRESS' };
 
 export type QuoteSuccessDirectTransferError =
+  | { code: 'MIN_WITHDRAWAL_AMOUNT_ERROR'; meta: { minAmount?: string } }
   | { code: 'DIRECT_TRANSFER_ERROR'; meta?: { message?: string } }
   | { code: 'BRIDGE_SDK_FAILED' }
   | { code: 'FEES_NOT_ESTIMATED' };

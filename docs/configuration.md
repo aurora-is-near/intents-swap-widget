@@ -293,3 +293,19 @@ Used to hide the send address when swapping or withdrawing.
 ### `hideTokenInputHeadings`
 
 Used to hide the headings on the token input boxes.
+
+### `onWalletSignin`
+
+Used to trigger wallet connection for main action button. If not set, the button
+has "Connect wallet" label and it's not clickable.
+
+### `onWalletSignout`
+
+Used to sign out user's wallet. Currently used for compatibility check modal if
+a wallet is incompatible. NB: some wallets don't support programmatic logout
+make sure you guide user accordingly if required on your side.
+
+### `themeParentElementSelector`
+
+HTML element that defines CSS theming variables. If not set, the `body` element
+is used.

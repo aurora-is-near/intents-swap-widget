@@ -59,11 +59,7 @@ export const ChainsDropdown = ({
                       );
                     case 'intents':
                       return showIntentTokens ? (
-                        <Icon
-                          radius={10}
-                          icon={appIcon}
-                          label={`${appName} account`}
-                        />
+                        <Icon radius={10} icon={appIcon} label={appName} />
                       ) : null;
                     default:
                       return !selectedChain ? (

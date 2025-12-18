@@ -19,6 +19,8 @@ type TokenItemProps = {
     }
 );
 
+const BORDER_RADIUS = 4;
+
 export const TokenIcon = ({
   icon,
   name,
@@ -32,10 +34,16 @@ export const TokenIcon = ({
     {chainShowIcon && (
       <div
         className={cn(
-          'absolute top-[19px] right-[-4px] flex h-[16px] w-[16px] items-center justify-center overflow-hidden rounded-[4px] border-2',
+          'absolute top-[19px] right-[-4px] flex h-[16px] w-[16px] items-center justify-center overflow-hidden border-2',
           className,
-        )}>
-        <Icon size={16} radius={6} icon={chainIcon} label={chainName} />
+        )}
+        style={{ borderRadius: BORDER_RADIUS }}>
+        <Icon
+          size={16}
+          radius={BORDER_RADIUS}
+          icon={chainIcon}
+          label={chainName}
+        />
       </div>
     )}
   </div>

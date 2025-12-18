@@ -43,17 +43,8 @@ For a full list of configuration options see the [Configuration](./configuration
 
 ### 3. Styling
 
-To apply the package styles you will need to add the `sw` class to some wrapping
-element within your app, for example:
-
-```tsx
-<div className="sw">
-  <h1>My Amazing Widget</h1>
-  <WidgetSwap />
-</div>
-```
-
-You will also need to import the package styles into your apps stylesheet, for example:
+To apply the package styles you need to import the package styles into your
+apps stylesheet, for example:
 
 ```css
 @import '@aurora-is-near/intents-swap-widget/styles.css';
