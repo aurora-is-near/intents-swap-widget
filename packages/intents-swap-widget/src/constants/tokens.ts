@@ -1,7 +1,7 @@
 export const DEFAULT_TOKEN_ICON = '/icons/widget/unknown-token.png';
 
 type TokenAdditionalData = {
-  icon: string | undefined;
+  icon?: string;
   name: string;
 };
 
@@ -98,19 +98,15 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'Burrow',
   },
   abg: {
-    icon: undefined,
     name: 'Asian Girl Boss',
   },
   noear: {
-    icon: undefined,
     name: 'NOEAR',
   },
   ref: {
-    icon: undefined,
     name: 'Ref Finance',
   },
   gnear: {
-    icon: undefined,
     name: 'gNear',
   },
   gno: {
@@ -126,7 +122,6 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'Safe',
   },
   score: {
-    icon: undefined,
     name: 'Trust Score',
   },
   kaito: {
@@ -138,147 +133,111 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'TRX',
   },
   arb: {
-    icon: undefined,
     name: 'Arbitrum',
   },
   avax: {
-    icon: undefined,
     name: 'Avalanche',
   },
   base: {
-    icon: undefined,
     name: 'Base',
   },
   bera: {
-    icon: undefined,
     name: 'Bera',
   },
   bsc: {
-    icon: undefined,
     name: 'Binance Smart Chain',
   },
   bnb: {
-    icon: undefined,
     name: 'Binance Coin',
   },
   btc: {
-    icon: undefined,
     name: 'Bitcoin',
   },
   ada: {
-    icon: undefined,
     name: 'Cardano',
   },
   doge: {
-    icon: undefined,
     name: 'Dogecoin',
   },
   eth: {
-    icon: undefined,
     name: 'Ethereum',
   },
   frax: {
-    icon: undefined,
     name: 'FRAZ',
   },
   gnosis: {
-    icon: undefined,
     name: 'Gnosis',
   },
   jambo: {
-    icon: undefined,
     name: 'Jambo',
   },
   knc: {
-    icon: undefined,
     name: 'KNC',
   },
   loud: {
-    icon: undefined,
     name: 'Loud',
   },
   mpdao: {
-    icon: undefined,
     name: 'mpDAO',
   },
   near: {
-    icon: undefined,
     name: 'Near',
   },
   op: {
-    icon: undefined,
     name: 'Optimism',
   },
   pol: {
-    icon: undefined,
     name: 'Polygon',
   },
   public: {
-    icon: undefined,
     name: 'Public',
   },
   purge: {
-    icon: undefined,
     name: 'Forgive Me Father',
   },
   rhea: {
-    icon: undefined,
     name: 'Rhea',
   },
   sol: {
-    icon: undefined,
     name: 'Solana',
   },
   sui: {
-    icon: undefined,
     name: 'Sui',
   },
   ton: {
-    icon: undefined,
     name: 'Ton',
   },
   tron: {
-    icon: undefined,
     name: 'Tron',
   },
   usd1: {
-    icon: undefined,
     name: 'USD1',
   },
   usdf: {
-    icon: undefined,
     name: 'USDf',
   },
   $wif: {
-    icon: undefined,
     name: 'WIF',
   },
   xdai: {
-    icon: undefined,
     name: 'xDAI',
   },
   xrp: {
-    icon: undefined,
     name: 'Ripple',
   },
   zec: {
-    icon: undefined,
     name: 'Zcash',
   },
   xbtc: {
-    icon: undefined,
     name: 'xBTC',
   },
   wbtc: {
-    icon: undefined,
     name: 'wBTC',
   },
   wnear: {
-    icon: undefined,
     name: 'wNEAR',
   },
   weth: {
-    icon: undefined,
     name: 'wETH',
   },
   nearkat: {
@@ -286,27 +245,21 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'NearKat',
   },
   itlx: {
-    icon: undefined,
     name: 'ITLX',
   },
   ltc: {
-    icon: undefined,
     name: 'LTC',
   },
   aster: {
-    icon: undefined,
     name: 'ASTER',
   },
   spx: {
-    icon: undefined,
     name: 'SPX',
   },
   eure: {
-    icon: undefined,
     name: 'EURe',
   },
   gbpe: {
-    icon: undefined,
     name: 'GBPE',
   },
 };
