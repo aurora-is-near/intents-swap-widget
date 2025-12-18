@@ -1,5 +1,6 @@
 :root {
     --font-family-sw: 'Inter', sans-serif;
+    --default-font-family: var(--font-family-sw);
 
     --r-sw-sm: 6px;
     --r-sw-md: 10px;
@@ -73,11 +74,11 @@
     }
 }
 
-:root {
-  font-family: Inter, sans-serif;
-  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+.sw {
+  font-family: var(--font-family-sw);
+  font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 @supports (font-variation-settings: normal) {
-  :root { font-family: InterVariable, sans-serif; }
+  .sw { font-family: var(--font-family-sw);; }
 }
