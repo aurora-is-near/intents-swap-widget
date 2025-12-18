@@ -12,6 +12,7 @@ import { CloseButton } from '@/components/CloseButton';
 
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
+import { useHandleKeyDown } from '@/hooks';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
@@ -48,6 +49,10 @@ export const TokensModal = ({
   const [search, setSearch] = useState('');
   const chains = useChains(variant);
 
+  const handleClose = () => onMsg({ type: 'on_dismiss_tokens_modal' });
+
+  useHandleKeyDown('Escape', handleClose);
+
   // If there is only one chain available, select it by default
   const defaultChain =
     chains.length === 1 && chains[0]?.id ? chains[0]?.id : 'all';
@@ -72,9 +77,7 @@ export const TokensModal = ({
       )}>
       <header className="flex items-center justify-between">
         <h2 className="text-sw-label-lg text-sw-gray-50">Select token</h2>
-        <CloseButton
-          onClick={() => onMsg({ type: 'on_dismiss_tokens_modal' })}
-        />
+        <CloseButton onClick={handleClose} />
       </header>
 
       <div className="gap-sw-xl flex items-center">
