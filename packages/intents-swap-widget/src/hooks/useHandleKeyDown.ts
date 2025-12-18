@@ -18,5 +18,5 @@ export const useHandleKeyDown = (key: string, onKeyPress: () => void) => {
         window.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [onKeyPress]);
+  }, [key, onKeyPress]);
 };
