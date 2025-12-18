@@ -8,7 +8,8 @@
     "dev": "turbo run dev",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "typecheck": "turbo run typecheck --parallel",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "check-docs": "node ./bin/verify-docs.js"
   },
   "engines": {
     "node": ">=20.18.1"

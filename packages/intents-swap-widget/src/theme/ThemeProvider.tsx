@@ -73,6 +73,8 @@ export const ThemeProvider = ({ children, theme }: ThemeProviderProps) => {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>
+      <div className="sw">{children}</div>
+    </ThemeContext.Provider>
   );
 };
