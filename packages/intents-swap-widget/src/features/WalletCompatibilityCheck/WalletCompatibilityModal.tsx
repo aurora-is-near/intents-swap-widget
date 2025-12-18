@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { useTypedTranslation } from '@/localisation';
 
 import { cn } from '@/utils';
+import { useHandleKeyDown } from '@/hooks';
 import { Button, Card, CloseButton } from '@/components';
 
 type Msg = { type: 'on_close' | 'on_check_compatibility' | 'on_sign_out' };
@@ -58,15 +59,16 @@ const FakeButton = ({
 
 export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
   const { t } = useTypedTranslation();
+  const handleClose = () => onMsg({ type: 'on_close' });
+
+  useHandleKeyDown('Escape', handleClose);
 
   const showTimer = useTimer({
     endTime: 0,
     autostart: false,
     timerType: 'DECREMENTAL',
     initialTime: 7,
-    onTimeOver: () => {
-      onMsg({ type: 'on_close' });
-    },
+    onTimeOver: handleClose,
   });
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
   return (
     <Card className="relative w-full gap-sw-2xl flex flex-col">
       <CloseButton
-        onClick={() => onMsg({ type: 'on_close' })}
+        onClick={handleClose}
         className="absolute top-sw-2xl right-sw-2xl"
       />
       <ArmingCountdownFill size={48} className="text-sw-status-warning" />
@@ -176,11 +178,14 @@ interface ErrorProps {
 
 export const ErrorView = ({ onMsg }: ErrorProps) => {
   const { t } = useTypedTranslation();
+  const handleClose = () => onMsg({ type: 'on_close' });
+
+  useHandleKeyDown('Escape', handleClose);
 
   return (
     <Card className="relative w-full gap-sw-2xl flex flex-col">
       <CloseButton
-        onClick={() => onMsg({ type: 'on_close' })}
+        onClick={handleClose}
         className="absolute top-sw-2xl right-sw-2xl"
       />
       <GppBadFill size={48} className="text-sw-status-error" />
