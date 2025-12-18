@@ -1,7 +1,7 @@
 export const DEFAULT_TOKEN_ICON = '/icons/widget/unknown-token.png';
 
 type TokenAdditionalData = {
-  icon: string | undefined;
+  icon?: string;
   name: string;
 };
 
@@ -98,19 +98,15 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'Burrow',
   },
   abg: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/abg.png',
     name: 'Asian Girl Boss',
   },
   noear: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/noear.png',
     name: 'NOEAR',
   },
   ref: {
-    icon: undefined,
     name: 'Ref Finance',
   },
   gnear: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/gnear.svg',
     name: 'gNear',
   },
   gno: {
@@ -126,7 +122,6 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'Safe',
   },
   score: {
-    icon: undefined,
     name: 'Trust Score',
   },
   kaito: {
@@ -138,147 +133,111 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'TRX',
   },
   arb: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/arb.svg',
     name: 'Arbitrum',
   },
   avax: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/avax.svg',
     name: 'Avalanche',
   },
   base: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/base.svg',
     name: 'Base',
   },
   bera: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/bera.svg',
     name: 'Bera',
   },
   bsc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/bsc.svg',
     name: 'Binance Smart Chain',
   },
   bnb: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/bsc.svg',
     name: 'Binance Coin',
   },
   btc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/btc.svg',
     name: 'Bitcoin',
   },
   ada: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/cardano.svg',
     name: 'Cardano',
   },
   doge: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/doge.svg',
     name: 'Dogecoin',
   },
   eth: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/eth.svg',
     name: 'Ethereum',
   },
   frax: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/frax.png',
     name: 'FRAZ',
   },
   gnosis: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/gnosis.svg',
     name: 'Gnosis',
   },
   jambo: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/jambo.png',
     name: 'Jambo',
   },
   knc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/knc.svg',
     name: 'KNC',
   },
   loud: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/loud.svg',
     name: 'Loud',
   },
   mpdao: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/mpdao.svg',
     name: 'mpDAO',
   },
   near: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/near.svg',
     name: 'Near',
   },
   op: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/op.svg',
     name: 'Optimism',
   },
   pol: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/pol.svg',
     name: 'Polygon',
   },
   public: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/public.svg',
     name: 'Public',
   },
   purge: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/purge.png',
     name: 'Forgive Me Father',
   },
   rhea: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/rhea.png',
     name: 'Rhea',
   },
   sol: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/sol.svg',
     name: 'Solana',
   },
   sui: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/sui.svg',
     name: 'Sui',
   },
   ton: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ton.svg',
     name: 'Ton',
   },
   tron: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/tron.svg',
     name: 'Tron',
   },
   usd1: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/usd1.png',
     name: 'USD1',
   },
   usdf: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/usdf.png',
     name: 'USDf',
   },
   $wif: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/wif.png',
     name: 'WIF',
   },
   xdai: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/xdai.svg',
     name: 'xDAI',
   },
   xrp: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/xrp.svg',
     name: 'Ripple',
   },
   zec: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/zec.svg',
     name: 'Zcash',
   },
   xbtc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/btc.svg',
     name: 'xBTC',
   },
   wbtc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/btc.svg',
     name: 'wBTC',
   },
   wnear: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/near.svg',
     name: 'wNEAR',
   },
   weth: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/eth.svg',
     name: 'wETH',
   },
   nearkat: {
@@ -286,27 +245,21 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'NearKat',
   },
   itlx: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/itlx.svg',
     name: 'ITLX',
   },
   ltc: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/ltc.svg',
     name: 'LTC',
   },
   aster: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/aster.svg',
     name: 'ASTER',
   },
   spx: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/spx.svg',
     name: 'SPX',
   },
   eure: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/eure.svg',
     name: 'EURe',
   },
   gbpe: {
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/gbpe.svg',
     name: 'GBPE',
   },
 };

@@ -9,9 +9,9 @@ import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { Icon } from '@/components/Icon';
 import { useChains } from '@/hooks/useChains';
-import { CHAINS_LIST } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
+import { ASSET_ICONS, UNKNOWN_ICON } from '@/icons';
 import type { Chains, ChainsFilter } from '@/types/chain';
 
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
@@ -72,7 +72,7 @@ export const ChainsDropdown = ({
                         <Icon
                           radius={10}
                           label={selectedChain.label}
-                          icon={CHAINS_LIST[selected].icon}
+                          icon={ASSET_ICONS[selected] ?? UNKNOWN_ICON}
                         />
                       );
                   }
@@ -125,10 +125,10 @@ export const ChainsDropdown = ({
                     {({ focus }) => (
                       <ChainItem
                         chain="intents"
-                        label={`${appName} account`}
+                        label={appName}
                         isSelected={selected === 'intents'}
                         isFocused={focus}
-                        icon={appIcon}
+                        icon={appIcon ?? UNKNOWN_ICON}
                         onMsg={(msg) => {
                           switch (msg.type) {
                             case 'on_click_chain':
@@ -156,7 +156,7 @@ export const ChainsDropdown = ({
                         <ChainItem
                           chain={chain.id}
                           label={chain.label}
-                          icon={CHAINS_LIST[chain.id].icon}
+                          icon={ASSET_ICONS[chain.id] ?? UNKNOWN_ICON}
                           isSelected={selected === chain.id}
                           isFocused={focus}
                           onMsg={(msg) => {

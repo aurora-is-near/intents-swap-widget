@@ -15,7 +15,6 @@ export type Token = Omit<SimpleToken, 'icon'> & {
   isIntent: boolean;
   chainName: string;
   name: string;
-  chainIcon: string;
 };
 
 export type TokenBalance = string | 0 | undefined;
