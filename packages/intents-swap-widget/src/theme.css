@@ -80,5 +80,5 @@
 }
 
 @supports (font-variation-settings: normal) {
-  .sw { font-family: var(--font-family-sw);; }
+  .sw { font-family: var(--font-family-sw); }
 }
