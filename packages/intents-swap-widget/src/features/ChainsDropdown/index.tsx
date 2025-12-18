@@ -98,59 +98,13 @@ export const ChainsDropdown = ({
                 className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-800 shadow-[0_6px_48px_0_rgba(36,38,45,0.3)] ring-1 ring-inset ring-sw-gray-700 outline-none">
                 {chains.length > 1 && (
                   <MenuItem>
-                    <ChainItem
-                      chain="all"
-                      label="All networks"
-                      isSelected={selected === 'all'}
-                      icon={<AllNetworksIcon />}
-                      onMsg={(msg) => {
-                        switch (msg.type) {
-                          case 'on_click_chain':
-                            close();
-                            onMsg(msg);
-                            break;
-                          default:
-                            notReachable(msg.type, { throwError: false });
-                        }
-                      }}
-                    />
-                  </MenuItem>
-                )}
-
-                {hasIntentsAccountMenuItem && (
-                  <MenuItem>
-                    <ChainItem
-                      chain="intents"
-                      label={`${appName} account`}
-                      isSelected={selected === 'intents'}
-                      icon={appIcon ?? UNKNOWN_ICON}
-                      onMsg={(msg) => {
-                        switch (msg.type) {
-                          case 'on_click_chain':
-                            close();
-                            onMsg(msg);
-                            break;
-                          default:
-                            notReachable(msg.type, { throwError: false });
-                        }
-                      }}
-                    />
-                  </MenuItem>
-                )}
-
-                {!!chains.length &&
-                  !!(chains.length > 1 || hasIntentsAccountMenuItem) && (
-                    <Hr className="shrink-0 my-sw-sm bg-sw-gray-700" />
-                  )}
-
-                {chains.map((chain) => {
-                  return (
-                    <MenuItem key={chain.id}>
+                    {({ focus }) => (
                       <ChainItem
-                        chain={chain.id}
-                        label={chain.label}
-                        icon={ASSET_ICONS[chain.id] ?? UNKNOWN_ICON}
-                        isSelected={selected === chain.id}
+                        chain="all"
+                        label="All networks"
+                        isSelected={selected === 'all'}
+                        isFocused={focus}
+                        icon={<AllNetworksIcon />}
                         onMsg={(msg) => {
                           switch (msg.type) {
                             case 'on_click_chain':
@@ -162,6 +116,61 @@ export const ChainsDropdown = ({
                           }
                         }}
                       />
+                    )}
+                  </MenuItem>
+                )}
+
+                {hasIntentsAccountMenuItem && (
+                  <MenuItem>
+                    {({ focus }) => (
+                      <ChainItem
+                        chain="intents"
+                        label={appName}
+                        isSelected={selected === 'intents'}
+                        isFocused={focus}
+                        icon={appIcon ?? UNKNOWN_ICON}
+                        onMsg={(msg) => {
+                          switch (msg.type) {
+                            case 'on_click_chain':
+                              close();
+                              onMsg(msg);
+                              break;
+                            default:
+                              notReachable(msg.type, { throwError: false });
+                          }
+                        }}
+                      />
+                    )}
+                  </MenuItem>
+                )}
+
+                {!!chains.length &&
+                  !!(chains.length > 1 || hasIntentsAccountMenuItem) && (
+                    <Hr className="shrink-0 my-sw-sm bg-sw-gray-700" />
+                  )}
+
+                {chains.map((chain) => {
+                  return (
+                    <MenuItem key={chain.id}>
+                      {({ focus }) => (
+                        <ChainItem
+                          chain={chain.id}
+                          label={chain.label}
+                          icon={ASSET_ICONS[chain.id] ?? UNKNOWN_ICON}
+                          isSelected={selected === chain.id}
+                          isFocused={focus}
+                          onMsg={(msg) => {
+                            switch (msg.type) {
+                              case 'on_click_chain':
+                                close();
+                                onMsg(msg);
+                                break;
+                              default:
+                                notReachable(msg.type, { throwError: false });
+                            }
+                          }}
+                        />
+                      )}
                     </MenuItem>
                   );
                 })}
