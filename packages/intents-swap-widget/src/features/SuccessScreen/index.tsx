@@ -70,11 +70,11 @@ export const SuccessScreen = ({
   );
 
   const sourceAmountUsd = ctx.quote?.amountInUsd
-    ? parseFloat(ctx.quote?.amountInUsd)
+    ? parseFloat(ctx.quote.amountInUsd)
     : ctx.sourceToken.price * parseFloat(sourceAmount);
 
   const targetAmountUsd = ctx.quote?.amountOutUsd
-    ? parseFloat(ctx.quote?.amountOutUsd)
+    ? parseFloat(ctx.quote.amountOutUsd)
     : ctx.targetToken.price * parseFloat(targetAmount);
 
   const targetTokenUnitPrice = targetAmountUsd / parseFloat(targetAmount);
