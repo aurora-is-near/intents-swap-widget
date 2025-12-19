@@ -1,4 +1,3 @@
-import { isBrowser } from 'browser-or-node';
 import { createContext, type ReactNode, useEffect, useMemo } from 'react';
 
 import { ColorPalette, ColorScheme, HexColor, Theme } from '../types/theme';
@@ -10,17 +9,15 @@ const setColorVariables = (
   colorKey: string,
   parentEl: Element | null,
 ) => {
-  if (isBrowser) {
-    let parentElement = document.body;
+  let parentElement = document.body;
 
-    if (parentEl instanceof HTMLElement) {
-      parentElement = parentEl;
-    }
-
-    Object.entries(palette).forEach(([key, value]) => {
-      parentElement.style.setProperty(`--c-sw-${colorKey}-${key}`, value);
-    });
+  if (parentEl instanceof HTMLElement) {
+    parentElement = parentEl;
   }
+
+  Object.entries(palette).forEach(([key, value]) => {
+    parentElement.style.setProperty(`--c-sw-${colorKey}-${key}`, value);
+  });
 };
 
 const setColorPalette = (
@@ -63,7 +60,7 @@ export const ThemeProvider = ({ children, theme }: ThemeProviderProps) => {
   const value = useMemo((): Theme | undefined => theme, [theme]);
 
   useEffect(() => {
-    if (theme && isBrowser) {
+    if (theme) {
       const themeParentElement = themeParentElementSelector
         ? document.querySelector(themeParentElementSelector)
         : null;
