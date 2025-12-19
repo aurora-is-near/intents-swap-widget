@@ -11,13 +11,11 @@ type Props = {
 
 export const TokenRow = ({ token, amount, amountUsd }: Props) => (
   <Card className="flex items-center justify-between gap-sw-md pl-sw-2xl py-sw-lg">
-    <div className="mt-auto">
-      <TokenIcon
-        token={token}
-        chainShowIcon={!token.isIntent}
-        className="border-sw-gray-900"
-      />
-    </div>
+    <TokenIcon
+      token={token}
+      chainShowIcon={!token.isIntent}
+      className="border-sw-gray-900"
+    />
     <div className="text-sw-label-md text-sw-gray-50 mr-auto">
       {`${amount} ${token.symbol}`}
     </div>
