@@ -4,9 +4,7 @@ import { isBrowser } from 'browser-or-node';
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const applyThemeDataAttr = (theme: ThemeMode, parentEl: Element | null) => {
-  if (isBrowser) {
-    (parentEl ?? document.body).setAttribute('data-sw-theme', theme);
-  }
+  (parentEl ?? document.body).setAttribute('data-sw-theme', theme);
 };
 
 type Args = {
