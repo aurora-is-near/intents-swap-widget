@@ -99,7 +99,7 @@ export const WidgetWithdrawContent = ({
   });
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: true, keepSelectedTokens: true });
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {

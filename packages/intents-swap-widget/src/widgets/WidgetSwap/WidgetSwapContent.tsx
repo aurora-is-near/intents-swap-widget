@@ -84,7 +84,7 @@ export const WidgetSwapContent = ({
   }, []);
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: true, keepSelectedTokens: true });
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
   useStoreSideEffects({
