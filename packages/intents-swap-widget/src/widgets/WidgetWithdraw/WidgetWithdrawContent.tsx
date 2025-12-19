@@ -130,8 +130,9 @@ export const WidgetWithdrawContent = ({
   if (ctx.state === 'transfer_success' && !!transferResult) {
     return (
       <SuccessScreen
-        {...transferResult}
+        showTargetToken
         title={t('transfer.success.withdrawal.title', 'Withdrawal successful')}
+        {...transferResult}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
