@@ -1,0 +1,155 @@
+@import 'tailwindcss';
+
+@import './theme.css';
+
+#root {
+    height: 100vh;
+}
+
+@theme {
+    --spacing-*: initial;
+    --radius-*: initial;
+    --color-*: initial;
+
+    /* Fonts */
+    --font-display: var(--font-family-csw);
+
+    /* Radius */
+    --radius-none: 0;
+    --radius-full: 99999px;
+
+    --radius-csw-sm: var(--r-csw-sm);
+    --radius-csw-md: var(--r-csw-md);
+    --radius-csw-lg: var(--r-csw-lg);
+    --radius-csw-xl: var(--r-csw-xl);
+
+    /* Gray tones */
+    --color-csw-gray-50: var(--c-csw-gray-50);
+    --color-csw-gray-100: var(--c-csw-gray-100);
+    --color-csw-gray-200: var(--c-csw-gray-200);
+    --color-csw-gray-300: var(--c-csw-gray-300);
+    --color-csw-gray-400: var(--c-csw-gray-400);
+    --color-csw-gray-500: var(--c-csw-gray-500);
+    --color-csw-gray-600: var(--c-csw-gray-600);
+    --color-csw-gray-700: var(--c-csw-gray-700);
+    --color-csw-gray-800: var(--c-csw-gray-800);
+    --color-csw-gray-900: var(--c-csw-gray-900);
+    --color-csw-gray-950: var(--c-csw-gray-950);
+
+    /* Accent tones */
+    --color-csw-accent-50: var(--c-csw-accent-50);
+    --color-csw-accent-100: var(--c-csw-accent-100);
+    --color-csw-accent-200: var(--c-csw-accent-200);
+    --color-csw-accent-300: var(--c-csw-accent-300);
+    --color-csw-accent-400: var(--c-csw-accent-400);
+    --color-csw-accent-500: var(--c-csw-accent-500);
+    --color-csw-accent-600: var(--c-csw-accent-600);
+    --color-csw-accent-700: var(--c-csw-accent-700);
+    --color-csw-accent-800: var(--c-csw-accent-800);
+    --color-csw-accent-900: var(--c-csw-accent-900);
+    --color-csw-accent-950: var(--c-csw-accent-950);
+
+    /* Status colors */
+    --color-csw-status-success: var(--c-csw-status-success);
+    --color-csw-status-warning: var(--c-csw-status-warning);
+    --color-csw-status-error: var(--c-csw-status-error);
+
+    /* Spaces */
+    --spacing-csw-xxs: 2px;
+    --spacing-csw-xs: 4px;
+    --spacing-csw-sm: 6px;
+    --spacing-csw-md: 8px;
+    --spacing-csw-2md: 10px;
+    --spacing-csw-lg: 12px;
+    --spacing-csw-xl: 16px;
+    --spacing-csw-2xl: 20px;
+    --spacing-csw-3xl: 24px;
+    --spacing-csw-4xl: 32px;
+    --spacing-csw-5xl: 40px;
+    --spacing-csw-6xl: 48px;
+    --spacing-csw-7xl: 64px;
+    --spacing-csw-8xl: 72px;
+    --spacing-csw-9xl: 80px;
+    --spacing-csw-10xl: 88px;
+    --spacing-csw-11xl: 96px;
+    --spacing-csw-12xl: 108px;
+    --spacing-csw-max: 128px
+}
+
+@layer base {
+    .csw {
+        font-family: var(--csw-font-sans);
+    }
+
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@utility text-csw-label-lg {
+    @layer components {
+        @apply font-semibold;
+        font-size: 1rem;
+        line-height: 1rem;
+        letter-spacing: -0.025rem;
+    }
+}
+
+@utility text-csw-label-md {
+    @layer components {
+        @apply font-semibold;
+        font-size: 0.875rem;
+        line-height: 1rem;
+        letter-spacing: -0.025rem;
+    }
+}
+
+@utility text-csw-label-sm {
+    @layer components {
+        @apply font-semibold;
+        font-size: 0.75rem;
+        line-height: 0.875rem;
+        letter-spacing: -0.01875rem;
+    }
+}
+
+@utility text-csw-value-lg {
+    @layer components {
+        @apply font-semibold;
+        font-size: 2rem;
+        line-height: 2.25rem;
+        letter-spacing: -0.0625rem;
+    }
+}
+
+@utility text-csw-body-lg {
+    @layer components {
+        @apply font-medium;
+        font-size: 1rem;
+        line-height: 1.375rem;
+        letter-spacing: -0.025rem;
+    }
+}
+
+@utility text-csw-body-md {
+    @layer components {
+        @apply font-medium;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        letter-spacing: -0.025rem;
+    }
+}
+
+@utility text-csw-body-sm {
+    @layer components {
+        @apply font-medium;
+        font-size: 0.75rem;
+        line-height: 1rem;
+        letter-spacing: -0.025rem;
+    }
+}
