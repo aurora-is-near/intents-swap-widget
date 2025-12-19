@@ -98,6 +98,10 @@ export const WidgetWithdrawContent = ({
     ],
   });
 
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: true, keepSelectedTokens: true });
+  };
+
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetWithdrawSkeleton />;
   }
@@ -127,14 +131,12 @@ export const WidgetWithdrawContent = ({
     return (
       <SuccessScreen
         {...transferResult}
-        message={[
-          'Your withdrawal has been successfully completed,',
-          'and the funds have been sent to the specified destination.',
-        ]}
+        title={t('transfer.success.withdrawal.title', 'Withdrawal successful')}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);

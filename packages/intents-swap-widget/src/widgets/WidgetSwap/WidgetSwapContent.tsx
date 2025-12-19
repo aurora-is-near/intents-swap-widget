@@ -83,6 +83,10 @@ export const WidgetSwapContent = ({
     fireEvent('reset', { clearWalletAddress: true });
   }, []);
 
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: true, keepSelectedTokens: true });
+  };
+
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
@@ -129,15 +133,14 @@ export const WidgetSwapContent = ({
   if (ctx.state === 'transfer_success' && !!transferResult) {
     return (
       <SuccessScreen
+        showTargetToken
+        title={t('transfer.success.swap.title', 'Swap successful')}
         {...transferResult}
-        message={[
-          'Your swap has been successfully completed,',
-          'and the funds are now available in your account.',
-        ]}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);
