@@ -5,7 +5,6 @@ export type EvmChains = (typeof EVM_CHAINS)[number];
 
 export type Chain = {
   id: Chains;
-  icon: string;
   label: string;
 };
 

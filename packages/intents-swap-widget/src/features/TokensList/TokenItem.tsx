@@ -50,9 +50,9 @@ export const TokenItem = ({
           !isNotSelectable && onMsg({ type: 'on_select_token', token })
         }>
         <TokenIcon
+          token={token}
           chainShowIcon={!token.isIntent}
           className="border-sw-gray-900 group-hover:border-sw-gray-800 transition-colors"
-          {...token}
         />
 
         <div className="gap-sw-xs mr-auto flex flex-col">

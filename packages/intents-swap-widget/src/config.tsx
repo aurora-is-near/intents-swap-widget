@@ -33,8 +33,6 @@ const DISABLED_TOKENS = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
 
 const DEFAULT_CONFIG: WidgetConfig = {
   appName: 'Unknown',
-  appIcon:
-    'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/unknown.svg',
 
   slippageTolerance: 100, // 1%
   intentsAccountType: 'evm',

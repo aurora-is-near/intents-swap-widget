@@ -74,10 +74,6 @@
 }
 
 @layer base {
-  .sw {
-    font-family: var(--font-family-sw);
-  }
-
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
