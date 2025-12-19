@@ -1,4 +1,3 @@
-import { isBrowser } from 'browser-or-node';
 import {
   ArrowDownward,
   Check,
@@ -165,7 +164,7 @@ export const SuccessScreen = ({
           variant="primary"
           iconPosition="tail"
           icon={OpenInNew}
-          onClick={() => isBrowser && window.open(transactionLink, '_blank')}>
+          onClick={() => window.open(transactionLink, '_blank')}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>
         <Button fluid size="lg" variant="outlined" onClick={handleClose}>
