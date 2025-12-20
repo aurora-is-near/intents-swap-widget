@@ -5,6 +5,8 @@ import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageB
 import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
+import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
+import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { TransferResult } from '@/types/transfer';
@@ -139,6 +141,10 @@ export function useMakeNEARFtTransferCall(
           code: 'NO_DEPOSIT_RESULT',
         });
       } catch (err: unknown) {
+        if (isErrorLikeObject(err) && isUserDeniedSigning(err)) {
+          return;
+        }
+
         logger.error('[TRANSFER ERROR]', err);
         throw new TransferError({
           code: 'DIRECT_TRANSFER_ERROR',
@@ -214,6 +220,10 @@ export function useMakeNEARFtTransferCall(
         code: 'NO_DEPOSIT_RESULT',
       });
     } catch (err: unknown) {
+      if (isErrorLikeObject(err) && isUserDeniedSigning(err)) {
+        return;
+      }
+
       logger.error('[TRANSFER ERROR]', err);
       throw new TransferError({
         code: 'DIRECT_TRANSFER_ERROR',

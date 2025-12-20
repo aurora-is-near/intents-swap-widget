@@ -21,3 +21,4 @@ export { formatAddressTruncate } from './formatters/formatAddressTruncate';
 export { cn } from './cn';
 export { noop } from './noop';
 export { notReachable } from './notReachable';
+export { isErrorLikeObject } from './isErrorLikeObject';
