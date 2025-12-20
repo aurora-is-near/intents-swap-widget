@@ -298,7 +298,10 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         // no hash means completion not trackable for this bridge
         hash: completionResult.hash ?? '',
         transactionLink: completionResult.hash
-          ? getTransactionLink(CHAIN_IDS_MAP.near, completionResult.hash)
+          ? getTransactionLink(
+              CHAIN_IDS_MAP[ctx.targetToken.blockchain],
+              completionResult.hash,
+            )
           : '',
       };
     } catch (e: unknown) {
