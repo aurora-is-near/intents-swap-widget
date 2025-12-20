@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@aurora-is-near/eslint-config": "^1.5.3",
-    "@defuse-protocol/bridge-sdk": "0.10.3",
+    "@defuse-protocol/intents-sdk": "^0.43.3",
     "@defuse-protocol/internal-utils": "^0.13.0",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
     "@headlessui/react": "^2.2.4",

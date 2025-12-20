@@ -1,5 +1,5 @@
 import { utils } from '@defuse-protocol/internal-utils';
-import { createIntentSignerViem } from '@defuse-protocol/bridge-sdk';
+import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
 import bs58 from 'bs58';
 import { SolanaProvider } from '../../../types/providers';
 
