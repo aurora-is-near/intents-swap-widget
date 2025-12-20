@@ -33,6 +33,77 @@ const WIDGET_TYPES = {
   withdraw: WidgetWithdraw,
 } as const;
 
+const getSourceTokens = (
+  selectedWidget: WidgetType,
+  showAppBalance: boolean,
+  walletAddress: string | undefined,
+) => {
+  return {
+    intents: (() => {
+      if (!showAppBalance) {
+        return 'none' as const;
+      }
+
+      if (selectedWidget === 'deposit') {
+        return 'none' as const;
+      }
+
+      if (selectedWidget === 'withdraw') {
+        return 'with-balance' as const;
+      }
+
+      return walletAddress ? ('with-balance' as const) : ('all' as const);
+    })(),
+
+    external: (() => {
+      if (selectedWidget === 'withdraw') {
+        return 'none' as const;
+      }
+
+      if (selectedWidget === 'deposit') {
+        return 'wallet-supported' as const;
+      }
+
+      return walletAddress ? ('wallet-supported' as const) : ('all' as const);
+    })(),
+  };
+};
+
+const getTargetTokens = (
+  selectedWidget: WidgetType,
+  showAppBalance: boolean,
+) => {
+  return {
+    intents: (() => {
+      if (!showAppBalance) {
+        return 'none' as const;
+      }
+
+      if (selectedWidget === 'withdraw') {
+        return 'none' as const;
+      }
+
+      if (selectedWidget === 'deposit') {
+        return 'all' as const;
+      }
+
+      return 'with-balance' as const;
+    })(),
+
+    external: (() => {
+      if (selectedWidget === 'withdraw') {
+        return 'all' as const;
+      }
+
+      if (selectedWidget === 'deposit') {
+        return 'none' as const;
+      }
+
+      return 'all' as const;
+    })(),
+  };
+};
+
 export const TabbedWidgetsDemo = () => {
   const {
     providers,
@@ -41,24 +112,18 @@ export const TabbedWidgetsDemo = () => {
   } = useAppKitWallet();
 
   const [showAppBalance, setShowAppBalance] = useState(true);
-  const appBalanceMode = walletAddress ? 'with-balance' : 'all';
 
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
 
-  const sourceIntents = (() => {
-    if (selectedWidget === 'deposit') {
-      return 'none';
-    }
-
-    if (selectedWidget === 'withdraw') {
-      return 'with-balance';
-    }
-
-    return showAppBalance ? appBalanceMode : 'none';
-  })();
-
   const WidgetComponent = WIDGET_TYPES[selectedWidget];
+
+  const targetTokens = getTargetTokens(selectedWidget, showAppBalance);
+  const sourceTokens = getSourceTokens(
+    selectedWidget,
+    showAppBalance,
+    walletAddress,
+  );
 
   useEffect(() => {
     if (!showAppBalance) {
@@ -99,14 +164,8 @@ export const TabbedWidgetsDemo = () => {
             intentsAccountType: 'evm',
             hideTokenInputHeadings: true,
             chainsFilter: {
-              target: {
-                intents: showAppBalance ? 'all' : 'none',
-                external: 'all',
-              },
-              source: {
-                intents: sourceIntents,
-                external: walletAddress ? 'wallet-supported' : 'all',
-              },
+              target: targetTokens,
+              source: sourceTokens,
             },
           }}>
           <WidgetComponent
