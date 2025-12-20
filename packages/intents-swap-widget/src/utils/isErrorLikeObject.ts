@@ -1,6 +1,6 @@
-export const isErrorLikeObject = (
-  error: unknown,
-): error is { message: string; cause?: unknown } => {
+export type ErrorLikeObject = Error | { message: string; cause?: unknown };
+
+export const isErrorLikeObject = (error: unknown): error is ErrorLikeObject => {
   return (
     error instanceof Error ||
     (typeof error === 'object' &&

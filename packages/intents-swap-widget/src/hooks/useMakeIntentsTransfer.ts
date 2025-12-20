@@ -322,10 +322,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         }
 
         // User rejected
-        if (
-          isUserDeniedSigning(e.message) ||
-          isUserDeniedSigning(`${e.cause}`)
-        ) {
+        if (isUserDeniedSigning(e)) {
           return undefined;
         }
       }
