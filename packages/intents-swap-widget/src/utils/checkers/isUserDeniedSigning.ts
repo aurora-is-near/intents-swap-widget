@@ -13,8 +13,9 @@ export const isUserDeniedSigning = (error: ErrorLikeObject) => {
     errorVariations.some((variation) =>
       error.message.toLowerCase().includes(variation),
     ) ||
-    errorVariations.some((variation) =>
-      `${error.cause}`.toLowerCase().includes(variation),
-    )
+    (error.cause &&
+      errorVariations.some((variation) =>
+        `${error.cause}`.toLowerCase().includes(variation),
+      ))
   );
 };
