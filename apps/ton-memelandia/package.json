@@ -28,12 +28,5 @@
     "react": "18",
     "react-dom": "18",
     "wagmi": "^2.18.2"
-  },
-  "resolutions": {
-    "@near-js/accounts": "2.5.1",
-    "@near-js/transactions": "2.5.1",
-    "@near-js/providers": "2.5.1",
-    "@near-js/types": "2.5.1",
-    "@near-js/utils": "2.5.1"
   }
 }

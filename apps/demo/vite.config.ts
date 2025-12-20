@@ -1,8 +1,9 @@
+import path from 'path';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import vercel from 'vite-plugin-vercel';
 
 export default defineConfig({
@@ -14,7 +15,7 @@ export default defineConfig({
         prettier: false,
         typescript: true,
       },
-      include: "**/*.svg",
+      include: '**/*.svg',
     }),
     tailwindcss(),
     react(),
@@ -22,7 +23,7 @@ export default defineConfig({
     nodePolyfills(),
   ].filter(Boolean),
   css: {
-    postcss: "./postcss.config.cjs",
+    postcss: './postcss.config.cjs',
     modules: false,
   },
   define: {
@@ -43,5 +44,13 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+  },
+  resolve: {
+    alias: {
+      '@near-js/transactions': path.resolve(
+        __dirname,
+        '../../node_modules/@near-js/transactions',
+      ),
+    },
   },
 });
