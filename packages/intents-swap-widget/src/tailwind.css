@@ -102,6 +102,15 @@
 	}
 }
 
+@utility text-sw-label-2sm {
+	@layer components {
+		@apply font-semibold;
+		font-size: 0.825rem;
+		line-height: 0.875rem;
+		letter-spacing: -0.01875rem;
+	}
+}
+
 @utility text-sw-label-sm {
 	@layer components {
 		@apply font-semibold;

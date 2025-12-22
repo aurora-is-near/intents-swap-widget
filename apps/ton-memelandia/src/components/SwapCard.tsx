@@ -1,9 +1,14 @@
 import clsx from 'clsx';
-import * as Icons from 'lucide-react';
 import { ReactNode, useMemo } from 'react';
 import { Card } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 import { useAllTokens } from '@aurora-is-near/intents-swap-widget/hooks';
+import {
+  ArrowRight,
+  Check,
+  Close,
+  ProgressActivity,
+} from '@material-symbols-svg/react-rounded/w700';
 
 import { TokenAmount } from './TokenAmount';
 
@@ -44,7 +49,7 @@ export const SwapCard = ({
     if (state === 'in-progress') {
       return {
         label: 'Waiting',
-        icon: <Icons.Loader size={16} className="animate-spin" />,
+        icon: <ProgressActivity size={16} className="animate-spin" />,
       };
     }
 
@@ -54,7 +59,7 @@ export const SwapCard = ({
         labelClassName: 'text-sw-status-success',
         icon: (
           <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-status-success">
-            <Icons.Check size={9} className="text-sw-gray-900" />
+            <Check size={9} className="text-sw-gray-900" />
           </div>
         ),
       };
@@ -66,7 +71,7 @@ export const SwapCard = ({
         labelClassName: 'text-sw-status-error',
         icon: (
           <div className="rounded-full w-[16px] h-[16px] flex items-center justify-center bg-sw-status-error">
-            <Icons.X size={9} className="text-sw-gray-900" />
+            <Close size={9} className="text-sw-gray-900" />
           </div>
         ),
       };
@@ -96,7 +101,7 @@ export const SwapCard = ({
         {sourceToken && (
           <TokenAmount token={sourceToken} amount={source.amount} />
         )}
-        <Icons.ArrowRight className="text-sw-gray-100" size={16} />
+        <ArrowRight className="text-sw-gray-100" size={16} />
         {targetToken && (
           <TokenAmount token={targetToken} amount={target.amount} />
         )}

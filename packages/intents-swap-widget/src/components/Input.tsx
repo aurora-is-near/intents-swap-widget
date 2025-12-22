@@ -1,23 +1,25 @@
+import { Close } from '@material-symbols-svg/react-rounded/w700';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Input as UIInput } from '@headlessui/react';
+import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';
 import type { InputProps } from '@headlessui/react';
 import type { PropsWithChildren } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
 
 import { cn } from '@/utils/cn';
 
 type State = 'default' | 'disabled' | 'error' | 'fixed';
 
 export type Props = Omit<InputProps, 'size'> & {
-  icon?: LucideIcon;
+  icon?: MaterialSymbolsComponent;
   defaultValue?: string;
   focusOnMount?: boolean;
+  fontSize?: 'sm' | 'md';
   state?: State;
 };
 
 export const Input = ({
   state = 'default',
+  fontSize = 'md',
   defaultValue = '',
   focusOnMount = false,
   className,
@@ -63,8 +65,10 @@ export const Input = ({
       disabled={inputDisabled}
       autoComplete="off"
       className={cn(
-        'px-sw-lg py-sw-lg text-sw-label-md rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors bg-sw-gray-800',
+        'px-sw-lg py-sw-lg rounded-sw-md ring-transparent ring-1 ring-inset data-focus:outline-none transition-colors bg-sw-gray-800',
         {
+          'text-sw-label-2sm': fontSize === 'sm',
+          'text-sw-label-md': fontSize === 'md',
           'text-sw-gray-400 bg-sw-gray-800': state === 'fixed',
           'text-sw-status-error bg-sw-gray-800': state === 'error',
           'text-sw-gray-50 bg-sw-gray-700': isFocused && state === 'default',
@@ -88,8 +92,10 @@ export const Input = ({
             disabled={inputDisabled}
             placeholder={inputProps.placeholder}
             autoComplete="off"
-            className={cn('text-sw-label-md mr-auto w-full outline-none', {
+            className={cn('mr-auto w-full outline-none', {
               'cursor-not-allowed': state === 'disabled',
+              'text-sw-label-2sm': fontSize === 'sm',
+              'text-sw-label-md': fontSize === 'md',
             })}
           />
           {!inputDisabled && (
@@ -99,15 +105,15 @@ export const Input = ({
                 <button
                   type="button"
                   className={cn(
-                    'opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
+                    'opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50 pl-sw-sm',
                     {
                       'cursor-pointer opacity-100': !!value,
-                      'cursor-default text-sw-gray-200': isFocused,
-                      'cursor-default text-sw-gray-300': !isFocused,
+                      'text-sw-gray-200': isFocused,
+                      'text-sw-gray-300': !isFocused,
                     },
                   )}
                   onClick={handleClear}>
-                  <Icons.X className="h-sw-xl w-sw-xl" />
+                  <Close className="h-sw-xl w-sw-xl" />
                 </button>
               ) : null}
             </div>

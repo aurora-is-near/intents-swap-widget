@@ -1,4 +1,4 @@
-import * as Icons from 'lucide-react';
+import { QrCode, Wallet } from '@material-symbols-svg/react-rounded/w700';
 
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
@@ -26,7 +26,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
       <div className="flex gap-sw-lg">
         <Button
           size="md"
-          icon={Icons.Wallet2}
+          icon={Wallet}
           state={ctx.isDepositFromExternalWallet ? 'default' : 'active'}
           variant={ctx.isDepositFromExternalWallet ? 'outlined' : 'primary'}
           onClick={() => onToggle(false)}>
@@ -34,7 +34,7 @@ export const DepositMethodSwitcher = ({ children, className }: Props) => {
         </Button>
         <Button
           size="md"
-          icon={Icons.QrCode}
+          icon={QrCode}
           state={ctx.isDepositFromExternalWallet ? 'active' : 'default'}
           variant={ctx.isDepositFromExternalWallet ? 'primary' : 'outlined'}
           onClick={() => onToggle(true)}>

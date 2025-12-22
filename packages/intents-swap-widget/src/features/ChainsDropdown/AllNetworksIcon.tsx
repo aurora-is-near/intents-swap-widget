@@ -1,7 +1,7 @@
-import * as Icons from 'lucide-react';
+import { Target } from '@material-symbols-svg/react-rounded/w700';
 
 export const AllNetworksIcon = () => (
   <div className="bg-sw-accent-500 flex h-[28px] w-[28px] items-center justify-center">
-    <Icons.Target size={16} className="text-sw-accent-950" />
+    <Target size={16} className="text-sw-accent-950" />
   </div>
 );
