@@ -16,7 +16,7 @@ export const CloseButton = ({ className, onClick }: Props) => {
         className,
       )}
       onClick={onClick}>
-      <Close size={18} strokeWidth={3} />
+      <Close size={18} />
     </button>
   );
 };

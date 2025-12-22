@@ -57,7 +57,7 @@ export const Banner = ({
         <div
           onClick={onDismiss}
           className="ml-auto flex cursor-pointer items-center justify-center transition-all hover:scale-125">
-          <Close size={16} strokeWidth={2.5} />
+          <Close size={16} />
         </div>
       )}
     </div>

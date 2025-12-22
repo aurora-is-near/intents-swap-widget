@@ -44,7 +44,6 @@ const Tab = <T extends string>({
         'text-sw-gray-900': isActive,
         'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
       })}
-      strokeWidth={2.5}
     />
     <span
       className={clsx('text-sw-label-md hidden sm:inline-block!', {
