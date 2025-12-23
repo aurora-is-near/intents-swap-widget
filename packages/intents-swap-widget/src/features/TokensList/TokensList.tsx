@@ -9,6 +9,7 @@ import {
   getFirstGroupItemTotalIndex,
   getGroupHeadersTotalIndexes,
   getListItemsTotalCount,
+  getListState,
   getListTotalHeight,
   getResetInitialScrollFn,
 } from './utils';
@@ -67,7 +68,7 @@ export const TokensList = ({
   });
 
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;
-  const tokensListState = useListState(filteredTokens.all, search);
+  const tokensListState = getListState(filteredTokens.all, search);
 
   const ref = useRef<VListHandle>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
