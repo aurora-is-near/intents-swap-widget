@@ -1,5 +1,5 @@
 import { VList } from 'virtua';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 
 import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
@@ -30,18 +30,6 @@ type Props = {
   className?: string;
   onMsg: (msg: Msg) => void;
 };
-
-type ListElement =
-  | {
-      label?: never;
-      count?: never;
-      tokens: Token[];
-    }
-  | {
-      label: string | null;
-      count: number;
-      tokens?: never;
-    };
 
 const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
   if (tokens.length === 0 && search) {
@@ -82,28 +70,25 @@ export const TokensList = ({
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;
   const tokensListState = useListState(filteredTokens.all, search);
 
-  const tokensUngrouped = useMemo<ListElement[]>(
-    () => [{ tokens: filteredTokens.all }],
+  const tokensUngrouped = useMemo(
+    () => [{ label: null, tokens: filteredTokens.all }],
     [filteredTokens.all],
   );
 
-  const tokensBySection = useMemo<ListElement[]>(
+  const tokensBySection = useMemo(
     () => [
-      { label: appName, count: filteredTokens.intents.length },
-      { tokens: filteredTokens.intents },
-
+      { label: appName, tokens: filteredTokens.intents },
       {
         label: chainIsNotSupported ? null : 'Connected wallet',
-        count: filteredTokens.wallet.length,
+        tokens: filteredTokens.wallet,
       },
-      { tokens: filteredTokens.wallet },
     ],
     [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
   );
 
   const tokensCount = useMemo(() => {
     return (areTokensGrouped ? tokensBySection : tokensUngrouped).reduce(
-      (acc, group) => acc + (group.tokens?.length ?? 0),
+      (acc, group) => acc + group.tokens.length,
       0,
     );
   }, [tokensBySection, tokensUngrouped, areTokensGrouped]);
@@ -146,18 +131,16 @@ export const TokensList = ({
                 : TOKEN_ITEM_HEIGHT * 2,
             }}>
             {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
-              ({ label, count, tokens: tokensToDisplay }) => {
-                if (label) {
-                  return (
-                    <header key={label} className="pb-sw-lg flex flex-col">
+              ({ label, tokens: tokensToDisplay }) => (
+                <Fragment key={label ?? 'ungrouped-tokens'}>
+                  {tokensToDisplay.length && label ? (
+                    <header className="pb-sw-lg flex flex-col">
                       <Hr />
-                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${count}`}</span>
+                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
                     </header>
-                  );
-                }
+                  ) : null}
 
-                if (tokensToDisplay) {
-                  return tokensToDisplay.map((token) => {
+                  {tokensToDisplay.map((token) => {
                     const tokenBalanceKey = getTokenBalanceKey(token);
 
                     return (
@@ -172,11 +155,11 @@ export const TokensList = ({
                         onMsg={onMsg}
                       />
                     );
-                  });
-                }
+                  })}
 
-                return null;
-              },
+                  {tokensToDisplay.length ? <div className="h-sw-2xl" /> : null}
+                </Fragment>
+              ),
             )}
           </VList>
         </div>
