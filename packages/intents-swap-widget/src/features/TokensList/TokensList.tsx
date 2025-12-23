@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { TokenItem } from './TokenItem';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
 import { LIST_CONTAINER_ID, MAX_LIST_VIEW_AREA_HEIGHT } from './constants';
-import { useFocusOnList, useListState } from './hooks';
+import { useFocusOnList } from './hooks';
 import {
   getFirstGroupItemTotalIndex,
   getGroupHeadersTotalIndexes,
@@ -12,6 +12,7 @@ import {
   getListState,
   getListTotalHeight,
   getResetInitialScrollFn,
+  getTokenByTotalIndex,
 } from './utils';
 import type { ListGroup } from './types';
 
@@ -178,7 +179,7 @@ export const TokensList = ({
 
                 case 'Enter': {
                   e.preventDefault();
-                  const token = tokensUngrouped[0]?.tokens?.[focusedIndex];
+                  const token = getTokenByTotalIndex(tokensList, focusedIndex);
 
                   if (token) {
                     onMsg({ type: 'on_select_token', token });
