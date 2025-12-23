@@ -1,8 +1,19 @@
-import { VList } from 'virtua';
-import { useMemo } from 'react';
+import { VList, VListHandle } from 'virtua';
+import { useMemo, useRef, useState } from 'react';
 
-import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
+import { TokenItem } from './TokenItem';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
+import { LIST_CONTAINER_ID, MAX_LIST_VIEW_AREA_HEIGHT } from './constants';
+import { useFocusOnList, useListState } from './hooks';
+import {
+  getFirstGroupItemTotalIndex,
+  getGroupHeadersTotalIndexes,
+  getListItemsTotalCount,
+  getListTotalHeight,
+  getResetInitialScrollFn,
+} from './utils';
+import type { ListGroup } from './types';
+
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -29,30 +40,6 @@ type Props = {
   chainIsNotSupported: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
-};
-
-type ListElement =
-  | {
-      label?: never;
-      count?: never;
-      tokens: Token[];
-    }
-  | {
-      label: string | null;
-      count: number;
-      tokens?: never;
-    };
-
-const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
-  if (tokens.length === 0 && search) {
-    return 'EMPTY_SEARCH';
-  }
-
-  if (tokens.length === 0 && !search) {
-    return 'NO_TOKENS';
-  }
-
-  return 'HAS_TOKENS';
 };
 
 export const TokensList = ({
@@ -82,38 +69,46 @@ export const TokensList = ({
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;
   const tokensListState = useListState(filteredTokens.all, search);
 
-  const tokensUngrouped = useMemo<ListElement[]>(
+  const ref = useRef<VListHandle>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+
+  const tokensUngrouped = useMemo<ListGroup<1>>(
     () => [{ tokens: filteredTokens.all }],
     [filteredTokens.all],
   );
 
-  const tokensBySection = useMemo<ListElement[]>(
-    () => [
-      { label: appName, count: filteredTokens.intents.length },
-      { tokens: filteredTokens.intents },
+  const tokensBySection = useMemo(() => {
+    return [
+      ...(filteredTokens.intents.length > 0
+        ? [
+            { label: appName, count: filteredTokens.intents.length },
+            { tokens: filteredTokens.intents },
+          ]
+        : []),
+      ...(filteredTokens.wallet.length > 0
+        ? [
+            {
+              label: chainIsNotSupported ? null : 'Connected wallet',
+              count: filteredTokens.wallet.length,
+            },
+            { tokens: filteredTokens.wallet },
+          ]
+        : []),
+    ].filter(Boolean) as ListGroup<0 | 2 | 4>;
+  }, [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported]);
 
-      {
-        label: chainIsNotSupported ? null : 'Connected wallet',
-        count: filteredTokens.wallet.length,
-      },
-      { tokens: filteredTokens.wallet },
-    ],
-    [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
-  );
+  const tokensList = areTokensGrouped ? tokensBySection : tokensUngrouped;
 
-  const tokensCount = useMemo(() => {
-    return (areTokensGrouped ? tokensBySection : tokensUngrouped).reduce(
-      (acc, group) => acc + (group.tokens?.length ?? 0),
-      0,
-    );
-  }, [tokensBySection, tokensUngrouped, areTokensGrouped]);
+  const listHeight = getListTotalHeight(tokensList);
+  const totalItems = getListItemsTotalCount(tokensList);
+  const headerIndexes = getGroupHeadersTotalIndexes(tokensList);
 
-  // <offset> - user defined offset e.g. page header height + space
-  // 152px - height of TokenModal elements like search and paddings
-  // 48px - minimal offset from the bottom screen edge
-  // Total: 152 + 48 = 200px
-  // const maxHeight = `calc(100vh - (${topScreenOffset ?? '0px'} + ${offset ?? '0px'} + 200px))`;
-  const maxHeight = '450px';
+  useFocusOnList({
+    listRef: ref.current,
+    initialFocusedIndex: areTokensGrouped ? 1 : 0,
+    onFocus: (index) => setFocusedIndex(index),
+    onBlur: () => setFocusedIndex(-1),
+  });
 
   switch (tokensListState) {
     case 'EMPTY_SEARCH':
@@ -136,20 +131,82 @@ export const TokensList = ({
       return (
         <div className={cn('gap-sw-lg flex flex-col', className)}>
           <VList
+            ref={ref}
+            tabIndex={0}
+            id={LIST_CONTAINER_ID}
             className="hide-scrollbar"
             style={{
-              maxHeight,
               minHeight: 200,
-              height: tokensCount
-                ? tokensCount * TOKEN_ITEM_HEIGHT +
-                  (areTokensGrouped ? tokensBySection.length * 62 : 0)
-                : TOKEN_ITEM_HEIGHT * 2,
+              height: listHeight,
+              maxHeight: MAX_LIST_VIEW_AREA_HEIGHT,
+              outline: 'none',
+            }}
+            // hack: to avoid scrolling on initial focus
+            onScroll={getResetInitialScrollFn(ref.current, focusedIndex)}
+            onKeyDown={(e) => {
+              if (!ref.current) {
+                return;
+              }
+
+              switch (e.code) {
+                case 'ArrowUp': {
+                  e.preventDefault();
+                  let prevIndex = Math.max(focusedIndex - 1, 0);
+
+                  if (areTokensGrouped && headerIndexes.includes(prevIndex)) {
+                    prevIndex = prevIndex === 0 ? 1 : prevIndex - 1;
+                  }
+
+                  setFocusedIndex(prevIndex);
+                  ref.current?.scrollToIndex(prevIndex, { align: 'nearest' });
+                  break;
+                }
+
+                case 'ArrowDown': {
+                  e.preventDefault();
+                  let nextIndex = Math.min(focusedIndex + 1, totalItems - 1);
+
+                  if (areTokensGrouped && headerIndexes.includes(nextIndex)) {
+                    nextIndex = nextIndex === 0 ? 1 : nextIndex + 1;
+                  }
+
+                  setFocusedIndex(nextIndex);
+                  ref.current?.scrollToIndex(nextIndex, { align: 'nearest' });
+                  break;
+                }
+
+                case 'Enter': {
+                  e.preventDefault();
+                  const token = tokensUngrouped[0]?.tokens?.[focusedIndex];
+
+                  if (token) {
+                    onMsg({ type: 'on_select_token', token });
+                  }
+
+                  break;
+                }
+
+                default:
+                  break;
+              }
             }}>
-            {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
-              ({ label, count, tokens: tokensToDisplay }) => {
-                if (label) {
+            {tokensList.map(
+              ({ label, count, tokens: tokensToDisplay }, groupIndex) => {
+                const firstItemInGroupIndex = getFirstGroupItemTotalIndex(
+                  tokensList,
+                  groupIndex,
+                );
+
+                if (label !== undefined) {
+                  if (!label) {
+                    // must be rendered for calculations even if label is null
+                    return <header key={groupIndex} />;
+                  }
+
                   return (
-                    <header key={label} className="pb-sw-lg flex flex-col">
+                    <header
+                      key={label}
+                      className="pb-sw-lg pt-sw-sm flex flex-col">
                       <Hr />
                       <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${count}`}</span>
                     </header>
@@ -157,7 +214,7 @@ export const TokensList = ({
                 }
 
                 if (tokensToDisplay) {
-                  return tokensToDisplay.map((token) => {
+                  return tokensToDisplay.map((token, tokenIndex) => {
                     const tokenBalanceKey = getTokenBalanceKey(token);
 
                     return (
@@ -166,6 +223,9 @@ export const TokensList = ({
                         key={tokenBalanceKey}
                         showBalance={showBalances}
                         balance={mergedBalance[tokenBalanceKey]}
+                        isFocused={
+                          focusedIndex === firstItemInGroupIndex + tokenIndex
+                        }
                         isNotSelectable={
                           chainIsNotSupported && !!ctx.walletAddress
                         }
