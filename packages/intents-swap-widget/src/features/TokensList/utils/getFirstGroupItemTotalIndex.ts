@@ -1,5 +1,12 @@
 import type { AnyListGroup } from '../types';
 
+/**
+ * Get index across all groups of the first item in a given group
+ *
+ * @param tokensList - The list of tokens (grouped or ungrouped)
+ * @param groupIndex - The index of the group
+ * @returns The total index of the first item in the group
+ */
 export const getFirstGroupItemTotalIndex = (
   tokensList: AnyListGroup,
   groupIndex: number,

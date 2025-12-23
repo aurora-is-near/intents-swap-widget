@@ -8,6 +8,12 @@ const getTokensTotalCount = (tokensList: AnyListGroup) => {
   );
 };
 
+/**
+ * Get the total height of the list
+ *
+ * @param tokensList - The list of tokens (grouped or ungrouped)
+ * @returns The total height of the list
+ */
 export const getListTotalHeight = (tokensList: AnyListGroup) => {
   const tokensCount = getTokensTotalCount(tokensList);
 
