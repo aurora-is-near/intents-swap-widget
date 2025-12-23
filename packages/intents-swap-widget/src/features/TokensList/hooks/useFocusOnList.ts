@@ -30,10 +30,22 @@ export const useFocusOnList = ({
   });
 
   useEffect(() => {
-    const virtualListDiv = document.getElementById(LIST_CONTAINER_ID);
+    const handleFocusChange = () => {
+      const virtualListDiv = document.getElementById(LIST_CONTAINER_ID);
 
-    if (document.activeElement !== virtualListDiv) {
-      onBlur();
-    }
-  }, [document.activeElement]);
+      if (document.activeElement !== virtualListDiv) {
+        onBlur();
+      }
+    };
+
+    document.addEventListener('focusin', handleFocusChange);
+    document.addEventListener('focusout', handleFocusChange);
+
+    handleFocusChange();
+
+    return () => {
+      document.removeEventListener('focusin', handleFocusChange);
+      document.removeEventListener('focusout', handleFocusChange);
+    };
+  }, [onBlur]);
 };
