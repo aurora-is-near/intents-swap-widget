@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import * as Icons from 'lucide-react';
 
 import { TokensList } from './TokensList';
@@ -46,28 +46,12 @@ export const TokensModal = ({
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains } = useConfig();
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
   const chains = useChains(variant);
 
   const handleClose = () => onMsg({ type: 'on_dismiss_tokens_modal' });
 
-  useHandleKeyDown(
-    'Escape',
-    () => {
-      if (search) {
-        setSearch('');
-      } else {
-        handleClose();
-      }
-    },
-    [search],
-  );
-
-  useHandleKeyDown('Alphanumeric', (key) => {
-    setSearch((s) => s + key);
-    searchInputRef.current?.focus();
-  });
+  useHandleKeyDown('Escape', handleClose);
 
   // If there is only one chain available, select it by default
   const defaultChain =
@@ -100,7 +84,6 @@ export const TokensModal = ({
         <Input
           focusOnMount
           icon={Icons.Search}
-          ref={searchInputRef}
           defaultValue={search}
           className="w-full"
           placeholder="Search or paste address"
