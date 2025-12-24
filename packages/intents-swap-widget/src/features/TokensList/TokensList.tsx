@@ -1,17 +1,20 @@
 import { VList, VListHandle } from 'virtua';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { TokenItem } from './TokenItem';
-import { TokensListPlaceholder } from './TokensListPlaceholder';
-import { LIST_CONTAINER_ID, MAX_LIST_VIEW_AREA_HEIGHT } from './constants';
 import { useFocusOnList } from './hooks';
+import { TokensListPlaceholder } from './TokensListPlaceholder';
+import {
+  LIST_CONTAINER_ID,
+  MAX_LIST_VIEW_AREA_HEIGHT,
+  TOKEN_ITEM_HEIGHT,
+} from './constants';
 import {
   getFirstGroupItemTotalIndex,
   getGroupHeadersTotalIndexes,
   getListItemsTotalCount,
   getListState,
   getListTotalHeight,
-  getResetInitialScrollFn,
   getTokenByTotalIndex,
 } from './utils';
 import type { ListGroup } from './types';
@@ -105,11 +108,15 @@ export const TokensList = ({
   const totalItems = getListItemsTotalCount(tokensList);
   const headerIndexes = getGroupHeadersTotalIndexes(tokensList);
 
+  const handleBlur = useCallback(() => {
+    setFocusedIndex(-1);
+  }, []);
+
   useFocusOnList({
     listRef: ref.current,
     initialFocusedIndex: areTokensGrouped ? 1 : 0,
     onFocus: (index) => setFocusedIndex(index),
-    onBlur: () => setFocusedIndex(-1),
+    onBlur: handleBlur,
   });
 
   switch (tokensListState) {
@@ -136,15 +143,15 @@ export const TokensList = ({
             ref={ref}
             tabIndex={0}
             id={LIST_CONTAINER_ID}
+            itemSize={TOKEN_ITEM_HEIGHT}
             className="hide-scrollbar"
             style={{
               minHeight: 200,
               height: listHeight,
               maxHeight: MAX_LIST_VIEW_AREA_HEIGHT,
+              overflowAnchor: 'none',
               outline: 'none',
             }}
-            // hack: to avoid scrolling on initial focus
-            onScroll={getResetInitialScrollFn(ref.current, focusedIndex)}
             onKeyDown={(e) => {
               if (!ref.current) {
                 return;
@@ -160,7 +167,11 @@ export const TokensList = ({
                   }
 
                   setFocusedIndex(prevIndex);
-                  ref.current?.scrollToIndex(prevIndex, { align: 'nearest' });
+                  ref.current?.scrollToIndex(prevIndex, {
+                    align: 'center',
+                    smooth: true,
+                  });
+
                   break;
                 }
 
@@ -173,7 +184,11 @@ export const TokensList = ({
                   }
 
                   setFocusedIndex(nextIndex);
-                  ref.current?.scrollToIndex(nextIndex, { align: 'nearest' });
+                  ref.current?.scrollToIndex(nextIndex, {
+                    align: 'center',
+                    smooth: true,
+                  });
+
                   break;
                 }
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { VListHandle } from 'virtua';
 
 import { LIST_CONTAINER_ID } from '../constants';
@@ -22,30 +22,35 @@ export const useFocusOnList = ({
     const virtualListDiv = document.getElementById(LIST_CONTAINER_ID);
 
     if (virtualListDiv && document.activeElement !== virtualListDiv) {
-      virtualListDiv.focus({ preventScroll: true });
-
       onFocus(initialFocusedIndex);
-      listRef?.scrollToIndex(initialFocusedIndex, { align: 'start' });
+      listRef?.scrollToIndex(initialFocusedIndex, { align: 'nearest' });
+
+      // required to prevent initial scroll on focus
+      // which causes list's jump
+      setTimeout(() => {
+        virtualListDiv.focus({ preventScroll: true });
+      }, 0);
     }
   });
 
-  useEffect(() => {
-    const handleFocusChange = () => {
+  const handleBlur = useCallback(
+    (event: FocusEvent) => {
       const virtualListDiv = document.getElementById(LIST_CONTAINER_ID);
 
-      if (document.activeElement !== virtualListDiv) {
+      if (event.target === virtualListDiv) {
         onBlur();
       }
-    };
+    },
+    [onBlur],
+  );
 
-    document.addEventListener('focusin', handleFocusChange);
-    document.addEventListener('focusout', handleFocusChange);
+  useEffect(() => {
+    const virtualListDiv = document.getElementById(LIST_CONTAINER_ID);
 
-    handleFocusChange();
+    virtualListDiv?.addEventListener('blur', handleBlur);
 
     return () => {
-      document.removeEventListener('focusin', handleFocusChange);
-      document.removeEventListener('focusout', handleFocusChange);
+      virtualListDiv?.removeEventListener('blur', handleBlur);
     };
-  }, [onBlur]);
+  }, [handleBlur]);
 };
