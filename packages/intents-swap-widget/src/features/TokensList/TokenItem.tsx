@@ -6,8 +6,6 @@ import { TinyNumber } from '@/components/TinyNumber';
 import { getUsdDisplayBalance } from '@/utils/formatters/getUsdDisplayBalance';
 import type { Token, TokenBalance } from '@/types/token';
 
-export const TOKEN_ITEM_HEIGHT = 58;
-
 type Msg = { type: 'on_select_token'; token: Token };
 
 type Props = {
@@ -15,6 +13,7 @@ type Props = {
   balance: TokenBalance;
   showBalance?: boolean;
   isNotSelectable?: boolean;
+  isFocused?: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
@@ -24,6 +23,7 @@ export const TokenItem = ({
   balance,
   showBalance = true,
   isNotSelectable,
+  isFocused,
   className,
   onMsg,
 }: Props) => {
@@ -43,6 +43,7 @@ export const TokenItem = ({
           {
             'cursor-not-allowed': isNotSelectable,
             'cursor-pointer hover:bg-sw-gray-800': !isNotSelectable,
+            'bg-sw-gray-800': isFocused && !isNotSelectable,
           },
           className,
         )}
@@ -52,7 +53,10 @@ export const TokenItem = ({
         <TokenIcon
           token={token}
           chainShowIcon={!token.isIntent}
-          className="border-sw-gray-900 group-hover:border-sw-gray-800 transition-colors"
+          className={cn('group-hover:border-sw-gray-800 transition-colors', {
+            'border-sw-gray-800': isFocused,
+            'border-sw-gray-900': !isFocused,
+          })}
         />
 
         <div className="gap-sw-xs mr-auto flex flex-col">
