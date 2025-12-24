@@ -2,15 +2,13 @@ import type { Machine } from '@/machine';
 import type { Context } from '@/machine/context';
 
 export type ResetPayload = {
+  keepSelectedTokens?: boolean;
   clearWalletAddress: boolean;
 };
 
 export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
-  ctx.sourceToken = undefined;
   ctx.sourceTokenBalance = undefined;
   ctx.sourceTokenAmount = '';
-
-  ctx.targetToken = undefined;
   ctx.targetTokenAmount = '';
 
   ctx.sendAddress = undefined;
@@ -21,6 +19,11 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
   ctx.quote = undefined;
   ctx.quoteStatus = 'idle';
   ctx.transferStatus = { status: 'idle' };
+
+  if (!payload.keepSelectedTokens) {
+    ctx.sourceToken = undefined;
+    ctx.targetToken = undefined;
+  }
 
   if (payload.clearWalletAddress) {
     ctx.walletAddress = undefined;

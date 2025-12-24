@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DownloadIcon, RepeatIcon, SendIcon } from 'lucide-react';
 import {
+  guardStates,
+  useUnsafeSnapshot,
   WidgetConfigProvider,
   WidgetDeposit,
   WidgetSwap,
@@ -33,12 +35,46 @@ const WIDGET_TYPES = {
   withdraw: WidgetWithdraw,
 } as const;
 
+type Props = {
+  isLoading: boolean;
+  showAppBalance: boolean;
+  selectedWidget: WidgetType;
+  setShowAppBalance: (showAppBalance: boolean) => void;
+};
+
+const Content = ({
+  isLoading,
+  selectedWidget,
+  showAppBalance,
+  setShowAppBalance,
+}: Props) => {
+  const { ctx } = useUnsafeSnapshot();
+  const { providers } = useAppKitWallet();
+
+  const WidgetComponent = WIDGET_TYPES[selectedWidget];
+
+  const isTransferSuccess = guardStates(ctx, ['transfer_success']);
+
+  return (
+    <WidgetComponent
+      isFullPage={false}
+      isLoading={isLoading}
+      providers={providers}
+      HeaderComponent={
+        isTransferSuccess ? null : (
+          <Toggle
+            isOn={showAppBalance}
+            label="Show app balance"
+            onToggle={setShowAppBalance}
+          />
+        )
+      }
+    />
+  );
+};
+
 export const TabbedWidgetsDemo = () => {
-  const {
-    providers,
-    address: walletAddress,
-    isConnecting: isLoading,
-  } = useAppKitWallet();
+  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   const [showAppBalance, setShowAppBalance] = useState(true);
   const appBalanceMode = walletAddress ? 'with-balance' : 'all';
@@ -57,8 +93,6 @@ export const TabbedWidgetsDemo = () => {
 
     return showAppBalance ? appBalanceMode : 'none';
   })();
-
-  const WidgetComponent = WIDGET_TYPES[selectedWidget];
 
   useEffect(() => {
     if (!showAppBalance) {
@@ -109,17 +143,11 @@ export const TabbedWidgetsDemo = () => {
               },
             },
           }}>
-          <WidgetComponent
-            isFullPage={false}
+          <Content
             isLoading={isLoading}
-            providers={providers}
-            HeaderComponent={
-              <Toggle
-                isOn={showAppBalance}
-                label="Show app balance"
-                onToggle={setShowAppBalance}
-              />
-            }
+            showAppBalance={showAppBalance}
+            setShowAppBalance={setShowAppBalance}
+            selectedWidget={selectedWidget}
           />
         </WidgetConfigProvider>
       </WidgetPageContainer>

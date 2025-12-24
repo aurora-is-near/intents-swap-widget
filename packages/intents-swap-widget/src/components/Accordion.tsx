@@ -29,12 +29,11 @@ export const Accordion = ({
   const [isExpanded, setIsExpanded] = useState(expandedByDefault);
 
   return (
-    <Card
-      isClickable
-      className={cn('py-sw-lg', className)}
-      onClick={() => setIsExpanded((p) => !p)}>
-      <header className="align-center flex w-full justify-between">
-        <span className="gap-sw-xs text-sw-label-md mt-sw-xs flex text-center text-sw-gray-200">
+    <Card className={cn('py-sw-xl', className)}>
+      <header
+        onClick={() => setIsExpanded((p) => !p)}
+        className="items-center flex w-full justify-between cursor-pointer">
+        <span className="gap-sw-xs text-sw-label-md flex text-center text-sw-gray-200">
           {title}
         </span>
         {isBadgeLoading ? (
