@@ -160,11 +160,13 @@ export const SuccessScreen = ({
       <div className="flex flex-col gap-sw-lg">
         <Button
           fluid
+          as="a"
           size="lg"
+          target="_blank"
           variant="primary"
           iconPosition="tail"
-          icon={OpenInNew}
-          onClick={() => window.open(transactionLink, '_blank')}>
+          href={transactionLink}
+          icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>
         <Button fluid size="lg" variant="outlined" onClick={handleClose}>
