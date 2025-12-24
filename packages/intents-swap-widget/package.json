@@ -82,7 +82,6 @@
     "imask": "^7.6.1",
     "jest-react-hooks-shallow": "^1.5.1",
     "lodash.once": "^4.1.1",
-    "lucide-react": "^0.525.0",
     "near-api-js": "^6.2.5",
     "proxy-memoize": "^3.0.1",
     "qrcode.react": "^4.2.0",

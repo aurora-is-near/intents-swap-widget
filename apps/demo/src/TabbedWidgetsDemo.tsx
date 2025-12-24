@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { DownloadIcon, RepeatIcon, SendIcon } from 'lucide-react';
+import {
+  Download,
+  Repeat,
+  Send,
+} from '@material-symbols-svg/react-rounded/w700';
 import {
   WidgetConfigProvider,
   WidgetDeposit,
@@ -22,9 +26,9 @@ const defaultTheme: Theme = {
 };
 
 const WIDGET_TABS = [
-  { id: 'swap', label: 'Swap', icon: RepeatIcon },
-  { id: 'deposit', label: 'Deposit', icon: DownloadIcon },
-  { id: 'withdraw', label: 'Withdraw', icon: SendIcon },
+  { id: 'swap', label: 'Swap', icon: Repeat },
+  { id: 'deposit', label: 'Deposit', icon: Download },
+  { id: 'withdraw', label: 'Withdraw', icon: Send },
 ] as const;
 
 const WIDGET_TYPES = {

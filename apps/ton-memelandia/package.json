@@ -12,6 +12,8 @@
   "dependencies": {
     "@aurora-is-near/intents-swap-widget": "*",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
+    "@material-symbols-svg/react": "^0.1.19",
+    "@material-symbols-svg/react-rounded": "^0.1.19",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
@@ -24,7 +26,6 @@
     "@tonconnect/ui-react": "^2.3.1",
     "clsx": "^2.1.1",
     "ethers": "^6.15.0",
-    "lucide-react": "^0.525.0",
     "react": "18",
     "react-dom": "18",
     "wagmi": "^2.18.2"

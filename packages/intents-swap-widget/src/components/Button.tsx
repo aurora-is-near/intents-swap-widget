@@ -1,6 +1,9 @@
 import { Button as UIButton } from '@headlessui/react';
-import type { LucideIcon, LucideProps } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { ProgressActivity } from '@material-symbols-svg/react-rounded/w700';
+import type {
+  IconProps,
+  MaterialSymbolsComponent,
+} from '@material-symbols-svg/react';
 
 import { cn as clsx } from '@/utils/cn';
 
@@ -17,7 +20,7 @@ type Props = {
   onClick?: () => void;
   fluid?: boolean;
 } & (
-  | { icon: LucideIcon; iconPosition?: 'head' | 'tail' }
+  | { icon: MaterialSymbolsComponent; iconPosition?: 'head' | 'tail' }
   | { icon?: never; iconPosition?: never }
 );
 
@@ -50,10 +53,10 @@ const ButtonChildren = ({
   const Icon =
     hasIcon && state !== 'loading'
       ? (icon ?? (() => <span />))
-      : ({ className, ...lucidProps }: LucideProps) => (
-          <Icons.Loader
+      : ({ className, ...iconProps }: IconProps) => (
+          <ProgressActivity
             className={clsx(styles.icon, 'animate-spin', className)}
-            {...lucidProps}
+            {...iconProps}
           />
         );
 

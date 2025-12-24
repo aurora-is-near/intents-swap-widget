@@ -1,4 +1,4 @@
-import * as Icons from 'lucide-react';
+import { OpenInNew } from '@material-symbols-svg/react-rounded/w700';
 
 type Props = {
   url: string;
@@ -10,6 +10,6 @@ export const ExternalAction = ({ url }: Props) => (
     href={url}
     className="text-sw-accent-300 hover:text-sw-accent-50 cursor-pointer"
     rel="noreferrer">
-    <Icons.ExternalLink size={16} />
+    <OpenInNew size={16} />
   </a>
 );

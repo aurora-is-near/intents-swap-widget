@@ -1,7 +1,7 @@
-import * as Icons from 'lucide-react';
 import { Button } from '@headlessui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import { WandShine } from '@material-symbols-svg/react-rounded/w700';
 import type { ChangeEvent } from 'react';
 
 import { useNotification } from './useNotification';
@@ -76,6 +76,7 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
         {t('sendAddress.label', 'Send to')}
       </h5>
       <Input
+        fontSize="sm"
         defaultValue={ctx.sendAddress}
         state={inputState}
         className="mb-sw-xl"
@@ -88,7 +89,7 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
           <Button
             className="absolute right-0 flex items-center gap-sw-md min-w-max cursor-pointer"
             onClick={() => fireEvent('addressSet', ctx.walletAddress ?? '')}>
-            <Icons.Wand2 size={14} />
+            <WandShine size={14} />
             <span className="text-sw-label-md">
               {t('sendAddress.button.magic.label', 'My wallet')}
             </span>
