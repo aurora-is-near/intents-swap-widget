@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  Banner,
   Button,
   type MakeTransferArgs,
   SuccessScreen,
@@ -71,6 +72,23 @@ export function Widget({ config }: WidgetProps) {
     [config, state.selectedNetworks],
   );
 
+  const exampleBanner = useMemo((): {
+    variant: 'success' | 'warn' | 'error';
+    label: string;
+  } | undefined => {
+    if (state.openThemeColorPickerId === 'successColor') {
+      return { variant: 'success', label: 'success' };
+    }
+
+    if (state.openThemeColorPickerId === 'warningColor') {
+      return { variant: 'warn', label: 'warning' };
+    }
+
+    if (state.openThemeColorPickerId === 'errorColor') {
+      return { variant: 'error', label: 'error' };
+    }
+  }, [state.openThemeColorPickerId]);
+
   const handleMakeTransfer = (args: MakeTransferArgs) => {
     setMakeTransferArgs(args);
   };
@@ -125,6 +143,13 @@ export function Widget({ config }: WidgetProps) {
         colorScheme: colorScheme ?? 'dark',
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
+      {exampleBanner && (
+        <Banner
+          variant={exampleBanner.variant}
+          message={`This is an example ${exampleBanner.label} message`}
+          className="mt-csw-2xl"
+        />
+      )}
     </WidgetConfigProvider>
   );
 }

@@ -1,14 +1,16 @@
-import { useState } from 'react';
-// import { Info } from 'lucide-react';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { Toggle } from '../../uikit/Toggle';
 import { OutlinedButton } from '../../uikit/Button';
 import { ColorInput } from './ColorInput';
+import { ThemeColorPickerId } from '../../types/colors';
 
 export function Design() {
   const { state, dispatch } = useCreator();
-  const [openPickerId, setOpenPickerId] = useState<string | null>(null);
+
+  const setOpenPickerId = (id: ThemeColorPickerId | null) => {
+    dispatch({ type: 'SET_OPEN_THEME_COLOR_PICKER_ID', payload: id });
+  };
 
   return (
     <div className="space-y-csw-2xl text-csw-gray-200">
@@ -128,7 +130,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_PRIMARY_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'primaryColor'}
+            isOpen={state.openThemeColorPickerId === 'primaryColor'}
             onOpen={() => setOpenPickerId('primaryColor')}
             onClose={() => setOpenPickerId(null)}
           />
@@ -138,7 +140,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_SURFACE_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'surfaceColor'}
+            isOpen={state.openThemeColorPickerId === 'surfaceColor'}
             onOpen={() => setOpenPickerId('surfaceColor')}
             onClose={() => setOpenPickerId(null)}
             hasInfo
@@ -149,7 +151,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'backgroundColor'}
+            isOpen={state.openThemeColorPickerId === 'backgroundColor'}
             onOpen={() => setOpenPickerId('backgroundColor')}
             onClose={() => setOpenPickerId(null)}
           />
@@ -159,7 +161,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_SUCCESS_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'successColor'}
+            isOpen={state.openThemeColorPickerId === 'successColor'}
             onOpen={() => setOpenPickerId('successColor')}
             onClose={() => setOpenPickerId(null)}
           />
@@ -169,7 +171,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_WARNING_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'warningColor'}
+            isOpen={state.openThemeColorPickerId === 'warningColor'}
             onOpen={() => setOpenPickerId('warningColor')}
             onClose={() => setOpenPickerId(null)}
           />
@@ -179,7 +181,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_ERROR_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'errorColor'}
+            isOpen={state.openThemeColorPickerId === 'errorColor'}
             onOpen={() => setOpenPickerId('errorColor')}
             onClose={() => setOpenPickerId(null)}
             disabled

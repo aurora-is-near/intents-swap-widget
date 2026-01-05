@@ -1,5 +1,6 @@
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
+import { ThemeColorPickerId } from '../types/colors';
 
 type CreatorState = {
   // Configure - User authentication
@@ -33,6 +34,7 @@ type CreatorState = {
   successColor: string;
   warningColor: string;
   errorColor: string;
+  openThemeColorPickerId: ThemeColorPickerId | null;
 };
 
 const initialState: CreatorState = {
@@ -60,6 +62,7 @@ const initialState: CreatorState = {
   successColor: '#98FFB5',
   warningColor: '#FADFAD',
   errorColor: '#FFB8BE',
+  openThemeColorPickerId: null,
 };
 
 type Action =
@@ -100,6 +103,10 @@ type Action =
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
   | { type: 'SET_WARNING_COLOR'; payload: string }
   | { type: 'SET_ERROR_COLOR'; payload: string }
+  | {
+    type: 'SET_OPEN_THEME_COLOR_PICKER_ID';
+    payload: ThemeColorPickerId | null;
+  }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };
@@ -165,6 +172,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, warningColor: action.payload };
     case 'SET_ERROR_COLOR':
       return { ...state, errorColor: action.payload };
+    case 'SET_OPEN_THEME_COLOR_PICKER_ID':
+      return { ...state, openThemeColorPickerId: action.payload };
     case 'RESET_DESIGN':
       return {
         ...state,
