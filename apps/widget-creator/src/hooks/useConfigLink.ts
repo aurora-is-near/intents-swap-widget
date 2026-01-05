@@ -1,8 +1,5 @@
 import { useCreator } from './useCreatorConfig';
-
-const isHexColor = (value: string): value is `#${string}` => {
-  return /^#[0-9A-Fa-f]{6}$/.test(value);
-};
+import { isHexColor } from '../utils/is-hex-color';
 
 const getColorParam = (params: URLSearchParams, key: string): `#${string}` | null => {
   const value = params.get(key);

@@ -27,12 +27,12 @@ type CreatorState = {
   cornerRadius: 'none' | 's' | 'm' | 'l';
   showContainerWrapper: boolean;
   // Design - Colors
-  primaryColor: `#${string}`;
-  surfaceColor: `#${string}`;
-  backgroundColor: `#${string}`;
-  successColor: `#${string}`;
-  warningColor: `#${string}`;
-  alertColor: `#${string}`;
+  primaryColor: string;
+  surfaceColor: string;
+  backgroundColor: string;
+  successColor: string;
+  warningColor: string;
+  alertColor: string;
 };
 
 const initialState: CreatorState = {
@@ -94,12 +94,12 @@ type Action =
   | { type: 'SET_CORNER_RADIUS'; payload: 'none' | 's' | 'm' | 'l' }
   | { type: 'SET_SHOW_CONTAINER_WRAPPER'; payload: boolean }
   // Design - Colors
-  | { type: 'SET_PRIMARY_COLOR'; payload: `#${string}` }
-  | { type: 'SET_SURFACE_COLOR'; payload: `#${string}` }
-  | { type: 'SET_BACKGROUND_COLOR'; payload: `#${string}` }
-  | { type: 'SET_SUCCESS_COLOR'; payload: `#${string}` }
-  | { type: 'SET_WARNING_COLOR'; payload: `#${string}` }
-  | { type: 'SET_ALERT_COLOR'; payload: `#${string}` }
+  | { type: 'SET_PRIMARY_COLOR'; payload: string }
+  | { type: 'SET_SURFACE_COLOR'; payload: string }
+  | { type: 'SET_BACKGROUND_COLOR'; payload: string }
+  | { type: 'SET_SUCCESS_COLOR'; payload: string }
+  | { type: 'SET_WARNING_COLOR'; payload: string }
+  | { type: 'SET_ALERT_COLOR'; payload: string }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };

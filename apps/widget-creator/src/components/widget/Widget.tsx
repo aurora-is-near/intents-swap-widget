@@ -11,12 +11,17 @@ import {
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
 import '@aurora-is-near/intents-swap-widget/styles.css';
+import { isHexColor } from '../../utils/is-hex-color';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 interface WidgetProps {
   config?: Partial<WidgetConfig>;
 }
+
+const getValidThemeColor = (color: string): `#${string}` | undefined => {
+  return isHexColor(color) ? color : undefined;
+};
 
 export function Widget({ config }: WidgetProps) {
   const { providers, address: walletAddress } = useAppKitWallet();
@@ -111,9 +116,9 @@ export function Widget({ config }: WidgetProps) {
     <WidgetConfigProvider
       config={defaultConfig}
       theme={{
-        primaryColor: state.primaryColor,
-        surfaceColor: state.surfaceColor,
-        backgroundColor: state.backgroundColor,
+        primaryColor: getValidThemeColor(state.primaryColor),
+        surfaceColor: getValidThemeColor(state.surfaceColor),
+        backgroundColor: getValidThemeColor(state.backgroundColor),
         colorScheme: colorScheme ?? 'dark',
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
