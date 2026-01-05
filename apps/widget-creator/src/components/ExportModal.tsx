@@ -27,7 +27,7 @@ export function App() {
       providers={[]}
       theme={{
         primaryColor: '${state.primaryColor ?? '#D5B7FF'}',
-        surfaceColor: '${state.pageBackgroundColor ?? '#24262D'}',
+        surfaceColor: '${state.surfaceColor ?? '#24262D'}',
         colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
       }}
       onMsg={async (msg) => {

@@ -133,13 +133,13 @@ export function Design() {
             onClose={() => setOpenPickerId(null)}
           />
           <ColorInput
-            label="Page background color"
-            value={state.pageBackgroundColor}
+            label="Surface color"
+            value={state.surfaceColor}
             onChange={(val) =>
-              dispatch({ type: 'SET_PAGE_BACKGROUND_COLOR', payload: val })
+              dispatch({ type: 'SET_SURFACE_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'pageBackgroundColor'}
-            onOpen={() => setOpenPickerId('pageBackgroundColor')}
+            isOpen={openPickerId === 'surfaceColor'}
+            onOpen={() => setOpenPickerId('surfaceColor')}
             onClose={() => setOpenPickerId(null)}
             hasInfo
           />

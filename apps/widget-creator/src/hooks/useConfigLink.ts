@@ -47,7 +47,7 @@ export function useConfigLink() {
 
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
-    params.append('pageBackgroundColor', state.pageBackgroundColor);
+    params.append('surfaceColor', state.surfaceColor);
     params.append('wrapperBackgroundColor', state.wrapperBackgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
@@ -226,12 +226,12 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
     }
 
-    const pageBackgroundColor = params.get('pageBackgroundColor');
+    const surfaceColor = params.get('surfaceColor');
 
-    if (pageBackgroundColor) {
+    if (surfaceColor) {
       dispatch({
-        type: 'SET_PAGE_BACKGROUND_COLOR',
-        payload: pageBackgroundColor,
+        type: 'SET_SURFACE_COLOR',
+        payload: surfaceColor,
       });
     }
 
