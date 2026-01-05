@@ -63,15 +63,15 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
   }
 
   if (successColor) {
-    setColorVariable('success', successColor, parentEl);
+    setColorVariable('status-success', successColor, parentEl);
   }
 
   if (warningColor) {
-    setColorVariable('warning', warningColor, parentEl);
+    setColorVariable('status-warning', warningColor, parentEl);
   }
 
   if (errorColor) {
-    setColorVariable('error', errorColor, parentEl);
+    setColorVariable('status-error', errorColor, parentEl);
   }
 };
 
