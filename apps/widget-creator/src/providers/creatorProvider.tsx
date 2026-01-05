@@ -32,7 +32,7 @@ type CreatorState = {
   backgroundColor: string;
   successColor: string;
   warningColor: string;
-  alertColor: string;
+  errorColor: string;
 };
 
 const initialState: CreatorState = {
@@ -59,7 +59,7 @@ const initialState: CreatorState = {
   backgroundColor: '#24262D',
   successColor: '#98FFB5',
   warningColor: '#FADFAD',
-  alertColor: '#FFB8BE',
+  errorColor: '#FFB8BE',
 };
 
 type Action =
@@ -99,7 +99,7 @@ type Action =
   | { type: 'SET_BACKGROUND_COLOR'; payload: string }
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
   | { type: 'SET_WARNING_COLOR'; payload: string }
-  | { type: 'SET_ALERT_COLOR'; payload: string }
+  | { type: 'SET_ERROR_COLOR'; payload: string }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };
@@ -163,8 +163,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, successColor: action.payload };
     case 'SET_WARNING_COLOR':
       return { ...state, warningColor: action.payload };
-    case 'SET_ALERT_COLOR':
-      return { ...state, alertColor: action.payload };
+    case 'SET_ERROR_COLOR':
+      return { ...state, errorColor: action.payload };
     case 'RESET_DESIGN':
       return {
         ...state,
@@ -178,7 +178,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         backgroundColor: '#24262D',
         successColor: '#98FFB5',
         warningColor: '#FADFAD',
-        alertColor: '#FFB8BE',
+        errorColor: '#FFB8BE',
       };
     case 'RESET_ALL':
       return initialState;

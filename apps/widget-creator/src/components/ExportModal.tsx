@@ -26,8 +26,12 @@ export function App() {
       makeTransfer={handleTransfer}
       providers={[]}
       theme={{
-        primaryColor: '${state.primaryColor ?? '#D5B7FF'}',
-        surfaceColor: '${state.surfaceColor ?? '#24262D'}',
+        primaryColor: '${state.primaryColor}',
+        surfaceColor: '${state.surfaceColor}',
+        backgroundColor: '${state.backgroundColor}',
+        successColor: '${state.successColor}',
+        warningColor: '${state.warningColor}',
+        errorColor: '${state.errorColor}',
         colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
       }}
       onMsg={async (msg) => {

@@ -174,13 +174,13 @@ export function Design() {
             onClose={() => setOpenPickerId(null)}
           />
           <ColorInput
-            label="Alert color"
-            value={state.alertColor}
+            label="Error color"
+            value={state.errorColor}
             onChange={(val) =>
-              dispatch({ type: 'SET_ALERT_COLOR', payload: val })
+              dispatch({ type: 'SET_ERROR_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'alertColor'}
-            onOpen={() => setOpenPickerId('alertColor')}
+            isOpen={openPickerId === 'errorColor'}
+            onOpen={() => setOpenPickerId('errorColor')}
             onClose={() => setOpenPickerId(null)}
             disabled
           />

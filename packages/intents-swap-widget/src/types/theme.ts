@@ -7,6 +7,9 @@ export type Theme = {
   backgroundColor?: HexColor;
   primaryColor?: HexColor;
   surfaceColor?: HexColor;
+  successColor?: HexColor;
+  warningColor?: HexColor;
+  errorColor?: HexColor;
 };
 
 export type ColorPalette = Record<

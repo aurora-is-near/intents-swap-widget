@@ -68,7 +68,7 @@ export function useConfigLink() {
     params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
-    params.append('alertColor', state.alertColor);
+    params.append('errorColor', state.errorColor);
 
     return `${baseUrl}?${params.toString()}`;
   };
@@ -273,10 +273,10 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_WARNING_COLOR', payload: warningColor });
     }
 
-    const alertColor = getColorParam(params, 'alertColor');
+    const errorColor = getColorParam(params, 'errorColor');
 
-    if (alertColor) {
-      dispatch({ type: 'SET_ALERT_COLOR', payload: alertColor });
+    if (errorColor) {
+      dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
     }
   };
 

@@ -41,6 +41,9 @@ export default function App() {
 | `backgroundColor` | `string`              | An optional background color for the widget                                       |
 | `primaryColor`    | `string`              | Main accent color used for highlights, buttons, and active states                 |
 | `surfaceColor`    | `string`              | Secondary surface tones used for backgrounds, texts and other non-accent elements |
+| `successColor`    | `string`              | The color used for any success messages                                           |
+| `warningColor`    | `string`              | The color used for any warning messages                                           |
+| `errorColor`      | `string`              | The color used for any error messages                                             |
 
 ### Use our theme outside of widget
 

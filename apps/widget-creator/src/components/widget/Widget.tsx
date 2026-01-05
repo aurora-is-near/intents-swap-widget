@@ -119,6 +119,9 @@ export function Widget({ config }: WidgetProps) {
         primaryColor: getValidThemeColor(state.primaryColor),
         surfaceColor: getValidThemeColor(state.surfaceColor),
         backgroundColor: getValidThemeColor(state.backgroundColor),
+        successColor: getValidThemeColor(state.successColor),
+        warningColor: getValidThemeColor(state.warningColor),
+        errorColor: getValidThemeColor(state.errorColor),
         colorScheme: colorScheme ?? 'dark',
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
