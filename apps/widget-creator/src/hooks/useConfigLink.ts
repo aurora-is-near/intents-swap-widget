@@ -1,5 +1,25 @@
 import { useCreator } from './useCreatorConfig';
 
+const isHexColor = (value: string): value is `#${string}` => {
+  return /^#[0-9A-Fa-f]{6}$/.test(value);
+};
+
+const getColorParam = (params: URLSearchParams, key: string): `#${string}` | null => {
+  const value = params.get(key);
+
+  if (!value) {
+    return null;
+  }
+
+  if (!isHexColor(value)) {
+    console.warn(`Invalid hex value for ${key}: ${value}`);
+
+    return null;
+  }
+
+  return value;
+};
+
 export function useConfigLink() {
   const { state } = useCreator();
 
@@ -48,7 +68,7 @@ export function useConfigLink() {
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
     params.append('surfaceColor', state.surfaceColor);
-    params.append('wrapperBackgroundColor', state.wrapperBackgroundColor);
+    params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
     params.append('alertColor', state.alertColor);
@@ -220,13 +240,13 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Colors
-    const primaryColor = params.get('primaryColor');
+    const primaryColor = getColorParam(params, 'primaryColor');
 
     if (primaryColor) {
       dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
     }
 
-    const surfaceColor = params.get('surfaceColor');
+    const surfaceColor = getColorParam(params, 'surfaceColor');
 
     if (surfaceColor) {
       dispatch({
@@ -235,28 +255,28 @@ export function useDecodeConfigLink() {
       });
     }
 
-    const wrapperBackgroundColor = params.get('wrapperBackgroundColor');
+    const backgroundColor = getColorParam(params, 'backgroundColor');
 
-    if (wrapperBackgroundColor) {
+    if (backgroundColor) {
       dispatch({
-        type: 'SET_WRAPPER_BACKGROUND_COLOR',
-        payload: wrapperBackgroundColor,
+        type: 'SET_BACKGROUND_COLOR',
+        payload: backgroundColor,
       });
     }
 
-    const successColor = params.get('successColor');
+    const successColor = getColorParam(params, 'successColor');
 
     if (successColor) {
       dispatch({ type: 'SET_SUCCESS_COLOR', payload: successColor });
     }
 
-    const warningColor = params.get('warningColor');
+    const warningColor = getColorParam(params, 'warningColor');
 
     if (warningColor) {
       dispatch({ type: 'SET_WARNING_COLOR', payload: warningColor });
     }
 
-    const alertColor = params.get('alertColor');
+    const alertColor = getColorParam(params, 'alertColor');
 
     if (alertColor) {
       dispatch({ type: 'SET_ALERT_COLOR', payload: alertColor });

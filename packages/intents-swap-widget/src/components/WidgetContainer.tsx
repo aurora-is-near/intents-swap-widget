@@ -2,7 +2,7 @@ import { PropsWithChildren, ReactElement } from 'react';
 import { cn } from '../utils';
 import { useTheme } from '../hooks/useTheme';
 
-const DEFAULT_BACKGROUND_COLOR = '#24262d';
+const DEFAULT_FULL_PAGE_BACKGROUND_COLOR = '#24262d';
 
 export type WidgetContainerProps = PropsWithChildren<{
   HeaderComponent?: ReactElement | false | null;
@@ -22,7 +22,10 @@ export const WidgetContainer = ({
 
   const jsx = (
     <div
-      style={{ transform: isFullPage ? 'translateY(15dvh)' : 'none' }}
+      style={{
+        transform: isFullPage ? 'translateY(15dvh)' : 'none',
+        backgroundColor: theme?.backgroundColor,
+      }}
       className={cn(
         'w-full h-fit flex flex-col justify-center items-center relative',
         className,
@@ -53,7 +56,8 @@ export const WidgetContainer = ({
         className,
       )}
       style={{
-        backgroundColor: theme?.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+        backgroundColor:
+          theme?.backgroundColor ?? DEFAULT_FULL_PAGE_BACKGROUND_COLOR,
       }}>
       <div className="w-full h-fit max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>

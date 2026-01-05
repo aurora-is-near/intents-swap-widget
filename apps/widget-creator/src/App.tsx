@@ -5,6 +5,7 @@ import { Widget } from './components/widget/Widget';
 import { CreatorProvider, QueryProvider } from './providers';
 import { ResolutionHeader } from './components/widget/ResolutionHeader';
 import { cn } from './utils/cn';
+import { WidgetSection } from './components/widget/WidgetSection';
 
 function App() {
   const [resolutionView, setResolutionView] = useState<'desktop' | 'mobile'>(
@@ -23,11 +24,7 @@ function App() {
                 ? 'flex-col md:items-center'
                 : 'flex-col md:flex-row',
             )}>
-            <section
-              className="flex-grow rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full"
-              style={{
-                background: 'var(--c-sw-gray-800)',
-              }}>
+            <WidgetSection>
               <ResolutionHeader
                 setResolutionView={setResolutionView}
                 resolutionView={resolutionView}
@@ -35,7 +32,7 @@ function App() {
               <aside className="mt-[46px] max-w-[420px] m-auto sw">
                 <Widget />
               </aside>
-            </section>
+            </WidgetSection>
             <section
               className={cn(
                 'flex-grow bg-csw-gray-950 rounded-csw-lg',

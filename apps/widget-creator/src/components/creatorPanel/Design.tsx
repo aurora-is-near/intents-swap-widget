@@ -144,13 +144,13 @@ export function Design() {
             hasInfo
           />
           <ColorInput
-            label="Wrapper background color"
-            value={state.wrapperBackgroundColor}
+            label="Background color"
+            value={state.backgroundColor}
             onChange={(val) =>
-              dispatch({ type: 'SET_WRAPPER_BACKGROUND_COLOR', payload: val })
+              dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'wrapperBackgroundColor'}
-            onOpen={() => setOpenPickerId('wrapperBackgroundColor')}
+            isOpen={openPickerId === 'backgroundColor'}
+            onOpen={() => setOpenPickerId('backgroundColor')}
             onClose={() => setOpenPickerId(null)}
           />
           <ColorInput
