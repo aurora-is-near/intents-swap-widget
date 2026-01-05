@@ -1,21 +1,4 @@
 import { useCreator } from './useCreatorConfig';
-import { isHexColor } from '../utils/is-hex-color';
-
-const getColorParam = (params: URLSearchParams, key: string): `#${string}` | null => {
-  const value = params.get(key);
-
-  if (!value) {
-    return null;
-  }
-
-  if (!isHexColor(value)) {
-    console.warn(`Invalid hex value for ${key}: ${value}`);
-
-    return null;
-  }
-
-  return value;
-};
 
 export function useConfigLink() {
   const { state } = useCreator();
@@ -237,13 +220,13 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Colors
-    const primaryColor = getColorParam(params, 'primaryColor');
+    const primaryColor = params.get('primaryColor');
 
     if (primaryColor) {
       dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
     }
 
-    const surfaceColor = getColorParam(params, 'surfaceColor');
+    const surfaceColor = params.get('surfaceColor');
 
     if (surfaceColor) {
       dispatch({
@@ -252,7 +235,7 @@ export function useDecodeConfigLink() {
       });
     }
 
-    const backgroundColor = getColorParam(params, 'backgroundColor');
+    const backgroundColor = params.get('backgroundColor');
 
     if (backgroundColor) {
       dispatch({
@@ -261,19 +244,19 @@ export function useDecodeConfigLink() {
       });
     }
 
-    const successColor = getColorParam(params, 'successColor');
+    const successColor = params.get('successColor');
 
     if (successColor) {
       dispatch({ type: 'SET_SUCCESS_COLOR', payload: successColor });
     }
 
-    const warningColor = getColorParam(params, 'warningColor');
+    const warningColor = params.get('warningColor');
 
     if (warningColor) {
       dispatch({ type: 'SET_WARNING_COLOR', payload: warningColor });
     }
 
-    const errorColor = getColorParam(params, 'errorColor');
+    const errorColor = params.get('errorColor');
 
     if (errorColor) {
       dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
