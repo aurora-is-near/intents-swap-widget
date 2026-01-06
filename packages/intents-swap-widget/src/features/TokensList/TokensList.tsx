@@ -1,8 +1,24 @@
-import { VList } from 'virtua';
-import { Fragment, useMemo } from 'react';
+import { VList, VListHandle } from 'virtua';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { TOKEN_ITEM_HEIGHT, TokenItem } from './TokenItem';
+import { TokenItem } from './TokenItem';
+import { useFocusOnList } from './hooks';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
+import {
+  LIST_CONTAINER_ID,
+  MAX_LIST_VIEW_AREA_HEIGHT,
+  TOKEN_ITEM_HEIGHT,
+} from './constants';
+import {
+  getFirstGroupItemTotalIndex,
+  getGroupHeadersTotalIndexes,
+  getListItemsTotalCount,
+  getListState,
+  getListTotalHeight,
+  getTokenByTotalIndex,
+} from './utils';
+import type { ListGroup } from './types';
+
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -31,18 +47,6 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-const useListState = (tokens: ReadonlyArray<Token>, search: string) => {
-  if (tokens.length === 0 && search) {
-    return 'EMPTY_SEARCH';
-  }
-
-  if (tokens.length === 0 && !search) {
-    return 'NO_TOKENS';
-  }
-
-  return 'HAS_TOKENS';
-};
-
 export const TokensList = ({
   variant,
   search,
@@ -68,37 +72,52 @@ export const TokensList = ({
   });
 
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;
-  const tokensListState = useListState(filteredTokens.all, search);
+  const tokensListState = getListState(filteredTokens.all, search);
 
-  const tokensUngrouped = useMemo(
-    () => [{ label: null, tokens: filteredTokens.all }],
+  const ref = useRef<VListHandle>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+
+  const tokensUngrouped = useMemo<ListGroup<1>>(
+    () => [{ tokens: filteredTokens.all }],
     [filteredTokens.all],
   );
 
-  const tokensBySection = useMemo(
-    () => [
-      { label: appName, tokens: filteredTokens.intents },
-      {
-        label: chainIsNotSupported ? null : 'Connected wallet',
-        tokens: filteredTokens.wallet,
-      },
-    ],
-    [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported],
-  );
+  const tokensBySection = useMemo(() => {
+    return [
+      ...(filteredTokens.intents.length > 0
+        ? [
+            { label: appName, count: filteredTokens.intents.length },
+            { tokens: filteredTokens.intents },
+          ]
+        : []),
+      ...(filteredTokens.wallet.length > 0
+        ? [
+            {
+              label: chainIsNotSupported ? null : 'Connected wallet',
+              count: filteredTokens.wallet.length,
+            },
+            { tokens: filteredTokens.wallet },
+          ]
+        : []),
+    ].filter(Boolean) as ListGroup<0 | 2 | 4>;
+  }, [filteredTokens.wallet, filteredTokens.intents, chainIsNotSupported]);
 
-  const tokensCount = useMemo(() => {
-    return (areTokensGrouped ? tokensBySection : tokensUngrouped).reduce(
-      (acc, group) => acc + group.tokens.length,
-      0,
-    );
-  }, [tokensBySection, tokensUngrouped, areTokensGrouped]);
+  const tokensList = areTokensGrouped ? tokensBySection : tokensUngrouped;
 
-  // <offset> - user defined offset e.g. page header height + space
-  // 152px - height of TokenModal elements like search and paddings
-  // 48px - minimal offset from the bottom screen edge
-  // Total: 152 + 48 = 200px
-  // const maxHeight = `calc(100vh - (${topScreenOffset ?? '0px'} + ${offset ?? '0px'} + 200px))`;
-  const maxHeight = '450px';
+  const listHeight = getListTotalHeight(tokensList);
+  const totalItems = getListItemsTotalCount(tokensList);
+  const headerIndexes = getGroupHeadersTotalIndexes(tokensList);
+
+  const handleBlur = useCallback(() => {
+    setFocusedIndex(-1);
+  }, []);
+
+  useFocusOnList({
+    listRef: ref.current,
+    initialFocusedIndex: areTokensGrouped ? 1 : 0,
+    onFocus: (index) => setFocusedIndex(index),
+    onBlur: handleBlur,
+  });
 
   switch (tokensListState) {
     case 'EMPTY_SEARCH':
@@ -121,26 +140,98 @@ export const TokensList = ({
       return (
         <div className={cn('gap-sw-lg flex flex-col', className)}>
           <VList
+            ref={ref}
+            tabIndex={0}
+            id={LIST_CONTAINER_ID}
+            itemSize={TOKEN_ITEM_HEIGHT}
             className="hide-scrollbar"
             style={{
-              maxHeight,
               minHeight: 200,
-              height: tokensCount
-                ? tokensCount * TOKEN_ITEM_HEIGHT +
-                  (areTokensGrouped ? tokensBySection.length * 62 : 0)
-                : TOKEN_ITEM_HEIGHT * 2,
-            }}>
-            {(areTokensGrouped ? tokensBySection : tokensUngrouped).map(
-              ({ label, tokens: tokensToDisplay }) => (
-                <Fragment key={label ?? 'ungrouped-tokens'}>
-                  {tokensToDisplay.length && label ? (
-                    <header className="pb-sw-lg flex flex-col">
-                      <Hr />
-                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${tokensToDisplay.length}`}</span>
-                    </header>
-                  ) : null}
+              height: listHeight,
+              maxHeight: MAX_LIST_VIEW_AREA_HEIGHT,
+              overflowAnchor: 'none',
+              outline: 'none',
+            }}
+            onKeyDown={(e) => {
+              if (!ref.current) {
+                return;
+              }
 
-                  {tokensToDisplay.map((token) => {
+              switch (e.code) {
+                case 'ArrowUp': {
+                  e.preventDefault();
+                  let prevIndex = Math.max(focusedIndex - 1, 0);
+
+                  if (areTokensGrouped && headerIndexes.includes(prevIndex)) {
+                    prevIndex = prevIndex === 0 ? 1 : prevIndex - 1;
+                  }
+
+                  setFocusedIndex(prevIndex);
+                  ref.current?.scrollToIndex(prevIndex, {
+                    align: 'center',
+                    smooth: true,
+                  });
+
+                  break;
+                }
+
+                case 'ArrowDown': {
+                  e.preventDefault();
+                  let nextIndex = Math.min(focusedIndex + 1, totalItems - 1);
+
+                  if (areTokensGrouped && headerIndexes.includes(nextIndex)) {
+                    nextIndex = nextIndex === 0 ? 1 : nextIndex + 1;
+                  }
+
+                  setFocusedIndex(nextIndex);
+                  ref.current?.scrollToIndex(nextIndex, {
+                    align: 'center',
+                    smooth: true,
+                  });
+
+                  break;
+                }
+
+                case 'Enter': {
+                  e.preventDefault();
+                  const token = getTokenByTotalIndex(tokensList, focusedIndex);
+
+                  if (token) {
+                    onMsg({ type: 'on_select_token', token });
+                  }
+
+                  break;
+                }
+
+                default:
+                  break;
+              }
+            }}>
+            {tokensList.map(
+              ({ label, count, tokens: tokensToDisplay }, groupIndex) => {
+                const firstItemInGroupIndex = getFirstGroupItemTotalIndex(
+                  tokensList,
+                  groupIndex,
+                );
+
+                if (label !== undefined) {
+                  if (!label) {
+                    // must be rendered for calculations even if label is null
+                    return <header key={groupIndex} />;
+                  }
+
+                  return (
+                    <header
+                      key={label}
+                      className="pb-sw-lg pt-sw-sm flex flex-col">
+                      <Hr />
+                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${count}`}</span>
+                    </header>
+                  );
+                }
+
+                if (tokensToDisplay) {
+                  return tokensToDisplay.map((token, tokenIndex) => {
                     const tokenBalanceKey = getTokenBalanceKey(token);
 
                     return (
@@ -149,17 +240,20 @@ export const TokensList = ({
                         key={tokenBalanceKey}
                         showBalance={showBalances}
                         balance={mergedBalance[tokenBalanceKey]}
+                        isFocused={
+                          focusedIndex === firstItemInGroupIndex + tokenIndex
+                        }
                         isNotSelectable={
                           chainIsNotSupported && !!ctx.walletAddress
                         }
                         onMsg={onMsg}
                       />
                     );
-                  })}
+                  });
+                }
 
-                  {tokensToDisplay.length ? <div className="h-sw-2xl" /> : null}
-                </Fragment>
-              ),
+                return null;
+              },
             )}
           </VList>
         </div>
