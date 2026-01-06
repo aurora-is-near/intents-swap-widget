@@ -4,6 +4,7 @@ import svgr from 'vite-plugin-svgr';
 import { Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import vercel from 'vite-plugin-vercel';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react(), svgr({}), nodePolyfills(), vercel()] as Plugin[],
@@ -30,5 +31,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+  },
+
+  // Due to @near-js versions mismatch across hot wallet and intents sdk
+  // we need to alias the transactions module to the one in the intents sdk
+  //
+  // ../../node_modules/@near-js/accounts/lib/esm/account.js "GlobalContractDeployMode"
+  // is not exported by"../../node_modules/@near-js/accounts/node_modules/@near-js/transactions/lib/esm/index.js"
+  // imported by "../../node_modules/@near-js/accounts/lib/esm/account.js".
+  resolve: {
+    alias: {
+      '@near-js/transactions': path.resolve(
+        __dirname,
+        '../../node_modules/@near-js/transactions',
+      ),
+    },
   },
 });
