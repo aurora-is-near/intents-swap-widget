@@ -72,10 +72,12 @@ export function Widget({ config }: WidgetProps) {
     [config, state.selectedNetworks],
   );
 
-  const exampleBanner = useMemo((): {
-    variant: 'success' | 'warn' | 'error';
-    label: string;
-  } | undefined => {
+  const exampleBanner = useMemo(():
+    | {
+        variant: 'success' | 'warn' | 'error';
+        label: string;
+      }
+    | undefined => {
     if (state.openThemeColorPickerId === 'successColor') {
       return { variant: 'success', label: 'success' };
     }

@@ -104,9 +104,9 @@ type Action =
   | { type: 'SET_WARNING_COLOR'; payload: string }
   | { type: 'SET_ERROR_COLOR'; payload: string }
   | {
-    type: 'SET_OPEN_THEME_COLOR_PICKER_ID';
-    payload: ThemeColorPickerId | null;
-  }
+      type: 'SET_OPEN_THEME_COLOR_PICKER_ID';
+      payload: ThemeColorPickerId | null;
+    }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };

@@ -1,5 +1,5 @@
-import { useCreator } from '../../hooks/useCreatorConfig';
 import { PropsWithChildren } from 'react';
+import { useCreator } from '../../hooks/useCreatorConfig';
 
 export const WidgetSection = ({ children }: PropsWithChildren) => {
   const { state } = useCreator();
@@ -13,4 +13,4 @@ export const WidgetSection = ({ children }: PropsWithChildren) => {
       {children}
     </section>
   );
-}
+};
