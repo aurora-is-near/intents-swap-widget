@@ -74,7 +74,7 @@ export function App() {
         }}
         onClick={onClose}>
         <div
-          className="relative z-50 mx-4 w-full max-w-[512px] rounded-csw-lg bg-csw-gray-900 overflow-hidden flex flex-col border border-csw-gray-800"
+          className="relative z-50 mx-4 w-full max-w-[720px] rounded-csw-lg bg-csw-gray-900 overflow-hidden flex flex-col border border-csw-gray-800 mx-csw-xl"
           onClick={(e) => e.stopPropagation()}>
           <div className="bg-csw-gray-900 px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-800 flex-shrink-0">
             <div className="flex flex-col gap-csw-md flex-1">
