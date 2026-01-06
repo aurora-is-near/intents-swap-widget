@@ -98,19 +98,17 @@ export function Configure() {
             <RadioButton
               label="Enabled"
               description={
-                <div className="space-y-1.5">
-                  <p>
-                    Users can deposit to or withdraw from their chain abstracted
-                    intents balance in addition to using their connected wallet
-                    balances.
-                  </p>
+                <span className="space-y-1.5">
+                  Users can deposit to or withdraw from their chain abstracted
+                  intents balance in addition to using their connected wallet
+                  balances.
                   <a
                     href="#"
                     className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
                     <span>Learn more</span>
                     <ExternalLink className="w-csw-xl h-csw-xl" />
                   </a>
-                </div>
+                </span>
               }
               isSelected={state.accountAbstractionMode === 'enabled'}
               onChange={() =>
