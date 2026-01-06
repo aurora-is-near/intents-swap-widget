@@ -18,6 +18,7 @@ import { TransferError } from '@/errors';
 import { INTENTS_CONTRACT } from '@/constants';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
+import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
@@ -313,7 +314,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         });
       }
 
-      if (e instanceof Error) {
+      if (isErrorLikeObject(e)) {
         if (e.message.includes('Fee is not estimated')) {
           throw new TransferError({
             code: 'FEES_NOT_ESTIMATED',
@@ -321,10 +322,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         }
 
         // User rejected
-        if (
-          isUserDeniedSigning(e.message) ||
-          isUserDeniedSigning(`${e.cause}`)
-        ) {
+        if (isUserDeniedSigning(e)) {
           return undefined;
         }
       }
