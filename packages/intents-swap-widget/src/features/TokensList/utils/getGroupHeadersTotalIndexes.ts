@@ -7,7 +7,7 @@ import type { AnyListGroup } from '../types';
  * @returns List of positions of all group headers in the combined list
  */
 export const getGroupHeadersTotalIndexes = (tokensList: AnyListGroup) => {
-  return tokensList.reduce((acc, group, index) => {
+  return tokensList.reduce<number[]>((acc, group, index) => {
     if (index === 0 && group.label) {
       return [0];
     }
@@ -17,5 +17,5 @@ export const getGroupHeadersTotalIndexes = (tokensList: AnyListGroup) => {
     }
 
     return acc;
-  }, [] as number[]);
+  }, []);
 };

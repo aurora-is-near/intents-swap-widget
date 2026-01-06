@@ -1,4 +1,4 @@
-import { TOKEN_ITEM_HEIGHT } from '../constants';
+import { LIST_SECTION_HEADER_HEIGHT, TOKEN_ITEM_HEIGHT } from '../constants';
 import type { AnyListGroup } from '../types';
 
 const getTokensTotalCount = (tokensList: AnyListGroup) => {
@@ -19,6 +19,7 @@ export const getListTotalHeight = (tokensList: AnyListGroup) => {
 
   return tokensCount
     ? tokensCount * TOKEN_ITEM_HEIGHT +
-        tokensList.filter((group) => !!group.label).length * 62
+        tokensList.filter((group) => !!group.label).length *
+          LIST_SECTION_HEADER_HEIGHT
     : TOKEN_ITEM_HEIGHT * 2;
 };

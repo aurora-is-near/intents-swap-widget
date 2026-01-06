@@ -8,13 +8,9 @@ import type { Token } from '@/types/token';
  * @returns The state of the list: 'EMPTY_SEARCH', 'NO_TOKENS', 'HAS_TOKENS'
  */
 export const getListState = (tokens: ReadonlyArray<Token>, search: string) => {
-  if (tokens.length === 0 && search) {
-    return 'EMPTY_SEARCH';
+  if (tokens.length) {
+    return 'HAS_TOKENS';
   }
 
-  if (tokens.length === 0 && !search) {
-    return 'NO_TOKENS';
-  }
-
-  return 'HAS_TOKENS';
+  return !search ? 'NO_TOKENS' : 'EMPTY_SEARCH';
 };
