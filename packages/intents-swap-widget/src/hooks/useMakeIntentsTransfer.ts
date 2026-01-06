@@ -1,12 +1,12 @@
 import {
-  BridgeSDK,
   createIntentSignerNEP413,
   createInternalTransferRoute,
   createNearWithdrawalRoute,
   FeeExceedsAmountError,
+  IntentsSDK,
   MinWithdrawalAmountError,
   type RouteConfig,
-} from '@defuse-protocol/bridge-sdk';
+} from '@defuse-protocol/intents-sdk';
 import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
 import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
@@ -246,7 +246,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         notReachable(intentsAccountType);
     }
 
-    const sdk = new BridgeSDK({ referral: snakeCase(appName) });
+    const sdk = new IntentsSDK({ referral: snakeCase(appName) });
 
     sdk.setIntentSigner(signer);
 
@@ -262,35 +262,48 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
       routeConfig = createInternalTransferRoute();
     }
 
-    const withdrawal = sdk.createWithdrawal({
-      withdrawalParams: {
-        assetId: ctx.sourceToken.assetId,
-        amount: BigInt(ctx.sourceTokenAmount),
-        destinationAddress: getDestinationAddress(
-          ctx,
-          isDirectNearTokenWithdrawal || isDirectNonNearWithdrawal,
-        ),
-        destinationMemo: undefined,
-        feeInclusive: false,
-        routeConfig,
-      },
-    });
+    const withdrawalParams = {
+      assetId: ctx.sourceToken.assetId,
+      amount: BigInt(ctx.sourceTokenAmount),
+      destinationAddress: getDestinationAddress(
+        ctx,
+        isDirectNearTokenWithdrawal || isDirectNonNearWithdrawal,
+      ),
+      destinationMemo: undefined,
+      feeInclusive: false,
+      routeConfig,
+    };
+
+    onPending('WAITING_CONFIRMATION');
 
     try {
-      await withdrawal.estimateFee();
+      const feeEstimation = await sdk.estimateWithdrawalFee({
+        withdrawalParams,
+      });
 
-      onPending('WAITING_CONFIRMATION');
-      const txIntent = await withdrawal.signAndSendIntent();
+      const { intentHash } = await sdk.signAndSendWithdrawalIntent({
+        withdrawalParams,
+        feeEstimation,
+      });
 
       onPending('PROCESSING');
-      const tx = await withdrawal.waitForIntentSettlement();
+      const intentTx = await sdk.waitForIntentSettlement({ intentHash });
 
-      await withdrawal.waitForWithdrawalCompletion();
+      const completionResult = await sdk.waitForWithdrawalCompletion({
+        withdrawalParams,
+        intentTx,
+      });
 
       return {
-        hash: tx.hash,
-        transactionLink: getTransactionLink(CHAIN_IDS_MAP.near, tx.hash),
-        intent: txIntent,
+        intent: intentTx.hash,
+        // no hash means completion not trackable for this bridge
+        hash: completionResult.hash ?? '',
+        transactionLink: completionResult.hash
+          ? getTransactionLink(
+              CHAIN_IDS_MAP[ctx.targetToken.blockchain],
+              completionResult.hash,
+            )
+          : '',
       };
     } catch (e: unknown) {
       logger.error('[TRANSFER ERROR]', e);
