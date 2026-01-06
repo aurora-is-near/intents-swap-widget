@@ -12,6 +12,7 @@ import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
+import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
 
@@ -139,7 +140,7 @@ export const useMakeQuoteTransfer = ({
       let errorMessage = 'Failed to make a transfer. Please try again.';
 
       const userCancelledTx =
-        error instanceof Error && isUserDeniedSigning(error.message);
+        isErrorLikeObject(error) && isUserDeniedSigning(error);
 
       if (userCancelledTx) {
         return;

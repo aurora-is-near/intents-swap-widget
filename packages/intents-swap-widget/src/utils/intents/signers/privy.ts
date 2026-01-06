@@ -1,5 +1,5 @@
 import { utils } from '@defuse-protocol/internal-utils';
-import { createIntentSignerViem } from '@defuse-protocol/bridge-sdk';
+import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
 
 import { EvmProvider } from '@/types';
 import { WidgetError } from '@/errors';
