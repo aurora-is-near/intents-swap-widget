@@ -13,7 +13,7 @@ jobs:
       - name: Install
         run: yarn install --frozen-lockfile --non-interactive
       - name: Lint
-        run: yarn lint
+        run: NODE_OPTIONS='--max-old-space-size=6000' yarn lint
       - name: Check types
         run: yarn typecheck
       - name: Check docs
