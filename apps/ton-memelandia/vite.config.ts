@@ -52,7 +52,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
   },
 
   // Due to @near-js versions mismatch across hot wallet and intents sdk
