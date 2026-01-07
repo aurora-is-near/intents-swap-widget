@@ -1,3 +1,4 @@
+import { Chain, Chains } from '@aurora-is-near/intents-swap-widget';
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 
@@ -7,7 +8,7 @@ type CreatorState = {
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
-  selectedNetworks: string[];
+  selectedNetworks: Chains[];
   // Configure - Tokens
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
@@ -68,7 +69,7 @@ type Action =
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
   // Configure - Networks
-  | { type: 'SET_SELECTED_NETWORKS'; payload: string[] }
+  | { type: 'SET_SELECTED_NETWORKS'; payload: Chains[] }
   // Configure - Tokens
   | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }

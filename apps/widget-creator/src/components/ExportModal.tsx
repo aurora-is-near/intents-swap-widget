@@ -3,35 +3,58 @@ import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '../uikit/Button';
 import { useCreator } from '../hooks/useCreatorConfig';
+import { useWidgetConfig } from '../hooks/useWidgetConfig';
 
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const applyIndent = (
+  code: string,
+  spaces: number,
+): string => {
+  const pad = ' '.repeat(spaces);
+  return code
+    .split('\n')
+    .map((line, index) => {
+      if (!index) {
+        return line;
+      }
+
+      return (line ? pad + line : line);
+    })
+    .join('\n');
+};
+
+const stringifyAsJS = (value: unknown, indent: number): string => {
+  const json = JSON.stringify(value, null, 2);
+
+  // Remove quotes from valid JS identifiers
+  const cleanJson = json.replace(
+    /"([a-zA-Z_$][a-zA-Z0-9_$]*)":/g,
+    '$1:',
+  );
+
+  return applyIndent(cleanJson, indent);
+};
+
 export function ExportModal({ isOpen, onClose }: ExportModalProps) {
   const { state } = useCreator();
+  const { widgetConfig } = useWidgetConfig();
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
   const SAMPLE_CODE = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
 export function App() {
-  const handleTransfer = async (args) => {
-    // Handle transfer logic
-  };
-
   return (
     <WidgetSwap
-      makeTransfer={handleTransfer}
-      providers={[]}
+      config={${stringifyAsJS(widgetConfig, 6)}}
       theme={{
         primaryColor: '${state.primaryColor ?? '#D5B7FF'}',
         surfaceColor: '${state.pageBackgroundColor ?? '#24262D'}',
         colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
-      }}
-      onMsg={async (msg) => {
-        console.log('Widget message:', msg);
       }}
     />
   );
@@ -74,7 +97,7 @@ export function App() {
         }}
         onClick={onClose}>
         <div
-          className="relative z-50 mx-4 w-full max-w-[720px] rounded-csw-lg bg-csw-gray-900 overflow-hidden flex flex-col border border-csw-gray-800 mx-csw-xl"
+          className="relative z-50 mx-4 w-full max-w-[720px] max-h-[90vh] rounded-csw-lg bg-csw-gray-900 overflow-hidden flex flex-col border border-csw-gray-800 mx-csw-xl"
           onClick={(e) => e.stopPropagation()}>
           <div className="bg-csw-gray-900 px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-800 flex-shrink-0">
             <div className="flex flex-col gap-csw-md flex-1">
@@ -108,7 +131,7 @@ export function App() {
             </p>
           </div>
 
-          <div className="bg-csw-gray-900 flex-1 overflow-y-auto flex-shrink-0 h-[380px]">
+          <div className="bg-csw-gray-900 overflow-y-auto flex-shrink-1 min-h-[380px]">
             <div className="bg-csw-gray-950 px-csw-2xl py-csw-lg rounded-csw-md m-csw-lg h-full overflow-auto">
               <Highlight
                 theme={themes.dracula}

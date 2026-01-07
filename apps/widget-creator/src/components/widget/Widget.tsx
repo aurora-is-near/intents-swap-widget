@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   type MakeTransferArgs,
@@ -11,6 +11,7 @@ import {
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
 import '@aurora-is-near/intents-swap-widget/styles.css';
+import { useWidgetConfig } from '../../hooks/useWidgetConfig';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
@@ -19,10 +20,7 @@ interface WidgetProps {
 }
 
 export function Widget({ config }: WidgetProps) {
-  const { providers, address: walletAddress } = useAppKitWallet();
-
-  const appBalanceMode = walletAddress ? 'with-balance' : 'all';
-  const showAppBalance = true;
+  const { providers } = useAppKitWallet();
   const { state } = useCreator();
   const [_makeTransferArgs, setMakeTransferArgs] =
     useState<MakeTransferArgs | null>(null);
@@ -33,38 +31,7 @@ export function Widget({ config }: WidgetProps) {
       transactionLink: string;
     } | null>(null);
 
-  const defaultConfig = useMemo(
-    () =>
-      ({
-        appName: 'Widget Creator',
-        connectedWallets: { default: walletAddress },
-        intentsAccountType: 'near',
-        chainsFilter: {
-          target: {
-            intents: showAppBalance ? 'all' : 'none',
-            external: 'all',
-          },
-          source: {
-            intents: showAppBalance ? appBalanceMode : 'none',
-            external: walletAddress ? 'wallet-supported' : 'all',
-          },
-        },
-        allowedTargetChainsList: ['near'] as const,
-        alchemyApiKey: ALCHEMY_API_KEY,
-        allowedChainsList:
-          state.selectedNetworks.length > 0
-            ? state.selectedNetworks
-            : undefined,
-        allowedTokensList:
-          state.selectedTokenSymbols.length > 0
-            ? state.selectedTokenSymbols
-            : undefined,
-        // showIntentTokens:
-        // appFees
-        ...config,
-      }) as WidgetConfig,
-    [config, state.selectedNetworks],
-  );
+  const { widgetConfig } = useWidgetConfig();
 
   const handleMakeTransfer = (args: MakeTransferArgs) => {
     setMakeTransferArgs(args);
@@ -109,7 +76,10 @@ export function Widget({ config }: WidgetProps) {
 
   return (
     <WidgetConfigProvider
-      config={defaultConfig}
+      config={{
+        ...widgetConfig,
+        alchemyApiKey: ALCHEMY_API_KEY,
+      }}
       theme={{
         primaryColor: (state.primaryColor ?? '#D5B7FF') as `#${string}`,
         surfaceColor: (state.pageBackgroundColor ?? '#636D9B') as `#${string}`,

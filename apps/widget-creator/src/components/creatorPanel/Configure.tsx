@@ -14,6 +14,7 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import type { TokenType } from '../../hooks/useTokens';
+import { Chains } from '@aurora-is-near/intents-swap-widget';
 
 export function Configure() {
   const { state, dispatch } = useCreator();
@@ -26,7 +27,7 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
 
-  const handleNetworksChange = (newNetworks: string[]) => {
+  const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
 
     // Auto-select tokens that are available for the chosen networks
