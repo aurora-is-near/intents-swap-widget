@@ -152,37 +152,36 @@ export function Configure() {
 
                   handleNetworksChange(newNetworks);
                 }}>
-                {
-                state.selectedNetworks.length === CHAINS.length
+                {state.selectedNetworks.length === CHAINS.length
                   ? 'Deselect all'
                   : 'Select all'}
               </OutlinedButton>
             </div>
             <div className="flex flex-wrap gap-csw-md">
               {CHAINS.map((chain) => (
-                  <button
-                    key={chain.id}
-                    onClick={() => {
-                      const isSelected = state.selectedNetworks?.includes(
-                        chain.id,
-                      );
+                <button
+                  key={chain.id}
+                  onClick={() => {
+                    const isSelected = state.selectedNetworks?.includes(
+                      chain.id,
+                    );
 
-                      const newNetworks = isSelected
-                        ? state.selectedNetworks.filter(
-                            (n: string) => n !== chain.id,
-                          )
-                        : [...(state.selectedNetworks || []), chain.id];
+                    const newNetworks = isSelected
+                      ? state.selectedNetworks.filter(
+                          (n: string) => n !== chain.id,
+                        )
+                      : [...(state.selectedNetworks || []), chain.id];
 
-                      handleNetworksChange(newNetworks);
-                    }}
-                    className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
-                      state.selectedNetworks?.includes(chain.id)
-                        ? 'border-2 border-csw-accent-600'
-                        : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
-                    }`}>
-                    {<div className="w-[28px] h-[28px]">{chain.icon}</div>}
-                  </button>
-                ))}
+                    handleNetworksChange(newNetworks);
+                  }}
+                  className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
+                    state.selectedNetworks?.includes(chain.id)
+                      ? 'border-2 border-csw-accent-600'
+                      : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
+                  }`}>
+                  {<div className="w-[28px] h-[28px]">{chain.icon}</div>}
+                </button>
+              ))}
             </div>
           </div>
         </ConfigSection>
@@ -268,9 +267,7 @@ export function Configure() {
                                   className="size-full rounded-full"
                                 />
                                 {sellTokenChain && (
-                                  <div
-                                    className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
-                                  >
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
                                     {sellTokenChain.icon}
                                   </div>
                                 )}
@@ -329,9 +326,7 @@ export function Configure() {
                                   className="size-full rounded-full"
                                 />
                                 {buyTokenChain && (
-                                  <div
-                                    className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
-                                  >
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
                                     {buyTokenChain.icon}
                                   </div>
                                 )}

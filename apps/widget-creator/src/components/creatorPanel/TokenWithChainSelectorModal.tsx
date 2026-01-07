@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
 import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
-import { useTokens } from '../../hooks/useTokens';
 import { CHAINS } from '@aurora-is-near/intents-swap-widget';
+import { useTokens } from '../../hooks/useTokens';
 
 interface TokenWithChainSelectorProps {
   isOpen: boolean;
@@ -203,10 +203,8 @@ export function TokenWithChainSelector({
                           );
 
                           return chain ? (
-                            <div
-                              className="absolute right-[0px] bottom-[0px] w-[12px] h-[12px] rounded-[4px] border border-[#444650]"
-                            >
-                              {chain.icon }
+                            <div className="absolute right-[0px] bottom-[0px] w-[12px] h-[12px] rounded-[4px] border border-[#444650]">
+                              {chain.icon}
                             </div>
                           ) : null;
                         })()}
