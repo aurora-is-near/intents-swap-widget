@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext .js,.ts,.tsx",
     "preview": "vite preview"
   },
   "dependencies": {
