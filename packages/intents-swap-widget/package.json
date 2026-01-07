@@ -85,7 +85,7 @@
     "near-api-js": "^6.2.5",
     "proxy-memoize": "^3.0.1",
     "qrcode.react": "^4.2.0",
-    "qs": "^6.14.0",
+    "qs": "^6.14.1",
     "react-error-boundary": "^6.0.0",
     "react-helmet-async": "^2.0.5",
     "react-i18next": "^15.7.3",
