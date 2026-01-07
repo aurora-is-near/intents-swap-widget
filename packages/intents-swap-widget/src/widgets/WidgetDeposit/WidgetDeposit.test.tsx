@@ -171,6 +171,6 @@ describe('Deposit', () => {
 
     expect(mockOneClickApi.post).toHaveBeenCalled();
     expect(submitBtn).toBeInTheDocument();
-    expect(submitBtn).not.toBeEnabled();
+    expect(submitBtn).toBeDisabled();
   });
 });
