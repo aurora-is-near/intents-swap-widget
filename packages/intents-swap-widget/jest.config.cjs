@@ -45,6 +45,7 @@ module.exports = {
   transformIgnorePatterns: [`node_modules/(?!(${nodeModulesToTransform})/)`],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '@material-symbols-svg/react-rounded': 'jest-transform-stub',
+    '^@material-symbols-svg/react-rounded/(.*)$':
+      '<rootDir>/jest-mock-icons.js',
   },
 };

@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
-import * as Icons from 'lucide-react';
+import { ArrowLeftW700 as ArrowLeft } from '@material-symbols-svg/react-rounded/icons/arrow-left';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 import {
   Blockchain,
   GaslessSettlement,
@@ -809,7 +810,7 @@ export const Page = () => {
         HeaderComponent={
           <div className="flex flex-row items-center mb-1">
             <div className="bg-sw-status-success text-sw-gray-950 flex h-[40px] w-[40px] items-center justify-center rounded-full">
-              <Icons.Check size={24} />
+              <Check size={24} />
             </div>
             <Heading className="ml-4">All done</Heading>
           </div>
@@ -884,7 +885,7 @@ export const Page = () => {
                 onClick={() => {
                   resetSwapState();
                 }}>
-                <Icons.ArrowLeft size={20} />
+                <ArrowLeft size={20} />
               </button>
               <Heading className="ml-4">Confirm swaps</Heading>
             </div>

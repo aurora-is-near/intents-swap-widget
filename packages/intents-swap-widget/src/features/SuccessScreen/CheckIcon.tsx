@@ -1,7 +1,7 @@
-import * as Icons from 'lucide-react';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 
 export const CheckIcon = () => (
   <div className="mb-sw-xl bg-sw-status-success text-sw-gray-950 flex h-[44px] w-[44px] items-center justify-center rounded-full">
-    <Icons.Check size={24} />
+    <Check size={24} />
   </div>
 );

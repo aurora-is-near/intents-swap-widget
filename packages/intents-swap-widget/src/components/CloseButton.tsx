@@ -1,4 +1,4 @@
-import * as Icons from 'lucide-react';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
 import { cn } from '@/utils';
 
@@ -16,7 +16,7 @@ export const CloseButton = ({ className, onClick }: Props) => {
         className,
       )}
       onClick={onClick}>
-      <Icons.X size={18} strokeWidth={3} />
+      <Close size={18} />
     </button>
   );
 };

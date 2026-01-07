@@ -1,5 +1,5 @@
+import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 import { useRef, useState } from 'react';
-import * as Icons from 'lucide-react';
 
 import { TokensList } from './TokensList';
 import { ChainsDropdown } from './ChainsDropdown';
@@ -99,7 +99,7 @@ export const TokensModal = ({
       <div className="gap-sw-xl flex items-center">
         <Input
           focusOnMount
-          icon={Icons.Search}
+          icon={Search}
           ref={searchInputRef}
           defaultValue={search}
           className="w-full"

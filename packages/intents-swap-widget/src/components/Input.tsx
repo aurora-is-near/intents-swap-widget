@@ -7,19 +7,20 @@ import {
   useState,
 } from 'react';
 import { Input as UIInput } from '@headlessui/react';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
+import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';
 import type { InputProps } from '@headlessui/react';
 import type { PropsWithChildren } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
 
 import { cn } from '@/utils/cn';
 
 type State = 'default' | 'disabled' | 'error' | 'fixed';
 
 export type Props = Omit<InputProps, 'size'> & {
-  icon?: LucideIcon;
+  icon?: MaterialSymbolsComponent;
   defaultValue?: string;
   focusOnMount?: boolean;
+  fontSize?: 'sm' | 'md';
   state?: State;
 };
 
@@ -121,7 +122,7 @@ export const Input = forwardRef<HTMLInputElement, PropsWithChildren<Props>>(
                       },
                     )}
                     onClick={handleClear}>
-                    <Icons.X className="h-sw-xl w-sw-xl" />
+                    <Close className="h-sw-xl w-sw-xl" />
                   </button>
                 ) : null}
               </div>

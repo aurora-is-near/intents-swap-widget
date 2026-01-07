@@ -1,7 +1,7 @@
 import { Fragment, useMemo } from 'react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import { AnimatePresence, motion } from 'framer-motion';
-import * as Icons from 'lucide-react';
 
 import { ChainItem } from './ChainItem';
 import { AllNetworksIcon } from './AllNetworksIcon';
@@ -79,9 +79,15 @@ export const ChainsDropdown = ({
                 })()}
 
                 {isOpen ? (
-                  <Icons.ChevronUp size={18} className="text-sw-gray-50" />
+                  <ChevronLeft
+                    size={18}
+                    className="text-sw-gray-50 rotate-90"
+                  />
                 ) : (
-                  <Icons.ChevronDown size={18} className="text-sw-gray-50" />
+                  <ChevronLeft
+                    size={18}
+                    className="text-sw-gray-50 -rotate-90"
+                  />
                 )}
               </div>
             )}

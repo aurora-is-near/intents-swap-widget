@@ -15,7 +15,7 @@ jobs:
       - name: Build
         run: yarn build --filter=@aurora-is-near/intents-swap-widget
       - name: Lint
-        run: yarn lint
+        run: NODE_OPTIONS='--max-old-space-size=6000' yarn lint
       - name: Check types
         run: yarn typecheck
       - name: Check docs
