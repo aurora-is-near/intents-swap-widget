@@ -3,12 +3,10 @@ import { ReactNode, useMemo } from 'react';
 import { Card } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 import { useAllTokens } from '@aurora-is-near/intents-swap-widget/hooks';
-import {
-  ArrowRight,
-  Check,
-  Close,
-  ProgressActivity,
-} from '@material-symbols-svg/react-rounded/w700';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
+import { ArrowRightW700 as ArrowRight } from '@material-symbols-svg/react-rounded/icons/arrow-right';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
 import { TokenAmount } from './TokenAmount';
 

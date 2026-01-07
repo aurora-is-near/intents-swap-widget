@@ -1,4 +1,5 @@
-import { Cached, Close } from '@material-symbols-svg/react-rounded/w700';
+import { CachedW700 as Cached } from '@material-symbols-svg/react-rounded/icons/cached';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
 import { Button } from './Button';
 import { Card } from './Card';

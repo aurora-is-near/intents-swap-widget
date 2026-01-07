@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check } from '@material-symbols-svg/react-rounded/w700';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 
 import { cn } from '@/utils/cn';
 import { Icon } from '@/components/Icon';

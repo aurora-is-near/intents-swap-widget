@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft } from '@material-symbols-svg/react-rounded/w700';
+import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import type { ReactNode } from 'react';
 
 import { Hr } from './Hr';

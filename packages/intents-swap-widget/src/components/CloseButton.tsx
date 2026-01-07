@@ -1,4 +1,4 @@
-import { Close } from '@material-symbols-svg/react-rounded/w700';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
 import { cn } from '@/utils';
 

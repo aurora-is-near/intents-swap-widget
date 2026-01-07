@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import {
-  Download,
-  Repeat,
-  Send,
-} from '@material-symbols-svg/react-rounded/w700';
+import { DownloadW700 as Download } from '@material-symbols-svg/react-rounded/icons/download';
+import { SendW700 as Send } from '@material-symbols-svg/react-rounded/icons/send';
+import { RepeatW700 as Repeat } from '@material-symbols-svg/react-rounded/icons/repeat';
+
 import {
   WidgetConfigProvider,
   WidgetDeposit,

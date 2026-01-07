@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
-import { ArrowLeft, Check } from '@material-symbols-svg/react-rounded/w700';
+import { ArrowLeftW700 as ArrowLeft } from '@material-symbols-svg/react-rounded/icons/arrow-left';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 import {
   Blockchain,
   GaslessSettlement,

@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { ChevronLeft } from '@material-symbols-svg/react-rounded/w700';
+import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { ChainItem } from './ChainItem';

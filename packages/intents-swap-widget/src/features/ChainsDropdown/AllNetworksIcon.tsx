@@ -1,4 +1,4 @@
-import { Target } from '@material-symbols-svg/react-rounded/w700';
+import { TargetW700 as Target } from '@material-symbols-svg/react-rounded/icons/target';
 
 export const AllNetworksIcon = () => (
   <div className="bg-sw-accent-500 flex h-[28px] w-[28px] items-center justify-center">

@@ -1,4 +1,4 @@
-import { OpenInNew } from '@material-symbols-svg/react-rounded/w700';
+import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 
 type Props = {
   url: string;

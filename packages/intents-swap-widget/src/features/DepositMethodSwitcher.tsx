@@ -1,4 +1,5 @@
-import { QrCode, Wallet } from '@material-symbols-svg/react-rounded/w700';
+import { QrCodeW700 as QrCode } from '@material-symbols-svg/react-rounded/icons/qr-code';
+import { WalletW700 as Wallet } from '@material-symbols-svg/react-rounded/icons/wallet';
 
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';

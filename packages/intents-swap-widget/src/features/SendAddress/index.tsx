@@ -1,7 +1,7 @@
 import { Button } from '@headlessui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { WandShine } from '@material-symbols-svg/react-rounded/w700';
+import { WandShineW700 as WandShine } from '@material-symbols-svg/react-rounded/icons/wand-shine';
 import type { ChangeEvent } from 'react';
 
 import { useNotification } from './useNotification';

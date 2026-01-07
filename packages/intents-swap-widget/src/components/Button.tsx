@@ -1,5 +1,5 @@
 import { Button as UIButton } from '@headlessui/react';
-import { ProgressActivity } from '@material-symbols-svg/react-rounded/w700';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 import type {
   IconProps,
   MaterialSymbolsComponent,

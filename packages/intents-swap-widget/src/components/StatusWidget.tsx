@@ -1,7 +1,5 @@
-import {
-  CheckCircleFill,
-  Close,
-} from '@material-symbols-svg/react-rounded/w700';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
+import { CheckCircleFillW700 as CheckCircleFill } from '@material-symbols-svg/react-rounded/icons/check-circle';
 
 const Error = ({ message }: { message: string }) => (
   <div className="flex flex-col gap-sw-lg py-sw-6xl items-center justify-center">

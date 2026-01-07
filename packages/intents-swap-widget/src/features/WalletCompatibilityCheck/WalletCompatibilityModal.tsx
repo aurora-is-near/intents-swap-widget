@@ -1,12 +1,11 @@
-import {
-  AccountBalanceWalletFill,
-  ArmingCountdownFill,
-  BeenhereFill,
-  CheckCircleFill,
-  EncryptedFill,
-  GppBadFill,
-  type MaterialSymbolsComponent,
-} from '@material-symbols-svg/react-rounded';
+import { AccountBalanceWalletFillW700 as AccountBalanceWalletFill } from '@material-symbols-svg/react-rounded/icons/account-balance-wallet';
+import { ArmingCountdownFillW700 as ArmingCountdownFill } from '@material-symbols-svg/react-rounded/icons/arming-countdown';
+import { BeenhereFillW700 as BeenhereFill } from '@material-symbols-svg/react-rounded/icons/beenhere';
+import { CheckCircleFillW700 as CheckCircleFill } from '@material-symbols-svg/react-rounded/icons/check-circle';
+import { EncryptedFillW700 as EncryptedFill } from '@material-symbols-svg/react-rounded/icons/encrypted';
+import { GppBadFillW700 as GppBadFill } from '@material-symbols-svg/react-rounded/icons/gpp-bad';
+import type { MaterialSymbolsComponent } from '@material-symbols-svg/react-rounded';
+
 import { useTimer } from 'use-timer';
 import { useEffect } from 'react';
 

@@ -2,11 +2,9 @@ import { clsx } from 'clsx';
 import { useState } from 'react';
 import { Input } from '@aurora-is-near/intents-swap-widget';
 import { useToggleTheme } from '@aurora-is-near/intents-swap-widget/hooks';
-import {
-  DarkMode,
-  NightSightAuto,
-  Sunny,
-} from '@material-symbols-svg/react-rounded/w700';
+import { DarkModeW700 as DarkMode } from '@material-symbols-svg/react-rounded/icons/dark-mode';
+import { NightSightAutoW700 as NightSightAuto } from '@material-symbols-svg/react-rounded/icons/night-sight-auto';
+import { SunnyW700 as Sunny } from '@material-symbols-svg/react-rounded/icons/sunny';
 import type { PropsWithChildren } from 'react';
 import type { HexColor } from '@aurora-is-near/intents-swap-widget';
 import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';

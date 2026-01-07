@@ -1,9 +1,7 @@
-import {
-  Close,
-  Emergency,
-  ErrorFill,
-  VerifiedFill,
-} from '@material-symbols-svg/react-rounded/w700';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
+import { EmergencyW700 as Emergency } from '@material-symbols-svg/react-rounded/icons/emergency';
+import { ErrorFillW700 as ErrorFill } from '@material-symbols-svg/react-rounded/icons/error';
+import { VerifiedFillW700 as VerifiedFill } from '@material-symbols-svg/react-rounded/icons/verified';
 import { useMemo } from 'react';
 
 import { cn } from '@/utils/cn';

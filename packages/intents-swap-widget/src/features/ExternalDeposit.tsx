@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
-import { ProgressActivity } from '@material-symbols-svg/react-rounded/w700';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 
 import { notReachable } from '@/utils';
 import { CHAIN_IDS_MAP } from '@/constants/chains';

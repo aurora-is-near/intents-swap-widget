@@ -1,5 +1,5 @@
 import copy from 'copy-text-to-clipboard';
-import { ContentCopy } from '@material-symbols-svg/react-rounded/w700';
+import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 
 export const CopyButton = ({ value }: { value: string }) => (
   <button

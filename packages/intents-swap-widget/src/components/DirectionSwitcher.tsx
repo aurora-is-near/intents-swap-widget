@@ -1,8 +1,5 @@
-import {
-  ArrowDownward,
-  ProgressActivity,
-} from '@material-symbols-svg/react-rounded/w700';
-
+import { ArrowDownwardW700 as ArrowDownward } from '@material-symbols-svg/react-rounded/icons/arrow-downward';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 import { cn } from '@/utils/cn';
 
 type Props = {

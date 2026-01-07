@@ -1,4 +1,4 @@
-import { Search } from '@material-symbols-svg/react-rounded/w700';
+import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 import { useRef, useState } from 'react';
 
 import { TokensList } from './TokensList';
