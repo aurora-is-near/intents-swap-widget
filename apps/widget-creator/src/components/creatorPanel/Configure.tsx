@@ -1,12 +1,12 @@
 import { Edit, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
+import { CHAINS } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
-import { useChains } from '../../hooks/useChains';
 import { TokenSelectionModal } from './TokenSelectionModal';
 import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 import {
@@ -17,7 +17,6 @@ import type { TokenType } from '../../hooks/useTokens';
 
 export function Configure() {
   const { state, dispatch } = useCreator();
-  const chains = useChains();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
@@ -145,54 +144,44 @@ export function Configure() {
                 fluid
                 onClick={() => {
                   const allSelected =
-                    chains &&
-                    chains.length > 0 &&
-                    state.selectedNetworks.length === chains.length;
+                    state.selectedNetworks.length === CHAINS.length;
 
                   const newNetworks = allSelected
                     ? []
-                    : chains?.map((chain) => chain.id) || [];
+                    : CHAINS.map((chain) => chain.id) || [];
 
                   handleNetworksChange(newNetworks);
                 }}>
-                {chains &&
-                chains.length > 0 &&
-                state.selectedNetworks.length === chains.length
+                {state.selectedNetworks.length === CHAINS.length
                   ? 'Deselect all'
                   : 'Select all'}
               </OutlinedButton>
             </div>
             <div className="flex flex-wrap gap-csw-md">
-              {chains &&
-                chains.length > 0 &&
-                chains.map((chain) => (
-                  <button
-                    key={chain.id}
-                    onClick={() => {
-                      const isSelected = state.selectedNetworks?.includes(
-                        chain.id,
-                      );
+              {CHAINS.map((chain) => (
+                <button
+                  key={chain.id}
+                  onClick={() => {
+                    const isSelected = state.selectedNetworks?.includes(
+                      chain.id,
+                    );
 
-                      const newNetworks = isSelected
-                        ? state.selectedNetworks.filter(
-                            (n: string) => n !== chain.id,
-                          )
-                        : [...(state.selectedNetworks || []), chain.id];
+                    const newNetworks = isSelected
+                      ? state.selectedNetworks.filter(
+                          (n: string) => n !== chain.id,
+                        )
+                      : [...(state.selectedNetworks || []), chain.id];
 
-                      handleNetworksChange(newNetworks);
-                    }}
-                    className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
-                      state.selectedNetworks?.includes(chain.id)
-                        ? 'border-2 border-csw-accent-600'
-                        : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
-                    }`}>
-                    <img
-                      src={chain.icon}
-                      alt={chain.label}
-                      className="w-[28px] h-[28px]"
-                    />
-                  </button>
-                ))}
+                    handleNetworksChange(newNetworks);
+                  }}
+                  className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
+                    state.selectedNetworks?.includes(chain.id)
+                      ? 'border-2 border-csw-accent-600'
+                      : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
+                  }`}>
+                  {<div className="w-[28px] h-[28px]">{chain.icon}</div>}
+                </button>
+              ))}
             </div>
           </div>
         </ConfigSection>
@@ -257,7 +246,7 @@ export function Configure() {
                         token.symbol === state.defaultSellToken.tokenSymbol,
                     );
 
-                    const sellTokenChain = chains.find(
+                    const sellTokenChain = CHAINS.find(
                       (chain) => chain.id === state.defaultSellToken.chain,
                     );
 
@@ -277,13 +266,11 @@ export function Configure() {
                                   alt={sellToken.symbol}
                                   className="size-full rounded-full"
                                 />
-                                {sellTokenChain ? (
-                                  <img
-                                    src={sellTokenChain?.icon}
-                                    alt={sellTokenChain?.label}
-                                    className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
-                                  />
-                                ) : null}
+                                {sellTokenChain && (
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                    {sellTokenChain.icon}
+                                  </div>
+                                )}
                               </div>
                             ) : undefined
                           }
@@ -318,7 +305,7 @@ export function Configure() {
                         token.symbol === state.defaultBuyToken.tokenSymbol,
                     );
 
-                    const buyTokenChain = chains.find(
+                    const buyTokenChain = CHAINS.find(
                       (chain) => chain.id === state.defaultBuyToken.chain,
                     );
 
@@ -338,13 +325,11 @@ export function Configure() {
                                   alt={buyToken.symbol}
                                   className="size-full rounded-full"
                                 />
-                                {buyTokenChain ? (
-                                  <img
-                                    src={buyTokenChain?.icon}
-                                    alt={buyTokenChain?.label}
-                                    className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white"
-                                  />
-                                ) : null}
+                                {buyTokenChain && (
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                    {buyTokenChain.icon}
+                                  </div>
+                                )}
                               </div>
                             ) : undefined
                           }
