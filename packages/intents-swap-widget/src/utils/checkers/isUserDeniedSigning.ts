@@ -1,3 +1,5 @@
+import type { ErrorLikeObject } from '../isErrorLikeObject';
+
 const errorVariations = [
   'user denied',
   'user closed',
@@ -6,8 +8,14 @@ const errorVariations = [
   'user declined',
 ];
 
-export const isUserDeniedSigning = (errorMessage: string) => {
-  return errorVariations.some((variation) =>
-    errorMessage.toLowerCase().includes(variation),
+export const isUserDeniedSigning = (error: ErrorLikeObject) => {
+  return (
+    errorVariations.some((variation) =>
+      error.message.toLowerCase().includes(variation),
+    ) ||
+    ('cause' in error &&
+      errorVariations.some((variation) =>
+        `${error.cause}`.toLowerCase().includes(variation),
+      ))
   );
 };
