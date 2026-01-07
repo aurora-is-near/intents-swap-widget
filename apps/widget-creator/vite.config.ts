@@ -46,19 +46,4 @@ export default defineConfig({
       ),
     },
   },
-
-  // Due to @near-js versions mismatch across hot wallet and intents sdk
-  // we need to alias the transactions module to the one in the intents sdk
-  //
-  // ../../node_modules/@near-js/accounts/lib/esm/account.js "GlobalContractDeployMode"
-  // is not exported by"../../node_modules/@near-js/accounts/node_modules/@near-js/transactions/lib/esm/index.js"
-  // imported by "../../node_modules/@near-js/accounts/lib/esm/account.js".
-  resolve: {
-    alias: {
-      '@near-js/transactions': path.resolve(
-        __dirname,
-        '../../node_modules/@near-js/transactions',
-      ),
-    },
-  },
 });
