@@ -6,7 +6,7 @@
     "build": "turbo run build",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "eslint . --ext .js,.ts,.tsx",
     "typecheck": "turbo run typecheck --parallel",
     "test": "turbo run test",
     "check-docs": "node ./bin/verify-docs.js"
