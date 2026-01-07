@@ -1,6 +1,6 @@
 import { Chain, Chains } from '@aurora-is-near/intents-swap-widget';
 
-export const CHAINS_LIST: Record<Chains, Chain> = {
+export const CHAINS_LIST: Record<Chains, Chain & { icon: string }> = {
   near: {
     id: 'near',
     label: 'NEAR',
