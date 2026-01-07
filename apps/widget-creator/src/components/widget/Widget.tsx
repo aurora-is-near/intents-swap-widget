@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  Banner,
   Button,
   type MakeTransferArgs,
   SuccessScreen,
@@ -11,12 +12,17 @@ import {
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
 import '@aurora-is-near/intents-swap-widget/styles.css';
+import { isHexColor } from '../../utils/is-hex-color';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 interface WidgetProps {
   config?: Partial<WidgetConfig>;
 }
+
+const getValidThemeColor = (color: string): `#${string}` | undefined => {
+  return isHexColor(color) ? color : undefined;
+};
 
 export function Widget({ config }: WidgetProps) {
   const { providers, address: walletAddress } = useAppKitWallet();
@@ -66,6 +72,25 @@ export function Widget({ config }: WidgetProps) {
     [config, state.selectedNetworks],
   );
 
+  const exampleBanner = useMemo(():
+    | {
+        variant: 'success' | 'warn' | 'error';
+        label: string;
+      }
+    | undefined => {
+    if (state.openThemeColorPickerId === 'successColor') {
+      return { variant: 'success', label: 'success' };
+    }
+
+    if (state.openThemeColorPickerId === 'warningColor') {
+      return { variant: 'warn', label: 'warning' };
+    }
+
+    if (state.openThemeColorPickerId === 'errorColor') {
+      return { variant: 'error', label: 'error' };
+    }
+  }, [state.openThemeColorPickerId]);
+
   const handleMakeTransfer = (args: MakeTransferArgs) => {
     setMakeTransferArgs(args);
   };
@@ -111,11 +136,22 @@ export function Widget({ config }: WidgetProps) {
     <WidgetConfigProvider
       config={defaultConfig}
       theme={{
-        primaryColor: (state.primaryColor ?? '#D5B7FF') as `#${string}`,
-        surfaceColor: (state.pageBackgroundColor ?? '#636D9B') as `#${string}`,
+        primaryColor: getValidThemeColor(state.primaryColor),
+        surfaceColor: getValidThemeColor(state.surfaceColor),
+        backgroundColor: getValidThemeColor(state.backgroundColor),
+        successColor: getValidThemeColor(state.successColor),
+        warningColor: getValidThemeColor(state.warningColor),
+        errorColor: getValidThemeColor(state.errorColor),
         colorScheme: colorScheme ?? 'dark',
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
+      {exampleBanner && (
+        <Banner
+          variant={exampleBanner.variant}
+          message={`This is an example ${exampleBanner.label} message`}
+          className="mt-csw-2xl"
+        />
+      )}
     </WidgetConfigProvider>
   );
 }

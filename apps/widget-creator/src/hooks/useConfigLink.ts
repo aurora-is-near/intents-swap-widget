@@ -47,11 +47,11 @@ export function useConfigLink() {
 
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
-    params.append('pageBackgroundColor', state.pageBackgroundColor);
-    params.append('wrapperBackgroundColor', state.wrapperBackgroundColor);
+    params.append('surfaceColor', state.surfaceColor);
+    params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
-    params.append('alertColor', state.alertColor);
+    params.append('errorColor', state.errorColor);
 
     return `${baseUrl}?${params.toString()}`;
   };
@@ -226,21 +226,21 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
     }
 
-    const pageBackgroundColor = params.get('pageBackgroundColor');
+    const surfaceColor = params.get('surfaceColor');
 
-    if (pageBackgroundColor) {
+    if (surfaceColor) {
       dispatch({
-        type: 'SET_PAGE_BACKGROUND_COLOR',
-        payload: pageBackgroundColor,
+        type: 'SET_SURFACE_COLOR',
+        payload: surfaceColor,
       });
     }
 
-    const wrapperBackgroundColor = params.get('wrapperBackgroundColor');
+    const backgroundColor = params.get('backgroundColor');
 
-    if (wrapperBackgroundColor) {
+    if (backgroundColor) {
       dispatch({
-        type: 'SET_WRAPPER_BACKGROUND_COLOR',
-        payload: wrapperBackgroundColor,
+        type: 'SET_BACKGROUND_COLOR',
+        payload: backgroundColor,
       });
     }
 
@@ -256,10 +256,10 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_WARNING_COLOR', payload: warningColor });
     }
 
-    const alertColor = params.get('alertColor');
+    const errorColor = params.get('errorColor');
 
-    if (alertColor) {
-      dispatch({ type: 'SET_ALERT_COLOR', payload: alertColor });
+    if (errorColor) {
+      dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
     }
   };
 
