@@ -186,6 +186,35 @@ const config = {
 };
 ```
 
+### `priorityAssets`
+
+Defines the order in which tokens with no balance are displayed on top of the list.
+
+If you want to promote certain tokens or just show most used on top of the list
+you can add them here and they will be displayed in a given order. Tokens that
+have balance always stay on top regardless. Tokens with no balance and not included
+in `priorityAssets` are sorted alphabetically at the bottom of the list.
+
+#### Example
+
+```ts
+const config = {
+  priorityAssets: [['eth', 'ETH'], ['eth', 'USDT']],
+
+  // or use assetIds
+  // priorityAssets: [
+  //   'nep141:eth.omft.near',
+  //   'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near',
+  // ],
+
+  // or mix
+  // priorityAssets: [
+  //   'nep141:eth.omft.near',
+  //   ['eth', 'USDT'],
+  // ],
+};
+```
+
 ### `fetchQuote`
 
 A function used to implement custom quote fetching behaviour, overriding the
