@@ -12,7 +12,7 @@ function App() {
           <Header />
           <div className="flex-1 flex items-center md:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col md:flex-row">
             <WidgetSection>
-              <aside className="mt-[46px] max-w-[420px] m-auto sw">
+              <aside className="mt-csw-10xl max-w-[420px] m-auto sw">
                 <Widget />
               </aside>
             </WidgetSection>
