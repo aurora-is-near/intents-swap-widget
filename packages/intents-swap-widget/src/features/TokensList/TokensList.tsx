@@ -60,7 +60,7 @@ export const TokensList = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName } = useConfig();
+  const { walletSupportedChains, appName, priorityAssets = [] } = useConfig();
   const { mergedBalance } = useMergedBalance();
 
   const filteredTokens = useTokensFiltered({
@@ -69,6 +69,7 @@ export const TokensList = ({
     chainsFilter,
     selectedChain,
     walletSupportedChains,
+    priorityAssets,
   });
 
   const areTokensGrouped = ctx.walletAddress ? groupTokens : false;

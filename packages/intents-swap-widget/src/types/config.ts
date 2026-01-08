@@ -9,6 +9,10 @@ export type WalletAddresses = Partial<
 
 export type IntentsAccountType = 'evm' | 'near' | 'sol';
 
+export type PriorityAssets =
+  | ReadonlyArray<string>
+  | ReadonlyArray<readonly [Chains, string]>;
+
 export type WidgetConfig = {
   // Application metadata
   appName: string;
@@ -38,6 +42,7 @@ export type WidgetConfig = {
   allowedTokensList?: string[]; // assetIDs
   allowedSourceTokensList?: string[];
   allowedTargetTokensList?: string[];
+  priorityAssets?: PriorityAssets;
   filterTokens: (token: Token) => boolean;
 
   // Chains filtering
