@@ -69,6 +69,7 @@ export const ChainsSelector = ({
             return (
               <ChainShortcut
                 isSelected
+                key={selectedChain}
                 icon={CHAIN_ICONS[selectedChain as Chains]}
                 label={chains.find((c) => c.id === selectedChain)?.label ?? ''}
                 onClick={noop}
@@ -80,6 +81,7 @@ export const ChainsSelector = ({
           if (chains.some((c) => c.id === chain)) {
             return (
               <ChainShortcut
+                key={chain}
                 icon={CHAIN_ICONS[chain]}
                 isSelected={selectedChain === chain}
                 label={chains.find((c) => c.id === chain)?.label ?? ''}
