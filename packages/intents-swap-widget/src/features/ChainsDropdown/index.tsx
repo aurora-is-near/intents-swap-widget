@@ -79,6 +79,7 @@ export const ChainsDropdown = ({
                         isSelected={selected === 'all'}
                         isFocused={focus}
                         icon={<AllNetworksIcon />}
+                        iconClassName="bg-sw-gray-50"
                         onMsg={(msg) => {
                           switch (msg.type) {
                             case 'on_click_chain':

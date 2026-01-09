@@ -25,7 +25,13 @@ const Shortcut = ({ icon, label, isSelected, onClick }: Props) => {
           'bg-sw-gray-800 hover:bg-sw-gray-700': !isSelected,
         },
       )}>
-      <Icon size={20} radius={6} icon={icon ?? UNKNOWN_ICON} label={label} />
+      <Icon
+        size={20}
+        radius={6}
+        label={label}
+        icon={icon ?? UNKNOWN_ICON}
+        className="bg-transparent"
+      />
     </li>
   );
 };

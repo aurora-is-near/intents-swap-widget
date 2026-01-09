@@ -6,6 +6,7 @@ import { ChainShortcut } from '@/components/ChainShortcut';
 import { cn } from '@/utils/cn';
 import { useChains } from '@/hooks';
 import { useConfig } from '@/config';
+import { noop } from '@/utils/noop';
 import { notReachable } from '@/utils/notReachable';
 import type { Chains, ChainsFilter } from '@/types/chain';
 
@@ -59,18 +60,36 @@ export const ChainsSelector = ({
           />
         )}
 
-        {topChains.map(
-          (chain) =>
-            // check it here to respect global chain filters
-            chains.some((c) => c.id === chain) && (
+        {topChains.map((chain, index) => {
+          // last shortcut reserved for the selected chain
+          if (
+            index === topChains.length - 1 &&
+            ![...topChains, 'all', 'intents'].includes(selectedChain)
+          ) {
+            return (
+              <ChainShortcut
+                isSelected
+                icon={CHAIN_ICONS[selectedChain as Chains]}
+                label={chains.find((c) => c.id === selectedChain)?.label ?? ''}
+                onClick={noop}
+              />
+            );
+          }
+
+          // check it here to respect global chain filters
+          if (chains.some((c) => c.id === chain)) {
+            return (
               <ChainShortcut
                 icon={CHAIN_ICONS[chain]}
                 isSelected={selectedChain === chain}
                 label={chains.find((c) => c.id === chain)?.label ?? ''}
                 onClick={() => onMsg({ type: 'on_select_chain', chain })}
               />
-            ),
-        )}
+            );
+          }
+
+          return null;
+        })}
       </ul>
 
       <ChainsDropdown
