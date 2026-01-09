@@ -60,7 +60,7 @@ export function Header() {
             )}
             <span
               className={`text-sm font-medium leading-4 hidden md:inline ${copyLinkFeedback ? 'text-csw-status-success' : 'text-csw-gray-50'}`}>
-              {copyLinkFeedback ? 'Copied!' : 'Copy config link'}
+              {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
             </span>
           </OutlinedButton>
           <Button
