@@ -1,4 +1,5 @@
 /* eslint-disable import/extensions */
+import { ReactElement, SVGAttributes } from 'react';
 import AbgIcon from './abg.svg';
 import ArbIcon from './arb.svg';
 import AsterIcon from './aster.svg';
@@ -44,7 +45,10 @@ import type { Chains } from '@/types/chain';
 
 export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
 
-export const CHAIN_ICONS: Record<Chains, React.ReactElement> = {
+export const CHAIN_ICONS: Record<
+  Chains,
+  ReactElement<SVGAttributes<SVGElement>>
+> = {
   arb: <ArbIcon />,
   avax: <AvaxIcon />,
   base: <BaseIcon />,

@@ -4,9 +4,9 @@ import { ColorPalette, ColorScheme, HexColor, Theme } from '../types/theme';
 import { ColorStop, createColorPalette } from './createColorPalette';
 import { useConfig } from '@/config';
 
-const setColorVariables = (
-  palette: ColorPalette,
-  colorKey: string,
+const setColorVariable = (
+  key: string,
+  value: string,
   parentEl: Element | null,
 ) => {
   let parentElement = document.body;
@@ -15,8 +15,16 @@ const setColorVariables = (
     parentElement = parentEl;
   }
 
+  parentElement.style.setProperty(`--c-sw-${key}`, value);
+};
+
+const setColorVariables = (
+  palette: ColorPalette,
+  colorKey: string,
+  parentEl: Element | null,
+) => {
   Object.entries(palette).forEach(([key, value]) => {
-    parentElement.style.setProperty(`--c-sw-${colorKey}-${key}`, value);
+    setColorVariable(`${colorKey}-${key}`, value, parentEl);
   });
 };
 
@@ -37,7 +45,14 @@ const setColorPalette = (
 };
 
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
-  const { primaryColor, surfaceColor, colorScheme = 'dark' } = theme;
+  const {
+    primaryColor,
+    surfaceColor,
+    successColor,
+    warningColor,
+    errorColor,
+    colorScheme = 'dark',
+  } = theme;
 
   if (primaryColor) {
     setColorPalette('accent', 500, parentEl, primaryColor, colorScheme);
@@ -45,6 +60,18 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
 
   if (surfaceColor) {
     setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
+  }
+
+  if (successColor) {
+    setColorVariable('status-success', successColor, parentEl);
+  }
+
+  if (warningColor) {
+    setColorVariable('status-warning', warningColor, parentEl);
+  }
+
+  if (errorColor) {
+    setColorVariable('status-error', errorColor, parentEl);
   }
 };
 

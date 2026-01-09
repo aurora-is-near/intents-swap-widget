@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Icons from 'lucide-react';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 
 import { cn } from '@/utils/cn';
 import { Icon } from '@/components/Icon';
@@ -34,7 +34,7 @@ export const ChainItem = React.forwardRef<HTMLButtonElement, Props>(
       )}>
       <Icon radius={10} label={label} icon={icon} />
       <span className="text-sw-label-md mr-auto">{label}</span>
-      {isSelected && <Icons.Check size={16} />}
+      {isSelected && <Check size={16} />}
     </button>
   ),
 );

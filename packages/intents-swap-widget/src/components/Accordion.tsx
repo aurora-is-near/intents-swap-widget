@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import * as Icons from 'lucide-react';
+import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import type { ReactNode } from 'react';
 
 import { Hr } from './Hr';
@@ -43,9 +43,9 @@ export const Accordion = ({
         )}
         <button type="button" className="ml-sw-lg cursor-pointer">
           {isExpanded ? (
-            <Icons.ChevronUp className="h-sw-2xl w-sw-2xl text-sw-gray-200" />
+            <ChevronLeft className="h-sw-2xl w-sw-2xl text-sw-gray-200 rotate-90" />
           ) : (
-            <Icons.ChevronDown className="h-sw-2xl w-sw-2xl text-sw-gray-200" />
+            <ChevronLeft className="h-sw-2xl w-sw-2xl text-sw-gray-200 -rotate-90" />
           )}
         </button>
       </header>

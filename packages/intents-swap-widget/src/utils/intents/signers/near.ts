@@ -1,4 +1,4 @@
-import { createIntentSignerNEP413 } from '@defuse-protocol/bridge-sdk';
+import { createIntentSignerNEP413 } from '@defuse-protocol/intents-sdk';
 import type {
   NearWalletBase as NearWallet,
   SignedMessage,

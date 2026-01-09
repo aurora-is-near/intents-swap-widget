@@ -1,4 +1,8 @@
-import * as Icons from 'lucide-react';
+import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
+import { EmergencyW700 as Emergency } from '@material-symbols-svg/react-rounded/icons/emergency';
+import { ErrorFillW700 as ErrorFill } from '@material-symbols-svg/react-rounded/icons/error';
+import { VerifiedFillW700 as VerifiedFill } from '@material-symbols-svg/react-rounded/icons/verified';
+import { useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -17,12 +21,17 @@ export const Banner = ({
   className,
   onDismiss,
 }: Props) => {
-  const icon =
-    variant === 'success' ? (
-      <Icons.CheckCircle size={16} />
-    ) : (
-      <Icons.CircleAlert size={16} />
-    );
+  const icon = useMemo(() => {
+    switch (variant) {
+      case 'success':
+        return <VerifiedFill size={16} />;
+      case 'error':
+        return <ErrorFill size={16} />;
+      case 'warn':
+      default:
+        return <Emergency size={16} />;
+    }
+  }, [variant]);
 
   return (
     <div
@@ -46,7 +55,7 @@ export const Banner = ({
         <div
           onClick={onDismiss}
           className="ml-auto flex cursor-pointer items-center justify-center transition-all hover:scale-125">
-          <Icons.X size={16} strokeWidth={2.5} />
+          <Close size={16} />
         </div>
       )}
     </div>

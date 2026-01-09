@@ -2,18 +2,19 @@ import { clsx } from 'clsx';
 import { useState } from 'react';
 import { Input } from '@aurora-is-near/intents-swap-widget';
 import { useToggleTheme } from '@aurora-is-near/intents-swap-widget/hooks';
-import type { HexColor } from '@aurora-is-near/intents-swap-widget';
-
-import * as Icons from 'lucide-react';
+import { DarkModeW700 as DarkMode } from '@material-symbols-svg/react-rounded/icons/dark-mode';
+import { NightSightAutoW700 as NightSightAuto } from '@material-symbols-svg/react-rounded/icons/night-sight-auto';
+import { SunnyW700 as Sunny } from '@material-symbols-svg/react-rounded/icons/sunny';
 import type { PropsWithChildren } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { HexColor } from '@aurora-is-near/intents-swap-widget';
+import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';
 
 import { WalletConnectButton } from './WalletConnectButton';
 
 type TabProps<T> = {
   id: T;
   label: string;
-  icon: LucideIcon;
+  icon: MaterialSymbolsComponent;
   isActive: boolean;
   onClick: (id: T) => void;
 };
@@ -41,7 +42,6 @@ const Tab = <T extends string>({
         'text-sw-gray-900': isActive,
         'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
       })}
-      strokeWidth={2.5}
     />
     <span
       className={clsx('text-sw-label-md hidden sm:inline-block!', {
@@ -61,10 +61,10 @@ const themeLabels: Record<ThemeMode, string> = {
   auto: 'Auto',
 };
 
-const themeIcons: Record<ThemeMode, LucideIcon> = {
-  light: Icons.Sun,
-  dark: Icons.Moon,
-  auto: Icons.SunMoon,
+const themeIcons: Record<ThemeMode, MaterialSymbolsComponent> = {
+  light: Sunny,
+  dark: DarkMode,
+  auto: NightSightAuto,
 };
 
 type ThemeToggleProps = {
