@@ -827,6 +827,7 @@ export const Page = () => {
         }>
         <SuccessScreen
           title="Swap successful"
+          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
           showTargetToken={false}
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}

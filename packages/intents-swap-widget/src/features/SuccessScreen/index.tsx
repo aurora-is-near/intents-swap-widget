@@ -30,12 +30,14 @@ type Msg = { type: 'on_dismiss_success' };
 
 type Props = TransferResult & {
   title: string;
+  message?: string;
   showTargetToken?: boolean;
   onMsg: (msg: Msg) => void;
 };
 
 export const SuccessScreen = ({
   title,
+  message,
   showTargetToken = true,
   transactionLink,
   onMsg,
@@ -93,6 +95,11 @@ export const SuccessScreen = ({
         </span>
         <CloseButton onClick={handleClose} />
       </header>
+
+      {!!message && (
+        <p className="text-sw-body-md text-sw-gray-200">{message}</p>
+      )}
+
       <div className="flex flex-col">
         <TokenRow
           token={ctx.sourceToken}
