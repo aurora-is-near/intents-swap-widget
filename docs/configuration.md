@@ -157,7 +157,7 @@ const config = {
       case 'sol':
         return ['sol', 'eth', 'btc', 'near'] as const;
       case 'near':
-        return ['near', 'sol', 'eth', 'near'] as const;
+        return ['near', 'sol', 'eth', 'btc'] as const;
       default:
         return ['eth', 'btc', 'sol', 'near'] as const;
     }
