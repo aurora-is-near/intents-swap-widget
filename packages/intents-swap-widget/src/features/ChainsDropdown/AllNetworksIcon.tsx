@@ -1,7 +1,8 @@
-import { TargetW700 as Target } from '@material-symbols-svg/react-rounded/icons/target';
-
 export const AllNetworksIcon = () => (
-  <div className="bg-sw-accent-500 flex h-[28px] w-[28px] items-center justify-center">
-    <Target size={16} className="text-sw-accent-950" />
+  <div className="flex flex-wrap gap-y-0 gap-x-[2px] h-[18px] w-[18px]">
+    <div className="w-[7px] h-[7px] rounded-[2px] shrink-0 bg-sw-gray-900" />
+    <div className="w-[7px] h-[7px] rounded-[2px] shrink-0 bg-sw-gray-600" />
+    <div className="w-[7px] h-[7px] rounded-[2px] shrink-0 bg-sw-gray-600" />
+    <div className="w-[7px] h-[7px] rounded-[2px] shrink-0 bg-sw-gray-900" />
   </div>
 );

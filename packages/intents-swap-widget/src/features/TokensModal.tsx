@@ -1,14 +1,19 @@
-import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 import { useRef, useState } from 'react';
+import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 
+import { useChains } from '../hooks';
 import { TokensList } from './TokensList';
 import { ChainsDropdown } from './ChainsDropdown';
-import { useChains } from '../hooks';
+import { AllNetworksIcon } from './ChainsDropdown/AllNetworksIcon';
+
+import { CHAIN_ICONS } from '@/icons';
+
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
 import { CloseButton } from '@/components/CloseButton';
+import { ChainShortcut } from '@/components/ChainShortcut';
 
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
@@ -33,6 +38,17 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
+const AllChainsShortcut = () => {
+  const { t } = useTypedTranslation();
+
+  return (
+    <div className="px-sw-md gap-sw-sm flex h-[36px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700 text-sw-label-md text-sw-gray-50">
+      <AllNetworksIcon />
+      {t('chain.all.label', 'All')}
+    </div>
+  );
+};
+
 export const TokensModal = ({
   variant,
   showBalances,
@@ -44,7 +60,7 @@ export const TokensModal = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains } = useConfig();
+  const { walletSupportedChains, appIcon, appName } = useConfig();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
@@ -96,17 +112,28 @@ export const TokensModal = ({
         <CloseButton onClick={handleClose} />
       </header>
 
-      <div className="gap-sw-xl flex items-center">
-        <Input
-          focusOnMount
-          icon={Search}
-          ref={searchInputRef}
-          defaultValue={search}
-          className="w-full"
-          placeholder="Search or paste address"
-          onChange={(e) => setSearch(e.target.value.trim())}
-        />
-        {showChainsSelector && (
+      <Input
+        focusOnMount
+        icon={Search}
+        ref={searchInputRef}
+        defaultValue={search}
+        className="w-full"
+        placeholder="Search or paste address"
+        onChange={(e) => setSearch(e.target.value.trim())}
+      />
+
+      {showChainsSelector && (
+        <div className="flex items-center justify-between gap-sw-md">
+          <AllChainsShortcut />
+
+          <ul className="flex items-center gap-sw-md">
+            <ChainShortcut icon={appIcon} label={appName} />
+            <ChainShortcut icon={CHAIN_ICONS.eth} label={appName} />
+            <ChainShortcut icon={CHAIN_ICONS.arb} label={appName} />
+            <ChainShortcut icon={CHAIN_ICONS.avax} label={appName} />
+            <ChainShortcut icon={CHAIN_ICONS.base} label={appName} />
+          </ul>
+
           <ChainsDropdown
             variant={variant}
             selected={selectedChain}
@@ -121,8 +148,8 @@ export const TokensModal = ({
               }
             }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {chainIsNotSupported && !!ctx.walletAddress && (
         <>

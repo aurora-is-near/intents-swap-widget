@@ -1,6 +1,7 @@
 export type LocalisationKeys =
   // chain
   | 'chain.all.label'
+  | 'chain.more.label'
   // wallet
   | 'wallet.recipient.placeholder'
   | 'wallet.recipient.info.selectToken'
