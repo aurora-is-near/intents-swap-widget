@@ -37,12 +37,9 @@ export const ChainsSelector = ({
     showIntentTokens,
   } = useConfig();
 
-  const topChains = topChainShortcuts?.(intentsAccountType) ?? [
-    'eth',
-    'btc',
-    'sol',
-    'near',
-  ];
+  const topChains =
+    topChainShortcuts?.(intentsAccountType) ??
+    (['eth', 'btc', 'sol', 'near'] as const);
 
   return (
     <div
@@ -65,7 +62,7 @@ export const ChainsSelector = ({
         {topChains.map(
           (chain) =>
             // check it here to respect global chain filters
-            chain in chains && (
+            chains.some((c) => c.id === chain) && (
               <ChainShortcut
                 icon={CHAIN_ICONS[chain]}
                 isSelected={selectedChain === chain}
