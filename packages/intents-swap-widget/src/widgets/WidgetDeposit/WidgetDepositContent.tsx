@@ -121,6 +121,10 @@ export const WidgetDepositContent = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+  };
+
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetDepositSkeleton />;
   }
@@ -150,14 +154,12 @@ export const WidgetDepositContent = ({
     return (
       <SuccessScreen
         {...transferResult}
-        message={[
-          'Your deposit has been successfully completed,',
-          'and the funds are now available in your account.',
-        ]}
+        title={t('transfer.success.deposit.title', 'Deposit successful')}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);

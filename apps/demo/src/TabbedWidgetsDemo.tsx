@@ -4,6 +4,8 @@ import { SendW700 as Send } from '@material-symbols-svg/react-rounded/icons/send
 import { RepeatW700 as Repeat } from '@material-symbols-svg/react-rounded/icons/repeat';
 
 import {
+  guardStates,
+  useUnsafeSnapshot,
   WidgetConfigProvider,
   WidgetDeposit,
   WidgetSwap,
@@ -35,6 +37,44 @@ const WIDGET_TYPES = {
   deposit: WidgetDeposit,
   withdraw: WidgetWithdraw,
 } as const;
+
+type Props = {
+  isLoading: boolean;
+  showAppBalance: boolean;
+  selectedWidget: WidgetType;
+  setShowAppBalance: (showAppBalance: boolean) => void;
+};
+
+const Content = ({
+  isLoading,
+  selectedWidget,
+  showAppBalance,
+  setShowAppBalance,
+}: Props) => {
+  const { ctx } = useUnsafeSnapshot();
+  const { providers } = useAppKitWallet();
+
+  const WidgetComponent = WIDGET_TYPES[selectedWidget];
+
+  const isTransferSuccess = guardStates(ctx, ['transfer_success']);
+
+  return (
+    <WidgetComponent
+      isFullPage={false}
+      isLoading={isLoading}
+      providers={providers}
+      HeaderComponent={
+        isTransferSuccess ? null : (
+          <Toggle
+            isOn={showAppBalance}
+            label="Show app balance"
+            onToggle={setShowAppBalance}
+          />
+        )
+      }
+    />
+  );
+};
 
 const getSourceTokens = (
   selectedWidget: WidgetType,
@@ -108,18 +148,12 @@ const getTargetTokens = (
 };
 
 export const TabbedWidgetsDemo = () => {
-  const {
-    providers,
-    address: walletAddress,
-    isConnecting: isLoading,
-  } = useAppKitWallet();
+  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   const [showAppBalance, setShowAppBalance] = useState(true);
 
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
-
-  const WidgetComponent = WIDGET_TYPES[selectedWidget];
 
   const targetTokens = getTargetTokens(selectedWidget, showAppBalance);
   const sourceTokens = getSourceTokens(
@@ -171,17 +205,11 @@ export const TabbedWidgetsDemo = () => {
               source: sourceTokens,
             },
           }}>
-          <WidgetComponent
-            isFullPage={false}
+          <Content
             isLoading={isLoading}
-            providers={providers}
-            HeaderComponent={
-              <Toggle
-                isOn={showAppBalance}
-                label="Show app balance"
-                onToggle={setShowAppBalance}
-              />
-            }
+            showAppBalance={showAppBalance}
+            setShowAppBalance={setShowAppBalance}
+            selectedWidget={selectedWidget}
           />
         </WidgetConfigProvider>
       </WidgetPageContainer>
