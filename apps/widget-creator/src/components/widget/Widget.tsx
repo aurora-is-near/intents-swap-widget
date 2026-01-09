@@ -9,6 +9,7 @@ import {
   WidgetContainer,
   WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
+import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
 import '@aurora-is-near/intents-swap-widget/styles.css';
@@ -104,9 +105,11 @@ export function Widget({ config }: WidgetProps) {
     return (
       <WidgetContainer>
         <SuccessScreen
+          title="Swap successful"
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}
           message="Your swap has been successfully completed!"
+          onMsg={noop}
         />
         <Button
           variant="primary"

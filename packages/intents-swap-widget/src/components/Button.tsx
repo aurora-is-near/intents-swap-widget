@@ -22,7 +22,11 @@ type Props = {
 } & (
   | { icon: MaterialSymbolsComponent; iconPosition?: 'head' | 'tail' }
   | { icon?: never; iconPosition?: never }
-);
+) &
+  (
+    | { as?: 'button'; href?: never; target?: never }
+    | { as: 'a'; href: string; target?: '_blank' | '_self' }
+  );
 
 const styles = {
   icon: 'h-sw-xl w-sw-xl',
@@ -76,20 +80,26 @@ const ButtonPrimary = ({
   size,
   className,
   children,
+  as = 'button',
   state = 'default',
   onClick,
   fluid,
+  href,
+  target,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const anchorProps = as === 'a' ? { href, target } : {};
   const isDisabled = ['disabled', 'loading', 'error'].includes(state)
     ? true
     : undefined;
 
   return (
     <UIButton
+      as={as}
       disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
+      {...anchorProps}
       className={clsx(
         styles.common,
         styles.width(fluid),
@@ -115,20 +125,26 @@ const ButtonOutlined = ({
   size,
   className,
   children,
+  as = 'button',
   state = 'default',
   onClick,
   fluid,
+  href,
+  target,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const anchorProps = as === 'a' ? { href, target } : {};
   const isDisabled = ['disabled', 'loading', 'error'].includes(state)
     ? true
     : undefined;
 
   return (
     <UIButton
+      as={as}
       disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
+      {...anchorProps}
       className={clsx(
         styles.common,
         styles.width(fluid),

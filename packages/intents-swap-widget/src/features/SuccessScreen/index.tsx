@@ -1,79 +1,185 @@
-import { Fragment } from 'react';
+import {
+  ArrowDownward,
+  Check,
+  OpenInNew,
+} from '@material-symbols-svg/react-rounded/w700';
 
-import { CheckIcon } from './CheckIcon';
-import { SummaryItem } from './SummaryItem';
-import { Hr } from '@/components/Hr';
-import { Card } from '@/components/Card';
+import { TokenRow } from './TokenRow';
+import { CopyableValue } from './CopyableValue';
+import { useSummaryItemsCount } from './useSummaryItemsCount';
+
+import { Notes } from '@/components/Notes';
+import { Button } from '@/components/Button';
 import { CloseButton } from '@/components/CloseButton';
+import { Accordion } from '@/components/Accordion';
+
+import { guardStates } from '@/machine/guards';
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
+import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { useTypedTranslation } from '@/localisation';
+import { useHandleKeyDown } from '@/hooks';
+import { logger } from '@/logger';
+
 import type { TransferResult } from '@/types/transfer';
 
-import { fireEvent, useUnsafeSnapshot } from '@/machine';
-import { useTypedTranslation } from '@/localisation';
+const NOTES_ITEM_HEIGHT = 44;
 
 type Msg = { type: 'on_dismiss_success' };
 
 type Props = TransferResult & {
-  message: string | string[];
-  onMsg?: (msg: Msg) => void;
-  hideHeader?: boolean;
+  title: string;
+  message?: string;
+  showTargetToken?: boolean;
+  onMsg: (msg: Msg) => void;
 };
 
 export const SuccessScreen = ({
-  intent,
-  transactionLink,
-  hash: txHash,
+  title,
   message,
+  showTargetToken = true,
+  transactionLink,
   onMsg,
-  hideHeader,
+  ...transferResult
 }: Props) => {
-  const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const lines = Array.isArray(message) ? message : [message];
+  const { ctx } = useUnsafeSnapshot();
 
-  const onDismiss = () => {
-    fireEvent('reset', { clearWalletAddress: false }).moveTo(
-      ctx.walletAddress ? 'initial_wallet' : 'initial_dry',
+  const isValidState = guardStates(ctx, ['transfer_success']);
+  const handleClose = () => onMsg({ type: 'on_dismiss_success' });
+  const summaryItemsCount = useSummaryItemsCount(!!transferResult.intent);
+
+  useHandleKeyDown('Escape', handleClose);
+
+  if (!isValidState) {
+    logger.warn(
+      '[WIDGET] Success screen can be rendered only in transfer_success state',
     );
-    onMsg?.({ type: 'on_dismiss_success' });
-  };
+
+    return null;
+  }
+
+  const sourceAmount = formatBigToHuman(
+    ctx.quote?.amountIn ?? ctx.sourceTokenAmount,
+    ctx.sourceToken.decimals,
+  );
+
+  const targetAmount = formatBigToHuman(
+    ctx.quote?.amountOut ?? ctx.targetTokenAmount,
+    ctx.targetToken.decimals,
+  );
+
+  const sourceAmountUsd = ctx.quote?.amountInUsd
+    ? parseFloat(ctx.quote.amountInUsd)
+    : ctx.sourceToken.price * parseFloat(sourceAmount);
+
+  const targetAmountUsd = ctx.quote?.amountOutUsd
+    ? parseFloat(ctx.quote.amountOutUsd)
+    : ctx.targetToken.price * parseFloat(targetAmount);
+
+  const targetTokenUnitPrice = targetAmountUsd / parseFloat(targetAmount);
+
+  const sourceTokenUnitAmount = formatTinyNumber(
+    targetTokenUnitPrice / (parseFloat(sourceAmount) / sourceAmountUsd),
+  );
 
   return (
-    <Card className="w-full">
-      {!hideHeader && (
-        <>
-          <header className="flex justify-between">
-            <CheckIcon />
-            <CloseButton onClick={onDismiss} />
-          </header>
-          <span className="text-sw-label-lg text-sw-gray-50">
-            {t('transfer.success.title', 'All done!')}
-          </span>
-        </>
+    <div className="flex flex-col gap-sw-2xl w-full">
+      <header className="flex items-center gap-sw-lg">
+        <div className="flex items-center justify-center p-sw-md bg-sw-status-success rounded-sw-md">
+          <Check size={20} className="text-sw-gray-900" />
+        </div>
+        <span className="text-sw-label-lg text-sw-status-success mr-auto">
+          {title}
+        </span>
+        <CloseButton onClick={handleClose} />
+      </header>
+
+      {!!message && (
+        <p className="text-sw-body-md text-sw-gray-200">{message}</p>
       )}
-      <p className="mt-sw-sm text-sw-body-md text-sw-gray-400">
-        {lines.map((line, idx) => (
-          <Fragment key={idx}>
-            {line}
-            {idx !== lines.length - 1 && <br />}
-          </Fragment>
-        ))}
-      </p>
-      <Hr className="mt-sw-xl mb-sw-md" />
-      <ul className="mt-sw-xl flex flex-col">
-        <SummaryItem
-          hasCopyAction
-          value={txHash}
-          externalUrl={transactionLink}
-          label={t('transfer.success.hash.label', 'Transaction hash')}
+
+      <div className="flex flex-col">
+        <TokenRow
+          token={ctx.sourceToken}
+          amount={sourceAmount}
+          amountUsd={sourceAmountUsd}
         />
-        {!!intent && (
-          <SummaryItem
-            hasCopyAction
-            label={t('transfer.success.intent.label', 'Intent')}
-            value={intent}
-          />
+        {showTargetToken && (
+          <>
+            <div className="flex items-center justify-center w-full h-[12px] z-1">
+              <div className="flex items-center justify-center p-sw-md bg-sw-gray-950 rounded-sw-md w-fit">
+                <ArrowDownward size={18} className="text-sw-gray-200" />
+              </div>
+            </div>
+            <TokenRow
+              token={ctx.targetToken}
+              amount={targetAmount}
+              amountUsd={targetAmountUsd}
+            />
+          </>
         )}
-      </ul>
-    </Card>
+      </div>
+
+      <Accordion
+        expandedByDefault={false}
+        expandedHeightPx={summaryItemsCount * NOTES_ITEM_HEIGHT}
+        title={t('transfer.success.details.label', 'Transaction details')}>
+        <Notes>
+          {ctx.sourceToken.symbol !== ctx.targetToken.symbol && (
+            <Notes.Item
+              label={t('transfer.success.details.rate', 'Rate')}
+              value={
+                <span
+                  className="text-sw-gray-50"
+                  style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
+                  {`1 ${ctx.targetToken.symbol} ≈ `} {sourceTokenUnitAmount}{' '}
+                  {`${ctx.sourceToken.symbol}`}
+                  <span>{` (${formatUsdAmount(targetTokenUnitPrice)})`}</span>
+                </span>
+              }
+            />
+          )}
+          {/* send address is missing if target token is on intents */}
+          {!!ctx.sendAddress && (
+            <Notes.Item
+              label={t(
+                'transfer.success.details.recipient',
+                'Recipient address',
+              )}
+              value={<CopyableValue value={ctx.sendAddress} />}
+            />
+          )}
+          {!!transferResult.intent && (
+            <Notes.Item
+              label={t('transfer.success.details.intent', 'Intent hash')}
+              value={<CopyableValue value={transferResult.intent} />}
+            />
+          )}
+          <Notes.Item
+            label={t('transfer.success.details.hash', 'Transaction hash')}
+            value={<CopyableValue value={transferResult.hash} />}
+          />
+        </Notes>
+      </Accordion>
+
+      <div className="flex flex-col gap-sw-lg">
+        <Button
+          fluid
+          as="a"
+          size="lg"
+          target="_blank"
+          variant="primary"
+          iconPosition="tail"
+          href={transactionLink}
+          icon={OpenInNew}>
+          {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
+        </Button>
+        <Button fluid size="lg" variant="outlined" onClick={handleClose}>
+          {t('transfer.success.action.backToSwap', 'Back to swap')}
+        </Button>
+      </div>
+    </div>
   );
 };

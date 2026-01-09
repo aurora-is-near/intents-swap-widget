@@ -826,10 +826,20 @@ export const Page = () => {
           </Button>
         }>
         <SuccessScreen
-          hideHeader
+          title="Swap successful"
+          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+          showTargetToken={false}
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}
-          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+          onMsg={(msg) => {
+            switch (msg.type) {
+              case 'on_dismiss_success':
+                resetSwapState();
+                break;
+              default:
+                break;
+            }
+          }}
         />
       </WidgetContainer>
     );
