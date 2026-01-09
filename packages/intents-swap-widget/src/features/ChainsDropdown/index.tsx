@@ -4,9 +4,9 @@ import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-roun
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { ChainItem } from './ChainItem';
-import { AllNetworksIcon } from './AllNetworksIcon';
 import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
+import { AllNetworksIcon } from '@/components/AllNetworksIcon';
 import { useChains } from '@/hooks/useChains';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
@@ -41,7 +41,7 @@ export const ChainsDropdown = ({
         <div>
           <MenuButton as={Fragment}>
             {({ open: isOpen }) => (
-              <div className="py-sw-sm pr-sw-md pl-sw-lg gap-sw-[2px] flex h-[36px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700">
+              <div className="py-sw-sm pr-sw-md pl-sw-lg gap-sw-xs flex h-[36px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700">
                 <span className="text-sw-label-md text-sw-gray-50">
                   {t('chain.more.label', 'More')}
                 </span>

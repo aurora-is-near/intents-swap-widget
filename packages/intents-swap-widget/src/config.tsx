@@ -50,6 +50,19 @@ const DEFAULT_CONFIG: WidgetConfig = {
     source: { external: 'wallet-supported', intents: 'none' },
     target: { external: 'all', intents: 'none' },
   },
+
+  topChainShortcuts: (intentsAccountType) => {
+    switch (intentsAccountType) {
+      case 'evm':
+        return ['eth', 'arb', 'avax', 'base'] as const;
+      case 'sol':
+        return ['sol', 'eth', 'btc', 'near'] as const;
+      case 'near':
+        return ['near', 'sol', 'eth', 'near'] as const;
+      default:
+        return ['eth', 'btc', 'sol', 'near'] as const;
+    }
+  },
 };
 
 type WidgetConfigContextType = { config: WidgetConfig };

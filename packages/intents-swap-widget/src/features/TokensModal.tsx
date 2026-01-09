@@ -3,17 +3,13 @@ import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/
 
 import { useChains } from '../hooks';
 import { TokensList } from './TokensList';
-import { ChainsDropdown } from './ChainsDropdown';
-import { AllNetworksIcon } from './ChainsDropdown/AllNetworksIcon';
-
-import { CHAIN_ICONS } from '@/icons';
+import { ChainsSelector } from './ChainsSelector';
 
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
 import { CloseButton } from '@/components/CloseButton';
-import { ChainShortcut } from '@/components/ChainShortcut';
 
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
@@ -38,17 +34,6 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-const AllChainsShortcut = () => {
-  const { t } = useTypedTranslation();
-
-  return (
-    <div className="px-sw-md gap-sw-sm flex h-[36px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700 text-sw-label-md text-sw-gray-50">
-      <AllNetworksIcon />
-      {t('chain.all.label', 'All')}
-    </div>
-  );
-};
-
 export const TokensModal = ({
   variant,
   showBalances,
@@ -60,7 +45,7 @@ export const TokensModal = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appIcon, appName } = useConfig();
+  const { walletSupportedChains } = useConfig();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
@@ -123,32 +108,20 @@ export const TokensModal = ({
       />
 
       {showChainsSelector && (
-        <div className="flex items-center justify-between gap-sw-md">
-          <AllChainsShortcut />
-
-          <ul className="flex items-center gap-sw-md">
-            <ChainShortcut icon={appIcon} label={appName} />
-            <ChainShortcut icon={CHAIN_ICONS.eth} label={appName} />
-            <ChainShortcut icon={CHAIN_ICONS.arb} label={appName} />
-            <ChainShortcut icon={CHAIN_ICONS.avax} label={appName} />
-            <ChainShortcut icon={CHAIN_ICONS.base} label={appName} />
-          </ul>
-
-          <ChainsDropdown
-            variant={variant}
-            selected={selectedChain}
-            chainsFilter={chainsFilter}
-            onMsg={(msg) => {
-              switch (msg.type) {
-                case 'on_click_chain':
-                  setSelectedChain(msg.chain);
-                  break;
-                default:
-                  notReachable(msg.type, { throwError: false });
-              }
-            }}
-          />
-        </div>
+        <ChainsSelector
+          variant={variant}
+          chainsFilter={chainsFilter}
+          selectedChain={selectedChain}
+          onMsg={(msg) => {
+            switch (msg.type) {
+              case 'on_select_chain':
+                setSelectedChain(msg.chain);
+                break;
+              default:
+                notReachable(msg.type);
+            }
+          }}
+        />
       )}
 
       {chainIsNotSupported && !!ctx.walletAddress && (
