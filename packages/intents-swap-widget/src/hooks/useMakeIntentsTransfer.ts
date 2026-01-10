@@ -270,7 +270,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         isDirectNearTokenWithdrawal || isDirectNonNearWithdrawal,
       ),
       destinationMemo: undefined,
-      feeInclusive: false,
+      feeInclusive: true,
       routeConfig,
     };
 
