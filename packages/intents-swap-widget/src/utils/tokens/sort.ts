@@ -2,7 +2,72 @@ import { formatUnits } from 'ethers';
 
 import { getTokenBalanceKey } from '../intents/getTokenBalanceKey';
 import type { Token, TokenBalances } from '@/types/token';
+import type { PriorityAssets } from '@/types/config';
 import type { Chains } from '@/types/chain';
+
+const compareByPriority = (
+  a: Token,
+  b: Token,
+  priorityAssets: PriorityAssets,
+): number | null => {
+  if (a.isIntent || b.isIntent || priorityAssets.length === 0) {
+    return null;
+  }
+
+  const isPriorityToken = (token: Token): boolean => {
+    // by assetId
+    if (typeof priorityAssets[0] === 'string') {
+      return (priorityAssets as ReadonlyArray<string>).includes(token.assetId);
+    }
+
+    // by blockchain and symbol
+    return (priorityAssets as ReadonlyArray<readonly [Chains, string]>).some(
+      ([blockchain, symbol]) =>
+        token.blockchain === blockchain &&
+        token.symbol.toLowerCase() === symbol.toLowerCase(),
+    );
+  };
+
+  const getPriorityIndex = (token: Token): number => {
+    // by assetId
+    if (typeof priorityAssets[0] === 'string') {
+      return (priorityAssets as ReadonlyArray<string>).indexOf(token.assetId);
+    }
+
+    // by blockchain and symbol
+    return (
+      priorityAssets as ReadonlyArray<readonly [Chains, string]>
+    ).findIndex(
+      ([blockchain, symbol]) =>
+        token.blockchain === blockchain &&
+        token.symbol.toLowerCase() === symbol.toLowerCase(),
+    );
+  };
+
+  const aIsPriority = isPriorityToken(a);
+  const bIsPriority = isPriorityToken(b);
+
+  if (aIsPriority && !bIsPriority) {
+    return -1;
+  }
+
+  if (!aIsPriority && bIsPriority) {
+    return 1;
+  }
+
+  // If both are priority tokens, maintain their relative order based on the priority list
+  if (aIsPriority && bIsPriority) {
+    const aIndex = getPriorityIndex(a);
+    const bIndex = getPriorityIndex(b);
+
+    if (aIndex !== bIndex) {
+      return aIndex - bIndex;
+    }
+  }
+
+  // Return null to indicate no priority difference, continue with other sorting criteria
+  return null;
+};
 
 const compareWithSearch = (
   a: Token,
@@ -73,8 +138,9 @@ const compareWithSearch = (
   return a.chainName.toLowerCase().localeCompare(b.chainName.toLowerCase());
 };
 
-const sortTokensByUsdBalance = (
+const sortTokens = (
   walletSupportedChains: ReadonlyArray<Chains>,
+  priorityAssets: PriorityAssets,
   usdBalanceA: number | undefined,
   usdBalanceB: number | undefined,
   searchStr: string | undefined,
@@ -82,8 +148,49 @@ const sortTokensByUsdBalance = (
   b: Token,
 ): number => {
   const isIntent = a.isIntent || b.isIntent;
+  const hasBalanceA = usdBalanceA !== undefined && usdBalanceA > 0;
+  const hasBalanceB = usdBalanceB !== undefined && usdBalanceB > 0;
 
-  // 0. Sort supported chains first
+  // 1. Tokens with balance always come first
+  if (hasBalanceA && !hasBalanceB) {
+    return -1;
+  }
+
+  if (!hasBalanceA && hasBalanceB) {
+    return 1;
+  }
+
+  // 2. If both have balance, sort by balance amount and other criteria
+  if (hasBalanceA && hasBalanceB) {
+    // Sort supported chains first
+    const aSupported = walletSupportedChains.includes(a.blockchain);
+    const bSupported = walletSupportedChains.includes(b.blockchain);
+
+    if (!isIntent && aSupported && !bSupported) {
+      return -1;
+    }
+
+    if (!isIntent && !aSupported && bSupported) {
+      return 1;
+    }
+
+    // Compare non-zero balances
+    if (usdBalanceA !== usdBalanceB) {
+      return (usdBalanceB ?? 0) - (usdBalanceA ?? 0);
+    }
+
+    // If balances equal, sort by search/name
+    return compareWithSearch(a, b, searchStr);
+  }
+
+  // 3. Both have no balance - prioritize by asset IDs or blockchain-symbol pairs (only for non-intent tokens)
+  const priorityComparison = compareByPriority(a, b, priorityAssets);
+
+  if (priorityComparison !== null) {
+    return priorityComparison;
+  }
+
+  // 4. For tokens without balance and not in priority list, sort by supported chains
   const aSupported = walletSupportedChains.includes(a.blockchain);
   const bSupported = walletSupportedChains.includes(b.blockchain);
 
@@ -95,29 +202,7 @@ const sortTokensByUsdBalance = (
     return 1;
   }
 
-  if (!isIntent && !aSupported && !bSupported) {
-    return compareWithSearch(a, b, searchStr);
-  }
-
-  // 1. Handle zero balances
-  if (!usdBalanceA && !usdBalanceB) {
-    return compareWithSearch(a, b, searchStr);
-  }
-
-  if (!usdBalanceA && usdBalanceB) {
-    return 1;
-  }
-
-  if (!usdBalanceB && usdBalanceA) {
-    return -1;
-  }
-
-  // 3. Compare non-zero balances
-  if (usdBalanceA !== usdBalanceB) {
-    return (usdBalanceB ?? 0) - (usdBalanceA ?? 0);
-  }
-
-  // 4. If balances equal, sort by market cap and then name
+  // 5. Finally, sort alphabetically by search/name
   return compareWithSearch(a, b, searchStr);
 };
 
@@ -125,6 +210,7 @@ export const createTokenSorter = (
   tokensBalance: TokenBalances,
   walletSupportedChains: ReadonlyArray<Chains>,
   searchStr?: string | undefined,
+  priorityAssets: PriorityAssets = [],
 ) => {
   return (a: Token, b: Token) => {
     const recordA = tokensBalance[getTokenBalanceKey(a)];
@@ -145,8 +231,9 @@ export const createTokenSorter = (
 
     const searchLower = searchStr?.trim().toLowerCase() ?? undefined;
 
-    return sortTokensByUsdBalance(
+    return sortTokens(
       walletSupportedChains,
+      priorityAssets,
       usdBalanceA,
       usdBalanceB,
       searchLower,
