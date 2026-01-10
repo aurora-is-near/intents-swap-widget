@@ -21,7 +21,6 @@ type CreatorState = {
   feePercentage: string;
   collectorAddress: string;
   // Design - Mode
-  allowToggleModes: boolean;
   defaultMode: 'auto' | 'dark' | 'light';
   // Design - Style
   stylePreset: 'clean' | 'bold';
@@ -51,7 +50,6 @@ const initialState: CreatorState = {
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
   // Design
-  allowToggleModes: false,
   defaultMode: 'dark',
   stylePreset: 'clean',
   cornerRadius: 'm',
@@ -90,7 +88,6 @@ type Action =
   | { type: 'SET_FEE_PERCENTAGE'; payload: string }
   | { type: 'SET_COLLECTOR_ADDRESS'; payload: string }
   // Design - Mode
-  | { type: 'SET_ALLOW_TOGGLE_MODES'; payload: boolean }
   | { type: 'SET_DEFAULT_MODE'; payload: 'auto' | 'dark' | 'light' }
   // Design - Style
   | { type: 'SET_STYLE_PRESET'; payload: 'clean' | 'bold' }
@@ -150,8 +147,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, collectorAddress: action.payload };
 
     // Design
-    case 'SET_ALLOW_TOGGLE_MODES':
-      return { ...state, allowToggleModes: action.payload };
     case 'SET_DEFAULT_MODE':
       return { ...state, defaultMode: action.payload };
     case 'SET_STYLE_PRESET':
@@ -177,7 +172,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     case 'RESET_DESIGN':
       return {
         ...state,
-        allowToggleModes: true,
         defaultMode: 'auto',
         stylePreset: 'clean',
         cornerRadius: 'm',
