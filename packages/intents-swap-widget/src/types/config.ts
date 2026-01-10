@@ -45,6 +45,9 @@ export type WidgetConfig = {
   allowedChainsList?: Chains[];
   allowedSourceChainsList?: Chains[];
   allowedTargetChainsList?: Chains[];
+  topChainShortcuts?: (
+    intentsAccountType?: IntentsAccountType,
+  ) => [Chains, Chains, Chains, Chains];
   chainsFilter: {
     source: ChainsFilter;
     target: ChainsFilter;
