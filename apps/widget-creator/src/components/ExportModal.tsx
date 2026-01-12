@@ -2,8 +2,8 @@ import { Copy, ExternalLink, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '../uikit/Button';
-import { useCreator } from '../hooks/useCreatorConfig';
 import { useWidgetConfig } from '../hooks/useWidgetConfig';
+import { useThemeConfig } from '../hooks/useThemeConfig';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -35,28 +35,18 @@ const stringifyAsJS = (value: unknown, indent: number): string => {
 };
 
 export function ExportModal({ isOpen, onClose }: ExportModalProps) {
-  const { state } = useCreator();
   const { widgetConfig } = useWidgetConfig();
+  const { themeConfig } = useThemeConfig();
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
-  const SAMPLE_CODE = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
+  const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
 export function App() {
   return (
     <WidgetSwap
       config={${stringifyAsJS(widgetConfig, 6)}}
-      theme={{
-        primaryColor: '${state.primaryColor}',
-        surfaceColor: '${state.surfaceColor}',
-        backgroundColor: '${state.backgroundColor}',
-        successColor: '${state.successColor}',
-        warningColor: '${state.warningColor}',
-        errorColor: '${state.errorColor}',
-        colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
-        stylePreset: '${state.stylePreset}',
-        borderRadius: '${state.borderRadius}',
-      }}
+      theme={${stringifyAsJS(themeConfig, 6)}}
     />
   );
 }`;
@@ -73,7 +63,7 @@ export function App() {
   }, [isOpen]);
 
   const handleCopyCode = async () => {
-    await navigator.clipboard.writeText(SAMPLE_CODE);
+    await navigator.clipboard.writeText(sampleCode);
     setCopyCodeFeedback(true);
     setTimeout(() => setCopyCodeFeedback(false), 2000);
   };
@@ -136,7 +126,7 @@ export function App() {
             <div className="bg-csw-gray-950 px-csw-2xl py-csw-lg rounded-csw-md m-csw-lg h-full overflow-auto">
               <Highlight
                 theme={themes.dracula}
-                code={SAMPLE_CODE}
+                code={sampleCode}
                 language="tsx">
                 {({ tokens, getLineProps, getTokenProps }) => (
                   <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">

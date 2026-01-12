@@ -11,15 +11,11 @@ import {
 import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
-import { isHexColor } from '../../utils/is-hex-color';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 import { useWidgetConfig } from '../../hooks/useWidgetConfig';
+import { useThemeConfig } from '../../hooks/useThemeConfig';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
-
-const getValidThemeColor = (color: string): `#${string}` | undefined => {
-  return isHexColor(color) ? color : undefined;
-};
 
 export function Widget() {
   const { providers } = useAppKitWallet();
@@ -34,6 +30,7 @@ export function Widget() {
     } | null>(null);
 
   const { widgetConfig } = useWidgetConfig();
+  const { themeConfig } = useThemeConfig();
 
   const exampleBanner = useMemo(():
     | {
@@ -84,36 +81,13 @@ export function Widget() {
     );
   }
 
-  const getColorScheme = () => {
-    if (state.defaultMode === 'auto') {
-      // Check system preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-    }
-
-    return state.defaultMode;
-  };
-
-  const colorScheme = getColorScheme();
-
   return (
     <WidgetConfigProvider
       config={{
         ...widgetConfig,
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
-      theme={{
-        primaryColor: getValidThemeColor(state.primaryColor),
-        surfaceColor: getValidThemeColor(state.surfaceColor),
-        backgroundColor: getValidThemeColor(state.backgroundColor),
-        successColor: getValidThemeColor(state.successColor),
-        warningColor: getValidThemeColor(state.warningColor),
-        errorColor: getValidThemeColor(state.errorColor),
-        colorScheme: colorScheme ?? 'dark',
-        borderRadius: state.borderRadius,
-        stylePreset: state.stylePreset,
-      }}>
+      theme={themeConfig}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
       {exampleBanner && (
         <Banner
