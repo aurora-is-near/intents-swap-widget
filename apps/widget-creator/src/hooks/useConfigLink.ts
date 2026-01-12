@@ -38,7 +38,7 @@ export function useConfigLink() {
 
     // Design - Style
     params.append('stylePreset', state.stylePreset);
-    params.append('cornerRadius', state.cornerRadius);
+    params.append('borderRadius', state.borderRadius);
     params.append(
       'showContainerWrapper',
       state.showContainerWrapper.toString(),
@@ -189,15 +189,15 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_STYLE_PRESET', payload: stylePreset });
     }
 
-    const cornerRadius = params.get('cornerRadius');
+    const borderRadius = params.get('borderRadius');
 
     if (
-      cornerRadius === 'none' ||
-      cornerRadius === 's' ||
-      cornerRadius === 'm' ||
-      cornerRadius === 'l'
+      borderRadius === 'none' ||
+      borderRadius === 'sm' ||
+      borderRadius === 'md' ||
+      borderRadius === 'lg'
     ) {
-      dispatch({ type: 'SET_CORNER_RADIUS', payload: cornerRadius });
+      dispatch({ type: 'SET_BORDER_RADIUS', payload: borderRadius });
     }
 
     const showContainerWrapper = params.get('showContainerWrapper');

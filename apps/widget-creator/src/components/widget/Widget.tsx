@@ -145,6 +145,7 @@ export function Widget({ config }: WidgetProps) {
         warningColor: getValidThemeColor(state.warningColor),
         errorColor: getValidThemeColor(state.errorColor),
         colorScheme: colorScheme ?? 'dark',
+        borderRadius: state.borderRadius,
       }}>
       <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
       {exampleBanner && (

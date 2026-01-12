@@ -1,13 +1,15 @@
 :root {
     --font-family-sw: 'Inter', sans-serif;
     --default-font-family: var(--font-family-sw);
-
-    --r-sw-sm: 6px;
-    --r-sw-md: 10px;
-    --r-sw-lg: 16px;
 }
 
 @layer base {
+    body[data-sw-theme] {
+        --r-sw-sm: 6px;
+        --r-sw-md: 10px;
+        --r-sw-lg: 16px;
+    }
+
     body[data-sw-theme="light"] {
         color-scheme: light;
 

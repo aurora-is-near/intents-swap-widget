@@ -5,6 +5,8 @@ import { OutlinedButton } from '../../uikit/Button';
 import { ColorInput } from './ColorInput';
 import { ThemeColorPickerId } from '../../types/colors';
 
+const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
+
 export function Design() {
   const { state, dispatch } = useCreator();
 
@@ -81,15 +83,15 @@ export function Design() {
               Corner radius
             </span>
             <div className="flex items-center gap-csw-2md">
-              {['none', 's', 'm', 'l'].map((radius) => (
+              {BORDER_RADIUS_VALUES.map((radius) => (
                 <OutlinedButton
                   key={radius}
                   size="sm"
-                  state={state.cornerRadius === radius ? 'active' : 'default'}
+                  state={state.borderRadius === radius ? 'active' : 'default'}
                   onClick={() =>
                     dispatch({
-                      type: 'SET_CORNER_RADIUS',
-                      payload: radius as 'none' | 's' | 'm' | 'l',
+                      type: 'SET_BORDER_RADIUS',
+                      payload: radius,
                     })
                   }>
                   {radius === 'none' ? '–' : radius.toUpperCase()}

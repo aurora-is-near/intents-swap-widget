@@ -33,6 +33,7 @@ export function App() {
         warningColor: '${state.warningColor}',
         errorColor: '${state.errorColor}',
         colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
+        borderRadius: '${state.borderRadius}',
       }}
       onMsg={async (msg) => {
         console.log('Widget message:', msg);

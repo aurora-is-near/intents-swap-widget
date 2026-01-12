@@ -2,6 +2,8 @@ export type HexColor = `#${string}`;
 
 export type ColorScheme = 'light' | 'dark';
 
+export type ThemeBorderRadius = 'none' | 'sm' | 'md' | 'lg';
+
 export type Theme = {
   colorScheme?: ColorScheme;
   backgroundColor?: HexColor;
@@ -10,6 +12,7 @@ export type Theme = {
   successColor?: HexColor;
   warningColor?: HexColor;
   errorColor?: HexColor;
+  borderRadius?: ThemeBorderRadius;
 };
 
 export type ColorPalette = Record<

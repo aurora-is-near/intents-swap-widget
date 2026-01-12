@@ -1,5 +1,6 @@
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
+import { ThemeBorderRadius } from '@aurora-is-near/intents-swap-widget';
 import { ThemeColorPickerId } from '../types/colors';
 
 type CreatorState = {
@@ -24,7 +25,7 @@ type CreatorState = {
   defaultMode: 'auto' | 'dark' | 'light';
   // Design - Style
   stylePreset: 'clean' | 'bold';
-  cornerRadius: 'none' | 's' | 'm' | 'l';
+  borderRadius: ThemeBorderRadius;
   showContainerWrapper: boolean;
   // Design - Colors
   primaryColor: string;
@@ -52,7 +53,7 @@ const initialState: CreatorState = {
   // Design
   defaultMode: 'dark',
   stylePreset: 'clean',
-  cornerRadius: 'm',
+  borderRadius: 'md',
   showContainerWrapper: false,
   primaryColor: '#D5B7FF',
   surfaceColor: '#2A2C33',
@@ -91,7 +92,7 @@ type Action =
   | { type: 'SET_DEFAULT_MODE'; payload: 'auto' | 'dark' | 'light' }
   // Design - Style
   | { type: 'SET_STYLE_PRESET'; payload: 'clean' | 'bold' }
-  | { type: 'SET_CORNER_RADIUS'; payload: 'none' | 's' | 'm' | 'l' }
+  | { type: 'SET_BORDER_RADIUS'; payload: ThemeBorderRadius }
   | { type: 'SET_SHOW_CONTAINER_WRAPPER'; payload: boolean }
   // Design - Colors
   | { type: 'SET_PRIMARY_COLOR'; payload: string }
@@ -151,8 +152,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, defaultMode: action.payload };
     case 'SET_STYLE_PRESET':
       return { ...state, stylePreset: action.payload };
-    case 'SET_CORNER_RADIUS':
-      return { ...state, cornerRadius: action.payload };
+    case 'SET_BORDER_RADIUS':
+      return { ...state, borderRadius: action.payload };
     case 'SET_SHOW_CONTAINER_WRAPPER':
       return { ...state, showContainerWrapper: action.payload };
     case 'SET_PRIMARY_COLOR':
@@ -174,7 +175,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         ...state,
         defaultMode: 'auto',
         stylePreset: 'clean',
-        cornerRadius: 'm',
+        borderRadius: 'md',
         showContainerWrapper: false,
         primaryColor: '#D5B7FF',
         surfaceColor: '#24262D',

@@ -1,21 +1,31 @@
 import { createContext, type ReactNode, useEffect, useMemo } from 'react';
 
-import { ColorPalette, ColorScheme, HexColor, Theme } from '../types/theme';
+import {
+  ColorPalette,
+  ColorScheme,
+  HexColor,
+  Theme,
+  ThemeBorderRadius,
+} from '../types/theme';
 import { ColorStop, createColorPalette } from './createColorPalette';
 import { useConfig } from '@/config';
 
-const setColorVariable = (
-  key: string,
-  value: string,
-  parentEl: Element | null,
-) => {
+const setVariable = (key: string, value: string, parentEl: Element | null) => {
   let parentElement = document.body;
 
   if (parentEl instanceof HTMLElement) {
     parentElement = parentEl;
   }
 
-  parentElement.style.setProperty(`--c-sw-${key}`, value);
+  parentElement.style.setProperty(key, value);
+};
+
+const setColorVariable = (
+  key: string,
+  value: string,
+  parentEl: Element | null,
+) => {
+  setVariable(`--c-sw-${key}`, value, parentEl);
 };
 
 const setColorVariables = (
@@ -44,6 +54,25 @@ const setColorPalette = (
   setColorVariables(palette, colorKey, parentEl);
 };
 
+const setBorderRadiusVariables = (
+  borderRadius: ThemeBorderRadius,
+  parentEl: Element | null,
+) => {
+  const values: Record<
+    'none' | 'sm' | 'md' | 'lg',
+    { sm: number; md: number; lg: number }
+  > = {
+    none: { sm: 0, md: 0, lg: 0 },
+    sm: { sm: 4, md: 6, lg: 10 },
+    md: { sm: 6, md: 10, lg: 16 },
+    lg: { sm: 8, md: 24, lg: 24 },
+  };
+
+  setVariable('--r-sw-sm', `${values[borderRadius].sm}px`, parentEl);
+  setVariable('--r-sw-md', `${values[borderRadius].md}px`, parentEl);
+  setVariable('--r-sw-lg', `${values[borderRadius].lg}px`, parentEl);
+};
+
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
   const {
     primaryColor,
@@ -52,6 +81,7 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     warningColor,
     errorColor,
     colorScheme = 'dark',
+    borderRadius = 'md',
   } = theme;
 
   if (primaryColor) {
@@ -72,6 +102,10 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
 
   if (errorColor) {
     setColorVariable('status-error', errorColor, parentEl);
+  }
+
+  if (borderRadius) {
+    setBorderRadiusVariables(borderRadius, parentEl);
   }
 };
 
