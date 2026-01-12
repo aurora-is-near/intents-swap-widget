@@ -77,6 +77,7 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
   const {
     primaryColor,
     surfaceColor,
+    containerColor,
     successColor,
     warningColor,
     errorColor,
@@ -95,6 +96,10 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
 
   if (surfaceColor && stylePreset === 'clean') {
     setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
+  }
+
+  if (containerColor) {
+    setColorVariable('container', containerColor, parentEl);
   }
 
   if (successColor) {

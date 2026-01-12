@@ -24,7 +24,6 @@ export const WidgetContainer = ({
     <div
       style={{
         transform: isFullPage ? 'translateY(15dvh)' : 'none',
-        backgroundColor: theme?.backgroundColor,
       }}
       className={cn(
         'w-full h-fit flex flex-col justify-center items-center relative',

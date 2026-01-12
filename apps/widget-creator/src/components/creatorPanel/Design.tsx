@@ -135,6 +135,19 @@ export function Design() {
               hasInfo
             />
           )}
+          {state.showContainerWrapper && (
+            <ColorInput
+              label="Container color"
+              value={state.containerColor}
+              onChange={(val) =>
+                dispatch({ type: 'SET_CONTAINER_COLOR', payload: val })
+              }
+              isOpen={state.openThemeColorPickerId === 'containerColor'}
+              onOpen={() => setOpenPickerId('containerColor')}
+              onClose={() => setOpenPickerId(null)}
+              hasInfo
+            />
+          )}
           <ColorInput
             label="Background color"
             value={state.backgroundColor}

@@ -1,3 +1,4 @@
+import { BaseContainer } from '../../components/BaseContainer';
 import {
   WidgetContainer,
   WidgetContainerProps,
@@ -13,11 +14,13 @@ export const WidgetSwap = ({
   className,
   ...widgetProps
 }: WidgetSwapProps) => (
-  <WidgetContainer
-    className={className}
-    isFullPage={isFullPage}
-    HeaderComponent={HeaderComponent}
-    FooterComponent={FooterComponent}>
-    <WidgetSwapContent {...widgetProps} />
-  </WidgetContainer>
+  <BaseContainer>
+    <WidgetContainer
+      className={className}
+      isFullPage={isFullPage}
+      HeaderComponent={HeaderComponent}
+      FooterComponent={FooterComponent}>
+      <WidgetSwapContent {...widgetProps} />
+    </WidgetContainer>
+  </BaseContainer>
 );

@@ -12,10 +12,12 @@ export type Theme = {
   backgroundColor?: HexColor;
   primaryColor?: HexColor;
   surfaceColor?: HexColor;
+  containerColor?: HexColor;
   successColor?: HexColor;
   warningColor?: HexColor;
   errorColor?: HexColor;
   borderRadius?: ThemeBorderRadius;
+  showContainer?: boolean;
 };
 
 export type ColorPalette = Record<

@@ -40,10 +40,6 @@ export function useConfigLink() {
     // Design - Style
     params.append('stylePreset', state.stylePreset);
     params.append('borderRadius', state.borderRadius);
-    params.append(
-      'showContainerWrapper',
-      state.showContainerWrapper.toString(),
-    );
 
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
@@ -52,6 +48,15 @@ export function useConfigLink() {
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
     params.append('errorColor', state.errorColor);
+
+    if (state.showContainerWrapper) {
+      params.append(
+        'showContainerWrapper',
+        state.showContainerWrapper.toString(),
+      );
+
+      params.append('containerColor', state.containerColor);
+    }
 
     return `${baseUrl}?${params.toString()}`;
   };
@@ -226,6 +231,15 @@ export function useDecodeConfigLink() {
       dispatch({
         type: 'SET_SURFACE_COLOR',
         payload: surfaceColor,
+      });
+    }
+
+    const containerColor = params.get('containerColor');
+
+    if (containerColor) {
+      dispatch({
+        type: 'SET_CONTAINER_COLOR',
+        payload: containerColor,
       });
     }
 

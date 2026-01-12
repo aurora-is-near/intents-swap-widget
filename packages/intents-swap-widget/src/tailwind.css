@@ -51,6 +51,9 @@
     --color-sw-status-warning: var(--c-sw-status-warning);
     --color-sw-status-error: var(--c-sw-status-error);
 
+    /* Container color */
+    --color-sw-container: var(--c-sw-container);
+
     /* Spaces */
     --spacing-sw-xxs: 2px;
     --spacing-sw-xs: 4px;
