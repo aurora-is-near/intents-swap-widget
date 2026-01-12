@@ -1,6 +1,6 @@
 import { Edit, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
-import { CHAINS } from '@aurora-is-near/intents-swap-widget';
+import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
@@ -25,7 +25,7 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
 
-  const handleNetworksChange = (newNetworks: string[]) => {
+  const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
 
     // Auto-select tokens that are available for the chosen networks

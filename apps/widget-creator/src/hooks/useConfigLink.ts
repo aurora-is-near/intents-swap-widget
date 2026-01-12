@@ -1,3 +1,4 @@
+import { Chains } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
 
 export function useConfigLink() {
@@ -98,7 +99,10 @@ export function useDecodeConfigLink() {
     const selectedNetworks = params.getAll('selectedNetworks');
 
     if (selectedNetworks.length > 0) {
-      dispatch({ type: 'SET_SELECTED_NETWORKS', payload: selectedNetworks });
+      dispatch({
+        type: 'SET_SELECTED_NETWORKS',
+        payload: selectedNetworks as Chains[],
+      });
     }
 
     const enableSellToken = params.get('enableSellToken');
