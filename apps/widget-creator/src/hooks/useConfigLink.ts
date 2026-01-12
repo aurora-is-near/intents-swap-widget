@@ -34,7 +34,6 @@ export function useConfigLink() {
     params.append('collectorAddress', state.collectorAddress);
 
     // Design - Mode
-    params.append('allowToggleModes', state.allowToggleModes.toString());
     params.append('defaultMode', state.defaultMode);
 
     // Design - Style
@@ -173,15 +172,6 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Mode
-    const allowToggleModes = params.get('allowToggleModes');
-
-    if (allowToggleModes === 'true' || allowToggleModes === 'false') {
-      dispatch({
-        type: 'SET_ALLOW_TOGGLE_MODES',
-        payload: allowToggleModes === 'true',
-      });
-    }
-
     const defaultMode = params.get('defaultMode');
 
     if (

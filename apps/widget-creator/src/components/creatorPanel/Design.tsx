@@ -16,33 +16,19 @@ export function Design() {
     <div className="space-y-csw-2xl text-csw-gray-200">
       <ConfigSection title="Mode">
         <div className="space-y-csw-xl">
-          <Toggle
-            label="Allow to toggle modes"
-            isEnabled={state.allowToggleModes}
-            onChange={(enabled) => {
-              dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: enabled });
-
-              if (!enabled) {
-                dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
-              }
-            }}
-          />
-
           <div className="flex items-center justify-between">
             <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
-              Default mode
+              Color scheme
             </span>
             <div className="flex items-center gap-csw-2md">
-              {state.allowToggleModes && (
-                <OutlinedButton
-                  size="sm"
-                  state={state.defaultMode === 'auto' ? 'active' : 'default'}
-                  onClick={() =>
-                    dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
-                  }>
-                  Auto
-                </OutlinedButton>
-              )}
+              <OutlinedButton
+                size="sm"
+                state={state.defaultMode === 'auto' ? 'active' : 'default'}
+                onClick={() =>
+                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
+                }>
+                Auto
+              </OutlinedButton>
               <OutlinedButton
                 size="sm"
                 state={state.defaultMode === 'dark' ? 'active' : 'default'}
