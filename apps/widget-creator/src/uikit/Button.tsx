@@ -72,7 +72,7 @@ const ButtonChildren = ({
         );
 
   return (
-    <span className="text-csw-label-m flex w-full items-center justify-center gap-csw-md">
+    <span className="flex w-full items-center justify-center gap-csw-md">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
         <Icon className={styles.icon} />
