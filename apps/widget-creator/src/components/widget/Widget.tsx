@@ -12,7 +12,6 @@ import {
 import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { useAppKitWallet } from '../../hooks/useAppKitWallet';
-import '@aurora-is-near/intents-swap-widget/styles.css';
 import { isHexColor } from '../../utils/is-hex-color';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
