@@ -33,6 +33,7 @@ export function App() {
         warningColor: '${state.warningColor}',
         errorColor: '${state.errorColor}',
         colorScheme: '${state.defaultMode === 'auto' ? 'dark' : state.defaultMode}',
+        stylePreset: '${state.stylePreset}',
         borderRadius: '${state.borderRadius}',
       }}
       onMsg={async (msg) => {

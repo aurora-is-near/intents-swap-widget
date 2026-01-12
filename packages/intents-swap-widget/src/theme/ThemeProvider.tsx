@@ -82,13 +82,18 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     errorColor,
     colorScheme = 'dark',
     borderRadius = 'md',
+    stylePreset = 'clean',
   } = theme;
 
   if (primaryColor) {
     setColorPalette('accent', 500, parentEl, primaryColor, colorScheme);
+
+    if (stylePreset === 'bold') {
+      setColorPalette('gray', 50, parentEl, primaryColor, colorScheme);
+    }
   }
 
-  if (surfaceColor) {
+  if (surfaceColor && stylePreset === 'clean') {
     setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
   }
 
