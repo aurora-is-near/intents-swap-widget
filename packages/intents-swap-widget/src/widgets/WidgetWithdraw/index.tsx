@@ -1,4 +1,3 @@
-import { BaseContainer } from '../../components/BaseContainer';
 import {
   WidgetContainer,
   WidgetContainerProps,
@@ -15,13 +14,11 @@ export const WidgetWithdraw = ({
   className,
   ...widgetProps
 }: WidgetWithdrawProps) => (
-  <BaseContainer>
-    <WidgetContainer
-      className={className}
-      isFullPage={isFullPage}
-      HeaderComponent={HeaderComponent}
-      FooterComponent={FooterComponent}>
-      <WidgetWithdrawContent {...widgetProps} />
-    </WidgetContainer>
-  </BaseContainer>
+  <WidgetContainer
+    className={className}
+    isFullPage={isFullPage}
+    HeaderComponent={HeaderComponent}
+    FooterComponent={FooterComponent}>
+    <WidgetWithdrawContent {...widgetProps} />
+  </WidgetContainer>
 );

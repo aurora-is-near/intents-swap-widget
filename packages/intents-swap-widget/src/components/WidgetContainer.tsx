@@ -45,7 +45,17 @@ export const WidgetContainer = ({
   );
 
   if (!isFullPage) {
-    return jsx;
+    return (
+      <div
+        className={cn(
+          'relative w-auto mx-auto',
+          theme?.showContainer
+            ? 'max-w-[496px] sm:w-[496px] p-csw-2xl bg-sw-container rounded-sw-lg'
+            : 'max-w-[456px] sm:w-[456px]',
+        )}>
+        {jsx}
+      </div>
+    );
   }
 
   return (
