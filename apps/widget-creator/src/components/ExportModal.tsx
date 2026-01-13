@@ -190,7 +190,7 @@ export function App() {
               fluid
               icon={Copy}
               onClick={handleCopyConfigLink}>
-              {copyLinkFeedback ? 'Copied!' : 'Copy configuration link'}
+              {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
             </Button>
           </div>
         </div>
