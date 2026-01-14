@@ -18,19 +18,21 @@ import {
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
+import { MakeTransferArgs } from '../../types';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
-  'onMsg'
+  'onMsg' | 'makeTransfer'
 > & {
-  onMsg?: (msg: Msg, widget: WidgetType) => void;
+  onMsg?: (msg: Msg, widgetType: WidgetType) => void;
+  makeTransfer?: (args: MakeTransferArgs, widgetType: WidgetType) => void;
 };
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;
 
-export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
+export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   const [isTabsVisible, setIsTabsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
   const { enableAccountAbstraction } = useConfig();
@@ -69,6 +71,7 @@ export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
             return (
               <WidgetSwapContent
                 {...restProps}
+                makeTransfer={(args) => makeTransfer?.(args, 'swap')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'swap');
                 }}
@@ -80,6 +83,7 @@ export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
             return (
               <WidgetDepositContent
                 {...restProps}
+                makeTransfer={(args) => makeTransfer?.(args, 'deposit')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'deposit');
                 }}
@@ -91,6 +95,7 @@ export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
             return (
               <WidgetWithdrawContent
                 {...restProps}
+                makeTransfer={(args) => makeTransfer?.(args, 'withdraw')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'withdraw');
                 }}

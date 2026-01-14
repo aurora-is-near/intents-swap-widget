@@ -44,7 +44,8 @@ export type MakeTransferArgs = {
 };
 ```
 
-It should return the transaction `hash` and a `transactionLink`.
+Your `makeTransfer` function should return the transaction `hash` and a
+`transactionLink`, which are used when displaying the transfer success screen.
 
 ### Example
 
@@ -60,3 +61,8 @@ It should return the transaction `hash` and a `transactionLink`.
     }}
   />
 ```
+
+The `makeTransfer` function is called with a second argument that defines the
+widget type. This can be useful if you have enabled account abstraction and need
+to modify the transfer behaviour in some way, or log analytics events, based on
+the widget type (i.e. swap, deposit or withdraw).
