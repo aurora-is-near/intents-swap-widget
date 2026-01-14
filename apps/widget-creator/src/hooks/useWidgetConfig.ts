@@ -23,6 +23,8 @@ export const useWidgetConfig = () => {
         state.selectedTokenSymbols.length > 0
           ? state.selectedTokenSymbols
           : undefined,
+      defaultSourceToken: state.defaultSellToken,
+      defaultTargetToken: state.defaultBuyToken,
     }),
     [state, appBalanceMode, walletAddress],
   );
