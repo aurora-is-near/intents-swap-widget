@@ -12,7 +12,7 @@ This automatically generates a full theme based on a small set of core colors.
 ### Example
 
 ```tsx
-import { WidgetConfigProvider, WidgetSwap } from '@aurora-is-near/intents-swap-widget';
+import { WidgetConfigProvider, Widget } from '@aurora-is-near/intents-swap-widget';
 
 export default function App() {
   return (
@@ -27,7 +27,7 @@ export default function App() {
         },
       }}
     >
-      <WidgetSwap />
+      <Widget />
     </WidgetConfigProvider>
   );
 }
@@ -58,7 +58,7 @@ within your app, for example:
 ```tsx
 <div className="sw">
   <h1 className="text-sw-gray-500">My Amazing Widget</h1>
-  <WidgetSwap />
+  <Widget />
 </div>
 ```
 

@@ -31,7 +31,7 @@ import { isDebug, notReachable } from '@/utils';
 
 import type { Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };

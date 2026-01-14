@@ -2,7 +2,6 @@ import './tailwind.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import { createAppKit } from './appkit-config';
 import { App } from './App';
 
@@ -20,8 +19,6 @@ createAppKit();
 
 root.render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <App />
   </StrictMode>,
 );

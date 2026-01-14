@@ -32,21 +32,18 @@ import { isDebug, notReachable } from '@/utils';
 
 import type { Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' };
 
-export type Props = CommonWidgetProps<Msg> & {
-  isOneWay?: boolean;
-};
+export type Props = CommonWidgetProps<Msg>;
 
 export const WidgetSwapContent = ({
   providers,
   makeTransfer,
   onMsg,
   isLoading,
-  isOneWay,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
@@ -217,7 +214,7 @@ export const WidgetSwapContent = ({
               }}
             />
 
-            <SwapDirectionSwitcher disabled={isOneWay} />
+            <SwapDirectionSwitcher />
 
             <TokenInput.Target
               heading={t('tokenInput.heading.target.swap', 'Buy')}

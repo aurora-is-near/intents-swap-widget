@@ -1,7 +1,10 @@
 # Widgets
 
 The **Intents Swap Widget** package exports multiple pre-built widget components,
-`WidgetSwap`, `WidgetWithdraw` and `WidgetDeposit`.
+`Widget`, `WidgetSwap`, `WidgetWithdraw` and `WidgetDeposit`.
+
+The `Widget` component is the one you will want to use in most cases. The others
+being used when you want to build more specific UIs.
 
 ## Usage
 
@@ -9,9 +12,9 @@ In their most basic form, all of these components can be rendered with no
 additional properties, for example:
 
 ```tsx
-import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
+import { Widget } from '@aurora-is-near/intents-swap-widget';
 
-<WidgetSwap />
+<Widget />
 ```
 
 As well as the global configuration properties provided via the
@@ -46,7 +49,7 @@ It should return the transaction `hash` and a `transactionLink`.
 ### Example
 
 ```tsx
-  <WidgetSwap
+  <Widget
     makeTransfer={(args) => {
       const hash = performTonSwap(args);
 

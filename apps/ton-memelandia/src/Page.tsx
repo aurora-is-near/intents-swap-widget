@@ -873,6 +873,7 @@ export const Page = () => {
             external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
         },
+        lockSwapDirection: true,
       }}
       localisation={{
         'submit.active.swap': 'Swap now',
@@ -936,7 +937,6 @@ export const Page = () => {
       )}
       <WidgetSwap
         className={showConfirmSwaps ? 'hidden' : undefined}
-        isOneWay
         isFullPage
         providers={providers}
         isLoading={isAppKitConnecting || isTonConnecting}

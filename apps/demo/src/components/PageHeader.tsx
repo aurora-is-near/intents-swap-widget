@@ -100,12 +100,6 @@ const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
   );
 };
 
-type Props<T> = {
-  activeTab: T;
-  tabs: ReadonlyArray<Omit<TabProps<T>, 'isActive' | 'onClick'>>;
-  onClick: (id: T) => void;
-};
-
 const defaultPrimaryColor: HexColor = '#D5B7FF';
 const defaultSurfaceColor: HexColor = '#636D9B';
 
@@ -122,7 +116,7 @@ const getThemeColor = (
     : defaultColor;
 };
 
-const Header = ({
+export const PageHeader = ({
   children,
   onToggleTheme,
   onSetColors,
@@ -172,20 +166,3 @@ const Header = ({
     </header>
   );
 };
-
-const Nav = <T extends string>({ tabs, activeTab, onClick }: Props<T>) => (
-  <nav className="flex gap-sw-md sm:gap-sw-lg items-center">
-    {tabs.map((tab) => (
-      <Tab
-        {...tab}
-        key={tab.id}
-        isActive={activeTab === tab.id}
-        onClick={onClick}
-      />
-    ))}
-  </nav>
-);
-
-export const PageHeader = Object.assign(Header, {
-  Nav,
-});

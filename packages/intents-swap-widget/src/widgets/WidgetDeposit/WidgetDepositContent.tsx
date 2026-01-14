@@ -32,7 +32,7 @@ import { isDebug, notReachable } from '@/utils';
 
 import type { Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
   | { type: 'on_transfer_success' }

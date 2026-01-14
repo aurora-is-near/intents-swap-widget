@@ -74,4 +74,5 @@ export type WidgetConfig = {
   hideSendAddress?: boolean;
   hideTokenInputHeadings?: boolean;
   themeParentElementSelector?: string;
+  lockSwapDirection?: boolean;
 };

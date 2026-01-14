@@ -18,7 +18,7 @@ theme, and optional partner fee settings.
 import {
   type WidgetConfig,
   WidgetConfigProvider,
-  WidgetSwap,
+  Widget,
 } from '@aurora-is-near/intents-swap-widget';
 
 const config: WidgetConfig = {
@@ -38,7 +38,7 @@ const config: WidgetConfig = {
 export default function App() {
   return (
     <WidgetConfigProvider config={config}>
-      <WidgetSwap />
+      <Widget />
     </WidgetConfigProvider>
   );
 }
@@ -385,3 +385,8 @@ make sure you guide user accordingly if required on your side.
 
 HTML element that defines CSS theming variables. If not set, the `body` element
 is used.
+
+### `lockSwapDirection`
+
+By default, when using the swap widget, we can click the arrow in the middle
+to switch the swap direction. This option disables that feature.
