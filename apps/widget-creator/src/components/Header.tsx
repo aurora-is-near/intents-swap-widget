@@ -38,7 +38,9 @@ export function Header() {
                 WIDGET STUDIO
               </span>
             </a>
-            <a href="#" className="flex gap-csw-md items-center">
+            <a
+              href="https://aurora-labs.gitbook.io/intents-swap-widget"
+              className="flex gap-csw-md items-center">
               <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-gray-200 whitespace-nowrap">
                 DOCS
               </span>
