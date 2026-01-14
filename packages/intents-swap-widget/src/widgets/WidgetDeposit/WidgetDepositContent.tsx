@@ -188,7 +188,7 @@ export const WidgetDepositContent = ({
             chainsFilter={
               tokenModalOpen === 'source'
                 ? {
-                    intents: 'none',
+                    intents: 'all',
                     external: ctx.isDepositFromExternalWallet
                       ? 'all'
                       : 'wallet-supported',
