@@ -180,7 +180,7 @@ export const WidgetSwapContent = ({
               tokenModalOpen === 'source'
                 ? getSourceTokens(!!enableAccountAbstraction, ctx.walletAddress)
                 : {
-                    intents: enableAccountAbstraction ? 'with-balance' : 'all',
+                    intents: enableAccountAbstraction ? 'all' : 'none',
                     external: 'all',
                   }
             }
