@@ -18,6 +18,9 @@ export type WidgetConfig = {
   appName: string;
   appIcon?: string;
 
+  // Account abstraction
+  enableAccountAbstraction?: boolean;
+
   // Connected wallet
   intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;
@@ -53,10 +56,6 @@ export type WidgetConfig = {
   topChainShortcuts?: (
     intentsAccountType?: IntentsAccountType,
   ) => [Chains, Chains, Chains, Chains];
-  chainsFilter: {
-    source: ChainsFilter;
-    target: ChainsFilter;
-  };
 
   // API
   fetchQuote?: (

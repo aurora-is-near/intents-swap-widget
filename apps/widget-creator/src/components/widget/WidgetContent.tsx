@@ -4,9 +4,9 @@ import {
   Button,
   type MakeTransferArgs,
   SuccessScreen,
+  Widget,
   WidgetConfigProvider,
   WidgetContainer,
-  WidgetSwap,
 } from '@aurora-is-near/intents-swap-widget';
 import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
@@ -17,7 +17,7 @@ import { useThemeConfig } from '../../hooks/useThemeConfig';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
-export function Widget() {
+export function WidgetContent() {
   const { providers } = useAppKitWallet();
   const { state } = useCreator();
   const [_makeTransferArgs, setMakeTransferArgs] =
@@ -88,7 +88,7 @@ export function Widget() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <WidgetSwap providers={providers} makeTransfer={handleMakeTransfer} />
+      <Widget providers={providers} makeTransfer={handleMakeTransfer} />
       {exampleBanner && (
         <Banner
           variant={exampleBanner.variant}

@@ -48,7 +48,6 @@ export const WidgetWithdrawContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -166,8 +165,11 @@ export const WidgetWithdrawContent = ({
             groupTokens={false}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? {
+                    intents: 'with-balance',
+                    external: 'none',
+                  }
+                : { intents: 'none', external: 'all' }
             }
             onMsg={(msg) => {
               switch (msg.type) {

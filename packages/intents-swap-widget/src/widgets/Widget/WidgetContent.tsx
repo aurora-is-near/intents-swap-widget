@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -17,6 +17,7 @@ import {
   Props as WidgetWithdrawProps,
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
+import { useConfig } from '../../config';
 
 type WidgetType = 'swap' | 'deposit' | 'withdraw';
 
@@ -32,6 +33,7 @@ type Msg = SwapMsg | DepositMsg | WithdrawMsg;
 export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
   const [isTabsVisible, setIsTabsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
+  const { enableAccountAbstraction } = useConfig();
 
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
@@ -49,9 +51,15 @@ export const WidgetContent = ({ onMsg, ...restProps }: Props) => {
     onMsg?.(msg, widgetType);
   };
 
+  useEffect(() => {
+    if (!enableAccountAbstraction) {
+      setActiveTab('swap');
+    }
+  }, [enableAccountAbstraction]);
+
   return (
     <>
-      {isTabsVisible && (
+      {enableAccountAbstraction && isTabsVisible && (
         <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
       )}
 

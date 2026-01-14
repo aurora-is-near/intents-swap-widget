@@ -54,6 +54,11 @@ The name used to refer to your app when making NEAR Intents transfers.
 
 URL to your app's icon. Shown in the chain selection dropdown.
 
+### `enableAccountAbstraction`
+
+Used to allow uses to deposit to and withdraw from your app's internal Intents
+account.
+
 ### `intentsAccountType`
 
 Determines which wallet provider (EVM, NEAR, or Solana) is used to sign and
@@ -199,22 +204,6 @@ Restricts which chains can be used when selecting **target** tokens.
 const config = {
   allowedTargetChainsList: ['ton'],
 }
-```
-
-### `chainsFilter`
-
-Specify high-level categories of chains that should be displayed when selecting
-the source or target token.
-
-#### Example
-
-```ts
-const config = {
-  chainsFilter: {
-    source: { external: 'wallet-supported', intents: 'none' },
-    target: { external: 'all', intents: 'none' },
-  },
-};
 ```
 
 ### `priorityAssets`

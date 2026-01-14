@@ -15,16 +15,7 @@ export const useWidgetConfig = () => {
       appName: 'Widget Creator',
       connectedWallets: { default: walletAddress },
       intentsAccountType: 'near',
-      chainsFilter: {
-        target: {
-          intents: 'all',
-          external: 'all',
-        },
-        source: {
-          intents: appBalanceMode,
-          external: walletAddress ? 'wallet-supported' : 'all',
-        },
-      },
+      enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       allowedTargetChainsList: ['near'],
       allowedChainsList:
         state.selectedNetworks.length > 0 ? state.selectedNetworks : undefined,

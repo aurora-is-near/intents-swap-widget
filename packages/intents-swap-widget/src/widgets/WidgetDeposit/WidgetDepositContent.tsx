@@ -50,7 +50,6 @@ export const WidgetDepositContent = ({
   const { t } = useTypedTranslation();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -188,8 +187,13 @@ export const WidgetDepositContent = ({
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? {
+                    intents: 'none',
+                    external: ctx.isDepositFromExternalWallet
+                      ? 'all'
+                      : 'wallet-supported',
+                  }
+                : { intents: 'all', external: 'none' }
             }
             onMsg={(msg) => {
               switch (msg.type) {

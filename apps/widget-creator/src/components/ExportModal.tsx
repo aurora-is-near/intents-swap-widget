@@ -44,7 +44,7 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
 
 export function App() {
   return (
-    <WidgetSwap
+    <Widget
       config={${stringifyAsJS(widgetConfig, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     />

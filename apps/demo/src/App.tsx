@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   guardStates,
   useUnsafeSnapshot,
@@ -12,8 +12,6 @@ import { PageHeader } from './components/PageHeader';
 import { WidgetPageContainer } from './components/WidgetPageContainer';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 
-type WidgetType = 'swap' | 'deposit' | 'withdraw';
-
 const defaultTheme: Theme = {
   primaryColor: '#D5B7FF',
   surfaceColor: '#24262D',
@@ -23,7 +21,6 @@ const defaultTheme: Theme = {
 type Props = {
   isLoading: boolean;
   showAppBalance: boolean;
-  selectedWidget: WidgetType;
   setShowAppBalance: (showAppBalance: boolean) => void;
 };
 
@@ -51,97 +48,11 @@ const Content = ({ isLoading, showAppBalance, setShowAppBalance }: Props) => {
   );
 };
 
-const getSourceTokens = (
-  selectedWidget: WidgetType,
-  showAppBalance: boolean,
-  walletAddress: string | undefined,
-) => {
-  return {
-    intents: (() => {
-      if (!showAppBalance) {
-        return 'none' as const;
-      }
-
-      if (selectedWidget === 'deposit') {
-        return 'none' as const;
-      }
-
-      if (selectedWidget === 'withdraw') {
-        return 'with-balance' as const;
-      }
-
-      return walletAddress ? ('with-balance' as const) : ('all' as const);
-    })(),
-
-    external: (() => {
-      if (selectedWidget === 'withdraw') {
-        return 'none' as const;
-      }
-
-      if (selectedWidget === 'deposit') {
-        return 'wallet-supported' as const;
-      }
-
-      return walletAddress ? ('wallet-supported' as const) : ('all' as const);
-    })(),
-  };
-};
-
-const getTargetTokens = (
-  selectedWidget: WidgetType,
-  showAppBalance: boolean,
-) => {
-  return {
-    intents: (() => {
-      if (!showAppBalance) {
-        return 'none' as const;
-      }
-
-      if (selectedWidget === 'withdraw') {
-        return 'none' as const;
-      }
-
-      if (selectedWidget === 'deposit') {
-        return 'all' as const;
-      }
-
-      return 'with-balance' as const;
-    })(),
-
-    external: (() => {
-      if (selectedWidget === 'withdraw') {
-        return 'all' as const;
-      }
-
-      if (selectedWidget === 'deposit') {
-        return 'none' as const;
-      }
-
-      return 'all' as const;
-    })(),
-  };
-};
-
 export const App = () => {
   const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
 
   const [showAppBalance, setShowAppBalance] = useState(true);
-
   const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [selectedWidget, setSelectedWidget] = useState<WidgetType>('swap');
-
-  const targetTokens = getTargetTokens(selectedWidget, showAppBalance);
-  const sourceTokens = getSourceTokens(
-    selectedWidget,
-    showAppBalance,
-    walletAddress,
-  );
-
-  useEffect(() => {
-    if (!showAppBalance) {
-      setSelectedWidget('swap');
-    }
-  }, [showAppBalance]);
 
   return (
     <>
@@ -170,6 +81,7 @@ export const App = () => {
             connectedWallets: { default: walletAddress },
             intentsAccountType: 'evm',
             hideTokenInputHeadings: true,
+            enableAccountAbstraction: showAppBalance,
             priorityAssets: [
               ['eth', 'USDC'],
               ['arb', 'USDC'],
@@ -203,16 +115,11 @@ export const App = () => {
               ['tron', 'TRX'],
               ['eth', 'DAI'],
             ],
-            chainsFilter: {
-              target: targetTokens,
-              source: sourceTokens,
-            },
           }}>
           <Content
             isLoading={isLoading}
             showAppBalance={showAppBalance}
             setShowAppBalance={setShowAppBalance}
-            selectedWidget={selectedWidget}
           />
         </WidgetConfigProvider>
       </WidgetPageContainer>

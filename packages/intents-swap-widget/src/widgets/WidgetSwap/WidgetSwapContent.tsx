@@ -30,7 +30,7 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilter, Token, TransferResult } from '@/types';
 
 export type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
@@ -38,6 +38,18 @@ export type Msg =
   | { type: 'on_transfer_success' };
 
 export type Props = CommonWidgetProps<Msg>;
+
+const getSourceTokens = (
+  enableAccountAbstraction: boolean,
+  walletAddress?: string,
+): ChainsFilter => {
+  const enabledIntentsFilter = walletAddress ? 'with-balance' : 'all';
+
+  return {
+    intents: enableAccountAbstraction ? enabledIntentsFilter : 'none',
+    external: walletAddress ? 'wallet-supported' : 'all',
+  };
+};
 
 export const WidgetSwapContent = ({
   providers,
@@ -48,7 +60,7 @@ export const WidgetSwapContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
+    enableAccountAbstraction,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -166,8 +178,11 @@ export const WidgetSwapContent = ({
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? getSourceTokens(!!enableAccountAbstraction, ctx.walletAddress)
+                : {
+                    intents: enableAccountAbstraction ? 'with-balance' : 'all',
+                    external: 'all',
+                  }
             }
             onMsg={(msg) => {
               switch (msg.type) {

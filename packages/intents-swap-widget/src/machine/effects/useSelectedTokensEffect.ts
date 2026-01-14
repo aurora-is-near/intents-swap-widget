@@ -38,8 +38,11 @@ export const useSelectedTokensEffect = ({
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
-  const { walletSupportedChains, chainsFilter, intentsAccountType } =
-    useConfig();
+  const {
+    walletSupportedChains,
+    enableAccountAbstraction,
+    intentsAccountType,
+  } = useConfig();
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
@@ -58,7 +61,7 @@ export const useSelectedTokensEffect = ({
       ] as const;
     }
 
-    if (chainsFilter.source.intents !== 'none' && !skipIntents) {
+    if (enableAccountAbstraction && !skipIntents) {
       if (!highestIntentsToken) {
         return [
           { token: undefined, status: 'loading' },
@@ -84,7 +87,7 @@ export const useSelectedTokensEffect = ({
   }, [
     tokens,
     skipIntents,
-    chainsFilter,
+    enableAccountAbstraction,
     ctx.walletAddress,
     highestIntentsToken,
     walletSupportedChains,

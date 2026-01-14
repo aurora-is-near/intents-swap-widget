@@ -46,11 +46,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   filterTokens: (tkn: Token) =>
     !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),
 
-  chainsFilter: {
-    source: { external: 'wallet-supported', intents: 'none' },
-    target: { external: 'all', intents: 'none' },
-  },
-
   topChainShortcuts: (intentsAccountType) => {
     switch (intentsAccountType) {
       case 'evm':
