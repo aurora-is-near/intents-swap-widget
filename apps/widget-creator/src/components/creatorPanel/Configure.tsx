@@ -102,7 +102,7 @@ export function Configure() {
                   intents balance in addition to using their connected wallet
                   balances.
                   <a
-                    href="#"
+                    href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
                     className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
                     <span>Learn more</span>
                     <ExternalLink className="w-csw-xl h-csw-xl" />
