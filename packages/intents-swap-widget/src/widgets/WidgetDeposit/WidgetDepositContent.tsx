@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -30,7 +30,7 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
@@ -50,6 +50,7 @@ export const WidgetDepositContent = ({
   const { t } = useTypedTranslation();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
+    chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -120,6 +121,20 @@ export const WidgetDepositContent = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
+  const chainsFilters = useMemo((): ChainsFilters => {
+    if (customChainsFilter) {
+      return customChainsFilter;
+    }
+
+    return {
+      source: {
+        intents: 'none',
+        external: ctx.isDepositFromExternalWallet ? 'all' : 'wallet-supported',
+      },
+      target: { intents: 'all', external: 'none' },
+    };
+  }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
+
   const onBackToSwap = () => {
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
@@ -187,13 +202,8 @@ export const WidgetDepositContent = ({
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? {
-                    intents: 'all',
-                    external: ctx.isDepositFromExternalWallet
-                      ? 'all'
-                      : 'wallet-supported',
-                  }
-                : { intents: 'all', external: 'none' }
+                ? chainsFilters.source
+                : chainsFilters.target
             }
             onMsg={(msg) => {
               switch (msg.type) {

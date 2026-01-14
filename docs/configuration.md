@@ -206,6 +206,28 @@ const config = {
 }
 ```
 
+### `chainsFilter`
+
+Specify high-level categories of chains that should be displayed when selecting
+the source or target token.
+
+You will probably find the internal defaults sufficient in most cases, which
+are driven by the `enableAccountAbstraction` option and whether or not there
+are any `connectedWallets`. However, this option exists for the case where you
+want more fine-grained control, for example, when building your own custom
+widget using our components.
+
+#### Example
+
+```ts
+const config = {
+  chainsFilter: {
+    source: { external: 'wallet-supported', intents: 'none' },
+    target: { external: 'all', intents: 'none' },
+  },
+};
+```
+
 ### `priorityAssets`
 
 Defines the order in which tokens with no balance are displayed on top of the list.

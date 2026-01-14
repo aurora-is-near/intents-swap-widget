@@ -1,5 +1,5 @@
 import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
-import { Chains, ChainsFilter } from './chain';
+import { Chains, ChainsFilters } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
 
@@ -56,6 +56,7 @@ export type WidgetConfig = {
   topChainShortcuts?: (
     intentsAccountType?: IntentsAccountType,
   ) => [Chains, Chains, Chains, Chains];
+  chainsFilter?: ChainsFilters;
 
   // API
   fetchQuote?: (

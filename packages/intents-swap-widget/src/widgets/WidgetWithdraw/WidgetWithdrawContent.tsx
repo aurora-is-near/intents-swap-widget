@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -29,7 +29,7 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
@@ -48,6 +48,7 @@ export const WidgetWithdrawContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
+    chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -96,6 +97,23 @@ export const WidgetWithdrawContent = ({
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
+
+  const chainsFilters = useMemo((): ChainsFilters => {
+    if (customChainsFilter) {
+      return customChainsFilter;
+    }
+
+    return {
+      source: {
+        intents: 'with-balance',
+        external: 'none',
+      },
+      target: {
+        intents: 'none',
+        external: 'all',
+      },
+    };
+  }, [customChainsFilter, ctx.walletAddress]);
 
   const onBackToSwap = () => {
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
@@ -165,11 +183,8 @@ export const WidgetWithdrawContent = ({
             groupTokens={false}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? {
-                    intents: 'with-balance',
-                    external: 'none',
-                  }
-                : { intents: 'none', external: 'all' }
+                ? chainsFilters.source
+                : chainsFilters.target
             }
             onMsg={(msg) => {
               switch (msg.type) {
