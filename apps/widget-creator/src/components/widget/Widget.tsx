@@ -59,11 +59,11 @@ export function Widget({ config }: WidgetProps) {
           state.selectedTokenSymbols.length > 0
             ? state.selectedTokenSymbols
             : undefined,
-        // showIntentTokens:
-        // appFees
+        defaultSourceToken: state.defaultSellToken,
+        defaultTargetToken: state.defaultBuyToken,
         ...config,
       }) as WidgetConfig,
-    [config, state.selectedNetworks],
+    [config, state],
   );
 
   const handleMakeTransfer = (args: MakeTransferArgs) => {

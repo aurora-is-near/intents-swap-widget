@@ -61,12 +61,12 @@ export function Configure() {
           if (tokenSelectorType === 'sell') {
             dispatch({
               type: 'SET_DEFAULT_SELL_TOKEN',
-              payload: { tokenSymbol: token.symbol, chain },
+              payload: { symbol: token.symbol, chainName: chain },
             });
           } else {
             dispatch({
               type: 'SET_DEFAULT_BUY_TOKEN',
-              payload: { tokenSymbol: token.symbol, chain },
+              payload: { symbol: token.symbol, chainName: chain },
             });
           }
         }}
@@ -256,11 +256,11 @@ export function Configure() {
                   {(() => {
                     const sellToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultSellToken.tokenSymbol,
+                        token.symbol === state.defaultSellToken.symbol,
                     );
 
                     const sellTokenChain = chains.find(
-                      (chain) => chain.id === state.defaultSellToken.chain,
+                      (chain) => chain.id === state.defaultSellToken.symbol,
                     );
 
                     return (
@@ -289,7 +289,7 @@ export function Configure() {
                               </div>
                             ) : undefined
                           }
-                          tokenSymbol={state.defaultSellToken.tokenSymbol}
+                          tokenSymbol={state.defaultSellToken.symbol}
                         />
                       </div>
                     );
@@ -317,11 +317,11 @@ export function Configure() {
                   {(() => {
                     const buyToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken.tokenSymbol,
+                        token.symbol === state.defaultBuyToken.symbol,
                     );
 
                     const buyTokenChain = chains.find(
-                      (chain) => chain.id === state.defaultBuyToken.chain,
+                      (chain) => chain.id === state.defaultBuyToken.chainName,
                     );
 
                     return (
@@ -350,7 +350,7 @@ export function Configure() {
                               </div>
                             ) : undefined
                           }
-                          tokenSymbol={state.defaultBuyToken.tokenSymbol}
+                          tokenSymbol={state.defaultBuyToken.symbol}
                         />
                       </div>
                     );

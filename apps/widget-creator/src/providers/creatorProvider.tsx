@@ -12,9 +12,9 @@ type CreatorState = {
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
   autoSelectTopBalanceToken: boolean;
-  defaultSellToken: { tokenSymbol: string; chain?: string };
+  defaultSellToken: { symbol: string; chainName: string };
   enableBuyToken: boolean;
-  defaultBuyToken: { tokenSymbol: string; chain?: string };
+  defaultBuyToken: { symbol: string; chainName: string };
   // Configure - Fee collection
   enableCustomFees: boolean;
   feePercentage: string;
@@ -42,9 +42,9 @@ const initialState: CreatorState = {
   selectedTokenSymbols: [],
   enableSellToken: true,
   autoSelectTopBalanceToken: false,
-  defaultSellToken: { tokenSymbol: 'USDT', chain: 'near' },
+  defaultSellToken: { symbol: 'USDT', chainName: 'near' },
   enableBuyToken: false,
-  defaultBuyToken: { tokenSymbol: 'USDT', chain: 'eth' },
+  defaultBuyToken: { symbol: 'USDT', chainName: 'eth' },
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
@@ -75,12 +75,12 @@ type Action =
   | { type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN'; payload: boolean }
   | {
       type: 'SET_DEFAULT_SELL_TOKEN';
-      payload: { tokenSymbol: string; chain?: string };
+      payload: { symbol: string; chainName: string };
     }
   | { type: 'SET_ENABLE_BUY_TOKEN'; payload: boolean }
   | {
       type: 'SET_DEFAULT_BUY_TOKEN';
-      payload: { tokenSymbol: string; chain?: string };
+      payload: { symbol: string; chainName: string };
     }
   // Configure - Fee collection
   | { type: 'SET_ENABLE_CUSTOM_FEES'; payload: boolean }

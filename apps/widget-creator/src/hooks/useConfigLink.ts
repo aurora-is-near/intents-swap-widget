@@ -1,5 +1,41 @@
 import { useCreator } from './useCreatorConfig';
 
+const parseJsonParam = (
+  params: URLSearchParams,
+  key: string
+): Record<string, unknown> | null => {
+  const param = params.get(key);
+
+  if (!param) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(param);
+  } catch {
+    return null;
+  }
+};
+
+const parseDefaultTokenParam = (
+  params: URLSearchParams,
+  key: string,
+): { symbol: string; chainName: string } | null => {
+  const param = parseJsonParam(params, key);
+
+  if (
+    param &&
+    'symbol' in param &&
+    typeof param.symbol === 'string' &&
+    'chainName' in param &&
+    typeof param.chainName === 'string'
+  ) {
+    return { symbol: param.symbol, chainName: param.chainName };
+  }
+
+  return null;
+}
+
 export function useConfigLink() {
   const { state } = useCreator();
 
@@ -24,9 +60,9 @@ export function useConfigLink() {
       'autoSelectTopBalanceToken',
       state.autoSelectTopBalanceToken.toString(),
     );
-    params.append('defaultSellToken', state.defaultSellToken.tokenSymbol);
+    params.append('defaultSellToken', JSON.stringify(state.defaultSellToken));
     params.append('enableBuyToken', state.enableBuyToken.toString());
-    params.append('defaultBuyToken', state.defaultBuyToken.tokenSymbol);
+    params.append('defaultBuyToken', JSON.stringify(state.defaultBuyToken));
 
     // Configure - Fee collection
     params.append('enableCustomFees', state.enableCustomFees.toString());
@@ -123,12 +159,12 @@ export function useDecodeConfigLink() {
       });
     }
 
-    const defaultSellToken = params.get('defaultSellToken');
+    const defaultSellToken = parseDefaultTokenParam(params, 'defaultSellToken');
 
     if (defaultSellToken) {
       dispatch({
         type: 'SET_DEFAULT_SELL_TOKEN',
-        payload: { tokenSymbol: defaultSellToken, chain: undefined },
+        payload: defaultSellToken,
       });
     }
 
@@ -141,12 +177,12 @@ export function useDecodeConfigLink() {
       });
     }
 
-    const defaultBuyToken = params.get('defaultBuyToken');
+    const defaultBuyToken = parseDefaultTokenParam(params, 'defaultBuyToken');
 
     if (defaultBuyToken) {
       dispatch({
         type: 'SET_DEFAULT_BUY_TOKEN',
-        payload: { tokenSymbol: defaultBuyToken, chain: undefined },
+        payload: defaultBuyToken,
       });
     }
 

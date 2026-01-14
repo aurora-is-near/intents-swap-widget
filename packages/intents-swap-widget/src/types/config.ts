@@ -9,6 +9,8 @@ export type WalletAddresses = Partial<
 
 export type IntentsAccountType = 'evm' | 'near' | 'sol';
 
+export type DefaultToken = Pick<Token, 'symbol' | 'chainName'>;
+
 export type WidgetConfig = {
   // Application metadata
   appName: string;
@@ -32,6 +34,10 @@ export type WidgetConfig = {
     recipient: string;
     fee: number;
   }[];
+
+  // Default tokens
+  defaultSourceToken?: DefaultToken;
+  defaultTargetToken?: DefaultToken;
 
   // Tokens filtering
   showIntentTokens: boolean;
