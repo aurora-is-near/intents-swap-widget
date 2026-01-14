@@ -100,7 +100,7 @@ export function App() {
                   Learn more about how to install the code snippet in our
                 </p>
                 <a
-                  href="https://docs.defuse.io"
+                  href="https://aurora-labs.gitbook.io/intents-swap-widget"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm leading-4 tracking-[-0.4px] text-csw-accent-500 font-semibold underline hover:text-csw-accent-400 transition-colors">
