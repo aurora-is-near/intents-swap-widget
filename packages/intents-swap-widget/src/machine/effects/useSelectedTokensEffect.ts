@@ -41,6 +41,7 @@ export const useSelectedTokensEffect = ({
   const {
     walletSupportedChains,
     enableAccountAbstraction,
+    chainsFilter,
     intentsAccountType,
   } = useConfig();
 
@@ -61,7 +62,12 @@ export const useSelectedTokensEffect = ({
       ] as const;
     }
 
-    if (enableAccountAbstraction && !skipIntents) {
+    if (
+      (chainsFilter
+        ? chainsFilter.source.intents !== 'none'
+        : enableAccountAbstraction) &&
+      !skipIntents
+    ) {
       if (!highestIntentsToken) {
         return [
           { token: undefined, status: 'loading' },
@@ -87,7 +93,7 @@ export const useSelectedTokensEffect = ({
   }, [
     tokens,
     skipIntents,
-    enableAccountAbstraction,
+    chainsFilter,
     ctx.walletAddress,
     highestIntentsToken,
     walletSupportedChains,
