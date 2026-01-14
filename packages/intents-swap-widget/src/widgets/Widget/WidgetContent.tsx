@@ -19,8 +19,7 @@ import {
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
 import { MakeTransferArgs } from '../../types';
-
-type WidgetType = 'swap' | 'deposit' | 'withdraw';
+import { WidgetType } from '../../types/widget';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
