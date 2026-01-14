@@ -1,6 +1,5 @@
 @import 'tailwindcss';
-
-@import './theme.css';
+@import '@aurora-is-near/intents-swap-widget/styles.css';
 
 #root {
     height: 100vh;
@@ -12,47 +11,46 @@
     --color-*: initial;
 
     /* Fonts */
-    --font-display: var(--font-family-csw);
+    --font-display: 'Inter', sans-serif;
 
     /* Radius */
     --radius-none: 0;
     --radius-full: 99999px;
 
-    --radius-csw-sm: var(--r-csw-sm);
-    --radius-csw-md: var(--r-csw-md);
-    --radius-csw-lg: var(--r-csw-lg);
-    --radius-csw-xl: var(--r-csw-xl);
+    --radius-csw-sm: 6px;
+    --radius-csw-md: 10px;
+    --radius-csw-lg: 16px;
 
     /* Gray tones */
-    --color-csw-gray-50: var(--c-csw-gray-50);
-    --color-csw-gray-100: var(--c-csw-gray-100);
-    --color-csw-gray-200: var(--c-csw-gray-200);
-    --color-csw-gray-300: var(--c-csw-gray-300);
-    --color-csw-gray-400: var(--c-csw-gray-400);
-    --color-csw-gray-500: var(--c-csw-gray-500);
-    --color-csw-gray-600: var(--c-csw-gray-600);
-    --color-csw-gray-700: var(--c-csw-gray-700);
-    --color-csw-gray-800: var(--c-csw-gray-800);
-    --color-csw-gray-900: var(--c-csw-gray-900);
-    --color-csw-gray-950: var(--c-csw-gray-950);
+    --color-csw-gray-50: #F3F3F5;
+    --color-csw-gray-100: #E4E5E9;
+    --color-csw-gray-200: #CACCD3;
+    --color-csw-gray-300: #B0B3BF;
+    --color-csw-gray-400: #979BAA;
+    --color-csw-gray-500: #7E8396;
+    --color-csw-gray-600: #686D7D;
+    --color-csw-gray-700: #555967;
+    --color-csw-gray-800: #41444F;
+    --color-csw-gray-900: #2E3038;
+    --color-csw-gray-950: #24262D;
 
     /* Accent tones */
-    --color-csw-accent-50: var(--c-csw-accent-50);
-    --color-csw-accent-100: var(--c-csw-accent-100);
-    --color-csw-accent-200: var(--c-csw-accent-200);
-    --color-csw-accent-300: var(--c-csw-accent-300);
-    --color-csw-accent-400: var(--c-csw-accent-400);
-    --color-csw-accent-500: var(--c-csw-accent-500);
-    --color-csw-accent-600: var(--c-csw-accent-600);
-    --color-csw-accent-700: var(--c-csw-accent-700);
-    --color-csw-accent-800: var(--c-csw-accent-800);
-    --color-csw-accent-900: var(--c-csw-accent-900);
-    --color-csw-accent-950: var(--c-csw-accent-950);
+    --color-csw-accent-50: #FBF8FF;
+    --color-csw-accent-100: #F6F1FF;
+    --color-csw-accent-200: #EEE4FF;
+    --color-csw-accent-300: #E6D6FF;
+    --color-csw-accent-400: #DCC4FF;
+    --color-csw-accent-500: #D5B7FF;
+    --color-csw-accent-600: #BA7AFF;
+    --color-csw-accent-700: #A528FF;
+    --color-csw-accent-800: #7300B7;
+    --color-csw-accent-900: #400069;
+    --color-csw-accent-950: #280045;
 
     /* Status colors */
-    --color-csw-status-success: var(--c-csw-status-success);
-    --color-csw-status-warning: var(--c-csw-status-warning);
-    --color-csw-status-error: var(--c-csw-status-error);
+    --color-csw-status-success: #98FFB5;
+    --color-csw-status-warning: #FADFAD;
+    --color-csw-status-error: #FFB8BE;
 
     /* Spaces */
     --spacing-csw-xxs: 2px;
@@ -77,10 +75,6 @@
 }
 
 @layer base {
-    .csw {
-        font-family: var(--csw-font-sans);
-    }
-
     .hide-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
@@ -88,68 +82,5 @@
 
     .hide-scrollbar::-webkit-scrollbar {
         display: none;
-    }
-}
-
-@utility text-csw-label-lg {
-    @layer components {
-        @apply font-semibold;
-        font-size: 1rem;
-        line-height: 1rem;
-        letter-spacing: -0.025rem;
-    }
-}
-
-@utility text-csw-label-md {
-    @layer components {
-        @apply font-semibold;
-        font-size: 0.875rem;
-        line-height: 1rem;
-        letter-spacing: -0.025rem;
-    }
-}
-
-@utility text-csw-label-sm {
-    @layer components {
-        @apply font-semibold;
-        font-size: 0.75rem;
-        line-height: 0.875rem;
-        letter-spacing: -0.01875rem;
-    }
-}
-
-@utility text-csw-value-lg {
-    @layer components {
-        @apply font-semibold;
-        font-size: 2rem;
-        line-height: 2.25rem;
-        letter-spacing: -0.0625rem;
-    }
-}
-
-@utility text-csw-body-lg {
-    @layer components {
-        @apply font-medium;
-        font-size: 1rem;
-        line-height: 1.375rem;
-        letter-spacing: -0.025rem;
-    }
-}
-
-@utility text-csw-body-md {
-    @layer components {
-        @apply font-medium;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-        letter-spacing: -0.025rem;
-    }
-}
-
-@utility text-csw-body-sm {
-    @layer components {
-        @apply font-medium;
-        font-size: 0.75rem;
-        line-height: 1rem;
-        letter-spacing: -0.025rem;
     }
 }

@@ -1,3 +1,4 @@
+import { Chains } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
 
 const parseJsonParam = (
@@ -70,24 +71,28 @@ export function useConfigLink() {
     params.append('collectorAddress', state.collectorAddress);
 
     // Design - Mode
-    params.append('allowToggleModes', state.allowToggleModes.toString());
     params.append('defaultMode', state.defaultMode);
 
     // Design - Style
     params.append('stylePreset', state.stylePreset);
-    params.append('cornerRadius', state.cornerRadius);
-    params.append(
-      'showContainerWrapper',
-      state.showContainerWrapper.toString(),
-    );
+    params.append('borderRadius', state.borderRadius);
 
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
-    params.append('pageBackgroundColor', state.pageBackgroundColor);
-    params.append('wrapperBackgroundColor', state.wrapperBackgroundColor);
+    params.append('surfaceColor', state.surfaceColor);
+    params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
-    params.append('alertColor', state.alertColor);
+    params.append('errorColor', state.errorColor);
+
+    if (state.showContainerWrapper) {
+      params.append(
+        'showContainerWrapper',
+        state.showContainerWrapper.toString(),
+      );
+
+      params.append('containerColor', state.containerColor);
+    }
 
     return `${baseUrl}?${params.toString()}`;
   };
@@ -135,7 +140,10 @@ export function useDecodeConfigLink() {
     const selectedNetworks = params.getAll('selectedNetworks');
 
     if (selectedNetworks.length > 0) {
-      dispatch({ type: 'SET_SELECTED_NETWORKS', payload: selectedNetworks });
+      dispatch({
+        type: 'SET_SELECTED_NETWORKS',
+        payload: selectedNetworks as Chains[],
+      });
     }
 
     const enableSellToken = params.get('enableSellToken');
@@ -209,15 +217,6 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Mode
-    const allowToggleModes = params.get('allowToggleModes');
-
-    if (allowToggleModes === 'true' || allowToggleModes === 'false') {
-      dispatch({
-        type: 'SET_ALLOW_TOGGLE_MODES',
-        payload: allowToggleModes === 'true',
-      });
-    }
-
     const defaultMode = params.get('defaultMode');
 
     if (
@@ -235,15 +234,15 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_STYLE_PRESET', payload: stylePreset });
     }
 
-    const cornerRadius = params.get('cornerRadius');
+    const borderRadius = params.get('borderRadius');
 
     if (
-      cornerRadius === 'none' ||
-      cornerRadius === 's' ||
-      cornerRadius === 'm' ||
-      cornerRadius === 'l'
+      borderRadius === 'none' ||
+      borderRadius === 'sm' ||
+      borderRadius === 'md' ||
+      borderRadius === 'lg'
     ) {
-      dispatch({ type: 'SET_CORNER_RADIUS', payload: cornerRadius });
+      dispatch({ type: 'SET_BORDER_RADIUS', payload: borderRadius });
     }
 
     const showContainerWrapper = params.get('showContainerWrapper');
@@ -262,21 +261,30 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
     }
 
-    const pageBackgroundColor = params.get('pageBackgroundColor');
+    const surfaceColor = params.get('surfaceColor');
 
-    if (pageBackgroundColor) {
+    if (surfaceColor) {
       dispatch({
-        type: 'SET_PAGE_BACKGROUND_COLOR',
-        payload: pageBackgroundColor,
+        type: 'SET_SURFACE_COLOR',
+        payload: surfaceColor,
       });
     }
 
-    const wrapperBackgroundColor = params.get('wrapperBackgroundColor');
+    const containerColor = params.get('containerColor');
 
-    if (wrapperBackgroundColor) {
+    if (containerColor) {
       dispatch({
-        type: 'SET_WRAPPER_BACKGROUND_COLOR',
-        payload: wrapperBackgroundColor,
+        type: 'SET_CONTAINER_COLOR',
+        payload: containerColor,
+      });
+    }
+
+    const backgroundColor = params.get('backgroundColor');
+
+    if (backgroundColor) {
+      dispatch({
+        type: 'SET_BACKGROUND_COLOR',
+        payload: backgroundColor,
       });
     }
 
@@ -292,10 +300,10 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_WARNING_COLOR', payload: warningColor });
     }
 
-    const alertColor = params.get('alertColor');
+    const errorColor = params.get('errorColor');
 
-    if (alertColor) {
-      dispatch({ type: 'SET_ALERT_COLOR', payload: alertColor });
+    if (errorColor) {
+      dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
     }
   };
 

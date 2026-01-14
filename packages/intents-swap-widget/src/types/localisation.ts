@@ -1,6 +1,7 @@
 export type LocalisationKeys =
   // chain
   | 'chain.all.label'
+  | 'chain.more.label'
   // wallet
   | 'wallet.recipient.placeholder'
   | 'wallet.recipient.info.selectToken'
@@ -14,9 +15,16 @@ export type LocalisationKeys =
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
   // transfer
-  | 'transfer.success.title'
-  | 'transfer.success.hash.label'
-  | 'transfer.success.intent.label'
+  | 'transfer.success.swap.title'
+  | 'transfer.success.withdrawal.title'
+  | 'transfer.success.deposit.title'
+  | 'transfer.success.details.label'
+  | 'transfer.success.details.hash'
+  | 'transfer.success.details.rate'
+  | 'transfer.success.details.intent'
+  | 'transfer.success.details.recipient'
+  | 'transfer.success.action.viewOnExplorer'
+  | 'transfer.success.action.backToSwap'
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'

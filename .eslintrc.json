@@ -5,5 +5,17 @@
       "./apps/*/tsconfig.json",
       "./packages/*/tsconfig.json"
     ]
+  },
+  "rules": {
+    "@typescript-eslint/no-restricted-imports": ["error", {
+        "paths": [
+          {
+            "name": "@material-symbols-svg/react-rounded",
+            "message": "Import [icon] from @material-symbols-svg/react-rounded/icons/[icon] instead (to reduce bundle size and memory usage)",
+            "allowTypeImports": true
+          }
+        ]
+      }
+    ]
   }
 }

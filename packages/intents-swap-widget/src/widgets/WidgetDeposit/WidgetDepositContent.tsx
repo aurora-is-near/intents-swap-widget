@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -30,9 +30,9 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilters, Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
   | { type: 'on_transfer_success' }
@@ -50,7 +50,7 @@ export const WidgetDepositContent = ({
   const { t } = useTypedTranslation();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
+    chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -121,6 +121,24 @@ export const WidgetDepositContent = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
+  const chainsFilters = useMemo((): ChainsFilters => {
+    if (customChainsFilter) {
+      return customChainsFilter;
+    }
+
+    return {
+      source: {
+        intents: 'none',
+        external: ctx.isDepositFromExternalWallet ? 'all' : 'wallet-supported',
+      },
+      target: { intents: 'all', external: 'none' },
+    };
+  }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
+
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+  };
+
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetDepositSkeleton />;
   }
@@ -150,14 +168,12 @@ export const WidgetDepositContent = ({
     return (
       <SuccessScreen
         {...transferResult}
-        message={[
-          'Your deposit has been successfully completed,',
-          'and the funds are now available in your account.',
-        ]}
+        title={t('transfer.success.deposit.title', 'Deposit successful')}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);
@@ -186,8 +202,8 @@ export const WidgetDepositContent = ({
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? chainsFilters.source
+                : chainsFilters.target
             }
             onMsg={(msg) => {
               switch (msg.type) {

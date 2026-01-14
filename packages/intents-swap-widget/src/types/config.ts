@@ -1,5 +1,5 @@
 import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
-import { Chains, ChainsFilter } from './chain';
+import { Chains, ChainsFilters } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
 
@@ -11,10 +11,17 @@ export type IntentsAccountType = 'evm' | 'near' | 'sol';
 
 export type DefaultToken = Pick<Token, 'symbol' | 'chainName'>;
 
+export type PriorityAssets =
+  | ReadonlyArray<string>
+  | ReadonlyArray<readonly [Chains, string]>;
+
 export type WidgetConfig = {
   // Application metadata
   appName: string;
   appIcon?: string;
+
+  // Account abstraction
+  enableAccountAbstraction?: boolean;
 
   // Connected wallet
   intentsAccountType?: IntentsAccountType;
@@ -44,6 +51,7 @@ export type WidgetConfig = {
   allowedTokensList?: string[]; // assetIDs
   allowedSourceTokensList?: string[];
   allowedTargetTokensList?: string[];
+  priorityAssets?: PriorityAssets;
   filterTokens: (token: Token) => boolean;
 
   // Chains filtering
@@ -51,10 +59,10 @@ export type WidgetConfig = {
   allowedChainsList?: Chains[];
   allowedSourceChainsList?: Chains[];
   allowedTargetChainsList?: Chains[];
-  chainsFilter: {
-    source: ChainsFilter;
-    target: ChainsFilter;
-  };
+  topChainShortcuts?: (
+    intentsAccountType?: IntentsAccountType,
+  ) => [Chains, Chains, Chains, Chains];
+  chainsFilter?: ChainsFilters;
 
   // API
   fetchQuote?: (
@@ -72,4 +80,5 @@ export type WidgetConfig = {
   hideSendAddress?: boolean;
   hideTokenInputHeadings?: boolean;
   themeParentElementSelector?: string;
+  lockSwapDirection?: boolean;
 };

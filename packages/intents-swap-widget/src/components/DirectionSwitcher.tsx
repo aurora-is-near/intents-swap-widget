@@ -1,5 +1,5 @@
-import * as Icons from 'lucide-react';
-
+import { ArrowDownwardW700 as ArrowDownward } from '@material-symbols-svg/react-rounded/icons/arrow-downward';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -25,11 +25,11 @@ export const DirectionSwitcher = ({
       )}>
       {isLoading ? (
         <div className="group relative inline-block">
-          <Icons.RefreshCw className="h-sw-2xl w-sw-2xl animate-spin opacity-50 text-sw-accent-500" />
+          <ProgressActivity className="h-sw-2xl w-sw-2xl animate-spin opacity-50 text-sw-accent-500" />
         </div>
       ) : (
         <div className="group relative inline-block">
-          <Icons.ArrowDown
+          <ArrowDownward
             className={cn(
               'h-sw-2xl w-sw-2xl transition-transform duration-300',
               {

@@ -1,46 +1,36 @@
-import { useState } from 'react';
-// import { Info } from 'lucide-react';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { Toggle } from '../../uikit/Toggle';
 import { OutlinedButton } from '../../uikit/Button';
 import { ColorInput } from './ColorInput';
+import { ThemeColorPickerId } from '../../types/colors';
+
+const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
 
 export function Design() {
   const { state, dispatch } = useCreator();
-  const [openPickerId, setOpenPickerId] = useState<string | null>(null);
+
+  const setOpenPickerId = (id: ThemeColorPickerId | null) => {
+    dispatch({ type: 'SET_OPEN_THEME_COLOR_PICKER_ID', payload: id });
+  };
 
   return (
     <div className="space-y-csw-2xl text-csw-gray-200">
       <ConfigSection title="Mode">
         <div className="space-y-csw-xl">
-          <Toggle
-            label="Allow to toggle modes"
-            isEnabled={state.allowToggleModes}
-            onChange={(enabled) => {
-              dispatch({ type: 'SET_ALLOW_TOGGLE_MODES', payload: enabled });
-
-              if (!enabled) {
-                dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
-              }
-            }}
-          />
-
           <div className="flex items-center justify-between">
             <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
-              Default mode
+              Color scheme
             </span>
             <div className="flex items-center gap-csw-2md">
-              {state.allowToggleModes && (
-                <OutlinedButton
-                  size="sm"
-                  state={state.defaultMode === 'auto' ? 'active' : 'default'}
-                  onClick={() =>
-                    dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
-                  }>
-                  Auto
-                </OutlinedButton>
-              )}
+              <OutlinedButton
+                size="sm"
+                state={state.defaultMode === 'auto' ? 'active' : 'default'}
+                onClick={() =>
+                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'auto' })
+                }>
+                Auto
+              </OutlinedButton>
               <OutlinedButton
                 size="sm"
                 state={state.defaultMode === 'dark' ? 'active' : 'default'}
@@ -93,15 +83,15 @@ export function Design() {
               Corner radius
             </span>
             <div className="flex items-center gap-csw-2md">
-              {['none', 's', 'm', 'l'].map((radius) => (
+              {BORDER_RADIUS_VALUES.map((radius) => (
                 <OutlinedButton
                   key={radius}
                   size="sm"
-                  state={state.cornerRadius === radius ? 'active' : 'default'}
+                  state={state.borderRadius === radius ? 'active' : 'default'}
                   onClick={() =>
                     dispatch({
-                      type: 'SET_CORNER_RADIUS',
-                      payload: radius as 'none' | 's' | 'm' | 'l',
+                      type: 'SET_BORDER_RADIUS',
+                      payload: radius,
                     })
                   }>
                   {radius === 'none' ? '–' : radius.toUpperCase()}
@@ -128,29 +118,44 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_PRIMARY_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'primaryColor'}
+            isOpen={state.openThemeColorPickerId === 'primaryColor'}
             onOpen={() => setOpenPickerId('primaryColor')}
             onClose={() => setOpenPickerId(null)}
           />
+          {state.stylePreset === 'clean' && (
+            <ColorInput
+              label="Surface color"
+              value={state.surfaceColor}
+              onChange={(val) =>
+                dispatch({ type: 'SET_SURFACE_COLOR', payload: val })
+              }
+              isOpen={state.openThemeColorPickerId === 'surfaceColor'}
+              onOpen={() => setOpenPickerId('surfaceColor')}
+              onClose={() => setOpenPickerId(null)}
+              hasInfo
+            />
+          )}
+          {state.showContainerWrapper && (
+            <ColorInput
+              label="Container color"
+              value={state.containerColor}
+              onChange={(val) =>
+                dispatch({ type: 'SET_CONTAINER_COLOR', payload: val })
+              }
+              isOpen={state.openThemeColorPickerId === 'containerColor'}
+              onOpen={() => setOpenPickerId('containerColor')}
+              onClose={() => setOpenPickerId(null)}
+              hasInfo
+            />
+          )}
           <ColorInput
-            label="Page background color"
-            value={state.pageBackgroundColor}
+            label="Background color"
+            value={state.backgroundColor}
             onChange={(val) =>
-              dispatch({ type: 'SET_PAGE_BACKGROUND_COLOR', payload: val })
+              dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'pageBackgroundColor'}
-            onOpen={() => setOpenPickerId('pageBackgroundColor')}
-            onClose={() => setOpenPickerId(null)}
-            hasInfo
-          />
-          <ColorInput
-            label="Wrapper background color"
-            value={state.wrapperBackgroundColor}
-            onChange={(val) =>
-              dispatch({ type: 'SET_WRAPPER_BACKGROUND_COLOR', payload: val })
-            }
-            isOpen={openPickerId === 'wrapperBackgroundColor'}
-            onOpen={() => setOpenPickerId('wrapperBackgroundColor')}
+            isOpen={state.openThemeColorPickerId === 'backgroundColor'}
+            onOpen={() => setOpenPickerId('backgroundColor')}
             onClose={() => setOpenPickerId(null)}
           />
           <ColorInput
@@ -159,7 +164,7 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_SUCCESS_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'successColor'}
+            isOpen={state.openThemeColorPickerId === 'successColor'}
             onOpen={() => setOpenPickerId('successColor')}
             onClose={() => setOpenPickerId(null)}
           />
@@ -169,18 +174,18 @@ export function Design() {
             onChange={(val) =>
               dispatch({ type: 'SET_WARNING_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'warningColor'}
+            isOpen={state.openThemeColorPickerId === 'warningColor'}
             onOpen={() => setOpenPickerId('warningColor')}
             onClose={() => setOpenPickerId(null)}
           />
           <ColorInput
-            label="Alert color"
-            value={state.alertColor}
+            label="Error color"
+            value={state.errorColor}
             onChange={(val) =>
-              dispatch({ type: 'SET_ALERT_COLOR', payload: val })
+              dispatch({ type: 'SET_ERROR_COLOR', payload: val })
             }
-            isOpen={openPickerId === 'alertColor'}
-            onOpen={() => setOpenPickerId('alertColor')}
+            isOpen={state.openThemeColorPickerId === 'errorColor'}
+            onOpen={() => setOpenPickerId('errorColor')}
             onClose={() => setOpenPickerId(null)}
             disabled
           />

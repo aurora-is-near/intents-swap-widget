@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -30,28 +30,26 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilters, Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' };
 
-export type Props = CommonWidgetProps<Msg> & {
-  isOneWay?: boolean;
-};
+export type Props = CommonWidgetProps<Msg>;
 
 export const WidgetSwapContent = ({
   providers,
   makeTransfer,
   onMsg,
   isLoading,
-  isOneWay,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
+    chainsFilter: customChainsFilter,
+    enableAccountAbstraction,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -83,6 +81,10 @@ export const WidgetSwapContent = ({
     fireEvent('reset', { clearWalletAddress: true });
   }, []);
 
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+  };
+
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
@@ -100,6 +102,25 @@ export const WidgetSwapContent = ({
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
+
+  const chainsFilters = useMemo((): ChainsFilters => {
+    if (customChainsFilter) {
+      return customChainsFilter;
+    }
+
+    const enabledIntentsFilter = ctx.walletAddress ? 'with-balance' : 'all';
+
+    return {
+      source: {
+        intents: enableAccountAbstraction ? enabledIntentsFilter : 'none',
+        external: ctx.walletAddress ? 'wallet-supported' : 'all',
+      },
+      target: {
+        intents: enableAccountAbstraction ? 'all' : 'none',
+        external: 'all',
+      },
+    };
+  }, [customChainsFilter, enableAccountAbstraction, ctx.walletAddress]);
 
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetSwapSkeleton />;
@@ -129,15 +150,14 @@ export const WidgetSwapContent = ({
   if (ctx.state === 'transfer_success' && !!transferResult) {
     return (
       <SuccessScreen
+        showTargetToken
+        title={t('transfer.success.swap.title', 'Swap successful')}
         {...transferResult}
-        message={[
-          'Your swap has been successfully completed,',
-          'and the funds are now available in your account.',
-        ]}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);
@@ -166,8 +186,8 @@ export const WidgetSwapContent = ({
             groupTokens={tokenModalOpen === 'source'}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? chainsFilters.source
+                : chainsFilters.target
             }
             onMsg={(msg) => {
               switch (msg.type) {
@@ -214,7 +234,7 @@ export const WidgetSwapContent = ({
               }}
             />
 
-            <SwapDirectionSwitcher disabled={isOneWay} />
+            <SwapDirectionSwitcher />
 
             <TokenInput.Target
               heading={t('tokenInput.heading.target.swap', 'Buy')}

@@ -1,18 +1,16 @@
+import { useConfig } from '../config';
 import { DirectionSwitcher } from '@/components/DirectionSwitcher';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine';
 
-type Props = {
-  disabled?: boolean;
-};
-
-export const SwapDirectionSwitcher = ({ disabled }: Props) => {
+export const SwapDirectionSwitcher = () => {
   const { ctx } = useUnsafeSnapshot();
+  const { lockSwapDirection } = useConfig();
 
   return (
     <DirectionSwitcher
       isLoading={ctx.quoteStatus === 'pending'}
-      isEnabled={!disabled && !!(ctx.sourceToken && ctx.targetToken)}
+      isEnabled={!lockSwapDirection && !!(ctx.sourceToken && ctx.targetToken)}
       onClick={() => fireEvent('tokenSelectRotate', null)}
     />
   );

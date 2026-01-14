@@ -1,6 +1,9 @@
 import { Button as UIButton } from '@headlessui/react';
-import type { LucideIcon, LucideProps } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
+import type {
+  IconProps,
+  MaterialSymbolsComponent,
+} from '@material-symbols-svg/react';
 
 import { cn as clsx } from '@/utils/cn';
 
@@ -17,9 +20,13 @@ type Props = {
   onClick?: () => void;
   fluid?: boolean;
 } & (
-  | { icon: LucideIcon; iconPosition?: 'head' | 'tail' }
+  | { icon: MaterialSymbolsComponent; iconPosition?: 'head' | 'tail' }
   | { icon?: never; iconPosition?: never }
-);
+) &
+  (
+    | { as?: 'button'; href?: never; target?: never }
+    | { as: 'a'; href: string; target?: '_blank' | '_self' }
+  );
 
 const styles = {
   icon: 'h-sw-xl w-sw-xl',
@@ -50,10 +57,10 @@ const ButtonChildren = ({
   const Icon =
     hasIcon && state !== 'loading'
       ? (icon ?? (() => <span />))
-      : ({ className, ...lucidProps }: LucideProps) => (
-          <Icons.Loader
+      : ({ className, ...iconProps }: IconProps) => (
+          <ProgressActivity
             className={clsx(styles.icon, 'animate-spin', className)}
-            {...lucidProps}
+            {...iconProps}
           />
         );
 
@@ -73,20 +80,26 @@ const ButtonPrimary = ({
   size,
   className,
   children,
+  as = 'button',
   state = 'default',
   onClick,
   fluid,
+  href,
+  target,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const anchorProps = as === 'a' ? { href, target } : {};
   const isDisabled = ['disabled', 'loading', 'error'].includes(state)
     ? true
     : undefined;
 
   return (
     <UIButton
+      as={as}
       disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
+      {...anchorProps}
       className={clsx(
         styles.common,
         styles.width(fluid),
@@ -112,20 +125,26 @@ const ButtonOutlined = ({
   size,
   className,
   children,
+  as = 'button',
   state = 'default',
   onClick,
   fluid,
+  href,
+  target,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const anchorProps = as === 'a' ? { href, target } : {};
   const isDisabled = ['disabled', 'loading', 'error'].includes(state)
     ? true
     : undefined;
 
   return (
     <UIButton
+      as={as}
       disabled={isDisabled}
       data-active={state === 'active' ? true : undefined}
       onClick={() => state === 'default' && onClick?.()}
+      {...anchorProps}
       className={clsx(
         styles.common,
         styles.width(fluid),

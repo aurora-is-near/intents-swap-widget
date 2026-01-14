@@ -28,7 +28,7 @@ const NoteItem = ({
 
 const NotesList = ({ children, className }: Props) => {
   return (
-    <ul className={cn('gap-sw-2xl flex flex-col', className)}>{children}</ul>
+    <ul className={cn('gap-sw-xl flex flex-col', className)}>{children}</ul>
   );
 };
 

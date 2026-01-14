@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
-import * as Icons from 'lucide-react';
+import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 
 import { notReachable } from '@/utils';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
@@ -50,7 +50,7 @@ const Skeleton = () => {
     <div className="flex flex-col gap-sw-2xl items-center">
       <div className="bg-sw-gray-800 h-[180px] w-[180px] animate-pulse rounded-sw-md" />
       <div className="bg-sw-gray-800 h-[44px] w-full animate-pulse rounded-sw-md flex items-center justify-center gap-sw-sm">
-        <Icons.Loader className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
+        <ProgressActivity className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
         <span className="text-sw-gray-100 text-sw-label-sm">
           {!isNotEmptyAmount(ctx.sourceTokenAmount)
             ? t('deposit.external.loading.waiting', 'Waiting for token amount')

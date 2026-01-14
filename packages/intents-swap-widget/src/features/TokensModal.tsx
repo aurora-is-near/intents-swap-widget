@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import * as Icons from 'lucide-react';
+import { useRef, useState } from 'react';
+import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 
-import { TokensList } from './TokensList';
-import { ChainsDropdown } from './ChainsDropdown';
 import { useChains } from '../hooks';
+import { TokensList } from './TokensList';
+import { ChainsSelector } from './ChainsSelector';
+
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
@@ -46,12 +47,28 @@ export const TokensModal = ({
   const { ctx } = useUnsafeSnapshot();
   const { walletSupportedChains } = useConfig();
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
   const chains = useChains(variant);
 
   const handleClose = () => onMsg({ type: 'on_dismiss_tokens_modal' });
 
-  useHandleKeyDown('Escape', handleClose);
+  useHandleKeyDown(
+    'Escape',
+    () => {
+      if (search) {
+        setSearch('');
+      } else {
+        handleClose();
+      }
+    },
+    [search],
+  );
+
+  useHandleKeyDown('Alphanumeric', (key) => {
+    setSearch((s) => s + key);
+    searchInputRef.current?.focus();
+  });
 
   // If there is only one chain available, select it by default
   const defaultChain =
@@ -80,32 +97,32 @@ export const TokensModal = ({
         <CloseButton onClick={handleClose} />
       </header>
 
-      <div className="gap-sw-xl flex items-center">
-        <Input
-          focusOnMount
-          icon={Icons.Search}
-          defaultValue={search}
-          className="w-full"
-          placeholder="Search or paste address"
-          onChange={(e) => setSearch(e.target.value.trim())}
+      <Input
+        focusOnMount
+        icon={Search}
+        ref={searchInputRef}
+        defaultValue={search}
+        className="w-full"
+        placeholder="Search or paste address"
+        onChange={(e) => setSearch(e.target.value.trim())}
+      />
+
+      {showChainsSelector && (
+        <ChainsSelector
+          variant={variant}
+          chainsFilter={chainsFilter}
+          selectedChain={selectedChain}
+          onMsg={(msg) => {
+            switch (msg.type) {
+              case 'on_select_chain':
+                setSelectedChain(msg.chain);
+                break;
+              default:
+                notReachable(msg.type);
+            }
+          }}
         />
-        {showChainsSelector && (
-          <ChainsDropdown
-            variant={variant}
-            selected={selectedChain}
-            chainsFilter={chainsFilter}
-            onMsg={(msg) => {
-              switch (msg.type) {
-                case 'on_click_chain':
-                  setSelectedChain(msg.chain);
-                  break;
-                default:
-                  notReachable(msg.type, { throwError: false });
-              }
-            }}
-          />
-        )}
-      </div>
+      )}
 
       {chainIsNotSupported && !!ctx.walletAddress && (
         <>

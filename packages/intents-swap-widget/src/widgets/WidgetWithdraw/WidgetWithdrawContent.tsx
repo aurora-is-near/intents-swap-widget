@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -29,9 +29,9 @@ import { useConfig } from '@/config';
 
 import { isDebug, notReachable } from '@/utils';
 
-import type { Token, TransferResult } from '@/types';
+import type { ChainsFilters, Token, TransferResult } from '@/types';
 
-type Msg =
+export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_transfer_success' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
@@ -48,7 +48,7 @@ export const WidgetWithdrawContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
-    chainsFilter,
+    chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
@@ -98,6 +98,27 @@ export const WidgetWithdrawContent = ({
     ],
   });
 
+  const chainsFilters = useMemo((): ChainsFilters => {
+    if (customChainsFilter) {
+      return customChainsFilter;
+    }
+
+    return {
+      source: {
+        intents: 'with-balance',
+        external: 'none',
+      },
+      target: {
+        intents: 'none',
+        external: 'all',
+      },
+    };
+  }, [customChainsFilter, ctx.walletAddress]);
+
+  const onBackToSwap = () => {
+    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+  };
+
   if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
     return <WidgetWithdrawSkeleton />;
   }
@@ -126,15 +147,14 @@ export const WidgetWithdrawContent = ({
   if (ctx.state === 'transfer_success' && !!transferResult) {
     return (
       <SuccessScreen
+        showTargetToken
+        title={t('transfer.success.withdrawal.title', 'Withdrawal successful')}
         {...transferResult}
-        message={[
-          'Your withdrawal has been successfully completed,',
-          'and the funds have been sent to the specified destination.',
-        ]}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
               setTransferResult(undefined);
+              onBackToSwap();
               break;
             default:
               notReachable(msg.type);
@@ -163,8 +183,8 @@ export const WidgetWithdrawContent = ({
             groupTokens={false}
             chainsFilter={
               tokenModalOpen === 'source'
-                ? chainsFilter.source
-                : chainsFilter.target
+                ? chainsFilters.source
+                : chainsFilters.target
             }
             onMsg={(msg) => {
               switch (msg.type) {

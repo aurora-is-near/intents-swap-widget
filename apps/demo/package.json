@@ -12,6 +12,8 @@
   "dependencies": {
     "@aurora-is-near/intents-swap-widget": "*",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
+    "@material-symbols-svg/react": "^0.1.19",
+    "@material-symbols-svg/react-rounded": "^0.1.19",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
@@ -19,7 +21,6 @@
     "@solana/web3.js": "^1.98.4",
     "react": "18",
     "react-dom": "18",
-    "react-router-dom": "^7.9.4",
     "wagmi": "^2.18.2"
   }
 }

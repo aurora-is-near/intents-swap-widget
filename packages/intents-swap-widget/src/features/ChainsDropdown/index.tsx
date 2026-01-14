@@ -1,17 +1,16 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment } from 'react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import { AnimatePresence, motion } from 'framer-motion';
-import * as Icons from 'lucide-react';
 
 import { ChainItem } from './ChainItem';
-import { AllNetworksIcon } from './AllNetworksIcon';
 import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
-import { Icon } from '@/components/Icon';
+import { AllNetworksIcon } from '@/components/AllNetworksIcon';
 import { useChains } from '@/hooks/useChains';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
-import { ASSET_ICONS, UNKNOWN_ICON } from '@/icons';
+import { CHAIN_ICONS, UNKNOWN_ICON } from '@/icons';
 import type { Chains, ChainsFilter } from '@/types/chain';
 
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
@@ -32,11 +31,7 @@ export const ChainsDropdown = ({
   const { t } = useTypedTranslation();
 
   const chains = useChains(variant);
-  const { appIcon, appName, showIntentTokens } = useConfig();
-  const selectedChain = useMemo(
-    () => chains.find((item) => item.id === selected),
-    [chains, selected],
-  );
+  const { appIcon, appName } = useConfig();
 
   const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
 
@@ -46,42 +41,21 @@ export const ChainsDropdown = ({
         <div>
           <MenuButton as={Fragment}>
             {({ open: isOpen }) => (
-              <div className="py-sw-sm px-sw-md gap-sw-md flex h-[40px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700">
-                {(() => {
-                  switch (selected) {
-                    case 'all':
-                      return (
-                        <Icon
-                          radius={10}
-                          icon={<AllNetworksIcon />}
-                          label="All networks"
-                        />
-                      );
-                    case 'intents':
-                      return showIntentTokens ? (
-                        <Icon radius={10} icon={appIcon} label={appName} />
-                      ) : null;
-                    default:
-                      return !selectedChain ? (
-                        <Icon
-                          radius={10}
-                          icon={<AllNetworksIcon />}
-                          label={t('chain.all.label', 'All networks')}
-                        />
-                      ) : (
-                        <Icon
-                          radius={10}
-                          label={selectedChain.label}
-                          icon={ASSET_ICONS[selected] ?? UNKNOWN_ICON}
-                        />
-                      );
-                  }
-                })()}
+              <div className="py-sw-sm pr-sw-md pl-sw-lg gap-sw-xs flex h-[36px] cursor-pointer items-center rounded-sw-md bg-sw-gray-800 hover:bg-sw-gray-700">
+                <span className="text-sw-label-md text-sw-gray-50">
+                  {t('chain.more.label', 'More')}
+                </span>
 
                 {isOpen ? (
-                  <Icons.ChevronUp size={18} className="text-sw-gray-50" />
+                  <ChevronLeft
+                    size={18}
+                    className="text-sw-gray-50 rotate-90"
+                  />
                 ) : (
-                  <Icons.ChevronDown size={18} className="text-sw-gray-50" />
+                  <ChevronLeft
+                    size={18}
+                    className="text-sw-gray-50 -rotate-90"
+                  />
                 )}
               </div>
             )}
@@ -105,6 +79,7 @@ export const ChainsDropdown = ({
                         isSelected={selected === 'all'}
                         isFocused={focus}
                         icon={<AllNetworksIcon />}
+                        iconClassName="bg-sw-gray-50"
                         onMsg={(msg) => {
                           switch (msg.type) {
                             case 'on_click_chain':
@@ -156,7 +131,7 @@ export const ChainsDropdown = ({
                         <ChainItem
                           chain={chain.id}
                           label={chain.label}
-                          icon={ASSET_ICONS[chain.id] ?? UNKNOWN_ICON}
+                          icon={CHAIN_ICONS[chain.id] ?? UNKNOWN_ICON}
                           isSelected={selected === chain.id}
                           isFocused={focus}
                           onMsg={(msg) => {

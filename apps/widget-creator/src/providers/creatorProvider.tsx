@@ -1,5 +1,7 @@
+import { Chains, ThemeBorderRadius } from '@aurora-is-near/intents-swap-widget';
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
+import { ThemeColorPickerId } from '../types/colors';
 
 type CreatorState = {
   // Configure - User authentication
@@ -7,7 +9,7 @@ type CreatorState = {
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
-  selectedNetworks: string[];
+  selectedNetworks: Chains[];
   // Configure - Tokens
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
@@ -20,19 +22,20 @@ type CreatorState = {
   feePercentage: string;
   collectorAddress: string;
   // Design - Mode
-  allowToggleModes: boolean;
   defaultMode: 'auto' | 'dark' | 'light';
   // Design - Style
   stylePreset: 'clean' | 'bold';
-  cornerRadius: 'none' | 's' | 'm' | 'l';
+  borderRadius: ThemeBorderRadius;
   showContainerWrapper: boolean;
   // Design - Colors
   primaryColor: string;
-  pageBackgroundColor: string;
-  wrapperBackgroundColor: string;
+  surfaceColor: string;
+  containerColor: string;
+  backgroundColor: string;
   successColor: string;
   warningColor: string;
-  alertColor: string;
+  errorColor: string;
+  openThemeColorPickerId: ThemeColorPickerId | null;
 };
 
 const initialState: CreatorState = {
@@ -49,17 +52,18 @@ const initialState: CreatorState = {
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
   // Design
-  allowToggleModes: false,
   defaultMode: 'dark',
   stylePreset: 'clean',
-  cornerRadius: 'm',
+  borderRadius: 'md',
   showContainerWrapper: false,
   primaryColor: '#D5B7FF',
-  pageBackgroundColor: '#636D9B',
-  wrapperBackgroundColor: '#636D9B',
+  surfaceColor: '#2A2C33',
+  containerColor: '#000000',
+  backgroundColor: '#24262D',
   successColor: '#98FFB5',
   warningColor: '#FADFAD',
-  alertColor: '#FFB8BE',
+  errorColor: '#FFB8BE',
+  openThemeColorPickerId: null,
 };
 
 type Action =
@@ -68,7 +72,7 @@ type Action =
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
   // Configure - Networks
-  | { type: 'SET_SELECTED_NETWORKS'; payload: string[] }
+  | { type: 'SET_SELECTED_NETWORKS'; payload: Chains[] }
   // Configure - Tokens
   | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
@@ -87,19 +91,23 @@ type Action =
   | { type: 'SET_FEE_PERCENTAGE'; payload: string }
   | { type: 'SET_COLLECTOR_ADDRESS'; payload: string }
   // Design - Mode
-  | { type: 'SET_ALLOW_TOGGLE_MODES'; payload: boolean }
   | { type: 'SET_DEFAULT_MODE'; payload: 'auto' | 'dark' | 'light' }
   // Design - Style
   | { type: 'SET_STYLE_PRESET'; payload: 'clean' | 'bold' }
-  | { type: 'SET_CORNER_RADIUS'; payload: 'none' | 's' | 'm' | 'l' }
+  | { type: 'SET_BORDER_RADIUS'; payload: ThemeBorderRadius }
   | { type: 'SET_SHOW_CONTAINER_WRAPPER'; payload: boolean }
   // Design - Colors
   | { type: 'SET_PRIMARY_COLOR'; payload: string }
-  | { type: 'SET_PAGE_BACKGROUND_COLOR'; payload: string }
-  | { type: 'SET_WRAPPER_BACKGROUND_COLOR'; payload: string }
+  | { type: 'SET_SURFACE_COLOR'; payload: string }
+  | { type: 'SET_CONTAINER_COLOR'; payload: string }
+  | { type: 'SET_BACKGROUND_COLOR'; payload: string }
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
   | { type: 'SET_WARNING_COLOR'; payload: string }
-  | { type: 'SET_ALERT_COLOR'; payload: string }
+  | { type: 'SET_ERROR_COLOR'; payload: string }
+  | {
+      type: 'SET_OPEN_THEME_COLOR_PICKER_ID';
+      payload: ThemeColorPickerId | null;
+    }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };
@@ -143,42 +151,44 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, collectorAddress: action.payload };
 
     // Design
-    case 'SET_ALLOW_TOGGLE_MODES':
-      return { ...state, allowToggleModes: action.payload };
     case 'SET_DEFAULT_MODE':
       return { ...state, defaultMode: action.payload };
     case 'SET_STYLE_PRESET':
       return { ...state, stylePreset: action.payload };
-    case 'SET_CORNER_RADIUS':
-      return { ...state, cornerRadius: action.payload };
+    case 'SET_BORDER_RADIUS':
+      return { ...state, borderRadius: action.payload };
     case 'SET_SHOW_CONTAINER_WRAPPER':
       return { ...state, showContainerWrapper: action.payload };
     case 'SET_PRIMARY_COLOR':
       return { ...state, primaryColor: action.payload };
-    case 'SET_PAGE_BACKGROUND_COLOR':
-      return { ...state, pageBackgroundColor: action.payload };
-    case 'SET_WRAPPER_BACKGROUND_COLOR':
-      return { ...state, wrapperBackgroundColor: action.payload };
+    case 'SET_SURFACE_COLOR':
+      return { ...state, surfaceColor: action.payload };
+    case 'SET_CONTAINER_COLOR':
+      return { ...state, containerColor: action.payload };
+    case 'SET_BACKGROUND_COLOR':
+      return { ...state, backgroundColor: action.payload };
     case 'SET_SUCCESS_COLOR':
       return { ...state, successColor: action.payload };
     case 'SET_WARNING_COLOR':
       return { ...state, warningColor: action.payload };
-    case 'SET_ALERT_COLOR':
-      return { ...state, alertColor: action.payload };
+    case 'SET_ERROR_COLOR':
+      return { ...state, errorColor: action.payload };
+    case 'SET_OPEN_THEME_COLOR_PICKER_ID':
+      return { ...state, openThemeColorPickerId: action.payload };
     case 'RESET_DESIGN':
       return {
         ...state,
-        allowToggleModes: true,
         defaultMode: 'auto',
         stylePreset: 'clean',
-        cornerRadius: 'm',
+        borderRadius: 'md',
         showContainerWrapper: false,
         primaryColor: '#D5B7FF',
-        pageBackgroundColor: '#24262D',
-        wrapperBackgroundColor: '#000000',
+        surfaceColor: '#24262D',
+        containerColor: '#000000',
+        backgroundColor: '#24262D',
         successColor: '#98FFB5',
         warningColor: '#FADFAD',
-        alertColor: '#FFB8BE',
+        errorColor: '#FFB8BE',
       };
     case 'RESET_ALL':
       return initialState;

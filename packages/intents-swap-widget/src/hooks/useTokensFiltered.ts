@@ -8,6 +8,7 @@ import { createFilterByIntents } from '@/utils/tokens/filterByIntents';
 import { createFilterBySearch } from '@/utils/tokens/filterBySearchString';
 import { createFilterBySelectedChain } from '@/utils/tokens/filterBySelectedChain';
 import type { Chains, ChainsFilter } from '@/types/chain';
+import type { PriorityAssets } from '@/types/config';
 
 export type TokensFilterOptions = {
   variant: 'source' | 'target';
@@ -15,6 +16,7 @@ export type TokensFilterOptions = {
   selectedChain: Chains | 'all' | 'intents';
   chainsFilter: ChainsFilter;
   walletSupportedChains: ReadonlyArray<Chains>;
+  priorityAssets: PriorityAssets;
 };
 
 // TODO: memoize
@@ -24,6 +26,7 @@ export const useTokensFiltered = ({
   selectedChain,
   chainsFilter,
   walletSupportedChains,
+  priorityAssets,
 }: TokensFilterOptions) => {
   const chains = useChains(variant);
   const { tokens } = useTokens(variant);
@@ -35,6 +38,7 @@ export const useTokensFiltered = ({
     mergedBalance,
     walletSupportedChains,
     search,
+    priorityAssets,
   );
 
   const filteredTokens = tokens

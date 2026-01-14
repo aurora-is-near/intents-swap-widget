@@ -2,11 +2,22 @@ export type HexColor = `#${string}`;
 
 export type ColorScheme = 'light' | 'dark';
 
+export type ThemeBorderRadius = 'none' | 'sm' | 'md' | 'lg';
+
+export type ThemeStylePreset = 'clean' | 'bold';
+
 export type Theme = {
   colorScheme?: ColorScheme;
+  stylePreset?: ThemeStylePreset;
   backgroundColor?: HexColor;
   primaryColor?: HexColor;
   surfaceColor?: HexColor;
+  containerColor?: HexColor;
+  successColor?: HexColor;
+  warningColor?: HexColor;
+  errorColor?: HexColor;
+  borderRadius?: ThemeBorderRadius;
+  showContainer?: boolean;
 };
 
 export type ColorPalette = Record<

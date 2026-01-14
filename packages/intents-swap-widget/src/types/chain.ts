@@ -13,4 +13,9 @@ export type ChainsFilter = {
   external: 'none' | 'all' | 'wallet-supported';
 };
 
+export type ChainsFilters = {
+  target: ChainsFilter;
+  source: ChainsFilter;
+};
+
 export type ChainRpcUrls = Partial<Record<Chains, string[]>>;

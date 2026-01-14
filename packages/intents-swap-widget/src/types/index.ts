@@ -5,6 +5,7 @@ export * from './transfer';
 export * from './config';
 export * from './providers';
 export * from './theme';
+export * from './widget';
 
 export type { QuoteTransferArgs } from '../hooks/useMakeQuoteTransfer';
 export type { IntentsTransferArgs } from '../hooks/useMakeIntentsTransfer';

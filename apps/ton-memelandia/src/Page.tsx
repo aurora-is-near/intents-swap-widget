@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Cell } from '@ton/core';
-import * as Icons from 'lucide-react';
+import { ArrowLeftW700 as ArrowLeft } from '@material-symbols-svg/react-rounded/icons/arrow-left';
+import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 import {
   Blockchain,
   GaslessSettlement,
@@ -809,7 +810,7 @@ export const Page = () => {
         HeaderComponent={
           <div className="flex flex-row items-center mb-1">
             <div className="bg-sw-status-success text-sw-gray-950 flex h-[40px] w-[40px] items-center justify-center rounded-full">
-              <Icons.Check size={24} />
+              <Check size={24} />
             </div>
             <Heading className="ml-4">All done</Heading>
           </div>
@@ -825,10 +826,20 @@ export const Page = () => {
           </Button>
         }>
         <SuccessScreen
-          hideHeader
+          title="Swap successful"
+          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+          showTargetToken={false}
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}
-          message="Your swap has been successfully completed, and the funds are now available in TON wallet."
+          onMsg={(msg) => {
+            switch (msg.type) {
+              case 'on_dismiss_success':
+                resetSwapState();
+                break;
+              default:
+                break;
+            }
+          }}
         />
       </WidgetContainer>
     );
@@ -862,6 +873,7 @@ export const Page = () => {
             external: appKitWalletAddress ? 'wallet-supported' : 'all',
           },
         },
+        lockSwapDirection: true,
       }}
       localisation={{
         'submit.active.swap': 'Swap now',
@@ -884,7 +896,7 @@ export const Page = () => {
                 onClick={() => {
                   resetSwapState();
                 }}>
-                <Icons.ArrowLeft size={20} />
+                <ArrowLeft size={20} />
               </button>
               <Heading className="ml-4">Confirm swaps</Heading>
             </div>
@@ -925,7 +937,6 @@ export const Page = () => {
       )}
       <WidgetSwap
         className={showConfirmSwaps ? 'hidden' : undefined}
-        isOneWay
         isFullPage
         providers={providers}
         isLoading={isAppKitConnecting || isTonConnecting}

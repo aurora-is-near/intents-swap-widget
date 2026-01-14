@@ -18,7 +18,7 @@ theme, and optional partner fee settings.
 import {
   type WidgetConfig,
   WidgetConfigProvider,
-  WidgetSwap,
+  Widget,
 } from '@aurora-is-near/intents-swap-widget';
 
 const config: WidgetConfig = {
@@ -38,7 +38,7 @@ const config: WidgetConfig = {
 export default function App() {
   return (
     <WidgetConfigProvider config={config}>
-      <WidgetSwap />
+      <Widget />
     </WidgetConfigProvider>
   );
 }
@@ -53,6 +53,11 @@ The name used to refer to your app when making NEAR Intents transfers.
 ### `appIcon`
 
 URL to your app's icon. Shown in the chain selection dropdown.
+
+### `enableAccountAbstraction`
+
+Used to allow uses to deposit to and withdraw from your app's internal Intents
+account.
 
 ### `intentsAccountType`
 
@@ -134,6 +139,37 @@ const config = {
 }
 ```
 
+### `topChainShortcuts`
+
+Defines top chain shortcuts that are visible to a user for quick access in
+tokens modal.
+
+You can specify different lists of chains based on user's account type (wallet
+connected). Four chains must be specified to keep layout clean. If the following
+configuration attributes are set: `allowedChainsList`, `allowedSourceChainsList`
+or `allowedTargetChainsList` and a chain is not in those lists it's shortcut
+won't be displayed, be careful specifying multiple chain filters.
+
+#### Example
+
+```ts
+const config = {
+  // this is the default behaviour
+  topChainShortcuts: (intentsAccountType) => {
+    switch (intentsAccountType) {
+      case 'evm':
+        return ['eth', 'arb', 'avax', 'base'] as const;
+      case 'sol':
+        return ['sol', 'eth', 'btc', 'near'] as const;
+      case 'near':
+        return ['near', 'sol', 'eth', 'btc'] as const;
+      default:
+        return ['eth', 'btc', 'sol', 'near'] as const;
+    }
+  },
+}
+```
+
 ### `allowedChainsList`
 
 Restricts which chains that can be used when selecting source or target tokens.
@@ -175,6 +211,12 @@ const config = {
 Specify high-level categories of chains that should be displayed when selecting
 the source or target token.
 
+You will probably find the internal defaults sufficient in most cases, which
+are driven by the `enableAccountAbstraction` option and whether or not there
+are any `connectedWallets`. However, this option exists for the case where you
+want more fine-grained control, for example, when building your own custom
+widget using our components.
+
 #### Example
 
 ```ts
@@ -183,6 +225,51 @@ const config = {
     source: { external: 'wallet-supported', intents: 'none' },
     target: { external: 'all', intents: 'none' },
   },
+};
+```
+
+### `priorityAssets`
+
+Defines the order in which tokens with no balance are displayed on top of the list.
+
+If you want to promote certain tokens or just show most used on top of the list
+you can add them here and they will be displayed in a given order. Tokens that
+have balance always stay on top regardless. Tokens with no balance and not included
+in `priorityAssets` are sorted alphabetically at the bottom of the list.
+
+The option accepts an array of arrays, where each child array defines either
+the chain ID and token symbol, or the asset ID.
+
+#### Example
+
+```ts
+const config = {
+  priorityAssets: [
+    ['eth', 'ETH'],
+    ['eth', 'USDT'],
+  ],
+};
+```
+
+or use asset IDs:
+
+```ts
+const config = {
+  priorityAssets: [
+    'nep141:eth.omft.near',
+    'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near',
+  ],
+};
+```
+
+or mix:
+
+```ts
+const config = {
+  priorityAssets: [
+    'nep141:eth.omft.near',
+    ['eth', 'USDT'],
+  ],
 };
 ```
 
@@ -309,3 +396,8 @@ make sure you guide user accordingly if required on your side.
 
 HTML element that defines CSS theming variables. If not set, the `body` element
 is used.
+
+### `lockSwapDirection`
+
+By default, when using the swap widget, we can click the arrow in the middle
+to switch the swap direction. This option disables that feature.

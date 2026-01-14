@@ -12,7 +12,7 @@ This automatically generates a full theme based on a small set of core colors.
 ### Example
 
 ```tsx
-import { WidgetConfigProvider, WidgetSwap } from '@aurora-is-near/intents-swap-widget';
+import { WidgetConfigProvider, Widget } from '@aurora-is-near/intents-swap-widget';
 
 export default function App() {
   return (
@@ -27,7 +27,7 @@ export default function App() {
         },
       }}
     >
-      <WidgetSwap />
+      <Widget />
     </WidgetConfigProvider>
   );
 }
@@ -35,12 +35,19 @@ export default function App() {
 
 ### Properties
 
-| Property          | Type                 | Description                                                                       |
-| ----------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `colorScheme`     | `'light'` \| `'dark'` | Sets the overall color scheme                                                    |
-| `backgroundColor` | `string`             | The background color of the widget (if `isFullscreen` is used)                    |
-| `primaryColor`    | `string`             | Main accent color used for highlights, buttons, and active states                 |
-| `surfaceColor`    | `string`             | Secondary surface tones used for backgrounds, texts and other non-accent elements |
+| Property          | Type                             | Description                                                                                               |
+| ----------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `colorScheme`     | `'light' \| 'dark'`              | Sets the overall color scheme                                                                             |
+| `backgroundColor` | `string`                         | An optional background color for the widget                                                               |
+| `primaryColor`    | `string`                         | Main accent color used for highlights, buttons, and active states                                         |
+| `surfaceColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
+| `successColor`    | `string`                         | The color used for any success messages                                                                   |
+| `warningColor`    | `string`                         | The color used for any warning messages                                                                   |
+| `errorColor`      | `string`                         | The color used for any error messages                                                                     |
+| `containerColor`  | `string`                         | The color used for the container (see `showContainer`)                                                    |
+| `stylePreset`     |  `'clean' \| 'bold'`             | Defines the way in which the colours are used to theme the widget                                         |
+| `borderRadius`    | `'none' \| 'sm' \| 'md' \| 'lg'` | The size of the border radii used throughout the widget                                                   |
+| `showContainer`   | `true \| false`                  | Swap a container around the widget                                                                        |
 
 ### Use our theme outside of widget
 
@@ -51,7 +58,7 @@ within your app, for example:
 ```tsx
 <div className="sw">
   <h1 className="text-sw-gray-500">My Amazing Widget</h1>
-  <WidgetSwap />
+  <Widget />
 </div>
 ```
 

@@ -5,3 +5,5 @@ coverage/
 typings/
 dist/
 scripts/
+.turbo
+.vercel

@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Icons from 'lucide-react';
+import { CheckFillW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 
 import { cn } from '@/utils/cn';
 import { Icon } from '@/components/Icon';
@@ -13,12 +13,25 @@ type Props = {
   isSelected: boolean;
   chain: 'intents' | 'all' | Chains;
   icon: string | React.ReactElement;
+  iconClassName?: string;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
 
 export const ChainItem = React.forwardRef<HTMLButtonElement, Props>(
-  ({ chain, label, icon, isFocused, isSelected, className, onMsg }, ref) => (
+  (
+    {
+      chain,
+      label,
+      icon,
+      iconClassName,
+      isFocused,
+      isSelected,
+      className,
+      onMsg,
+    },
+    ref,
+  ) => (
     <button
       ref={ref}
       type="button"
@@ -32,9 +45,9 @@ export const ChainItem = React.forwardRef<HTMLButtonElement, Props>(
         },
         className,
       )}>
-      <Icon radius={10} label={label} icon={icon} />
+      <Icon radius={10} label={label} icon={icon} className={iconClassName} />
       <span className="text-sw-label-md mr-auto">{label}</span>
-      {isSelected && <Icons.Check size={16} />}
+      {isSelected && <Check size={16} className="text-sw-status-success" />}
     </button>
   ),
 );

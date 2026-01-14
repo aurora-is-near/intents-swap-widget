@@ -18,3 +18,5 @@ export * from './TokenIcon';
 export * from './StatusWidget';
 export * from './WidgetContainer';
 export * from './CloseButton';
+export * from './ChainShortcut';
+export * from './AllNetworksIcon';

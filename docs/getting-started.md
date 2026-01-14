@@ -25,13 +25,13 @@ For example, the snippet below shows how to render the swap widget.
 ```tsx
 import {
   WidgetConfigProvider,
-  WidgetSwap,
+  Widget,
 } from '@aurora-is-near/intents-swap-widget';
 
 export default function App() {
   return (
     <WidgetConfigProvider config={{ appName: 'MyApp' }}>
-      <WidgetSwap />
+      <Widget />
     </WidgetConfigProvider>
   );
 }
@@ -67,7 +67,7 @@ and have a hook for providing the wallet address and a button for connecting.
 ```tsx
 import {
   WidgetConfigProvider,
-  WidgetSwap,
+  Widget,
 } from '@aurora-is-near/intents-swap-widget';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 import { WalletConnectButton } from './components/WalletConnectButton';
@@ -79,7 +79,7 @@ export const SimpleWidgetDemo = () => {
     <WidgetConfigProvider
       config={{ connectedWallets: { default: walletAddress } }}
     >
-      <WidgetSwap
+      <Widget
         isFullPage
         isLoading={isLoading}
         FooterComponent={<WalletConnectButton />}

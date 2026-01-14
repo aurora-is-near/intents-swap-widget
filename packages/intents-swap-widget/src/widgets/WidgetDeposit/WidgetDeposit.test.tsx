@@ -39,10 +39,6 @@ const WidgetDepositSetup = () => {
     alchemyApiKey: 'test-alchemy-api-key',
     connectedWallets: { default: mockConnectedWalletAddress('evm') },
     walletSupportedChains: EVM_CHAINS,
-    chainsFilter: {
-      target: { intents: 'all', external: 'all' },
-      source: { intents: 'all', external: 'all' },
-    },
   };
 
   return (
@@ -171,6 +167,6 @@ describe('Deposit', () => {
 
     expect(mockOneClickApi.post).toHaveBeenCalled();
     expect(submitBtn).toBeInTheDocument();
-    expect(submitBtn).not.toBeEnabled();
+    expect(submitBtn).toBeDisabled();
   });
 });
