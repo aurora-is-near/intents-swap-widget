@@ -136,7 +136,8 @@ export function Configure() {
             <div className="flex gap-csw-md items-center">
               <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
                 <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  {state.selectedNetworks.length} networks selected
+                  {state.selectedNetworks.length} network
+                  {state.selectedNetworks.length !== 1 ? 's' : ''} selected
                 </p>
               </div>
               <OutlinedButton

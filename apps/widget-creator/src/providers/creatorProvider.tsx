@@ -1,4 +1,8 @@
-import { Chains, ThemeBorderRadius } from '@aurora-is-near/intents-swap-widget';
+import {
+  CHAINS,
+  Chains,
+  ThemeBorderRadius,
+} from '@aurora-is-near/intents-swap-widget';
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
@@ -40,7 +44,7 @@ type CreatorState = {
 const initialState: CreatorState = {
   userAuthMode: 'standalone',
   accountAbstractionMode: 'enabled',
-  selectedNetworks: [],
+  selectedNetworks: CHAINS.map((chain) => chain.id),
   selectedTokenSymbols: [],
   enableSellToken: true,
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
