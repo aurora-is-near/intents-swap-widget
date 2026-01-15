@@ -35,6 +35,10 @@ export const ChainsDropdown = ({
 
   const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
 
+  if (chains.length < 2) {
+    return null;
+  }
+
   return (
     <Menu>
       {({ open, close }) => (
