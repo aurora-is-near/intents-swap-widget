@@ -1,6 +1,6 @@
 import { Edit, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
-import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
+import { CHAINS, Chains, useTokens } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
@@ -9,11 +9,6 @@ import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
 import { TokenSelectionModal } from './TokenSelectionModal';
 import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
-import {
-  isTokenAvailable,
-  useTokensGroupedBySymbol,
-} from '../../hooks/useTokens';
-import type { TokenType } from '../../hooks/useTokens';
 
 export function Configure() {
   const { state, dispatch } = useCreator();
@@ -23,19 +18,17 @@ export function Configure() {
     'sell',
   );
 
-  const allTokens = useTokensGroupedBySymbol();
+  const { tokens: allTokens } = useTokens();
 
   const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
 
     // Auto-select tokens that are available for the chosen networks
     const availableTokens = allTokens.filter((token) =>
-      isTokenAvailable(token, newNetworks),
+      newNetworks.includes(token.blockchain),
     );
 
-    const availableTokenSymbols = availableTokens.map(
-      (token: TokenType) => token.symbol,
-    );
+    const availableTokenSymbols = availableTokens.map((token) => token.symbol);
 
     dispatch({
       type: 'SET_SELECTED_TOKEN_SYMBOLS',
@@ -232,8 +225,7 @@ export function Configure() {
                   </p>
                   {(() => {
                     const sellToken = allTokens.find(
-                      (token: TokenType) =>
-                        token.symbol === state.defaultSellToken.symbol,
+                      (token) => token.symbol === state.defaultSellToken.symbol,
                     );
 
                     const sellTokenChain = CHAINS.find(
@@ -291,8 +283,7 @@ export function Configure() {
                   </p>
                   {(() => {
                     const buyToken = allTokens.find(
-                      (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken.symbol,
+                      (token) => token.symbol === state.defaultBuyToken.symbol,
                     );
 
                     const buyTokenChain = CHAINS.find(

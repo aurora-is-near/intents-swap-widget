@@ -1,9 +1,9 @@
+import { SimpleToken } from '@aurora-is-near/intents-swap-widget';
 import { ToggleOnly } from '../../uikit/Toggle';
 import { TokenTag } from '../../uikit/TokenTag';
-import { TokenType } from '../../hooks/useTokens';
 
 interface TokenRowProps {
-  token: TokenType;
+  token: SimpleToken;
   isSelected: boolean;
   onToggle: () => void;
   isDisabled?: boolean;
