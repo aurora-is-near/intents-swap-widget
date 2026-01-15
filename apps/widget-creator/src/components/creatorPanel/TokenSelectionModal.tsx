@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, X } from 'lucide-react';
-import { useTokens } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
+import {
+  isTokenAvailable,
+  TokenType,
+  useTokensGroupedBySymbol,
+} from '../../hooks/useTokens';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { TokenRow } from './TokenRow';
 
@@ -26,7 +30,7 @@ export function TokenSelectionModal({
   onClose,
 }: TokenSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const { tokens: allTokens } = useTokens();
+  const allTokens = useTokensGroupedBySymbol();
   const { state, dispatch } = useCreator();
 
   const selectedTokens = state.selectedTokenSymbols || [];
@@ -48,27 +52,27 @@ export function TokenSelectionModal({
 
   // Filter tokens based on search and deduplicate by symbol
   const filteredTokens = useMemo(() => {
-    return allTokens.filter((token) => {
+    return allTokens.filter((token: TokenType) => {
       return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [searchQuery, allTokens]);
 
   // Separate available and unavailable tokens
-  const availableFilteredTokens = filteredTokens.filter((token) =>
-    state.selectedNetworks.includes(token.blockchain),
+  const availableFilteredTokens = filteredTokens.filter((token: TokenType) =>
+    isTokenAvailable(token, state.selectedNetworks),
   );
 
   const unavailableFilteredTokens = filteredTokens.filter(
-    (token) => !state.selectedNetworks.includes(token.blockchain),
+    (token: TokenType) => !isTokenAvailable(token, state.selectedNetworks),
   );
 
   // Separate popular and other tokens
-  const popularAvailable = availableFilteredTokens.filter((token) =>
+  const popularAvailable = availableFilteredTokens.filter((token: TokenType) =>
     POPULAR_TOKENS.includes(token.symbol),
   );
 
   const otherAvailable = availableFilteredTokens.filter(
-    (token) => !POPULAR_TOKENS.includes(token.symbol),
+    (token: TokenType) => !POPULAR_TOKENS.includes(token.symbol),
   );
 
   const handleToggleToken = (tokenId: string) => {
@@ -81,10 +85,10 @@ export function TokenSelectionModal({
 
   const handleSelectAllPopular = () => {
     const currentPopularSelected = popularAvailable
-      .filter((t) => selectedTokens.includes(t.symbol))
-      .map((t) => t.symbol);
+      .filter((t: TokenType) => selectedTokens.includes(t.symbol))
+      .map((t: TokenType) => t.symbol);
 
-    const allPopularSymbols = popularAvailable.map((t) => t.symbol);
+    const allPopularSymbols = popularAvailable.map((t: TokenType) => t.symbol);
     const newTokens = selectedTokens.filter(
       (t) => !allPopularSymbols.includes(t),
     );
@@ -100,10 +104,10 @@ export function TokenSelectionModal({
 
   const handleSelectAllOther = () => {
     const currentOtherSelected = otherAvailable
-      .filter((t) => selectedTokens.includes(t.symbol))
-      .map((t) => t.symbol);
+      .filter((t: TokenType) => selectedTokens.includes(t.symbol))
+      .map((t: TokenType) => t.symbol);
 
-    const allOtherSymbols = otherAvailable.map((t) => t.symbol);
+    const allOtherSymbols = otherAvailable.map((t: TokenType) => t.symbol);
     const newTokens = selectedTokens.filter(
       (t) => !allOtherSymbols.includes(t),
     );
@@ -123,11 +127,11 @@ export function TokenSelectionModal({
 
   const allPopularSelected =
     popularAvailable.length > 0 &&
-    popularAvailable.every((t) => selectedTokens.includes(t.symbol));
+    popularAvailable.every((t: TokenType) => selectedTokens.includes(t.symbol));
 
   const allOtherSelected =
     otherAvailable.length > 0 &&
-    otherAvailable.every((t) => selectedTokens.includes(t.symbol));
+    otherAvailable.every((t: TokenType) => selectedTokens.includes(t.symbol));
 
   return (
     <div className="z-50 w-full h-full fixed top-[0px] right-[0px]">
@@ -188,7 +192,7 @@ export function TokenSelectionModal({
                 </div>
 
                 <div className="flex flex-col gap-csw-md">
-                  {popularAvailable.map((token) => (
+                  {popularAvailable.map((token: TokenType) => (
                     <TokenRow
                       key={token.symbol}
                       token={token}
@@ -227,7 +231,7 @@ export function TokenSelectionModal({
               )}
 
               <div className="flex flex-col gap-csw-md">
-                {otherAvailable.map((token) => (
+                {otherAvailable.map((token: TokenType) => (
                   <TokenRow
                     key={token.symbol}
                     token={token}
@@ -237,7 +241,7 @@ export function TokenSelectionModal({
                   />
                 ))}
 
-                {unavailableFilteredTokens.map((token) => (
+                {unavailableFilteredTokens.map((token: TokenType) => (
                   <TokenRow
                     key={token.symbol}
                     token={token}
