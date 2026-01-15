@@ -80,9 +80,14 @@ export const configStore = proxy<{ config: WidgetConfig }>({
 
 export const useConfig = () => {
   const configState = useContext(WidgetConfigContext);
-  const store = useSnapshot(configState);
 
-  return store.config;
+  if (!configState) {
+    throw new Error('useConfig must be used within WidgetConfigProvider');
+  }
+
+  const snap = useSnapshot(configState);
+
+  return snap.config;
 };
 
 const resetConfig = (config: WidgetConfig) => {
