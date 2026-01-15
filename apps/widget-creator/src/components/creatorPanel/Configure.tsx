@@ -52,20 +52,20 @@ export function Configure() {
       <TokenWithChainSelector
         isOpen={isTokenSelectorOpen}
         onClose={() => setIsTokenSelectorOpen(false)}
-        onSelectToken={(token, chain) => {
-          if (!token || !chain) {
+        onSelectToken={(token, blockchain) => {
+          if (!token || !blockchain) {
             return;
           }
 
           if (tokenSelectorType === 'sell') {
             dispatch({
               type: 'SET_DEFAULT_SELL_TOKEN',
-              payload: { symbol: token.symbol, chainName: chain },
+              payload: { symbol: token.symbol, blockchain },
             });
           } else {
             dispatch({
               type: 'SET_DEFAULT_BUY_TOKEN',
-              payload: { symbol: token.symbol, chainName: chain },
+              payload: { symbol: token.symbol, blockchain },
             });
           }
         }}
@@ -247,7 +247,7 @@ export function Configure() {
                     );
 
                     const sellTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultSellToken.symbol,
+                      (chain) => chain.id === state.defaultSellToken.blockchain,
                     );
 
                     return (
@@ -306,7 +306,7 @@ export function Configure() {
                     );
 
                     const buyTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultBuyToken.chainName,
+                      (chain) => chain.id === state.defaultBuyToken.blockchain,
                     );
 
                     return (

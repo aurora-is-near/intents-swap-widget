@@ -1,9 +1,9 @@
-import { Chains } from '@aurora-is-near/intents-swap-widget';
+import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
 
 const parseJsonParam = (
   params: URLSearchParams,
-  key: string
+  key: string,
 ): Record<string, unknown> | null => {
   const param = params.get(key);
 
@@ -12,30 +12,35 @@ const parseJsonParam = (
   }
 
   try {
-    return JSON.parse(param);
+    return JSON.parse(param) as Record<string, unknown>;
   } catch {
     return null;
   }
 };
 
+const isValidChain = (chain: unknown): chain is Chains => {
+  return typeof chain === 'string' && CHAINS.some(({ id }) => id === chain);
+};
+
 const parseDefaultTokenParam = (
   params: URLSearchParams,
   key: string,
-): { symbol: string; chainName: string } | null => {
+): { symbol: string; chain: Chains } | null => {
   const param = parseJsonParam(params, key);
 
   if (
     param &&
     'symbol' in param &&
     typeof param.symbol === 'string' &&
-    'chainName' in param &&
-    typeof param.chainName === 'string'
+    'chain' in param &&
+    typeof param.chain === 'string' &&
+    isValidChain(param.chain)
   ) {
-    return { symbol: param.symbol, chainName: param.chainName };
+    return { symbol: param.symbol, chain: param.chain };
   }
 
   return null;
-}
+};
 
 export function useConfigLink() {
   const { state } = useCreator();

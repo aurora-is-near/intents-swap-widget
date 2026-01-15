@@ -9,7 +9,7 @@ export type WalletAddresses = Partial<
 
 export type IntentsAccountType = 'evm' | 'near' | 'sol';
 
-export type DefaultToken = Pick<Token, 'symbol' | 'chainName'>;
+export type DefaultToken = Pick<Token, 'symbol' | 'blockchain'>;
 
 export type PriorityAssets =
   | ReadonlyArray<string>

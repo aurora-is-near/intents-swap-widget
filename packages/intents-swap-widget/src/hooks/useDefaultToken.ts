@@ -21,12 +21,12 @@ export const useDefaultToken = (
     const foundToken = tokens.find(
       (token) =>
         token.symbol.toUpperCase() === defaultToken.symbol.toUpperCase() &&
-        token.chainName === defaultToken.chainName,
+        token.blockchain === defaultToken.blockchain,
     );
 
     if (!foundToken) {
       logger.error(
-        `Default ${variant} token not found: ${defaultToken.symbol} on ${defaultToken.chainName}`,
+        `Default ${variant} token not found: ${defaultToken.symbol} on ${defaultToken.blockchain}`,
       );
 
       return;
@@ -38,19 +38,23 @@ export const useDefaultToken = (
   };
 
   useEffect(() => {
+    if (variant === 'source' && defaultSourceToken) {
+      setDefaultToken(defaultSourceToken);
+
+      return;
+    }
+
+    if (variant === 'target' && defaultTargetToken) {
+      setDefaultToken(defaultTargetToken);
+
+      return;
+    }
+
     const singleToken = uniqueAssetIds.length === 1 ? tokens[0] : null;
 
     // If there is only one token for a given variant, select it by default
     if (singleToken) {
       onMsg({ type: 'on_select_token', token: singleToken });
-    }
-
-    if (variant === 'source' && defaultSourceToken) {
-      setDefaultToken(defaultSourceToken);
-    }
-
-    if (variant === 'target' && defaultTargetToken) {
-      setDefaultToken(defaultTargetToken);
     }
   }, [tokens, defaultSourceToken, defaultTargetToken]);
 };
