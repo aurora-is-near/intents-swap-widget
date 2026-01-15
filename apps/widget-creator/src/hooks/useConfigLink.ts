@@ -1,4 +1,8 @@
-import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
+import {
+  CHAINS,
+  Chains,
+  DefaultToken,
+} from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
 
 const parseJsonParam = (
@@ -25,18 +29,18 @@ const isValidChain = (chain: unknown): chain is Chains => {
 const parseDefaultTokenParam = (
   params: URLSearchParams,
   key: string,
-): { symbol: string; chain: Chains } | null => {
+): DefaultToken | null => {
   const param = parseJsonParam(params, key);
 
   if (
     param &&
     'symbol' in param &&
     typeof param.symbol === 'string' &&
-    'chain' in param &&
-    typeof param.chain === 'string' &&
-    isValidChain(param.chain)
+    'blockchain' in param &&
+    typeof param.blockchain === 'string' &&
+    isValidChain(param.blockchain)
   ) {
-    return { symbol: param.symbol, chain: param.chain };
+    return { symbol: param.symbol, blockchain: param.blockchain };
   }
 
   return null;
