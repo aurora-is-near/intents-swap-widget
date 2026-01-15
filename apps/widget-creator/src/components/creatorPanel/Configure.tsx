@@ -1,4 +1,4 @@
-import { Edit, ExternalLink, X } from 'lucide-react';
+import { Edit, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
@@ -345,70 +345,9 @@ export function Configure() {
             />
 
             {state.enableCustomFees && (
-              <>
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                    Fee percentage (max 1%)
-                  </p>
-                  <div className="bg-csw-gray-800 p-csw-2md rounded-csw-md flex items-center gap-csw-sm">
-                    <input
-                      type="text"
-                      value={state.feePercentage}
-                      onChange={(e) => {
-                        const raw = e.target.value
-                          .replace('%', '')
-                          .replace(/[^0-9.]/g, '');
-
-                        const num = parseFloat(raw);
-
-                        if (!Number.isNaN(num) && num >= 0 && num <= 1) {
-                          dispatch({
-                            type: 'SET_FEE_PERCENTAGE',
-                            payload: raw,
-                          });
-                        } else if (raw === '' || raw === '.') {
-                          dispatch({
-                            type: 'SET_FEE_PERCENTAGE',
-                            payload: raw,
-                          });
-                        }
-                      }}
-                      className="flex-shrink-1 bg-transparent max-w-[25px] font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-center text-csw-gray-50"
-                    />
-                    <span className="flex-grow-1 font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200 flex-shrink-0">
-                      %
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-csw-xl text-csw-gray-200">
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                    Collector address (Intents account)
-                  </p>
-                  <div className="bg-csw-gray-800 p-csw-2md rounded-csw-md flex justify-between items-center">
-                    <input
-                      type="text"
-                      value={state.collectorAddress}
-                      onChange={(e) =>
-                        dispatch({
-                          type: 'SET_COLLECTOR_ADDRESS',
-                          payload: e.target.value,
-                        })
-                      }
-                      className="bg-transparent font-semibold text-sm leading-4 tracking-[-0.4px] outline-none text-csw-gray-5 w-full"
-                    />
-                    <X
-                      className="w-[16px] h-[16px] cursor-pointer hover:opacity-70 transition-opacity"
-                      onClick={() =>
-                        dispatch({
-                          type: 'SET_COLLECTOR_ADDRESS',
-                          payload: '',
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </>
+              <p className="text-sm leading-5 tracking-[-0.4px] font-medium">
+                Get in touch with Aurora to discuss custom fees.
+              </p>
             )}
           </div>
         </ConfigSection>
