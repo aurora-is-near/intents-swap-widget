@@ -13,7 +13,6 @@ type CreatorState = {
   // Configure - Tokens
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
-  autoSelectTopBalanceToken: boolean;
   defaultSellToken: { symbol: string; blockchain: Chains };
   enableBuyToken: boolean;
   defaultBuyToken: { symbol: string; blockchain: Chains };
@@ -44,7 +43,6 @@ const initialState: CreatorState = {
   selectedNetworks: [],
   selectedTokenSymbols: [],
   enableSellToken: true,
-  autoSelectTopBalanceToken: false,
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
   enableBuyToken: false,
   defaultBuyToken: { symbol: 'USDT', blockchain: 'eth' },
@@ -76,7 +74,6 @@ type Action =
   // Configure - Tokens
   | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
-  | { type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN'; payload: boolean }
   | {
       type: 'SET_DEFAULT_SELL_TOKEN';
       payload: { symbol: string; blockchain: Chains };
@@ -129,8 +126,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       };
     case 'SET_ENABLE_SELL_TOKEN':
       return { ...state, enableSellToken: action.payload };
-    case 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN':
-      return { ...state, autoSelectTopBalanceToken: action.payload };
     case 'SET_DEFAULT_SELL_TOKEN':
       return {
         ...state,

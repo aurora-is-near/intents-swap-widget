@@ -225,16 +225,6 @@ export function Configure() {
                   dispatch({ type: 'SET_ENABLE_SELL_TOKEN', payload: enabled })
                 }
               />
-              <Toggle
-                label="Auto-select top balance token"
-                isEnabled={state.autoSelectTopBalanceToken}
-                onChange={(enabled) =>
-                  dispatch({
-                    type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
-                    payload: enabled,
-                  })
-                }
-              />
               {state.enableSellToken && (
                 <div className="flex items-center justify-between">
                   <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">

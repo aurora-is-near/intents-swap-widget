@@ -62,10 +62,6 @@ export function useConfigLink() {
     });
 
     params.append('enableSellToken', state.enableSellToken.toString());
-    params.append(
-      'autoSelectTopBalanceToken',
-      state.autoSelectTopBalanceToken.toString(),
-    );
     params.append('defaultSellToken', JSON.stringify(state.defaultSellToken));
     params.append('enableBuyToken', state.enableBuyToken.toString());
     params.append('defaultBuyToken', JSON.stringify(state.defaultBuyToken));
@@ -157,18 +153,6 @@ export function useDecodeConfigLink() {
       dispatch({
         type: 'SET_ENABLE_SELL_TOKEN',
         payload: enableSellToken === 'true',
-      });
-    }
-
-    const autoSelectTopBalanceToken = params.get('autoSelectTopBalanceToken');
-
-    if (
-      autoSelectTopBalanceToken === 'true' ||
-      autoSelectTopBalanceToken === 'false'
-    ) {
-      dispatch({
-        type: 'SET_AUTO_SELECT_TOP_BALANCE_TOKEN',
-        payload: autoSelectTopBalanceToken === 'true',
       });
     }
 
