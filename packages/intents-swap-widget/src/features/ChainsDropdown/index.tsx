@@ -34,8 +34,9 @@ export const ChainsDropdown = ({
   const { appIcon, appName } = useConfig();
 
   const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
+  const numberOfItems = chains.length + (hasIntentsAccountMenuItem ? 1 : 0);
 
-  if (chains.length < 2) {
+  if (numberOfItems < 2) {
     return null;
   }
 
