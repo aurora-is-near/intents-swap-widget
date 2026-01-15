@@ -43,7 +43,7 @@ const getTokenChain = (blockchain: string): Chains | null => {
   return null;
 };
 
-export const useTokens = (): Omit<SimpleToken, 'assetId'>[] => {
+export const useTokens = (): SimpleToken[] => {
   const { data } = useQuery<TokenResponse[]>({
     queryKey: ['tokens'],
     queryFn: async (): Promise<TokenResponse[]> => {
