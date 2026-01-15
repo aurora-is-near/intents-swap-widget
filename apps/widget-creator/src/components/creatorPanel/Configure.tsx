@@ -194,6 +194,7 @@ export function Configure() {
               </p>
               <a
                 href="https://aurora-labs.gitbook.io/intents-swap-widget/configuration"
+                target="_blank"
                 className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-csw-gray-300 hover:text-csw-gray-300">
                 <span>Check docs for more granularity</span>
                 <ExternalLink className="w-csw-xl h-csw-xl text-csw-gray-300 font-semibold" />

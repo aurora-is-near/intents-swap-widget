@@ -40,6 +40,7 @@ export function Header() {
             </a>
             <a
               href="https://aurora-labs.gitbook.io/intents-swap-widget"
+              target="_blank"
               className="flex gap-csw-md items-center">
               <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-gray-200 whitespace-nowrap">
                 DOCS
