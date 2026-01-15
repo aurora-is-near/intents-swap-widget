@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
-import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
-import { Chains, CHAINS } from '@aurora-is-near/intents-swap-widget';
-import { useTokens } from '../../hooks/useTokens';
+import {
+  Chains,
+  CHAINS,
+  Token,
+  useTokens,
+} from '@aurora-is-near/intents-swap-widget';
 
 interface TokenWithChainSelectorProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectToken: (
-    token: (TokenResponse & { icon: string | undefined }) | undefined,
-    selectedChain: Chains | null | undefined,
-  ) => void;
+  onSelectToken: (token?: Token, selectedChain?: Chains | null) => void;
 }
 
 export function TokenWithChainSelector({
@@ -22,7 +22,7 @@ export function TokenWithChainSelector({
   const [selectedChain, setSelectedChain] = useState<string | null>();
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false);
 
-  const allTokens = useTokens();
+  const { tokens: allTokens } = useTokens();
 
   useEffect(() => {
     if (isOpen) {
@@ -164,7 +164,7 @@ export function TokenWithChainSelector({
                 allTokens
                   .filter((token) => {
                     if (selectedChain) {
-                      return String(token.blockchain) === selectedChain;
+                      return token.blockchain === selectedChain;
                     }
 
                     return true;
