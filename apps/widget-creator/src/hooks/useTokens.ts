@@ -55,7 +55,7 @@ export const useTokens = (): Omit<SimpleToken, 'assetId'>[] => {
     return [];
   }
 
-  return (data ?? [])
+  const tokens = (data ?? [])
     .map((token): SimpleToken | null => {
       const blockchain = getTokenChain(token.blockchain);
 
@@ -74,6 +74,17 @@ export const useTokens = (): Omit<SimpleToken, 'assetId'>[] => {
       };
     })
     .filter((token): token is SimpleToken => token !== null);
+
+  const wNearToken = tokens.find((t) => t.symbol.toLowerCase() === 'wnear');
+
+  // Map wNEAR to native NEAR, which is what we use within the swap widget
+  if (wNearToken) {
+    wNearToken.symbol = 'NEAR';
+    wNearToken.assetId = 'native-near';
+    wNearToken.icon = getTokenIcon('NEAR');
+  }
+
+  return tokens;
 };
 
 export const useTokensGroupedBySymbol = (): TokenType[] => {

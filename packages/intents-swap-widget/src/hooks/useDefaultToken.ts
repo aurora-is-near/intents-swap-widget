@@ -26,7 +26,11 @@ export const useDefaultToken = (
 
     if (!foundToken) {
       logger.error(
-        `Default ${variant} token not found: ${defaultToken.symbol} on ${defaultToken.blockchain}`,
+        `Default ${variant} token not found: ${defaultToken.symbol} on ${defaultToken.blockchain}. ` +
+          `Available ${defaultToken.blockchain} tokens: ${tokens
+            .filter((token) => token.blockchain === defaultToken.blockchain)
+            .map((token) => token.symbol)
+            .join(', ')}`,
       );
 
       return;
