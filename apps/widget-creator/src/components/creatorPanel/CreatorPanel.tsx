@@ -4,6 +4,9 @@ import { OutlinedButton } from '../../uikit/Button';
 import { Design } from './Design';
 import { Configure } from './Configure';
 import { useCreator } from '../../hooks/useCreatorConfig';
+import { cn } from '../../utils/cn';
+
+const SCROLLBAR_OFFSET_CLASSNAME = 'md:mr-csw-sm';
 
 export function CreatorPanel() {
   const [activeTab, setActiveTab] = useState<'configure' | 'design'>(
@@ -17,7 +20,11 @@ export function CreatorPanel() {
   }
 
   return (
-    <div className="px-csw-2xl pt-[22px] pb-csw-2xl">
+    <div
+      className={cn(
+        'px-csw-2xl pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full',
+        SCROLLBAR_OFFSET_CLASSNAME,
+      )}>
       <aside>
         <div className="flex items-center gap-csw-2xl mb-[22px]">
           <button

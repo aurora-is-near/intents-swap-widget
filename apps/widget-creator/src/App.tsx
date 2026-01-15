@@ -16,7 +16,7 @@ function App() {
                 <WidgetContent />
               </aside>
             </WidgetSection>
-            <section className="flex-grow bg-csw-gray-950 rounded-csw-lg max-w-full w-full md:max-w-[455px] md:w-full overflow-y-auto md:h-full">
+            <section className="flex-grow bg-csw-gray-950 rounded-csw-lg max-w-full w-full md:max-w-[455px] md:w-full md:h-full">
               <CreatorPanel />
             </section>
           </div>
