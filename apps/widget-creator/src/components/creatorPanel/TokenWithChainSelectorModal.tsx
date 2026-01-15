@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
-import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
-import { Chains, CHAINS } from '@aurora-is-near/intents-swap-widget';
+
+import {
+  Chains,
+  CHAINS,
+  SimpleToken,
+} from '@aurora-is-near/intents-swap-widget';
 import { useTokens } from '../../hooks/useTokens';
 
 interface TokenWithChainSelectorProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectToken: (
-    token: (TokenResponse & { icon: string | undefined }) | undefined,
-    selectedChain: Chains | null | undefined,
-  ) => void;
+  onSelectToken: (token?: SimpleToken, selectedChain?: Chains | null) => void;
 }
 
 export function TokenWithChainSelector({

@@ -4,17 +4,23 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import {
+  CHAINS,
+  Chains,
+  SimpleToken,
+} from '@aurora-is-near/intents-swap-widget';
 import { TOKENS_DATA } from '../config';
 
 export type TokenType = {
-  assetIds: string[];
   decimals: number;
-  blockchains: TokenResponse['blockchain'][];
+  blockchains: Chains[];
   symbol: string;
-  prices: number[];
-  pricesUpdatedAt: string[];
   contractAddresses?: string[];
   icon: string | undefined;
+};
+
+const isValidChain = (blockchain: string): blockchain is Chains => {
+  return CHAINS.some((chain) => chain.id === blockchain);
 };
 
 export const getTokenIcon = (
@@ -29,26 +35,45 @@ export const getTokenIcon = (
   return TOKENS_DATA[symbol]?.icon ?? undefined;
 };
 
-export const useTokens = (): Array<
-  TokenResponse & { icon: string | undefined }
-> => {
-  const { data: queryData } = useQuery<TokenResponse[]>({
+const getTokenChain = (blockchain: string): Chains | null => {
+  if (isValidChain(blockchain)) {
+    return blockchain;
+  }
+
+  return null;
+};
+
+export const useTokens = (): Omit<SimpleToken, 'assetId'>[] => {
+  const { data } = useQuery<TokenResponse[]>({
     queryKey: ['tokens'],
     queryFn: async (): Promise<TokenResponse[]> => {
       return OneClickService.getTokens();
     },
   });
 
-  if (!queryData || queryData.length === 0) {
+  if (!data || data.length === 0) {
     return [];
   }
 
-  const tokensWithIcons = (queryData ?? []).map((token) => ({
-    ...token,
-    icon: getTokenIcon(token.symbol),
-  }));
+  return (data ?? [])
+    .map((token): SimpleToken | null => {
+      const blockchain = getTokenChain(token.blockchain);
 
-  return tokensWithIcons;
+      if (!blockchain) {
+        return null;
+      }
+
+      return {
+        assetId: token.assetId,
+        symbol: token.symbol,
+        decimals: token.decimals,
+        price: token.price,
+        blockchain,
+        icon: getTokenIcon(token.symbol),
+        contractAddress: token.contractAddress,
+      };
+    })
+    .filter((token): token is SimpleToken => token !== null);
 };
 
 export const useTokensGroupedBySymbol = (): TokenType[] => {
@@ -59,11 +84,7 @@ export const useTokensGroupedBySymbol = (): TokenType[] => {
       if (token.symbol && acc[token.symbol]) {
         const existing = acc[token.symbol]!;
 
-        existing.assetIds.push(token.assetId);
-        existing.prices.push(token.price);
-        existing.pricesUpdatedAt.push(token.priceUpdatedAt);
-
-        if (!existing.blockchains.includes(token.blockchain)) {
+        if (!existing.blockchains.some((b) => b === token.blockchain)) {
           existing.blockchains.push(token.blockchain);
         }
 
@@ -78,12 +99,9 @@ export const useTokensGroupedBySymbol = (): TokenType[] => {
         }
       } else if (token.symbol && !acc[token.symbol]) {
         acc[token.symbol] = {
-          assetIds: [token.assetId],
           decimals: token.decimals,
           blockchains: [token.blockchain],
           symbol: token.symbol,
-          prices: [token.price],
-          pricesUpdatedAt: [token.priceUpdatedAt],
           contractAddresses: token.contractAddress
             ? [token.contractAddress]
             : undefined,
