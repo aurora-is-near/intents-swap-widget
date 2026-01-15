@@ -17,8 +17,7 @@ export const useWidgetConfig = () => {
       intentsAccountType: 'near',
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       allowedTargetChainsList: ['near'],
-      allowedChainsList:
-        state.selectedNetworks.length > 0 ? state.selectedNetworks : undefined,
+      allowedChainsList: state.selectedNetworks,
       allowedTokensList:
         state.selectedTokenSymbols.length > 0
           ? state.selectedTokenSymbols
