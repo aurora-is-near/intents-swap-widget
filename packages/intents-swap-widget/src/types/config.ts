@@ -23,6 +23,9 @@ export type WidgetConfig = {
   // Account abstraction
   enableAccountAbstraction?: boolean;
 
+  // Standalone mode
+  enableStandaloneMode?: boolean;
+
   // Connected wallet
   intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;

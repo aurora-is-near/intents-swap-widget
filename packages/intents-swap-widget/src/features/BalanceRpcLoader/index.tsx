@@ -2,15 +2,14 @@ import { useMemo } from 'react';
 
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
-import { WalletAddresses } from '../../types';
 import { useConfig } from '@/config';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
+import { useConnectedWallets } from '@/hooks/useConnectedWallets';
 
 type Props = {
-  connectedWallets: WalletAddresses;
   rpcs: ChainRpcUrls;
 };
 
@@ -65,7 +64,8 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
   });
 };
 
-export const BalanceRpcLoader = ({ rpcs, connectedWallets }: Props) => {
+export const BalanceRpcLoader = ({ rpcs }: Props) => {
+  const { connectedWallets } = useConnectedWallets();
   const { tokens } = useAllTokens();
   const { walletSupportedChains } = useConfig();
   const { setWalletBalance } = useWalletBalance(connectedWallets);
