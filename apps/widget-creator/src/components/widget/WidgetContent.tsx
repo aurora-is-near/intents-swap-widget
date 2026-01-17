@@ -9,7 +9,6 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
-import { useAppKitWallet } from '../../hooks/useAppKitWallet';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 import { useWidgetConfig } from '../../hooks/useWidgetConfig';
 import { useThemeConfig } from '../../hooks/useThemeConfig';
@@ -17,7 +16,6 @@ import { useThemeConfig } from '../../hooks/useThemeConfig';
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 export function WidgetContent() {
-  const { providers } = useAppKitWallet();
   const { state } = useCreator();
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
@@ -80,7 +78,7 @@ export function WidgetContent() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <Widget providers={providers} />
+      <Widget />
       {exampleBanner && (
         <Banner
           variant={exampleBanner.variant}
