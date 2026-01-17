@@ -59,6 +59,12 @@ URL to your app's icon. Shown in the chain selection dropdown.
 Used to allow uses to deposit to and withdraw from your app's internal Intents
 account.
 
+### `enableStandaloneMode`
+
+Render the widget with its own AppKit-based wallet connection mechanism, as an
+alternative to controlling the connection externally and passing in walled
+addresses via `connectedWallets`.
+
 ### `intentsAccountType`
 
 Determines which wallet provider (EVM, NEAR, or Solana) is used to sign and
@@ -383,8 +389,9 @@ Used to hide the headings on the token input boxes.
 
 ### `onWalletSignin`
 
-Used to trigger wallet connection for main action button. If not set, the button
-has "Connect wallet" label and it's not clickable.
+Used to trigger wallet connection for main action button. If this function is
+not provided and you are not using standlone mode (see `enableStandaloneMode`)
+the button will have the label "Connect wallet" and not be clickable.
 
 ### `onWalletSignout`
 

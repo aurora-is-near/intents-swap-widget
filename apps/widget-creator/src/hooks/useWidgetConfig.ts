@@ -16,6 +16,7 @@ export const useWidgetConfig = () => {
       connectedWallets: { default: walletAddress },
       intentsAccountType: 'near',
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
+      enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedTargetChainsList: ['near'],
       allowedChainsList: state.selectedNetworks,
       allowedTokensList:
