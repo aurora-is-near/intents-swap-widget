@@ -2,19 +2,19 @@ import { useState } from 'react';
 
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
 import { useUnsafeSnapshot } from '../../machine';
+import { useProviders } from '../../hooks';
 import { notReachable } from '@/utils/notReachable';
 import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
-import type { IntentsTransferArgs } from '@/types';
 
 type Msg = { type: 'on_sign_out' | 'on_close' };
 
 type Props = {
-  providers: IntentsTransferArgs['providers'];
   onMsg: (msg: Msg) => void;
 };
 
-export function WalletCompatibilityCheck({ onMsg, providers }: Props) {
+export function WalletCompatibilityCheck({ onMsg }: Props) {
+  const { providers } = useProviders();
   const [hasError, setHasError] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
 

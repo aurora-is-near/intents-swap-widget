@@ -41,7 +41,6 @@ export type Msg =
 export type Props = CommonWidgetProps<Msg>;
 
 export const WidgetSwapContent = ({
-  providers,
   makeTransfer,
   onMsg,
   isLoading,
@@ -130,7 +129,6 @@ export const WidgetSwapContent = ({
   if (isCompatibilityCheckRequired && isCompatibilityOpen) {
     return (
       <WalletCompatibilityCheck
-        providers={providers}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_sign_out':
@@ -276,7 +274,6 @@ export const WidgetSwapContent = ({
           {!isDirectNearTokenWithdrawal && <SwapQuote />}
 
           <SubmitButton
-            providers={providers}
             makeTransfer={makeTransfer}
             label={
               ctx.sourceToken?.isIntent && ctx.targetToken?.isIntent

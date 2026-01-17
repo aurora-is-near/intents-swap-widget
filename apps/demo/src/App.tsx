@@ -26,7 +26,6 @@ type Props = {
 
 const Content = ({ isLoading, showAppBalance, setShowAppBalance }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { providers } = useAppKitWallet();
 
   const isTransferSuccess = guardStates(ctx, ['transfer_success']);
 
@@ -34,7 +33,6 @@ const Content = ({ isLoading, showAppBalance, setShowAppBalance }: Props) => {
     <Widget
       isFullPage={false}
       isLoading={isLoading}
-      providers={providers}
       HeaderComponent={
         isTransferSuccess ? null : (
           <Toggle
@@ -49,7 +47,11 @@ const Content = ({ isLoading, showAppBalance, setShowAppBalance }: Props) => {
 };
 
 export const App = () => {
-  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
+  const {
+    address: walletAddress,
+    isConnecting: isLoading,
+    providers,
+  } = useAppKitWallet();
 
   const [showAppBalance, setShowAppBalance] = useState(true);
   const [theme, setTheme] = useState<Theme>(defaultTheme);
@@ -82,6 +84,7 @@ export const App = () => {
             intentsAccountType: 'evm',
             hideTokenInputHeadings: true,
             enableAccountAbstraction: showAppBalance,
+            providers,
             priorityAssets: [
               ['eth', 'USDC'],
               ['arb', 'USDC'],

@@ -40,7 +40,6 @@ export type Msg =
 export type Props = CommonWidgetProps<Msg>;
 
 export const WidgetWithdrawContent = ({
-  providers,
   makeTransfer,
   onMsg,
   isLoading,
@@ -127,7 +126,6 @@ export const WidgetWithdrawContent = ({
   if (isCompatibilityOpen) {
     return (
       <WalletCompatibilityCheck
-        providers={providers}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_sign_out':
@@ -283,7 +281,6 @@ export const WidgetWithdrawContent = ({
           {!isDirectNearTokenWithdrawal && <SwapQuote />}
 
           <SubmitButton
-            providers={providers}
             makeTransfer={makeTransfer}
             label={t('submit.active.withdraw', 'Swap & withdraw')}
             onSuccess={(transfer) => {

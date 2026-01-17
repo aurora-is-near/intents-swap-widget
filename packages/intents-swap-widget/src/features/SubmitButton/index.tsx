@@ -1,4 +1,5 @@
 import { Trans } from 'react-i18next';
+import { useProviders } from '../../hooks';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -12,13 +13,12 @@ import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
-import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
-type Props = QuoteTransferArgs &
-  IntentsTransferArgs & {
-    label: string;
-    onSuccess: (transfer: TransferResult) => void;
-  };
+type Props = {
+  label: string;
+  onSuccess: (transfer: TransferResult) => void;
+  makeTransfer?: QuoteTransferArgs['makeTransfer'];
+};
 
 const commonBtnProps = {
   size: 'lg' as const,
@@ -211,7 +211,8 @@ const SubmitButtonError = () => {
 };
 
 const SubmitButtonBase = (props: Props) => {
-  const { providers, makeTransfer, onSuccess } = props;
+  const { providers } = useProviders();
+  const { makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
   const {

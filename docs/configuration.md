@@ -408,3 +408,8 @@ is used.
 
 By default, when using the swap widget, we can click the arrow in the middle
 to switch the swap direction. This option disables that feature.
+
+### `providers`
+
+The provider(s) for interacting with the `connectedWallets`. Used for signing
+messages.

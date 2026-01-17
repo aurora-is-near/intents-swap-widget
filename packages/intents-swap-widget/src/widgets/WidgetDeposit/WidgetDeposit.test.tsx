@@ -39,6 +39,7 @@ const WidgetDepositSetup = () => {
     alchemyApiKey: 'test-alchemy-api-key',
     connectedWallets: { default: mockConnectedWalletAddress('evm') },
     walletSupportedChains: EVM_CHAINS,
+    providers: { evm: mockEvmWallet },
   };
 
   return (
@@ -47,11 +48,7 @@ const WidgetDepositSetup = () => {
       theme={undefined}
       balanceViaRpc={false}
       localisation={undefined}>
-      <WidgetDeposit
-        isLoading={false}
-        providers={{ evm: mockEvmWallet }}
-        makeTransfer={mockMakeTransfer}
-      />
+      <WidgetDeposit isLoading={false} makeTransfer={mockMakeTransfer} />
       <CtxDebugger isEnabled={false} />
     </WidgetConfigProvider>
   );
