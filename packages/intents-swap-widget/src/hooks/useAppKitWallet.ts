@@ -1,14 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
-import {
-  useAppKit,
-  useAppKitAccount,
-  useDisconnect,
-} from '@reown/appkit/react';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { useAppKitAccount, useDisconnect } from '@reown/appkit/react';
+import { AppKitContext } from '../appkit';
 
 type ChainType = 'evm' | 'solana' | 'unknown';
 
 export const useAppKitWallet = () => {
-  const { open } = useAppKit();
+  const { appKit } = useContext(AppKitContext) ?? {};
   const { address: appKitAddress } = useAppKitAccount();
   const { disconnect: appKitDisconnect } = useDisconnect();
   const [isConnecting, setIsConnecting] = useState(false);
@@ -16,15 +13,19 @@ export const useAppKitWallet = () => {
   const connect = useCallback(async () => {
     setIsConnecting(true);
 
+    if (!appKit) {
+      throw new Error('AppKit is not initialized');
+    }
+
     try {
-      await open();
+      await appKit.open();
     } catch (error) {
       setIsConnecting(false);
       throw error;
     }
 
     setIsConnecting(false);
-  }, [open]);
+  }, [appKit]);
 
   const disconnect = useCallback(async () => {
     await appKitDisconnect({ namespace: 'solana' });

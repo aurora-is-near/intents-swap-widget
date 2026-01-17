@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 
-import { createAppKit } from '@reown/appkit/react';
+import { AppKit, createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
@@ -34,7 +34,10 @@ type AppKitProviderProps = {
   children: ReactNode;
 };
 
-type AppKitContextType = { isLoading: boolean };
+type AppKitContextType = {
+  isLoading: boolean;
+  appKit: AppKit | null;
+};
 
 const findFavicon = (): string | null =>
   document.querySelector<HTMLLinkElement>('link[rel*="icon"]')?.href ?? null;
@@ -70,7 +73,7 @@ export const initAppKit = ({
 
   const websiteFavicon = findFavicon();
 
-  createAppKit({
+  return createAppKit({
     adapters: [wagmiAdapter, solanaAdapter],
     // Networks must be inlined here (not spread from evmNetworks array)
     // because TypeScript requires a tuple type for AppKit networks
@@ -107,20 +110,27 @@ export const AppKitContext = createContext<AppKitContextType | undefined>(
 export const AppKitProvider = ({ children }: AppKitProviderProps) => {
   const wasEnabled = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [appKit, setAppKit] = useState<AppKit | null>(null);
   const config = useConfig();
   const theme = useTheme();
 
-  const value = useMemo(() => ({ isLoading }), [isLoading]);
-
   useEffect(() => {
     if (config.enableStandaloneMode && !wasEnabled.current) {
-      initAppKit({ appName: config.appName, theme });
+      setAppKit(initAppKit({ appName: config.appName, theme }));
 
       wasEnabled.current = true;
     }
 
     setIsLoading(false);
   }, [config, theme]);
+
+  const value = useMemo(
+    () => ({
+      isLoading,
+      appKit,
+    }),
+    [isLoading, appKit],
+  );
 
   return (
     <AppKitContext.Provider value={value}>{children}</AppKitContext.Provider>
