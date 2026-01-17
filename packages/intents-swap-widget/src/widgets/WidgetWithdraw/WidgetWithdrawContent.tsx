@@ -24,6 +24,7 @@ import {
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
+  useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
 
@@ -52,7 +53,6 @@ export const WidgetWithdrawContent = ({
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
-    onWalletSignout,
   } = useConfig();
 
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
@@ -60,6 +60,7 @@ export const WidgetWithdrawContent = ({
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
 
+  const { walletSignOut } = useWalletConnection();
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
 
@@ -130,7 +131,7 @@ export const WidgetWithdrawContent = ({
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_sign_out':
-              onWalletSignout?.(intentsAccountType);
+              walletSignOut?.(intentsAccountType);
               setIsCompatibilityOpen(false);
               break;
             case 'on_close':

@@ -20,3 +20,4 @@ export { useHandleKeyDown } from './useHandleKeyDown';
 export { useProviders } from './useProviders';
 export { useAppKitWallet } from './useAppKitWallet';
 export { useConnectedWallets } from './useConnectedWallets';
+export { useWalletConnection } from './useWalletConnection';

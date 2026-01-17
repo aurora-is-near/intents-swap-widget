@@ -6,11 +6,10 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
-import { useConfig } from '@/config';
 import { useTypedTranslation } from '@/localisation';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
-import { useAppKitWallet } from '@/hooks/useAppKitWallet';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
@@ -193,16 +192,13 @@ const useGetErrorButton = (ctx: Context) => {
 
 const ConnectWalletButton = () => {
   const { t } = useTypedTranslation();
-  const { connect } = useAppKitWallet();
-  const { enableStandaloneMode, onWalletSignin } = useConfig();
-
-  const onClick = enableStandaloneMode ? connect : onWalletSignin;
+  const { walletSignIn } = useWalletConnection();
 
   return (
     <Button
-      state={onClick ? 'default' : 'disabled'}
+      state={walletSignIn ? 'default' : 'disabled'}
       {...commonBtnProps}
-      onClick={onClick}>
+      onClick={walletSignIn}>
       {t('submit.error.connectWallet', 'Connect wallet')}
     </Button>
   );
