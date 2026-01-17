@@ -7,20 +7,20 @@ type ChainType = 'evm' | 'solana' | 'unknown';
 export const useAppKitWallet = () => {
   const { open } = useAppKit();
   const { address: appKitAddress } = useAppKitAccount();
-  // const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const providers = useProviders();
 
   const connect = useCallback(async () => {
-    // setIsConnecting(true);
+    setIsConnecting(true);
 
     try {
       await open();
     } catch (error) {
-      // setIsConnecting(false);
+      setIsConnecting(false);
       throw error;
     }
 
-    // setIsConnecting(false);
+    setIsConnecting(false);
   }, [open]);
 
   // For EVM chains, AppKit handles disconnect internally via the modal
@@ -46,7 +46,7 @@ export const useAppKitWallet = () => {
   return {
     chainType,
     address: appKitAddress,
-    isConnecting: false,
+    isConnecting,
     isConnected: !!appKitAddress,
     connect,
     disconnect,
