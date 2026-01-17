@@ -9,7 +9,6 @@ export const useWidgetConfig = () => {
   const widgetConfig = useMemo(
     (): Partial<WidgetConfig> => ({
       appName: 'Widget Creator',
-      intentsAccountType: 'near',
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedTargetChainsList: ['near'],
