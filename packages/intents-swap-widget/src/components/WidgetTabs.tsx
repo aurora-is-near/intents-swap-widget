@@ -17,6 +17,7 @@ export const WidgetTabs = ({ activeTab, onSelect }: Props) => {
 
         return (
           <button
+            key={tab}
             onClick={() => onSelect(tab)}
             className={cn(
               'rounded-sw-md text-sw-label-md cursor-pointer py-[10px] px-sw-lg',

@@ -6,7 +6,18 @@ import {
   type UseTranslationResponse,
 } from 'react-i18next';
 
+import { useEffect } from 'react';
 import { LocalisationDict, LocalisationKeys } from './types/localisation';
+
+const I18N = i18n.use(initReactI18next);
+
+void I18N.init({
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 type TypedUseTranslationResponse<
   Ns extends string = 'translation',
@@ -34,17 +45,8 @@ export function useTypedTranslation<
   return { t, ...rest } as TypedUseTranslationResponse<Ns, KPrefix>;
 }
 
-export const initLocalisation = (dict: LocalisationDict = {}) => {
-  void i18n.use(initReactI18next).init({
-    resources: {
-      en: {
-        translation: dict,
-      },
-    },
-    lng: 'en',
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+export const useLocalisation = (dict: LocalisationDict = {}) => {
+  useEffect(() => {
+    I18N.addResourceBundle('en', 'translation', dict);
+  }, [dict]);
 };

@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import {
   Banner,
   Button,
-  type MakeTransferArgs,
   SuccessScreen,
   Widget,
   WidgetConfigProvider,
@@ -20,8 +19,6 @@ const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 export function WidgetContent() {
   const { providers } = useAppKitWallet();
   const { state } = useCreator();
-  const [_makeTransferArgs, setMakeTransferArgs] =
-    useState<MakeTransferArgs | null>(null);
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
     useState<{
@@ -51,13 +48,8 @@ export function WidgetContent() {
     }
   }, [state.openThemeColorPickerId]);
 
-  const handleMakeTransfer = (args: MakeTransferArgs) => {
-    setMakeTransferArgs(args);
-  };
-
   const resetState = () => {
     setSuccessfulTransactionDetails(null);
-    setMakeTransferArgs(null);
   };
 
   if (successfulTransactionDetails) {
@@ -88,7 +80,7 @@ export function WidgetContent() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <Widget providers={providers} makeTransfer={handleMakeTransfer} />
+      <Widget providers={providers} />
       {exampleBanner && (
         <Banner
           variant={exampleBanner.variant}

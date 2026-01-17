@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import type { PropsWithChildren } from 'react';
 
-import { initLocalisation } from './localisation';
 import { LocalisationDict } from './types/localisation';
 import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
@@ -16,6 +15,7 @@ import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { AppKitProvider } from './appkit';
+import { useLocalisation } from './localisation';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { DEFAULT_CHAINS_ORDER, EVM_CHAINS } from '@/constants/chains';
@@ -123,7 +123,7 @@ export const WidgetConfigProvider = ({
   }, [userConfig]);
 
   // Initialise localisation
-  initLocalisation(localisation ?? {});
+  useLocalisation(localisation);
 
   // Add tailwind parent class to portal root
   useAddClassToPortal('headlessui-portal-root', 'sw');
