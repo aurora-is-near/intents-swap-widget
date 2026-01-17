@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 
-import { createAppKit as reownCreateAppKit } from '@reown/appkit/react';
+import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
@@ -70,7 +70,7 @@ export const initAppKit = ({
 
   const websiteFavicon = findFavicon();
 
-  reownCreateAppKit({
+  createAppKit({
     adapters: [wagmiAdapter, solanaAdapter],
     // Networks must be inlined here (not spread from evmNetworks array)
     // because TypeScript requires a tuple type for AppKit networks
