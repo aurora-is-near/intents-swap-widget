@@ -6,6 +6,7 @@ import {
   walletVerificationMessageFactory,
 } from '../utils/intents/walletCompatibilityVerification';
 import { IntentsTransferArgs } from '../types';
+import { logger } from '../logger';
 import { TransferError } from '@/errors';
 import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
@@ -159,6 +160,8 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
 
       return isValid;
     } catch (error) {
+      logger.error('Wallet compatibility check failed', error);
+
       return false;
     } finally {
       setIsSigning(false);
