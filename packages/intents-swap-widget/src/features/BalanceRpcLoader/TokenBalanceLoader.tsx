@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 import { useTokenBalanceRpc } from './useTokenBalanceRpc';
 import { WalletAddresses } from '../../types';
@@ -37,18 +37,30 @@ const TokenBalanceBaseLoader = memo(
       connectedWallets,
     });
 
+    const lastSent = useRef<string | null>(null);
+
     useEffect(() => {
-      // != checks for both null and undefined
-      if (!token.isIntent && balance != null) {
-        onBalancesLoaded({ [token.assetId]: balance });
+      if (token.isIntent || balance == null) {
+        return;
       }
+
+      // A unique key to avoid firing onBalancesLoaded with duplicate balances
+      const key = `${token.assetId}:${balance}`;
+
+      if (lastSent.current === key) {
+        return;
+      }
+
+      lastSent.current = key;
+      onBalancesLoaded({ [token.assetId]: balance });
     }, [token, balance, onBalancesLoaded]);
 
     return null;
   },
   (prev, next) =>
     prev.token.assetId === next.token.assetId &&
-    prev.connectedWallets === next.connectedWallets,
+    prev.connectedWallets === next.connectedWallets &&
+    prev.onBalancesLoaded === next.onBalancesLoaded,
 );
 
 TokenBalanceBaseLoader.displayName = 'TokenBalanceLoader';

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useMemo } from 'react';
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
@@ -28,10 +29,12 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
   const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
   // Create a stable key based on connected wallet addresses for react-query caching
-  const walletKey = Object.entries(connectedWallets)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([chain, addr]) => `${chain}:${addr}`)
-    .join('|');
+  const walletKey = useMemo(() => {
+    return Object.entries(connectedWallets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([chain, addr]) => `${chain}:${addr}`)
+      .join('|');
+  }, [connectedWallets]);
 
   return useQuery<string | null>({
     retry: 2,
