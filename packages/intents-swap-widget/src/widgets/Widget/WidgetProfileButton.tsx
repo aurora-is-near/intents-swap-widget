@@ -17,7 +17,7 @@ export const WidgetProfileButton = () => {
           <button
             type="button"
             onClick={isConnected ? disconnect : connect}
-            className="w-full flex items-center gap-sw-md px-sw-lg py-sw-sm rounded-sw-sm text-sm text-sw-gray-200 bg-sw-gray-900 border border-sw-gray-800 select-none cursor-pointer">
+            className="w-full flex items-center gap-sw-md px-sw-lg py-sw-sm rounded-sw-sm text-sm text-sw-gray-200 bg-sw-gray-900 border border-sw-gray-800 select-none cursor-pointer data-focus:outline-none">
             {isConnected ? 'Disconnect' : 'Connect Wallet'}
           </button>
         </MenuItem>
