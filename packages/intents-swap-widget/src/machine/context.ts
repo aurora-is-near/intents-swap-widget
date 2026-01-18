@@ -6,6 +6,7 @@ import type {
   InputValidWalletError,
   QuoteSuccessError,
 } from './errors';
+import { DefaultToken } from '../types';
 import type { Quote, QuoteDry, QuoteReal } from '@/types/quote';
 import type { Token, TokenBalance } from '@/types/token';
 
@@ -15,9 +16,11 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   sourceToken: undefined,
   sourceTokenBalance: undefined,
   sourceTokenAmount: '',
+  sourceTokenDefault: undefined,
 
   targetToken: undefined,
   targetTokenAmount: '',
+  targetTokenDefault: undefined,
 
   areInputsValidating: false,
   isDepositFromExternalWallet: false,
@@ -58,9 +61,11 @@ export type InitialDryContext = {
   sourceToken: Token | undefined;
   sourceTokenAmount: string;
   sourceTokenBalance?: never;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token | undefined;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress?: string;
   walletAddress?: string;
@@ -80,9 +85,11 @@ export type InitialWalletContext = {
   sourceToken: Token | undefined;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token | undefined;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   walletAddress: string;
   sendAddress: string | undefined;
@@ -102,9 +109,11 @@ export type InputValidDryContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance?: never;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress?: string;
   walletAddress?: string;
@@ -124,9 +133,11 @@ export type InputValidInternalContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress?: never;
   walletAddress: string;
@@ -146,9 +157,11 @@ export type InputValidExternalContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress: string;
   walletAddress: string;
@@ -168,9 +181,11 @@ export type QuoteSuccessDryContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance?: never;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress?: never;
   walletAddress?: never;
@@ -190,9 +205,11 @@ export type QuoteSuccessInternalContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress?: never;
   walletAddress: string;
@@ -214,9 +231,11 @@ export type QuoteSuccessExternalContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress: string;
   walletAddress: string;
@@ -238,9 +257,11 @@ export type TransferSuccessContext = {
   sourceToken: Token;
   sourceTokenAmount: string;
   sourceTokenBalance: TokenBalance;
+  sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
+  targetTokenDefault: DefaultToken | undefined | null;
 
   walletAddress: string;
   areInputsValidating?: never;

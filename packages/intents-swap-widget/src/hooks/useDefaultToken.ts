@@ -3,6 +3,20 @@ import { useTokens } from './useTokens';
 import { DefaultToken, Token } from '../types';
 import { useConfig } from '../config';
 import { logger } from '../logger';
+import { fireEvent, useUnsafeSnapshot } from '../machine';
+
+const isSameToken = (
+  tokenA?: { symbol: string; blockchain: string } | null,
+  tokenB?: { symbol: string; blockchain: string } | null,
+) => {
+  if (!tokenA || !tokenB) {
+    return tokenA === tokenB;
+  }
+
+  return (
+    tokenA.symbol === tokenB.symbol && tokenA.blockchain === tokenB.blockchain
+  );
+};
 
 export const useDefaultToken = (
   variant: 'source' | 'target',
@@ -10,6 +24,7 @@ export const useDefaultToken = (
 ) => {
   const { tokens } = useTokens(variant);
   const { defaultSourceToken, defaultTargetToken } = useConfig();
+  const { ctx } = useUnsafeSnapshot();
 
   // The set is needed here as, at the time of writing, the tokens list will
   // include two variants of each asset, with isIntent set as true or false.
@@ -17,7 +32,25 @@ export const useDefaultToken = (
     new Set(tokens.map((token) => token.assetId)),
   );
 
-  const setDefaultToken = (defaultToken: DefaultToken) => {
+  const setDefaultToken = (
+    defaultToken?: DefaultToken | null,
+    currentDefaultToken?: DefaultToken | null,
+  ) => {
+    if (isSameToken(defaultToken, currentDefaultToken)) {
+      // Only set the default token once, then allow the user to change it
+      return;
+    }
+
+    // Store the default globally to help avoid resetting it on every render
+    fireEvent('tokenSetDefault', {
+      variant,
+      token: defaultToken,
+    });
+
+    if (!defaultToken) {
+      return;
+    }
+
     const foundToken = tokens.find(
       (token) =>
         token.symbol.toUpperCase() === defaultToken.symbol.toUpperCase() &&
@@ -42,21 +75,21 @@ export const useDefaultToken = (
   };
 
   useEffect(() => {
-    if (variant === 'source' && defaultSourceToken) {
-      setDefaultToken(defaultSourceToken);
+    if (variant === 'source') {
+      setDefaultToken(defaultSourceToken, ctx.sourceTokenDefault);
 
       return;
     }
 
-    if (variant === 'target' && defaultTargetToken) {
-      setDefaultToken(defaultTargetToken);
+    if (variant === 'target') {
+      setDefaultToken(defaultTargetToken, ctx.targetTokenDefault);
 
       return;
     }
 
     const singleToken = uniqueAssetIds.length === 1 ? tokens[0] : null;
 
-    // If there is only one token for a given variant, select it by default
+    // If there is only one token for a given variant it is always selected
     if (singleToken) {
       onMsg({ type: 'on_select_token', token: singleToken });
     }

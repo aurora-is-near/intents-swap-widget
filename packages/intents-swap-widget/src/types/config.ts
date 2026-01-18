@@ -50,8 +50,8 @@ export type WidgetConfig = {
   }[];
 
   // Default tokens
-  defaultSourceToken?: DefaultToken;
-  defaultTargetToken?: DefaultToken;
+  defaultSourceToken?: DefaultToken | null;
+  defaultTargetToken?: DefaultToken | null;
 
   // Tokens filtering
   showIntentTokens: boolean;
