@@ -11,7 +11,7 @@ type Props = {
 
 export const WidgetTabs = ({ activeTab, onSelect }: Props) => {
   return (
-    <nav className="space-x-[10px] mb-sw-2xl w-full">
+    <nav className="space-x-[10px] w-full">
       {TABS.map((tab) => {
         const isActive = activeTab === tab;
 

@@ -20,6 +20,7 @@ import {
 import { useConfig } from '../../config';
 import { MakeTransferArgs } from '../../types';
 import { WidgetType } from '../../types/widget';
+import { WidgetProfileButton } from './WidgetProfileButton';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
@@ -60,8 +61,13 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
 
   return (
     <>
-      {enableAccountAbstraction && isTabsVisible && (
-        <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+      {enableAccountAbstraction && (
+        <div className="mb-sw-2xl w-full flex items-center">
+          {isTabsVisible && (
+            <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+          )}
+          <WidgetProfileButton />
+        </div>
       )}
 
       {(() => {
