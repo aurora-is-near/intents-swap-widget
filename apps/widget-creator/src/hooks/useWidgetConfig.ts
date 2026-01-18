@@ -17,8 +17,12 @@ export const useWidgetConfig = () => {
         state.selectedTokenSymbols.length > 0
           ? state.selectedTokenSymbols
           : undefined,
-      defaultSourceToken: state.defaultSellToken,
-      defaultTargetToken: state.defaultBuyToken,
+      defaultSourceToken: state.enableSellToken
+        ? state.defaultSellToken
+        : undefined,
+      defaultTargetToken: state.enableBuyToken
+        ? state.defaultBuyToken
+        : undefined,
     }),
     [state],
   );
