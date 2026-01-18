@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 
 import { useWalletBalance } from './useWalletBalance';
 import { useIntentsBalance } from './useIntentsBalance';
-import { useConfig } from '@/config';
+import { useConnectedWallets } from './useConnectedWallets';
 
 export const useMergedBalance = () => {
-  const { connectedWallets } = useConfig();
+  const { connectedWallets } = useConnectedWallets();
   const { intentBalances } = useIntentsBalance();
   const { walletBalance } = useWalletBalance(connectedWallets);
 

@@ -17,3 +17,8 @@ export { useExternalDepositStatus } from './useExternalDepositStatus';
 export { useIsCompatibilityCheckRequired } from './useIsCompatibilityCheckRequired';
 export { useToggleTheme } from './useToggleTheme';
 export { useHandleKeyDown } from './useHandleKeyDown';
+export { useAppKitProviders } from './useAppKitProviders';
+export { useAppKitWallet } from './useAppKitWallet';
+export { useConnectedWallets } from './useConnectedWallets';
+export { useWalletConnection } from './useWalletConnection';
+export { useProviders } from './useProviders';

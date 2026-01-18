@@ -874,6 +874,7 @@ export const Page = () => {
           },
         },
         lockSwapDirection: true,
+        providers,
       }}
       localisation={{
         'submit.active.swap': 'Swap now',
@@ -938,7 +939,6 @@ export const Page = () => {
       <WidgetSwap
         className={showConfirmSwaps ? 'hidden' : undefined}
         isFullPage
-        providers={providers}
         isLoading={isAppKitConnecting || isTonConnecting}
         makeTransfer={makeTransfer}
         onMsg={(msg) => {

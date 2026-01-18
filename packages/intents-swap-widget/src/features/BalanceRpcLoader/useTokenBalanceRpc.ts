@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useMemo } from 'react';
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
@@ -27,10 +28,18 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
   const { walletSupportedChains, tonCenterApiKey, alchemyApiKey } = useConfig();
   const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
+  // Create a stable key based on connected wallet addresses for react-query caching
+  const walletKey = useMemo(() => {
+    return Object.entries(connectedWallets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([chain, addr]) => `${chain}:${addr}`)
+      .join('|');
+  }, [connectedWallets]);
+
   return useQuery<string | null>({
     retry: 2,
     enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
-    queryKey: ['tokenBalance', token.assetId, connectedWallets],
+    queryKey: ['tokenBalance', token.assetId, walletKey],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
       if (!walletAddress) {

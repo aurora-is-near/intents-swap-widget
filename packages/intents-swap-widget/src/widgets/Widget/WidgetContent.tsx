@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -20,6 +20,8 @@ import {
 import { useConfig } from '../../config';
 import { MakeTransferArgs } from '../../types';
 import { WidgetType } from '../../types/widget';
+import { WidgetProfileButton } from './WidgetProfileButton';
+import { useAppKitWallet } from '../../hooks';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
@@ -32,9 +34,11 @@ export type Props = Omit<
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;
 
 export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
+  const wasStandaloneModeEnabled = useRef(false);
   const [isTabsVisible, setIsTabsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
-  const { enableAccountAbstraction } = useConfig();
+  const { enableAccountAbstraction, enableStandaloneMode } = useConfig();
+  const { disconnect, isConnected } = useAppKitWallet();
 
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
@@ -58,11 +62,32 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
     }
   }, [enableAccountAbstraction]);
 
+  // Disconnect any connected AppKit wallet when standalone mode is disabled and
+  // was previously enabled
+  useEffect(() => {
+    if (enableStandaloneMode) {
+      wasStandaloneModeEnabled.current = true;
+
+      return;
+    }
+
+    if (isConnected) {
+      void disconnect();
+    }
+  }, [enableStandaloneMode, isConnected]);
+
   return (
     <>
-      {enableAccountAbstraction && isTabsVisible && (
-        <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
-      )}
+      <div className="mb-sw-2xl w-full flex items-center">
+        {enableAccountAbstraction && isTabsVisible ? (
+          <>
+            <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+          </>
+        ) : (
+          <div className="w-full" />
+        )}
+        {enableStandaloneMode && <WidgetProfileButton />}
+      </div>
 
       {(() => {
         switch (activeTab) {

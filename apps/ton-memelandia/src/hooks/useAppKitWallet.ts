@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
-import { useProviders } from './useProviders';
+import {
+  useAppKit,
+  useAppKitAccount,
+  useDisconnect,
+} from '@reown/appkit/react';
 
 type ChainType = 'evm' | 'solana' | 'unknown';
 
@@ -8,7 +11,7 @@ export const useAppKitWallet = () => {
   const { open } = useAppKit();
   const { address: appKitAddress } = useAppKitAccount();
   const [isConnecting, setIsConnecting] = useState(false);
-  const providers = useProviders();
+  const { disconnect: appKitDisconnect } = useDisconnect();
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
@@ -23,12 +26,10 @@ export const useAppKitWallet = () => {
     setIsConnecting(false);
   }, [open]);
 
-  // For EVM chains, AppKit handles disconnect internally via the modal
   const disconnect = useCallback(async () => {
-    if (providers.sol?.disconnect) {
-      await providers.sol.disconnect();
-    }
-  }, [providers.sol]);
+    await appKitDisconnect({ namespace: 'solana' });
+    await appKitDisconnect({ namespace: 'eip155' });
+  }, [appKitDisconnect]);
 
   const chainType = useMemo((): ChainType => {
     if (!appKitAddress) {

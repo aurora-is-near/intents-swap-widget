@@ -14,6 +14,7 @@ import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
 import { ThemeProvider } from './theme/ThemeProvider';
+import { AppKitProvider } from './appkit';
 import { useLocalisation } from './localisation';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
@@ -131,26 +132,28 @@ export const WidgetConfigProvider = ({
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
-          <HelmetProvider>
-            <Helmet>
-              <link rel="preconnect" href="https://rsms.me/" />
-              <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-            </Helmet>
-            <ThemeProvider theme={theme}>
-              {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
-              {process.env.NODE_ENV === 'test' ? (
-                children
-              ) : (
-                <ErrorBoundary>{children}</ErrorBoundary>
+          <ThemeProvider theme={theme}>
+            <AppKitProvider>
+              <HelmetProvider>
+                <Helmet>
+                  <link rel="preconnect" href="https://rsms.me/" />
+                  <link
+                    rel="stylesheet"
+                    href="https://rsms.me/inter/inter.css"
+                  />
+                </Helmet>
+                {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
+                {process.env.NODE_ENV === 'test' ? (
+                  children
+                ) : (
+                  <ErrorBoundary>{children}</ErrorBoundary>
+                )}
+              </HelmetProvider>
+              {balanceViaRpc && (
+                <BalanceRpcLoader rpcs={rpcs ?? DEFAULT_RPCS} />
               )}
-            </ThemeProvider>
-          </HelmetProvider>
-          {balanceViaRpc && (
-            <BalanceRpcLoader
-              rpcs={rpcs ?? DEFAULT_RPCS}
-              connectedWallets={userConfig.connectedWallets ?? {}}
-            />
-          )}
+            </AppKitProvider>
+          </ThemeProvider>
         </WidgetConfigContext.Provider>
       </I18nextProvider>
     </QueryClientProvider>

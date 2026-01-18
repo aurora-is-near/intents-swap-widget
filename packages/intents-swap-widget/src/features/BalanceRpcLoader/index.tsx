@@ -1,16 +1,15 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
-import { WalletAddresses } from '../../types';
 import { useConfig } from '@/config';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import type { ChainRpcUrls } from '@/types/chain';
-import type { Token } from '@/types/token';
+import type { Token, TokenBalances } from '@/types/token';
+import { useConnectedWallets } from '@/hooks/useConnectedWallets';
 
 type Props = {
-  connectedWallets: WalletAddresses;
   rpcs: ChainRpcUrls;
 };
 
@@ -65,11 +64,19 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
   });
 };
 
-export const BalanceRpcLoader = ({ rpcs, connectedWallets }: Props) => {
+export const BalanceRpcLoader = ({ rpcs }: Props) => {
+  const { connectedWallets } = useConnectedWallets();
   const { tokens } = useAllTokens();
   const { walletSupportedChains } = useConfig();
   const { setWalletBalance } = useWalletBalance(connectedWallets);
   const sortedTokens = useMemo(() => sortTokensByPriority(tokens), [tokens]);
+
+  const onBalancesLoaded = useCallback(
+    (balance: TokenBalances) => {
+      setWalletBalance(connectedWallets, balance);
+    },
+    [connectedWallets, setWalletBalance],
+  );
 
   return sortedTokens.map((tkn) => {
     if (walletSupportedChains.includes(tkn.blockchain)) {
@@ -79,9 +86,7 @@ export const BalanceRpcLoader = ({ rpcs, connectedWallets }: Props) => {
           token={tkn}
           connectedWallets={connectedWallets}
           key={getTokenBalanceKey(tkn)}
-          onBalancesLoaded={(balance) =>
-            setWalletBalance(connectedWallets, balance)
-          }
+          onBalancesLoaded={onBalancesLoaded}
         />
       );
     }
@@ -91,9 +96,7 @@ export const BalanceRpcLoader = ({ rpcs, connectedWallets }: Props) => {
         rpcs={rpcs}
         token={tkn}
         key={getTokenBalanceKey(tkn)}
-        onBalancesLoaded={(balance) =>
-          setWalletBalance(connectedWallets, balance)
-        }
+        onBalancesLoaded={onBalancesLoaded}
       />
     );
   });

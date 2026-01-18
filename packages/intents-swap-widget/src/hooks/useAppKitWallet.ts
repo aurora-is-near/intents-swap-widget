@@ -1,39 +1,31 @@
-import { useCallback, useMemo, useState } from 'react';
-import {
-  useAppKit,
-  useAppKitAccount,
-  useAppKitProvider,
-  useDisconnect,
-} from '@reown/appkit/react';
-import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
-import type { Provider as Eip155Provider } from '@reown/appkit/react';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { useAppKitAccount, useDisconnect } from '@reown/appkit/react';
+import { AppKitContext } from '../appkit';
 
 type ChainType = 'evm' | 'solana' | 'unknown';
 
 export const useAppKitWallet = () => {
-  const { open } = useAppKit();
+  const { appKit } = useContext(AppKitContext) ?? {};
   const { address: appKitAddress } = useAppKitAccount();
-  const [isConnecting, setIsConnecting] = useState(false);
   const { disconnect: appKitDisconnect } = useDisconnect();
-
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana');
-
-  const { walletProvider: ethProvider } =
-    useAppKitProvider<Eip155Provider>('eip155');
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
 
+    if (!appKit) {
+      throw new Error('AppKit is not initialized');
+    }
+
     try {
-      await open();
+      await appKit.open();
     } catch (error) {
       setIsConnecting(false);
       throw error;
     }
 
     setIsConnecting(false);
-  }, [open]);
+  }, [appKit]);
 
   const disconnect = useCallback(async () => {
     await appKitDisconnect({ namespace: 'solana' });
@@ -55,17 +47,9 @@ export const useAppKitWallet = () => {
 
   return {
     chainType,
+    address: appKitAddress,
     isConnecting,
     isConnected: !!appKitAddress,
-    address: appKitAddress,
-    providers: {
-      evm: ethProvider,
-      sol: {
-        ...solanaProvider,
-        signMessage: async ({ message }: { message: Uint8Array }) =>
-          solanaProvider.signMessage(message),
-      },
-    },
     connect,
     disconnect,
   };

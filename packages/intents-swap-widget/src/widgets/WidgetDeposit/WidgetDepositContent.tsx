@@ -25,6 +25,7 @@ import {
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
+  useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
 
@@ -41,7 +42,6 @@ export type Msg =
 export type Props = CommonWidgetProps<Msg>;
 
 export const WidgetDepositContent = ({
-  providers,
   onMsg,
   makeTransfer,
   isLoading,
@@ -54,12 +54,12 @@ export const WidgetDepositContent = ({
     alchemyApiKey,
     refetchQuoteInterval,
     intentsAccountType,
-    onWalletSignout,
   } = useConfig();
 
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const { status: tokensStatus, refetch: refetchTokens } = useTokens();
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
+  const { walletSignOut } = useWalletConnection();
 
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
@@ -146,11 +146,10 @@ export const WidgetDepositContent = ({
   if (isCompatibilityOpen) {
     return (
       <WalletCompatibilityCheck
-        providers={providers}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_sign_out':
-              onWalletSignout?.(intentsAccountType);
+              walletSignOut?.(intentsAccountType);
               setIsCompatibilityOpen(false);
               break;
             case 'on_close':
@@ -270,7 +269,6 @@ export const WidgetDepositContent = ({
           {!isDirectNearTokenWithdrawal && <SwapQuote />}
 
           <SubmitButton
-            providers={providers}
             makeTransfer={makeTransfer}
             label={t('submit.active.deposit', 'Deposit now')}
             onSuccess={(transfer) => {

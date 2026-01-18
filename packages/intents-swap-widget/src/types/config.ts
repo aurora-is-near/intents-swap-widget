@@ -2,6 +2,7 @@ import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 import { Chains, ChainsFilters } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
+import { Providers } from './providers';
 
 export type WalletAddresses = Partial<
   Record<Chains | 'default', string | null>
@@ -22,6 +23,12 @@ export type WidgetConfig = {
 
   // Account abstraction
   enableAccountAbstraction?: boolean;
+
+  // Standalone mode
+  enableStandaloneMode?: boolean;
+
+  // Providers
+  providers?: Providers;
 
   // Connected wallet
   intentsAccountType?: IntentsAccountType;

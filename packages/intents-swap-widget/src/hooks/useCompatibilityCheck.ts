@@ -6,6 +6,7 @@ import {
   walletVerificationMessageFactory,
 } from '../utils/intents/walletCompatibilityVerification';
 import { IntentsTransferArgs } from '../types';
+import { logger } from '../logger';
 import { TransferError } from '@/errors';
 import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
@@ -17,6 +18,19 @@ type Props = {
   walletAddress?: string;
 };
 
+function assertDefined<T>(
+  value: T,
+  message: string,
+): asserts value is NonNullable<T> {
+  if (value == null) {
+    logger.error(message);
+    throw new TransferError({
+      code: 'TRANSFER_INVALID_INITIAL',
+      meta: { message },
+    });
+  }
+}
+
 export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   const [isSigning, setIsSigning] = useState(false);
   const { intentsAccountType } = useConfig();
@@ -26,19 +40,9 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   });
 
   async function handleSignInternal(): Promise<walletMessage.WalletSignatureResult> {
-    if (!intentsAccountId || !walletAddress) {
-      throw new TransferError({
-        code: 'TRANSFER_INVALID_INITIAL',
-        meta: { message: 'No wallet connected' },
-      });
-    }
-
-    if (!intentsAccountType) {
-      throw new TransferError({
-        code: 'TRANSFER_INVALID_INITIAL',
-        meta: { message: 'Intents account type is not defined' },
-      });
-    }
+    assertDefined(walletAddress, 'No wallet connected');
+    assertDefined(intentsAccountType, 'Intents account type is not defined');
+    assertDefined(intentsAccountId, 'Intents account ID is not defined');
 
     const authType =
       intentsAccountType === 'sol' ? 'solana' : intentsAccountType;
@@ -47,12 +51,7 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
 
     switch (intentsAccountType) {
       case 'evm': {
-        if (!providers?.evm) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No EVM provider configured' },
-          });
-        }
+        assertDefined(providers?.evm, 'No EVM provider configured');
 
         const provider =
           typeof providers.evm === 'function'
@@ -72,12 +71,7 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
       }
 
       case 'sol': {
-        if (!providers?.sol) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No SOL provider configured' },
-          });
-        }
+        assertDefined(providers?.sol, 'No SOL provider configured');
 
         const signatureData = await providers.sol.signMessage({
           message: msg.SOLANA.message,
@@ -93,12 +87,7 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
       case 'near': {
         const nearProvider = providers?.near ? providers.near() : null;
 
-        if (!nearProvider?.signMessage) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No NEAR provider configured' },
-          });
-        }
+        assertDefined(nearProvider?.signMessage, 'No NEAR provider configured');
 
         const signatureData = await nearProvider.signMessage({
           message: msg.NEP413.message,
@@ -106,12 +95,7 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
           recipient: msg.NEP413.recipient,
         });
 
-        if (!signatureData) {
-          throw new TransferError({
-            code: 'TRANSFER_INVALID_INITIAL',
-            meta: { message: 'No public key returned from NEAR wallet' },
-          });
-        }
+        assertDefined(signatureData, 'No public key returned from NEAR wallet');
 
         return {
           type: 'NEP413',
