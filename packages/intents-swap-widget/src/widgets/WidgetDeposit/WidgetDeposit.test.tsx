@@ -115,16 +115,16 @@ describe('Deposit', () => {
   it('renders deposit widget layout', async () => {
     const { screen, within } = setup(<WidgetDepositSetup />);
 
-    // 1. Tokens are fetched
-    expect(mockOneClickSDK.getTokens).toHaveBeenCalled();
-
-    // 2. Input initial state
+    // 1. Input initial state
     const tokenInput = await screen.findByLabelText('Sell');
     const inputAmount = within(tokenInput).getByPlaceholderText('0');
     expect(inputAmount).toBeInTheDocument();
     expect(inputAmount).not.toHaveFocus();
     expect(inputAmount).toHaveValue('');
     expect(inputAmount).toBeEnabled();
+
+    // 2. Tokens are fetched
+    expect(mockOneClickSDK.getTokens).toHaveBeenCalled();
 
     // 3. Deposit selector
     const depositMethodLabel = screen.getByText('Select deposit method');
