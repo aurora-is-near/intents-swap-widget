@@ -76,6 +76,11 @@ export const useDefaultToken = (
   };
 
   useEffect(() => {
+    // Wait for the tokens to load
+    if (!tokens.length) {
+      return;
+    }
+
     const singleToken = uniqueAssetIds.length === 1 ? tokens[0] : null;
 
     // If there is only one token for a given variant it is always selected
