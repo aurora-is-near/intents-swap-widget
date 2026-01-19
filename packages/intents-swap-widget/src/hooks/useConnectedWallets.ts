@@ -2,17 +2,14 @@ import { useAppKitWallet } from './useAppKitWallet';
 import { useConfig } from '../config';
 
 export const useConnectedWallets = () => {
-  const { connectedWallets } = useConfig();
+  const { connectedWallets, enableStandaloneMode } = useConfig();
   const { address } = useAppKitWallet();
 
-  if (!address) {
-    return { connectedWallets };
+  // If in standalone mode set the default wallet to the internal AppKit address.
+  if (enableStandaloneMode) {
+    return { connectedWallets: { default: address } };
   }
 
-  return {
-    connectedWallets: {
-      ...connectedWallets,
-      default: address,
-    },
-  };
+  // Otherwise, use the connected wallets passed in via the config.
+  return { connectedWallets };
 };
