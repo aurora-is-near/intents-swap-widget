@@ -127,8 +127,16 @@ A filter function applied to tokens in both the source and target lists. Return
 `true` to include the token, or `false` to exclude it.
 
 This can be useful when we want to exclude, rather than include particular tokens.
-If you want to include particlar tokens the `allowedTokensList` option might
+If you want to include particular tokens the `allowedTokensList` option might
 be more suitable.
+
+### `defaultSourceToken`
+
+Predefine the default source token. Can be set to `null` to keep it not selected.
+
+### `defaultTargetToken`
+
+Predefine the default target token. Can be set to `null` to keep it not selected.
 
 ### `chainsOrder`
 
