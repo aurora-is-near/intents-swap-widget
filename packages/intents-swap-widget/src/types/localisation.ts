@@ -32,6 +32,7 @@ export type LocalisationKeys =
   | 'tokens.input.max.label'
   | 'tokens.input.half.label'
   | 'tokens.input.externalBalance.label'
+  | 'tokens.input.externalBalanceOnly.label'
   | 'tokens.list.noBalanceOnApp.label'
   | 'tokens.list.noBalanceOnApp.subLabel'
   | 'tokens.list.searchEmpty.label'
@@ -43,6 +44,7 @@ export type LocalisationKeys =
   | 'deposit.external.error.failed'
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
+  | 'deposit.method.switcher.label'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'
