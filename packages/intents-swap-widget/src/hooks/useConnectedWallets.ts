@@ -2,12 +2,12 @@ import { useAppKitWallet } from './useAppKitWallet';
 import { useConfig } from '../config';
 
 export const useConnectedWallets = () => {
-  const { connectedWallets } = useConfig();
+  const { connectedWallets, enableStandaloneMode } = useConfig();
   const { address } = useAppKitWallet();
 
   // If we do not have an internal AppKit wallet address (i.e. from standalone mode)
   // then return the `connectedWallets` that are passed into the widget config.
-  if (!address) {
+  if (!enableStandaloneMode) {
     return { connectedWallets };
   }
 
