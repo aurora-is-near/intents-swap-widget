@@ -27,10 +27,9 @@ import {
   useTokens,
   useWalletConnection,
 } from '@/hooks';
+
 import { useConfig } from '@/config';
-
-import { isDebug, notReachable } from '@/utils';
-
+import { isDebug, noop, notReachable } from '@/utils';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 export type Msg =
@@ -223,6 +222,38 @@ export const WidgetDepositContent = ({
               }
             }}
           />
+        );
+      }
+
+      if (!ctx.walletAddress) {
+        return (
+          <div className="gap-sw-2xl flex flex-col">
+            <TokenInput.Source
+              showBalance
+              heading={t('tokenInput.heading.source.deposit', 'Sell')}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_select_token':
+                    onChangeToken('source', msg.token);
+                    break;
+                  case 'on_change_amount':
+                    onChangeAmount('source', msg.amount);
+                    break;
+                  case 'on_click_select_token':
+                    updateTokenModalState('source');
+                    break;
+                  default:
+                    notReachable(msg);
+                }
+              }}
+            />
+
+            <SubmitButton
+              makeTransfer={makeTransfer}
+              label={t('submit.active.deposit', 'Deposit now')}
+              onSuccess={noop}
+            />
+          </div>
         );
       }
 
