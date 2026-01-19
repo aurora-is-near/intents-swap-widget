@@ -6,7 +6,7 @@ export const useConnectedWallets = () => {
   const { address } = useAppKitWallet();
 
   // If in standlone mode set the default wallet to the internal AppKit address.
-  if (!enableStandaloneMode) {
+  if (enableStandaloneMode) {
     return { connectedWallets: { default: address } };
   }
 
