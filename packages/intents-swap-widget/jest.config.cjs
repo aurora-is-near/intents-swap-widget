@@ -8,6 +8,15 @@ const nodeModulesToTransform = [
   '@noble',
   'omni-bridge-sdk',
   'micro-packed',
+  'uint8arrays',
+  'multiformats',
+  'lit',
+  'lit-html',
+  'lit-element',
+  '@lit',
+  '@wagmi',
+  '@walletconnect',
+  '@reown',
 ].join('|');
 
 module.exports = {

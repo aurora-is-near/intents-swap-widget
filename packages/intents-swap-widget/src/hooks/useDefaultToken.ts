@@ -4,6 +4,7 @@ import { DefaultToken, Token } from '../types';
 import { useConfig } from '../config';
 import { logger } from '../logger';
 import { fireEvent, useUnsafeSnapshot } from '../machine';
+import { notReachable } from '../utils';
 
 const isSameToken = (
   tokenA?: { symbol: string; blockchain: string } | null,
@@ -75,23 +76,24 @@ export const useDefaultToken = (
   };
 
   useEffect(() => {
-    if (variant === 'source') {
-      setDefaultToken(defaultSourceToken, ctx.sourceTokenDefault);
-
-      return;
-    }
-
-    if (variant === 'target') {
-      setDefaultToken(defaultTargetToken, ctx.targetTokenDefault);
-
-      return;
-    }
-
     const singleToken = uniqueAssetIds.length === 1 ? tokens[0] : null;
 
     // If there is only one token for a given variant it is always selected
     if (singleToken) {
       onMsg({ type: 'on_select_token', token: singleToken });
+
+      return;
+    }
+
+    switch (variant) {
+      case 'source':
+        setDefaultToken(defaultSourceToken, ctx.sourceTokenDefault);
+        break;
+      case 'target':
+        setDefaultToken(defaultTargetToken, ctx.targetTokenDefault);
+        break;
+      default:
+        notReachable(variant, { throwError: false });
     }
   }, [tokens, defaultSourceToken, defaultTargetToken]);
 };
