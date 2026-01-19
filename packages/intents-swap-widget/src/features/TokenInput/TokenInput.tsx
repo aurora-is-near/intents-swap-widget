@@ -50,7 +50,7 @@ export const TokenInputWithToken = ({
   const inputName = useId();
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { hideTokenInputHeadings } = useConfig();
+  const { hideTokenInputHeadings, walletSupportedChains } = useConfig();
 
   const usdAmount = getUsdDisplayAmount(token, value, quoteUsdValue);
 
@@ -147,11 +147,16 @@ export const TokenInputWithToken = ({
           )}
 
           {!showBalance && (
-            <div className="rounded-full bg-sw-gray-700 py-sw-xs px-sw-sm flex items-center justify-center">
-              <span className="text-sw-gray-100 text-sw-label-sm">
-                {t('tokens.input.externalBalance.label', 'External balance')}
-              </span>
-            </div>
+            <span
+              className="text-sw-gray-200 text-sw-label-sm"
+              style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
+              {walletSupportedChains.includes(token.blockchain)
+                ? t('tokens.input.externalBalance.label', 'External balance')
+                : t(
+                    'tokens.input.externalBalanceOnly.label',
+                    'External balance only',
+                  )}
+            </span>
           )}
         </div>
       </div>
