@@ -1,14 +1,26 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
 import { useAppKitAccount, useDisconnect } from '@reown/appkit/react';
 import { AppKitContext } from '../appkit';
+import { useConfig } from '../config';
+import { noop } from '../utils';
 
 type ChainType = 'evm' | 'solana' | 'unknown';
 
-export const useAppKitWallet = () => {
+type AppKitWalletConfig = {
+  isConnecting: boolean;
+  isConnected: boolean;
+  connect: () => Promise<void> | void;
+  disconnect: () => Promise<void> | void;
+  address: string | undefined;
+  chainType: ChainType;
+};
+
+export const useAppKitWallet = (): AppKitWalletConfig => {
   const { appKit } = useContext(AppKitContext) ?? {};
   const { address: appKitAddress } = useAppKitAccount();
   const { disconnect: appKitDisconnect } = useDisconnect();
   const [isConnecting, setIsConnecting] = useState(false);
+  const { enableStandaloneMode } = useConfig();
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
@@ -44,6 +56,17 @@ export const useAppKitWallet = () => {
 
     return 'solana';
   }, [appKitAddress]);
+
+  if (!enableStandaloneMode) {
+    return {
+      isConnecting: false,
+      isConnected: false,
+      connect: noop,
+      disconnect: noop,
+      address: undefined,
+      chainType: 'unknown',
+    };
+  }
 
   return {
     chainType,
