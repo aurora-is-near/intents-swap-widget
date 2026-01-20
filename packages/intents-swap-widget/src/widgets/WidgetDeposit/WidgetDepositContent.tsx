@@ -6,6 +6,7 @@ import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
+  ExternalDeposit,
   SubmitButton,
   SuccessScreen,
   SwapQuote,
