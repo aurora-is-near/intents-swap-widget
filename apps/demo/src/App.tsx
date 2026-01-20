@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import {
-  guardStates,
-  useUnsafeSnapshot,
   Widget,
   WidgetConfigProvider,
 } from '@aurora-is-near/intents-swap-widget';
@@ -16,34 +14,6 @@ const defaultTheme: Theme = {
   primaryColor: '#D5B7FF',
   surfaceColor: '#24262D',
   colorScheme: 'dark',
-};
-
-type Props = {
-  isLoading: boolean;
-  showAppBalance: boolean;
-  setShowAppBalance: (showAppBalance: boolean) => void;
-};
-
-const Content = ({ isLoading, showAppBalance, setShowAppBalance }: Props) => {
-  const { ctx } = useUnsafeSnapshot();
-
-  const isTransferSuccess = guardStates(ctx, ['transfer_success']);
-
-  return (
-    <Widget
-      isFullPage={false}
-      isLoading={isLoading}
-      HeaderComponent={
-        isTransferSuccess ? null : (
-          <Toggle
-            isOn={showAppBalance}
-            label="Show app balance"
-            onToggle={setShowAppBalance}
-          />
-        )
-      }
-    />
-  );
 };
 
 export const App = () => {
@@ -72,8 +42,13 @@ export const App = () => {
             primaryColor: p.primaryColor,
             surfaceColor: p.surfaceColor,
           }))
-        }
-      />
+        }>
+        <Toggle
+          isOn={showAppBalance}
+          label="Show app balance"
+          onToggle={setShowAppBalance}
+        />
+      </PageHeader>
 
       <WidgetPageContainer>
         <WidgetConfigProvider
@@ -119,11 +94,7 @@ export const App = () => {
               ['eth', 'DAI'],
             ],
           }}>
-          <Content
-            isLoading={isLoading}
-            showAppBalance={showAppBalance}
-            setShowAppBalance={setShowAppBalance}
-          />
+          <Widget isFullPage={false} isLoading={isLoading} />
         </WidgetConfigProvider>
       </WidgetPageContainer>
     </>
