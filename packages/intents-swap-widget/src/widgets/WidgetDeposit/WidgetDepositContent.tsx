@@ -250,7 +250,10 @@ export const WidgetDepositContent = ({
 
             <SubmitButton
               makeTransfer={makeTransfer}
-              label={t('submit.active.deposit', 'Deposit now')}
+              label={t(
+                'submit.active.deposit',
+                'Confirm deposit in your wallet',
+              )}
               onSuccess={noop}
             />
           </div>
@@ -301,7 +304,7 @@ export const WidgetDepositContent = ({
 
           <SubmitButton
             makeTransfer={makeTransfer}
-            label={t('submit.active.deposit', 'Deposit now')}
+            label={t('submit.active.deposit', 'Confirm deposit in your wallet')}
             onSuccess={(transfer) => {
               setTransferResult(transfer);
               onMsg?.({ type: 'on_transfer_success' });
