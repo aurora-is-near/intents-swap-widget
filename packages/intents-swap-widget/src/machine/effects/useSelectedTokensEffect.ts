@@ -5,6 +5,7 @@ import { IntentsAccountType } from '../../types/config';
 import { isSolanaAddress } from '../../utils/solana/isSolanaAddress';
 import { isEvmAddress } from '../../utils/evm/isEvmAddress';
 import { isNearAddress } from '../../utils/near/isNearAddress';
+import { useDefaultToken } from '../../hooks/useDefaultToken';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -38,12 +39,24 @@ export const useSelectedTokensEffect = ({
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
+  const { defaultSourceToken, defaultTargetToken } = useConfig();
   const {
     walletSupportedChains,
     enableAccountAbstraction,
     chainsFilter,
     intentsAccountType,
   } = useConfig();
+
+  // Load default source and target tokens if they are not already set and we
+  // are not specifying a default via the config.
+  const shouldLoadInternalDefaultSourceToken =
+    !ctx.sourceToken && !defaultSourceToken;
+
+  const shouldLoadInternalDefaultTargetToken =
+    !ctx.targetToken && !defaultTargetToken;
+
+  useDefaultToken('source');
+  useDefaultToken('target');
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
@@ -108,7 +121,10 @@ export const useSelectedTokensEffect = ({
     const isGuardedState = guardStates(ctx, ['initial_dry', 'initial_wallet']);
 
     if (isGuardedState) {
-      if (sourceToken.status === 'loaded' && !ctx.sourceToken) {
+      if (
+        sourceToken.status === 'loaded' &&
+        shouldLoadInternalDefaultSourceToken
+      ) {
         fireEvent('tokenSelect', {
           variant: 'source',
           token: sourceToken.token,
@@ -118,7 +134,7 @@ export const useSelectedTokensEffect = ({
       if (
         targetToken.status === 'loaded' &&
         sourceToken.status === 'loaded' &&
-        !ctx.targetToken
+        shouldLoadInternalDefaultTargetToken
       ) {
         let tkn: Token | undefined = targetToken.token;
 
@@ -184,7 +200,7 @@ export const useSelectedTokensEffect = ({
     );
 
     const timer = setTimeout(() => {
-      if (!sourceToken.token) {
+      if (shouldLoadInternalDefaultSourceToken) {
         // 1. Intents token if possible
         if (!skipIntents && highestIntentsToken) {
           fireEvent('tokenSelect', {
