@@ -13,11 +13,11 @@ import {
   TokensModal,
 } from '@/features';
 
-import { BlockingError } from '@/components';
+import { Banner, BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
