@@ -19,7 +19,7 @@ const isSameToken = (
   );
 };
 
-export const useDefaultToken = (variant: 'source' | 'target') => {
+export const useExternalDefaultToken = (variant: 'source' | 'target') => {
   const { tokens } = useTokens(variant);
   const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { ctx } = useUnsafeSnapshot();

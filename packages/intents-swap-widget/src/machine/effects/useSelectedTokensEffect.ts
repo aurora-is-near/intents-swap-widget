@@ -5,7 +5,7 @@ import { IntentsAccountType } from '../../types/config';
 import { isSolanaAddress } from '../../utils/solana/isSolanaAddress';
 import { isEvmAddress } from '../../utils/evm/isEvmAddress';
 import { isNearAddress } from '../../utils/near/isNearAddress';
-import { useDefaultToken } from '../../hooks/useDefaultToken';
+import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -55,8 +55,8 @@ export const useSelectedTokensEffect = ({
   const shouldLoadInternalDefaultTargetToken =
     !ctx.targetToken && !defaultTargetToken;
 
-  useDefaultToken('source');
-  useDefaultToken('target');
+  useExternalDefaultToken('source');
+  useExternalDefaultToken('target');
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
