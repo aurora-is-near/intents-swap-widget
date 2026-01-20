@@ -18,7 +18,7 @@ import { Banner, BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 
 import { useStoreSideEffects } from '@/machine/effects';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
@@ -47,7 +47,6 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const {
     chainsFilter: customChainsFilter,
     alchemyApiKey,
