@@ -6,19 +6,18 @@ import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
-  DepositSummary,
-  ExternalDeposit,
   SubmitButton,
   SuccessScreen,
+  SwapQuote,
   TokenInput,
   TokensModal,
 } from '@/features';
 
-import { Banner, BlockingError } from '@/components';
+import { BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 
-import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
@@ -300,7 +299,7 @@ export const WidgetDepositContent = ({
             }
           </DepositMethodSwitcher>
 
-          <DepositSummary />
+          {!isDirectNearTokenWithdrawal && <SwapQuote />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

@@ -11,4 +11,3 @@ export * from './SwapDirectionSwitcher';
 export * from './ExternalDeposit';
 export * from './DepositMethodSwitcher';
 export * from './WalletCompatibilityCheck';
-export * from './DepositSummary';
