@@ -21,7 +21,7 @@ export const Badge = ({
     className={cn(
       'ml-auto flex items-center justify-center rounded-full transition-colors',
       {
-        'py-sw-xs px-sw-sm': size === 'sm',
+        'py-[3px] px-sw-sm': size === 'sm',
         'py-sw-sm px-sw-md': size === 'md',
         'bg-sw-gray-800 text-sw-gray-200': !isClickable,
         'bg-sw-gray-800 text-sw-gray-200 hover:bg-sw-gray-700 cursor-pointer':

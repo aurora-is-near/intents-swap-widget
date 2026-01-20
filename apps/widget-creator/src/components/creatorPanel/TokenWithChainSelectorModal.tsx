@@ -7,6 +7,7 @@ import {
   SimpleToken,
 } from '@aurora-is-near/intents-swap-widget';
 import { useTokens } from '../../hooks/useTokens';
+import { getChainName } from '../../utils/get-chain-name';
 
 interface TokenWithChainSelectorProps {
   isOpen: boolean;
@@ -211,18 +212,12 @@ export function TokenWithChainSelector({
                         })()}
                       </div>
 
-                      <div className="gap-[6px] mr-auto flex flex-col">
-                        <p className="text-sm text-csw-gray-50">
-                          {(() => {
-                            const chain = CHAINS.find(
-                              (c) => c.id === token.blockchain,
-                            );
-
-                            return chain?.label ?? token.blockchain;
-                          })()}
+                      <div className="gap-[2px] mr-auto flex flex-col">
+                        <p className="text-sm font-medium text-csw-gray-50">
+                          {token.symbol}
                         </p>
                         <p className="text-sm text-csw-gray-200 text-[12px]">
-                          {token.symbol}
+                          {token.symbol} on {getChainName(token.blockchain)}
                         </p>
                       </div>
                     </div>
