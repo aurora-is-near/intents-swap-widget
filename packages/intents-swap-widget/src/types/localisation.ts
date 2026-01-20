@@ -45,6 +45,8 @@ export type LocalisationKeys =
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
   | 'deposit.method.switcher.label'
+  | 'deposit.summary.youWillDeposit.label'
+  | 'deposit.summary.title'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'

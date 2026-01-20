@@ -6,10 +6,10 @@ import { useTypedTranslation } from '../../localisation';
 import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
+  DepositSummary,
   ExternalDeposit,
   SubmitButton,
   SuccessScreen,
-  SwapQuote,
   TokenInput,
   TokensModal,
 } from '@/features';
@@ -297,7 +297,7 @@ export const WidgetDepositContent = ({
             }
           </DepositMethodSwitcher>
 
-          {!isDirectNearTokenWithdrawal && <SwapQuote />}
+          <DepositSummary />
 
           <SubmitButton
             makeTransfer={makeTransfer}
