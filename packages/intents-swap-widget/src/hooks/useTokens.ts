@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
@@ -60,14 +60,21 @@ export const useTokens = (variant?: 'source' | 'target') => {
           return null;
         }
 
-        if (allowedTokensList && !allowedTokensList.includes(token.symbol)) {
+        if (
+          allowedTokensList &&
+          !allowedTokensList.includes(token.assetId) &&
+          !allowedTokensList.includes(token.symbol)
+        ) {
           return null;
         }
 
         if (
           variant === 'source' &&
           allowedSourceTokensList &&
-          !allowedSourceTokensList.includes(token.symbol)
+          !(
+            allowedSourceTokensList.includes(token.assetId) ||
+            allowedSourceTokensList.includes(token.symbol)
+          )
         ) {
           return null;
         }
@@ -75,7 +82,10 @@ export const useTokens = (variant?: 'source' | 'target') => {
         if (
           variant === 'target' &&
           allowedTargetTokensList &&
-          !allowedTargetTokensList.includes(token.symbol)
+          !(
+            allowedTargetTokensList.includes(token.assetId) ||
+            allowedTargetTokensList.includes(token.symbol)
+          )
         ) {
           return null;
         }
