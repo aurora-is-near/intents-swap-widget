@@ -60,14 +60,14 @@ export const useTokens = (variant?: 'source' | 'target') => {
           return null;
         }
 
-        if (allowedTokensList && !allowedTokensList.includes(token.assetId)) {
+        if (allowedTokensList && !allowedTokensList.includes(token.symbol)) {
           return null;
         }
 
         if (
           variant === 'source' &&
           allowedSourceTokensList &&
-          !allowedSourceTokensList.includes(token.assetId)
+          !allowedSourceTokensList.includes(token.symbol)
         ) {
           return null;
         }
@@ -75,7 +75,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
         if (
           variant === 'target' &&
           allowedTargetTokensList &&
-          !allowedTargetTokensList.includes(token.assetId)
+          !allowedTargetTokensList.includes(token.symbol)
         ) {
           return null;
         }
@@ -133,7 +133,15 @@ export const useTokens = (variant?: 'source' | 'target') => {
           ),
         ]
       : tokensWithoutWNEAR;
-  }, [queryData, showIntentTokens, filterTokens]);
+  }, [
+    queryData,
+    showIntentTokens,
+    filterTokens,
+    allowedTokensList,
+    allowedSourceTokensList,
+    allowedTargetTokensList,
+    variant,
+  ]);
 
   return {
     ...query,

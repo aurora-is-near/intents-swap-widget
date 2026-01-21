@@ -107,18 +107,17 @@ Controls whether NEAR Intents tokens appear in token lists.
 
 ### `allowedTokensList`
 
-Specifies the available tokens by their NEAR intents asset IDs. It will
-only be possible to select tokens from this list in both the source and the
-target inputs.
+Specifies the available token symbols. It will only be possible to select tokens
+from this list in both the source and the target inputs.
 
 ### `allowedSourceTokensList`
 
-Specifies the available **source** tokens by their NEAR intents asset IDs.
+Specifies the available **source** token symbols.
 It will only be possible to select tokens from this list in the source input.
 
 ### `allowedTargetTokensList`
 
-Specifies the available **target** tokens by their NEAR intents asset IDs.
+Specifies the available **target** token symbols.
 It will only be possible to select tokens from this list in the target input.
 
 ### `filterTokens`

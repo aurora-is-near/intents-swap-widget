@@ -1,5 +1,5 @@
 import { Edit, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
@@ -16,6 +16,7 @@ import {
 import type { TokenType } from '../../hooks/useTokens';
 
 export function Configure() {
+  const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
@@ -24,6 +25,20 @@ export function Configure() {
   );
 
   const allTokens = useTokensGroupedBySymbol();
+  const allTokenSymbols = allTokens.map((token) => token.symbol);
+
+  // Once the tokens have loaded, select them all initially
+  useEffect(() => {
+    if (wereInitialTokensSet.current || !allTokenSymbols.length) {
+      return;
+    }
+
+    wereInitialTokensSet.current = true;
+    dispatch({
+      type: 'SET_SELECTED_TOKEN_SYMBOLS',
+      payload: allTokenSymbols,
+    });
+  }, [allTokenSymbols]);
 
   const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
@@ -205,7 +220,8 @@ export function Configure() {
             <div className="flex gap-csw-2md items-center">
               <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
                 <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  {state.selectedTokenSymbols.length} tokens selected
+                  {state.selectedTokenSymbols.length} token
+                  {state.selectedTokenSymbols.length !== 1 ? 's' : ''} selected
                 </p>
               </div>
               <OutlinedButton
