@@ -14,6 +14,7 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import type { TokenType } from '../../hooks/useTokens';
+import { SelectATokenText } from './SelectATokenText';
 
 export function Configure() {
   const wereInitialTokensSet = useRef(false);
@@ -251,11 +252,12 @@ export function Configure() {
                   {(() => {
                     const sellToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultSellToken.symbol,
+                        token.symbol === state.defaultSellToken?.symbol,
                     );
 
                     const sellTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultSellToken.blockchain,
+                      (chain) =>
+                        chain.id === state.defaultSellToken?.blockchain,
                     );
 
                     return (
@@ -265,25 +267,29 @@ export function Configure() {
                           setIsTokenSelectorOpen(true);
                         }}
                         className="cursor-pointer">
-                        <TokenTag
-                          tokenIcon={
-                            sellToken?.icon ? (
-                              <div>
-                                <img
-                                  src={sellToken.icon}
-                                  alt={sellToken.symbol}
-                                  className="size-full rounded-full"
-                                />
-                                {sellTokenChain && (
-                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                    {sellTokenChain.icon}
-                                  </div>
-                                )}
-                              </div>
-                            ) : undefined
-                          }
-                          tokenSymbol={state.defaultSellToken.symbol}
-                        />
+                        {state.defaultSellToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              sellToken?.icon ? (
+                                <div>
+                                  <img
+                                    src={sellToken.icon}
+                                    alt={sellToken.symbol}
+                                    className="size-full rounded-full"
+                                  />
+                                  {sellTokenChain && (
+                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                      {sellTokenChain.icon}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : undefined
+                            }
+                            tokenSymbol={state.defaultSellToken.symbol}
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
                       </div>
                     );
                   })()}
@@ -310,11 +316,11 @@ export function Configure() {
                   {(() => {
                     const buyToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken.symbol,
+                        token.symbol === state.defaultBuyToken?.symbol,
                     );
 
                     const buyTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultBuyToken.blockchain,
+                      (chain) => chain.id === state.defaultBuyToken?.blockchain,
                     );
 
                     return (
@@ -324,25 +330,29 @@ export function Configure() {
                           setIsTokenSelectorOpen(true);
                         }}
                         className="cursor-pointer">
-                        <TokenTag
-                          tokenIcon={
-                            buyToken?.icon ? (
-                              <div>
-                                <img
-                                  src={buyToken.icon}
-                                  alt={buyToken.symbol}
-                                  className="size-full rounded-full"
-                                />
-                                {buyTokenChain && (
-                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                    {buyTokenChain.icon}
-                                  </div>
-                                )}
-                              </div>
-                            ) : undefined
-                          }
-                          tokenSymbol={state.defaultBuyToken.symbol}
-                        />
+                        {state.defaultBuyToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              buyToken?.icon ? (
+                                <div>
+                                  <img
+                                    src={buyToken.icon}
+                                    alt={buyToken.symbol}
+                                    className="size-full rounded-full"
+                                  />
+                                  {buyTokenChain && (
+                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                      {buyTokenChain.icon}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : undefined
+                            }
+                            tokenSymbol={state.defaultBuyToken.symbol}
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
                       </div>
                     );
                   })()}

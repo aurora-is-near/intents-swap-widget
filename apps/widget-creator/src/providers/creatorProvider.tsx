@@ -17,9 +17,9 @@ type CreatorState = {
   // Configure - Tokens
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
-  defaultSellToken: { symbol: string; blockchain: Chains };
+  defaultSellToken: { symbol: string; blockchain: Chains } | null;
   enableBuyToken: boolean;
-  defaultBuyToken: { symbol: string; blockchain: Chains };
+  defaultBuyToken: { symbol: string; blockchain: Chains } | null;
   // Configure - Fee collection
   enableCustomFees: boolean;
   feePercentage: string;
@@ -80,12 +80,12 @@ type Action =
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
   | {
       type: 'SET_DEFAULT_SELL_TOKEN';
-      payload: { symbol: string; blockchain: Chains };
+      payload: { symbol: string; blockchain: Chains } | null;
     }
   | { type: 'SET_ENABLE_BUY_TOKEN'; payload: boolean }
   | {
       type: 'SET_DEFAULT_BUY_TOKEN';
-      payload: { symbol: string; blockchain: Chains };
+      payload: { symbol: string; blockchain: Chains } | null;
     }
   // Configure - Fee collection
   | { type: 'SET_ENABLE_CUSTOM_FEES'; payload: boolean }
