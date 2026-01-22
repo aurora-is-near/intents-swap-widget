@@ -21,7 +21,6 @@ export default function App() {
         appName: 'My App',
         theme: {
           colorScheme: 'dark',
-          backgroundColor: '#1E2337',
           primaryColor: '#0098EA',
           surfaceColor: '#1E2337',
         },
@@ -38,7 +37,6 @@ export default function App() {
 | Property          | Type                             | Description                                                                                               |
 | ----------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `colorScheme`     | `'light' \| 'dark'`              | Sets the overall color scheme                                                                             |
-| `backgroundColor` | `string`                         | An optional background color for the widget                                                               |
 | `primaryColor`    | `string`                         | Main accent color used for highlights, buttons, and active states                                         |
 | `surfaceColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
 | `successColor`    | `string`                         | The color used for any success messages                                                                   |

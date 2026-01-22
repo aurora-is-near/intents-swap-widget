@@ -881,7 +881,6 @@ export const Page = () => {
       }}
       theme={{
         colorScheme: 'dark',
-        backgroundColor: '#1E2337',
         primaryColor: '#0098EA',
         surfaceColor: '#1E2337',
       }}>

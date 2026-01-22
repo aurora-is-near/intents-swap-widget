@@ -82,7 +82,6 @@ export function useConfigLink() {
     // Design - Colors
     params.append('primaryColor', state.primaryColor);
     params.append('surfaceColor', state.surfaceColor);
-    params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
     params.append('errorColor', state.errorColor);
@@ -255,15 +254,6 @@ export function useDecodeConfigLink() {
       dispatch({
         type: 'SET_CONTAINER_COLOR',
         payload: containerColor,
-      });
-    }
-
-    const backgroundColor = params.get('backgroundColor');
-
-    if (backgroundColor) {
-      dispatch({
-        type: 'SET_BACKGROUND_COLOR',
-        payload: backgroundColor,
       });
     }
 

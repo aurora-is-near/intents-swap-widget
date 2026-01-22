@@ -13,7 +13,6 @@ export const useThemeConfig = () => {
   const themeConfig = useMemo((): Theme => {
     const theme: Theme = {
       primaryColor: getValidThemeColor(state.primaryColor),
-      backgroundColor: getValidThemeColor(state.backgroundColor),
       successColor: getValidThemeColor(state.successColor),
       warningColor: getValidThemeColor(state.warningColor),
       errorColor: getValidThemeColor(state.errorColor),

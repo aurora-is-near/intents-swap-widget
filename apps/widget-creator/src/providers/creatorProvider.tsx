@@ -32,7 +32,6 @@ type CreatorState = {
   primaryColor: string;
   surfaceColor: string;
   containerColor: string;
-  backgroundColor: string;
   successColor: string;
   warningColor: string;
   errorColor: string;
@@ -56,9 +55,8 @@ const initialState: CreatorState = {
   borderRadius: 'md',
   showContainerWrapper: false,
   primaryColor: '#D5B7FF',
-  surfaceColor: '#2A2C33',
+  surfaceColor: '#24262D',
   containerColor: '#000000',
-  backgroundColor: '#24262D',
   successColor: '#98FFB5',
   warningColor: '#FADFAD',
   errorColor: '#FFB8BE',
@@ -96,7 +94,6 @@ type Action =
   | { type: 'SET_PRIMARY_COLOR'; payload: string }
   | { type: 'SET_SURFACE_COLOR'; payload: string }
   | { type: 'SET_CONTAINER_COLOR'; payload: string }
-  | { type: 'SET_BACKGROUND_COLOR'; payload: string }
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
   | { type: 'SET_WARNING_COLOR'; payload: string }
   | { type: 'SET_ERROR_COLOR'; payload: string }
@@ -157,8 +154,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, surfaceColor: action.payload };
     case 'SET_CONTAINER_COLOR':
       return { ...state, containerColor: action.payload };
-    case 'SET_BACKGROUND_COLOR':
-      return { ...state, backgroundColor: action.payload };
     case 'SET_SUCCESS_COLOR':
       return { ...state, successColor: action.payload };
     case 'SET_WARNING_COLOR':
@@ -176,7 +171,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         primaryColor: '#D5B7FF',
         surfaceColor: '#24262D',
         containerColor: '#000000',
-        backgroundColor: '#24262D',
         successColor: '#98FFB5',
         warningColor: '#FADFAD',
         errorColor: '#FFB8BE',

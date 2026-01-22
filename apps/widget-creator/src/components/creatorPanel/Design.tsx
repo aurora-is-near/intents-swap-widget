@@ -78,16 +78,6 @@ export function Design() {
                 hasInfo
               />
             )}
-            <ColorInput
-              label="Background color"
-              value={state.backgroundColor}
-              onChange={(val) =>
-                dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
-              }
-              isOpen={state.openThemeColorPickerId === 'backgroundColor'}
-              onOpen={() => setOpenPickerId('backgroundColor')}
-              onClose={() => setOpenPickerId(null)}
-            />
             <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
               <ColorInput
                 label="Success color"
