@@ -43,13 +43,13 @@ export function Design() {
 
           <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
             <ColorInput
-              label="Primary color"
-              value={state.primaryColor}
+              label="Accent color"
+              value={state.accentColor}
               onChange={(val) =>
-                dispatch({ type: 'SET_PRIMARY_COLOR', payload: val })
+                dispatch({ type: 'SET_ACCENT_COLOR', payload: val })
               }
-              isOpen={state.openThemeColorPickerId === 'primaryColor'}
-              onOpen={() => setOpenPickerId('primaryColor')}
+              isOpen={state.openThemeColorPickerId === 'accentColor'}
+              onOpen={() => setOpenPickerId('accentColor')}
               onClose={() => setOpenPickerId(null)}
             />
             {state.stylePreset === 'clean' && (

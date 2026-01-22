@@ -21,7 +21,7 @@ export default function App() {
         appName: 'My App',
         theme: {
           colorScheme: 'dark',
-          primaryColor: '#0098EA',
+          accentColor: '#0098EA',
           backgroundColor: '#1E2337',
         },
       }}
@@ -37,8 +37,8 @@ export default function App() {
 | Property          | Type                             | Description                                                                                               |
 | ----------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `colorScheme`     | `'light' \| 'dark'`              | Sets the overall color scheme                                                                             |
-| `primaryColor`    | `string`                         | Main accent color used for highlights, buttons, and active states                                         |
-| `backgroundColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
+| `accentColor`     | `string`                          | Main accent color used for highlights, buttons, and active states                                         |
+| `backgroundColor` | `string`                      | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
 | `successColor`    | `string`                         | The color used for any success messages                                                                   |
 | `warningColor`    | `string`                         | The color used for any warning messages                                                                   |
 | `errorColor`      | `string`                         | The color used for any error messages                                                                     |

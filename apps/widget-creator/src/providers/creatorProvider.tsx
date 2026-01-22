@@ -29,7 +29,7 @@ type CreatorState = {
   borderRadius: ThemeBorderRadius;
   showContainerWrapper: boolean;
   // Design - Colors
-  primaryColor: string;
+  accentColor: string;
   backgroundColor: string;
   containerColor: string;
   successColor: string;
@@ -54,7 +54,7 @@ const initialState: CreatorState = {
   stylePreset: 'clean',
   borderRadius: 'md',
   showContainerWrapper: false,
-  primaryColor: '#D5B7FF',
+  accentColor: '#D5B7FF',
   backgroundColor: '#24262D',
   containerColor: '#000000',
   successColor: '#98FFB5',
@@ -91,7 +91,7 @@ type Action =
   | { type: 'SET_BORDER_RADIUS'; payload: ThemeBorderRadius }
   | { type: 'SET_SHOW_CONTAINER_WRAPPER'; payload: boolean }
   // Design - Colors
-  | { type: 'SET_PRIMARY_COLOR'; payload: string }
+  | { type: 'SET_ACCENT_COLOR'; payload: string }
   | { type: 'SET_BACKGROUND_COLOR'; payload: string }
   | { type: 'SET_CONTAINER_COLOR'; payload: string }
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
@@ -148,8 +148,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, borderRadius: action.payload };
     case 'SET_SHOW_CONTAINER_WRAPPER':
       return { ...state, showContainerWrapper: action.payload };
-    case 'SET_PRIMARY_COLOR':
-      return { ...state, primaryColor: action.payload };
+    case 'SET_ACCENT_COLOR':
+      return { ...state, accentColor: action.payload };
     case 'SET_BACKGROUND_COLOR':
       return { ...state, backgroundColor: action.payload };
     case 'SET_CONTAINER_COLOR':
@@ -168,7 +168,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         stylePreset: 'clean',
         borderRadius: 'md',
         showContainerWrapper: false,
-        primaryColor: '#D5B7FF',
+        accentColor: '#D5B7FF',
         backgroundColor: '#24262D',
         containerColor: '#000000',
         successColor: '#98FFB5',

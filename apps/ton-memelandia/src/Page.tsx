@@ -881,7 +881,7 @@ export const Page = () => {
       }}
       theme={{
         colorScheme: 'dark',
-        primaryColor: '#0098EA',
+        accentColor: '#0098EA',
         backgroundColor: '#1E2337',
       }}>
       {showConfirmSwaps && (

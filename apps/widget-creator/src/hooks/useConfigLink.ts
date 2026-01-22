@@ -80,7 +80,7 @@ export function useConfigLink() {
     params.append('borderRadius', state.borderRadius);
 
     // Design - Colors
-    params.append('primaryColor', state.primaryColor);
+    params.append('accentColor', state.accentColor);
     params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
@@ -233,10 +233,10 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Colors
-    const primaryColor = params.get('primaryColor');
+    const accentColor = params.get('accentColor');
 
-    if (primaryColor) {
-      dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
+    if (accentColor) {
+      dispatch({ type: 'SET_ACCENT_COLOR', payload: accentColor });
     }
 
     const backgroundColor = params.get('backgroundColor');

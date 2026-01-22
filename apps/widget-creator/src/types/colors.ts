@@ -1,5 +1,5 @@
 export type ThemeColorPickerId =
-  | 'primaryColor'
+  | 'accentColor'
   | 'backgroundColor'
   | 'containerColor'
   | 'successColor'

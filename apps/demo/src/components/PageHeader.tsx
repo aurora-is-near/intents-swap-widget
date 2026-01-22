@@ -100,7 +100,7 @@ const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
   );
 };
 
-const defaultPrimaryColor: HexColor = '#D5B7FF';
+const defaultAccentColor: HexColor = '#D5B7FF';
 const defaultBackgroundColor: HexColor = '#636D9B';
 
 const getThemeColor = (
@@ -123,12 +123,12 @@ export const PageHeader = ({
 }: PropsWithChildren<{
   onToggleTheme?: ThemeToggleProps['onClick'];
   onSetColors?: (colors: {
-    primaryColor: HexColor;
+    accentColor: HexColor;
     backgroundColor: HexColor;
   }) => void;
 }>) => {
-  const [primaryColor, setPrimaryColor] = useState<string | undefined>(
-    defaultPrimaryColor,
+  const [accentColor, setAccentColor] = useState<string | undefined>(
+    defaultAccentColor,
   );
 
   const [backgroundColor, setBackgroundColor] = useState<string | undefined>(
@@ -137,7 +137,7 @@ export const PageHeader = ({
 
   const setThemeColors = () => {
     onSetColors?.({
-      primaryColor: getThemeColor(primaryColor, defaultPrimaryColor),
+      accentColor: getThemeColor(accentColor, defaultAccentColor),
       backgroundColor: getThemeColor(backgroundColor, defaultBackgroundColor),
     });
   };
@@ -149,8 +149,8 @@ export const PageHeader = ({
         <Input
           className="w-[108px]"
           placeholder="Accent color"
-          defaultValue={primaryColor}
-          onChange={(e) => setPrimaryColor(e.target.value)}
+          defaultValue={accentColor}
+          onChange={(e) => setAccentColor(e.target.value)}
           onBlur={setThemeColors}
         />
         <Input

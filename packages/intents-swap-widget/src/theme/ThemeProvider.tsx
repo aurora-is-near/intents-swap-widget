@@ -75,7 +75,7 @@ const setBorderRadiusVariables = (
 
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
   const {
-    primaryColor,
+    accentColor,
     backgroundColor,
     containerColor,
     successColor,
@@ -86,11 +86,11 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     stylePreset = 'clean',
   } = theme;
 
-  if (primaryColor) {
-    setColorPalette('accent', 500, parentEl, primaryColor, colorScheme);
+  if (accentColor) {
+    setColorPalette('accent', 500, parentEl, accentColor, colorScheme);
 
     if (stylePreset === 'bold') {
-      setColorPalette('gray', 50, parentEl, primaryColor, colorScheme);
+      setColorPalette('gray', 50, parentEl, accentColor, colorScheme);
     }
   }
 
