@@ -75,9 +75,6 @@ export function useConfigLink() {
     params.append('feePercentage', state.feePercentage);
     params.append('collectorAddress', state.collectorAddress);
 
-    // Design - Mode
-    params.append('defaultMode', state.defaultMode);
-
     // Design - Style
     params.append('stylePreset', state.stylePreset);
     params.append('borderRadius', state.borderRadius);
@@ -207,17 +204,6 @@ export function useDecodeConfigLink() {
 
     if (collectorAddress) {
       dispatch({ type: 'SET_COLLECTOR_ADDRESS', payload: collectorAddress });
-    }
-
-    // Design - Mode
-    const defaultMode = params.get('defaultMode');
-
-    if (
-      defaultMode === 'auto' ||
-      defaultMode === 'dark' ||
-      defaultMode === 'light'
-    ) {
-      dispatch({ type: 'SET_DEFAULT_MODE', payload: defaultMode });
     }
 
     // Design - Style

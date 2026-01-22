@@ -51,6 +51,7 @@ const styles = {
     ring-1 ring-inset ring-transparent
     transition-colors duration-250 ease-in-out
     rounded-csw-md
+    select-none
   `,
 };
 
