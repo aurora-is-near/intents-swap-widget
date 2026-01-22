@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTokens } from './useTokens';
-import { DefaultToken, Token } from '../types';
+import { DefaultToken } from '../types';
 import { useConfig } from '../config';
 import { logger } from '../logger';
 import { fireEvent, useUnsafeSnapshot } from '../machine';
@@ -19,10 +19,7 @@ const isSameToken = (
   );
 };
 
-export const useDefaultToken = (
-  variant: 'source' | 'target',
-  onMsg: (msg: { type: 'on_select_token'; token: Token }) => void,
-) => {
+export const useExternalDefaultToken = (variant: 'source' | 'target') => {
   const { tokens } = useTokens(variant);
   const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { ctx } = useUnsafeSnapshot();
@@ -71,7 +68,10 @@ export const useDefaultToken = (
     }
 
     if (foundToken) {
-      onMsg({ type: 'on_select_token', token: foundToken });
+      fireEvent('tokenSelect', {
+        variant,
+        token: foundToken,
+      });
     }
   };
 
@@ -85,7 +85,10 @@ export const useDefaultToken = (
 
     // If there is only one token for a given variant it is always selected
     if (singleToken) {
-      onMsg({ type: 'on_select_token', token: singleToken });
+      fireEvent('tokenSelect', {
+        variant,
+        token: singleToken,
+      });
 
       return;
     }

@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { useTokenInputBalance } from './hooks';
-import { useDefaultToken } from '../../hooks/useDefaultToken';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 
@@ -21,8 +20,6 @@ export const TokenInputTarget = ({
   const { ctx } = useUnsafeSnapshot();
   const { usdTradeDelta } = useComputedSnapshot();
   const targetTokenBalance = useTokenInputBalance(ctx.targetToken);
-
-  useDefaultToken('target', onMsg);
 
   const sourceInputState = useMemo(() => {
     if (!isChanging && ctx.quoteStatus === 'pending') {
