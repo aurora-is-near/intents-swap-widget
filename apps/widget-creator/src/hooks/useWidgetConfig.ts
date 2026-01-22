@@ -11,7 +11,6 @@ export const useWidgetConfig = () => {
       appName: 'Widget Creator',
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableStandaloneMode: state.userAuthMode === 'standalone',
-      allowedTargetChainsList: ['near'],
       allowedChainsList: state.selectedNetworks,
       allowedTokensList:
         state.selectedTokenSymbols.length > 0
