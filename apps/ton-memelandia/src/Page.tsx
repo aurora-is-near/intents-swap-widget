@@ -882,7 +882,7 @@ export const Page = () => {
       theme={{
         colorScheme: 'dark',
         primaryColor: '#0098EA',
-        surfaceColor: '#1E2337',
+        backgroundColor: '#1E2337',
       }}>
       {showConfirmSwaps && (
         <WidgetContainer

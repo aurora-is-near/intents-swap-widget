@@ -54,13 +54,13 @@ export function Design() {
             />
             {state.stylePreset === 'clean' && (
               <ColorInput
-                label="Surface color"
-                value={state.surfaceColor}
+                label="Background color"
+                value={state.backgroundColor}
                 onChange={(val) =>
-                  dispatch({ type: 'SET_SURFACE_COLOR', payload: val })
+                  dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'surfaceColor'}
-                onOpen={() => setOpenPickerId('surfaceColor')}
+                isOpen={state.openThemeColorPickerId === 'backgroundColor'}
+                onOpen={() => setOpenPickerId('backgroundColor')}
                 onClose={() => setOpenPickerId(null)}
                 hasInfo
               />

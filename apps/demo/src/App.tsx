@@ -12,7 +12,7 @@ import { useAppKitWallet } from './hooks/useAppKitWallet';
 
 const defaultTheme: Theme = {
   primaryColor: '#D5B7FF',
-  surfaceColor: '#24262D',
+  backgroundColor: '#24262D',
   colorScheme: 'dark',
 };
 
@@ -33,14 +33,14 @@ export const App = () => {
           setTheme((p) => ({
             colorScheme: p.colorScheme,
             primaryColor: colors.primaryColor,
-            surfaceColor: colors.surfaceColor,
+            backgroundColor: colors.backgroundColor,
           }))
         }
         onToggleTheme={(palette) =>
           setTheme((p) => ({
             colorScheme: palette,
             primaryColor: p.primaryColor,
-            surfaceColor: p.surfaceColor,
+            backgroundColor: p.backgroundColor,
           }))
         }>
         <Toggle

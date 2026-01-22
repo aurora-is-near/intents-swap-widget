@@ -63,7 +63,7 @@ export const WidgetContainer = ({
         className,
       )}
       style={{
-        backgroundColor: theme?.surfaceColor,
+        backgroundColor: theme?.backgroundColor,
       }}>
       <div className="w-full h-fit max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>

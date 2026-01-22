@@ -21,7 +21,7 @@ export const useThemeConfig = () => {
     };
 
     if (state.stylePreset === 'clean') {
-      theme.surfaceColor = getValidThemeColor(state.surfaceColor);
+      theme.backgroundColor = getValidThemeColor(state.backgroundColor);
     }
 
     if (state.showContainerWrapper) {

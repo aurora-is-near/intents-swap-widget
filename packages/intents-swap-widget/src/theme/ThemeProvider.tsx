@@ -76,7 +76,7 @@ const setBorderRadiusVariables = (
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
   const {
     primaryColor,
-    surfaceColor,
+    backgroundColor,
     containerColor,
     successColor,
     warningColor,
@@ -94,8 +94,8 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     }
   }
 
-  if (surfaceColor && stylePreset === 'clean') {
-    setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
+  if (backgroundColor && stylePreset === 'clean') {
+    setColorPalette('gray', 950, parentEl, backgroundColor, colorScheme);
   }
 
   if (containerColor) {

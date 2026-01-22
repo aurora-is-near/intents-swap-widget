@@ -101,7 +101,7 @@ const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
 };
 
 const defaultPrimaryColor: HexColor = '#D5B7FF';
-const defaultSurfaceColor: HexColor = '#636D9B';
+const defaultBackgroundColor: HexColor = '#636D9B';
 
 const getThemeColor = (
   color: string | undefined,
@@ -124,21 +124,21 @@ export const PageHeader = ({
   onToggleTheme?: ThemeToggleProps['onClick'];
   onSetColors?: (colors: {
     primaryColor: HexColor;
-    surfaceColor: HexColor;
+    backgroundColor: HexColor;
   }) => void;
 }>) => {
   const [primaryColor, setPrimaryColor] = useState<string | undefined>(
     defaultPrimaryColor,
   );
 
-  const [surfaceColor, setSurfaceColor] = useState<string | undefined>(
-    defaultSurfaceColor,
+  const [backgroundColor, setBackgroundColor] = useState<string | undefined>(
+    defaultBackgroundColor,
   );
 
   const setThemeColors = () => {
     onSetColors?.({
       primaryColor: getThemeColor(primaryColor, defaultPrimaryColor),
-      surfaceColor: getThemeColor(surfaceColor, defaultSurfaceColor),
+      backgroundColor: getThemeColor(backgroundColor, defaultBackgroundColor),
     });
   };
 
@@ -156,8 +156,8 @@ export const PageHeader = ({
         <Input
           className="w-[108px]"
           placeholder="Gray tone"
-          defaultValue={surfaceColor}
-          onChange={(e) => setSurfaceColor(e.target.value)}
+          defaultValue={backgroundColor}
+          onChange={(e) => setBackgroundColor(e.target.value)}
           onBlur={setThemeColors}
         />
         <ThemeToggle onClick={onToggleTheme} />

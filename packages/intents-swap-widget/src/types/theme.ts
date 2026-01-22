@@ -10,7 +10,7 @@ export type Theme = {
   colorScheme?: ColorScheme;
   stylePreset?: ThemeStylePreset;
   primaryColor?: HexColor;
-  surfaceColor?: HexColor;
+  backgroundColor?: HexColor;
   containerColor?: HexColor;
   successColor?: HexColor;
   warningColor?: HexColor;

@@ -22,7 +22,7 @@ export default function App() {
         theme: {
           colorScheme: 'dark',
           primaryColor: '#0098EA',
-          surfaceColor: '#1E2337',
+          backgroundColor: '#1E2337',
         },
       }}
     >
@@ -38,7 +38,7 @@ export default function App() {
 | ----------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `colorScheme`     | `'light' \| 'dark'`              | Sets the overall color scheme                                                                             |
 | `primaryColor`    | `string`                         | Main accent color used for highlights, buttons, and active states                                         |
-| `surfaceColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
+| `backgroundColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
 | `successColor`    | `string`                         | The color used for any success messages                                                                   |
 | `warningColor`    | `string`                         | The color used for any warning messages                                                                   |
 | `errorColor`      | `string`                         | The color used for any error messages                                                                     |
