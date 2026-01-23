@@ -4,6 +4,7 @@ import { Toggle } from '../../uikit/Toggle';
 import { OutlinedButton } from '../../uikit/Button';
 import { ColorInput } from './ColorInput';
 import { ThemeColorPickerId } from '../../types/colors';
+import { DEFAULT_ACCENT_COLOR } from '../../constants';
 
 const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
 
@@ -48,9 +49,10 @@ export function Design() {
               onChange={(val) =>
                 dispatch({ type: 'SET_ACCENT_COLOR', payload: val })
               }
-              isOpen={state.openThemeColorPickerId === 'accentColor'}
-              onOpen={() => setOpenPickerId('accentColor')}
-              onClose={() => setOpenPickerId(null)}
+              isColorPickerOpen={state.openThemeColorPickerId === 'accentColor'}
+              onOpenColorPicker={() => setOpenPickerId('accentColor')}
+              onCloseColorPicker={() => setOpenPickerId(null)}
+              themes={[DEFAULT_ACCENT_COLOR, '#00D8F0', '#9EED00', '#FFA61E']}
             />
             {state.stylePreset === 'clean' && (
               <ColorInput
@@ -59,10 +61,12 @@ export function Design() {
                 onChange={(val) =>
                   dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'backgroundColor'}
-                onOpen={() => setOpenPickerId('backgroundColor')}
-                onClose={() => setOpenPickerId(null)}
-                hasInfo
+                isColorPickerOpen={
+                  state.openThemeColorPickerId === 'backgroundColor'
+                }
+                onOpenColorPicker={() => setOpenPickerId('backgroundColor')}
+                onCloseColorPicker={() => setOpenPickerId(null)}
+                themes={[]}
               />
             )}
             {state.showContainerWrapper && (
@@ -72,10 +76,12 @@ export function Design() {
                 onChange={(val) =>
                   dispatch({ type: 'SET_CONTAINER_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'containerColor'}
-                onOpen={() => setOpenPickerId('containerColor')}
-                onClose={() => setOpenPickerId(null)}
-                hasInfo
+                isColorPickerOpen={
+                  state.openThemeColorPickerId === 'containerColor'
+                }
+                onOpenColorPicker={() => setOpenPickerId('containerColor')}
+                onCloseColorPicker={() => setOpenPickerId(null)}
+                themes={[]}
               />
             )}
             <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
@@ -85,9 +91,12 @@ export function Design() {
                 onChange={(val) =>
                   dispatch({ type: 'SET_SUCCESS_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'successColor'}
-                onOpen={() => setOpenPickerId('successColor')}
-                onClose={() => setOpenPickerId(null)}
+                isColorPickerOpen={
+                  state.openThemeColorPickerId === 'successColor'
+                }
+                onOpenColorPicker={() => setOpenPickerId('successColor')}
+                onCloseColorPicker={() => setOpenPickerId(null)}
+                themes={[]}
               />
               <ColorInput
                 label="Warning color"
@@ -95,9 +104,12 @@ export function Design() {
                 onChange={(val) =>
                   dispatch({ type: 'SET_WARNING_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'warningColor'}
-                onOpen={() => setOpenPickerId('warningColor')}
-                onClose={() => setOpenPickerId(null)}
+                isColorPickerOpen={
+                  state.openThemeColorPickerId === 'warningColor'
+                }
+                onOpenColorPicker={() => setOpenPickerId('warningColor')}
+                onCloseColorPicker={() => setOpenPickerId(null)}
+                themes={[]}
               />
               <ColorInput
                 label="Error color"
@@ -105,10 +117,12 @@ export function Design() {
                 onChange={(val) =>
                   dispatch({ type: 'SET_ERROR_COLOR', payload: val })
                 }
-                isOpen={state.openThemeColorPickerId === 'errorColor'}
-                onOpen={() => setOpenPickerId('errorColor')}
-                onClose={() => setOpenPickerId(null)}
-                disabled
+                isColorPickerOpen={
+                  state.openThemeColorPickerId === 'errorColor'
+                }
+                onOpenColorPicker={() => setOpenPickerId('errorColor')}
+                onCloseColorPicker={() => setOpenPickerId(null)}
+                themes={[]}
               />
             </div>
           </div>

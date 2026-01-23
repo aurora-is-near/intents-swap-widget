@@ -6,6 +6,7 @@ import {
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
+import { DEFAULT_ACCENT_COLOR } from '../constants';
 
 type CreatorState = {
   // Configure - User authentication
@@ -54,7 +55,7 @@ const initialState: CreatorState = {
   stylePreset: 'clean',
   borderRadius: 'md',
   showContainerWrapper: false,
-  accentColor: '#D5B7FF',
+  accentColor: DEFAULT_ACCENT_COLOR,
   backgroundColor: '#24262D',
   containerColor: '#000000',
   successColor: '#98FFB5',
@@ -168,7 +169,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         stylePreset: 'clean',
         borderRadius: 'md',
         showContainerWrapper: false,
-        accentColor: '#D5B7FF',
+        accentColor: DEFAULT_ACCENT_COLOR,
         backgroundColor: '#24262D',
         containerColor: '#000000',
         successColor: '#98FFB5',
