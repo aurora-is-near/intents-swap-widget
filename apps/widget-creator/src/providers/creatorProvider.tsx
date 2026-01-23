@@ -40,7 +40,6 @@ type CreatorState = {
   // Design - Colors
   accentColor: string;
   backgroundColor: string;
-  containerColor: string;
   successColor: string;
   warningColor: string;
   errorColor: string;
@@ -66,7 +65,6 @@ const initialState: CreatorState = {
   showContainerWrapper: false,
   accentColor: DEFAULT_ACCENT_COLOR,
   backgroundColor: DEFAULT_BACKGROUND_COLOR,
-  containerColor: '#000000',
   successColor: DEFAULT_SUCCESS_COLOR_LIGHT,
   warningColor: DEFAULT_WARNING_COLOR_LIGHT,
   errorColor: DEFAULT_ERROR_COLOR_LIGHT,
@@ -105,7 +103,6 @@ type Action =
   // Design - Colors
   | { type: 'SET_ACCENT_COLOR'; payload: string }
   | { type: 'SET_BACKGROUND_COLOR'; payload: string }
-  | { type: 'SET_CONTAINER_COLOR'; payload: string }
   | { type: 'SET_SUCCESS_COLOR'; payload: string }
   | { type: 'SET_WARNING_COLOR'; payload: string }
   | { type: 'SET_ERROR_COLOR'; payload: string }
@@ -166,8 +163,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, accentColor: action.payload };
     case 'SET_BACKGROUND_COLOR':
       return { ...state, backgroundColor: action.payload };
-    case 'SET_CONTAINER_COLOR':
-      return { ...state, containerColor: action.payload };
     case 'SET_SUCCESS_COLOR':
       return { ...state, successColor: action.payload };
     case 'SET_WARNING_COLOR':
@@ -185,7 +180,6 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         showContainerWrapper: false,
         accentColor: DEFAULT_ACCENT_COLOR,
         backgroundColor: DEFAULT_BACKGROUND_COLOR,
-        containerColor: '#000000',
         successColor: DEFAULT_SUCCESS_COLOR_LIGHT,
         warningColor: DEFAULT_WARNING_COLOR_LIGHT,
         errorColor: DEFAULT_ERROR_COLOR_LIGHT,

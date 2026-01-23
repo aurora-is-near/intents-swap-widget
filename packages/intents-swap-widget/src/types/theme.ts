@@ -11,7 +11,6 @@ export type Theme = {
   stylePreset?: ThemeStylePreset;
   accentColor?: HexColor;
   backgroundColor?: HexColor;
-  containerColor?: HexColor;
   successColor?: HexColor;
   warningColor?: HexColor;
   errorColor?: HexColor;

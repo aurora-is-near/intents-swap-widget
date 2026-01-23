@@ -42,7 +42,6 @@ export default function App() {
 | `successColor`    | `string`                         | The color used for any success messages                                                                   |
 | `warningColor`    | `string`                         | The color used for any warning messages                                                                   |
 | `errorColor`      | `string`                         | The color used for any error messages                                                                     |
-| `containerColor`  | `string`                         | The color used for the container (see `showContainer`)                                                    |
 | `stylePreset`     |  `'clean' \| 'bold'`             | Defines the way in which the colours are used to theme the widget                                         |
 | `borderRadius`    | `'none' \| 'sm' \| 'md' \| 'lg'` | The size of the border radii used throughout the widget                                                   |
 | `showContainer`   | `true \| false`                  | Swap a container around the widget                                                                        |

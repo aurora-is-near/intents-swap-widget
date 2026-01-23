@@ -102,21 +102,6 @@ export function Design() {
                 />
               ))}
             </ColorInputGroup>
-            {state.showContainerWrapper && (
-              <ColorInputItems
-                label="Container color"
-                value={state.containerColor}
-                onChange={(val) =>
-                  dispatch({ type: 'SET_CONTAINER_COLOR', payload: val })
-                }
-                isColorPickerOpen={
-                  state.openThemeColorPickerId === 'containerColor'
-                }
-                onOpenColorPicker={() => setOpenPickerId('containerColor')}
-                onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={['#250042', '#F8F5FF']}
-              />
-            )}
             <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
               <ColorInputItems
                 label="Success color"

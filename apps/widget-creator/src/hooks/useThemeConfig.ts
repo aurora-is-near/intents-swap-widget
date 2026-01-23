@@ -27,7 +27,6 @@ export const useThemeConfig = () => {
 
     if (state.showContainerWrapper) {
       theme.showContainer = true;
-      theme.containerColor = getValidThemeColor(state.containerColor);
     }
 
     return theme;

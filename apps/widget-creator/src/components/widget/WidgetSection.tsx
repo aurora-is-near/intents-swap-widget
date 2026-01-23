@@ -11,12 +11,20 @@ export const WidgetSection = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     if (state.stylePreset === 'bold') {
-      setBackgroundColor(getWidgetColor('accent-950'));
+      setBackgroundColor(
+        state.showContainerWrapper
+          ? getWidgetColor('accent-50')
+          : getWidgetColor('accent-950'),
+      );
 
       return;
     }
 
-    setBackgroundColor(getWidgetColor('gray-950'));
+    setBackgroundColor(
+      state.showContainerWrapper
+        ? getWidgetColor('gray-50')
+        : getWidgetColor('gray-950'),
+    );
   }, [state]);
 
   return (

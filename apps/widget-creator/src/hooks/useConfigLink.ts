@@ -91,8 +91,6 @@ export function useConfigLink() {
         'showContainerWrapper',
         state.showContainerWrapper.toString(),
       );
-
-      params.append('containerColor', state.containerColor);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -245,15 +243,6 @@ export function useDecodeConfigLink() {
       dispatch({
         type: 'SET_BACKGROUND_COLOR',
         payload: backgroundColor,
-      });
-    }
-
-    const containerColor = params.get('containerColor');
-
-    if (containerColor) {
-      dispatch({
-        type: 'SET_CONTAINER_COLOR',
-        payload: containerColor,
       });
     }
 
