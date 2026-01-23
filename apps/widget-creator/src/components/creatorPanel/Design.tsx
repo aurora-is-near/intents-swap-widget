@@ -154,40 +154,38 @@ export function Design() {
       </ConfigSection>
 
       <ConfigSection title="Layout">
-        <div className="space-y-csw-xl">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
-              Corner radius
-            </span>
-            <div className="flex items-center gap-csw-2md">
-              {BORDER_RADIUS_VALUES.map((radius) => (
-                <OutlinedButton
-                  key={radius}
-                  size="sm"
-                  className="w-[36px] h-[36px]"
-                  state={state.borderRadius === radius ? 'active' : 'default'}
-                  onClick={() =>
-                    dispatch({
-                      type: 'SET_BORDER_RADIUS',
-                      payload: radius,
-                    })
-                  }>
-                  {radius === 'none'
-                    ? '–'
-                    : radius.substring(0, 1).toUpperCase()}
-                </OutlinedButton>
-              ))}
-            </div>
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
+            Corner radius
+          </span>
+          <div className="flex items-center gap-csw-2md">
+            {BORDER_RADIUS_VALUES.map((radius) => (
+              <OutlinedButton
+                key={radius}
+                size="sm"
+                className="w-[36px] h-[36px]"
+                state={state.borderRadius === radius ? 'active' : 'default'}
+                onClick={() =>
+                  dispatch({
+                    type: 'SET_BORDER_RADIUS',
+                    payload: radius,
+                  })
+                }>
+                {radius === 'none' ? '–' : radius.substring(0, 1).toUpperCase()}
+              </OutlinedButton>
+            ))}
           </div>
-
-          <Toggle
-            label="Show container wrapper"
-            isEnabled={state.showContainerWrapper}
-            onChange={(enabled) =>
-              dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: enabled })
-            }
-          />
         </div>
+
+        <div className="border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl" />
+
+        <Toggle
+          label="Show container wrapper"
+          isEnabled={state.showContainerWrapper}
+          onChange={(enabled) =>
+            dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: enabled })
+          }
+        />
       </ConfigSection>
     </div>
   );
