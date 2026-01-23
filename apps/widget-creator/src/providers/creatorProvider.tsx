@@ -6,7 +6,7 @@ import {
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
-import { DEFAULT_ACCENT_COLOR } from '../constants';
+import { DEFAULT_ACCENT_COLOR, DEFAULT_BACKGROUND_COLOR } from '../constants';
 
 type CreatorState = {
   // Configure - User authentication
@@ -25,6 +25,8 @@ type CreatorState = {
   enableCustomFees: boolean;
   feePercentage: string;
   collectorAddress: string;
+  // Design - Mode
+  defaultMode: 'dark' | 'light';
   // Design - Style
   stylePreset: 'clean' | 'bold';
   borderRadius: ThemeBorderRadius;
@@ -52,11 +54,12 @@ const initialState: CreatorState = {
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
   // Design
+  defaultMode: 'dark',
   stylePreset: 'clean',
   borderRadius: 'md',
   showContainerWrapper: false,
   accentColor: DEFAULT_ACCENT_COLOR,
-  backgroundColor: '#24262D',
+  backgroundColor: DEFAULT_BACKGROUND_COLOR,
   containerColor: '#000000',
   successColor: '#98FFB5',
   warningColor: '#FADFAD',
@@ -87,6 +90,8 @@ type Action =
   | { type: 'SET_ENABLE_CUSTOM_FEES'; payload: boolean }
   | { type: 'SET_FEE_PERCENTAGE'; payload: string }
   | { type: 'SET_COLLECTOR_ADDRESS'; payload: string }
+  // Design - Mode
+  | { type: 'SET_DEFAULT_MODE'; payload: 'dark' | 'light' }
   // Design - Style
   | { type: 'SET_STYLE_PRESET'; payload: 'clean' | 'bold' }
   | { type: 'SET_BORDER_RADIUS'; payload: ThemeBorderRadius }
@@ -143,6 +148,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, collectorAddress: action.payload };
 
     // Design
+    case 'SET_DEFAULT_MODE':
+      return { ...state, defaultMode: action.payload };
     case 'SET_STYLE_PRESET':
       return { ...state, stylePreset: action.payload };
     case 'SET_BORDER_RADIUS':
@@ -166,11 +173,12 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     case 'RESET_DESIGN':
       return {
         ...state,
+        defaultMode: 'dark',
         stylePreset: 'clean',
         borderRadius: 'md',
         showContainerWrapper: false,
         accentColor: DEFAULT_ACCENT_COLOR,
-        backgroundColor: '#24262D',
+        backgroundColor: DEFAULT_BACKGROUND_COLOR,
         containerColor: '#000000',
         successColor: '#98FFB5',
         warningColor: '#FADFAD',

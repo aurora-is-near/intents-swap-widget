@@ -4,9 +4,14 @@ import { Toggle } from '../../uikit/Toggle';
 import { OutlinedButton } from '../../uikit/Button';
 import { ColorInput } from './ColorInput';
 import { ThemeColorPickerId } from '../../types/colors';
-import { DEFAULT_ACCENT_COLOR } from '../../constants';
+import {
+  DEFAULT_ACCENT_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+} from '../../constants';
 
 const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
+const DARK_MODE_COLOR = '#250042';
+const LIGHT_MODE_COLOR = '#F8F5FF';
 
 export function Design() {
   const { state, dispatch } = useCreator();
@@ -54,21 +59,39 @@ export function Design() {
               onCloseColorPicker={() => setOpenPickerId(null)}
               themes={[DEFAULT_ACCENT_COLOR, '#00D8F0', '#9EED00', '#FFA61E']}
             />
-            {state.stylePreset === 'clean' && (
-              <ColorInput
-                label="Background color"
-                value={state.backgroundColor}
-                onChange={(val) =>
-                  dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val })
+            <ColorInput
+              label="Background color"
+              value={state.backgroundColor}
+              onChange={(val) => {
+                if (val === DARK_MODE_COLOR) {
+                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
+                  dispatch({
+                    type: 'SET_BACKGROUND_COLOR',
+                    payload: DEFAULT_BACKGROUND_COLOR,
+                  });
+
+                  return;
                 }
-                isColorPickerOpen={
-                  state.openThemeColorPickerId === 'backgroundColor'
+
+                if (val === LIGHT_MODE_COLOR) {
+                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'light' });
+                  dispatch({
+                    type: 'SET_BACKGROUND_COLOR',
+                    payload: DEFAULT_BACKGROUND_COLOR,
+                  });
+
+                  return;
                 }
-                onOpenColorPicker={() => setOpenPickerId('backgroundColor')}
-                onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={[]}
-              />
-            )}
+
+                dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val });
+              }}
+              isColorPickerOpen={
+                state.openThemeColorPickerId === 'backgroundColor'
+              }
+              onOpenColorPicker={() => setOpenPickerId('backgroundColor')}
+              onCloseColorPicker={() => setOpenPickerId(null)}
+              themes={[DARK_MODE_COLOR, LIGHT_MODE_COLOR]}
+            />
             {state.showContainerWrapper && (
               <ColorInput
                 label="Container color"
@@ -81,7 +104,7 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('containerColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={[]}
+                themes={['#250042', '#F8F5FF']}
               />
             )}
             <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
@@ -96,7 +119,7 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('successColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={[]}
+                themes={['#98FFB5', '#00652F']}
               />
               <ColorInput
                 label="Warning color"
@@ -109,7 +132,7 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('warningColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={[]}
+                themes={['#FADFAD', '#A87A04']}
               />
               <ColorInput
                 label="Error color"
@@ -122,7 +145,7 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('errorColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={[]}
+                themes={['#FFB8BE', '#9F002B']}
               />
             </div>
           </div>

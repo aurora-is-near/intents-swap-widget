@@ -1,1 +1,2 @@
 export const DEFAULT_ACCENT_COLOR = '#C398FF';
+export const DEFAULT_BACKGROUND_COLOR = '#24262D';

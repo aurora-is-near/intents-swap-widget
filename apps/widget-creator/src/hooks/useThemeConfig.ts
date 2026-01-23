@@ -16,6 +16,7 @@ export const useThemeConfig = () => {
       successColor: getValidThemeColor(state.successColor),
       warningColor: getValidThemeColor(state.warningColor),
       errorColor: getValidThemeColor(state.errorColor),
+      colorScheme: state.defaultMode,
       borderRadius: state.borderRadius,
       stylePreset: state.stylePreset,
     };

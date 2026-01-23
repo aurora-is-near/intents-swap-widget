@@ -34,6 +34,7 @@ export const ColorInput = ({
 
             return (
               <ColorInputItem
+                key={themeColor}
                 isActive={isActive}
                 onClick={() => {
                   onChange(themeColor);
