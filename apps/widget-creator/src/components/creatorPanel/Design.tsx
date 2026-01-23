@@ -10,8 +10,6 @@ import {
 } from '../../constants';
 
 const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
-const DARK_MODE_COLOR = '#250042';
-const LIGHT_MODE_COLOR = '#F8F5FF';
 
 export function Design() {
   const { state, dispatch } = useCreator();
@@ -61,9 +59,9 @@ export function Design() {
             />
             <ColorInput
               label="Background color"
-              value={state.backgroundColor}
+              value={state.defaultMode}
               onChange={(val) => {
-                if (val === DARK_MODE_COLOR) {
+                if (val === 'dark') {
                   dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
                   dispatch({
                     type: 'SET_BACKGROUND_COLOR',
@@ -73,7 +71,7 @@ export function Design() {
                   return;
                 }
 
-                if (val === LIGHT_MODE_COLOR) {
+                if (val === 'light') {
                   dispatch({ type: 'SET_DEFAULT_MODE', payload: 'light' });
                   dispatch({
                     type: 'SET_BACKGROUND_COLOR',
@@ -90,7 +88,7 @@ export function Design() {
               }
               onOpenColorPicker={() => setOpenPickerId('backgroundColor')}
               onCloseColorPicker={() => setOpenPickerId(null)}
-              themes={[DARK_MODE_COLOR, LIGHT_MODE_COLOR]}
+              themes={['dark', 'light']}
             />
             {state.showContainerWrapper && (
               <ColorInput

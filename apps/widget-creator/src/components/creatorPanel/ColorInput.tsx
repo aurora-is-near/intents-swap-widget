@@ -9,7 +9,7 @@ interface ColorInputProps {
   isColorPickerOpen: boolean;
   onOpenColorPicker: () => void;
   onCloseColorPicker: () => void;
-  themes: `#${string}`[];
+  themes: (`#${string}` | 'dark' | 'light')[];
 }
 
 export const ColorInput = ({
@@ -39,7 +39,7 @@ export const ColorInput = ({
                 onClick={() => {
                   onChange(themeColor);
                 }}
-                backgroundColor={themeColor}
+                color={themeColor}
               />
             );
           })}

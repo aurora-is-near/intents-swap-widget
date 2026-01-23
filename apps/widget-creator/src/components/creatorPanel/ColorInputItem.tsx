@@ -1,19 +1,53 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { cn } from '../../utils/cn';
+import { useCreator } from '../../hooks/useCreatorConfig';
+import { getWidgetColor } from '../../utils/get-widget-color';
 
 interface ColorInputItemProps {
   children?: ReactNode;
   onClick: () => void;
   isActive: boolean;
-  backgroundColor?: string;
+  color?: string;
 }
 
 export const ColorInputItem = ({
   isActive,
   onClick,
   children,
-  backgroundColor,
+  color,
 }: ColorInputItemProps) => {
+  const { state } = useCreator();
+  const [backgroundColor, setBackgroundColor] = useState<string | undefined>(
+    () => {
+      if (color && !['light', 'dark'].includes(color)) {
+        return color;
+      }
+    },
+  );
+
+  useEffect(() => {
+    if (!color || !['light', 'dark'].includes(color)) {
+      return;
+    }
+
+    const showLightColor =
+      (color === 'light' && !isActive) || (color === 'dark' && !isActive);
+
+    if (state.stylePreset === 'bold') {
+      setBackgroundColor(
+        showLightColor
+          ? getWidgetColor('accent-50')
+          : getWidgetColor('accent-950'),
+      );
+
+      return;
+    }
+
+    setBackgroundColor(
+      showLightColor ? getWidgetColor('gray-50') : getWidgetColor('gray-950'),
+    );
+  }, [state]);
+
   return (
     <div
       className={cn(

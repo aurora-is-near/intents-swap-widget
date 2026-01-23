@@ -1,10 +1,7 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { DEFAULT_BACKGROUND_COLOR } from '../../constants';
-
-const getWidgetColor = (key: string) => {
-  return document.body.style.getPropertyValue(`--c-sw-${key}`);
-};
+import { getWidgetColor } from '../../utils/get-widget-color';
 
 export const WidgetSection = ({ children }: PropsWithChildren) => {
   const { state } = useCreator();
