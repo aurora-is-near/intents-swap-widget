@@ -22,3 +22,4 @@ export { useAppKitWallet } from './useAppKitWallet';
 export { useConnectedWallets } from './useConnectedWallets';
 export { useWalletConnection } from './useWalletConnection';
 export { useProviders } from './useProviders';
+export { useIsDarkMode } from './useIsDarkMode';
