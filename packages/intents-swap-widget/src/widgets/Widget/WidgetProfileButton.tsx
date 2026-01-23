@@ -1,5 +1,5 @@
-import { CircleUserRound } from 'lucide-react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { PersonFillW700 as Person } from '@material-symbols-svg/react-rounded/icons/person';
 import { useAppKitWallet } from '../../hooks';
 
 export const WidgetProfileButton = () => {
@@ -9,7 +9,7 @@ export const WidgetProfileButton = () => {
     <Menu>
       <MenuButton>
         <div className="px-sw-md cursor-pointer">
-          <CircleUserRound className="w-sw-2xl h-sw-2xl text-sw-gray-200" />
+          <Person className="w-sw-2xl h-sw-2xl text-sw-gray-200" />
         </div>
       </MenuButton>
       <MenuItems anchor="bottom" className="mt-sw-lg">
