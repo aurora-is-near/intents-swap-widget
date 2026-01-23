@@ -164,6 +164,7 @@ export function Design() {
                 <OutlinedButton
                   key={radius}
                   size="sm"
+                  className="w-[36px] h-[36px]"
                   state={state.borderRadius === radius ? 'active' : 'default'}
                   onClick={() =>
                     dispatch({

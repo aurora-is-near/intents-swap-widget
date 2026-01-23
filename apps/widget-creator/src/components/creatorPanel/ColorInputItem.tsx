@@ -51,10 +51,10 @@ export const ColorInputItem = ({
   return (
     <div
       className={cn(
-        'p-csw-md border-[1.5px] flex items-center rounded-csw-md cursor-pointer',
+        'p-csw-md flex items-center rounded-csw-md cursor-pointer',
         isActive
-          ? 'border-csw-gray-300 bg-csw-gray-800'
-          : 'border-csw-gray-700',
+          ? 'border-[1.5px] border-csw-gray-300 bg-csw-gray-800'
+          : 'border border-csw-gray-700',
       )}
       onClick={onClick}>
       <div
