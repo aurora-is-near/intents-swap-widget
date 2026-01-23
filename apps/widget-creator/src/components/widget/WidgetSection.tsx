@@ -10,12 +10,8 @@ export const WidgetSection = ({ children }: PropsWithChildren) => {
   );
 
   useEffect(() => {
-    const isDarkMode = state.defaultMode === 'dark';
-
     if (state.stylePreset === 'bold') {
-      setBackgroundColor(
-        isDarkMode ? getWidgetColor('accent-50') : getWidgetColor('accent-950'),
-      );
+      setBackgroundColor(getWidgetColor('accent-950'));
 
       return;
     }
