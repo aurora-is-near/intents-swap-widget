@@ -6,7 +6,13 @@ import {
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
-import { DEFAULT_ACCENT_COLOR, DEFAULT_BACKGROUND_COLOR } from '../constants';
+import {
+  DEFAULT_ACCENT_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_ERROR_COLOR_LIGHT,
+  DEFAULT_SUCCESS_COLOR_LIGHT,
+  DEFAULT_WARNING_COLOR_LIGHT,
+} from '../constants';
 
 type CreatorState = {
   // Configure - User authentication
@@ -61,9 +67,9 @@ const initialState: CreatorState = {
   accentColor: DEFAULT_ACCENT_COLOR,
   backgroundColor: DEFAULT_BACKGROUND_COLOR,
   containerColor: '#000000',
-  successColor: '#98FFB5',
-  warningColor: '#FADFAD',
-  errorColor: '#FFB8BE',
+  successColor: DEFAULT_SUCCESS_COLOR_LIGHT,
+  warningColor: DEFAULT_WARNING_COLOR_LIGHT,
+  errorColor: DEFAULT_ERROR_COLOR_LIGHT,
   openThemeColorPickerId: null,
 };
 
@@ -180,9 +186,9 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         accentColor: DEFAULT_ACCENT_COLOR,
         backgroundColor: DEFAULT_BACKGROUND_COLOR,
         containerColor: '#000000',
-        successColor: '#98FFB5',
-        warningColor: '#FADFAD',
-        errorColor: '#FFB8BE',
+        successColor: DEFAULT_SUCCESS_COLOR_LIGHT,
+        warningColor: DEFAULT_WARNING_COLOR_LIGHT,
+        errorColor: DEFAULT_ERROR_COLOR_LIGHT,
       };
     case 'RESET_ALL':
       return initialState;

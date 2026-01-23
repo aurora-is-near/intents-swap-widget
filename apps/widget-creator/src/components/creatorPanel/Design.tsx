@@ -7,6 +7,12 @@ import { ThemeColorPickerId } from '../../types/colors';
 import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_ERROR_COLOR_DARK,
+  DEFAULT_ERROR_COLOR_LIGHT,
+  DEFAULT_SUCCESS_COLOR_DARK,
+  DEFAULT_SUCCESS_COLOR_LIGHT,
+  DEFAULT_WARNING_COLOR_DARK,
+  DEFAULT_WARNING_COLOR_LIGHT,
 } from '../../constants';
 import { ColorInputGroup } from './ColorInputGroup';
 import { ColorInputItem } from './ColorInputItem';
@@ -70,6 +76,27 @@ export function Design() {
                       type: 'SET_BACKGROUND_COLOR',
                       payload: DEFAULT_BACKGROUND_COLOR,
                     });
+                    dispatch({
+                      type: 'SET_SUCCESS_COLOR',
+                      payload:
+                        mode === 'dark'
+                          ? DEFAULT_SUCCESS_COLOR_LIGHT
+                          : DEFAULT_SUCCESS_COLOR_DARK,
+                    });
+                    dispatch({
+                      type: 'SET_WARNING_COLOR',
+                      payload:
+                        mode === 'dark'
+                          ? DEFAULT_WARNING_COLOR_LIGHT
+                          : DEFAULT_WARNING_COLOR_DARK,
+                    });
+                    dispatch({
+                      type: 'SET_ERROR_COLOR',
+                      payload:
+                        mode === 'dark'
+                          ? DEFAULT_ERROR_COLOR_LIGHT
+                          : DEFAULT_ERROR_COLOR_DARK,
+                    });
                   }}
                   color={mode}
                 />
@@ -102,7 +129,10 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('successColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={['#98FFB5', '#00652F']}
+                themes={[
+                  DEFAULT_SUCCESS_COLOR_LIGHT,
+                  DEFAULT_SUCCESS_COLOR_DARK,
+                ]}
               />
               <ColorInputItems
                 label="Warning color"
@@ -115,7 +145,10 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('warningColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={['#FADFAD', '#A87A04']}
+                themes={[
+                  DEFAULT_WARNING_COLOR_LIGHT,
+                  DEFAULT_WARNING_COLOR_DARK,
+                ]}
               />
               <ColorInputItems
                 label="Error color"
@@ -128,7 +161,7 @@ export function Design() {
                 }
                 onOpenColorPicker={() => setOpenPickerId('errorColor')}
                 onCloseColorPicker={() => setOpenPickerId(null)}
-                themes={['#FFB8BE', '#9F002B']}
+                themes={[DEFAULT_ERROR_COLOR_LIGHT, DEFAULT_ERROR_COLOR_DARK]}
               />
             </div>
           </div>
