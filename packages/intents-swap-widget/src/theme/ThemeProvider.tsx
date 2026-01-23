@@ -90,7 +90,7 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     setColorPalette('accent', 500, parentEl, accentColor, colorScheme);
 
     if (stylePreset === 'bold') {
-      setColorPalette('gray', 50, parentEl, accentColor, colorScheme);
+      setColorPalette('gray', 500, parentEl, accentColor, colorScheme);
     }
   }
 
