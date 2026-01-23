@@ -2,12 +2,14 @@ import { ConfigSection } from '../../uikit/ConfigSection';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { Toggle } from '../../uikit/Toggle';
 import { OutlinedButton } from '../../uikit/Button';
-import { ColorInput } from './ColorInput';
+import { ColorInputItems } from './ColorInputItems';
 import { ThemeColorPickerId } from '../../types/colors';
 import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_BACKGROUND_COLOR,
 } from '../../constants';
+import { ColorInputGroup } from './ColorInputGroup';
+import { ColorInputItem } from './ColorInputItem';
 
 const BORDER_RADIUS_VALUES = ['none', 'sm', 'md', 'lg'] as const;
 
@@ -46,7 +48,7 @@ export function Design() {
           </div>
 
           <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
-            <ColorInput
+            <ColorInputItems
               label="Accent color"
               value={state.accentColor}
               onChange={(val) =>
@@ -57,41 +59,24 @@ export function Design() {
               onCloseColorPicker={() => setOpenPickerId(null)}
               themes={[DEFAULT_ACCENT_COLOR, '#00D8F0', '#9EED00', '#FFA61E']}
             />
-            <ColorInput
-              label="Background color"
-              value={state.defaultMode}
-              onChange={(val) => {
-                if (val === 'dark') {
-                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'dark' });
-                  dispatch({
-                    type: 'SET_BACKGROUND_COLOR',
-                    payload: DEFAULT_BACKGROUND_COLOR,
-                  });
-
-                  return;
-                }
-
-                if (val === 'light') {
-                  dispatch({ type: 'SET_DEFAULT_MODE', payload: 'light' });
-                  dispatch({
-                    type: 'SET_BACKGROUND_COLOR',
-                    payload: DEFAULT_BACKGROUND_COLOR,
-                  });
-
-                  return;
-                }
-
-                dispatch({ type: 'SET_BACKGROUND_COLOR', payload: val });
-              }}
-              isColorPickerOpen={
-                state.openThemeColorPickerId === 'backgroundColor'
-              }
-              onOpenColorPicker={() => setOpenPickerId('backgroundColor')}
-              onCloseColorPicker={() => setOpenPickerId(null)}
-              themes={['dark', 'light']}
-            />
+            <ColorInputGroup label="Background color">
+              {(['dark', 'light'] as const).map((mode) => (
+                <ColorInputItem
+                  key={mode}
+                  isActive={state.defaultMode === mode}
+                  onClick={() => {
+                    dispatch({ type: 'SET_DEFAULT_MODE', payload: mode });
+                    dispatch({
+                      type: 'SET_BACKGROUND_COLOR',
+                      payload: DEFAULT_BACKGROUND_COLOR,
+                    });
+                  }}
+                  color={mode}
+                />
+              ))}
+            </ColorInputGroup>
             {state.showContainerWrapper && (
-              <ColorInput
+              <ColorInputItems
                 label="Container color"
                 value={state.containerColor}
                 onChange={(val) =>
@@ -106,7 +91,7 @@ export function Design() {
               />
             )}
             <div className="space-y-csw-xl border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl">
-              <ColorInput
+              <ColorInputItems
                 label="Success color"
                 value={state.successColor}
                 onChange={(val) =>
@@ -119,7 +104,7 @@ export function Design() {
                 onCloseColorPicker={() => setOpenPickerId(null)}
                 themes={['#98FFB5', '#00652F']}
               />
-              <ColorInput
+              <ColorInputItems
                 label="Warning color"
                 value={state.warningColor}
                 onChange={(val) =>
@@ -132,7 +117,7 @@ export function Design() {
                 onCloseColorPicker={() => setOpenPickerId(null)}
                 themes={['#FADFAD', '#A87A04']}
               />
-              <ColorInput
+              <ColorInputItems
                 label="Error color"
                 value={state.errorColor}
                 onChange={(val) =>
