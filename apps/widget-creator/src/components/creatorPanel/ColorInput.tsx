@@ -55,7 +55,7 @@ export const ColorInput = ({
         </div>
       </div>
       {isColorPickerOpen && (
-        <div className="bg-csw-gray-800 rounded-csw-md p-csw-md w-fit">
+        <div className="bg-csw-gray-900 rounded-csw-md p-csw-md w-fit absolute right-csw-6xl shadow-[0_10px_15px_8px_rgba(0,0,0,0.22)] flex flex-col items-center">
           <HexColorPicker color={value} onChange={onChange} />
           <div className="mt-csw-md flex items-center gap-csw-md">
             <input
@@ -66,7 +66,7 @@ export const ColorInput = ({
             />
             <button
               onClick={onCloseColorPicker}
-              className="px-csw-md py-csw-xs bg-csw-accent-500 text-csw-gray-950 rounded-csw-sm font-semibold text-sm hover:opacity-90 transition-opacity">
+              className="px-csw-md py-csw-xs bg-csw-accent-500 text-csw-gray-950 rounded-csw-sm font-semibold text-sm hover:opacity-90 transition-opacity select-none cursor-pointer">
               Done
             </button>
           </div>
