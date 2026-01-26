@@ -66,9 +66,16 @@ export function useConfigLink() {
     });
 
     params.append('enableSellToken', state.enableSellToken.toString());
-    params.append('defaultSellToken', JSON.stringify(state.defaultSellToken));
+
+    if (state.defaultSellToken) {
+      params.append('defaultSellToken', JSON.stringify(state.defaultSellToken));
+    }
+
     params.append('enableBuyToken', state.enableBuyToken.toString());
-    params.append('defaultBuyToken', JSON.stringify(state.defaultBuyToken));
+
+    if (state.defaultBuyToken) {
+      params.append('defaultBuyToken', JSON.stringify(state.defaultBuyToken));
+    }
 
     // Configure - Fee collection
     params.append('enableCustomFees', state.enableCustomFees.toString());
