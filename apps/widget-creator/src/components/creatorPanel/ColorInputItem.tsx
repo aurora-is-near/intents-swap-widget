@@ -30,8 +30,7 @@ export const ColorInputItem = ({
       return;
     }
 
-    const showLightColor =
-      (color === 'light' && !isActive) || (color === 'dark' && !isActive);
+    const showLightColor = !isActive;
 
     if (state.stylePreset === 'bold') {
       setBackgroundColor(
