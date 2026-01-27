@@ -26,8 +26,6 @@ export const ColorInputItems = ({
       {themes.map((themeColor) => {
         const isActive = themeColor.toLowerCase() === value.toLowerCase();
 
-        console.log(value, themeColor, isActive);
-
         return (
           <ColorInputItem
             key={themeColor}
