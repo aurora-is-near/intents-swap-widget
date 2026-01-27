@@ -55,7 +55,7 @@ export function Header() {
         </aside>
 
         <aside className="flex gap-csw-2md items-center">
-          <AuthButton />
+          {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
           <OutlinedButton
             size="sm"
             fluid
