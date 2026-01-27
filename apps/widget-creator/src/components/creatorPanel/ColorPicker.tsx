@@ -33,10 +33,8 @@ export const ColorPicker = ({
       const target = event.target as Node;
 
       if (
-        pickerRef.current &&
-        !pickerRef.current.contains(target) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(target)
+        !pickerRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target)
       ) {
         onClose();
       }
