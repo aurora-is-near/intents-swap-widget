@@ -95,6 +95,7 @@ const ButtonPrimary = ({
 }: Omit<Props, 'variant'>) => {
   return (
     <UIButton
+      disabled={['disabled', 'loading'].includes(state)}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
@@ -126,6 +127,7 @@ const ButtonTertiary = ({
 }: Omit<Props, 'variant'>) => {
   return (
     <UIButton
+      disabled={['disabled', 'loading'].includes(state)}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
@@ -159,6 +161,7 @@ export const OutlinedButton = ({
 }: Omit<Props, 'variant'>) => {
   return (
     <UIButton
+      disabled={['disabled', 'loading'].includes(state)}
       onClick={() => state === 'default' && onClick?.()}
       className={clsx(
         styles.common,
