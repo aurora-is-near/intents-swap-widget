@@ -1,5 +1,5 @@
 import { Edit, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
 import { OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
@@ -14,8 +14,10 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import type { TokenType } from '../../hooks/useTokens';
+import { SelectATokenText } from './SelectATokenText';
 
 export function Configure() {
+  const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
@@ -24,6 +26,20 @@ export function Configure() {
   );
 
   const allTokens = useTokensGroupedBySymbol();
+  const allTokenSymbols = allTokens.map((token) => token.symbol);
+
+  // Once the tokens have loaded, select them all initially
+  useEffect(() => {
+    if (wereInitialTokensSet.current || !allTokenSymbols.length) {
+      return;
+    }
+
+    wereInitialTokensSet.current = true;
+    dispatch({
+      type: 'SET_SELECTED_TOKEN_SYMBOLS',
+      payload: allTokenSymbols,
+    });
+  }, [allTokenSymbols]);
 
   const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
@@ -205,7 +221,8 @@ export function Configure() {
             <div className="flex gap-csw-2md items-center">
               <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
                 <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  {state.selectedTokenSymbols.length} tokens selected
+                  {state.selectedTokenSymbols.length} token
+                  {state.selectedTokenSymbols.length !== 1 ? 's' : ''} selected
                 </p>
               </div>
               <OutlinedButton
@@ -235,11 +252,12 @@ export function Configure() {
                   {(() => {
                     const sellToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultSellToken.symbol,
+                        token.symbol === state.defaultSellToken?.symbol,
                     );
 
                     const sellTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultSellToken.blockchain,
+                      (chain) =>
+                        chain.id === state.defaultSellToken?.blockchain,
                     );
 
                     return (
@@ -249,25 +267,29 @@ export function Configure() {
                           setIsTokenSelectorOpen(true);
                         }}
                         className="cursor-pointer">
-                        <TokenTag
-                          tokenIcon={
-                            sellToken?.icon ? (
-                              <div>
-                                <img
-                                  src={sellToken.icon}
-                                  alt={sellToken.symbol}
-                                  className="size-full rounded-full"
-                                />
-                                {sellTokenChain && (
-                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                    {sellTokenChain.icon}
-                                  </div>
-                                )}
-                              </div>
-                            ) : undefined
-                          }
-                          tokenSymbol={state.defaultSellToken.symbol}
-                        />
+                        {state.defaultSellToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              sellToken?.icon ? (
+                                <div>
+                                  <img
+                                    src={sellToken.icon}
+                                    alt={sellToken.symbol}
+                                    className="size-full rounded-full"
+                                  />
+                                  {sellTokenChain && (
+                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                      {sellTokenChain.icon}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : undefined
+                            }
+                            tokenSymbol={state.defaultSellToken.symbol}
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
                       </div>
                     );
                   })()}
@@ -294,11 +316,11 @@ export function Configure() {
                   {(() => {
                     const buyToken = allTokens.find(
                       (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken.symbol,
+                        token.symbol === state.defaultBuyToken?.symbol,
                     );
 
                     const buyTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultBuyToken.blockchain,
+                      (chain) => chain.id === state.defaultBuyToken?.blockchain,
                     );
 
                     return (
@@ -308,25 +330,29 @@ export function Configure() {
                           setIsTokenSelectorOpen(true);
                         }}
                         className="cursor-pointer">
-                        <TokenTag
-                          tokenIcon={
-                            buyToken?.icon ? (
-                              <div>
-                                <img
-                                  src={buyToken.icon}
-                                  alt={buyToken.symbol}
-                                  className="size-full rounded-full"
-                                />
-                                {buyTokenChain && (
-                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                    {buyTokenChain.icon}
-                                  </div>
-                                )}
-                              </div>
-                            ) : undefined
-                          }
-                          tokenSymbol={state.defaultBuyToken.symbol}
-                        />
+                        {state.defaultBuyToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              buyToken?.icon ? (
+                                <div>
+                                  <img
+                                    src={buyToken.icon}
+                                    alt={buyToken.symbol}
+                                    className="size-full rounded-full"
+                                  />
+                                  {buyTokenChain && (
+                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                      {buyTokenChain.icon}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : undefined
+                            }
+                            tokenSymbol={state.defaultBuyToken.symbol}
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
                       </div>
                     );
                   })()}
