@@ -43,7 +43,11 @@ export const ColorInputItems = ({
         isOpen={isColorPickerOpen}
         onOpen={onOpenColorPicker}
         onClose={onCloseColorPicker}
-        isActive={!themes.includes(value as `#${string}`) || isColorPickerOpen}
+        isActive={
+          !themes.some(
+            (theme) => theme.toLowerCase() === value.toLowerCase(),
+          ) || isColorPickerOpen
+        }
       />
     </ColorInputGroup>
   );
