@@ -12,10 +12,7 @@ export const useWidgetConfig = () => {
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedChainsList: state.selectedNetworks,
-      allowedTokensList:
-        state.selectedTokenSymbols.length > 0
-          ? state.selectedTokenSymbols
-          : undefined,
+      allowedTokensList: state.selectedTokenSymbols,
       defaultSourceToken: state.enableSellToken
         ? state.defaultSellToken
         : undefined,

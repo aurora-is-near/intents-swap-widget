@@ -26,8 +26,6 @@ export const ColorInputItems = ({
       {themes.map((themeColor) => {
         const isActive = themeColor.toLowerCase() === value.toLowerCase();
 
-        console.log(value, themeColor, isActive);
-
         return (
           <ColorInputItem
             key={themeColor}
@@ -45,7 +43,11 @@ export const ColorInputItems = ({
         isOpen={isColorPickerOpen}
         onOpen={onOpenColorPicker}
         onClose={onCloseColorPicker}
-        isActive={!themes.includes(value as `#${string}`) || isColorPickerOpen}
+        isActive={
+          !themes.some(
+            (theme) => theme.toLowerCase() === value.toLowerCase(),
+          ) || isColorPickerOpen
+        }
       />
     </ColorInputGroup>
   );

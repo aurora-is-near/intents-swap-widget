@@ -37,6 +37,20 @@ export function TokenSelectionModal({
 
   const onTokensChange = (tokens: string[]) => {
     dispatch({ type: 'SET_SELECTED_TOKEN_SYMBOLS', payload: tokens });
+
+    if (
+      state.defaultSellToken?.symbol &&
+      !tokens.includes(state.defaultSellToken.symbol)
+    ) {
+      dispatch({ type: 'SET_DEFAULT_SELL_TOKEN', payload: null });
+    }
+
+    if (
+      state.defaultBuyToken?.symbol &&
+      !tokens.includes(state.defaultBuyToken.symbol)
+    ) {
+      dispatch({ type: 'SET_DEFAULT_BUY_TOKEN', payload: null });
+    }
   };
 
   // Prevent scroll when modal is open

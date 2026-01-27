@@ -34,7 +34,7 @@ export const TokenInputEmpty = ({ onMsg, heading }: Props) => {
         <button
           type="button"
           onClick={() => onMsg({ type: 'on_click_select_token' })}
-          className="gap-sw-md px-sw-md flex h-[36px] min-w-[100px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-800">
+          className="gap-sw-md px-sw-md flex h-[36px] shrink-0 cursor-pointer items-center rounded-sw-md bg-sw-gray-800">
           <span className="text-sw-label-md text-sw-gray-50">Select token</span>
         </button>
       </div>
