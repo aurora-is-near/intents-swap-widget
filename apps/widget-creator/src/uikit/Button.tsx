@@ -27,7 +27,7 @@ const styles = {
   icon: 'h-csw-xl w-csw-xl',
 
   size: (size: Size) => ({
-    'px-csw-xl py-csw-2md': size === 'sm',
+    'px-csw-lg py-csw-md text-sm': size === 'sm',
     'px-csw-2xl py-csw-lg': size === 'md',
     'px-csw-3xl py-csw-xl': size === 'lg',
   }),
@@ -48,9 +48,9 @@ const styles = {
   }),
 
   common: `
-    ring-1 ring-inset ring-transparent
-    transition-colors duration-250 ease-in-out
+    transition-colors duration-200 ease-in-out
     rounded-csw-md
+    select-none
   `,
 };
 
@@ -167,12 +167,11 @@ export const OutlinedButton = ({
         styles.common,
         styles.width(fluid),
         styles.size(size),
-        'hover:bg-csw-gray-800',
-
-        'ring-1 ring-csw-gray-500 text-csw-gray-50',
+        'p-csw-sm flex items-center rounded-csw-md cursor-pointer text-csw-gray-50',
         {
-          'bg-csw-gray-800': state === 'active',
-          'cursor-pointer bg-transparent': state === 'default',
+          'border-[1.5px] border-csw-gray-300 bg-csw-gray-800':
+            state === 'active',
+          'border border-csw-gray-700': state === 'default',
           'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
         },
         className,

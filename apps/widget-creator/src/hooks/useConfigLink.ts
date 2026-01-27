@@ -82,16 +82,12 @@ export function useConfigLink() {
     params.append('feePercentage', state.feePercentage);
     params.append('collectorAddress', state.collectorAddress);
 
-    // Design - Mode
-    params.append('defaultMode', state.defaultMode);
-
     // Design - Style
     params.append('stylePreset', state.stylePreset);
     params.append('borderRadius', state.borderRadius);
 
     // Design - Colors
-    params.append('primaryColor', state.primaryColor);
-    params.append('surfaceColor', state.surfaceColor);
+    params.append('accentColor', state.accentColor);
     params.append('backgroundColor', state.backgroundColor);
     params.append('successColor', state.successColor);
     params.append('warningColor', state.warningColor);
@@ -102,8 +98,6 @@ export function useConfigLink() {
         'showContainerWrapper',
         state.showContainerWrapper.toString(),
       );
-
-      params.append('containerColor', state.containerColor);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -216,17 +210,6 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_COLLECTOR_ADDRESS', payload: collectorAddress });
     }
 
-    // Design - Mode
-    const defaultMode = params.get('defaultMode');
-
-    if (
-      defaultMode === 'auto' ||
-      defaultMode === 'dark' ||
-      defaultMode === 'light'
-    ) {
-      dispatch({ type: 'SET_DEFAULT_MODE', payload: defaultMode });
-    }
-
     // Design - Style
     const stylePreset = params.get('stylePreset');
 
@@ -255,28 +238,10 @@ export function useDecodeConfigLink() {
     }
 
     // Design - Colors
-    const primaryColor = params.get('primaryColor');
+    const accentColor = params.get('accentColor');
 
-    if (primaryColor) {
-      dispatch({ type: 'SET_PRIMARY_COLOR', payload: primaryColor });
-    }
-
-    const surfaceColor = params.get('surfaceColor');
-
-    if (surfaceColor) {
-      dispatch({
-        type: 'SET_SURFACE_COLOR',
-        payload: surfaceColor,
-      });
-    }
-
-    const containerColor = params.get('containerColor');
-
-    if (containerColor) {
-      dispatch({
-        type: 'SET_CONTAINER_COLOR',
-        payload: containerColor,
-      });
+    if (accentColor) {
+      dispatch({ type: 'SET_ACCENT_COLOR', payload: accentColor });
     }
 
     const backgroundColor = params.get('backgroundColor');

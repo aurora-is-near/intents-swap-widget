@@ -9,10 +9,8 @@ export type ThemeStylePreset = 'clean' | 'bold';
 export type Theme = {
   colorScheme?: ColorScheme;
   stylePreset?: ThemeStylePreset;
+  accentColor?: HexColor;
   backgroundColor?: HexColor;
-  primaryColor?: HexColor;
-  surfaceColor?: HexColor;
-  containerColor?: HexColor;
   successColor?: HexColor;
   warningColor?: HexColor;
   errorColor?: HexColor;

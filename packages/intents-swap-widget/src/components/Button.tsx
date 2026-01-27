@@ -5,6 +5,7 @@ import type {
   MaterialSymbolsComponent,
 } from '@material-symbols-svg/react';
 
+import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import { cn as clsx } from '@/utils/cn';
 
 type Size = 'sm' | 'md' | 'lg';
@@ -88,6 +89,7 @@ const ButtonPrimary = ({
   target,
   ...props
 }: Omit<Props, 'variant'>) => {
+  const { isDarkMode } = useIsDarkMode();
   const anchorProps = as === 'a' ? { href, target } : {};
   const isDisabled = ['disabled', 'loading', 'error'].includes(state)
     ? true
@@ -109,9 +111,12 @@ const ButtonPrimary = ({
             state === 'error',
           'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
             state === 'loading' || state === 'disabled',
-          'text-sw-gray-950 bg-sw-accent-500 hover:bg-sw-accent-400 cursor-pointer':
-            ['active', 'default'].includes(state),
+          'bg-sw-accent-500 hover:bg-sw-accent-400 cursor-pointer': [
+            'active',
+            'default',
+          ].includes(state),
         },
+        isDarkMode ? 'text-sw-gray-950' : 'text-sw-gray-50',
         className,
       )}>
       <ButtonChildren state={state} {...props}>

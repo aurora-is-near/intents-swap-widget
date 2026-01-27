@@ -9,9 +9,7 @@ import { cn } from '../../utils/cn';
 const SCROLLBAR_OFFSET_CLASSNAME = 'md:mr-csw-sm';
 
 export function CreatorPanel() {
-  const [activeTab, setActiveTab] = useState<'configure' | 'design'>(
-    'configure',
-  );
+  const [activeTab, setActiveTab] = useState<'configure' | 'design'>('design');
 
   const { dispatch } = useCreator();
 
@@ -28,15 +26,6 @@ export function CreatorPanel() {
       <aside>
         <div className="flex items-center gap-csw-2xl mb-[22px]">
           <button
-            onClick={() => setActiveTab('configure')}
-            className={`font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors ${
-              activeTab === 'configure'
-                ? 'text-csw-gray-50 border-b-csw-gray-50'
-                : 'text-csw-gray-200 border-b-transparent cursor-pointer'
-            }`}>
-            Configure
-          </button>
-          <button
             onClick={() => setActiveTab('design')}
             className={`font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors ${
               activeTab === 'design'
@@ -44,6 +33,15 @@ export function CreatorPanel() {
                 : 'text-csw-gray-200 border-b-transparent cursor-pointer'
             }`}>
             Design
+          </button>
+          <button
+            onClick={() => setActiveTab('configure')}
+            className={`font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors ${
+              activeTab === 'configure'
+                ? 'text-csw-gray-50 border-b-csw-gray-50'
+                : 'text-csw-gray-200 border-b-transparent cursor-pointer'
+            }`}>
+            Configure
           </button>
           <OutlinedButton
             onClick={handleReset}

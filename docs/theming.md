@@ -21,9 +21,8 @@ export default function App() {
         appName: 'My App',
         theme: {
           colorScheme: 'dark',
+          accentColor: '#0098EA',
           backgroundColor: '#1E2337',
-          primaryColor: '#0098EA',
-          surfaceColor: '#1E2337',
         },
       }}
     >
@@ -38,13 +37,11 @@ export default function App() {
 | Property          | Type                             | Description                                                                                               |
 | ----------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `colorScheme`     | `'light' \| 'dark'`              | Sets the overall color scheme                                                                             |
-| `backgroundColor` | `string`                         | An optional background color for the widget                                                               |
-| `primaryColor`    | `string`                         | Main accent color used for highlights, buttons, and active states                                         |
-| `surfaceColor`    | `string`                         | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
+| `accentColor`     | `string`                          | Main accent color used for highlights, buttons, and active states                                         |
+| `backgroundColor` | `string`                      | Colors used for backgrounds, text and other secondary elements (ignored when using the bold style preset) |
 | `successColor`    | `string`                         | The color used for any success messages                                                                   |
 | `warningColor`    | `string`                         | The color used for any warning messages                                                                   |
 | `errorColor`      | `string`                         | The color used for any error messages                                                                     |
-| `containerColor`  | `string`                         | The color used for the container (see `showContainer`)                                                    |
 | `stylePreset`     |  `'clean' \| 'bold'`             | Defines the way in which the colours are used to theme the widget                                         |
 | `borderRadius`    | `'none' \| 'sm' \| 'md' \| 'lg'` | The size of the border radii used throughout the widget                                                   |
 | `showContainer`   | `true \| false`                  | Swap a container around the widget                                                                        |

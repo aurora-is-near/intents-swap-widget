@@ -80,11 +80,13 @@ export function WidgetContent() {
       theme={themeConfig}>
       <Widget />
       {exampleBanner && (
-        <Banner
-          variant={exampleBanner.variant}
-          message={`This is an example ${exampleBanner.label} message`}
-          className="mt-csw-2xl"
-        />
+        <div className="flex justify-center">
+          <Banner
+            variant={exampleBanner.variant}
+            message={`This is an example ${exampleBanner.label} message`}
+            className="mt-csw-2xl"
+          />
+        </div>
       )}
     </WidgetConfigProvider>
   );

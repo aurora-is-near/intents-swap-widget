@@ -2,8 +2,6 @@ import { PropsWithChildren, ReactElement } from 'react';
 import { cn } from '../utils';
 import { useTheme } from '../hooks/useTheme';
 
-const DEFAULT_FULL_PAGE_BACKGROUND_COLOR = '#24262d';
-
 export type WidgetContainerProps = PropsWithChildren<{
   HeaderComponent?: ReactElement | false | null;
   FooterComponent?: ReactElement | false | null;
@@ -19,6 +17,8 @@ export const WidgetContainer = ({
   className,
 }: WidgetContainerProps) => {
   const theme = useTheme();
+  const containerColor =
+    theme?.stylePreset === 'bold' ? 'bg-sw-accent-950' : 'bg-sw-gray-950';
 
   const jsx = (
     <div
@@ -50,7 +50,10 @@ export const WidgetContainer = ({
         className={cn(
           'relative w-auto mx-auto',
           theme?.showContainer
-            ? 'max-w-[496px] sm:w-[496px] p-csw-2xl bg-sw-container rounded-sw-lg'
+            ? cn(
+                'max-w-[496px] sm:w-[496px] p-csw-2xl rounded-sw-lg',
+                containerColor,
+              )
             : 'max-w-[456px] sm:w-[456px]',
         )}>
         {jsx}
@@ -62,12 +65,9 @@ export const WidgetContainer = ({
     <div
       className={cn(
         'sm:h-full min-h-screen sm:max-h-screen sm:overflow-auto w-full min-w-full px-sw-lg py-sw-xl sm:py-auto mx-auto flex justify-center sm:fixed sm:top-0 sm:left-0 sm:right-0',
+        containerColor,
         className,
-      )}
-      style={{
-        backgroundColor:
-          theme?.backgroundColor ?? DEFAULT_FULL_PAGE_BACKGROUND_COLOR,
-      }}>
+      )}>
       <div className="w-full h-fit max-w-[456px] min-w-[270px]">{jsx}</div>
     </div>
   );

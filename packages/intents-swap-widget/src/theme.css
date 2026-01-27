@@ -40,8 +40,6 @@
         --c-sw-status-success: #00652F;
         --c-sw-status-warning: #A87A04;
         --c-sw-status-error: #9F002B;
-
-        --c-sw-container: #000;
     }
 
     body[data-sw-theme="dark"] {
@@ -74,8 +72,6 @@
         --c-sw-status-success: #98FFB5;
         --c-sw-status-warning: #FADFAD;
         --c-sw-status-error: #FFB8BE;
-
-        --c-sw-container: #FFF;
     }
 }
 

@@ -1,7 +1,6 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Theme } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
-import '@aurora-is-near/intents-swap-widget/styles.css';
 import { isHexColor } from '../utils/is-hex-color';
 
 const getValidThemeColor = (color: string): `#${string}` | undefined => {
@@ -11,42 +10,27 @@ const getValidThemeColor = (color: string): `#${string}` | undefined => {
 export const useThemeConfig = () => {
   const { state } = useCreator();
 
-  const getColorScheme = useCallback(() => {
-    if (state.defaultMode === 'auto') {
-      // Check system preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-    }
-
-    return state.defaultMode;
-  }, [state.defaultMode]);
-
-  const colorScheme = getColorScheme();
-
   const themeConfig = useMemo((): Theme => {
     const theme: Theme = {
-      primaryColor: getValidThemeColor(state.primaryColor),
-      backgroundColor: getValidThemeColor(state.backgroundColor),
+      accentColor: getValidThemeColor(state.accentColor),
       successColor: getValidThemeColor(state.successColor),
       warningColor: getValidThemeColor(state.warningColor),
       errorColor: getValidThemeColor(state.errorColor),
-      colorScheme: colorScheme ?? 'dark',
+      colorScheme: state.defaultMode,
       borderRadius: state.borderRadius,
       stylePreset: state.stylePreset,
     };
 
     if (state.stylePreset === 'clean') {
-      theme.surfaceColor = getValidThemeColor(state.surfaceColor);
+      theme.backgroundColor = getValidThemeColor(state.backgroundColor);
     }
 
     if (state.showContainerWrapper) {
       theme.showContainer = true;
-      theme.containerColor = getValidThemeColor(state.containerColor);
     }
 
     return theme;
-  }, [state, colorScheme]);
+  }, [state]);
 
   return { themeConfig };
 };

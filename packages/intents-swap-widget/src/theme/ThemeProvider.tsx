@@ -75,9 +75,8 @@ const setBorderRadiusVariables = (
 
 const loadTheme = (parentEl: Element | null, theme: Theme) => {
   const {
-    primaryColor,
-    surfaceColor,
-    containerColor,
+    accentColor,
+    backgroundColor,
     successColor,
     warningColor,
     errorColor,
@@ -86,20 +85,16 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
     stylePreset = 'clean',
   } = theme;
 
-  if (primaryColor) {
-    setColorPalette('accent', 500, parentEl, primaryColor, colorScheme);
+  if (accentColor) {
+    setColorPalette('accent', 500, parentEl, accentColor, colorScheme);
 
     if (stylePreset === 'bold') {
-      setColorPalette('gray', 50, parentEl, primaryColor, colorScheme);
+      setColorPalette('gray', 500, parentEl, accentColor, colorScheme);
     }
   }
 
-  if (surfaceColor && stylePreset === 'clean') {
-    setColorPalette('gray', 950, parentEl, surfaceColor, colorScheme);
-  }
-
-  if (containerColor) {
-    setColorVariable('container', containerColor, parentEl);
+  if (backgroundColor && stylePreset === 'clean') {
+    setColorPalette('gray', 950, parentEl, backgroundColor, colorScheme);
   }
 
   if (successColor) {

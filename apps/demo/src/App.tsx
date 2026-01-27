@@ -11,8 +11,8 @@ import { WidgetPageContainer } from './components/WidgetPageContainer';
 import { useAppKitWallet } from './hooks/useAppKitWallet';
 
 const defaultTheme: Theme = {
-  primaryColor: '#D5B7FF',
-  surfaceColor: '#24262D',
+  accentColor: '#D5B7FF',
+  backgroundColor: '#24262D',
   colorScheme: 'dark',
 };
 
@@ -32,15 +32,15 @@ export const App = () => {
         onSetColors={(colors) =>
           setTheme((p) => ({
             colorScheme: p.colorScheme,
-            primaryColor: colors.primaryColor,
-            surfaceColor: colors.surfaceColor,
+            accentColor: colors.accentColor,
+            backgroundColor: colors.backgroundColor,
           }))
         }
         onToggleTheme={(palette) =>
           setTheme((p) => ({
             colorScheme: palette,
-            primaryColor: p.primaryColor,
-            surfaceColor: p.surfaceColor,
+            accentColor: p.accentColor,
+            backgroundColor: p.backgroundColor,
           }))
         }>
         <Toggle
