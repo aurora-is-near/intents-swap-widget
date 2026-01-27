@@ -21,11 +21,7 @@ export const ColorPicker = ({
 }: ColorPickerProps) => {
   return (
     <>
-      <ColorInputItem
-        isActive={!!isActive}
-        onClick={() => {
-          onOpen();
-        }}>
+      <ColorInputItem isActive={!!isActive} onClick={onOpen}>
         <ColorPickerIcon />
       </ColorInputItem>
       {isOpen && (
