@@ -49,7 +49,7 @@ export const ColorInputItem = ({
   }, [state]);
 
   return (
-    <div
+    <button
       className={cn(
         'p-csw-md flex items-center rounded-csw-md cursor-pointer',
         isActive
@@ -62,6 +62,6 @@ export const ColorInputItem = ({
         style={{ backgroundColor }}>
         {children}
       </div>
-    </div>
+    </button>
   );
 };
