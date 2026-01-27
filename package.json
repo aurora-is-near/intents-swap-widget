@@ -68,6 +68,7 @@
     "jest-react-hooks-shallow": "^1.5.1",
     "jest-transform-stub": "^2.0.0",
     "jest-transformer-svg": "^2.1.0",
+    "jsdom": "^26.0.0",
     "knip": "^5.34.0",
     "postcss": "^8.5.6",
     "postcss-prefix-selector": "^2.1.1",
@@ -85,7 +86,8 @@
     "vite-plugin-node-polyfills": "^0.24.0",
     "vite-plugin-static-copy": "^3.1.4",
     "vite-plugin-svgr": "^4.3.0",
-    "vite-plugin-vercel": "^9.0.7"
+    "vite-plugin-vercel": "^9.0.7",
+    "vitest": "^4.0.17"
   },
   "resolutions": {
     "strip-ansi": "6.0.1",
