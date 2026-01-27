@@ -2,7 +2,6 @@ import { ArrowUpRight, Code } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CopyIcon from '../assets/icons/copy.svg?react';
 import CheckIcon from '../assets/icons/check-circle.svg?react';
-
 import { Button, OutlinedButton } from '../uikit/Button';
 import { ExportModal } from './ExportModal';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
