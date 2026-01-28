@@ -16,7 +16,7 @@ export function AuthButton() {
 
   if (authenticated && user) {
     return (
-      <HeaderButton variant="bright" onClick={logout} >
+      <HeaderButton variant="bright" onClick={logout}>
         Logout
       </HeaderButton>
     );
