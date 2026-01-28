@@ -7,7 +7,7 @@ import CheckIcon from '../assets/icons/check-circle.svg?react';
 import { Button, OutlinedButton } from '../uikit/Button';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
 
-import { ExportModal } from './ExportModal';
+import { IntegrationModal } from './IntegrationModal';
 import { AuthButton } from './auth';
 
 export function Header() {
@@ -83,7 +83,8 @@ export function Header() {
           </Button>
         </aside>
       </header>
-      <ExportModal
+
+      <IntegrationModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
       />
