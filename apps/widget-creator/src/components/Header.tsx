@@ -63,7 +63,7 @@ export function Header() {
             onClick={() => setIsExportModalOpen(true)}>
             Export code
           </HeaderButton>
-          <AuthButton />
+          {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
         </nav>
       </header>
       <ExportModal
