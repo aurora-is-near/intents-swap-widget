@@ -63,9 +63,9 @@ describe('AuthButton', () => {
 
     render(<AuthButton />);
 
-    const accountButton = screen.getByRole('button', { name: /account/i });
+    const logoutButton = screen.getByRole('button', { name: /logout/i });
 
-    expect(accountButton).toBeInTheDocument();
-    expect(accountButton).toBeEnabled();
+    expect(logoutButton).toBeInTheDocument();
+    expect(logoutButton).toBeEnabled();
   });
 });
