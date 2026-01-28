@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist .turbo",
     "prebuild": "yarn clean",
     "prepublishOnly": "yarn run build",
     "build:watch": "vite build --watch",
