@@ -8,7 +8,7 @@ function App() {
   return (
     <QueryProvider>
       <CreatorProvider>
-        <main className="flex flex-col gap-4 p-4 h-full p-csw-2xl relative md:max-h-screen md:overflow-hidden">
+        <main className="flex flex-col p-4 h-full p-csw-2xl relative md:max-h-screen md:overflow-hidden bg-[#1D1E24]">
           <Header />
           <div className="flex items-center md:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col md:flex-row md:h-[calc(100%-62px)]">
             <WidgetSection>
