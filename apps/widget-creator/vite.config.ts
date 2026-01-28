@@ -40,6 +40,7 @@ export default defineConfig({
   // imported by "../../node_modules/@near-js/accounts/lib/esm/account.js".
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, './src'),
       '@near-js/transactions': path.resolve(
         __dirname,
         '../../node_modules/@near-js/transactions',

@@ -8,7 +8,7 @@ import AuroraIcon from '../assets/icons/aurora.svg?react';
 import { HeaderButton } from './HeaderButton';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
 
-import { ExportModal } from './ExportModal';
+import { IntegrationModal } from './IntegrationModal';
 import { AuthButton } from './auth';
 
 export function Header() {
@@ -66,7 +66,8 @@ export function Header() {
           {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
         </nav>
       </header>
-      <ExportModal
+
+      <IntegrationModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
       />

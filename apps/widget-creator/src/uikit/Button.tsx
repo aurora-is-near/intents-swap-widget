@@ -1,5 +1,7 @@
 import { Button as UIButton } from '@headlessui/react';
 import type { LucideIcon, LucideProps } from 'lucide-react';
+import type { IconProps } from '@material-symbols-svg/react-rounded';
+import type { FC } from 'react';
 import * as Icons from 'lucide-react';
 
 import { cn as clsx } from '../utils/cn';
@@ -7,7 +9,7 @@ import { cn as clsx } from '../utils/cn';
 type Size = 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'tertiary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
-type Detail = 'default' | 'dimmed';
+type Detail = 'default' | 'dimmed' | 'accent';
 
 type Props = {
   size: Size;
@@ -19,7 +21,7 @@ type Props = {
   onClick?: () => void;
   fluid?: boolean;
 } & (
-  | { icon: LucideIcon; iconPosition?: 'head' | 'tail' }
+  | { icon: LucideIcon | FC<IconProps>; iconPosition?: 'head' | 'tail' }
   | { icon?: never; iconPosition?: never }
 );
 
@@ -27,7 +29,7 @@ const styles = {
   icon: 'h-csw-xl w-csw-xl',
 
   size: (size: Size) => ({
-    'px-csw-lg py-csw-md text-sm': size === 'sm',
+    'px-csw-lg py-csw-2md': size === 'sm',
     'px-csw-2xl py-csw-lg': size === 'md',
     'px-csw-3xl py-csw-xl': size === 'lg',
   }),
@@ -72,13 +74,15 @@ const ButtonChildren = ({
         );
 
   return (
-    <span className="flex w-full items-center justify-center gap-csw-md">
+    <span className="flex w-full items-center justify-center gap-csw-md text-csw-label-md">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
         <Icon className={styles.icon} />
       ) : null}
       {children}
-      {hasIcon && iconPosition === 'tail' && <Icon className={styles.icon} />}
+      {hasIcon && iconPosition === 'tail' && (
+        <Icon className={styles.icon} size={16} />
+      )}
     </span>
   );
 };
@@ -104,7 +108,9 @@ const ButtonPrimary = ({
         styles.state(state),
         {
           'cursor-pointer': !['disabled', 'loading', 'error'].includes(state),
-          'bg-csw-gray-700': detail === 'dimmed',
+          'bg-csw-accent-600 hover:bg-csw-accent-500': detail === 'accent',
+          'bg-csw-gray-900 hover:bg-csw-gray-800 text-csw-gray-50':
+            detail === 'dimmed',
         },
         className,
       )}>
@@ -154,6 +160,7 @@ export const OutlinedButton = ({
   size,
   children,
   className,
+  detail = 'default',
   state = 'default',
   onClick,
   fluid,
@@ -173,6 +180,7 @@ export const OutlinedButton = ({
             state === 'active',
           'border border-csw-gray-700': state === 'default',
           'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
+          'text-csw-gray-950': detail === 'dimmed',
         },
         className,
       )}>
