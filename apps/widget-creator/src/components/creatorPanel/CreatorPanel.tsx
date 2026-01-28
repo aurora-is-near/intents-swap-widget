@@ -32,6 +32,7 @@ export function CreatorPanel() {
         <div role="tablist" className="flex gap-csw-2xl">
           <button
             role="tab"
+            type="button"
             id={DESIGN_TAB_ID}
             aria-selected={activeTab === 'design'}
             aria-controls={DESIGN_PANEL_ID}
@@ -48,6 +49,7 @@ export function CreatorPanel() {
 
           <button
             role="tab"
+            type="button"
             id={CONFIGURE_TAB_ID}
             aria-selected={activeTab === 'configure'}
             aria-controls={CONFIGURE_PANEL_ID}
