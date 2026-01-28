@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import ColorPickerIcon from '../../assets/icons/color-picker.svg?react';
 import { ColorInputItem } from './ColorInputItem';
@@ -19,15 +20,50 @@ export const ColorPicker = ({
   onClose,
   isActive,
 }: ColorPickerProps) => {
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  // Close the colour picker when clicking outside
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        !pickerRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   return (
     <>
-      <ColorInputItem isActive={!!isActive} onClick={onOpen}>
-        <ColorPickerIcon />
-      </ColorInputItem>
+      <div ref={triggerRef}>
+        <ColorInputItem
+          isActive={!!isActive}
+          onClick={() => {
+            onOpen();
+          }}>
+          <ColorPickerIcon />
+        </ColorInputItem>
+      </div>
       {isOpen && (
-        <div className="bg-csw-gray-900 rounded-csw-md p-csw-md w-fit absolute right-csw-6xl shadow-[0_10px_15px_8px_rgba(0,0,0,0.22)] flex flex-col items-center">
+        <div
+          ref={pickerRef}
+          className="bg-csw-gray-900 rounded-csw-md p-csw-md w-fit absolute right-csw-6xl shadow-[0_10px_15px_8px_rgba(0,0,0,0.22)] flex flex-col items-center">
           <HexColorPicker color={value} onChange={onChange} />
-          <div className="mt-csw-md flex items-center gap-csw-md">
+          <div className="mt-csw-xl flex items-center gap-csw-2md">
             <input
               type="text"
               value={value}
@@ -36,8 +72,8 @@ export const ColorPicker = ({
             />
             <button
               onClick={onClose}
-              className="px-csw-md py-csw-xs bg-csw-accent-500 text-csw-gray-950 rounded-csw-sm font-semibold text-sm hover:opacity-90 transition-opacity select-none cursor-pointer">
-              Done
+              className="px-csw-lg leading-none py-csw-2md bg-csw-gray-50 text-csw-gray-950 rounded-csw-sm font-semibold text-sm hover:opacity-90 transition-opacity select-none cursor-pointer">
+              OK
             </button>
           </div>
         </div>
