@@ -55,7 +55,12 @@ export const WidgetDepositContent = ({
   } = useConfig();
 
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
-  const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const {
+    status: tokensStatus,
+    refetch: refetchTokens,
+    isLoading: isLoadingTokens,
+  } = useTokens();
+
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { walletSignOut } = useWalletConnection();
 
@@ -137,7 +142,7 @@ export const WidgetDepositContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
-  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
+  if (!!isLoading || isLoadingTokens) {
     return <WidgetDepositSkeleton />;
   }
 
@@ -226,7 +231,7 @@ export const WidgetDepositContent = ({
 
       if (!ctx.walletAddress) {
         return (
-          <div className="gap-sw-2xl flex flex-col">
+          <div className="gap-sw-2xl flex flex-col w-full">
             <TokenInput.Source
               showBalance
               heading={t('tokenInput.heading.source.deposit', 'Sell')}
@@ -260,7 +265,7 @@ export const WidgetDepositContent = ({
       }
 
       return (
-        <div className="gap-sw-2xl flex flex-col">
+        <div className="gap-sw-2xl flex flex-col w-full">
           <TokenInput.Source
             showBalance={!ctx.isDepositFromExternalWallet}
             heading={t('tokenInput.heading.source.deposit', 'Sell')}

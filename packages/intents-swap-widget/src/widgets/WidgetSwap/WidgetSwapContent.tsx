@@ -56,7 +56,12 @@ export const WidgetSwapContent = ({
   } = useConfig();
 
   const { t } = useTypedTranslation();
-  const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const {
+    status: tokensStatus,
+    refetch: refetchTokens,
+    isLoading: isLoadingTokens,
+  } = useTokens();
+
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
@@ -122,7 +127,7 @@ export const WidgetSwapContent = ({
     };
   }, [customChainsFilter, enableAccountAbstraction, ctx.walletAddress]);
 
-  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
+  if (!!isLoading || isLoadingTokens) {
     return <WidgetSwapSkeleton />;
   }
 
@@ -211,7 +216,7 @@ export const WidgetSwapContent = ({
       }
 
       return (
-        <div className="gap-sw-2xl flex flex-col">
+        <div className="gap-sw-2xl flex flex-col w-full">
           <div className="gap-[10px] relative flex flex-col">
             <TokenInput.Source
               heading={t('tokenInput.heading.source.swap', 'Sell')}
