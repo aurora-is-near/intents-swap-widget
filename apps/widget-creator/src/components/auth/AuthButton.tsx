@@ -1,5 +1,4 @@
 import { useLogin, useLogout, usePrivy } from '@privy-io/react-auth';
-import { User } from 'lucide-react';
 import { HeaderButton } from '../HeaderButton';
 
 export function AuthButton() {
@@ -17,8 +16,8 @@ export function AuthButton() {
 
   if (authenticated && user) {
     return (
-      <HeaderButton variant="bright" onClick={logout} LeadingIcon={User}>
-        Account
+      <HeaderButton variant="bright" onClick={logout} >
+        Logout
       </HeaderButton>
     );
   }
