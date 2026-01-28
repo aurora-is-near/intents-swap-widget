@@ -34,7 +34,7 @@ export function IntegrationModal({ isOpen, onClose }: ModalProps) {
           backdropFilter: 'blur(4px)',
         }}>
         <div
-          className="relative z-50 mx-4 max-h-[90vh] min-h-[500px] rounded-csw-lg bg-csw-gray-950 overflow-hidden flex border border-csw-gray-900 mx-csw-xl"
+          className="relative z-50 max-h-[90vh] min-h-[500px] rounded-csw-lg bg-csw-gray-950 overflow-hidden flex border border-csw-gray-900 mx-csw-xl"
           onClick={(e) => e.stopPropagation()}>
           <button
             onClick={onClose}
