@@ -95,6 +95,8 @@ const ButtonPrimary = ({
     ? true
     : undefined;
 
+  const isDefaultOrActive = ['default', 'active'].includes(state);
+
   return (
     <UIButton
       as={as}
@@ -111,12 +113,11 @@ const ButtonPrimary = ({
             state === 'error',
           'bg-transparent text-sw-gray-400 ring-1 ring-inset ring-sw-gray-700':
             state === 'loading' || state === 'disabled',
-          'bg-sw-accent-500 hover:bg-sw-accent-400 cursor-pointer': [
-            'active',
-            'default',
-          ].includes(state),
+          'bg-sw-accent-500 hover:bg-sw-accent-400 cursor-pointer':
+            isDefaultOrActive,
+          'text-sw-gray-950': isDarkMode && isDefaultOrActive,
+          'text-sw-gray-50': !isDarkMode && isDefaultOrActive,
         },
-        isDarkMode ? 'text-sw-gray-950' : 'text-sw-gray-50',
         className,
       )}>
       <ButtonChildren state={state} {...props}>
