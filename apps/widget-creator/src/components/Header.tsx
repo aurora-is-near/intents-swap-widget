@@ -1,10 +1,11 @@
-import { ArrowUpRight, Code } from 'lucide-react';
+import { Code, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import CopyIcon from '../assets/icons/copy.svg?react';
 import CheckIcon from '../assets/icons/check-circle.svg?react';
+import AuroraIcon from '../assets/icons/aurora.svg?react';
 
-import { Button, OutlinedButton } from '../uikit/Button';
+import { HeaderButton } from './HeaderButton';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
 
 import { ExportModal } from './ExportModal';
@@ -34,54 +35,36 @@ export function Header() {
 
   return (
     <>
-      <header className="backdrop-blur-[20px] backdrop-filter bg-csw-gray-950 rounded-csw-lg w-full flex items-center justify-between px-csw-2xl py-[11px]">
-        <aside className="flex gap-[20px] md:gap-[44px] items-center">
-          <nav className="gap-csw-xl md:gap-csw-5xl items-center hidden md:flex">
-            <a href="#" className="flex gap-2.5 items-center justify-center">
-              <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-accent-50 whitespace-nowrap">
-                WIDGET STUDIO
-              </span>
-            </a>
-            <a
-              href="https://aurora-labs.gitbook.io/intents-swap-widget"
-              target="_blank"
-              className="flex gap-csw-md items-center">
-              <span className="font-medium text-xs leading-3 tracking-[1px] uppercase text-csw-gray-200 whitespace-nowrap">
-                DOCS
-              </span>
-              <ArrowUpRight className="w-csw-xl h-csw-xl text-csw-gray-200" />
-            </a>
-          </nav>
-        </aside>
+      <header className="w-full flex items-center justify-between">
+        <div className="gap-csw-2xl items-center hidden md:flex">
+          <span className="font-medium text-xl tracking-[-0.5px] text-csw-gray-100 flex flex-row">
+            <AuroraIcon className="w-[25px] h-[25px] text-csw-gray-100 mr-csw-xl" />
+            Intents Widget
+          </span>
+          <HeaderButton
+            TrailingIcon={ExternalLink}
+            href="https://aurora-labs.gitbook.io/intents-swap-widget"
+            target="_blank"
+            className="flex flex-row items-center bg-csw-gray-900 rounded-csw-md px-csw-lg py-csw-2md hover:bg-csw-gray-800 transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
+            Get started guide
+          </HeaderButton>
+        </div>
 
-        <aside className="flex gap-csw-2md items-center">
-          {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
-          <OutlinedButton
-            size="sm"
-            fluid
-            onClick={copyConfigLink}
-            state={copyLinkFeedback ? 'active' : 'default'}>
-            {copyLinkFeedback ? (
-              <CheckIcon className="w-4 h-4" />
-            ) : (
-              <CopyIcon className="w-4 h-4" />
-            )}
-            <span
-              className={`text-sm font-medium leading-4 hidden md:inline ${copyLinkFeedback ? 'text-csw-status-success' : 'text-csw-gray-50'}`}>
-              {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
-            </span>
-          </OutlinedButton>
-          <Button
+        <nav className="flex gap-csw-2md items-center">
+          <HeaderButton
+            variant={copyLinkFeedback ? 'success' : 'dark'}
+            LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}
+            onClick={copyConfigLink}>
+            {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
+          </HeaderButton>
+          <HeaderButton
             variant="primary"
-            size="sm"
-            fluid
+            LeadingIcon={Code}
             onClick={() => setIsExportModalOpen(true)}>
-            <Code className="w-[16px] h-[16px]" strokeWidth={3} />
-            <span className="text-sm font-medium leading-4 text-csw-gray-950 hidden md:inline">
-              Export code
-            </span>
-          </Button>
-        </aside>
+            Export code
+          </HeaderButton>
+          {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
+        </nav>
       </header>
       <ExportModal
         isOpen={isExportModalOpen}
