@@ -1,6 +1,6 @@
 import { useLogin, useLogout, usePrivy } from '@privy-io/react-auth';
-
-import { OutlinedButton } from '../../uikit/Button';
+import { User } from 'lucide-react';
+import { HeaderButton } from '../HeaderButton';
 
 export function AuthButton() {
   const { ready, authenticated, user } = usePrivy();
@@ -8,35 +8,20 @@ export function AuthButton() {
   const { logout } = useLogout();
 
   if (!ready) {
-    return (
-      <OutlinedButton size="sm" fluid state="loading">
-        <span className="text-sm font-medium leading-4 text-csw-gray-50">
-          Loading...
-        </span>
-      </OutlinedButton>
-    );
+    return <HeaderButton variant="bright">Loading...</HeaderButton>;
   }
 
   if (authenticated && user) {
     return (
-      <div className="flex items-center gap-csw-md">
-        <span className="text-sm font-medium leading-4 text-csw-gray-50">
-          {user.email?.address}
-        </span>
-        <OutlinedButton size="sm" fluid onClick={logout} state="default">
-          <span className="text-sm font-medium leading-4 text-csw-gray-50">
-            Logout
-          </span>
-        </OutlinedButton>
-      </div>
+      <HeaderButton variant="bright" onClick={logout} LeadingIcon={User}>
+        Account
+      </HeaderButton>
     );
   }
 
   return (
-    <OutlinedButton size="sm" fluid onClick={login}>
-      <span className="text-sm font-medium leading-4 text-csw-gray-50">
-        Login
-      </span>
-    </OutlinedButton>
+    <HeaderButton variant="bright" onClick={login}>
+      Login
+    </HeaderButton>
   );
 }
