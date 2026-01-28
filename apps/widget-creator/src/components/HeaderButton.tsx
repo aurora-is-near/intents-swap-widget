@@ -6,6 +6,7 @@ type Props = {
   className?: string;
   children: ReactNode;
   onClick?: () => void;
+  disabled?: boolean;
   LeadingIcon?: ComponentType<{ className?: string; strokeWidth?: number }>;
   TrailingIcon?: ComponentType<{ className?: string; strokeWidth?: number }>;
 } & (
@@ -29,6 +30,7 @@ export const HeaderButton = ({
   variant = 'primary',
   className,
   children,
+  disabled,
   LeadingIcon,
   TrailingIcon,
 }: Props) => {
@@ -38,9 +40,11 @@ export const HeaderButton = ({
     <Component
       href={href}
       target={target}
+      disabled={disabled}
       onClick={onClick}
       className={cn(
         'flex flex-row items-center rounded-csw-md px-csw-lg py-csw-2md transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] whitespace-nowrap gap-x-csw-md cursor-pointer',
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         VARIANT_CLASS_NAMES[variant],
         className,
       )}>

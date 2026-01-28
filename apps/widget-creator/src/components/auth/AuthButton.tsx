@@ -8,7 +8,11 @@ export function AuthButton() {
   const { logout } = useLogout();
 
   if (!ready) {
-    return <HeaderButton variant="bright">Loading...</HeaderButton>;
+    return (
+      <HeaderButton disabled variant="bright">
+        Loading...
+      </HeaderButton>
+    );
   }
 
   if (authenticated && user) {

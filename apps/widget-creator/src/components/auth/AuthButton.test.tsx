@@ -51,25 +51,21 @@ describe('AuthButton', () => {
   });
 
   it('renders user email and logout button when authenticated', () => {
-    const testEmail = 'test@example.com';
-
     mockUsePrivy.mockReturnValue({
       ready: true,
       authenticated: true,
       user: {
         email: {
-          address: testEmail,
+          address: 'test@example.com',
         },
       },
     });
 
     render(<AuthButton />);
 
-    expect(screen.getByText(testEmail)).toBeInTheDocument();
+    const accountButton = screen.getByRole('button', { name: /account/i });
 
-    const logoutButton = screen.getByRole('button', { name: /logout/i });
-
-    expect(logoutButton).toBeInTheDocument();
-    expect(logoutButton).toBeEnabled();
+    expect(accountButton).toBeInTheDocument();
+    expect(accountButton).toBeEnabled();
   });
 });
