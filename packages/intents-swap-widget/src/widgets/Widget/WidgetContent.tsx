@@ -18,7 +18,11 @@ import {
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
-import { MakeTransferArgs } from '../../types';
+import {
+  MakeTransfer,
+  MakeTransferArgs,
+  MakeTransferResponse,
+} from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { useAppKitWallet } from '../../hooks';
@@ -29,7 +33,10 @@ export type Props = Omit<
   'onMsg' | 'makeTransfer'
 > & {
   onMsg?: (msg: Msg, widgetType: WidgetType) => void;
-  makeTransfer?: (args: MakeTransferArgs, widgetType: WidgetType) => void;
+  makeTransfer?: (
+    args: MakeTransferArgs,
+    widgetType: WidgetType,
+  ) => MakeTransferResponse | Promise<MakeTransferResponse>;
 };
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;
@@ -37,7 +44,7 @@ type Msg = SwapMsg | DepositMsg | WithdrawMsg;
 const wrapMakeTransfer = (
   makeTransfer: Props['makeTransfer'],
   widgetType: WidgetType,
-) => {
+): MakeTransfer | undefined => {
   // It is important to return undefined if no custom `makeTransfer` function
   // was passed into the widget, as this is how internal hooks such as
   // `useMakeEvmTransfer` know to use their default implementation.
@@ -46,7 +53,7 @@ const wrapMakeTransfer = (
   }
 
   return (args: MakeTransferArgs) => {
-    makeTransfer(args, widgetType);
+    return makeTransfer(args, widgetType);
   };
 };
 

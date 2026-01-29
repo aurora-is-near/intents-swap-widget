@@ -14,20 +14,14 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
-import type { MakeTransferArgs, TransferResult } from '@/types/transfer';
+import type {
+  MakeTransfer,
+  MakeTransferArgs,
+  TransferResult,
+} from '@/types/transfer';
 
-type Result = {
-  hash: string;
-  transactionLink: string;
-  intent?: string;
-};
-
-type MakeTransferResult = Result | undefined | null | void;
-
-export type QuoteTransferArgs = {
-  makeTransfer?: (
-    args: MakeTransferArgs,
-  ) => Promise<MakeTransferResult> | MakeTransferResult;
+type QuoteTransferArgs = {
+  makeTransfer?: MakeTransfer;
   providers?: Providers;
 };
 
