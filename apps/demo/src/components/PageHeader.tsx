@@ -1,104 +1,9 @@
-import { clsx } from 'clsx';
 import { useState } from 'react';
 import { Input } from '@aurora-is-near/intents-swap-widget';
-import { useToggleTheme } from '@aurora-is-near/intents-swap-widget/hooks';
-import { DarkModeW700 as DarkMode } from '@material-symbols-svg/react-rounded/icons/dark-mode';
-import { NightSightAutoW700 as NightSightAuto } from '@material-symbols-svg/react-rounded/icons/night-sight-auto';
-import { SunnyW700 as Sunny } from '@material-symbols-svg/react-rounded/icons/sunny';
 import type { PropsWithChildren } from 'react';
 import type { HexColor } from '@aurora-is-near/intents-swap-widget';
-import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';
 
 import { WalletConnectButton } from './WalletConnectButton';
-
-type TabProps<T> = {
-  id: T;
-  label: string;
-  icon: MaterialSymbolsComponent;
-  isActive: boolean;
-  onClick: (id: T) => void;
-};
-
-const Tab = <T extends string>({
-  id,
-  label,
-  isActive,
-  icon: Icon,
-  onClick,
-}: TabProps<T>) => (
-  <button
-    key={id}
-    onClick={() => onClick(id)}
-    type="button"
-    className={clsx(
-      'flex gap-sw-md items-center cursor-pointer rounded-sw-md p-sw-lg sm:px-sw-xl group transition-colors',
-      {
-        'bg-sw-gray-200': isActive,
-        'bg-sw-gray-900 text-sw-gray-400 hover:text-sw-gray-200': !isActive,
-      },
-    )}>
-    <Icon
-      className={clsx('w-[16px] h-[16px]', {
-        'text-sw-gray-900': isActive,
-        'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
-      })}
-    />
-    <span
-      className={clsx('text-sw-label-md hidden sm:inline-block!', {
-        'text-sw-gray-900': isActive,
-        'text-sw-gray-400 group-hover:text-sw-gray-200': !isActive,
-      })}>
-      {label}
-    </span>
-  </button>
-);
-
-type ThemeMode = 'light' | 'dark' | 'auto';
-
-const themeLabels: Record<ThemeMode, string> = {
-  light: 'Light',
-  dark: 'Dark',
-  auto: 'Auto',
-};
-
-const themeIcons: Record<ThemeMode, MaterialSymbolsComponent> = {
-  light: Sunny,
-  dark: DarkMode,
-  auto: NightSightAuto,
-};
-
-type ThemeToggleProps = {
-  onClick?: (colorPalette: 'light' | 'dark') => void;
-};
-
-const ThemeToggle = ({ onClick }: ThemeToggleProps) => {
-  const { theme = 'dark', toggleTheme } = useToggleTheme({
-    defaultTheme: 'dark',
-    onChange: onClick,
-  });
-
-  if (!theme) {
-    return (
-      <Tab
-        id="theme"
-        isActive={false}
-        label={themeLabels.dark}
-        icon={themeIcons.dark}
-        onClick={toggleTheme}
-      />
-    );
-  }
-
-  return (
-    <Tab
-      id="theme"
-      isActive={false}
-      label={themeLabels[theme]}
-      icon={themeIcons[theme]}
-      onClick={toggleTheme}
-    />
-  );
-};
 
 const defaultAccentColor: HexColor = '#D5B7FF';
 const defaultBackgroundColor: HexColor = '#636D9B';
@@ -118,10 +23,8 @@ const getThemeColor = (
 
 export const PageHeader = ({
   children,
-  onToggleTheme,
   onSetColors,
 }: PropsWithChildren<{
-  onToggleTheme?: ThemeToggleProps['onClick'];
   onSetColors?: (colors: {
     accentColor: HexColor;
     backgroundColor: HexColor;
@@ -160,7 +63,6 @@ export const PageHeader = ({
           onChange={(e) => setBackgroundColor(e.target.value)}
           onBlur={setThemeColors}
         />
-        <ThemeToggle onClick={onToggleTheme} />
         <WalletConnectButton />
       </div>
     </header>

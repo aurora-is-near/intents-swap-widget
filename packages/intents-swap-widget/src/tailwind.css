@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:where([data-sw-theme=dark], [data-sw-theme=dark] *));
-
 @import './theme.css';
 
 @theme {

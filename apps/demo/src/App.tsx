@@ -35,13 +35,6 @@ export const App = () => {
             accentColor: colors.accentColor,
             backgroundColor: colors.backgroundColor,
           }))
-        }
-        onToggleTheme={(palette) =>
-          setTheme((p) => ({
-            colorScheme: palette,
-            accentColor: p.accentColor,
-            backgroundColor: p.backgroundColor,
-          }))
         }>
         <Toggle
           isOn={showAppBalance}
