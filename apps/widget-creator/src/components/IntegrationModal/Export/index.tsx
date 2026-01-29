@@ -8,6 +8,7 @@ import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link
 import { Button } from '@/uikit/Button';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
+import { InfoBanner } from '@/components/InfoBanner';
 
 const applyIndent = (code: string, spaces: number): string => {
   const pad = ' '.repeat(spaces);
@@ -68,8 +69,8 @@ export function App() {
         <div className="flex flex-col gap-csw-lg flex-1 pt-csw-md">
           <h2 className="text-csw-label-lg text-csw-gray-50">Embed code</h2>
           <p className="text-csw-body-md text-csw-gray-200">
-            Add the Intents Studio widget to your app using an API key.
-            <br />
+            Add the Intents Studio widget to your app using an API key.{' '}
+            <br className="hidden sm:block" />
             The selected API key determines the applied fees.
           </p>
 
@@ -94,30 +95,15 @@ export function App() {
       </div>
 
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
-        <div className="flex items-center justify-between bg-csw-status-warning rounded-csw-lg px-csw-2xl py-csw-xl">
-          <div className="flex flex-col gap-csw-xs">
-            <div className="flex items-center gap-csw-xs">
-              <Emergency size={16} className="text-csw-gray-950" />
-              <span className="text-csw-label-md text-csw-gray-950">
-                API key required
-              </span>
-            </div>
-            <p className="text-csw-body-sm text-csw-gray-900">
-              Create an API key to activate the widget.
-            </p>
-          </div>
-          <Button
-            variant="outlined"
-            detail="dimmed"
-            size="sm"
-            fluid
-            onClick={handleCopyConfigLink}>
-            Go to API Keys
-          </Button>
-        </div>
+        <InfoBanner
+          action="Go to API Keys"
+          title="API key required"
+          description="Create an API key to activate the widget."
+          onClick={handleCopyConfigLink}
+        />
 
         <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
-          <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto">
+          <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
             <span className="text-csw-label-md text-csw-gray-50">React</span>
             <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
             <Highlight theme={themes.dracula} code={sampleCode} language="tsx">
