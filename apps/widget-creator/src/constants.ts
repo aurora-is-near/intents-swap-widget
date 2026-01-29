@@ -6,3 +6,5 @@ export const DEFAULT_ERROR_COLOR_LIGHT = '#FFB8BE';
 export const DEFAULT_ERROR_COLOR_DARK = '#9F002B';
 export const DEFAULT_SUCCESS_COLOR_LIGHT = '#98FFB5';
 export const DEFAULT_SUCCESS_COLOR_DARK = '#00652F';
+
+export const PRIVY_APP_ID = 'cmkzn6yvs0324kz0cp0pf50v1';
