@@ -17,6 +17,8 @@ import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
 
+import { useApiKeys } from '@/api/hooks';
+
 export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
@@ -30,6 +32,8 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
   const allTokenSymbols = allTokens.map((token) => token.symbol);
+
+  const { data: apiKeys } = useApiKeys();
 
   // Once the tokens have loaded, select them all initially
   useEffect(() => {
@@ -369,7 +373,7 @@ export function Configure() {
           <div className="space-y-csw-xl text-csw-gray-200">
             <Toggle
               label="Enable custom fees"
-              isEnabled={state.enableCustomFees}
+              isEnabled={state.enableCustomFees || !!apiKeys?.length}
               onChange={(enabled) =>
                 dispatch({ type: 'SET_ENABLE_CUSTOM_FEES', payload: enabled })
               }

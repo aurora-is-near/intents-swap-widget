@@ -8,7 +8,6 @@ import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link
 import { Header } from '../Header';
 
 import { Button } from '@/uikit/Button';
-import { useApiKeys } from '@/api/hooks';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -50,10 +49,6 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-
-  const { status, data: apiKeys } = useApiKeys();
-
-  console.log('---1', status, apiKeys);
 
   const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
