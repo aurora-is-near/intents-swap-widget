@@ -5,7 +5,7 @@ import {
   verifyWalletSignature,
   walletVerificationMessageFactory,
 } from '../utils/intents/walletCompatibilityVerification';
-import { IntentsTransferArgs } from '../types';
+import { Providers } from '../types';
 import { logger } from '../logger';
 import { TransferError } from '@/errors';
 import { useConfig } from '@/config';
@@ -14,7 +14,7 @@ import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { localStorageTyped } from '@/utils/localstorage';
 
 type Props = {
-  providers: IntentsTransferArgs['providers'];
+  providers?: Providers;
   walletAddress?: string;
 };
 

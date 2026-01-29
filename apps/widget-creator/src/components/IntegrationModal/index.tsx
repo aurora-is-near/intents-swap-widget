@@ -13,11 +13,11 @@ interface ModalProps {
   onClose: () => void;
 }
 
-export function IntegrationModal({
+export const IntegrationModal = ({
   isOpen,
   selectedTab = 'embed-code',
   onClose,
-}: ModalProps) {
+}: ModalProps) => {
   const [selectedApiKey, setSelectedApiKey] = useState<string | null>(null);
   const [selected, setSelected] = useState<NavigationTabs | 'fees'>(
     selectedTab,
@@ -99,4 +99,4 @@ export function IntegrationModal({
       </div>
     </div>
   );
-}
+};

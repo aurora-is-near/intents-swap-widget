@@ -31,7 +31,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
-export type IntentsTransferArgs = {
+type IntentsTransferArgs = {
   providers?: Providers;
 };
 
