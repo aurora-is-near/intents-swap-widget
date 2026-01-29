@@ -21,6 +21,7 @@ import { useMemo, useRef, useState } from 'react';
 import {
   Button,
   Chains,
+  MakeTransfer,
   MakeTransferArgs,
   SimpleToken,
   SuccessScreen,
@@ -776,8 +777,10 @@ export const Page = () => {
     return fetchDoubleQuote(data, options);
   };
 
-  const makeTransfer = (args: MakeTransferArgs) => {
+  const makeTransfer: MakeTransfer = (args) => {
     setMakeTransferArgs(args);
+
+    return null;
   };
 
   const walletSupportedChains = useMemo(() => {
