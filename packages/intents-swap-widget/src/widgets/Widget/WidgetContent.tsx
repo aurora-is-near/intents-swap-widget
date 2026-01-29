@@ -33,6 +33,22 @@ export type Props = Omit<
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;
 
+const wrapMakeTransfer = (
+  makeTransfer: Props['makeTransfer'],
+  widgetType: WidgetType,
+) => {
+  // It is important to return undefined if no custom `makeTransfer` function
+  // was passed into the widget, as this is how internal hooks such as
+  // `useMakeEvmTransfer` know to use their default implementation.
+  if (!makeTransfer) {
+    return;
+  }
+
+  return (args: MakeTransferArgs) => {
+    makeTransfer(args, widgetType);
+  };
+};
+
 export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   const wasStandaloneModeEnabled = useRef(false);
   const [isTabsVisible, setIsTabsVisible] = useState(true);
@@ -95,7 +111,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
             return (
               <WidgetSwapContent
                 {...restProps}
-                makeTransfer={(args) => makeTransfer?.(args, 'swap')}
+                makeTransfer={wrapMakeTransfer(makeTransfer, 'swap')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'swap');
                 }}
@@ -107,7 +123,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
             return (
               <WidgetDepositContent
                 {...restProps}
-                makeTransfer={(args) => makeTransfer?.(args, 'deposit')}
+                makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'deposit');
                 }}
@@ -119,7 +135,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
             return (
               <WidgetWithdrawContent
                 {...restProps}
-                makeTransfer={(args) => makeTransfer?.(args, 'withdraw')}
+                makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
                 onMsg={(msg) => {
                   handleMsg(msg, 'withdraw');
                 }}
