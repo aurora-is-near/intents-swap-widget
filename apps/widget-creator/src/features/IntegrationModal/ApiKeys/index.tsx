@@ -15,7 +15,7 @@ const ApiKeysHeader = () => (
   </div>
 );
 
-const apiKeys = ['api-key'];
+const apiKeys = [];
 
 type Props = {
   onClickFees: (apiKey: string) => void;
