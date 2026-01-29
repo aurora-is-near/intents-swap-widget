@@ -54,7 +54,12 @@ export const WidgetWithdrawContent = ({
     intentsAccountType,
   } = useConfig();
 
-  const { status: tokensStatus, refetch: refetchTokens } = useTokens();
+  const {
+    status: tokensStatus,
+    refetch: refetchTokens,
+    isLoading: isLoadingTokens,
+  } = useTokens();
+
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
@@ -119,7 +124,7 @@ export const WidgetWithdrawContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
-  if (!!isLoading || (tokensStatus !== 'error' && !ctx.sourceToken)) {
+  if (!!isLoading || isLoadingTokens) {
     return <WidgetWithdrawSkeleton />;
   }
 
@@ -208,7 +213,7 @@ export const WidgetWithdrawContent = ({
       }
 
       return (
-        <div className="gap-sw-2xl relative flex flex-col">
+        <div className="gap-sw-2xl relative flex flex-col w-full">
           <div className="gap-[10px] relative flex flex-col">
             <Card padding="none">
               <TokenInput.Source
