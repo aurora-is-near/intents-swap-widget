@@ -187,7 +187,6 @@ export const useMakeQuote = () => {
     };
 
     if (message) {
-      // @ts-expect-error customRecipientMsg is not in the types
       commonQuoteParams.customRecipientMsg = message;
     }
 

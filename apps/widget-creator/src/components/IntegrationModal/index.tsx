@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
+import { Fees } from './Fees';
 import { Export } from './Export';
+import { ApiKeys } from './ApiKeys';
 import { Navigation } from './Navigation';
 import type { NavigationTabs } from './Navigation';
 
 interface ModalProps {
   isOpen: boolean;
+  selectedTab?: NavigationTabs;
   onClose: () => void;
 }
 
-export function IntegrationModal({ isOpen, onClose }: ModalProps) {
-  const [selected, setSelected] = useState<NavigationTabs>('embed-code');
+export function IntegrationModal({
+  isOpen,
+  selectedTab = 'embed-code',
+  onClose,
+}: ModalProps) {
+  const [selectedApiKey, setSelectedApiKey] = useState<string | null>(null);
+  const [selected, setSelected] = useState<NavigationTabs | 'fees'>(
+    selectedTab,
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -45,10 +55,45 @@ export function IntegrationModal({ isOpen, onClose }: ModalProps) {
             <Close size={16} className="text-csw-gray-50" />
           </button>
 
-          <Navigation selected={selected} onSelect={setSelected} />
+          {selected === 'fees' ? (
+            <Navigation selected="api-keys" onSelect={setSelected} />
+          ) : (
+            <Navigation selected={selected} onSelect={setSelected} />
+          )}
 
           <div className="px-csw-2xl max-w-[600px] overflow-auto">
-            <Export />
+            {(() => {
+              if (selected === 'embed-code') {
+                return (
+                  <Export onClickApiKeys={() => setSelected('api-keys')} />
+                );
+              }
+
+              if (
+                selected === 'api-keys' ||
+                (selected === 'fees' && !selectedApiKey)
+              ) {
+                return (
+                  <ApiKeys
+                    onClickFees={(apiKey) => {
+                      setSelected('fees');
+                      setSelectedApiKey(apiKey);
+                    }}
+                  />
+                );
+              }
+
+              if (selected === 'fees' && selectedApiKey) {
+                return (
+                  <Fees
+                    apiKey={selectedApiKey}
+                    onClickBack={() => setSelected('api-keys')}
+                  />
+                );
+              }
+
+              return null;
+            })()}
           </div>
         </div>
       </div>

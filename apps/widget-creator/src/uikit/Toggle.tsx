@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 interface ToggleProps {
   isEnabled: boolean;
   onChange: (enabled: boolean) => void;
   disabled?: boolean;
   label?: string;
+  labelPosition?: 'left' | 'right';
   description?: ReactNode;
 }
 
@@ -35,32 +36,42 @@ export function ToggleOnly({
   );
 }
 
+const ToggleLabel = ({ children }: PropsWithChildren) => (
+  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+    {children}
+  </p>
+);
+
 export function Toggle({
   isEnabled,
   onChange,
   disabled = false,
+  labelPosition = 'left',
   label,
   description,
 }: ToggleProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-col gap-1.5">
-        {label ? (
-          <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
-            {label}
-          </p>
-        ) : null}
-        {description ? (
-          <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
-            {description}
-          </p>
-        ) : null}
-      </div>
+    <div className="flex items-center justify-between gap-csw-lg">
+      {((label && labelPosition === 'left') ?? description) ? (
+        <div className="flex flex-col gap-1.5">
+          {label && labelPosition === 'left' ? (
+            <ToggleLabel>{label}</ToggleLabel>
+          ) : null}
+          {description ? (
+            <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <ToggleOnly
         isEnabled={isEnabled}
         onChange={onChange}
         disabled={disabled}
       />
+      {label && labelPosition === 'right' ? (
+        <ToggleLabel>{label}</ToggleLabel>
+      ) : null}
     </div>
   );
 }
