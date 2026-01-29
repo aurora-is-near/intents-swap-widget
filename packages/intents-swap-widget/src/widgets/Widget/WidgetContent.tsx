@@ -22,6 +22,7 @@ import { MakeTransferArgs } from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { useAppKitWallet } from '../../hooks';
+import { useUnsafeSnapshot } from '../../machine';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
@@ -55,6 +56,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
   const { enableAccountAbstraction, enableStandaloneMode } = useConfig();
   const { disconnect, isConnected } = useAppKitWallet();
+  const { ctx } = useUnsafeSnapshot();
 
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
@@ -92,18 +94,22 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
     }
   }, [enableStandaloneMode, isConnected]);
 
+  const showHeader = ctx.state !== 'transfer_success';
+
   return (
     <>
-      <div className="mb-sw-2xl w-full flex items-center">
-        {enableAccountAbstraction && isTabsVisible ? (
-          <>
-            <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
-          </>
-        ) : (
-          <div className="w-full" />
-        )}
-        {enableStandaloneMode && <WidgetProfileButton />}
-      </div>
+      {showHeader && (
+        <div className="mb-sw-2xl w-full flex items-center">
+          {enableAccountAbstraction && isTabsVisible ? (
+            <>
+              <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+            </>
+          ) : (
+            <div className="w-full" />
+          )}
+          {enableStandaloneMode && <WidgetProfileButton />}
+        </div>
+      )}
 
       {(() => {
         switch (activeTab) {
