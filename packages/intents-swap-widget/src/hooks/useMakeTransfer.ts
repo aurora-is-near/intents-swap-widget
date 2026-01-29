@@ -1,21 +1,24 @@
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
+import { Providers } from '../types';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import type { TransferResult } from '@/types/transfer';
+import type { MakeTransfer, TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
-import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
-import type { IntentsTransferArgs } from '@/hooks/useMakeIntentsTransfer';
 
 export const useMakeTransfer = ({
   message,
   providers,
   makeTransfer,
-}: QuoteTransferArgs & IntentsTransferArgs & { message?: string }) => {
+}: {
+  message?: string;
+  providers?: Providers;
+  makeTransfer?: MakeTransfer;
+}) => {
   const { ctx } = useUnsafeSnapshot();
   const {
     isDirectTokenOnNearDeposit,

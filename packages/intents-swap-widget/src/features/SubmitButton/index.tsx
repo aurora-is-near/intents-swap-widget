@@ -4,7 +4,7 @@ import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import type { TransferResult } from '@/types/transfer';
+import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
 import { useTypedTranslation } from '@/localisation';
@@ -12,12 +12,11 @@ import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-import type { QuoteTransferArgs } from '@/hooks/useMakeQuoteTransfer';
 
 type Props = {
   label: string;
   onSuccess: (transfer: TransferResult) => void;
-  makeTransfer?: QuoteTransferArgs['makeTransfer'];
+  makeTransfer?: MakeTransfer;
 };
 
 const commonBtnProps = {

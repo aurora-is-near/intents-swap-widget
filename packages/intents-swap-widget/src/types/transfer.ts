@@ -17,3 +17,15 @@ export type MakeTransferArgs = {
   sourceAssetId: string;
   targetAssetId: string;
 };
+
+export type MakeTransferResult = {
+  hash: string;
+  transactionLink: string;
+  intent?: string;
+};
+
+export type MakeTransferResponse = MakeTransferResult | null;
+
+export type MakeTransfer = (
+  args: MakeTransferArgs,
+) => Promise<MakeTransferResponse> | MakeTransferResponse;
