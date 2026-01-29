@@ -1,4 +1,4 @@
-import { FeeConfig } from 'intents-1click-rule-engine';
+import type { FeeConfig } from 'intents-1click-rule-engine';
 
 export type ApiKey = {
   isEnabled: boolean;

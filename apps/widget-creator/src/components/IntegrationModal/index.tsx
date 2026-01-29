@@ -25,6 +25,13 @@ export const IntegrationModal = ({
 
   useEffect(() => {
     if (isOpen) {
+      setSelected(selectedTab);
+      setSelectedApiKey(null);
+    }
+  }, [isOpen, selectedTab]);
+
+  useEffect(() => {
+    if (isOpen) {
       document.body.style.overflow = 'hidden';
 
       return () => {

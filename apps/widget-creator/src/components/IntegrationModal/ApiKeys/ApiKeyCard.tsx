@@ -34,7 +34,7 @@ export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(apiKey);
     setTimeout(() => setIsCopied(false), 2000);
     setIsCopied(true);
   };

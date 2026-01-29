@@ -6,7 +6,7 @@ import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/
 import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
 
 import { Header } from '../Header';
-import { useGetApiKeys } from '../api/hooks';
+// import { useGetApiKeys } from '../api/hooks';
 
 import { Button } from '@/uikit/Button';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
@@ -51,9 +51,9 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
-  const { status, data: apiKeys } = useGetApiKeys();
+  //   const { status, data: apiKeys } = useGetApiKeys();
 
-  console.log('---1', status, apiKeys);
+  //   console.log('---1', status, apiKeys);
 
   const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 

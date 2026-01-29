@@ -8,7 +8,7 @@ import { FeeJsonInput } from '../FeeJsonInput';
 import { ExpandableToggleCard } from './ExpandableToggleCard';
 import { Button } from '@/uikit/Button';
 
-const PROTOCOL_FEE_BASIS_POINTS = 50;
+const PROTOCOL_FEE_BASIS_POINTS = 5;
 
 const feePercentStringToBasisPoints = (fee: string) =>
   parseFloat(fee ?? '0') * 100;

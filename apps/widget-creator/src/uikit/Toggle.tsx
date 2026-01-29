@@ -52,7 +52,8 @@ export function Toggle({
 }: ToggleProps) {
   return (
     <div className="flex items-center justify-between gap-csw-lg">
-      {((label && labelPosition === 'left') ?? description) ? (
+      {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
+      {(label && labelPosition === 'left') || description ? (
         <div className="flex flex-col gap-1.5">
           {label && labelPosition === 'left' ? (
             <ToggleLabel>{label}</ToggleLabel>

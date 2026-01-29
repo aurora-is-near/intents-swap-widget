@@ -1,9 +1,6 @@
-import type { ReactNode } from 'react';
-
 type Props = {
   value?: string;
   placeholder: string;
-  suffix?: ReactNode;
   onChange: (value: string) => void;
 };
 

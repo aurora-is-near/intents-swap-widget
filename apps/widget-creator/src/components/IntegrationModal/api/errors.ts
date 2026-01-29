@@ -1,4 +1,5 @@
 type FeeServiceApiErrorCodes =
+  | 'NOT_AUTHORIZED'
   | 'NO_API_KEYS_ASSIGNED'
   | 'INVALID_AUTHORIZATION'
   | 'FAILED_TO_GET_API_KEYS'

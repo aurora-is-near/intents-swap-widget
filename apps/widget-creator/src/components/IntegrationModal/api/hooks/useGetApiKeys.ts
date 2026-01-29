@@ -5,10 +5,10 @@ import { getApiKeys } from '../requests/getApiKeys';
 import type { ApiKey } from '../types';
 
 export const useGetApiKeys = () => {
-  const { authenticated, getAccessToken } = usePrivy();
+  const { authenticated, getAccessToken, user } = usePrivy();
 
   return useQuery<ApiKey[]>({
-    queryKey: ['apiKeys'],
+    queryKey: ['apiKeys', user?.id ?? 'anonymous'],
     enabled: authenticated,
     queryFn: async () => {
       const authToken = await getAccessToken();

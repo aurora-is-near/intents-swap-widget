@@ -9,6 +9,10 @@ import type { ApiKey } from '../types';
 export const getApiKeys = async (authToken: string) => {
   let res: unknown;
 
+  if (!authToken) {
+    throw new FeeServiceApiError('NOT_AUTHORIZED');
+  }
+
   try {
     const response = await axiosInstance.get('/key', {
       headers: { Authorization: authToken },

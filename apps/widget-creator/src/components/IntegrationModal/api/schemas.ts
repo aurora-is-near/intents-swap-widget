@@ -41,5 +41,5 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z.object({
   isEnabled: z.boolean(),
   createdAt: z.string(),
   widgetAppKey: z.string(),
-  feeRules: z.custom<FeeConfig>(),
+  feeRules: FeeConfigSchema,
 });

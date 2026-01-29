@@ -20,8 +20,11 @@ export const ExpandableToggleCard = ({
   const [isExpanded, setIsExpanded] = useState(isEnabled);
 
   const handleToggle = () => {
-    setIsExpanded((p) => !p);
-    onToggle(!isExpanded);
+    setIsExpanded((prev) => {
+      onToggle(!prev);
+
+      return !prev;
+    });
   };
 
   return (
