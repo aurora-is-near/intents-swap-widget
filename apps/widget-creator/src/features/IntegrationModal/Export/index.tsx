@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
-import { EmergencyFillW700 as Emergency } from '@material-symbols-svg/react-rounded/icons/emergency';
 import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
+
+import { Header } from '../Header';
 
 import { Button } from '@/uikit/Button';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
@@ -34,9 +36,17 @@ const stringifyAsJS = (value: unknown, indent: number): string => {
   return applyIndent(cleanJson, indent);
 };
 
-export function Export() {
+type Props = {
+  onClickApiKeys: () => void;
+};
+
+export const Export = ({ onClickApiKeys }: Props) => {
+  const { authenticated } = usePrivy();
+  const { login } = useLogin();
+
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
+
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
@@ -66,20 +76,17 @@ export function App() {
   return (
     <>
       <div className="px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
-        <div className="flex flex-col gap-csw-lg flex-1 pt-csw-md">
-          <h2 className="text-csw-label-lg text-csw-gray-50">Embed code</h2>
-          <p className="text-csw-body-md text-csw-gray-200">
-            Add the Intents Studio widget to your app using an API key.{' '}
-            <br className="hidden sm:block" />
-            The selected API key determines the applied fees.
-          </p>
-
-          <div className="flex items-center gap-csw-xxs">
-            <Emergency
-              size={16}
-              className="text-csw-status-warning mr-csw-xs"
-            />
-            <p className="text-csw-body-sm text-csw-status-warning inline">
+        <Header
+          title="Embed code"
+          description={
+            <>
+              Add the Intents Studio widget to your app using an API key.
+              <br className="hidden sm:block" />
+              The selected API key determines the applied fees.
+            </>
+          }
+          warning={
+            <>
               For more information, check out{' '}
               <a
                 href="https://aurora-labs.gitbook.io/intents-swap-widget"
@@ -89,18 +96,27 @@ export function App() {
                 Developer quick guide
                 <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
               </a>
-            </p>
-          </div>
-        </div>
+            </>
+          }
+        />
       </div>
 
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
-        <InfoBanner
-          action="Go to API Keys"
-          title="API key required"
-          description="Create an API key to activate the widget."
-          onClick={handleCopyConfigLink}
-        />
+        {authenticated ? (
+          <InfoBanner
+            action="Go to API Keys"
+            title="API key required"
+            description="Create an API key to activate the widget."
+            onClick={onClickApiKeys}
+          />
+        ) : (
+          <InfoBanner
+            action="Log in"
+            title="API key required"
+            description="Log in to create an API key to activate the widget."
+            onClick={login}
+          />
+        )}
 
         <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
           <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
@@ -179,4 +195,4 @@ export function App() {
       </div>
     </>
   );
-}
+};

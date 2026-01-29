@@ -1,7 +1,7 @@
 import { Edit, ExternalLink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
-import { OutlinedButton } from '../../uikit/Button';
+import { Button, OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
@@ -13,13 +13,16 @@ import {
   isTokenAvailable,
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
+import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
 
 export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
+
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
   const [tokenSelectorType, setTokenSelectorType] = useState<'sell' | 'buy'>(
     'sell',
@@ -373,13 +376,25 @@ export function Configure() {
             />
 
             {state.enableCustomFees && (
-              <p className="text-sm leading-5 tracking-[-0.4px] font-medium">
-                Get in touch with Aurora to discuss custom fees.
-              </p>
+              <Button
+                fluid
+                size="sm"
+                variant="outlined"
+                className="w-full"
+                onClick={() => setIsExportModalOpen(true)}>
+                <Edit className="w-csw-xl h-csw-xl" />
+                Edit fees
+              </Button>
             )}
           </div>
         </ConfigSection>
       </div>
+
+      <IntegrationModal
+        selectedTab="api-keys"
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
     </>
   );
 }
