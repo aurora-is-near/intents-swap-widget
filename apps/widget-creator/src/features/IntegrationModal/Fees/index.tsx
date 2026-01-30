@@ -55,8 +55,23 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
         },
       });
     } else if (isJsonCodeOpen) {
-      setFeeRules(DEFAULT_ZERO_FEE);
-      // setFeeRules(JSON.parse(feeJson));
+      let rules: FeeConfig;
+
+      try {
+        // we don't really care what the output is
+        // it will be validated on save
+        rules = JSON.parse(feeJson) as FeeConfig;
+      } catch (error) {
+        if (feeRules) {
+          setFeeJsonError('Invalid JSON configuration');
+        } else {
+          setFeeJsonError(undefined);
+        }
+
+        return;
+      }
+
+      setFeeRules(rules);
     } else {
       setFeeRules(undefined);
     }
@@ -110,6 +125,16 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     if (mutation.status === 'error') {
       if (mutation.error.code === 'INVALID_API_KEY_CONFIGURATION') {
         setFeeJsonError('Invalid JSON configuration');
+      } else if (mutation.error.code === 'FAILED_TO_UPDATE_API_KEY') {
+        setFeeJsonError('Invalid JSON configuration');
+      } else {
+        setFeeJsonError(undefined);
+      }
+    } else {
+      setFeeJsonError(undefined);
+
+      if (mutation.status === 'success') {
+        onClickBack();
       }
     }
   }, [mutation.status]);
