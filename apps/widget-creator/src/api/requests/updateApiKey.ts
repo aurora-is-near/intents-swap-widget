@@ -12,7 +12,11 @@ export type RequestBody = {
   feeRules: FeeConfig;
 };
 
-export const updateApiKey = async (authToken: string, body: RequestBody) => {
+export const updateApiKey = async (
+  authToken: string,
+  apiKey: string,
+  body: RequestBody,
+) => {
   let res: unknown;
 
   try {
@@ -20,7 +24,7 @@ export const updateApiKey = async (authToken: string, body: RequestBody) => {
       ApiKey,
       AxiosResponse<ApiKey>,
       RequestBody
-    >('/key', body, {
+    >(`/key/${apiKey}`, body, {
       headers: { Authorization: authToken },
     });
 

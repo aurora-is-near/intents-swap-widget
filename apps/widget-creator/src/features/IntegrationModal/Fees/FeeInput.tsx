@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { IMaskInput } from 'react-imask';
 import type { ReactNode } from 'react';
 
@@ -5,6 +6,7 @@ type Props = {
   value?: string;
   placeholder: string;
   suffix?: ReactNode;
+  state?: 'normal' | 'error';
   onChange: (value: string) => void;
 };
 
@@ -12,10 +14,18 @@ export const FeeInput = ({
   value = '',
   placeholder,
   suffix,
+  state = 'normal',
   onChange,
 }: Props) => (
   <div className="flex-shrink-0">
-    <div className="flex gap-csw-md items-center bg-csw-gray-800 px-csw-lg py-csw-md rounded-csw-md">
+    <div
+      className={clsx(
+        'flex gap-csw-md items-center px-csw-lg py-csw-md rounded-csw-md',
+        {
+          'bg-csw-gray-800': state === 'normal',
+          'bg-csw-status-error/20': state === 'error',
+        },
+      )}>
       <IMaskInput
         lazy={true}
         eager={true}
@@ -35,11 +45,24 @@ export const FeeInput = ({
           },
         }}
         onAccept={(val) => onChange(val)}
-        className="bg-transparent text-csw-gray-50 placeholder-csw-gray-300 outline-none flex-1 font-medium text-sm leading-4"
+        className={clsx(
+          'bg-transparent outline-none flex-1 font-medium text-sm leading-4',
+          {
+            'text-csw-gray-50 placeholder-csw-gray-300': state === 'normal',
+            'text-csw-status-error placeholder-csw-status-error':
+              state === 'error',
+          },
+        )}
       />
 
       {!!suffix && (
-        <span className="text-csw-label-sm text-csw-gray-300">{suffix}</span>
+        <span
+          className={clsx('text-csw-label-sm', {
+            'text-csw-status-error': state === 'error',
+            'text-csw-gray-300': state === 'normal',
+          })}>
+          {suffix}
+        </span>
       )}
     </div>
   </div>

@@ -6,7 +6,7 @@ import { updateApiKey } from '../requests/updateApiKey';
 import type { RequestBody } from '../requests/updateApiKey';
 import type { ApiKey } from '../types';
 
-export const useUpdateApiKey = () => {
+export const useUpdateApiKey = (apiKey: string) => {
   const queryClient = useQueryClient();
   const { getAccessToken, user } = usePrivy();
 
@@ -18,7 +18,7 @@ export const useUpdateApiKey = () => {
         throw new FeeServiceCreateApiKeyError('NOT_AUTHORIZED');
       }
 
-      return updateApiKey(authToken, data);
+      return updateApiKey(authToken, apiKey, data);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
