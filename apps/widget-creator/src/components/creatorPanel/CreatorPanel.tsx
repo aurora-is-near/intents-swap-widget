@@ -6,7 +6,6 @@ import { Configure } from './Configure';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { cn } from '../../utils/cn';
 
-const SCROLLBAR_OFFSET_CLASSNAME = 'md:mr-csw-sm';
 const DESIGN_TAB_ID = 'design-tab';
 const CONFIGURE_TAB_ID = 'configure-tab';
 const DESIGN_PANEL_ID = 'design-panel';
@@ -23,11 +22,7 @@ export function CreatorPanel() {
   }
 
   return (
-    <div
-      className={cn(
-        'px-csw-2xl pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full',
-        SCROLLBAR_OFFSET_CLASSNAME,
-      )}>
+    <div className="px-csw-2xl pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full">
       <div className="flex items-center mb-[22px]">
         <div role="tablist" className="flex gap-csw-2xl">
           <button
