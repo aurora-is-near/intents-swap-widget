@@ -47,7 +47,8 @@ export const Fees = ({ onClickBack }: Props) => {
         },
       });
     } else if (isJsonCodeOpen) {
-      setFeeRules(JSON.parse(feeJson));
+      setFeeRules(DEFAULT_ZERO_FEE);
+      // setFeeRules(JSON.parse(feeJson));
     } else {
       setFeeRules(undefined);
     }
