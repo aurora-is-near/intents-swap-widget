@@ -41,7 +41,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   connectedWallets: {},
 
   enableAutoTokensSwitching: true,
-  showIntentTokens: true,
   chainsOrder: DEFAULT_CHAINS_ORDER,
 
   filterTokens: (tkn: Token) =>

@@ -54,7 +54,6 @@ export type WidgetConfig = {
   defaultTargetToken?: DefaultToken | null;
 
   // Tokens filtering
-  showIntentTokens: boolean;
   allowedTokensList?: string[]; // assetIDs
   allowedSourceTokensList?: string[];
   allowedTargetTokensList?: string[];
