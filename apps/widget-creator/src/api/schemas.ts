@@ -24,8 +24,24 @@ export const FeeConfigSchema = z.any().superRefine((data, ctx) => {
   }
 
   try {
-    // eslint-disable-next-line no-new
-    new RuleEngine(data as FeeConfig);
+    // Allow empty recipient address if default fee is set to 0
+    if (
+      (!data.rules || data.rules.length === 0) &&
+      !data.default_fee?.recipient &&
+      data.default_fee?.bps === 0
+    ) {
+      // eslint-disable-next-line no-new
+      new RuleEngine({
+        ...data,
+        default_fee: {
+          ...data.default_fee,
+          recipient: 'placeholder-recipient-address',
+        },
+      } as FeeConfig);
+    } else {
+      // eslint-disable-next-line no-new
+      new RuleEngine(data as FeeConfig);
+    }
   } catch (error: unknown) {
     ctx.addIssue({
       code: 'custom',

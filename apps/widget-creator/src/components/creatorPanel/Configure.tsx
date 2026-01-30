@@ -379,7 +379,7 @@ export function Configure() {
               }
             />
 
-            {state.enableCustomFees && (
+            {(state.enableCustomFees || !!apiKeys?.length) && (
               <Button
                 fluid
                 size="sm"

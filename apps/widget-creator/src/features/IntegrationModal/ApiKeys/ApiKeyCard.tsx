@@ -5,6 +5,7 @@ import { EditSquareW700 as Edit } from '@material-symbols-svg/react-rounded/icon
 import { ContentCopyW700 as Copy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 
 import { Button } from '@/uikit/Button';
+import { useDeleteApiKey } from '@/api/hooks';
 
 type Props = {
   apiKey: string;
@@ -33,6 +34,9 @@ const formatDate = (dateString: string) => {
 export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
   const [isCopied, setIsCopied] = useState(false);
 
+  const { mutate: deleteApiKey, status: deleteApiKeyStatus } =
+    useDeleteApiKey(apiKey);
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(apiKey);
     setTimeout(() => setIsCopied(false), 2000);
@@ -40,18 +44,24 @@ export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
   };
 
   return (
-    <div className="flex flex-col gap-csw-xl bg-csw-gray-900 rounded-csw-lg px-csw-2xl py-csw-xl">
+    <div className="relative flex flex-col gap-csw-xl bg-csw-gray-900 rounded-csw-lg px-csw-2xl py-csw-xl overflow-hidden">
+      {deleteApiKeyStatus === 'pending' && (
+        <div className="absolute top-0 right-0 size-full bg-csw-gray-900/80 rounded-csw-lg animate-pulse" />
+      )}
+
       <header className="flex items-center justify-between w-full">
         <span className="text-csw-label-md text-csw-gray-50">API key</span>
         <span className="text-csw-label-md text-csw-gray-300 mr-auto ml-csw-xs">
           created at {formatDate(createdAt)}
         </span>
-        <div className="cursor-pointer p-csw-2md">
+        <button
+          className="cursor-pointer p-csw-2md"
+          onClick={() => deleteApiKey()}>
           <Delete
             size={16}
             className="text-csw-gray-300 hover:text-csw-status-error transition-all"
           />
-        </div>
+        </button>
       </header>
 
       <div className="flex items-center justify-between w-full p-csw-2md rounded-csw-md bg-csw-gray-800">

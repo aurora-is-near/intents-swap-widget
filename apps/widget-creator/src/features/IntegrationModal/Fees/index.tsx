@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowBackW700 as ArrowBack } from '@material-symbols-svg/react-rounded/icons/arrow-back';
+import type { FeeConfig } from 'intents-1click-rule-engine';
 
 import { FeeInput } from './FeeInput';
 
@@ -8,6 +9,8 @@ import { Button } from '@/uikit/Button';
 import { TextInput } from '@/uikit/TextInput';
 import { FeeJsonInput } from '@/uikit/TextAreaInput';
 import { ExpandableToggleCard } from '@/uikit/ToggleCard';
+import { useUpdateApiKey } from '@/api/hooks';
+import { DEFAULT_ZERO_FEE } from '@/constants';
 
 const PROTOCOL_FEE_BASIS_POINTS = 5;
 
@@ -26,6 +29,47 @@ export const Fees = ({ onClickBack }: Props) => {
   const [feeJson, setFeeJson] = useState('');
   const [customFee, setCustomFee] = useState(0);
   const [walletAddress, setWalletAddress] = useState('');
+  const [feeRules, setFeeRules] = useState<FeeConfig | undefined>();
+
+  const [isCustomFeeOpen, setIsCustomFeeOpen] = useState(false);
+  const [isJsonCodeOpen, setIsJsonCodeOpen] = useState(false);
+
+  useEffect(() => {
+    if (isCustomFeeOpen) {
+      setFeeRules({
+        version: '1.0.0',
+        rules: [],
+        default_fee: {
+          type: 'bps',
+          // default to zero fee
+          bps: customFee ?? 0,
+          recipient: walletAddress ?? '',
+        },
+      });
+    } else if (isJsonCodeOpen) {
+      setFeeRules(JSON.parse(feeJson));
+    } else {
+      setFeeRules(undefined);
+    }
+  }, [feeJson, customFee, walletAddress, isCustomFeeOpen, isJsonCodeOpen]);
+
+  const { mutate: updateApiKey } = useUpdateApiKey();
+
+  const handleToggleCustomFee = (isOpen: boolean) => {
+    setIsCustomFeeOpen(isOpen);
+
+    if (isOpen && isJsonCodeOpen) {
+      setIsJsonCodeOpen(false);
+    }
+  };
+
+  const handleToggleJsonCode = (isOpen: boolean) => {
+    setIsJsonCodeOpen(isOpen);
+
+    if (isOpen && isCustomFeeOpen) {
+      setIsCustomFeeOpen(false);
+    }
+  };
 
   return (
     <>
@@ -41,7 +85,8 @@ export const Fees = ({ onClickBack }: Props) => {
       <div className="flex flex-col gap-csw-2xl my-csw-2xl">
         <ExpandableToggleCard
           label="Add custom fee"
-          onToggle={() => {}}
+          isExpanded={isCustomFeeOpen}
+          onToggle={handleToggleCustomFee}
           description={
             <>
               Set up optional custom fees added on top of the protocol fee.{' '}
@@ -76,7 +121,8 @@ export const Fees = ({ onClickBack }: Props) => {
 
         <ExpandableToggleCard
           label="Add JSON code"
-          onToggle={() => {}}
+          isExpanded={isJsonCodeOpen}
+          onToggle={handleToggleJsonCode}
           description={
             <>
               Use{' '}
@@ -143,7 +189,12 @@ export const Fees = ({ onClickBack }: Props) => {
             detail="accent"
             variant="primary"
             className="w-full"
-            onClick={onClickBack}>
+            onClick={() =>
+              updateApiKey({
+                isEnabled: true,
+                feeRules: feeRules ?? DEFAULT_ZERO_FEE,
+              })
+            }>
             Save
           </Button>
         </div>

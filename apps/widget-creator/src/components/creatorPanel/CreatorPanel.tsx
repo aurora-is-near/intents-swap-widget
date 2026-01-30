@@ -6,6 +6,8 @@ import { Configure } from './Configure';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { cn } from '../../utils/cn';
 
+import { useApiKeys } from '@/api/hooks';
+
 const SCROLLBAR_OFFSET_CLASSNAME = 'md:mr-csw-sm';
 const DESIGN_TAB_ID = 'design-tab';
 const CONFIGURE_TAB_ID = 'configure-tab';
@@ -17,6 +19,9 @@ type TabKey = 'design' | 'configure';
 export function CreatorPanel() {
   const [activeTab, setActiveTab] = useState<TabKey>('design');
   const { dispatch } = useCreator();
+
+  // preload API keys
+  useApiKeys();
 
   function handleReset() {
     dispatch({ type: 'RESET_ALL' });

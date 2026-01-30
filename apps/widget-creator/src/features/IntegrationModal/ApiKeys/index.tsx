@@ -3,7 +3,11 @@ import { usePrivy } from '@privy-io/react-auth';
 import { Header } from '../Header';
 import { ApiKeysEmpty } from './ApiKeysEmpty';
 import { ApiKeysNoAuth } from './ApiKeysNoAuth';
+import { ApiKeysSkeleton } from './ApiKeysSkeleton';
 import { ApiKeyCard } from './ApiKeyCard';
+import { CreateApiKey } from './CreateApiKey';
+
+import { useApiKeys, useCreateApiKey } from '@/api/hooks';
 
 const ApiKeysHeader = () => (
   <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
@@ -15,14 +19,16 @@ const ApiKeysHeader = () => (
   </div>
 );
 
-const apiKeys = [];
-
 type Props = {
   onClickFees: (apiKey: string) => void;
 };
 
 export const ApiKeys = ({ onClickFees }: Props) => {
   const { authenticated } = usePrivy();
+
+  const { status, data: apiKeys = [] } = useApiKeys();
+  const { mutate: createApiKey, status: createApiKeyStatus } =
+    useCreateApiKey();
 
   if (!authenticated) {
     return (
@@ -33,11 +39,23 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     );
   }
 
+  if (status === 'pending') {
+    return (
+      <>
+        <ApiKeysHeader />
+        <ApiKeysSkeleton />
+      </>
+    );
+  }
+
   if (!apiKeys.length) {
     return (
       <>
         <ApiKeysHeader />
-        <ApiKeysEmpty />
+        <ApiKeysEmpty
+          isCreatingKey={createApiKeyStatus === 'pending'}
+          onClickCreate={createApiKey}
+        />
       </>
     );
   }
@@ -46,12 +64,20 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     <>
       <ApiKeysHeader />
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl flex flex-col">
-        <ApiKeyCard
-          createdAt="2024-01-01"
-          apiKey="sk-asdsafh29235kjlskf235pfd1"
-          onClickFees={onClickFees}
-        />
+        {apiKeys.map((apiKey) => (
+          <ApiKeyCard
+            key={apiKey.widgetAppKey}
+            createdAt={apiKey.createdAt}
+            apiKey={apiKey.widgetAppKey}
+            onClickFees={onClickFees}
+          />
+        ))}
       </div>
+
+      <CreateApiKey
+        isLoading={createApiKeyStatus === 'pending'}
+        onClick={createApiKey}
+      />
     </>
   );
 };
