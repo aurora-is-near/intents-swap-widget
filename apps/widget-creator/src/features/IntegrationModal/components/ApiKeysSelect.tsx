@@ -10,12 +10,10 @@ import { CheckCircleFillW700 as Check } from '@material-symbols-svg/react-rounde
 
 import { maskApiKey } from '../utils';
 
-import type { ApiKey } from '@/api/types';
-
 type Props = {
-  keys: ApiKey[];
-  selected: ApiKey;
-  onChange: (key: ApiKey) => void;
+  keys: string[];
+  selected: string;
+  onChange: (key: string) => void;
 };
 
 export const ApiKeySelect = ({ keys, selected, onChange }: Props) => {
@@ -29,7 +27,7 @@ export const ApiKeySelect = ({ keys, selected, onChange }: Props) => {
                 'relative outline-none flex items-center justify-between w-full rounded-csw-md bg-csw-gray-800 pl-csw-xl pr-csw-lg py-csw-lg text-csw-label-md text-csw-gray-50 cursor-pointer transition-colors hover:bg-csw-gray-700',
                 'focus:bg-csw-gray-700',
               )}>
-              {maskApiKey(selected.widgetAppKey)}
+              {maskApiKey(selected)}
               <Chevron
                 size={20}
                 className={open ? 'rotate-90' : '-rotate-90'}
@@ -43,10 +41,10 @@ export const ApiKeySelect = ({ keys, selected, onChange }: Props) => {
               {keys.map((appKey) => (
                 <ListboxOption
                   value={appKey}
-                  key={appKey.widgetAppKey}
+                  key={appKey}
                   className="group flex cursor-pointer items-center justify-between gap-csw-md rounded-csw-md p-csw-2md transition-colors hover:bg-csw-gray-700">
                   <div className="text-csw-label-md text-csw-gray-50">
-                    {maskApiKey(appKey.widgetAppKey)}
+                    {maskApiKey(appKey)}
                   </div>
                   <Check
                     size={20}

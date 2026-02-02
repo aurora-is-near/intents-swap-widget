@@ -69,7 +69,7 @@ const useApiKeysState = () => {
 
 export const Export = ({ onClickApiKeys }: Props) => {
   const { login } = useLogin();
-  const { dispatch } = useCreator();
+  const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
   const { refetch: refetchApiKeys } = useApiKeys();
@@ -79,7 +79,6 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-  const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | undefined>();
 
   const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
@@ -92,9 +91,8 @@ export function App() {
   );
 }`;
 
-  const handleAppKeySelect = (apiKey: ApiKey) => {
-    dispatch({ type: 'SET_APP_KEY', payload: apiKey.widgetAppKey });
-    setSelectedApiKey(apiKey);
+  const handleAppKeySelect = (appKey: string) => {
+    dispatch({ type: 'SET_APP_KEY', payload: appKey });
   };
 
   const handleCopyCode = async () => {
@@ -111,7 +109,7 @@ export function App() {
 
   useEffect(() => {
     if (apiKeysState.state === 'has-api-keys') {
-      handleAppKeySelect(apiKeysState.apiKeys[0]);
+      handleAppKeySelect(apiKeysState.apiKeys[0].widgetAppKey);
     }
   }, [apiKeysState.state]);
 
@@ -177,7 +175,7 @@ export function App() {
               );
 
             case 'has-api-keys': {
-              const apiKeySelected = selectedApiKey ?? apiKeysState.apiKeys[0];
+              const apiKeySelected = state.appKey ?? apiKeysState.apiKeys[0];
 
               return (
                 <div className="flex flex-col gap-csw-md">
@@ -200,7 +198,9 @@ export function App() {
 
                   {apiKeySelected ? (
                     <ApiKeySelect
-                      keys={apiKeysState.apiKeys}
+                      keys={apiKeysState.apiKeys.map(
+                        (apiKey) => apiKey.widgetAppKey,
+                      )}
                       selected={apiKeySelected}
                       onChange={handleAppKeySelect}
                     />
