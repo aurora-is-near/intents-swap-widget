@@ -11,6 +11,7 @@ import { ApiKeySelect, Header } from '../components';
 
 import { Button } from '@/uikit/Button';
 import { useApiKeys } from '@/api/hooks';
+import { useCreator } from '@/hooks/useCreatorConfig';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -65,6 +66,7 @@ const useApiKeysState = () => {
 
 export const Export = ({ onClickApiKeys }: Props) => {
   const { login } = useLogin();
+  const { dispatch } = useCreator();
 
   const apiKeysState = useApiKeysState();
   const { refetch: refetchApiKeys } = useApiKeys();
@@ -83,11 +85,16 @@ export const Export = ({ onClickApiKeys }: Props) => {
 export function App() {
   return (
     <Widget
-      config={${stringifyAsJS(selectedApiKey ? { appKey: selectedApiKey.widgetAppKey, ...widgetConfig } : widgetConfig, 6)}}
+      config={${stringifyAsJS(widgetConfig, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     />
   );
 }`;
+
+  const handleAppKeySelect = (apiKey: ApiKey) => {
+    dispatch({ type: 'SET_APP_KEY', payload: apiKey.widgetAppKey });
+    setSelectedApiKey(apiKey);
+  };
 
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(sampleCode);
@@ -188,7 +195,7 @@ export function App() {
                     <ApiKeySelect
                       keys={apiKeysState.apiKeys}
                       selected={apiKeySelected}
-                      onChange={setSelectedApiKey}
+                      onChange={handleAppKeySelect}
                     />
                   ) : (
                     <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />

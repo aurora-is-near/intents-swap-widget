@@ -9,6 +9,7 @@ export const useWidgetConfig = () => {
   const widgetConfig = useMemo(
     (): Partial<WidgetConfig> => ({
       appName: 'Widget Creator',
+      appKey: state.appKey,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedChainsList: state.selectedNetworks,
