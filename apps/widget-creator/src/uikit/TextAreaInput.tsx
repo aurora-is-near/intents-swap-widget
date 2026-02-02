@@ -7,7 +7,7 @@ type Props = {
   onChange: (value: string) => void;
 };
 
-export const FeeJsonInput = ({
+export const TextAreaInput = ({
   value = '',
   state = 'normal',
   placeholder,

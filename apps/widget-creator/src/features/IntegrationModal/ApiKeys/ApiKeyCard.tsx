@@ -6,11 +6,11 @@ import { ContentCopyW700 as Copy } from '@material-symbols-svg/react-rounded/ico
 
 import { Button } from '@/uikit/Button';
 import { useDeleteApiKey } from '@/api/hooks';
+import type { ApiKey } from '@/api/types';
 
 type Props = {
-  apiKey: string;
-  createdAt: string;
-  onClickFees: (apiKey: string) => void;
+  apiKey: ApiKey;
+  onClickFees: (apiKey: ApiKey) => void;
 };
 
 const maskApiKey = (key: string) => {
@@ -31,14 +31,15 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
+export const ApiKeyCard = ({ apiKey, onClickFees }: Props) => {
   const [isCopied, setIsCopied] = useState(false);
 
-  const { mutate: deleteApiKey, status: deleteApiKeyStatus } =
-    useDeleteApiKey(apiKey);
+  const { mutate: deleteApiKey, status: deleteApiKeyStatus } = useDeleteApiKey(
+    apiKey.widgetAppKey,
+  );
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(apiKey);
+    await navigator.clipboard.writeText(apiKey.widgetAppKey);
     setTimeout(() => setIsCopied(false), 2000);
     setIsCopied(true);
   };
@@ -52,7 +53,7 @@ export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
       <header className="flex items-center justify-between w-full">
         <span className="text-csw-label-md text-csw-gray-50">API key</span>
         <span className="text-csw-label-md text-csw-gray-300 mr-auto ml-csw-xs">
-          created at {formatDate(createdAt)}
+          created at {formatDate(apiKey.createdAt)}
         </span>
         <button
           className="cursor-pointer p-csw-2md"
@@ -66,7 +67,7 @@ export const ApiKeyCard = ({ apiKey, createdAt, onClickFees }: Props) => {
 
       <div className="flex items-center justify-between w-full p-csw-2md rounded-csw-md bg-csw-gray-800">
         <span className="text-csw-label-md text-csw-gray-50">
-          {maskApiKey(apiKey)}
+          {maskApiKey(apiKey.widgetAppKey)}
         </span>
         <button className="cursor-pointer" onClick={handleCopy}>
           {isCopied ? (

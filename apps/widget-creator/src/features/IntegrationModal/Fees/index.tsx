@@ -1,16 +1,18 @@
 import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
+import { RuleEngine } from 'intents-1click-rule-engine';
 import { ArrowBackW700 as ArrowBack } from '@material-symbols-svg/react-rounded/icons/arrow-back';
-import type { FeeConfig } from 'intents-1click-rule-engine';
+import type { Fee, FeeConfig } from 'intents-1click-rule-engine';
 
 import { FeeInput } from './FeeInput';
 
 import { Button } from '@/uikit/Button';
 import { TextInput } from '@/uikit/TextInput';
-import { FeeJsonInput } from '@/uikit/TextAreaInput';
+import { TextAreaInput } from '@/uikit/TextAreaInput';
 import { ExpandableToggleCard } from '@/uikit/ToggleCard';
 import { useUpdateApiKey } from '@/api/hooks';
 import { DEFAULT_ZERO_FEE } from '@/constants';
+import type { ApiKey } from '@/api/types';
 
 const PROTOCOL_FEE_BASIS_POINTS = 5;
 
@@ -20,19 +22,58 @@ const feePercentStringToBasisPoints = (fee: string) =>
 const basisPointsToFeePercentString = (fee: number) =>
   ((fee ?? 0) / 100).toFixed(2);
 
+const getValueBasedFee = (feeRules: FeeConfig): Fee | undefined => {
+  if (feeRules.rules.length === 0) {
+    if (Array.isArray(feeRules.default_fee)) {
+      return undefined;
+    }
+
+    return feeRules.default_fee;
+  }
+
+  return undefined;
+};
+
+const isZeroValueBasedFee = (feeRules: FeeConfig): boolean => {
+  const isValueBasedFee = getValueBasedFee(feeRules);
+
+  if (!isValueBasedFee) {
+    return false;
+  }
+
+  return isValueBasedFee.bps === 0;
+};
+
 type Props = {
-  apiKey: string;
+  apiKey: ApiKey;
   onClickBack: () => void;
 };
 
 export const Fees = ({ apiKey, onClickBack }: Props) => {
-  const [feeJson, setFeeJson] = useState('');
-  const [customFee, setCustomFee] = useState(0);
-  const [walletAddress, setWalletAddress] = useState('');
   const [feeRules, setFeeRules] = useState<FeeConfig | undefined>();
 
-  const [isCustomFeeOpen, setIsCustomFeeOpen] = useState(false);
-  const [isJsonCodeOpen, setIsJsonCodeOpen] = useState(false);
+  // value based fee
+  const valueBasedFee = getValueBasedFee(apiKey.feeRules);
+  const [customFee, setCustomFee] = useState(valueBasedFee?.bps ?? 0);
+  const [walletAddress, setWalletAddress] = useState(
+    valueBasedFee?.recipient ?? '',
+  );
+
+  // custom fee json config
+  const [feeJson, setFeeJson] = useState(
+    valueBasedFee ? JSON.stringify(apiKey.feeRules, null, 2) : '',
+  );
+
+  // means only default fee is set
+  const isFeeConfigSetAsValue = apiKey.feeRules.rules.length === 0;
+  const [isCustomFeeOpen, setIsCustomFeeOpen] = useState(
+    isFeeConfigSetAsValue && !isZeroValueBasedFee(apiKey.feeRules),
+  );
+
+  // means fee config has been loaded from JSON
+  // because there is no UI to provide detail configuration
+  const isFeeConfigSetAsJson = apiKey.feeRules.rules.length > 0;
+  const [isJsonCodeOpen, setIsJsonCodeOpen] = useState(isFeeConfigSetAsJson);
 
   const [feeJsonError, setFeeJsonError] = useState<string | undefined>();
   const [customFeeError, setCustomFeeError] = useState<string | undefined>();
@@ -40,7 +81,9 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     string | undefined
   >();
 
-  const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(apiKey);
+  const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(
+    apiKey.widgetAppKey,
+  );
 
   useEffect(() => {
     if (isCustomFeeOpen) {
@@ -50,8 +93,8 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
         default_fee: {
           type: 'bps',
           // default to zero fee
-          bps: customFee ?? 0,
-          recipient: walletAddress ?? '',
+          bps: customFee,
+          recipient: walletAddress,
         },
       });
     } else if (isJsonCodeOpen) {
@@ -61,9 +104,18 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
         // we don't really care what the output is
         // it will be validated on save
         rules = JSON.parse(feeJson) as FeeConfig;
+        // eslint-disable-next-line no-new
+        new RuleEngine(rules);
       } catch (error) {
         if (feeRules) {
-          setFeeJsonError('Invalid JSON configuration');
+          if (error instanceof Error) {
+            // ignore showing JSON syntax errors on save
+            if (error.message.includes('Invalid fee config')) {
+              setFeeJsonError(error.message);
+            }
+          } else {
+            setFeeJsonError('Invalid JSON configuration');
+          }
         } else {
           setFeeJsonError(undefined);
         }
@@ -94,25 +146,50 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   };
 
   const handleSave = () => {
+    let hasErrors = false;
+
     if (isCustomFeeOpen) {
       // other validation handled by imask
       if (!customFee) {
+        hasErrors = true;
         setCustomFeeError('Custom fee is required');
-
-        return;
       }
 
       if (!walletAddress) {
+        hasErrors = true;
         setWalletAddressError('Wallet address is required');
-
-        return;
       }
     } else if (isJsonCodeOpen) {
       if (!feeJson) {
+        hasErrors = true;
         setFeeJsonError('JSON configuration is required');
-
-        return;
       }
+    }
+
+    try {
+      // we don't really care what the output is
+      // it will be validated on save
+      const rules = JSON.parse(feeJson) as FeeConfig;
+
+      // eslint-disable-next-line no-new
+      new RuleEngine(rules);
+    } catch (error) {
+      if (feeRules) {
+        if (error instanceof Error) {
+          // ignore showing JSON syntax errors on save
+          setFeeJsonError(error.message);
+          hasErrors = true;
+        } else {
+          setFeeJsonError('Invalid JSON configuration');
+          hasErrors = true;
+        }
+      } else {
+        setFeeJsonError(undefined);
+      }
+    }
+
+    if (hasErrors) {
+      return;
     }
 
     updateApiKey({
@@ -121,12 +198,24 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     });
   };
 
+  // reset JSON field or re-toggle if user removed initial JSON code
+  // if user changed it - show changed code as it is to proceed working with it
+  useEffect(() => {
+    if (isJsonCodeOpen && !feeJson && apiKey.feeRules) {
+      setFeeJson(JSON.stringify(apiKey.feeRules, null, 2));
+    }
+  }, [isJsonCodeOpen]);
+
   useEffect(() => {
     if (mutation.status === 'error') {
       if (mutation.error.code === 'INVALID_API_KEY_CONFIGURATION') {
         setFeeJsonError('Invalid JSON configuration');
       } else if (mutation.error.code === 'FAILED_TO_UPDATE_API_KEY') {
-        setFeeJsonError('Invalid JSON configuration');
+        if (mutation.error.message.includes('Invalid fee config')) {
+          setFeeJsonError(mutation.error.message.replace('body/feeRules ', ''));
+        } else {
+          setFeeJsonError('Invalid JSON configuration');
+        }
       } else {
         setFeeJsonError(undefined);
       }
@@ -236,7 +325,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                 {feeJsonError}
               </span>
             )}
-            <FeeJsonInput
+            <TextAreaInput
               value={feeJson}
               state={feeJsonError ? 'error' : 'normal'}
               placeholder="Paste your JSON code here"
@@ -293,6 +382,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
             detail="accent"
             variant="primary"
             className="w-full"
+            state={mutation.status === 'pending' ? 'loading' : 'default'}
             onClick={handleSave}>
             Save
           </Button>

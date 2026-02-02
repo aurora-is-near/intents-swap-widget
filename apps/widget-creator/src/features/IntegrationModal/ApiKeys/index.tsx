@@ -8,6 +8,7 @@ import { ApiKeyCard } from './ApiKeyCard';
 import { CreateApiKey } from './CreateApiKey';
 
 import { useApiKeys, useCreateApiKey } from '@/api/hooks';
+import type { ApiKey } from '@/api/types';
 
 const ApiKeysHeader = () => (
   <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
@@ -20,7 +21,7 @@ const ApiKeysHeader = () => (
 );
 
 type Props = {
-  onClickFees: (apiKey: string) => void;
+  onClickFees: (apiKey: ApiKey) => void;
 };
 
 export const ApiKeys = ({ onClickFees }: Props) => {
@@ -66,9 +67,8 @@ export const ApiKeys = ({ onClickFees }: Props) => {
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl flex flex-col">
         {apiKeys.map((apiKey) => (
           <ApiKeyCard
+            apiKey={apiKey}
             key={apiKey.widgetAppKey}
-            createdAt={apiKey.createdAt}
-            apiKey={apiKey.widgetAppKey}
             onClickFees={onClickFees}
           />
         ))}

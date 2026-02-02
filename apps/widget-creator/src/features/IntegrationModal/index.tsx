@@ -6,6 +6,7 @@ import { Export } from './Export';
 import { ApiKeys } from './ApiKeys';
 import { Navigation } from './Navigation';
 import type { NavigationTabs } from './Navigation';
+import type { ApiKey } from '@/api/types';
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ export const IntegrationModal = ({
   selectedTab = 'embed-code',
   onClose,
 }: ModalProps) => {
-  const [selectedApiKey, setSelectedApiKey] = useState<string | null>(null);
+  const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | null>(null);
   const [selected, setSelected] = useState<NavigationTabs | 'fees'>(
     selectedTab,
   );
