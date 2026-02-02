@@ -2878,10 +2878,10 @@
   resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-2.2.0.tgz#0c05124af50434a800773abec8d3af6a297d904b"
   integrity sha512-LMcepvRaS9LYHJGsF0zzmgKCUim/X3N/DQKc4jepAXJ7l8QxJ1PmxJzqplF2Z3FE4PqBAIGyJAQ/w4B5dsqbtQ==
 
-"@hot-labs/near-connect@^0.6.8":
-  version "0.6.8"
-  resolved "https://registry.yarnpkg.com/@hot-labs/near-connect/-/near-connect-0.6.8.tgz#c56765ce56883b65a17d4ad60044eb668e6a48b9"
-  integrity sha512-hlxp5NeD/3VGWJFMG+UFy4xnaiaS4NILEgXwlogzP00deRwr+RPh1A1U9FVBYcu6CNDgUbdEvS5hQPOw4trP5w==
+"@hot-labs/near-connect@^0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@hot-labs/near-connect/-/near-connect-0.8.2.tgz#fe03b5ef3c0b620d25a35b99ad74ced8533cd5a2"
+  integrity sha512-cvi5q9mp7k575CIPSUEKNUwpwV04oV6i9SJBkwaaT2IS3rFaIlE0fnl8zje7Eenj7Futt+L0/mQfJgtek6E0bQ==
 
 "@hot-labs/omni-sdk@2.24.3":
   version "2.24.3"
