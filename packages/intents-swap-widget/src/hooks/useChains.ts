@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { useTokens } from './useTokens';
+import { isAllowedChain } from '../utils/chains/isAllowedChain';
 import { useConfig } from '@/config';
 import { CHAINS_LIST, DEFAULT_CHAINS_ORDER } from '@/constants/chains';
 import type { Chain, Chains } from '@/types/chain';
@@ -40,27 +41,13 @@ export const useChains = (variant: 'source' | 'target') => {
     const chainsFromTokens = Array.from(
       new Set(tokens.map((token) => CHAINS_LIST[token.blockchain])),
     ).filter((chain) => {
-      if (allowedChainsList && !allowedChainsList.includes(chain.id)) {
-        return false;
-      }
-
-      if (
-        variant === 'source' &&
-        allowedSourceChainsList &&
-        !allowedSourceChainsList.includes(chain.id)
-      ) {
-        return false;
-      }
-
-      if (
-        variant === 'target' &&
-        allowedTargetChainsList &&
-        !allowedTargetChainsList.includes(chain.id)
-      ) {
-        return false;
-      }
-
-      return true;
+      return isAllowedChain({
+        chainId: chain.id,
+        variant,
+        allowedChainsList,
+        allowedSourceChainsList,
+        allowedTargetChainsList,
+      });
     });
 
     return sortChains(chainsFromTokens, chainsOrder);
