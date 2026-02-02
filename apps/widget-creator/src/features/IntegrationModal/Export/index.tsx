@@ -83,7 +83,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 export function App() {
   return (
     <Widget
-      config={${stringifyAsJS(selectedApiKey ? { widgetAppKey: selectedApiKey.widgetAppKey, ...widgetConfig } : widgetConfig, 6)}}
+      config={${stringifyAsJS(selectedApiKey ? { appKey: selectedApiKey.widgetAppKey, ...widgetConfig } : widgetConfig, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     />
   );
