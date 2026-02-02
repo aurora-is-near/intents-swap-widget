@@ -1,10 +1,19 @@
-import { clsx } from 'clsx';
+import { z } from 'zod/v3';
 import { useEffect, useState } from 'react';
-import { RuleEngine } from 'intents-1click-rule-engine';
-import { ArrowBackW700 as ArrowBack } from '@material-symbols-svg/react-rounded/icons/arrow-back';
-import type { Fee, FeeConfig } from 'intents-1click-rule-engine';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { FeeInput } from './FeeInput';
+import { FeesSummary } from './FeesSummary';
+
+import { NestedHeader } from '../components';
+import {
+  getBasisPointsFromPercent,
+  getPercentFromBasisPoints,
+  getSimpleValueBasedFee,
+  isZeroValueBasedFee,
+  validateFeeConfig,
+} from '../utils';
 
 import { Button } from '@/uikit/Button';
 import { TextInput } from '@/uikit/TextInput';
@@ -14,35 +23,22 @@ import { useUpdateApiKey } from '@/api/hooks';
 import { DEFAULT_ZERO_FEE } from '@/constants';
 import type { ApiKey } from '@/api/types';
 
-const PROTOCOL_FEE_BASIS_POINTS = 5;
+const formSchema = z.object({
+  walletAddress: z.string().min(1, 'Wallet address is required'),
+  customFee: z.string().min(0.00001, 'Custom fee is required'),
+  feeJson: z
+    .string()
+    .min(1, 'JSON configuration is required')
+    .superRefine((data, ctx) => {
+      const { error } = validateFeeConfig(data);
 
-const feePercentStringToBasisPoints = (fee: string) =>
-  parseFloat(fee ?? '0') * 100;
+      if (error) {
+        ctx.addIssue({ code: 'custom', message: error });
+      }
+    }),
+});
 
-const basisPointsToFeePercentString = (fee: number) =>
-  ((fee ?? 0) / 100).toFixed(2);
-
-const getValueBasedFee = (feeRules: FeeConfig): Fee | undefined => {
-  if (feeRules.rules.length === 0) {
-    if (Array.isArray(feeRules.default_fee)) {
-      return undefined;
-    }
-
-    return feeRules.default_fee;
-  }
-
-  return undefined;
-};
-
-const isZeroValueBasedFee = (feeRules: FeeConfig): boolean => {
-  const isValueBasedFee = getValueBasedFee(feeRules);
-
-  if (!isValueBasedFee) {
-    return false;
-  }
-
-  return isValueBasedFee.bps === 0;
-};
+type FormValues = z.infer<typeof formSchema>;
 
 type Props = {
   apiKey: ApiKey;
@@ -50,24 +46,15 @@ type Props = {
 };
 
 export const Fees = ({ apiKey, onClickBack }: Props) => {
-  const [feeRules, setFeeRules] = useState<FeeConfig | undefined>();
-
   // value based fee
-  const valueBasedFee = getValueBasedFee(apiKey.feeRules);
-  const [customFee, setCustomFee] = useState(valueBasedFee?.bps ?? 0);
-  const [walletAddress, setWalletAddress] = useState(
-    valueBasedFee?.recipient ?? '',
+  const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
+  const [hasConfigAssetRules, setHasConfigAssetRules] = useState(
+    apiKey.feeRules.rules.length > 0,
   );
 
-  // custom fee json config
-  const [feeJson, setFeeJson] = useState(
-    valueBasedFee ? JSON.stringify(apiKey.feeRules, null, 2) : '',
-  );
-
-  // means only default fee is set
-  const isFeeConfigSetAsValue = apiKey.feeRules.rules.length === 0;
   const [isCustomFeeOpen, setIsCustomFeeOpen] = useState(
-    isFeeConfigSetAsValue && !isZeroValueBasedFee(apiKey.feeRules),
+    // means only default fee is set
+    apiKey.feeRules.rules.length === 0 && !isZeroValueBasedFee(apiKey.feeRules),
   );
 
   // means fee config has been loaded from JSON
@@ -75,62 +62,49 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   const isFeeConfigSetAsJson = apiKey.feeRules.rules.length > 0;
   const [isJsonCodeOpen, setIsJsonCodeOpen] = useState(isFeeConfigSetAsJson);
 
-  const [feeJsonError, setFeeJsonError] = useState<string | undefined>();
-  const [customFeeError, setCustomFeeError] = useState<string | undefined>();
-  const [walletAddressError, setWalletAddressError] = useState<
-    string | undefined
-  >();
+  const {
+    watch,
+    control,
+    setError,
+    setValue,
+    clearErrors,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      walletAddress: valueBasedFee?.recipient ?? '',
+      feeJson: valueBasedFee ? JSON.stringify(apiKey.feeRules, null, 2) : '',
+      customFee: valueBasedFee?.bps
+        ? getPercentFromBasisPoints(valueBasedFee.bps)
+        : '0',
+    },
+  });
+
+  const customFee = watch('customFee');
+  const walletAddress = watch('walletAddress');
+  const feeJson = watch('feeJson');
 
   const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(
     apiKey.widgetAppKey,
   );
 
-  useEffect(() => {
-    if (isCustomFeeOpen) {
-      setFeeRules({
-        version: '1.0.0',
-        rules: [],
-        default_fee: {
-          type: 'bps',
-          // default to zero fee
-          bps: customFee,
-          recipient: walletAddress,
-        },
-      });
-    } else if (isJsonCodeOpen) {
-      let rules: FeeConfig;
+  const handleFeeJsonChange = (fee: string) => {
+    const { data: config, error } = validateFeeConfig(fee);
 
-      try {
-        // we don't really care what the output is
-        // it will be validated on save
-        rules = JSON.parse(feeJson) as FeeConfig;
-        // eslint-disable-next-line no-new
-        new RuleEngine(rules);
-      } catch (error) {
-        if (feeRules) {
-          if (error instanceof Error) {
-            // ignore showing JSON syntax errors on save
-            if (error.message.includes('Invalid fee config')) {
-              setFeeJsonError(error.message);
-            }
-          } else {
-            setFeeJsonError('Invalid JSON configuration');
-          }
-        } else {
-          setFeeJsonError(undefined);
-        }
-
-        return;
-      }
-
-      setFeeRules(rules);
+    if (!error) {
+      clearErrors('feeJson');
+      setHasConfigAssetRules((config?.rules.length ?? 0) > 0);
     } else {
-      setFeeRules(undefined);
+      setError('feeJson', { message: error });
     }
-  }, [feeJson, customFee, walletAddress, isCustomFeeOpen, isJsonCodeOpen]);
+  };
 
   const handleToggleCustomFee = (isOpen: boolean) => {
     setIsCustomFeeOpen(isOpen);
+    setHasConfigAssetRules(false);
 
     if (isOpen && isJsonCodeOpen) {
       setIsJsonCodeOpen(false);
@@ -145,82 +119,40 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     }
   };
 
-  const handleSave = () => {
-    let hasErrors = false;
+  const handleSave = (data: FormValues) => {
+    const { data: rules, error } = validateFeeConfig(data.feeJson);
 
-    if (isCustomFeeOpen) {
-      // other validation handled by imask
-      if (!customFee) {
-        hasErrors = true;
-        setCustomFeeError('Custom fee is required');
-      }
+    if (error) {
+      setError('feeJson', { message: error });
 
-      if (!walletAddress) {
-        hasErrors = true;
-        setWalletAddressError('Wallet address is required');
-      }
-    } else if (isJsonCodeOpen) {
-      if (!feeJson) {
-        hasErrors = true;
-        setFeeJsonError('JSON configuration is required');
-      }
-    }
-
-    try {
-      // we don't really care what the output is
-      // it will be validated on save
-      const rules = JSON.parse(feeJson) as FeeConfig;
-
-      // eslint-disable-next-line no-new
-      new RuleEngine(rules);
-    } catch (error) {
-      if (feeRules) {
-        if (error instanceof Error) {
-          // ignore showing JSON syntax errors on save
-          setFeeJsonError(error.message);
-          hasErrors = true;
-        } else {
-          setFeeJsonError('Invalid JSON configuration');
-          hasErrors = true;
-        }
-      } else {
-        setFeeJsonError(undefined);
-      }
-    }
-
-    if (hasErrors) {
       return;
     }
 
     updateApiKey({
       isEnabled: true,
-      feeRules: feeRules ?? DEFAULT_ZERO_FEE,
+      feeRules: rules ?? DEFAULT_ZERO_FEE,
     });
   };
 
-  // reset JSON field or re-toggle if user removed initial JSON code
-  // if user changed it - show changed code as it is to proceed working with it
-  useEffect(() => {
-    if (isJsonCodeOpen && !feeJson && apiKey.feeRules) {
-      setFeeJson(JSON.stringify(apiKey.feeRules, null, 2));
+  const handleSubmitForm = () => {
+    // omit validation if both toggles are off
+    if (!isCustomFeeOpen && !isJsonCodeOpen) {
+      return updateApiKey({
+        isEnabled: true,
+        feeRules: DEFAULT_ZERO_FEE,
+      });
     }
-  }, [isJsonCodeOpen]);
+
+    return handleSubmit(handleSave)();
+  };
 
   useEffect(() => {
+    // we already handle parsing errors on the client side
+    // no need to parse them from the server (it's not possible to submit invalid JSON)
     if (mutation.status === 'error') {
-      if (mutation.error.code === 'INVALID_API_KEY_CONFIGURATION') {
-        setFeeJsonError('Invalid JSON configuration');
-      } else if (mutation.error.code === 'FAILED_TO_UPDATE_API_KEY') {
-        if (mutation.error.message.includes('Invalid fee config')) {
-          setFeeJsonError(mutation.error.message.replace('body/feeRules ', ''));
-        } else {
-          setFeeJsonError('Invalid JSON configuration');
-        }
-      } else {
-        setFeeJsonError(undefined);
-      }
+      setError('feeJson', { message: 'Unable to update custom fees' });
     } else {
-      setFeeJsonError(undefined);
+      clearErrors('feeJson');
 
       if (mutation.status === 'success') {
         onClickBack();
@@ -228,16 +160,43 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     }
   }, [mutation.status]);
 
+  // sync values from custom fee to fee JSON
+  useEffect(() => {
+    if (isCustomFeeOpen) {
+      const defaultFee = {
+        version: '1.0.0',
+        default_fee: {
+          type: 'bps',
+          recipient: walletAddress,
+          bps: getBasisPointsFromPercent(customFee),
+        },
+        rules: [],
+      };
+
+      setValue('feeJson', JSON.stringify(defaultFee, null, 2));
+    }
+  }, [customFee, walletAddress, isCustomFeeOpen]);
+
+  // sync values from fee JSON to custom fee
+  useEffect(() => {
+    if (isJsonCodeOpen) {
+      const { data: rules, error } = validateFeeConfig(feeJson);
+
+      if (!!error || !rules) {
+        setValue('customFee', '');
+        setValue('walletAddress', '');
+
+        return;
+      }
+
+      setValue('customFee', getPercentFromBasisPoints(rules.default_fee.bps));
+      setValue('walletAddress', rules.default_fee.recipient);
+    }
+  }, [feeJson, isJsonCodeOpen]);
+
   return (
     <>
-      <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900 w-full sm:block hidden">
-        <div className="flex items-center gap-csw-xl pt-csw-md sm:max-w-[80%] max-w-full">
-          <button onClick={onClickBack} className="cursor-pointer">
-            <ArrowBack size={16} className="text-csw-gray-50" />
-          </button>
-          <h2 className="text-csw-label-lg text-csw-gray-50">Edit fees</h2>
-        </div>
-      </div>
+      <NestedHeader onClickBack={onClickBack} title="Edit fees" />
 
       <div className="flex flex-col gap-csw-2xl my-csw-2xl">
         <ExpandableToggleCard
@@ -253,27 +212,26 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
           }>
           <div className="flex flex-col gap-csw-2xl">
             <div className="flex flex-col gap-csw-md">
-              {!!customFeeError && (
+              {!!errors.customFee && (
                 <span className="text-csw-label-sm text-csw-status-error -mt-[22px]">
-                  {customFeeError}
+                  {errors.customFee.message}
                 </span>
               )}
-              <FeeInput
-                suffix="1.00% max"
-                placeholder="0.00%"
-                state={customFeeError ? 'error' : 'normal'}
-                value={
-                  customFee ? basisPointsToFeePercentString(customFee) : ''
-                }
-                onChange={(value) => {
-                  setCustomFeeError(undefined);
-
-                  if (value) {
-                    setCustomFee(feePercentStringToBasisPoints(value));
-                  } else {
-                    setCustomFee(0);
-                  }
-                }}
+              <Controller
+                name="customFee"
+                control={control}
+                render={({ field }) => (
+                  <FeeInput
+                    suffix="1.00% max"
+                    placeholder="0.00%"
+                    state={errors.customFee ? 'error' : 'normal'}
+                    value={field.value || ''}
+                    onChange={(value) => {
+                      clearErrors('customFee');
+                      field.onChange(value);
+                    }}
+                  />
+                )}
               />
             </div>
 
@@ -282,20 +240,26 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                 <span className="text-csw-label-md text-csw-gray-50">
                   Your fee recipient address
                 </span>
-                {!!walletAddressError && (
+                {!!errors.walletAddress && (
                   <span className="text-csw-label-sm text-csw-status-error">
-                    {walletAddressError}
+                    {errors.walletAddress.message}
                   </span>
                 )}
               </div>
-              <TextInput
-                state={walletAddressError ? 'error' : 'normal'}
-                placeholder="Enter wallet address"
-                value={walletAddress}
-                onChange={(value) => {
-                  setWalletAddressError(undefined);
-                  setWalletAddress(value);
-                }}
+              <Controller
+                name="walletAddress"
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    state={errors.walletAddress ? 'error' : 'normal'}
+                    placeholder="Enter wallet address"
+                    value={field.value}
+                    onChange={(value) => {
+                      clearErrors('walletAddress');
+                      field.onChange(value);
+                    }}
+                  />
+                )}
               />
             </div>
           </div>
@@ -320,52 +284,34 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
             </>
           }>
           <div className="flex flex-col gap-csw-md">
-            {!!feeJsonError && (
+            {!!errors.feeJson && (
               <span className="text-csw-label-sm text-csw-status-error -mt-[22px]">
-                {feeJsonError}
+                {errors.feeJson.message}
               </span>
             )}
-            <TextAreaInput
-              value={feeJson}
-              state={feeJsonError ? 'error' : 'normal'}
-              placeholder="Paste your JSON code here"
-              onChange={(value) => {
-                setFeeJsonError(undefined);
-                setFeeJson(value);
-              }}
+            <Controller
+              name="feeJson"
+              control={control}
+              render={({ field }) => (
+                <TextAreaInput
+                  value={field.value}
+                  state={errors.feeJson ? 'error' : 'normal'}
+                  placeholder="Paste your JSON code here"
+                  onChange={(value) => {
+                    clearErrors('feeJson');
+                    handleFeeJsonChange(value);
+                    field.onChange(value);
+                  }}
+                />
+              )}
             />
           </div>
         </ExpandableToggleCard>
 
-        <div className="flex flex-col gap-csw-lg bg-csw-gray-900 rounded-csw-lg p-csw-2xl w-full">
-          <header className="flex items-center justify-between w-full border-b border-csw-gray-800 pb-csw-xl">
-            <span className="text-csw-label-md text-csw-gray-50">
-              End user pays
-            </span>
-            <span className="text-csw-label-sm text-csw-gray-950 px-csw-sm py-csw-xs rounded-full bg-csw-gray-50">
-              Applied to all trades
-            </span>
-          </header>
-
-          <ul className="flex flex-col gap-csw-lg">
-            <li className="flex items-center justify-between gap-csw-lg text-csw-label-md">
-              <span className="text-csw-gray-200">Protocol fees</span>
-              <span className="text-csw-accent-200">0.05%</span>
-            </li>
-            <li className="flex items-center justify-between gap-csw-lg text-csw-label-md">
-              <span className="text-csw-gray-200">Your custom fee</span>
-              <span
-                className={clsx(
-                  'text-csw-accent-400',
-                  customFee && 'text-csw-gray-50',
-                )}>{`+${basisPointsToFeePercentString(customFee)}%`}</span>
-            </li>
-            <li className="flex items-center justify-between gap-csw-lg text-csw-label-md text-csw-gray-50">
-              <span>Total</span>
-              <span>{`${basisPointsToFeePercentString(customFee + PROTOCOL_FEE_BASIS_POINTS)}%`}</span>
-            </li>
-          </ul>
-        </div>
+        <FeesSummary
+          customFee={isCustomFeeOpen || isJsonCodeOpen ? customFee : '0'}
+          isValueBasedFee={!hasConfigAssetRules}
+        />
 
         <div className="border-t border-csw-gray-900 pt-csw-2xl flex items-center gap-csw-lg">
           <Button
@@ -383,7 +329,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
             variant="primary"
             className="w-full"
             state={mutation.status === 'pending' ? 'loading' : 'default'}
-            onClick={handleSave}>
+            onClick={handleSubmitForm}>
             Save
           </Button>
         </div>

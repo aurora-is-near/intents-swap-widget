@@ -5,7 +5,7 @@ import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-roun
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
 
-import { Header } from '../Header';
+import { Header } from '../components';
 
 import { Button } from '@/uikit/Button';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
@@ -80,20 +80,21 @@ export function App() {
           title="Embed code"
           description={
             <>
-              Add the Intents Studio widget to your app using an API key.
+              Add the Intents Widget to your app using an API key.
               <br className="hidden sm:block" />
-              The selected API key determines the applied fees.
+              Your API key controls configuration, fees, and reporting for your
+              integration.
             </>
           }
           warning={
             <>
-              For more information, check out{' '}
+              For more details, check out{' '}
               <a
                 href="https://aurora-labs.gitbook.io/intents-swap-widget"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-csw-xxs underline">
-                Developer quick guide
+                Developer Quick Start
                 <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
               </a>
             </>
@@ -106,7 +107,7 @@ export function App() {
           <InfoBanner
             action="Go to API Keys"
             title="API key required"
-            description="Create an API key to activate the widget."
+            description="Create an API key to activate the widget, configure fees and track usage."
             onClick={onClickApiKeys}
           />
         ) : (
