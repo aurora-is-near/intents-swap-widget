@@ -5,10 +5,10 @@ import CopyIcon from '../assets/icons/copy.svg?react';
 import CheckIcon from '../assets/icons/check-circle.svg?react';
 import AuroraIcon from '../assets/icons/aurora.svg?react';
 
-import { HeaderButton } from './HeaderButton';
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
+import { IntegrationModal } from '../features/IntegrationModal';
 
-import { IntegrationModal } from './IntegrationModal';
+import { HeaderButton } from './HeaderButton';
 import { AuthButton } from './auth';
 
 export function Header() {
@@ -63,7 +63,7 @@ export function Header() {
             onClick={() => setIsExportModalOpen(true)}>
             Export code
           </HeaderButton>
-          {import.meta.env.VITE_PRIVY_APP_ID && <AuthButton />}
+          <AuthButton />
         </nav>
       </header>
 

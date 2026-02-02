@@ -15573,6 +15573,11 @@ int64-buffer@^1.1.0:
   resolved "https://registry.yarnpkg.com/int64-buffer/-/int64-buffer-1.1.0.tgz#7ebe9822196a93bbedf93ec6b73b569561b5ae3a"
   integrity sha512-94smTCQOvigN4d/2R/YDjz8YVG0Sufvv2aAh8P5m42gwhCsDAJqnbNOrxJsrADuAFAA69Q/ptGzxvNcNuIJcvw==
 
+intents-1click-rule-engine@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/intents-1click-rule-engine/-/intents-1click-rule-engine-1.2.0.tgz#dd9d7fdc1967812e6d084cd76b3a9ffc79081803"
+  integrity sha512-q1atqooq9RJWIM6t6USWJzGqo5BwYv16dwlFHk6ziVhqjZFSpfZk+I6yVlrGc7emK8qnPgM2sbU2Es7Z+YayCA==
+
 internal-slot@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/internal-slot/-/internal-slot-1.1.0.tgz#1eac91762947d2f7056bc838d93e13b2e9604961"
