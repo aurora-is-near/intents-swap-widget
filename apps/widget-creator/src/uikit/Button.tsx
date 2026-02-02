@@ -37,7 +37,7 @@ const styles = {
   state: (state: State) => ({
     'bg-transparent text-csw-gray-50 ring-1 ring-inset ring-csw-gray-50':
       state === 'disabled',
-    'bg-csw-gray-700 text-csw-gray-300': state === 'loading',
+    'bg-csw-gray-700': state === 'loading',
     'bg-csw-alert-900 text-csw-alert-100': state === 'error',
     'text-csw-gray-950 bg-csw-gray-50 hover:bg-csw-gray-400': [
       'active',
@@ -179,7 +179,10 @@ export const OutlinedButton = ({
           'border-[1.5px] border-csw-gray-300 bg-csw-gray-800':
             state === 'active',
           'border border-csw-gray-700': state === 'default',
-          'cursor-not-allowed opacity-50 bg-transparent': state === 'disabled',
+          'cursor-not-allowed opacity-50 bg-transparent': [
+            'disabled',
+            'loading',
+          ].includes(state),
           'text-csw-gray-950': detail === 'dimmed',
         },
         className,

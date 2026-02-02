@@ -17,6 +17,9 @@ export function CreatorPanel() {
   const [activeTab, setActiveTab] = useState<TabKey>('design');
   const { dispatch } = useCreator();
 
+  // preload API keys
+  useApiKeys();
+
   function handleReset() {
     dispatch({ type: 'RESET_ALL' });
   }
