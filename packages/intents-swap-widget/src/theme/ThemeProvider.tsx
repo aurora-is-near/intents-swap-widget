@@ -1,4 +1,10 @@
-import { createContext, type ReactNode, useEffect, useMemo } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import {
   ColorPalette,
@@ -10,38 +16,34 @@ import {
 import { ColorStop, createColorPalette } from './createColorPalette';
 import { useConfig } from '@/config';
 
-const setVariable = (key: string, value: string, parentEl: Element | null) => {
-  let parentElement = document.body;
-
-  if (parentEl instanceof HTMLElement) {
-    parentElement = parentEl;
-  }
-
-  parentElement.style.setProperty(key, value);
+const setVariable = (key: string, value: string, elements: HTMLElement[]) => {
+  elements.forEach((el) => {
+    el.style.setProperty(key, value, 'important');
+  });
 };
 
 const setColorVariable = (
   key: string,
   value: string,
-  parentEl: Element | null,
+  elements: HTMLElement[],
 ) => {
-  setVariable(`--c-sw-${key}`, value, parentEl);
+  setVariable(`--c-sw-${key}`, value, elements);
 };
 
 const setColorVariables = (
   palette: ColorPalette,
   colorKey: string,
-  parentEl: Element | null,
+  elements: HTMLElement[],
 ) => {
   Object.entries(palette).forEach(([key, value]) => {
-    setColorVariable(`${colorKey}-${key}`, value, parentEl);
+    setColorVariable(`${colorKey}-${key}`, value, elements);
   });
 };
 
 const setColorPalette = (
   colorKey: string,
   colorStop: ColorStop,
-  parentEl: Element | null,
+  elements: HTMLElement[],
   baseColor: HexColor,
   colorScheme: ColorScheme,
 ) => {
@@ -51,12 +53,12 @@ const setColorPalette = (
     return;
   }
 
-  setColorVariables(palette, colorKey, parentEl);
+  setColorVariables(palette, colorKey, elements);
 };
 
 const setBorderRadiusVariables = (
   borderRadius: ThemeBorderRadius,
-  parentEl: Element | null,
+  elements: HTMLElement[],
 ) => {
   const values: Record<
     'none' | 'sm' | 'md' | 'lg',
@@ -68,12 +70,12 @@ const setBorderRadiusVariables = (
     lg: { sm: 8, md: 24, lg: 24 },
   };
 
-  setVariable('--r-sw-sm', `${values[borderRadius].sm}px`, parentEl);
-  setVariable('--r-sw-md', `${values[borderRadius].md}px`, parentEl);
-  setVariable('--r-sw-lg', `${values[borderRadius].lg}px`, parentEl);
+  setVariable('--r-sw-sm', `${values[borderRadius].sm}px`, elements);
+  setVariable('--r-sw-md', `${values[borderRadius].md}px`, elements);
+  setVariable('--r-sw-lg', `${values[borderRadius].lg}px`, elements);
 };
 
-const loadTheme = (parentEl: Element | null, theme: Theme) => {
+const loadTheme = (theme: Theme, elements: HTMLElement[]) => {
   const {
     accentColor,
     backgroundColor,
@@ -86,31 +88,31 @@ const loadTheme = (parentEl: Element | null, theme: Theme) => {
   } = theme;
 
   if (accentColor) {
-    setColorPalette('accent', 500, parentEl, accentColor, colorScheme);
+    setColorPalette('accent', 500, elements, accentColor, colorScheme);
 
     if (stylePreset === 'bold') {
-      setColorPalette('gray', 500, parentEl, accentColor, colorScheme);
+      setColorPalette('gray', 500, elements, accentColor, colorScheme);
     }
   }
 
   if (backgroundColor && stylePreset === 'clean') {
-    setColorPalette('gray', 950, parentEl, backgroundColor, colorScheme);
+    setColorPalette('gray', 950, elements, backgroundColor, colorScheme);
   }
 
   if (successColor) {
-    setColorVariable('status-success', successColor, parentEl);
+    setColorVariable('status-success', successColor, elements);
   }
 
   if (warningColor) {
-    setColorVariable('status-warning', warningColor, parentEl);
+    setColorVariable('status-warning', warningColor, elements);
   }
 
   if (errorColor) {
-    setColorVariable('status-error', errorColor, parentEl);
+    setColorVariable('status-error', errorColor, elements);
   }
 
   if (borderRadius) {
-    setBorderRadiusVariables(borderRadius, parentEl);
+    setBorderRadiusVariables(borderRadius, elements);
   }
 };
 
@@ -124,20 +126,38 @@ type ThemeProviderProps = {
 export const ThemeProvider = ({ children, theme }: ThemeProviderProps) => {
   const { themeParentElementSelector } = useConfig();
   const value = useMemo((): Theme | undefined => theme, [theme]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (theme) {
-      const themeParentElement = themeParentElementSelector
-        ? document.querySelector(themeParentElementSelector)
-        : null;
-
-      loadTheme(themeParentElement, theme);
+    if (!theme) {
+      return;
     }
+
+    const themeParentElement = themeParentElementSelector
+      ? document.querySelector(themeParentElementSelector)
+      : null;
+
+    const parentEl =
+      themeParentElement instanceof HTMLElement
+        ? themeParentElement
+        : document.body;
+
+    const elements: HTMLElement[] = [parentEl];
+
+    // It is important to set the variables on the container element as,
+    // otherwise the variables set in the CSS files will take precedence.
+    if (containerRef.current) {
+      elements.push(containerRef.current);
+    }
+
+    loadTheme(theme, elements);
   }, [theme]);
 
   return (
     <ThemeContext.Provider value={value}>
-      <div className="sw">{children}</div>
+      <div ref={containerRef} className="sw">
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 };
