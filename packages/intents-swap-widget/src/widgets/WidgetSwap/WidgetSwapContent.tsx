@@ -4,6 +4,7 @@ import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import { useTypedTranslation } from '../../localisation';
+import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
 import {
   SendAddress,
   SubmitButton,
@@ -47,12 +48,12 @@ export const WidgetSwapContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
+  const { intentsAccountType } = useIntentsAccountType();
   const {
     chainsFilter: customChainsFilter,
     enableAccountAbstraction,
     alchemyApiKey,
     refetchQuoteInterval,
-    intentsAccountType,
   } = useConfig();
 
   const { t } = useTypedTranslation();
