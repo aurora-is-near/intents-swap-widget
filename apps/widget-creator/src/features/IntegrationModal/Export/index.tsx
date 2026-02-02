@@ -161,11 +161,9 @@ export function App() {
                   onClick={refetchApiKeys}
                 />
               );
-            case 'has-api-keys':
-              // impossible, just for TS
-              if (!selectedApiKey) {
-                return null;
-              }
+
+            case 'has-api-keys': {
+              const apiKeySelected = selectedApiKey ?? apiKeysState.apiKeys[0];
 
               return (
                 <div className="flex flex-col gap-csw-md">
@@ -185,13 +183,20 @@ export function App() {
                       </span>
                     </UIButton>
                   </header>
-                  <ApiKeySelect
-                    keys={apiKeysState.apiKeys}
-                    selected={selectedApiKey}
-                    onChange={setSelectedApiKey}
-                  />
+
+                  {apiKeySelected ? (
+                    <ApiKeySelect
+                      keys={apiKeysState.apiKeys}
+                      selected={apiKeySelected}
+                      onChange={setSelectedApiKey}
+                    />
+                  ) : (
+                    <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
+                  )}
                 </div>
               );
+            }
+
             case 'pending':
             default:
               return <InfoBanner.Skeleton />;
