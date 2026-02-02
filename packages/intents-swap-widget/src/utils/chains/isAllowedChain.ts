@@ -1,4 +1,4 @@
-import { Chains } from '../../types';
+import type { Chains } from '../../types';
 
 export const isAllowedChain = ({
   chainId,
