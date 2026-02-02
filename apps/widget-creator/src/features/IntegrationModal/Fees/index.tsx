@@ -76,7 +76,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       walletAddress: valueBasedFee?.recipient ?? '',
-      feeJson: valueBasedFee ? JSON.stringify(apiKey.feeRules, null, 2) : '',
+      feeJson: JSON.stringify(apiKey.feeRules, null, 2),
       customFee: valueBasedFee?.bps
         ? getPercentFromBasisPoints(valueBasedFee.bps)
         : '0',
