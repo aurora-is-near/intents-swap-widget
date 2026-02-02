@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 import type { FeeConfig } from 'intents-1click-rule-engine';
 
 import { apiKeySchema } from '../schemas';
-import { axiosInstance } from '../network';
+import { feeServiceClient } from '../network';
 import { FeeServiceUpdateApiKeyError } from '../errors';
 import type { ApiKey } from '../types';
 
@@ -20,7 +20,7 @@ export const updateApiKey = async (
   let res: unknown;
 
   try {
-    const response = await axiosInstance.patch<
+    const response = await feeServiceClient.patch<
       ApiKey,
       AxiosResponse<ApiKey>,
       RequestBody

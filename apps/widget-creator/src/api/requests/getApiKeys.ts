@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { AxiosError } from 'axios';
 
 import { apiKeySchema } from '../schemas';
-import { axiosInstance } from '../network';
+import { feeServiceClient } from '../network';
 import { FeeServiceGetApiKeysError } from '../errors';
 import type { ApiKey } from '../types';
 
@@ -10,7 +10,7 @@ export const getApiKeys = async (authToken: string) => {
   let res: unknown;
 
   try {
-    const response = await axiosInstance.get('/key', {
+    const response = await feeServiceClient.get('/key', {
       headers: { Authorization: authToken },
     });
 

@@ -49,6 +49,19 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     );
   }
 
+  if (status === 'error') {
+    return (
+      <>
+        <ApiKeysHeader />
+        <ApiKeysEmpty
+          message="Unable to load API keys"
+          isCreatingKey={createApiKeyStatus === 'pending'}
+          onClickCreate={createApiKey}
+        />
+      </>
+    );
+  }
+
   if (!apiKeys.length) {
     return (
       <>

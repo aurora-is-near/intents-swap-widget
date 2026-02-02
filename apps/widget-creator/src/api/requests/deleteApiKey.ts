@@ -1,11 +1,11 @@
 import { AxiosError } from 'axios';
 
-import { axiosInstance } from '../network';
+import { feeServiceClient } from '../network';
 import { FeeServiceDeleteApiKeyError } from '../errors';
 
 export const deleteApiKey = async (authToken: string, apiKey: string) => {
   try {
-    await axiosInstance.delete<null>(`/key/${apiKey}`, {
+    await feeServiceClient.delete<null>(`/key/${apiKey}`, {
       headers: { Authorization: authToken },
     });
   } catch (error) {

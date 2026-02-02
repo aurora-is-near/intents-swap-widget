@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-export const axiosInstance = axios.create({
-  //   baseURL: 'http://localhost:3000/api',
+export const feeServiceClient = axios.create({
   baseURL: 'https://intents-api.aurora.dev/api',
   headers: {
     'Content-Type': 'application/json',

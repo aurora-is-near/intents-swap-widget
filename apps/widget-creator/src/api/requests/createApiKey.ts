@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 import type { FeeConfig } from 'intents-1click-rule-engine';
 
 import { apiKeySchema } from '../schemas';
-import { axiosInstance } from '../network';
+import { feeServiceClient } from '../network';
 import { FeeServiceCreateApiKeyError } from '../errors';
 import type { ApiKey } from '../types';
 
@@ -13,7 +13,7 @@ export const createApiKey = async (authToken: string) => {
   let res: unknown;
 
   try {
-    const response = await axiosInstance.post<
+    const response = await feeServiceClient.post<
       ApiKey,
       AxiosResponse<ApiKey>,
       FeeConfig
