@@ -137,6 +137,9 @@ export const ThemeProvider = ({ children, theme }: ThemeProviderProps) => {
       ? document.querySelector(themeParentElementSelector)
       : null;
 
+    // The variables are set on a parent element (document.body by default) so
+    // they can be used outside of the widget, such as the background of the
+    // widget creator.
     const parentEl =
       themeParentElement instanceof HTMLElement
         ? themeParentElement
