@@ -4,8 +4,8 @@ import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/cl
 import { Fees } from './Fees';
 import { Export } from './Export';
 import { ApiKeys } from './ApiKeys';
-import { Navigation } from './Navigation';
-import type { NavigationTabs } from './Navigation';
+import { Navigation } from './components';
+import type { NavigationTabs } from './components';
 import type { ApiKey } from '@/api/types';
 
 interface ModalProps {

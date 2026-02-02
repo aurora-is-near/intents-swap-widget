@@ -4,6 +4,8 @@ import { DeleteW700 as Delete } from '@material-symbols-svg/react-rounded/icons/
 import { EditSquareW700 as Edit } from '@material-symbols-svg/react-rounded/icons/edit-square';
 import { ContentCopyW700 as Copy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 
+import { getPercentFromBasisPoints, getSimpleValueBasedFee } from '../utils';
+
 import { Button } from '@/uikit/Button';
 import { useDeleteApiKey } from '@/api/hooks';
 import type { ApiKey } from '@/api/types';
@@ -43,6 +45,8 @@ export const ApiKeyCard = ({ apiKey, onClickFees }: Props) => {
     setTimeout(() => setIsCopied(false), 2000);
     setIsCopied(true);
   };
+
+  const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
 
   return (
     <div className="relative flex flex-col gap-csw-xl bg-csw-gray-900 rounded-csw-lg px-csw-2xl py-csw-xl overflow-hidden">
@@ -87,9 +91,11 @@ export const ApiKeyCard = ({ apiKey, onClickFees }: Props) => {
       </div>
 
       <footer className="flex items-center justify-between w-full">
-        <span className="text-csw-label-md text-csw-accent-200">0.05%</span>
+        <span className="text-csw-label-md text-csw-accent-200">
+          {`${getPercentFromBasisPoints(valueBasedFee?.bps ?? 0)}%`}
+        </span>
         <span className="text-csw-label-md text-csw-gray-300 mr-auto ml-csw-xs">
-          protocol fee
+          custom fee
         </span>
         <Button
           size="sm"

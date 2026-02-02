@@ -1,10 +1,11 @@
 import { usePrivy } from '@privy-io/react-auth';
 
-import { Header } from '../Header';
+import { Header } from '../components';
+
+import { ApiKeyCard } from './ApiKeyCard';
 import { ApiKeysEmpty } from './ApiKeysEmpty';
 import { ApiKeysNoAuth } from './ApiKeysNoAuth';
 import { ApiKeysSkeleton } from './ApiKeysSkeleton';
-import { ApiKeyCard } from './ApiKeyCard';
 import { CreateApiKey } from './CreateApiKey';
 
 import { useApiKeys, useCreateApiKey } from '@/api/hooks';

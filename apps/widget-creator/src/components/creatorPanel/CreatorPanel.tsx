@@ -6,6 +6,8 @@ import { Configure } from './Configure';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { cn } from '../../utils/cn';
 
+import { useApiKeys } from '@/api/hooks';
+
 const DESIGN_TAB_ID = 'design-tab';
 const CONFIGURE_TAB_ID = 'configure-tab';
 const DESIGN_PANEL_ID = 'design-panel';
