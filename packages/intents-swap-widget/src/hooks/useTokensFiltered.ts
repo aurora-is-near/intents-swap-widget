@@ -3,6 +3,8 @@ import { useTokens } from './useTokens';
 import { useMergedBalance } from './useMergedBalance';
 import { useIntentsBalance } from './useIntentsBalance';
 import { useTokensIntentsUnique } from './useTokensIntentsUnique';
+import { isAllowedChain } from '../utils/chains/isAllowedChain';
+import { useConfig } from '../config';
 import { createTokenSorter } from '@/utils/tokens/sort';
 import { createFilterByIntents } from '@/utils/tokens/filterByIntents';
 import { createFilterBySearch } from '@/utils/tokens/filterBySearchString';
@@ -33,6 +35,11 @@ export const useTokensFiltered = ({
   const { mergedBalance } = useMergedBalance();
   const { intentBalances } = useIntentsBalance();
   const { uniqueIntentsTokens } = useTokensIntentsUnique();
+  const {
+    allowedChainsList,
+    allowedSourceChainsList,
+    allowedTargetChainsList,
+  } = useConfig();
 
   const sorter = createTokenSorter(
     mergedBalance,
@@ -51,6 +58,15 @@ export const useTokensFiltered = ({
         walletSupportedChains,
         intentBalances,
         uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
+      }),
+    )
+    .filter((token) =>
+      isAllowedChain({
+        chainId: token.blockchain,
+        variant,
+        allowedChainsList,
+        allowedSourceChainsList,
+        allowedTargetChainsList,
       }),
     );
 

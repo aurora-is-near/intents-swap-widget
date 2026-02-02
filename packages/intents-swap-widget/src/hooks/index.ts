@@ -15,7 +15,6 @@ export { useTokens } from './useTokens';
 export { useWalletBalance } from './useWalletBalance';
 export { useExternalDepositStatus } from './useExternalDepositStatus';
 export { useIsCompatibilityCheckRequired } from './useIsCompatibilityCheckRequired';
-export { useToggleTheme } from './useToggleTheme';
 export { useHandleKeyDown } from './useHandleKeyDown';
 export { useAppKitProviders } from './useAppKitProviders';
 export { useAppKitWallet } from './useAppKitWallet';

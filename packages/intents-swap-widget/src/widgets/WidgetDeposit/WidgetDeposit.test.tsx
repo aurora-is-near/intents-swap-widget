@@ -36,6 +36,7 @@ const WidgetDepositSetup = () => {
     appName: 'Test',
     appIcon: '/test-icon.png',
     intentsAccountType: 'evm',
+    enableAccountAbstraction: true,
     alchemyApiKey: 'test-alchemy-api-key',
     connectedWallets: { default: mockConnectedWalletAddress('evm') },
     walletSupportedChains: EVM_CHAINS,
