@@ -101,10 +101,6 @@ the user selects the same token on both sides.
 The interval in milliseconds at which new quotes are fetched automatically.
 Useful for keeping market prices updated in volatile conditions.
 
-### `showIntentTokens`
-
-Controls whether NEAR Intents tokens appear in token lists.
-
 ### `allowedTokensList`
 
 Specifies the available tokens by their NEAR intents asset IDs or token symbols.

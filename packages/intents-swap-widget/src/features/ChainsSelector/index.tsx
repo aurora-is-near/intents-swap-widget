@@ -35,7 +35,7 @@ export const ChainsSelector = ({
     appName,
     topChainShortcuts,
     intentsAccountType,
-    showIntentTokens,
+    enableAccountAbstraction,
   } = useConfig();
 
   const topChains =
@@ -51,7 +51,7 @@ export const ChainsSelector = ({
       />
 
       <ul className="flex items-center gap-sw-md">
-        {showIntentTokens && (
+        {enableAccountAbstraction && (
           <ChainShortcut
             icon={appIcon}
             label={appName}

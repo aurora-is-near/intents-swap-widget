@@ -23,10 +23,10 @@ const getTokenName = (tokenSymbol: string): string => {
 
 export const useTokens = (variant?: 'source' | 'target') => {
   const {
-    showIntentTokens,
     allowedTokensList,
     allowedSourceTokensList,
     allowedTargetTokensList,
+    enableAccountAbstraction,
     filterTokens,
     fetchSourceTokens,
     fetchTargetTokens,
@@ -132,7 +132,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
       });
     }
 
-    return showIntentTokens
+    return enableAccountAbstraction
       ? [
           ...tokensWithoutWNEAR,
           // add intents tokens to the full list
@@ -145,7 +145,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
       : tokensWithoutWNEAR;
   }, [
     queryData,
-    showIntentTokens,
+    enableAccountAbstraction,
     filterTokens,
     allowedTokensList,
     allowedSourceTokensList,
