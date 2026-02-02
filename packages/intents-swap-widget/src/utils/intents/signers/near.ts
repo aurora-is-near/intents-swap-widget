@@ -2,7 +2,7 @@ import { createIntentSignerNEP413 } from '@defuse-protocol/intents-sdk';
 import type {
   NearWalletBase as NearWallet,
   SignedMessage,
-} from '@hot-labs/near-connect/build/types/wallet';
+} from '@hot-labs/near-connect';
 import { WidgetError } from '@/errors';
 
 type Args = {
