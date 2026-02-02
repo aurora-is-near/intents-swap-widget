@@ -34,7 +34,7 @@
         --c-sw-accent-950: #280045;
 
         --c-sw-status-success: #98FFB5;
-        --c-sw-status-warning: hsl(39, 89%, 83%);
+        --c-sw-status-warning: #FADFAD;
         --c-sw-status-error: #FFB8BE;
     }
 }
