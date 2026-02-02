@@ -1,2 +1,2 @@
 export const getBasisPointsFromPercent = (fee: string) =>
-  parseFloat(fee ?? '0') * 100;
+  parseFloat(fee || '0') * 100;

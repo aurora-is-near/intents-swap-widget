@@ -34,7 +34,7 @@ export const validateFeeConfig = (
       };
     }
 
-    return { data: rules, error: undefined };
+    return { data: { ...rules, default_fee: defaultFee }, error: undefined };
   } catch (error) {
     if (feeJson) {
       if (error instanceof Error) {
