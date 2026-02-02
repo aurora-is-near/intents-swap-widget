@@ -143,7 +143,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       });
     }
 
-    handleSubmit(handleSave)();
+    void handleSubmit(handleSave)();
   };
 
   useEffect(() => {
