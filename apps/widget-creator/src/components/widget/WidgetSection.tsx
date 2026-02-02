@@ -29,7 +29,7 @@ export const WidgetSection = ({ children }: PropsWithChildren) => {
 
   return (
     <section
-      className="flex-grow rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full"
+      className="flex-grow rounded-csw-lg px-csw-2xl pb-csw-4xl max-w-full md:max-w-none w-full overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl"
       style={{ backgroundColor }}>
       {children}
     </section>
