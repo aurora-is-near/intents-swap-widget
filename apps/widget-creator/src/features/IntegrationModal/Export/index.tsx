@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
@@ -58,7 +58,10 @@ const useApiKeysState = () => {
       return { state: 'no-api-keys' as const };
     }
 
-    return { state: 'has-api-keys' as const, apiKeys };
+    return {
+      state: 'has-api-keys' as const,
+      apiKeys: apiKeys as [ApiKey, ...ApiKey[]],
+    };
   }
 
   return { state: status };
@@ -76,9 +79,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-  const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | undefined>(
-    apiKeysState?.apiKeys?.[0],
-  );
+  const [selectedApiKey, setSelectedApiKey] = useState<ApiKey | undefined>();
 
   const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
@@ -107,6 +108,12 @@ export function App() {
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
+
+  useEffect(() => {
+    if (apiKeysState.state === 'has-api-keys') {
+      handleAppKeySelect(apiKeysState.apiKeys[0]);
+    }
+  }, [apiKeysState.state]);
 
   return (
     <>
