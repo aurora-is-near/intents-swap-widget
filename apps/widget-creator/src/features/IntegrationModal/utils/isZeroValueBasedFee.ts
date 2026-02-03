@@ -1,13 +1,13 @@
 import type { FeeConfig } from 'intents-1click-rule-engine';
 
-import { getSimpleValueBasedFee } from './getSimpleValueBasedFee';
-
 export const isZeroValueBasedFee = (feeRules: FeeConfig): boolean => {
-  const isValueBasedFee = getSimpleValueBasedFee(feeRules);
-
-  if (!isValueBasedFee) {
+  if (feeRules.rules.length > 0) {
     return false;
   }
 
-  return isValueBasedFee.bps === 0;
+  if (Array.isArray(feeRules.default_fee)) {
+    return false;
+  }
+
+  return feeRules.default_fee.bps === 0;
 };
