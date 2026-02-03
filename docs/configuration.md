@@ -65,19 +65,6 @@ Render the widget with its own AppKit-based wallet connection mechanism, as an
 alternative to controlling the connection externally and passing in walled
 addresses via `connectedWallets`.
 
-### `intentsAccountType`
-
-Determines which wallet provider (EVM, NEAR, or Solana) is used to sign and
-execute NEAR Intents transactions.
-
-If not explicitly provided we will attempt to establish the account type based
-on the connected wallet address. If multiple wallets are connected we will
-prefer the one associated with the selected source token.
-
-With that said, you will not usually need to set this property. It exists as
-a fallback should this internal logic fail, or if you have some particularly
-unique use case.
-
 ### `walletSupportedChains`
 
 A list of blockchain networks supported by the connected wallet(s).
