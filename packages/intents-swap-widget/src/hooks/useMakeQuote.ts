@@ -51,6 +51,7 @@ export const useMakeQuote = () => {
   const {
     walletSupportedChains,
     appName,
+    appKey,
     appFees,
     fetchQuote,
     slippageTolerance,
@@ -77,19 +78,27 @@ export const useMakeQuote = () => {
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          'https://1click.chaindefuser.com/v0/quote',
+          // no need for extra check API will return missing app key error
+          `https://intents-api.aurora.dev/api/quote/${appKey ?? ''}`,
           data,
           { signal },
         )
       ).data.quote;
     };
-  }, [oneClickApi]);
+  }, [appKey, oneClickApi]);
 
   const make = async ({
     message,
     quoteType = 'exact_in',
     options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
+    if (!fetchQuote && !appKey) {
+      throw new QuoteError({
+        code: 'QUOTE_INVALID_INITIAL',
+        meta: { isDry: false, message: 'App key is required' },
+      });
+    }
+
     const guardCurrentState = guardStates(ctx, [
       'input_valid_dry',
       'input_valid_external',
