@@ -8,7 +8,7 @@ type Props = {
 };
 
 export const CreateApiKey = ({ isLoading, onClick }: Props) => (
-  <div className="py-csw-2xl mt-csw-2xl border-t border-csw-gray-900">
+  <div className="flex flex-col gap-csw-lg py-csw-2xl mt-csw-2xl border-t border-csw-gray-900">
     <Button
       fluid
       size="sm"
@@ -20,5 +20,24 @@ export const CreateApiKey = ({ isLoading, onClick }: Props) => (
       onClick={onClick}>
       Create API key
     </Button>
+    <p className="text-csw-body-sm text-csw-gray-600 text-center">
+      By creating an API key, you agree to the{' '}
+      <a
+        href="https://aurora-labs.gitbook.io/intents-swap-widget/terms-of-service"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline">
+        Terms of Service
+      </a>{' '}
+      and{' '}
+      <a
+        href="https://aurora-labs.gitbook.io/intents-swap-widget/privacy-policy"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline">
+        Privacy Policy
+      </a>
+      .
+    </p>
   </div>
 );

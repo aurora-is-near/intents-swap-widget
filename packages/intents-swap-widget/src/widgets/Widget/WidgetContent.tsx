@@ -65,6 +65,9 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   const { disconnect, isConnected } = useAppKitWallet();
   const { ctx } = useUnsafeSnapshot();
 
+  const hasAccountAbstraction =
+    enableAccountAbstraction && isConnected && !!ctx.walletAddress;
+
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
   };
@@ -82,10 +85,13 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   };
 
   useEffect(() => {
-    if (!enableAccountAbstraction) {
+    if (
+      !enableAccountAbstraction ||
+      (!hasAccountAbstraction && activeTab === 'withdraw')
+    ) {
       setActiveTab('swap');
     }
-  }, [enableAccountAbstraction]);
+  }, [enableAccountAbstraction, hasAccountAbstraction, activeTab]);
 
   // Disconnect any connected AppKit wallet when standalone mode is disabled and
   // was previously enabled
