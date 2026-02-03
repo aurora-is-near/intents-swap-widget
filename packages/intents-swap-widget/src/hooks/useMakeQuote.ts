@@ -95,7 +95,7 @@ export const useMakeQuote = () => {
     if (!fetchQuote && !appKey) {
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
-        meta: { isDry: false, message: 'App key is required' },
+        meta: { isDry, message: 'App key is required' },
       });
     }
 
