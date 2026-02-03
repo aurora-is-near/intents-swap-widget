@@ -12,6 +12,7 @@ import { ApiKeySelect, Header } from '../components';
 import { Button } from '@/uikit/Button';
 import { useApiKeys } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
+import { useConfigLink } from '@/hooks/useConfigLink';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -80,6 +81,8 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
+  const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
+
   const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
 
 export function App() {
@@ -101,8 +104,8 @@ export function App() {
     setTimeout(() => setCopyCodeFeedback(false), 2000);
   };
 
-  const handleCopyConfigLink = async () => {
-    await navigator.clipboard.writeText(window.location.href);
+  const handleCopySharableLink = async () => {
+    await originalCopyConfigLink();
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
@@ -279,8 +282,8 @@ export function App() {
           fluid
           icon={Link}
           className="w-full"
-          onClick={handleCopyConfigLink}>
-          {copyLinkFeedback ? 'Copied!' : 'Copy config link'}
+          onClick={handleCopySharableLink}>
+          {copyLinkFeedback ? 'Copied!' : 'Copy sharable link'}
         </Button>
         <Button
           variant="primary"

@@ -40,6 +40,7 @@ const InfoBannerBase = ({
         detail="dimmed"
         size="sm"
         fluid
+        className="shrink-0"
         onClick={onClick}>
         {action}
       </Button>
