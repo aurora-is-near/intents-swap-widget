@@ -1,4 +1,4 @@
-import { isNearNamedAccount } from './isNearNamedAccount';
+import { isNearNamedAccount } from '../near/isNearNamedAccount';
 
 export const isNearAddress = (address?: string | null): boolean => {
   if (!address) {

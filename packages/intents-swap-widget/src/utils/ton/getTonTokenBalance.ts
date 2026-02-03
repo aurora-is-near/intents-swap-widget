@@ -1,5 +1,5 @@
 import { Token } from '../../types';
-import { isTonAddress } from './isTonAddress';
+import { isTonAddress } from '../chains/isTonAddress';
 
 type TonJettonWallet = {
   address: string;

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useUnsafeSnapshot } from '../machine';
-import { isEvmAddress } from '../utils/evm/isEvmAddress';
-import { isNearAddress } from '../utils/near/isNearAddress';
-import { isSolanaAddress } from '../utils/solana/isSolanaAddress';
+import { isEvmAddress } from '../utils/chains/isEvmAddress';
+import { isNearAddress } from '../utils/chains/isNearAddress';
+import { isSolanaAddress } from '../utils/chains/isSolanaAddress';
 
 const getIntentsAccountTypeFromAddress = (
   address: string,

@@ -16,7 +16,7 @@ import {
 } from 'viem/chains';
 import { getTransactionLink, isEvmChain } from '../utils';
 import { MakeTransferArgs } from '../types';
-import { isEvmAddress } from '../utils/evm/isEvmAddress';
+import { isEvmAddress } from '../utils/chains/isEvmAddress';
 import { switchEthereumChain } from '../utils/evm/switchEthereumChain';
 import { EVM_CHAINS } from '../constants';
 import { Providers } from '../types/providers';

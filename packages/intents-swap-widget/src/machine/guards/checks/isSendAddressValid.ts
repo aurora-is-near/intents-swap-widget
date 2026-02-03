@@ -1,5 +1,5 @@
 import { isAsyncSendAddressValidationError } from '@/machine/errors';
-import { isNearAddress } from '@/utils/near/isNearAddress';
+import { isNearAddress } from '@/utils/chains/isNearAddress';
 import type { Context } from '@/machine/context';
 
 export const isSendAddressValid = (ctx: Context): boolean => {

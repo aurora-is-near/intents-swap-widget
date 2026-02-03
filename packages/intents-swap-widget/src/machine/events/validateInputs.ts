@@ -2,7 +2,7 @@ import { fireEvent } from './utils/fireEvent';
 import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
-import { isNearAddress } from '@/utils/near/isNearAddress';
+import { isNearAddress } from '@/utils/chains/isNearAddress';
 
 import { moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';

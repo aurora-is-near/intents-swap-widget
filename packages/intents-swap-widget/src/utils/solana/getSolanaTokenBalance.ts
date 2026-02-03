@@ -1,5 +1,5 @@
 import { Token } from '../../types';
-import { isSolanaAddress } from './isSolanaAddress';
+import { isSolanaAddress } from '../chains/isSolanaAddress';
 
 const ALCHEMY_SOLANA_RPC_BASE = 'https://solana-mainnet.g.alchemy.com/v2';
 

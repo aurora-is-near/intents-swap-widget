@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react';
 
 import type { ListenerProps } from './types';
 import { IntentsAccountType } from '../../types/config';
-import { isSolanaAddress } from '../../utils/solana/isSolanaAddress';
-import { isEvmAddress } from '../../utils/evm/isEvmAddress';
-import { isNearAddress } from '../../utils/near/isNearAddress';
+import { isSolanaAddress } from '../../utils/chains/isSolanaAddress';
+import { isEvmAddress } from '../../utils/chains/isEvmAddress';
+import { isNearAddress } from '../../utils/chains/isNearAddress';
 import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
 import { useIntentsAccountType } from '../../hooks';
 import { useSupportedChains } from '../../hooks/useSupportedChains';

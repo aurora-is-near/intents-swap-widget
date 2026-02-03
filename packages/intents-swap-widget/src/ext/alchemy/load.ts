@@ -1,4 +1,4 @@
-import { isTonAddress } from '../../utils/ton/isTonAddress';
+import { isTonAddress } from '../../utils/chains/isTonAddress';
 import { CHAINS_MAP, isAlchemySupportedChain } from './types';
 import type {
   AlchemyBalanceItem,
