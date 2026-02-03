@@ -6,6 +6,7 @@ import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
 import { WalletAddresses } from '../../types';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '@/config';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
@@ -25,7 +26,8 @@ type Args = {
 };
 
 export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
-  const { walletSupportedChains, tonCenterApiKey, alchemyApiKey } = useConfig();
+  const { tonCenterApiKey, alchemyApiKey } = useConfig();
+  const { supportedChains } = useSupportedChains();
   const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
   // Create a stable key based on connected wallet addresses for react-query caching
@@ -49,7 +51,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       // 2. Near
       if (
         token.blockchain === 'near' &&
-        walletSupportedChains.includes(token.blockchain)
+        supportedChains.includes(token.blockchain)
       ) {
         if (!rpcs.near || rpcs.near.length === 0) {
           return null;
@@ -63,10 +65,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       }
 
       // 3. Do not fetch EVM balances if evms are not supported
-      if (
-        !walletSupportedChains.includes('eth') &&
-        isEvmChain(token.blockchain)
-      ) {
+      if (!supportedChains.includes('eth') && isEvmChain(token.blockchain)) {
         return null;
       }
 
@@ -97,7 +96,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       // 7. Solana token balance
       if (
         token.blockchain === 'sol' &&
-        walletSupportedChains.includes(token.blockchain)
+        supportedChains.includes(token.blockchain)
       ) {
         return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
       }

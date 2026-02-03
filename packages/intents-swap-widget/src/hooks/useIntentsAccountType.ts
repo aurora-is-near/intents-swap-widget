@@ -3,8 +3,6 @@ import { useUnsafeSnapshot } from '../machine';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { isNearAddress } from '../utils/near/isNearAddress';
 import { isSolanaAddress } from '../utils/solana/isSolanaAddress';
-import { useConnectedWallets } from './useConnectedWallets';
-import { useWalletAddressForToken } from './useWalletAddressForToken';
 
 const getIntentsAccountTypeFromAddress = (
   address: string,
@@ -32,13 +30,9 @@ const getIntentsAccountTypeFromAddress = (
  * wallet address format.
  */
 export const useIntentsAccountType = () => {
-  const { connectedWallets } = useConnectedWallets();
-  const { ctx } = useUnsafeSnapshot();
-
-  const { walletAddress } = useWalletAddressForToken(
-    connectedWallets,
-    ctx.sourceToken,
-  );
+  const {
+    ctx: { walletAddress },
+  } = useUnsafeSnapshot();
 
   const intentsAccountType = useMemo(() => {
     if (!walletAddress) {

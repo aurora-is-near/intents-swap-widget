@@ -14,9 +14,9 @@ type ResultPage = {
 };
 
 const mapAlchemyNetworks = (
-  walletSupportedChains: ReadonlyArray<Chains>,
+  supportedChains: ReadonlyArray<Chains>,
 ): string[] => {
-  return walletSupportedChains
+  return supportedChains
     .map((chain): string | null => {
       if (isAlchemySupportedChain(chain)) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -34,11 +34,11 @@ type CreateLoaderArgs = {
 
 export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
   return async ({
-    walletSupportedChains,
+    supportedChains,
     connectedWallets,
     pageParam,
   }: AlchemyRequestParams): Promise<AlchemyResponse> => {
-    const networks = mapAlchemyNetworks(walletSupportedChains);
+    const networks = mapAlchemyNetworks(supportedChains);
 
     const walletAddresses = Object.values(connectedWallets).filter(
       (walletAddress) => !!walletAddress && !isTonAddress(walletAddress),

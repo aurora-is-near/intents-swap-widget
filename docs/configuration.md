@@ -73,6 +73,9 @@ addresses via `connectedWallets`.
 
 A list of blockchain networks supported by the connected wallet(s).
 
+If this is not provided we will attempt to establish the supported chains based
+on the format of the wallet address.
+
 ### `connectedWallets`
 
 A map of connected wallet addresses keyed by chain. Used to determine which

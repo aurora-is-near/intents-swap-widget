@@ -8,7 +8,7 @@ import type { Token, TokenBalances } from '@/types/token';
 type Args = {
   balances: TokenBalances;
   tokens: ReadonlyArray<Token>;
-  walletSupportedChains: ReadonlyArray<Chains>;
+  supportedChains: ReadonlyArray<Chains>;
   across: 'all' | 'wallet' | 'intents';
 };
 
@@ -16,7 +16,7 @@ export const getTokenWithHighBalance = ({
   across,
   tokens,
   balances,
-  walletSupportedChains,
+  supportedChains,
 }: Args) => {
   if (Object.keys(balances).length > 0) {
     const intentsTokens = tokens.filter((t) => {
@@ -35,9 +35,8 @@ export const getTokenWithHighBalance = ({
     });
 
     const highestBalanceTkn =
-      intentsTokens.sort(
-        createTokenSorter(balances, walletSupportedChains),
-      )[0] ?? getDefaultIntentsToken({ tokens });
+      intentsTokens.sort(createTokenSorter(balances, supportedChains))[0] ??
+      getDefaultIntentsToken({ tokens });
 
     return highestBalanceTkn;
   }

@@ -6,6 +6,7 @@ import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
 
 import { TokenInputHeading } from './TokenInputHeading';
 import { useUnsafeSnapshot } from '../../machine';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -50,7 +51,8 @@ export const TokenInputWithToken = ({
   const inputName = useId();
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { hideTokenInputHeadings, walletSupportedChains } = useConfig();
+  const { hideTokenInputHeadings } = useConfig();
+  const { supportedChains } = useSupportedChains();
 
   const usdAmount = getUsdDisplayAmount(token, value, quoteUsdValue);
 
@@ -150,7 +152,7 @@ export const TokenInputWithToken = ({
             <span
               className="text-sw-gray-200 text-sw-label-sm"
               style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
-              {walletSupportedChains.includes(token.blockchain)
+              {supportedChains.includes(token.blockchain)
                 ? t('tokens.input.externalBalance.label', 'External balance')
                 : t(
                     'tokens.input.externalBalanceOnly.label',

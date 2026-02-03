@@ -36,7 +36,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   appName: 'Unknown',
 
   slippageTolerance: 100, // 1%
-  walletSupportedChains: EVM_CHAINS,
   connectedWallets: {},
 
   enableAutoTokensSwitching: true,

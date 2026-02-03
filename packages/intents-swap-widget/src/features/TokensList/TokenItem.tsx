@@ -1,3 +1,4 @@
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -28,10 +29,11 @@ export const TokenItem = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName } = useConfig();
+  const { appName } = useConfig();
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
+  const { supportedChains } = useSupportedChains();
   const isTokenSupported =
-    walletSupportedChains.includes(token.blockchain) || token.isIntent;
+    supportedChains.includes(token.blockchain) || token.isIntent;
 
   const hasBalance = balance !== '0' && balance !== 0 && balance !== undefined;
 

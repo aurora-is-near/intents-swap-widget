@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
-import { useConfig } from '@/config';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import type { ChainRpcUrls } from '@/types/chain';
@@ -67,7 +67,7 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
 export const BalanceRpcLoader = ({ rpcs }: Props) => {
   const { connectedWallets } = useConnectedWallets();
   const { tokens } = useAllTokens();
-  const { walletSupportedChains } = useConfig();
+  const { supportedChains } = useSupportedChains();
   const { setWalletBalance } = useWalletBalance(connectedWallets);
   const sortedTokens = useMemo(() => sortTokensByPriority(tokens), [tokens]);
 
@@ -79,7 +79,7 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
   );
 
   return sortedTokens.map((tkn) => {
-    if (walletSupportedChains.includes(tkn.blockchain)) {
+    if (supportedChains.includes(tkn.blockchain)) {
       return (
         <TokenBalanceLoader
           rpcs={rpcs}

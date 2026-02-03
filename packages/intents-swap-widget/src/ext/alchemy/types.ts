@@ -32,6 +32,6 @@ export type AlchemyResponse = {
 
 export type AlchemyRequestParams = {
   pageParam: string | null;
-  walletSupportedChains: ReadonlyArray<Chains>;
+  supportedChains: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
 };

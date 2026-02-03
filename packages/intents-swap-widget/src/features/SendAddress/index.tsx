@@ -5,6 +5,7 @@ import { WandShineW700 as WandShine } from '@material-symbols-svg/react-rounded/
 import type { ChangeEvent } from 'react';
 
 import { useNotification } from './useNotification';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
@@ -26,7 +27,8 @@ type Props = {
 export const SendAddress = ({ error, className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, sendAddress, hideSendAddress } = useConfig();
+  const { sendAddress, hideSendAddress } = useConfig();
+  const { supportedChains } = useSupportedChains();
 
   const [value, setValue] = useState(ctx.sendAddress ?? '');
   const [debouncedValue] = useDebounce(value, 700);
@@ -36,7 +38,7 @@ export const SendAddress = ({ error, className, onMsg }: Props) => {
   const showMagicButton =
     ctx.targetToken &&
     !ctx.sendAddress &&
-    walletSupportedChains.includes(ctx.targetToken.blockchain);
+    supportedChains.includes(ctx.targetToken.blockchain);
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;

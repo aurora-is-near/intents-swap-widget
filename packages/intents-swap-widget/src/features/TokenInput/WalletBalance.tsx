@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import { useConfig } from '@/config';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { Skeleton } from '@/components/Skeleton';
 import { TinyNumber } from '@/components/TinyNumber';
 import type { Token, TokenBalance } from '@/types/token';
@@ -18,12 +18,9 @@ export const WalletBalance = ({
   isNotSufficient = false,
   onClick,
 }: Props) => {
-  const config = useConfig();
+  const { supportedChains } = useSupportedChains();
 
-  if (
-    !token.isIntent &&
-    !config.walletSupportedChains.includes(token.blockchain)
-  ) {
+  if (!token.isIntent && !supportedChains.includes(token.blockchain)) {
     return <span />;
   }
 

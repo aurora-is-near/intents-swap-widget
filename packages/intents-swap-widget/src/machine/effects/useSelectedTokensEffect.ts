@@ -7,6 +7,7 @@ import { isEvmAddress } from '../../utils/evm/isEvmAddress';
 import { isNearAddress } from '../../utils/near/isNearAddress';
 import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
 import { useIntentsAccountType } from '../../hooks';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -42,8 +43,8 @@ export const useSelectedTokensEffect = ({
   const { intentBalances } = useIntentsBalance();
   const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { intentsAccountType } = useIntentsAccountType();
-  const { walletSupportedChains, enableAccountAbstraction, chainsFilter } =
-    useConfig();
+  const { enableAccountAbstraction, chainsFilter } = useConfig();
+  const { supportedChains } = useSupportedChains();
 
   // Load default source and target tokens if they are not already set and we
   // are not specifying a default via the config.
@@ -58,7 +59,7 @@ export const useSelectedTokensEffect = ({
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,
-    walletSupportedChains,
+    supportedChains,
     balances: intentBalances,
     across: 'intents',
   });
@@ -94,7 +95,7 @@ export const useSelectedTokensEffect = ({
 
     const mainExternalToken = getMainTokenByChain({
       tokens,
-      walletSupportedChains,
+      supportedChains,
     });
 
     return [
@@ -107,7 +108,7 @@ export const useSelectedTokensEffect = ({
     chainsFilter,
     ctx.walletAddress,
     highestIntentsToken,
-    walletSupportedChains,
+    supportedChains,
     state,
   ]);
 
@@ -206,7 +207,7 @@ export const useSelectedTokensEffect = ({
             token: highestIntentsToken,
           });
           // 2. Wallet base token if intents not supported
-        } else if (walletSupportedChains.length && intentsAccountType) {
+        } else if (supportedChains.length && intentsAccountType) {
           setTokenForIntentsAccountType(intentsAccountType, fallbackToken);
           // 3. Select base token by detecting Solana wallet address
         } else if (ctx.walletAddress && isSolanaAddress(ctx.walletAddress)) {

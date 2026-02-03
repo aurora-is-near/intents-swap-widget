@@ -9,6 +9,7 @@ import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
 import { Quote } from '../types';
 import { useIntentsAccountType } from './useIntentsAccountType';
+import { useSupportedChains } from './useSupportedChains';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -48,14 +49,9 @@ const validateQuoteProperties = (
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
-  const {
-    walletSupportedChains,
-    appName,
-    appKey,
-    appFees,
-    fetchQuote,
-    slippageTolerance,
-  } = useConfig();
+  const { supportedChains } = useSupportedChains();
+  const { appName, appKey, appFees, fetchQuote, slippageTolerance } =
+    useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -131,7 +127,7 @@ export const useMakeQuote = () => {
     const isRefundToIntentAccount =
       recipientIntentsAccountId &&
       (ctx.sourceToken.isIntent ||
-        !walletSupportedChains.includes(ctx.sourceToken.blockchain));
+        !supportedChains.includes(ctx.sourceToken.blockchain));
 
     const getRefundToAccountId = () => {
       if (isDry) {

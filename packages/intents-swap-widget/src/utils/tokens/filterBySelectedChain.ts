@@ -6,7 +6,7 @@ type Options = {
   search: string;
   selectedChain: Chains | 'all' | 'intents';
   chainsFilter: ChainsFilter;
-  walletSupportedChains: ReadonlyArray<Chains>;
+  supportedChains: ReadonlyArray<Chains>;
   intentBalances: TokenBalances;
   uniqueIntentTokenIds: string[];
 };
@@ -16,7 +16,7 @@ export const createFilterBySelectedChain = (options: Options) => {
     chainsFilter,
     selectedChain,
     intentBalances,
-    walletSupportedChains,
+    supportedChains,
     uniqueIntentTokenIds,
   } = options;
 
@@ -47,7 +47,7 @@ export const createFilterBySelectedChain = (options: Options) => {
       if (
         !token.isIntent &&
         chainsFilter.external === 'wallet-supported' &&
-        !walletSupportedChains.includes(token.blockchain)
+        !supportedChains.includes(token.blockchain)
       ) {
         return false;
       }

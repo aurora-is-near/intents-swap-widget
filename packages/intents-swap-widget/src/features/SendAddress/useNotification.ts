@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { ComponentProps } from 'react';
 
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import type { Input } from '@/components/Input';
 import type { Banner } from '@/components/Banner';
 
@@ -23,7 +24,8 @@ export const useNotification = (
 ): Notification => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName, sendAddress } = useConfig();
+  const { appName, sendAddress } = useConfig();
+  const { supportedChains } = useSupportedChains();
 
   return useMemo(() => {
     if (sendAddress) {
@@ -100,7 +102,7 @@ export const useNotification = (
 
     if (
       !ctx.targetToken.isIntent &&
-      !walletSupportedChains.includes(ctx.targetToken.blockchain)
+      !supportedChains.includes(ctx.targetToken.blockchain)
     ) {
       return {
         variant: 'warn',
@@ -127,7 +129,7 @@ export const useNotification = (
 
     if (
       ctx.walletAddress === ctx.sendAddress &&
-      walletSupportedChains.includes(ctx.targetToken.blockchain)
+      supportedChains.includes(ctx.targetToken.blockchain)
     ) {
       return {
         variant: 'success',
@@ -169,5 +171,5 @@ export const useNotification = (
         }),
       };
     }
-  }, [ctx, userError, walletSupportedChains]);
+  }, [ctx, userError, supportedChains]);
 };

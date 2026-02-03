@@ -1,14 +1,11 @@
-import { snapshot } from 'valtio';
-
-import { configStore } from '@/config';
-
+import { useSupportedChains } from '../../../hooks/useSupportedChains';
 import type { Context, ContextChange } from '@/machine/context';
 
 export const isSendAddressAsConnected = (
   ctx: Context,
   changes: ContextChange[],
 ) => {
-  const { config } = snapshot(configStore);
+  const { supportedChains } = useSupportedChains();
 
   return (
     ctx.targetToken &&
@@ -16,6 +13,6 @@ export const isSendAddressAsConnected = (
     !!ctx.walletAddress &&
     !ctx.targetToken.isIntent &&
     !changes.find((change) => change?.key === 'sendAddress') &&
-    config.walletSupportedChains.includes(ctx.targetToken.blockchain)
+    supportedChains.includes(ctx.targetToken.blockchain)
   );
 };

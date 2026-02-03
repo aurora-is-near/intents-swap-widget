@@ -19,6 +19,7 @@ import {
 } from './utils';
 import type { ListGroup } from './types';
 
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -60,7 +61,8 @@ export const TokensList = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains, appName, priorityAssets = [] } = useConfig();
+  const { appName, priorityAssets = [] } = useConfig();
+  const { supportedChains } = useSupportedChains();
   const { mergedBalance } = useMergedBalance();
 
   const filteredTokens = useTokensFiltered({
@@ -68,7 +70,7 @@ export const TokensList = ({
     search,
     chainsFilter,
     selectedChain,
-    walletSupportedChains,
+    supportedChains,
     priorityAssets,
   });
 

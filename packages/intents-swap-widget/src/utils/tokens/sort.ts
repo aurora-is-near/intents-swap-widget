@@ -139,7 +139,7 @@ const compareWithSearch = (
 };
 
 const sortTokens = (
-  walletSupportedChains: ReadonlyArray<Chains>,
+  supportedChains: ReadonlyArray<Chains>,
   priorityAssets: PriorityAssets,
   usdBalanceA: number | undefined,
   usdBalanceB: number | undefined,
@@ -163,8 +163,8 @@ const sortTokens = (
   // 2. If both have balance, sort by balance amount and other criteria
   if (hasBalanceA && hasBalanceB) {
     // Sort supported chains first
-    const aSupported = walletSupportedChains.includes(a.blockchain);
-    const bSupported = walletSupportedChains.includes(b.blockchain);
+    const aSupported = supportedChains.includes(a.blockchain);
+    const bSupported = supportedChains.includes(b.blockchain);
 
     if (!isIntent && aSupported && !bSupported) {
       return -1;
@@ -191,8 +191,8 @@ const sortTokens = (
   }
 
   // 4. For tokens without balance and not in priority list, sort by supported chains
-  const aSupported = walletSupportedChains.includes(a.blockchain);
-  const bSupported = walletSupportedChains.includes(b.blockchain);
+  const aSupported = supportedChains.includes(a.blockchain);
+  const bSupported = supportedChains.includes(b.blockchain);
 
   if (!isIntent && aSupported && !bSupported) {
     return -1;
@@ -208,7 +208,7 @@ const sortTokens = (
 
 export const createTokenSorter = (
   tokensBalance: TokenBalances,
-  walletSupportedChains: ReadonlyArray<Chains>,
+  supportedChains: ReadonlyArray<Chains>,
   searchStr?: string | undefined,
   priorityAssets: PriorityAssets = [],
 ) => {
@@ -232,7 +232,7 @@ export const createTokenSorter = (
     const searchLower = searchStr?.trim().toLowerCase() ?? undefined;
 
     return sortTokens(
-      walletSupportedChains,
+      supportedChains,
       priorityAssets,
       usdBalanceA,
       usdBalanceB,

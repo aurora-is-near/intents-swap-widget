@@ -6,7 +6,7 @@ import { createLoader } from './load';
 import { isAlchemySupportedChain } from './types';
 import type { AlchemyResponse } from './types';
 import { WalletAddresses } from '../../types';
-import { useConfig } from '@/config';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { fireEvent } from '@/machine';
 import { useTokens } from '@/hooks/useTokens';
 import { guardStates } from '@/machine/guards';
@@ -29,13 +29,13 @@ export const useAlchemyBalanceIntegration = ({
   const { ctx } = useUnsafeSnapshot();
 
   const { tokens } = useTokens();
-  const { walletSupportedChains } = useConfig();
+  const { supportedChains } = useSupportedChains();
   const { setWalletBalance } = useWalletBalance(connectedWallets);
 
   const isEnabled =
     args.isEnabled &&
     !!Object.values(connectedWallets).length &&
-    walletSupportedChains.length > 0;
+    supportedChains.length > 0;
 
   const query = useInfiniteQuery<AlchemyResponse>({
     initialPageParam: null,
@@ -45,7 +45,7 @@ export const useAlchemyBalanceIntegration = ({
       return createLoader({ alchemyApiKey })({
         pageParam: pageParam ? `${pageParam as string}` : null,
         connectedWallets,
-        walletSupportedChains,
+        supportedChains,
       });
     },
     getNextPageParam: (lastPage, allPages) => {

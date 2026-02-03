@@ -17,7 +17,7 @@ export type TokensFilterOptions = {
   search: string;
   selectedChain: Chains | 'all' | 'intents';
   chainsFilter: ChainsFilter;
-  walletSupportedChains: ReadonlyArray<Chains>;
+  supportedChains: ReadonlyArray<Chains>;
   priorityAssets: PriorityAssets;
 };
 
@@ -27,7 +27,7 @@ export const useTokensFiltered = ({
   search,
   selectedChain,
   chainsFilter,
-  walletSupportedChains,
+  supportedChains,
   priorityAssets,
 }: TokensFilterOptions) => {
   const chains = useChains(variant);
@@ -43,7 +43,7 @@ export const useTokensFiltered = ({
 
   const sorter = createTokenSorter(
     mergedBalance,
-    walletSupportedChains,
+    supportedChains,
     search,
     priorityAssets,
   );
@@ -55,7 +55,7 @@ export const useTokensFiltered = ({
         search,
         selectedChain,
         chainsFilter,
-        walletSupportedChains,
+        supportedChains,
         intentBalances,
         uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
       }),

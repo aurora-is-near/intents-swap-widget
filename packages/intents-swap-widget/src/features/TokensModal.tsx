@@ -5,6 +5,7 @@ import { useChains } from '../hooks';
 import { TokensList } from './TokensList';
 import { ChainsSelector } from './ChainsSelector';
 
+import { useSupportedChains } from '../hooks/useSupportedChains';
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
@@ -12,7 +13,6 @@ import { Banner } from '@/components/Banner';
 import { CloseButton } from '@/components/CloseButton';
 
 import { cn } from '@/utils/cn';
-import { useConfig } from '@/config';
 import { useHandleKeyDown } from '@/hooks';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
@@ -45,7 +45,7 @@ export const TokensModal = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { walletSupportedChains } = useConfig();
+  const { supportedChains } = useSupportedChains();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
@@ -83,7 +83,7 @@ export const TokensModal = ({
     selectedChain !== 'all' &&
     selectedChain !== 'intents' &&
     chainsFilter.external !== 'all' &&
-    !walletSupportedChains.includes(selectedChain);
+    !supportedChains.includes(selectedChain);
 
   return (
     <Card
