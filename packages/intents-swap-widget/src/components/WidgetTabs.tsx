@@ -6,13 +6,22 @@ export type WidgetTab = (typeof TABS)[number];
 
 type Props = {
   activeTab: WidgetTab;
+  hasAccountAbstraction: boolean;
   onSelect: (tab: WidgetTab) => void;
 };
 
-export const WidgetTabs = ({ activeTab, onSelect }: Props) => {
+export const WidgetTabs = ({
+  activeTab,
+  hasAccountAbstraction,
+  onSelect,
+}: Props) => {
+  const tabs = hasAccountAbstraction
+    ? TABS
+    : TABS.filter((tab) => tab !== 'withdraw');
+
   return (
     <nav className="space-x-[10px] w-full">
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = activeTab === tab;
 
         return (

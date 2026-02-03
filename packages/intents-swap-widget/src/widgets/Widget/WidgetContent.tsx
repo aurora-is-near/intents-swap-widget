@@ -109,7 +109,13 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
         <div className="mb-sw-2xl w-full flex items-center">
           {enableAccountAbstraction && isTabsVisible ? (
             <>
-              <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+              <WidgetTabs
+                activeTab={activeTab}
+                hasAccountAbstraction={
+                  enableAccountAbstraction && isConnected && !!ctx.walletAddress
+                }
+                onSelect={switchTab}
+              />
             </>
           ) : (
             <div className="w-full" />
