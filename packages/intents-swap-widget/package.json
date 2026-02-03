@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "MIT",
