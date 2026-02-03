@@ -25,6 +25,7 @@ export const InfoBanner = ({ title, description, action, onClick }: Props) => (
         detail="dimmed"
         size="sm"
         fluid
+        className="shrink-0"
         onClick={onClick}>
         {action}
       </Button>
