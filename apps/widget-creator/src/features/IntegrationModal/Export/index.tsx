@@ -1,17 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
 import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
+import { Button as UIButton } from '@headlessui/react';
 
-import { Header } from '../components';
+import { ApiKeySelect, Header } from '../components';
 
 import { Button } from '@/uikit/Button';
+import { useApiKeys } from '@/api/hooks';
+import { useCreator } from '@/hooks/useCreatorConfig';
 import { useConfigLink } from '@/hooks/useConfigLink';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
+import type { ApiKey } from '@/api/types';
 
 const applyIndent = (code: string, spaces: number): string => {
   const pad = ' '.repeat(spaces);
@@ -41,9 +46,34 @@ type Props = {
   onClickApiKeys: () => void;
 };
 
-export const Export = ({ onClickApiKeys }: Props) => {
+const useApiKeysState = () => {
   const { authenticated } = usePrivy();
+  const { data: apiKeys, status } = useApiKeys();
+
+  if (!authenticated) {
+    return { state: 'unauthenticated' as const };
+  }
+
+  if (status === 'success') {
+    if (apiKeys.length === 0) {
+      return { state: 'no-api-keys' as const };
+    }
+
+    return {
+      state: 'has-api-keys' as const,
+      apiKeys: apiKeys as [ApiKey, ...ApiKey[]],
+    };
+  }
+
+  return { state: status };
+};
+
+export const Export = ({ onClickApiKeys }: Props) => {
   const { login } = useLogin();
+  const { dispatch, state } = useCreator();
+
+  const apiKeysState = useApiKeysState();
+  const { refetch: refetchApiKeys } = useApiKeys();
 
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
@@ -64,6 +94,10 @@ export function App() {
   );
 }`;
 
+  const handleAppKeySelect = (appKey: string) => {
+    dispatch({ type: 'SET_APP_KEY', payload: appKey });
+  };
+
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(sampleCode);
     setCopyCodeFeedback(true);
@@ -75,6 +109,12 @@ export function App() {
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
+
+  useEffect(() => {
+    if (apiKeysState.state === 'has-api-keys') {
+      handleAppKeySelect(apiKeysState.apiKeys[0].widgetAppKey);
+    }
+  }, [apiKeysState.state]);
 
   return (
     <>
@@ -106,21 +146,80 @@ export function App() {
       </div>
 
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
-        {authenticated ? (
-          <InfoBanner
-            action="Go to API Keys"
-            title="API key required"
-            description="Create an API key to activate the widget, configure fees and track usage."
-            onClick={onClickApiKeys}
-          />
-        ) : (
-          <InfoBanner
-            action="Log in"
-            title="API key required"
-            description="Log in to create an API key to activate the widget."
-            onClick={login}
-          />
-        )}
+        {(() => {
+          switch (apiKeysState.state) {
+            case 'unauthenticated':
+              return (
+                <InfoBanner
+                  action="Log in"
+                  title="API key required"
+                  description="Log in to create an API key to activate the widget."
+                  onClick={login}
+                />
+              );
+            case 'no-api-keys':
+              return (
+                <InfoBanner
+                  action="Go to API Keys"
+                  title="API key required"
+                  description="Create an API key to activate the widget, configure fees and track usage."
+                  onClick={onClickApiKeys}
+                />
+              );
+            case 'error':
+              return (
+                <InfoBanner
+                  state="error"
+                  action="Try again"
+                  title="Unable to load API keys"
+                  description="We couldn't load your API keys. Please try again."
+                  onClick={refetchApiKeys}
+                />
+              );
+
+            case 'has-api-keys': {
+              const apiKeySelected =
+                state.appKey ?? apiKeysState.apiKeys[0].widgetAppKey;
+
+              return (
+                <div className="flex flex-col gap-csw-md">
+                  <header className="flex items-center justify-between">
+                    <span className="text-csw-label-md text-csw-gray-50">
+                      API key
+                    </span>
+                    <UIButton
+                      className="flex items-center gap-csw-xs cursor-pointer transition-colors group"
+                      onClick={onClickApiKeys}>
+                      <Add
+                        size={18}
+                        className="text-csw-gray-300 group-hover:text-csw-gray-50 transition-colors"
+                      />
+                      <span className="text-csw-label-md text-csw-gray-300 group-hover:text-csw-gray-50 transition-colors">
+                        Create API key
+                      </span>
+                    </UIButton>
+                  </header>
+
+                  {apiKeySelected ? (
+                    <ApiKeySelect
+                      keys={apiKeysState.apiKeys.map(
+                        (apiKey) => apiKey.widgetAppKey,
+                      )}
+                      selected={apiKeySelected}
+                      onChange={handleAppKeySelect}
+                    />
+                  ) : (
+                    <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
+                  )}
+                </div>
+              );
+            }
+
+            case 'pending':
+            default:
+              return <InfoBanner.Skeleton />;
+          }
+        })()}
 
         <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
           <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
