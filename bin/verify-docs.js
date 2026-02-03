@@ -54,7 +54,7 @@ const getDocumentedConfigKeys = () => {
   const markdown = fs.readFileSync(MARKDOWN_FILE, 'utf8');
 
   // Matches: ### `optionName`
-  const regex = /^###\s+`([^`]+)`/gm;
+  const regex = /^#+\s+`([^`]+)`/gm;
 
   const keys = new Set();
   let match;
@@ -62,6 +62,14 @@ const getDocumentedConfigKeys = () => {
   // eslint-disable-next-line no-cond-assign
   while ((match = regex.exec(markdown)) !== null) {
     keys.add(match[1]);
+
+    if (!match[0].startsWith('### `')) {
+      console.error(
+        `❌ Incorrect heading level detected: "${match[0]}" should be a level 3 heading (###)`,
+      );
+
+      process.exit(1);
+    }
   }
 
   return Array.from(keys).sort();
