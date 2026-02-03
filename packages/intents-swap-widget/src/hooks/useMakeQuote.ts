@@ -91,7 +91,7 @@ export const useMakeQuote = () => {
     quoteType = 'exact_in',
     options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
-    if (fetchQuote && !appKey) {
+    if (!fetchQuote && !appKey) {
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry: false, message: 'App key is required' },
