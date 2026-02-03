@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useConfig } from '../config';
 import { useUnsafeSnapshot } from '../machine';
 import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { isNearAddress } from '../utils/near/isNearAddress';
@@ -35,7 +34,6 @@ const getIntentsAccountTypeFromAddress = (
 export const useIntentsAccountType = () => {
   const { connectedWallets } = useConnectedWallets();
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType: fixedIntentsAccountType } = useConfig();
 
   const { walletAddress } = useWalletAddressForToken(
     connectedWallets,
@@ -43,12 +41,12 @@ export const useIntentsAccountType = () => {
   );
 
   const intentsAccountType = useMemo(() => {
-    if (!walletAddress || fixedIntentsAccountType) {
-      return fixedIntentsAccountType;
+    if (!walletAddress) {
+      return;
     }
 
     return getIntentsAccountTypeFromAddress(walletAddress);
-  }, [fixedIntentsAccountType, walletAddress]);
+  }, [walletAddress]);
 
   return { intentsAccountType };
 };
