@@ -1,10 +1,10 @@
-**AURORA SWAP WIDGET-  INTEGRATOR TERMS AND CONDITIONS**
+# Terms and Conditions
 
 Last updated: January 2026
 
 **Effective Date:** These Terms and Conditions (the **“Terms”**) are effective as of (i) the date on which you electronically accept these Terms, or (ii) the first date on which you access or use any Integration Solution.
 
-BY ACCESSING THE WIDGET CONFIGURATOR, ACCEPTING THESE TERMS, RECEIVING AN API KEY, GENERATING AN EMBED CODE, OR INTEGRATING THE AURORA SWAP WIDGET INTO ANY APPLICATION OR WEBSITE, YOU AGREE TO BE LEGALLY BOUND BY THESE TERMS. 
+BY ACCESSING THE WIDGET CONFIGURATOR, ACCEPTING THESE TERMS, RECEIVING AN API KEY, GENERATING AN EMBED CODE, OR INTEGRATING THE AURORA SWAP WIDGET INTO ANY APPLICATION OR WEBSITE, YOU AGREE TO BE LEGALLY BOUND BY THESE TERMS.
 
 IF YOU DO NOT AGREE, YOU ARE NOT AUTHORIZED TO ACCESS OR USE ANY OF OUR INTEGRATION SOLUTIONS AND SHOULD NOT USE OUR INTEGRATION SOLUTIONS.
 
@@ -12,37 +12,37 @@ IF YOU DO NOT AGREE, YOU ARE NOT AUTHORIZED TO ACCESS OR USE ANY OF OUR INTEGRAT
 
 This Agreement is entered into between **Aurora Labs Limited** ("**Aurora**", “**we**”, “**us**”) and the Integrator ("**Integrator**", “**you**”). These Terms govern your access to and use of the Aurora Swap Widget, the Widget Configurator, related APIs and SDKs, and other tooling (collectively, the **“Integration Solutions”**) enabling interaction with the NEAR Intents Protocol.
 
-2. **DEFINITIONS**
+1. **DEFINITIONS**
 
 Unless the context requires otherwise, capitalised terms have the meanings set out below:
 
 1. **“API” \-** the application programming interface (including any SDKs, keys and documentation) that we make available for the purpose of integrating the Integration Solution functionalities into Your Platform.
 
-   2. **“API Integration**” \- an integration effected using the API.
+   1. **“API Integration**” \- an integration effected using the API.
 
-   3. **“Confidential Information” \-** any non-public information, in any form, disclosed by one party (“**Discloser**”) to the other (“**Recipient**”) that is designated confidential or that a reasonable person would understand to be confidential, including the content of these Terms, non public technical information, business plans, financial data and End-User data.
+   2. **“Confidential Information” \-** any non-public information, in any form, disclosed by one party (“**Discloser**”) to the other (“**Recipient**”) that is designated confidential or that a reasonable person would understand to be confidential, including the content of these Terms, non public technical information, business plans, financial data and End-User data.
 
-   4. **Configurator:** The web-based tool provided by Aurora to customize the Widget's appearance and generate implementation code.
+   3. **Configurator:** The web-based tool provided by Aurora to customize the Widget's appearance and generate implementation code.
 
-   5. **“End User**” \- a person that accesses the Underlying Technology functionalities via the Aurora Swap Widget integrated into Your Platform.
+   4. **“End User**” \- a person that accesses the Underlying Technology functionalities via the Aurora Swap Widget integrated into Your Platform.
 
-   6. **“Infrastructure Fee"** \- the fee that Aurora retains to cover operational and infrastructure costs. This fee is automaticaly deducted from the Partner Fee pool and applied uniformly across all Integrators (subject to public volume tiers). The Integrator is responsible for understanding and accepting this fee structure. 
+   5. **“Infrastructure Fee"** \- the fee that Aurora retains to cover operational and infrastructure costs. This fee is automaticaly deducted from the Partner Fee pool and applied uniformly across all Integrators (subject to public volume tiers). The Integrator is responsible for understanding and accepting this fee structure.
 
-   7. **Near Intents Protocol** \- means the decentralized universal settlement protocol using JSON-structured requests processed by competing and compatible solvers to execute cross-chain and off-chain interactions and transactions leveraging one or more component(s) of the NEAR technology stack, enabling AI-driven automation and seamless actions (including asset transfers) across multiple blockchains, known as “NEAR Intents”, further details of which can be found at [https://docs.near-intents.org/near-intents](https://docs.near-intents.org/near-intents); 
+   6. **Near Intents Protocol** \- means the decentralized universal settlement protocol using JSON-structured requests processed by competing and compatible solvers to execute cross-chain and off-chain interactions and transactions leveraging one or more component(s) of the NEAR technology stack, enabling AI-driven automation and seamless actions (including asset transfers) across multiple blockchains, known as “NEAR Intents”, further details of which can be found at [https://docs.near-intents.org/near-intents](https://docs.near-intents.org/near-intents);
 
-   8. **“Partner Fee”** – The gross fee amount designated and configured solely by the Integrator via the Configurator to be applied to a transaction. For the avoidance of doubt, the Integrator acknowledges that they have sole discretion over the setting of this fee, subject to any technical floors or caps set forth in the Fee Policy Schedule.
+   7. **“Partner Fee”** – The gross fee amount designated and configured solely by the Integrator via the Configurator to be applied to a transaction. For the avoidance of doubt, the Integrator acknowledges that they have sole discretion over the setting of this fee, subject to any technical floors or caps set forth in the Fee Policy Schedule.
 
-   9. **“Net Partner Fee”** – The residual portion of the Partner Fee actually collected and settled in respect of a Qualified Transaction, calculated as:
+   8. **“Net Partner Fee”** – The residual portion of the Partner Fee actually collected and settled in respect of a Qualified Transaction, calculated as:
 
-   10. *Net Partner Fee \= Partner Fee−Infrastructure Fee*
+   9. *Net Partner Fee \= Partner Fee−Infrastructure Fee*
 
-   11. The Net Partner Fee represents the final amount due to the Integrator, and the Platform shall have no obligation to remit any portion of the Infrastructure Fee.
+   10. The Net Partner Fee represents the final amount due to the Integrator, and the Platform shall have no obligation to remit any portion of the Infrastructure Fee.
 
-   12. **"API Key"** \- The unique, non-transferable alphanumeric identifier assigned to the Integrator upon successful registration and email authentication via the Widget Configurator. The Integrator is solely responsible for the security of its API Key. Any transaction processed using the Integrator's API Key shall be deemed to have been authorized by the Integrator, and the Platform shall have no liability for an unauthorized access resulting from the compromise of said Key.
+   11. **"API Key"** \- The unique, non-transferable alphanumeric identifier assigned to the Integrator upon successful registration and email authentication via the Widget Configurator. The Integrator is solely responsible for the security of its API Key. Any transaction processed using the Integrator's API Key shall be deemed to have been authorized by the Integrator, and the Platform shall have no liability for an unauthorized access resulting from the compromise of said Key.
 
-   13. **Sanctions Laws”** means any economic, financial, or trade sanctions, embargoes, restrictive measures, or similar laws or regulations administered, enacted, or enforced by any relevant governmental authority, including, without limitation, the United Nations Security Council, the United States government (including the U.S. Department of the Treasury’s Office of Foreign Assets Control (OFAC)), the European Union, His Majesty’s Treasury of the United Kingdom, and any other applicable sanctions authority.
+   12. **Sanctions Laws”** means any economic, financial, or trade sanctions, embargoes, restrictive measures, or similar laws or regulations administered, enacted, or enforced by any relevant governmental authority, including, without limitation, the United Nations Security Council, the United States government (including the U.S. Department of the Treasury’s Office of Foreign Assets Control (OFAC)), the European Union, His Majesty’s Treasury of the United Kingdom, and any other applicable sanctions authority.
 
-   14. “**Qualified Transaction**” \- means a transaction that:
+   13. “**Qualified Transaction**” \- means a transaction that:
 
        (a) originates from Your Platform;
 
@@ -54,25 +54,25 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        For purposes of fee calculations:
 
-* If a Qualified Transaction is blocked by a Third Party Service KYT screening before settlement, no fee is collected by You, but the transaction may be re-attempted.  
-* If a Qualified Transaction is settled but later identified as violating Sanctions Laws, you shall refund collected fees within thirty (30) days.  
+* If a Qualified Transaction is blocked by a Third Party Service KYT screening before settlement, no fee is collected by You, but the transaction may be re-attempted.
+* If a Qualified Transaction is settled but later identified as violating Sanctions Laws, you shall refund collected fees within thirty (30) days.
 * A transaction shall not be deemed a Qualified Transaction if it is subsequently determined to have violated Sanctions Laws or AML regulations.
 
-  15. “**Term**” \- the period commencing on the Effective Date and continuing until terminated in accordance with Section 15\.
+  1. “**Term**” \- the period commencing on the Effective Date and continuing until terminated in accordance with Section 15\.
 
-  16. “**ETH**” \- the native cryptocurrency of the Ethereum blockchain.
+  2. “**ETH**” \- the native cryptocurrency of the Ethereum blockchain.
 
-  17. “**Near**” \- the native cryptocurrency in Near blockchain.
+  3. “**Near**” \- the native cryptocurrency in Near blockchain.
 
-  18. **Widget:** The front-end React component or iframe provided by Aurora to enable  Integrator to permit its End-Users to interact with the NEAR Intents Protocol.
+  4. **Widget:** The front-end React component or iframe provided by Aurora to enable  Integrator to permit its End-Users to interact with the NEAR Intents Protocol.
 
-  19. **Widget Configurator:** the web-based tool used to customize the Widget and generate integration code, including Fee Parameters.
+  5. **Widget Configurator:** the web-based tool used to customize the Widget and generate integration code, including Fee Parameters.
 
-  20. “**Widget Integration**” \- an integration effected using the Widget.
+  6. “**Widget Integration**” \- an integration effected using the Widget.
 
-  21. “**Your Platform**” \- means any digital interface where you have configured the Widget using your API Key. If you permit third parties to access the Widget on your platform, you remain fully responsible for their compliance with these Terms.
+  7. “**Your Platform**” \- means any digital interface where you have configured the Widget using your API Key. If you permit third parties to access the Widget on your platform, you remain fully responsible for their compliance with these Terms.
 
-3. **NATURE OF THE SERVICES**
+1. **NATURE OF THE SERVICES**
 
    1. Purely Technical Role: Aurora provides software and technical infrastructure only. Aurora’s role is strictly limited to:
 
@@ -120,9 +120,9 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
          3. Repeated breach of these Terms (after written notice and 5-day cure period);
 
-         4. Emergency security incident requiring immediate action, except in emergency circumstances under which Aurora shall: (1) Provide written notice specifying the violation (2) Allow a 5-day cure period (3) Offer a hearing/explanation opportunity (4) Explain the specific bases for revocation; 
+         4. Emergency security incident requiring immediate action, except in emergency circumstances under which Aurora shall: (1) Provide written notice specifying the violation (2) Allow a 5-day cure period (3) Offer a hearing/explanation opportunity (4) Explain the specific bases for revocation;
 
-         5. Emergency revocations (immediate, without notice) may occur only when: (1) Aurora reasonably believes imminent harm would result from delay (2) Aurora shall provide notice within 24 hours of emergency action (3) Aurora shall provide a hearing opportunity within 7 days 
+         5. Emergency revocations (immediate, without notice) may occur only when: (1) Aurora reasonably believes imminent harm would result from delay (2) Aurora shall provide notice within 24 hours of emergency action (3) Aurora shall provide a hearing opportunity within 7 days
 
          6. Integrators may appeal any revocation by email.
 
@@ -132,15 +132,15 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
    10. Protocol Access. Aurora has obtained the necessary rights and permissions to enable Integrators and its End Users to interact with the NEAR Intents Protocol through the Integration Solutions. Such access is provided as part of the software license granted herein. Aurora does not charge separately for protocol access, and the Infrastructure Fee relates solely to Aurora's software and services, not to protocol usage rights.
 
-4. **GRANT OF LICENSE** 
+2. **GRANT OF LICENSE**
 
-   1. Aurora Swap Widget, the Widget Configurator, related APIs and SDKs are made available under a Business Source License (“**BSL**”), as specified in the applicable license file or documentation. 
+   1. Aurora Swap Widget, the Widget Configurator, related APIs and SDKs are made available under a Business Source License (“**BSL**”), as specified in the applicable license file or documentation.
 
    2. Under the BSL, Aurora grants the Integrator a limited, non-exclusive, non-transferable, revocable license to use the Integration Solutions solely for the purposes permitted under these Terms.
 
    3. BSL Terms: Use of the Widget is also subject to the Business Source License attached as Exhibit A. In the event of conflict between these Terms and the BSL, the more restrictive provision shall apply. Integrators have 5 days to review the BSL before accepting these Terms.
 
-   4. Eligibility: You must satisfy any eligibility criteria published in the documentation and comply with these Terms at all times. 
+   4. Eligibility: You must satisfy any eligibility criteria published in the documentation and comply with these Terms at all times.
 
    5. Non-exclusive appointment: Subject to this Section, we grant you and you accept a non-exclusive, worldwide right to use the Integration Solutions during the Term solely for the purpose of making the Integration Solutions functionalities available to End Users via Your Platform. Nothing in these Terms restricts us from authorising others to do the same, or from offering services.
 
@@ -162,7 +162,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
       4. use the Integration Solutions to build a competing product or service;
 
-      5. and shall implement technology to prevent: (a) Use of the Widget by any person subject to Sanctions Law (b) Transfer of assets to addresses in Sanctions Law jurisdictions (c) Facilitation of transactions for entities in Sanctions Law countries (Iran, North Korea, Syria, Crimea, and others) 
+      5. and shall implement technology to prevent: (a) Use of the Widget by any person subject to Sanctions Law (b) Transfer of assets to addresses in Sanctions Law jurisdictions (c) Facilitation of transactions for entities in Sanctions Law countries (Iran, North Korea, Syria, Crimea, and others)
 
       6. remove or obscure proprietary notices or license headers;
 
@@ -180,7 +180,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
       13. misrepresent your relationship with us.
 
-5. **YOUR OBLIGATIONS**
+3. **YOUR OBLIGATIONS**
 
    1. Technical implementation. Integrations must strictly follow the then-current documentation;
 
@@ -234,11 +234,11 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
       5. You will not direct End Users to Aurora for matters within your control or responsibility.
 
-6. **OUR OBLIGATIONS**
+4. **OUR OBLIGATIONS**
 
    1. Provision of Integration Solutions. We will make the Integration Solution(s) available on an “AS IS” and “AS AVAILABLE” basis. We make no warranties regarding uninterrupted uptime, absence of bugs or errors, price execution by solvers, suitability for any particular purpose.
 
-7. **ONBOARDING AND ACCESS FLOW**
+5. **ONBOARDING AND ACCESS FLOW**
 
    1. Acceptance of these Terms is the sole prerequisite for access to the Integration Solutions.
 
@@ -250,7 +250,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
       3. does not create a partnership, agency, or joint venture.
 
-8. **FEES**
+6. **FEES**
 
    1. **Partner Fee**
 
@@ -262,7 +262,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
       2. The Infrastructure Fee is automatically deducted by the smart contract from the Partner Fee (specifically, the Net Partner Fee) after a successful swap (Qualified Transaction) is completed. This Infrastructure Fee is not charged directly to the end-user, but from You.
 
-      3. As an Infrastructure Fee, X percent (X%) of your Partner Fee. 
+      3. As an Infrastructure Fee, X percent (X%) of your Partner Fee.
 
       4. Fees under this section are not accumulated or held. Distribution occurs automatically within the same transaction. The Integrator's share is routed directly to the wallet address associated with their API Key.
 
@@ -290,13 +290,13 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
    9. Tax Obligations: All fees are exclusive of Value Added Tax (VAT) or similar indirect taxes. Where VAT applies, it shall be accounted for by the Integrator under the reverse-charge mechanism, where applicable. Integration Solutions may not be available or appropriate for use in your jurisdiction. By accessing or using any of our Integration Solutions, you agree that you are solely and entirely responsible for compliance with all laws and regulations that may apply to you. Specifically, your use of our Integration Solutions may result in various tax consequences, such as income or capital gains tax, value-added tax, goods and services tax, or sales tax in certain jurisdictions.
 
-9. **INTELLECTUAL PROPERTY**
+7. **INTELLECTUAL PROPERTY**
 
    1. Ownership: Integrator acknowledges that Aurora owns all rights, titles, and interests in the Widget UI/UX and the Configurator. Third Parties own the NEAR Intents Protocol, 1Click Swap Service, and related trademarks.
 
    2. **No Transfer:** Nothing in these Terms shall be construed as a transfer of any Intellectual Property rights from Aurora or third- Parties to the Integrator.
 
-10. **COMPLIANCE AND SECURITY**
+8. **COMPLIANCE AND SECURITY**
 
     1. Transaction Screening: The underlying infrastructure includes automated KYT (Know-Your-Transaction) screening. Aurora is not liable for any transaction that is blocked, delayed, or cancelled by the Underlying Technology.
 
@@ -304,7 +304,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
     3. Hosting and Data: Integrator is responsible for the secure hosting of their own site. Aurora does not collect or store end-user private keys or personal data through the Widget.
 
-11. **CONFIDENTIALITY**
+9. **CONFIDENTIALITY**
 
     1. Each party (the “**Recipient**”) shall:
 
@@ -328,13 +328,13 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
     7. Duration and Survival. Confidentiality obligations shall survive termination of these Terms for five (5) years, or indefinitely with respect to trade secrets. Upon termination, each party shall promptly return or securely destroy the other party’s Confidential Information, subject to lawful retention requirements.
 
-12. **SECURITY AND TRANSPARENCY**
+10. **SECURITY AND TRANSPARENCY**
 
     1. Security Controls. The Integrator shall implement and maintain industry-standard technical and organisational security measures appropriate to the nature of its Platform and the Integration Solutions.
 
     2. Incident Notification. The Integrator shall notify Aurora without undue delay and in any event within forty-eight (48) hours of becoming aware of any actual or suspected security incident that materially affects the Integration Solutions, the API Key, or fee attribution mechanisms.
 
-13. **DISCLAIMERS AND LIMITATION OF LIABILITY**
+11. **DISCLAIMERS AND LIMITATION OF LIABILITY**
 
     1. "As-Is" Basis: The Widget and Configurator are provided as "as-is" and "as-available." Aurora makes no warranties regarding the uptime of the Underlying Technology or the price execution provided by solvers.
 
@@ -352,9 +352,9 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        4. Immediate settlement.
 
-    5. Cap on Liability: To the maximum extent permitted by law, Aurora’s total liability for any claim arising out of these Terms shall not exceed the fees paid in prior 12 months. 
+    5. Cap on Liability: To the maximum extent permitted by law, Aurora’s total liability for any claim arising out of these Terms shall not exceed the fees paid in prior 12 months.
 
-14. **INDEMNIFICATION**
+12. **INDEMNIFICATION**
 
     1. The Integrator shall indemnify, defend, and hold harmless Aurora, its affiliates, directors, officers, employees, and contractors from and against any losses, damages, liabilities, costs, and expenses (including reasonable legal fees) arising out of or relating to:
 
@@ -364,7 +364,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        3. any claim by an End User or third party relating to the Integrator’s services, disclosures, or fees;
 
-       4. the Integrator’s violation of applicable law; 
+       4. the Integrator’s violation of applicable law;
 
        5. The Integrator's failure to comply with sanctions or compliance obligations;
 
@@ -372,7 +372,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        7. the Integrator’s negligence, wilful misconduct, or misrepresentation.
 
-15. **TERMINATION**
+13. **TERMINATION**
 
     1. By Aurora: Aurora may terminate this Agreement and revoke the Widget license at any time for any reason, with thirty (30) days' notice, or immediately for breach of any clause of this Agreement. For avoidance of doubts, Aurora will use commercially reasonable efforts to provide advance notice except where immediate termination is required to protect system integrity, security, or comply with law.
 
@@ -386,7 +386,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        4. Sections intended to survive termination shall remain in effect, including Confidentiality, IP, Disclaimers, Indemnification, and Limitation of Liability.
 
-16. **GOVERNING LAW AND DISPUTE RESOLUTION**
+14. **GOVERNING LAW AND DISPUTE RESOLUTION**
 
     1. These Terms and any non-contractual obligations arising out of or in connection with them shall be governed by and construed in accordance with the laws of Gibraltar, without regard to conflict-of-laws principles.
 
@@ -396,7 +396,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
     4. Waiver of Class Actions and Jury Trial. To the fullest extent permitted by law, each party irrevocably waives any right to a jury trial or to participate in any class, collective, or representative proceeding.
 
-17. **BLOCKCHAIN TRANSPARENCY**
+15. **BLOCKCHAIN TRANSPARENCY**
 
     1. The Integrator acknowledges that:
 
@@ -408,7 +408,7 @@ Unless the context requires otherwise, capitalised terms have the meanings set o
 
        4. Integrators may wish to use privacy measures (e.g., multi-sig wallets) at their own discretion.
 
-18. **MISCELLANEOUS**
+16. **MISCELLANEOUS**
 
     1. Entire Agreement. These Terms constitute the entire agreement between the parties regarding their subject matter.
 
