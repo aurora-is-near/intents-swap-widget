@@ -8,6 +8,7 @@ import {
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
 import { Quote } from '../types';
+import { useIntentsAccountType } from './useIntentsAccountType';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -46,9 +47,9 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
+  const { intentsAccountType } = useIntentsAccountType();
   const {
     walletSupportedChains,
-    intentsAccountType,
     appName,
     appKey,
     appFees,

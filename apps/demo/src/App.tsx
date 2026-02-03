@@ -49,7 +49,6 @@ export const App = () => {
           config={{
             appName: 'Demo App',
             connectedWallets: { default: walletAddress },
-            intentsAccountType: 'evm',
             hideTokenInputHeadings: true,
             enableAccountAbstraction: showAppBalance,
             providers,

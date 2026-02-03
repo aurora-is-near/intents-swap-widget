@@ -32,7 +32,6 @@ export type WidgetConfig = {
   providers?: Providers;
 
   // Connected wallet
-  intentsAccountType?: IntentsAccountType;
   walletSupportedChains: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
   onWalletSignout?: (walletType?: IntentsAccountType) => void;
