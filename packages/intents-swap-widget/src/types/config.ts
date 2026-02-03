@@ -20,6 +20,7 @@ export type WidgetConfig = {
   // Application metadata
   appName: string;
   appIcon?: string;
+  appKey?: string;
 
   // Account abstraction
   enableAccountAbstraction?: boolean;
