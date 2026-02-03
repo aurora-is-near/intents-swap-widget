@@ -12,6 +12,7 @@ import {
   DEFAULT_ERROR_COLOR_LIGHT,
   DEFAULT_SUCCESS_COLOR_LIGHT,
   DEFAULT_WARNING_COLOR_LIGHT,
+  PLACEHOLDER_APP_KEY,
 } from '../constants';
 
 type CreatorState = {
@@ -60,7 +61,7 @@ const initialState: CreatorState = {
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
-  appKey: 'your-generated-app-key',
+  appKey: PLACEHOLDER_APP_KEY,
   // Design
   defaultMode: 'dark',
   stylePreset: 'clean',
