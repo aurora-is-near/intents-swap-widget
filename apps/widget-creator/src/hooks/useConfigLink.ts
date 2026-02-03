@@ -3,7 +3,9 @@ import {
   Chains,
   DefaultToken,
 } from '@aurora-is-near/intents-swap-widget';
+
 import { useCreator } from './useCreatorConfig';
+import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 
 const parseJsonParam = (
   params: URLSearchParams,
@@ -98,6 +100,15 @@ export function useConfigLink() {
         'showContainerWrapper',
         state.showContainerWrapper.toString(),
       );
+    }
+
+    // App key
+    // Do not export default or placeholder since it doesn't make sense
+    if (
+      state.appKey &&
+      ![PLACEHOLDER_APP_KEY, DEFAULT_APP_KEY].includes(state.appKey)
+    ) {
+      params.append('appKey', state.appKey);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -269,6 +280,13 @@ export function useDecodeConfigLink() {
 
     if (errorColor) {
       dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
+    }
+
+    // App key
+    const appKey = params.get('appKey');
+
+    if (appKey) {
+      dispatch({ type: 'SET_APP_KEY', payload: appKey });
     }
   };
 

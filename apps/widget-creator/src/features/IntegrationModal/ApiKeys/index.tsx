@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
 import { Header } from '../components';
@@ -8,6 +9,8 @@ import { ApiKeysNoAuth } from './ApiKeysNoAuth';
 import { ApiKeysSkeleton } from './ApiKeysSkeleton';
 import { CreateApiKey } from './CreateApiKey';
 
+import { DEFAULT_APP_KEY } from '@/constants';
+import { useCreator } from '@/hooks/useCreatorConfig';
 import { useApiKeys, useCreateApiKey } from '@/api/hooks';
 import type { ApiKey } from '@/api/types';
 
@@ -27,10 +30,30 @@ type Props = {
 
 export const ApiKeys = ({ onClickFees }: Props) => {
   const { authenticated } = usePrivy();
+  const { dispatch } = useCreator();
 
   const { status, data: apiKeys = [] } = useApiKeys();
-  const { mutate: createApiKey, status: createApiKeyStatus } =
-    useCreateApiKey();
+  const { mutate: createApiKey, ...mutation } = useCreateApiKey();
+
+  const handleKeyRemoved = (appKey: string) => {
+    const newApiKeys = apiKeys.filter(
+      (apiKey) => apiKey.widgetAppKey !== appKey,
+    );
+
+    dispatch({
+      type: 'SET_APP_KEY',
+      payload: newApiKeys[0]?.widgetAppKey ?? DEFAULT_APP_KEY,
+    });
+  };
+
+  useEffect(() => {
+    if (mutation.status === 'success') {
+      dispatch({
+        type: 'SET_APP_KEY',
+        payload: mutation.data.widgetAppKey,
+      });
+    }
+  }, [mutation.status]);
 
   if (!authenticated) {
     return (
@@ -56,7 +79,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
         <ApiKeysHeader />
         <ApiKeysEmpty
           message="Unable to load API keys"
-          isCreatingKey={createApiKeyStatus === 'pending'}
+          isCreatingKey={mutation.status === 'pending'}
           onClickCreate={createApiKey}
         />
       </>
@@ -68,7 +91,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
       <>
         <ApiKeysHeader />
         <ApiKeysEmpty
-          isCreatingKey={createApiKeyStatus === 'pending'}
+          isCreatingKey={mutation.status === 'pending'}
           onClickCreate={createApiKey}
         />
       </>
@@ -84,12 +107,13 @@ export const ApiKeys = ({ onClickFees }: Props) => {
             apiKey={apiKey}
             key={apiKey.widgetAppKey}
             onClickFees={onClickFees}
+            onKeyRemoved={handleKeyRemoved}
           />
         ))}
       </div>
 
       <CreateApiKey
-        isLoading={createApiKeyStatus === 'pending'}
+        isLoading={mutation.status === 'pending'}
         onClick={createApiKey}
       />
     </>

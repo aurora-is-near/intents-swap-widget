@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 import { DeleteW700 as Delete } from '@material-symbols-svg/react-rounded/icons/delete';
 import { EditSquareW700 as Edit } from '@material-symbols-svg/react-rounded/icons/edit-square';
@@ -17,6 +17,7 @@ import type { ApiKey } from '@/api/types';
 type Props = {
   apiKey: ApiKey;
   onClickFees: (apiKey: ApiKey) => void;
+  onKeyRemoved: (apiKey: string) => void;
 };
 
 const formatDate = (dateString: string) => {
@@ -29,7 +30,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export const ApiKeyCard = ({ apiKey, onClickFees }: Props) => {
+export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const { mutate: deleteApiKey, status: deleteApiKeyStatus } = useDeleteApiKey(
@@ -43,6 +44,12 @@ export const ApiKeyCard = ({ apiKey, onClickFees }: Props) => {
   };
 
   const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
+
+  useEffect(() => {
+    if (deleteApiKeyStatus === 'success') {
+      onKeyRemoved(apiKey.widgetAppKey);
+    }
+  }, [deleteApiKeyStatus]);
 
   return (
     <div className="relative flex flex-col gap-csw-xl bg-csw-gray-900 rounded-csw-lg px-csw-2xl py-csw-xl overflow-hidden">
