@@ -43,7 +43,7 @@ export function Header() {
           </span>
           <HeaderButton
             TrailingIcon={ExternalLink}
-            href="https://aurora-labs.gitbook.io/intents-swap-widget"
+            href="https://aurora-labs.gitbook.io/intents-swap-widget/getting-started"
             target="_blank"
             className="flex flex-row items-center bg-csw-gray-900 rounded-csw-md px-csw-lg py-csw-2md hover:bg-csw-gray-800 transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
             Get started guide
