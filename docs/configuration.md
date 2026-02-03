@@ -50,6 +50,10 @@ export default function App() {
 
 The name used to refer to your app when making NEAR Intents transfers.
 
+#### `appKey`
+
+Your widget integration Application Key. Visit [Intents Widget Studio](https://intents.aurora.dev/) to obtain.
+
 ### `appIcon`
 
 URL to your app's icon. Shown in the chain selection dropdown.
