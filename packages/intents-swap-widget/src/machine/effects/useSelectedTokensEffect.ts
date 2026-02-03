@@ -138,7 +138,7 @@ export const useSelectedTokensEffect = ({
 
         if (target === 'same-asset') {
           if (sourceToken.token?.isIntent) {
-            if (!intentsAccountType) {
+            if (!intentsAccountType && ctx.walletAddress) {
               throw new Error(
                 'Intents account type is required to select same-asset target token',
               );
@@ -148,7 +148,7 @@ export const useSelectedTokensEffect = ({
               (t) =>
                 !t.isIntent &&
                 t.symbol === ctx.sourceToken?.symbol &&
-                t.blockchain === accountChainMap[intentsAccountType],
+                t.blockchain === accountChainMap[intentsAccountType ?? 'evm'],
             );
           } else {
             tkn = tokens.find(
