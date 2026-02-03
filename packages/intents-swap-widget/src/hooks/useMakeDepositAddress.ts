@@ -1,8 +1,8 @@
 import { useMemo, useRef } from 'react';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
+import { useIntentsAccountType } from './useIntentsAccountType';
 import { logger } from '@/logger';
-import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
 import { guardStates } from '@/machine/guards';
 import { bridgeApi, oneClickApi } from '@/network';
@@ -26,7 +26,7 @@ type DepositAddressResponse = {
 
 export const useMakeDepositAddress = () => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType } = useConfig();
+  const { intentsAccountType } = useIntentsAccountType();
   const { isNativeNearDeposit } = useComputedSnapshot();
 
   const intentsAccountId = getIntentsAccountId({
