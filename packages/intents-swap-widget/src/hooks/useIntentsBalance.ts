@@ -3,15 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useTokens } from './useTokens';
 import { useUnsafeSnapshot } from '../machine';
-import { useIntentsAccountType } from './useIntentsAccountType';
 import { logger } from '@/logger';
+import { useConfig } from '@/config';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getIntentsBalances } from '@/utils/intents/getIntentsBalance';
 import { notReachable } from '@/utils/notReachable';
 import type { TokenBalances } from '@/types/token';
 
 export const useIntentsBalance = () => {
-  const { intentsAccountType } = useIntentsAccountType();
+  const { intentsAccountType } = useConfig();
   const {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();

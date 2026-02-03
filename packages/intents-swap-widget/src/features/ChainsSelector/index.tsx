@@ -4,7 +4,7 @@ import { CHAIN_ICONS } from '@/icons';
 import { ChainShortcut } from '@/components/ChainShortcut';
 
 import { cn } from '@/utils/cn';
-import { useChains, useIntentsAccountType } from '@/hooks';
+import { useChains } from '@/hooks';
 import { useConfig } from '@/config';
 import { noop } from '@/utils/noop';
 import { notReachable } from '@/utils/notReachable';
@@ -30,9 +30,13 @@ export const ChainsSelector = ({
   onMsg,
 }: Props) => {
   const chains = useChains(variant);
-  const { intentsAccountType } = useIntentsAccountType();
-  const { appIcon, appName, topChainShortcuts, enableAccountAbstraction } =
-    useConfig();
+  const {
+    appIcon,
+    appName,
+    topChainShortcuts,
+    intentsAccountType,
+    enableAccountAbstraction,
+  } = useConfig();
 
   const topChains =
     topChainShortcuts?.(intentsAccountType) ??

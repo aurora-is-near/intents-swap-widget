@@ -6,7 +6,6 @@ import { isSolanaAddress } from '../../utils/solana/isSolanaAddress';
 import { isEvmAddress } from '../../utils/evm/isEvmAddress';
 import { isNearAddress } from '../../utils/near/isNearAddress';
 import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
-import { useIntentsAccountType } from '../../hooks';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -41,9 +40,12 @@ export const useSelectedTokensEffect = ({
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
   const { defaultSourceToken, defaultTargetToken } = useConfig();
-  const { intentsAccountType } = useIntentsAccountType();
-  const { walletSupportedChains, enableAccountAbstraction, chainsFilter } =
-    useConfig();
+  const {
+    walletSupportedChains,
+    enableAccountAbstraction,
+    chainsFilter,
+    intentsAccountType,
+  } = useConfig();
 
   // Load default source and target tokens if they are not already set and we
   // are not specifying a default via the config.

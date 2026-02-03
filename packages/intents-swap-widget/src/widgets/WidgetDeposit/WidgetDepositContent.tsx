@@ -22,7 +22,6 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
-  useIntentsAccountType,
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
@@ -48,11 +47,11 @@ export const WidgetDepositContent = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
-  const { intentsAccountType } = useIntentsAccountType();
   const {
     chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
+    intentsAccountType,
   } = useConfig();
 
   const { onChangeAmount, onChangeToken } = useTokenInputPair();

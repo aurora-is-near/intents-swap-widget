@@ -21,7 +21,6 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
-  useIntentsAccountType,
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
@@ -48,11 +47,11 @@ export const WidgetWithdrawContent = ({
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
-  const { intentsAccountType } = useIntentsAccountType();
   const {
     chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
+    intentsAccountType,
   } = useConfig();
 
   const {

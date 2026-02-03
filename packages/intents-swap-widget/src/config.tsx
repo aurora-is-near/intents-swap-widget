@@ -36,6 +36,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   appName: 'Unknown',
 
   slippageTolerance: 100, // 1%
+  intentsAccountType: 'evm',
   walletSupportedChains: EVM_CHAINS,
   connectedWallets: {},
 
@@ -59,9 +60,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   },
 };
 
-type WidgetConfigContextType = {
-  config: WidgetConfig;
-};
+type WidgetConfigContextType = { config: WidgetConfig };
 
 const WidgetConfigContext = createContext<WidgetConfigContextType>({
   config: DEFAULT_CONFIG,
