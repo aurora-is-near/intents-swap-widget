@@ -66,7 +66,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
   const { ctx } = useUnsafeSnapshot();
 
   const hasAccountAbstraction =
-    enableAccountAbstraction && isConnected && !!ctx.walletAddress;
+    !!enableAccountAbstraction && isConnected && !!ctx.walletAddress;
 
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
@@ -117,9 +117,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
             <>
               <WidgetTabs
                 activeTab={activeTab}
-                hasAccountAbstraction={
-                  enableAccountAbstraction && isConnected && !!ctx.walletAddress
-                }
+                hasAccountAbstraction={hasAccountAbstraction}
                 onSelect={switchTab}
               />
             </>
