@@ -6,6 +6,7 @@ import { isEvmAddress } from '../utils/evm/isEvmAddress';
 import { isNearAddress } from '../utils/near/isNearAddress';
 import { isSolanaAddress } from '../utils/solana/isSolanaAddress';
 import { useConfig } from '../config';
+import { isTonAddress } from '../utils/ton/isTonAddress';
 
 const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
   if (isSolanaAddress(address)) {
@@ -18,6 +19,10 @@ const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
 
   if (isNearAddress(address)) {
     return ['near'];
+  }
+
+  if (isTonAddress(address)) {
+    return ['ton'];
   }
 
   // Default to EVM chains if unable to determine based on address format.
