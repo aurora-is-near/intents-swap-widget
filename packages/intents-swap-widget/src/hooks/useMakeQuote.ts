@@ -117,13 +117,16 @@ export const useMakeQuote = () => {
       });
     }
 
-    const recipientIntentsAccountId = getIntentsAccountId({
-      addressType: intentsAccountType,
-      walletAddress: isDry
-        ? // address on the target chain should be a dry quote recipient
-          getDryQuoteAddress(ctx.targetToken.blockchain)
-        : (ctx.walletAddress ?? ''),
-    });
+    const recipientIntentsAccountId = isDry
+      ? getIntentsAccountId({
+          addressType: intentsAccountType ?? 'evm',
+          // address on the target chain should be a dry quote recipient
+          walletAddress: getDryQuoteAddress(ctx.targetToken.blockchain),
+        })
+      : getIntentsAccountId({
+          addressType: intentsAccountType,
+          walletAddress: ctx.walletAddress ?? '',
+        });
 
     const isRefundToIntentAccount =
       recipientIntentsAccountId &&
