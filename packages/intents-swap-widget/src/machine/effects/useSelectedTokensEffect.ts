@@ -163,7 +163,7 @@ export const useSelectedTokensEffect = ({
         });
       }
     }
-  }, [ctx, sourceToken, targetToken, isEnabled]);
+  }, [ctx, sourceToken, targetToken, isEnabled, intentsAccountType]);
 
   const setTokenForIntentsAccountType = (
     accountType: IntentsAccountType,
