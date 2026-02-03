@@ -175,7 +175,8 @@ export function App() {
               );
 
             case 'has-api-keys': {
-              const apiKeySelected = state.appKey ?? apiKeysState.apiKeys[0];
+              const apiKeySelected =
+                state.appKey ?? apiKeysState.apiKeys[0].widgetAppKey;
 
               return (
                 <div className="flex flex-col gap-csw-md">
