@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import type { AxiosResponse } from 'axios';
 
-import { useConfig } from '@/config';
+import { useIntentsAccountType } from '../useIntentsAccountType';
 import { bridgeApi } from '@/network';
 import { WidgetError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine';
@@ -100,7 +100,7 @@ const oneClickBridgeStatusMap: Record<
 
 export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
   const { ctx } = useUnsafeSnapshot();
-  const { intentsAccountType } = useConfig();
+  const { intentsAccountType } = useIntentsAccountType();
 
   const [initiatedAt, setInitiatedAt] = useState<string | null>(null);
 

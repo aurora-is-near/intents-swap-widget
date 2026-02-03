@@ -7,8 +7,8 @@ import {
 } from '../utils/intents/walletCompatibilityVerification';
 import { Providers } from '../types';
 import { logger } from '../logger';
+import { useIntentsAccountType } from './useIntentsAccountType';
 import { TransferError } from '@/errors';
-import { useConfig } from '@/config';
 import { notReachable } from '@/utils/notReachable';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { localStorageTyped } from '@/utils/localstorage';
@@ -33,7 +33,7 @@ function assertDefined<T>(
 
 export function useCompatibilityCheck({ providers, walletAddress }: Props) {
   const [isSigning, setIsSigning] = useState(false);
-  const { intentsAccountType } = useConfig();
+  const { intentsAccountType } = useIntentsAccountType();
   const intentsAccountId = getIntentsAccountId({
     walletAddress,
     addressType: intentsAccountType,
