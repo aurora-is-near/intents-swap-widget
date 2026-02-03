@@ -189,9 +189,22 @@ const useGetErrorButton = (ctx: Context) => {
   }
 };
 
+const SubmitButtonError = () => {
+  const { ctx } = useUnsafeSnapshot();
+
+  return useGetErrorButton(ctx) ?? null;
+};
+
 const ConnectWalletButton = () => {
   const { t } = useTypedTranslation();
+  const { ctx } = useUnsafeSnapshot();
   const { walletSignIn } = useWalletConnection();
+
+  const SubmitErrorButton = useGetErrorButton(ctx);
+
+  if (SubmitErrorButton) {
+    return SubmitErrorButton;
+  }
 
   return (
     <Button
@@ -201,12 +214,6 @@ const ConnectWalletButton = () => {
       {t('submit.error.connectWallet', 'Connect wallet')}
     </Button>
   );
-};
-
-const SubmitButtonError = () => {
-  const { ctx } = useUnsafeSnapshot();
-
-  return useGetErrorButton(ctx) ?? null;
 };
 
 const SubmitButtonBase = (props: Props) => {

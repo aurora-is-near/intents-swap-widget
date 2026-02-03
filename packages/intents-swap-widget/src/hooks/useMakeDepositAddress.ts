@@ -64,7 +64,6 @@ export const useMakeDepositAddress = () => {
 
   const make = async (): Promise<Quote | undefined> => {
     const guardCurrentState = guardStates(ctx, [
-      'input_valid_dry',
       'input_valid_external',
       'input_valid_internal',
       'quote_success_internal',
