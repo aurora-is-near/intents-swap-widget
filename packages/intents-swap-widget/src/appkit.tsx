@@ -2,24 +2,6 @@
 
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  createAppKit,
-  useAppKitAccount,
-  useAppKitProvider,
-  useDisconnect,
-} from '@reown/appkit/react';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { SolanaAdapter } from '@reown/appkit-adapter-solana';
-import {
-  arbitrum,
-  avalanche,
-  base,
-  bsc,
-  mainnet,
-  optimism,
-  polygon,
-  solana,
-} from '@reown/appkit/networks';
-import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
@@ -37,42 +19,38 @@ import { useTheme } from './hooks/useTheme';
 const findFavicon = (): string | null =>
   document.querySelector<HTMLLinkElement>('link[rel*="icon"]')?.href ?? null;
 
-export const initAppKit = ({
-  appName,
-  theme,
-}: {
-  appName: string;
-  theme?: Theme;
-}) => {
-  const projectId = '76f61d4322c80976d1a24a1263a9d082';
+type AppKitBridgeProps = {
+  children: ReactNode;
+};
 
-  const evmNetworks = [
-    mainnet,
-    arbitrum,
-    polygon,
-    bsc,
-    optimism,
-    avalanche,
-    base,
-  ];
+// Loads the optional @reown dependencies and returns the AppKitBridge component.
+// We use dynamic imports to ensure that consumer bundlers do not try to resolve
+// these optional packages at build time.
+export async function createAppKitBridge(): Promise<{
+  AppKitBridge: (props: AppKitBridgeProps) => ReactNode;
+}> {
+  const [
+    { createAppKit, useAppKitAccount, useAppKitProvider, useDisconnect },
+    { WagmiAdapter },
+    { SolanaAdapter },
+    { mainnet, arbitrum, polygon, bsc, optimism, avalanche, base, solana },
+  ] = await Promise.all([
+    import('@reown/appkit/react'),
+    import('@reown/appkit-adapter-wagmi'),
+    import('@reown/appkit-adapter-solana'),
+    import('@reown/appkit/networks'),
+  ]);
 
-  const wagmiAdapter = new WagmiAdapter({
-    networks: evmNetworks,
-    projectId,
-    ssr: false,
-  });
+  const initAppKit = ({
+    appName,
+    theme,
+  }: {
+    appName: string;
+    theme?: Theme;
+  }) => {
+    const projectId = '76f61d4322c80976d1a24a1263a9d082';
 
-  const solanaAdapter = new SolanaAdapter({
-    wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-  });
-
-  const websiteFavicon = findFavicon();
-
-  return createAppKit({
-    adapters: [wagmiAdapter, solanaAdapter],
-    // Networks must be inlined here (not spread from evmNetworks array)
-    // because TypeScript requires a tuple type for AppKit networks
-    networks: [
+    const evmNetworks = [
       mainnet,
       arbitrum,
       polygon,
@@ -80,66 +58,91 @@ export const initAppKit = ({
       optimism,
       avalanche,
       base,
-      solana,
-    ],
-    projectId,
-    metadata: {
-      name: appName,
-      description: 'Cross-chain swap widget powered by Intents',
-      url: window.location.origin,
-      icons: websiteFavicon ? [websiteFavicon] : [],
-    },
-    features: {
-      analytics: false,
-      email: false,
-      socials: false,
-    },
-    themeMode: theme?.colorScheme,
-  });
-};
+    ];
 
-type AppKitBridgeProps = {
-  children: ReactNode;
-};
+    const wagmiAdapter = new WagmiAdapter({
+      networks: evmNetworks,
+      projectId,
+      ssr: false,
+    });
 
-export const AppKitBridge = ({ children }: AppKitBridgeProps) => {
-  const { address } = useAppKitAccount();
-  const { disconnect } = useDisconnect();
-  const wasEnabled = useRef(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [appKit, setAppKit] = useState<AppKit | null>(null);
-  const config = useConfig();
-  const theme = useTheme();
+    const solanaAdapter = new SolanaAdapter({
+      wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    });
 
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana');
+    const websiteFavicon = findFavicon();
 
-  const { walletProvider: evmProvider } =
-    useAppKitProvider<Eip1193Provider>('eip155');
+    return createAppKit({
+      adapters: [wagmiAdapter, solanaAdapter],
+      // Networks must be inlined here (not spread from evmNetworks array)
+      // because TypeScript requires a tuple type for AppKit networks
+      networks: [
+        mainnet,
+        arbitrum,
+        polygon,
+        bsc,
+        optimism,
+        avalanche,
+        base,
+        solana,
+      ],
+      projectId,
+      metadata: {
+        name: appName,
+        description: 'Cross-chain swap widget powered by Intents',
+        url: window.location.origin,
+        icons: websiteFavicon ? [websiteFavicon] : [],
+      },
+      features: {
+        analytics: false,
+        email: false,
+        socials: false,
+      },
+      themeMode: theme?.colorScheme,
+    });
+  };
 
-  useEffect(() => {
-    if (!wasEnabled.current) {
-      setAppKit(initAppKit({ appName: config.appName, theme }));
+  const AppKitBridge = ({ children }: AppKitBridgeProps) => {
+    const { address } = useAppKitAccount();
+    const { disconnect } = useDisconnect();
+    const wasEnabled = useRef(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [appKit, setAppKit] = useState<AppKit | null>(null);
+    const config = useConfig();
+    const theme = useTheme();
 
-      wasEnabled.current = true;
-    }
+    const { walletProvider: solanaProvider } =
+      useAppKitProvider<SolanaProvider>('solana');
 
-    setIsLoading(false);
-  }, [config, theme]);
+    const { walletProvider: evmProvider } =
+      useAppKitProvider<Eip1193Provider>('eip155');
 
-  const value = useMemo(
-    (): AppKitContextType => ({
-      isLoading,
-      appKit,
-      address,
-      disconnect,
-      evmProvider,
-      solanaProvider,
-    }),
-    [appKit, address, disconnect, evmProvider, solanaProvider, isLoading],
-  );
+    useEffect(() => {
+      if (!wasEnabled.current) {
+        setAppKit(initAppKit({ appName: config.appName, theme }));
 
-  return (
-    <AppKitContext.Provider value={value}>{children}</AppKitContext.Provider>
-  );
-};
+        wasEnabled.current = true;
+      }
+
+      setIsLoading(false);
+    }, [config, theme]);
+
+    const value = useMemo(
+      (): AppKitContextType => ({
+        isLoading,
+        appKit,
+        address,
+        disconnect,
+        evmProvider,
+        solanaProvider,
+      }),
+      [appKit, address, disconnect, evmProvider, solanaProvider, isLoading],
+    );
+
+    return (
+      <AppKitContext.Provider value={value}>{children}</AppKitContext.Provider>
+    );
+  };
+
+  return { AppKitBridge };
+}

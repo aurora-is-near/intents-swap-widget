@@ -82,8 +82,10 @@ export const AppKitProvider = ({ children }: AppKitProviderProps) => {
     wasEnabled.current = true;
 
     // Dynamically import AppKit and its dependencies only when standalone mode
-    // is enabled
+    // is enabled. The factory loads @reown packages via dynamic import() so
+    // consumer bundlers skip resolution when those packages are not installed.
     import('../appkit')
+      .then(({ createAppKitBridge }) => createAppKitBridge())
       .then(({ AppKitBridge }) => {
         setBridge(() => AppKitBridge);
       })
