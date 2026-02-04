@@ -3,10 +3,11 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { parse } from './parse';
 import { createLoader } from './load';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { isAlchemySupportedChain } from './types';
 import type { AlchemyResponse } from './types';
-import { WalletAddresses } from '../../types';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
+import type { WalletAddresses } from '../../types';
+
 import { fireEvent } from '@/machine';
 import { useTokens } from '@/hooks/useTokens';
 import { guardStates } from '@/machine/guards';
@@ -40,7 +41,7 @@ export const useAlchemyBalanceIntegration = ({
   const query = useInfiniteQuery<AlchemyResponse>({
     initialPageParam: null,
     enabled: !!isEnabled && !!alchemyApiKey,
-    queryKey: ['walletTokensBalance', connectedWallets],
+    queryKey: ['walletTokensBalance', connectedWallets, supportedChains],
     queryFn: async ({ pageParam }) => {
       return createLoader({ alchemyApiKey })({
         pageParam: pageParam ? `${pageParam as string}` : null,
