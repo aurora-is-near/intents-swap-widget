@@ -1,6 +1,11 @@
+const ACCOUNT_ID_REGEX =
+  /^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$/;
+
 /**
- * Check if an address is a NEAR named account (e.g., "alice.near", "app.factory.near").
- * Does NOT include implicit accounts (64-char hex).
+ * Validates the Account ID according to the NEAR protocol Account ID rules.
+ *
+ * @see https://nomicon.io/DataStructures/Account#account-id-rules
+ * @see https://github.com/near/near-sdk-js/blob/dc6f07bd30064da96efb7f90a6ecd8c4d9cc9b06/lib/utils.js#L107-L117
  */
 export const isNearNamedAccount = (
   address: string | undefined | null,
@@ -10,7 +15,8 @@ export const isNearNamedAccount = (
   }
 
   return (
-    /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.near$/i.test(address) ||
-    /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.testnet$/i.test(address)
+    address.length >= 2 &&
+    address.length <= 64 &&
+    ACCOUNT_ID_REGEX.test(address)
   );
 };
