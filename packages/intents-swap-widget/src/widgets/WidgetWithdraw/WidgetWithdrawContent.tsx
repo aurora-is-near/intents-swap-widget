@@ -271,18 +271,7 @@ export const WidgetWithdrawContent = ({
 
           {!!ctx.walletAddress &&
             ctx.targetToken &&
-            !ctx.targetToken.isIntent && (
-              <SendAddress
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_change_send_address':
-                      break;
-                    default:
-                      notReachable(msg.type, { throwError: false });
-                  }
-                }}
-              />
-            )}
+            !ctx.targetToken.isIntent && <SendAddress />}
 
           {!isDirectNearTokenWithdrawal && <SwapQuote />}
 
