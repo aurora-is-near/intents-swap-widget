@@ -266,7 +266,7 @@ export const WidgetSwapContent = ({
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
 
-          {!isDirectNearTokenWithdrawal && <SwapQuote />}
+          {!isDirectNearTokenWithdrawal && ctx.sourceToken && <SwapQuote />}
 
           <SubmitButton
             makeTransfer={makeTransfer}
