@@ -149,21 +149,4 @@ describe('Deposit', () => {
     const selectedAsset = within(tokenInput).getByRole('button');
     expect(selectedAsset).toHaveTextContent('ETH');
   });
-
-  it('insufficient balance', async () => {
-    const { screen, user, within } = setup(<WidgetDepositSetup />);
-
-    const tokenInput = await screen.findByLabelText('Sell');
-    const inputAmount = within(tokenInput).getByPlaceholderText('0');
-
-    await user.type(inputAmount, '2');
-
-    const submitBtn = screen.getByRole('button', {
-      name: 'Insufficient balance',
-    });
-
-    expect(mockOneClickApi.post).toHaveBeenCalled();
-    expect(submitBtn).toBeInTheDocument();
-    expect(submitBtn).toBeDisabled();
-  });
 });

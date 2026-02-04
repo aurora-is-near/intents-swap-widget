@@ -46,7 +46,7 @@ export const ChainsSelector = ({
         onClick={() => onMsg({ type: 'on_select_chain', chain: 'all' })}
       />
 
-      <ul className="flex items-center gap-sw-md">
+      <ul className="flex items-center gap-sw-md mr-auto">
         {enableAccountAbstraction && (
           <ChainShortcut
             icon={appIcon}
