@@ -18,6 +18,10 @@ const __dirname = dirname(__filename);
 
 const testFiles = ['**/*.test.tsx', '**/*.test.ts', 'src/tests/**'];
 
+// Files that should only be included in the build when explicitly imported
+// (not automatically included as entry points).
+const dynamicOnlyFiles = ['src/appkit.tsx'];
+
 const externals = [
   ...Object.keys(pkg.dependencies ?? {}),
   ...Object.keys(pkg.peerDependencies ?? {}),
@@ -118,7 +122,9 @@ export default defineConfig({
       },
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
-        glob.sync('src/**/*.{ts,tsx}', { ignore: testFiles }).map((file) => [
+        glob
+          .sync('src/**/*.{ts,tsx}', { ignore: [...testFiles, ...dynamicOnlyFiles] })
+          .map((file) => [
           // 1. The name of the entry point
           // lib/nested/foo.js becomes nested/foo
           relative('src', file.slice(0, file.length - extname(file).length)),

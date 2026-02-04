@@ -1,6 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { useAppKitAccount, useDisconnect } from '@reown/appkit/react';
-import { AppKitContext } from '../appkit';
+import { AppKitContext } from '../providers/AppKitProvider';
 import { useConfig } from '../config';
 import { noop } from '../utils';
 
@@ -16,9 +15,12 @@ type AppKitWalletConfig = {
 };
 
 export const useAppKitWallet = (): AppKitWalletConfig => {
-  const { appKit } = useContext(AppKitContext) ?? {};
-  const { address: appKitAddress } = useAppKitAccount();
-  const { disconnect: appKitDisconnect } = useDisconnect();
+  const {
+    appKit,
+    address: appKitAddress,
+    disconnect: appKitDisconnect,
+  } = useContext(AppKitContext) ?? {};
+
   const [isConnecting, setIsConnecting] = useState(false);
   const { enableStandaloneMode } = useConfig();
 
@@ -40,8 +42,8 @@ export const useAppKitWallet = (): AppKitWalletConfig => {
   }, [appKit]);
 
   const disconnect = useCallback(async () => {
-    await appKitDisconnect({ namespace: 'solana' });
-    await appKitDisconnect({ namespace: 'eip155' });
+    await appKitDisconnect?.({ namespace: 'solana' });
+    await appKitDisconnect?.({ namespace: 'eip155' });
   }, [appKitDisconnect]);
 
   const chainType = useMemo((): ChainType => {

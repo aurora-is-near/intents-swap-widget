@@ -14,11 +14,11 @@ import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
 import { ThemeProvider } from './theme/ThemeProvider';
-import { AppKitProvider } from './appkit';
+import { AppKitProvider } from './providers/AppKitProvider';
 import { useLocalisation } from './localisation';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
-import { DEFAULT_CHAINS_ORDER, EVM_CHAINS } from '@/constants/chains';
+import { DEFAULT_CHAINS_ORDER } from '@/constants/chains';
 import type { Token } from '@/types/token';
 
 const queryClient = new QueryClient({

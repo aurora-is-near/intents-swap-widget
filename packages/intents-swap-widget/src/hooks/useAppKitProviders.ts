@@ -1,20 +1,18 @@
-import { useAppKitProvider } from '@reown/appkit/react';
-import { Eip1193Provider } from 'ethers';
-import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
+import { useContext } from 'react';
+import { AppKitContext } from '../providers/AppKitProvider';
+import type { Providers } from '../types/providers';
 
-export const useAppKitProviders = () => {
-  const { walletProvider: solanaProvider } =
-    useAppKitProvider<SolanaProvider>('solana');
-
-  const { walletProvider: evmProvider } =
-    useAppKitProvider<Eip1193Provider>('eip155');
+export const useAppKitProviders = (): Providers => {
+  const { solanaProvider, evmProvider } = useContext(AppKitContext) ?? {};
 
   return {
     evm: evmProvider,
-    sol: {
-      ...solanaProvider,
-      signMessage: ({ message }: { message: Uint8Array }) =>
-        solanaProvider.signMessage(message),
-    },
+    sol: solanaProvider
+      ? {
+          ...solanaProvider,
+          signMessage: ({ message }: { message: Uint8Array }) =>
+            solanaProvider.signMessage(message),
+        }
+      : undefined,
   };
 };

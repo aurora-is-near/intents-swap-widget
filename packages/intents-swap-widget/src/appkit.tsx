@@ -1,15 +1,12 @@
 'use client';
 
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  createContext,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-
-import { AppKit, createAppKit } from '@reown/appkit/react';
+  createAppKit,
+  useAppKitAccount,
+  useAppKitProvider,
+  useDisconnect,
+} from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
@@ -26,18 +23,16 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import { useTheme } from './hooks/useTheme';
+import { Eip1193Provider } from 'ethers';
+import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react';
+import {
+  AppKitContext,
+  type AppKitContextType,
+} from './providers/AppKitProvider';
 import { Theme } from './types/theme';
-import { useConfig } from '@/config';
-
-type AppKitProviderProps = {
-  children: ReactNode;
-};
-
-type AppKitContextType = {
-  isLoading: boolean;
-  appKit: AppKit | null;
-};
+import { AppKit } from './types/appkit';
+import { useConfig } from './config';
+import { useTheme } from './hooks/useTheme';
 
 const findFavicon = (): string | null =>
   document.querySelector<HTMLLinkElement>('link[rel*="icon"]')?.href ?? null;
@@ -103,19 +98,27 @@ export const initAppKit = ({
   });
 };
 
-export const AppKitContext = createContext<AppKitContextType | undefined>(
-  undefined,
-);
+type AppKitBridgeProps = {
+  children: ReactNode;
+};
 
-export const AppKitProvider = ({ children }: AppKitProviderProps) => {
+export const AppKitBridge = ({ children }: AppKitBridgeProps) => {
+  const { address } = useAppKitAccount();
+  const { disconnect } = useDisconnect();
   const wasEnabled = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [appKit, setAppKit] = useState<AppKit | null>(null);
   const config = useConfig();
   const theme = useTheme();
 
+  const { walletProvider: solanaProvider } =
+    useAppKitProvider<SolanaProvider>('solana');
+
+  const { walletProvider: evmProvider } =
+    useAppKitProvider<Eip1193Provider>('eip155');
+
   useEffect(() => {
-    if (config.enableStandaloneMode && !wasEnabled.current) {
+    if (!wasEnabled.current) {
       setAppKit(initAppKit({ appName: config.appName, theme }));
 
       wasEnabled.current = true;
@@ -125,11 +128,15 @@ export const AppKitProvider = ({ children }: AppKitProviderProps) => {
   }, [config, theme]);
 
   const value = useMemo(
-    () => ({
+    (): AppKitContextType => ({
       isLoading,
       appKit,
+      address,
+      disconnect,
+      evmProvider,
+      solanaProvider,
     }),
-    [isLoading, appKit],
+    [appKit, address, disconnect, evmProvider, solanaProvider, isLoading],
   );
 
   return (

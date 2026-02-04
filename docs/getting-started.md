@@ -15,6 +15,15 @@ npm install @aurora-is-near/intents-swap-widget
 yarn add @aurora-is-near/intents-swap-widget
 ```
 
+If your website does not already provide a wallet connection mechanism and you
+want to use the widget's "standalone" mode then you will also need to install
+the following [Reown AppKit](https://docs.reown.com/appkit/overview)
+dependencies:
+
+```text
+yarn add @reown/appkit @reown/appkit-adapter-wagmi @reown/appkit-adapter-solana
+```
+
 ## 2. Setup
 
 Wrap your app, or just the area where the widget appears, with the `WidgetConfigProvider`,
