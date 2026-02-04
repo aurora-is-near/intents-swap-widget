@@ -9,7 +9,8 @@
     "lint": "eslint . --ext .js,.ts,.tsx",
     "typecheck": "turbo run typecheck --parallel",
     "test": "turbo run test",
-    "check-docs": "node ./bin/verify-docs.js"
+    "check-docs": "node ./bin/verify-docs.js",
+    "check-optional-deps": "node ./bin/verify-optional-deps.js"
   },
   "engines": {
     "node": ">=20.18.1"

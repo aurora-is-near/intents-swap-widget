@@ -20,5 +20,7 @@ jobs:
         run: yarn typecheck
       - name: Check docs
         run: yarn check-docs
+      - name: Check optional dependencies
+        run: yarn check-optional-deps
       - name: Test
         run: yarn test
