@@ -27,7 +27,7 @@ export function CreatorPanel() {
   }
 
   return (
-    <div className="px-csw-2xl pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full">
+    <div className="px-csw-2xl sm:pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full w-full">
       <div className="flex items-center mb-[22px]">
         <div role="tablist" className="flex gap-csw-2xl">
           <button

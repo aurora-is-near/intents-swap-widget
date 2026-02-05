@@ -59,8 +59,8 @@ export const IntegrationModal = ({
           onClick={(e) => e.stopPropagation()}>
           <button
             onClick={onClose}
-            className="absolute top-csw-3xl sm:top-csw-xl right-csw-xl bg-csw-gray-950 p-csw-md rounded-csw-md hover:bg-csw-gray-800 transition-colors flex-shrink-0 cursor-pointer">
-            <Close size={16} className="text-csw-gray-50" />
+            className="absolute top-csw-xl right-csw-xl bg-csw-gray-950 p-csw-md rounded-csw-md hover:bg-csw-gray-800 transition-colors flex-shrink-0 cursor-pointer">
+            <Close className="text-csw-gray-50 size-6" />
           </button>
 
           {selected === 'fees' ? (

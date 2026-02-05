@@ -123,7 +123,7 @@ export function App() {
           title="Embed code"
           description={
             <>
-              Add the Intents Widget to your app using an API key.
+              Add the Intents Widget to your app using an API key.{' '}
               <br className="hidden sm:block" />
               Your API key controls configuration, fees, and reporting for your
               integration.
@@ -274,7 +274,7 @@ export function App() {
         </div>
       </div>
 
-      <div className="border-t border-csw-gray-900 py-csw-2xl flex items-center gap-csw-lg">
+      <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
         <Button
           variant="primary"
           detail="dimmed"

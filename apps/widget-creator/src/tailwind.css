@@ -71,7 +71,8 @@
     --spacing-csw-10xl: 88px;
     --spacing-csw-11xl: 96px;
     --spacing-csw-12xl: 108px;
-    --spacing-csw-max: 128px
+    --spacing-csw-max: 128px;
+    --spacing-csw-auto: auto;
 }
 
 @layer base {
