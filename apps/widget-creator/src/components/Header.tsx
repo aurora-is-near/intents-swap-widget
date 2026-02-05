@@ -47,13 +47,13 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
           TrailingIcon={ExternalLink}
           href="https://aurora-labs.gitbook.io/intents-swap-widget/getting-started"
           target="_blank"
-          className="hidden md:flex flex-row items-center bg-csw-gray-900 rounded-csw-md px-csw-lg py-csw-2md hover:bg-csw-gray-800 transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
+          className="hidden sm:flex flex-row items-center bg-csw-gray-900 rounded-csw-md px-csw-lg py-csw-2md hover:bg-csw-gray-800 transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
           Get started guide
         </HeaderButton>
       </div>
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex gap-csw-2md items-center">
+      <nav className="hidden lg:flex gap-csw-2md items-center">
         <HeaderButton
           variant={copyLinkFeedback ? 'success' : 'dark'}
           LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}
@@ -70,7 +70,7 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
       </nav>
 
       {/* Mobile hamburger */}
-      <nav className="flex md:hidden gap-csw-2md items-center ml-auto">
+      <nav className="flex lg:hidden gap-csw-2md items-center ml-auto">
         <HeaderButton variant="dark" LeadingIcon={Menu} onClick={onOpenDrawer}>
           Menu
         </HeaderButton>

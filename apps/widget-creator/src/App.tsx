@@ -19,18 +19,18 @@ function App() {
   return (
     <QueryProvider>
       <CreatorProvider>
-        <main className="flex flex-col py-csw-2xl sm:p-csw-2xl relative sm:h-full md:max-h-screen md:overflow-hidden bg-[#1D1E24] min-h-full">
+        <main className="flex flex-col py-csw-2xl sm:p-csw-2xl relative sm:h-full lg:max-h-screen lg:overflow-hidden bg-[#1D1E24] min-h-full">
           <Header
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onOpenExportModal={openExportModal}
           />
-          <div className="flex items-center md:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col md:flex-row md:h-[calc(100%-62px)]">
+          <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
             <WidgetSection>
               <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw">
                 <WidgetContent />
               </aside>
             </WidgetSection>
-            <section className="hidden md:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full md:max-w-[455px] md:w-full md:h-full">
+            <section className="hidden lg:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full lg:max-w-[455px] lg:w-full lg:h-full">
               <CreatorPanel />
             </section>
           </div>

@@ -67,7 +67,7 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
       ref={dialogRef}
       onClose={onClose}
       aria-label="Main menu"
-      className="fixed inset-0 size-auto max-h-none max-w-none overflow-hidden bg-transparent md:hidden">
+      className="fixed inset-0 size-auto max-h-none max-w-none overflow-hidden bg-transparent lg:hidden">
       <div
         className={cn(
           'absolute inset-0 w-full h-full',
@@ -91,7 +91,7 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
 
           {/* Content */}
           {view === 'menu' ? (
-            <nav className="flex flex-col px-csw-2xl gap-csw-md">
+            <nav className="flex flex-col px-csw-2xl gap-csw-md sm:items-center">
               <MenuItem
                 icon={<SlidersHorizontal className="size-5" />}
                 label="Customize"
