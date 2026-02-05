@@ -19,6 +19,15 @@ import { useTheme } from './hooks/useTheme';
 const findFavicon = (): string | null =>
   document.querySelector<HTMLLinkElement>('link[rel*="icon"]')?.href ?? null;
 
+// This dynamic import wrapper exists to help avoid module not found issues
+// in consuming apps that do not have the @reown packages installed. When using
+// Turbopack with Next.js, for example, even though the imports are dynamic it
+// still performs static analysis and tries to resolve them at build time.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
+const dynamicImport = <T extends unknown = unknown>(path: string): Promise<T> =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-implied-eval
+  new Function('p', 'return import(p)')(path) as Promise<T>;
+
 type AppKitBridgeProps = {
   children: ReactNode;
 };
@@ -35,10 +44,16 @@ export async function createAppKitBridge(): Promise<{
     { SolanaAdapter },
     { mainnet, arbitrum, polygon, bsc, optimism, avalanche, base, solana },
   ] = await Promise.all([
-    import('@reown/appkit/react'),
-    import('@reown/appkit-adapter-wagmi'),
-    import('@reown/appkit-adapter-solana'),
-    import('@reown/appkit/networks'),
+    dynamicImport<typeof import('@reown/appkit/react')>('@reown/appkit/react'),
+    dynamicImport<typeof import('@reown/appkit-adapter-wagmi')>(
+      '@reown/appkit-adapter-wagmi',
+    ),
+    dynamicImport<typeof import('@reown/appkit-adapter-solana')>(
+      '@reown/appkit-adapter-solana',
+    ),
+    dynamicImport<typeof import('@reown/appkit/networks')>(
+      '@reown/appkit/networks',
+    ),
   ]);
 
   const initAppKit = ({
