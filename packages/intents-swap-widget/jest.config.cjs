@@ -27,7 +27,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   testMatch: [
     '**/?(*.)+(spec|test).(js|ts|tsx)',
-    '!**/?(*.)+(visual.spec|visual.test).(js|ts|tsx)',
+    '!**/?(*.)+(visual.spec|visual.test).(ts|tsx)',
   ],
   transform: {
     '^.+\\.(t|j)sx?$': [
