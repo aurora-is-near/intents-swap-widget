@@ -1,17 +1,20 @@
 import { Trans } from 'react-i18next';
+import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
+
 import { useProviders } from '../../hooks';
+
+import { useConfig } from '@/config';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import type { MakeTransfer, TransferResult } from '@/types/transfer';
-import type { Context } from '@/machine/context';
-
 import { useTypedTranslation } from '@/localisation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import type { MakeTransfer, TransferResult } from '@/types/transfer';
+import type { Context } from '@/machine/context';
 
 type Props = {
   label: string;
@@ -25,6 +28,7 @@ const commonBtnProps = {
 };
 
 const useGetErrorButton = (ctx: Context) => {
+  const { appKey, fetchQuote } = useConfig();
   const { t } = useTypedTranslation();
 
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
@@ -185,6 +189,38 @@ const useGetErrorButton = (ctx: Context) => {
       <Button state="error" {...commonBtnProps}>
         {t('submit.error.insufficientBalance', 'Insufficient balance')}
       </Button>
+    );
+  }
+
+  if (
+    (ctx.state === 'input_valid_dry' ||
+      ctx.state === 'input_valid_internal' ||
+      ctx.state === 'input_valid_external') &&
+    !fetchQuote &&
+    !appKey
+  ) {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.appKeyRequired', 'App key is required')}
+        </Button>
+        <ErrorMessage>
+          <Trans i18nKey="submit.error.appKeyRequired.message">
+            Visit{' '}
+            <span className="inline-flex items-center gap-sw-xs px-sw-xs">
+              <a
+                className="underline"
+                href="https://intents.aurora.dev"
+                rel="noopener noreferrer"
+                target="_blank">
+                intents.aurora.dev
+              </a>
+              <OpenInNew size={12} />
+            </span>{' '}
+            to get your app key.
+          </Trans>
+        </ErrorMessage>
+      </div>
     );
   }
 };

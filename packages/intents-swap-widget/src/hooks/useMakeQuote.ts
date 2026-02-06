@@ -89,6 +89,7 @@ export const useMakeQuote = () => {
     options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
     if (!fetchQuote && !appKey) {
+      logger.error('[WIDGET] Application key is required to make a quote');
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
         meta: { isDry, message: 'App key is required' },
