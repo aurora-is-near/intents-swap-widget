@@ -103,7 +103,7 @@ Please refer to your package manager documentation for ways of doing this:
 
 2. **Verify `walletSupportedChains`** - This must include chains your wallet actually supports:
    ```tsx
-   walletSupportedChains={['eth', 'base', 'arbitrum']}
+   walletSupportedChains={['eth', 'base', 'arb']}
    ```
 
 ## Token and Chain Filtering
@@ -113,7 +113,7 @@ Please refer to your package manager documentation for ways of doing this:
 **Causes:**
 - Token filtered by `allowedTokensList` or `filterTokens`
 - Token not available on the selected chain
-- `showIntentTokens` set to false
+- `enableAccountAbstraction` set to false
 
 **Solutions:**
 
@@ -129,7 +129,7 @@ Please refer to your package manager documentation for ways of doing this:
 
 2. Enable intent tokens if needed:
    ```tsx
-   showIntentTokens={true}
+   enableAccountAbstraction={true}
    ```
 
 ### Chains not appearing
@@ -138,10 +138,10 @@ Please refer to your package manager documentation for ways of doing this:
 
 **Solution:** Check your chain filter configuration:
 ```tsx
-allowedChainsList={['eth', 'base', 'near', 'solana']}
+allowedChainsList={['eth', 'base', 'sol', 'near']}
 // Or for directional filtering:
 allowedSourceChainsList={['eth', 'base']}
-allowedTargetChainsList={['near']}
+allowedTargetChainsList={['near', 'sol']}
 ```
 
 ## Configuration Errors
