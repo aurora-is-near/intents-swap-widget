@@ -48,6 +48,7 @@ export const App = () => {
           theme={theme}
           config={{
             appName: 'Demo App',
+            appKey: '31d04ca1-0074-4c41-a0c7-325d8ba794f9',
             connectedWallets: { default: walletAddress },
             hideTokenInputHeadings: true,
             enableAccountAbstraction: showAppBalance,

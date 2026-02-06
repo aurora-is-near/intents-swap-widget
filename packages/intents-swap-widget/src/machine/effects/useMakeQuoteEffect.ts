@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { logger } from '../../logger';
 import { isDryQuote } from '../guards/checks/isDryQuote';
 import type { ListenerProps } from './types';
+
+import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
@@ -25,6 +27,7 @@ export const useMakeQuoteEffect = ({
   refetchQuoteInterval,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const { appKey, fetchQuote } = useConfig();
   const {
     isNativeNearDeposit,
     isDirectNonNearWithdrawal,
@@ -38,6 +41,7 @@ export const useMakeQuoteEffect = ({
 
   const shouldRun =
     isEnabled &&
+    (!!fetchQuote || (!!appKey && !fetchQuote)) &&
     !ctx.areInputsValidating &&
     (isSameAssetDiffChainWithdrawal ||
       ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&
