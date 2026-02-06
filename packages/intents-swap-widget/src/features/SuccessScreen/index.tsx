@@ -124,7 +124,10 @@ export const SuccessScreen = ({
 
       <Accordion
         expandedByDefault={false}
-        expandedHeightPx={summaryItemsCount * NOTES_ITEM_HEIGHT}
+        expandedHeightPx={
+          // edge case if only Rate is present
+          summaryItemsCount === 1 ? 52 : summaryItemsCount * NOTES_ITEM_HEIGHT
+        }
         title={t('transfer.success.details.label', 'Transaction details')}>
         <Notes>
           {ctx.sourceToken.symbol !== ctx.targetToken.symbol && (
