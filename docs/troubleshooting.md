@@ -154,8 +154,9 @@ allowedTargetChainsList={['near', 'sol']}
 
 ```tsx
 import '@aurora-is-near/intents-swap-widget/styles.css';
-import '@aurora-is-near/intents-swap-widget/theme.css';
 ```
+
+Check our detailed [theming](./theming.md) documentation.
 
 ### Theme not applying
 
