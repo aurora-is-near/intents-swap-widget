@@ -2,7 +2,7 @@
 
 This guide covers common issues when integrating the Intents Swap Widget.
 
-If you can't find an answer here, please [open an issue](https://github.com/aurora-is-near/aurora-token-launchpad/issues) or reach out to the team.
+If you can't find an answer here, please [open an issue](https://github.com/aurora-is-near/intents-swap-widget/issues) or reach out to the team.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 
 **Causes & Solutions:**
 
-1. **Missing API key** - EVM balances require an Alchemy API key.
+1. **Missing API key** - The widget will try to use a set of RPCs by default, but Alchemy is more reliable and you can have better control with Alchemy API key.
    ```tsx
    <SwapWidget
      alchemyApiKey="your-alchemy-api-key"
@@ -76,6 +76,11 @@ For **Yarn**, resolutions work as shown above. For **npm** or **bun**, use `over
   "valtio": "2.1.7"
 }
 ```
+
+Please refer to your package manager documentation for ways of doing this:
+- [npm](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#overrides)
+- [yarn](https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/)
+- [pnpm](https://pnpm.io/9.x/package_json#resolutions)
 
 ## Wallet Connection Problems
 
@@ -165,7 +170,7 @@ themeParentElementSelector="#my-app-container"
 
 If this guide didn't solve your problem:
 
-1. Check the [GitHub Issues](https://github.com/aurora-is-near/aurora-token-launchpad/issues) for similar problems
+1. Check the [GitHub Issues](https://github.com/aurora-is-near/intents-swap-widget/issues) for similar problems
 2. Open a new issue with:
    - Widget version
    - Your configuration (remove sensitive keys)
