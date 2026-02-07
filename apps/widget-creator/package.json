@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "clean": "rimraf dist .turbo .vercel"
   },
   "dependencies": {
     "@aurora-is-near/intents-swap-widget": "*",
