@@ -23,7 +23,7 @@ type CreatorState = {
   // Configure - Networks
   selectedNetworks: Chains[];
   // Configure - App Key
-  appKey: string;
+  apiKey: string;
   // Configure - Tokens
   selectedTokenSymbols: string[];
   enableSellToken: boolean;
@@ -61,7 +61,7 @@ const initialState: CreatorState = {
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
-  appKey: PLACEHOLDER_APP_KEY,
+  apiKey: PLACEHOLDER_APP_KEY,
   // Design
   defaultMode: 'dark',
   stylePreset: 'clean',
@@ -83,7 +83,7 @@ type Action =
   // Configure - Networks
   | { type: 'SET_SELECTED_NETWORKS'; payload: Chains[] }
   // Configure - App Key
-  | { type: 'SET_APP_KEY'; payload: string }
+  | { type: 'SET_API_KEY'; payload: string }
   // Configure - Tokens
   | { type: 'SET_SELECTED_TOKEN_SYMBOLS'; payload: string[] }
   | { type: 'SET_ENABLE_SELL_TOKEN'; payload: boolean }
@@ -155,8 +155,8 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, feePercentage: action.payload };
     case 'SET_COLLECTOR_ADDRESS':
       return { ...state, collectorAddress: action.payload };
-    case 'SET_APP_KEY':
-      return { ...state, appKey: action.payload };
+    case 'SET_API_KEY':
+      return { ...state, apiKey: action.payload };
 
     // Design
     case 'SET_DEFAULT_MODE':

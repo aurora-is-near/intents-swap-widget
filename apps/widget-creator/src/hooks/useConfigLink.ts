@@ -105,10 +105,10 @@ export function useConfigLink() {
     // App key
     // Do not export default or placeholder since it doesn't make sense
     if (
-      state.appKey &&
-      ![PLACEHOLDER_APP_KEY, DEFAULT_APP_KEY].includes(state.appKey)
+      state.apiKey &&
+      ![PLACEHOLDER_APP_KEY, DEFAULT_APP_KEY].includes(state.apiKey)
     ) {
-      params.append('appKey', state.appKey);
+      params.append('apiKey', state.apiKey);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -282,11 +282,11 @@ export function useDecodeConfigLink() {
       dispatch({ type: 'SET_ERROR_COLOR', payload: errorColor });
     }
 
-    // App key
-    const appKey = params.get('appKey');
+    // API key
+    const apiKey = params.get('apiKey');
 
-    if (appKey) {
-      dispatch({ type: 'SET_APP_KEY', payload: appKey });
+    if (apiKey) {
+      dispatch({ type: 'SET_API_KEY', payload: apiKey });
     }
   };
 

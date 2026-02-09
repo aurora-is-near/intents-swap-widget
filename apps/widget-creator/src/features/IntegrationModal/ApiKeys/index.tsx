@@ -35,22 +35,20 @@ export const ApiKeys = ({ onClickFees }: Props) => {
   const { status, data: apiKeys = [] } = useApiKeys();
   const { mutate: createApiKey, ...mutation } = useCreateApiKey();
 
-  const handleKeyRemoved = (appKey: string) => {
-    const newApiKeys = apiKeys.filter(
-      (apiKey) => apiKey.widgetAppKey !== appKey,
-    );
+  const handleKeyRemoved = (key: string) => {
+    const newApiKeys = apiKeys.filter((apiKey) => apiKey.widgetApiKey !== key);
 
     dispatch({
-      type: 'SET_APP_KEY',
-      payload: newApiKeys[0]?.widgetAppKey ?? DEFAULT_APP_KEY,
+      type: 'SET_API_KEY',
+      payload: newApiKeys[0]?.widgetApiKey ?? DEFAULT_APP_KEY,
     });
   };
 
   useEffect(() => {
     if (mutation.status === 'success') {
       dispatch({
-        type: 'SET_APP_KEY',
-        payload: mutation.data.widgetAppKey,
+        type: 'SET_API_KEY',
+        payload: mutation.data.widgetApiKey,
       });
     }
   }, [mutation.status]);
@@ -105,7 +103,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
         {apiKeys.map((apiKey) => (
           <ApiKeyCard
             apiKey={apiKey}
-            key={apiKey.widgetAppKey}
+            key={apiKey.widgetApiKey}
             onClickFees={onClickFees}
             onKeyRemoved={handleKeyRemoved}
           />

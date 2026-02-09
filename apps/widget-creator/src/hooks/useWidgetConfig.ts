@@ -11,10 +11,10 @@ export const useWidgetConfig = () => {
   const widgetConfig = useMemo(
     (): Partial<WidgetConfig> => ({
       appName: 'Widget Creator',
-      appKey:
+      apiKey:
         // we don't want to expose our default app key to the exported code
         // but want a widget to function in a studio so we swap them here
-        state.appKey === PLACEHOLDER_APP_KEY ? DEFAULT_APP_KEY : state.appKey,
+        state.apiKey === PLACEHOLDER_APP_KEY ? DEFAULT_APP_KEY : state.apiKey,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedChainsList: state.selectedNetworks,
