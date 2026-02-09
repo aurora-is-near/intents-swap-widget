@@ -9,7 +9,6 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 - [Balance Loading Issues](#balance-loading-issues)
 - [Dependency Conflicts](#dependency-conflicts)
 - [Wallet Connection Problems](#wallet-connection-problems)
-- [Token and Chain Filtering](#token-and-chain-filtering)
 - [Configuration Errors](#configuration-errors)
 
 ## Balance Loading Issues
@@ -101,48 +100,10 @@ Please refer to your package manager documentation for ways of doing this:
    providers={{ near: () => nearWallet }}
    ```
 
-2. **Verify `walletSupportedChains`** - This must include chains your wallet actually supports:
+2. **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
    ```tsx
    walletSupportedChains={['eth', 'base', 'arb']}
    ```
-
-## Token and Chain Filtering
-
-### Tokens not appearing in list
-
-**Causes:**
-- Token filtered by `allowedTokensList` or `filterTokens`
-- Token not available on the selected chain
-- `enableAccountAbstraction` set to false
-
-**Solutions:**
-
-1. Check your filter configuration:
-   ```tsx
-   // Allow all tokens (remove filtering)
-   allowedTokensList={undefined}
-   filterTokens={undefined}
-
-   // Or explicitly include the token
-   allowedTokensList={['usdc', 'eth', 'near']}
-   ```
-
-2. Enable intent tokens if needed:
-   ```tsx
-   enableAccountAbstraction={true}
-   ```
-
-### Chains not appearing
-
-**Cause:** Chain filtered by `allowedChainsList` or related props.
-
-**Solution:** Check your chain filter configuration:
-```tsx
-allowedChainsList={['eth', 'base', 'sol', 'near']}
-// Or for directional filtering:
-allowedSourceChainsList={['eth', 'base']}
-allowedTargetChainsList={['near', 'sol']}
-```
 
 ## Configuration Errors
 
@@ -157,15 +118,6 @@ import '@aurora-is-near/intents-swap-widget/styles.css';
 ```
 
 Check our detailed [theming](./theming.md) documentation.
-
-### Theme not applying
-
-**Cause:** Theme parent element not found.
-
-**Solution:** Ensure `themeParentElementSelector` points to a valid element:
-```tsx
-themeParentElementSelector="#my-app-container"
-```
 
 ## Still Having Issues?
 
