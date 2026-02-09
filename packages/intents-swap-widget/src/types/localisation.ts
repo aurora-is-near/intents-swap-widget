@@ -64,6 +64,8 @@ export type LocalisationKeys =
   | 'submit.error.externalTransferFailed.label'
   | 'submit.error.externalTransferFailed.incompleteMessage'
   | 'submit.error.externalTransferFailed.refundedMessage'
+  | 'submit.error.apiKeyInvalid'
+  | 'submit.error.apiKeyInvalid.message'
   | 'submit.error.apiKeyRequired'
   | 'submit.error.apiKeyRequired.message'
   // send address
