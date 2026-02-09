@@ -38,13 +38,13 @@ export const ApiKeySelect = ({ keys, selected, onChange }: Props) => {
               modal={false}
               portal={false}
               className="absolute rounded-csw-md bg-csw-gray-800 py-1 shadow-lg z-10 focus:outline-none w-full mt-csw-lg p-csw-2md">
-              {keys.map((appKey) => (
+              {keys.map((apiKey) => (
                 <ListboxOption
-                  value={appKey}
-                  key={appKey}
+                  value={apiKey}
+                  key={apiKey}
                   className="group flex cursor-pointer items-center justify-between gap-csw-md rounded-csw-md p-csw-2md transition-colors hover:bg-csw-gray-700">
                   <div className="text-csw-label-md text-csw-gray-50">
-                    {maskApiKey(appKey)}
+                    {maskApiKey(apiKey)}
                   </div>
                   <Check
                     size={20}

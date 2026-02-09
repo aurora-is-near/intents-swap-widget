@@ -88,7 +88,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   const feeJson = watch('feeJson');
 
   const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(
-    apiKey.widgetAppKey,
+    apiKey.widgetApiKey,
   );
 
   const handleFeeJsonChange = (fee: string) => {

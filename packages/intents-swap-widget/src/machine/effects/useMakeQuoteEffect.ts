@@ -27,7 +27,7 @@ export const useMakeQuoteEffect = ({
   refetchQuoteInterval,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { appKey, fetchQuote } = useConfig();
+  const { apiKey, fetchQuote } = useConfig();
   const {
     isNativeNearDeposit,
     isDirectNonNearWithdrawal,
@@ -41,7 +41,7 @@ export const useMakeQuoteEffect = ({
 
   const shouldRun =
     isEnabled &&
-    (!!fetchQuote || (!!appKey && !fetchQuote)) &&
+    (!!fetchQuote || (!!apiKey && !fetchQuote)) &&
     !ctx.areInputsValidating &&
     (isSameAssetDiffChainWithdrawal ||
       ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&

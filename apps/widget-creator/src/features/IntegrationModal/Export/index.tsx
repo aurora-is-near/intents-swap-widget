@@ -94,8 +94,8 @@ export function App() {
   );
 }`;
 
-  const handleAppKeySelect = (appKey: string) => {
-    dispatch({ type: 'SET_APP_KEY', payload: appKey });
+  const handleApiKeySelect = (apiKey: string) => {
+    dispatch({ type: 'SET_API_KEY', payload: apiKey });
   };
 
   const handleCopyCode = async () => {
@@ -112,7 +112,7 @@ export function App() {
 
   useEffect(() => {
     if (apiKeysState.state === 'has-api-keys') {
-      handleAppKeySelect(apiKeysState.apiKeys[0].widgetAppKey);
+      handleApiKeySelect(apiKeysState.apiKeys[0].widgetApiKey);
     }
   }, [apiKeysState.state]);
 
@@ -179,7 +179,7 @@ export function App() {
 
             case 'has-api-keys': {
               const apiKeySelected =
-                state.appKey ?? apiKeysState.apiKeys[0].widgetAppKey;
+                state.apiKey ?? apiKeysState.apiKeys[0].widgetApiKey;
 
               return (
                 <div className="flex flex-col gap-csw-md">
@@ -203,10 +203,10 @@ export function App() {
                   {apiKeySelected ? (
                     <ApiKeySelect
                       keys={apiKeysState.apiKeys.map(
-                        (apiKey) => apiKey.widgetAppKey,
+                        (apiKey) => apiKey.widgetApiKey,
                       )}
                       selected={apiKeySelected}
-                      onChange={handleAppKeySelect}
+                      onChange={handleApiKeySelect}
                     />
                   ) : (
                     <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
