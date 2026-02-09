@@ -8,10 +8,10 @@ Swap Widget frontend that uses [1Click API](https://docs.near-intents.org/near-i
 
 ### Widgets
 
-This package exports a number of pre-built widget components, `WidgetSwap`,
-`WidgetDeposit` and `WidgetWithdraw`.
+This package exports a number of pre-built widget components, `Widget`,
+`WidgetSwap`, `WidgetDeposit` and `WidgetWithdraw`.
 
-See the `/apps/demo` folder for some examples of how to use these widgets.
+See the `/apps` folder for some examples of how to use these widgets.
 
 ## Custom implementation
 
