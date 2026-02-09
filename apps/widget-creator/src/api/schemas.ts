@@ -53,14 +53,9 @@ export const FeeConfigSchema = z.any().superRefine((data, ctx) => {
   }
 }) as z.ZodType<FeeConfig>;
 
-export const apiKeySchema: z.ZodSchema<ApiKey> = z
-  .object({
-    isEnabled: z.boolean(),
-    createdAt: z.string(),
-    widgetAppKey: z.string(),
-    feeRules: FeeConfigSchema,
-  })
-  .transform((data) => ({
-    ...data,
-    widgetApiKey: data.widgetAppKey,
-  }));
+export const apiKeySchema: z.ZodSchema<ApiKey> = z.object({
+  isEnabled: z.boolean(),
+  createdAt: z.string(),
+  widgetApiKey: z.string(),
+  feeRules: FeeConfigSchema,
+});
