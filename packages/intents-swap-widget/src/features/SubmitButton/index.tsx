@@ -104,11 +104,11 @@ const useGetErrorButton = (ctx: Context) => {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
-          {t('submit.error.appKeyInvalid', 'Invalid API key')}
+          {t('submit.error.apiKeyInvalid', 'Invalid API key')}
         </Button>
         <ErrorMessage>
           {t(
-            'submit.error.appKeyInvalid.message',
+            'submit.error.apiKeyInvalid.message',
             'Please contact the dApp owner.',
           )}
         </ErrorMessage>
