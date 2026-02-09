@@ -100,6 +100,22 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  if (ctx.error?.code === 'QUOTE_WIDGET_API_KEY_IS_INVALID') {
+    return (
+      <div className="gap-sw-md flex flex-col">
+        <Button state="error" {...commonBtnProps}>
+          {t('submit.error.appKeyInvalid', 'Invalid API key')}
+        </Button>
+        <ErrorMessage>
+          {t(
+            'submit.error.appKeyInvalid.message',
+            'Please contact the dApp owner.',
+          )}
+        </ErrorMessage>
+      </div>
+    );
+  }
+
   // other quote errors
   if (ctx.quoteStatus === 'error') {
     return (

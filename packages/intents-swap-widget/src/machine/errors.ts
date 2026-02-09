@@ -45,7 +45,8 @@ export type InputValidDryError =
 
 export type InputValidWalletError =
   | InputValidDryError
-  | { code: 'QUOTE_NO_ONE_TIME_ADDRESS' };
+  | { code: 'QUOTE_NO_ONE_TIME_ADDRESS' }
+  | { code: 'QUOTE_WIDGET_API_KEY_IS_INVALID' };
 
 export type QuoteSuccessDirectTransferError =
   | { code: 'MIN_WITHDRAWAL_AMOUNT_ERROR'; meta: { minAmount?: string } }

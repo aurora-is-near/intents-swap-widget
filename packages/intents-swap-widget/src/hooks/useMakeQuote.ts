@@ -290,6 +290,12 @@ export const useMakeQuote = () => {
           });
         }
 
+        if (errorMessage.includes('Application key not found')) {
+          throw new QuoteError({
+            code: 'QUOTE_WIDGET_API_KEY_IS_INVALID',
+          });
+        }
+
         throw error;
       }
 
