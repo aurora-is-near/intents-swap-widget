@@ -28,7 +28,7 @@ const commonBtnProps = {
 };
 
 const useGetErrorButton = (ctx: Context) => {
-  const { appKey, fetchQuote } = useConfig();
+  const { apiKey, fetchQuote } = useConfig();
   const { t } = useTypedTranslation();
 
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
@@ -197,15 +197,15 @@ const useGetErrorButton = (ctx: Context) => {
       ctx.state === 'input_valid_internal' ||
       ctx.state === 'input_valid_external') &&
     !fetchQuote &&
-    !appKey
+    !apiKey
   ) {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
-          {t('submit.error.appKeyRequired', 'App key is required')}
+          {t('submit.error.apiKeyRequired', 'API key is required')}
         </Button>
         <ErrorMessage>
-          <Trans i18nKey="submit.error.appKeyRequired.message">
+          <Trans i18nKey="submit.error.apiKeyRequired.message">
             Visit{' '}
             <span className="inline-flex items-center gap-sw-xs px-sw-xs">
               <a
