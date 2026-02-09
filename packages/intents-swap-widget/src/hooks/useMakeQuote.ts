@@ -50,7 +50,7 @@ export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const { appName, appKey, appFees, fetchQuote, slippageTolerance } =
+  const { appName, apiKey, appFees, fetchQuote, slippageTolerance } =
     useConfig();
 
   const isDry = isDryQuote(ctx);
@@ -74,24 +74,24 @@ export const useMakeQuote = () => {
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          // no need for extra check API will return missing app key error
-          `https://intents-api.aurora.dev/api/quote/${appKey ?? ''}`,
+          // no need for extra check API will return missing API key error
+          `https://intents-api.aurora.dev/api/quote/${apiKey ?? ''}`,
           data,
           { signal },
         )
       ).data.quote;
     };
-  }, [appKey, oneClickApi]);
+  }, [apiKey, oneClickApi]);
 
   const make = async ({
     message,
     quoteType = 'exact_in',
     options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
-    if (!fetchQuote && !appKey) {
+    if (!fetchQuote && !apiKey) {
       throw new QuoteError({
         code: 'QUOTE_INVALID_INITIAL',
-        meta: { isDry, message: 'App key is required' },
+        meta: { isDry, message: 'API key is required' },
       });
     }
 
