@@ -110,7 +110,7 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
               <MenuItem
                 icon={<Book className="size-5" />}
                 label="Get started guide"
-                href="https://aurora-labs.gitbook.io/intents-swap-widget/getting-started"
+                href="https://docs.intents.aurora.dev/intents-swap-widget/getting-started"
               />
               {ready && (
                 <MenuItem

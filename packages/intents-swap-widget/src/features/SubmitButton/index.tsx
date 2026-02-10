@@ -270,6 +270,9 @@ const ConnectWalletButton = () => {
 
 const SubmitButtonBase = (props: Props) => {
   const { providers } = useProviders();
+
+  console.log(providers);
+
   const { makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
