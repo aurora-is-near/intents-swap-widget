@@ -10,7 +10,7 @@ export type EvmProvider = Eip1193Provider | (() => Promise<Eip1193Provider>);
 
 export type SolanaProvider = {
   publicKey?: PublicKey;
-  signMessage: ({ message }: { message: Uint8Array }) => Promise<Uint8Array>;
+  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
   signTransaction: <T extends SolanaWeb3Transaction | VersionedTransaction>(
     transaction: T,
   ) => Promise<T>;
