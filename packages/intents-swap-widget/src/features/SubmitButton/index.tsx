@@ -109,7 +109,7 @@ const useGetErrorButton = (ctx: Context) => {
         <ErrorMessage>
           {t(
             'submit.error.apiKeyInvalid.message',
-            'Please contact the dApp owner.',
+            'Please contact support if the problem persists.',
           )}
         </ErrorMessage>
       </div>
