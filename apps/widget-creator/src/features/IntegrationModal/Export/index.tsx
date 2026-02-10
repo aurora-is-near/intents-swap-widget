@@ -133,7 +133,7 @@ export function App() {
             <>
               For more details, check out{' '}
               <a
-                href="https://docs.intents.aurora.dev/intents-swap-widget"
+                href="https://docs.intents.aurora.dev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-csw-xxs underline">

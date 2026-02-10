@@ -217,7 +217,7 @@ export function Configure() {
                 Selected tokens apply to all chosen networks.
               </p>
               <a
-                href="https://docs.intents.aurora.dev/intents-swap-widget/configuration"
+                href="https://docs.intents.aurora.dev/configuration"
                 target="_blank"
                 className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-csw-gray-300 hover:text-csw-gray-300">
                 <span>Check docs for more granularity</span>
