@@ -32,9 +32,9 @@ export class IntentSignerSolana
         }),
     });
 
-    const signature = await this.solanaWallet.signMessage({
-      message: new TextEncoder().encode(message),
-    });
+    const signature = await this.solanaWallet.signMessage(
+      new TextEncoder().encode(message),
+    );
 
     return {
       payload: message,

@@ -73,9 +73,9 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
       case 'sol': {
         assertDefined(providers?.sol, 'No SOL provider configured');
 
-        const signatureData = await providers.sol.signMessage({
-          message: msg.SOLANA.message,
-        });
+        const signatureData = await providers.sol.signMessage(
+          msg.SOLANA.message,
+        );
 
         return {
           type: 'SOLANA',

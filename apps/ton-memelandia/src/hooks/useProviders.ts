@@ -11,10 +11,6 @@ export const useProviders = () => {
 
   return {
     evm: evmProvider,
-    sol: {
-      ...solanaProvider,
-      signMessage: ({ message }: { message: Uint8Array }) =>
-        solanaProvider.signMessage(message),
-    },
+    sol: solanaProvider,
   };
 };
