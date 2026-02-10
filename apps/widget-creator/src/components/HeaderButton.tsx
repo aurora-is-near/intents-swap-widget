@@ -5,7 +5,7 @@ type Props = {
   variant?: 'primary' | 'dark' | 'bright' | 'success';
   className?: string;
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   disabled?: boolean;
   LeadingIcon?: ComponentType<{ className?: string; strokeWidth?: number }>;
   TrailingIcon?: ComponentType<{ className?: string; strokeWidth?: number }>;

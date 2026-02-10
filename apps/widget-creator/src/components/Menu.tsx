@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Book,
   Code,
-  Link,
+  Link as LinkIcon,
+  Link2,
   LogIn,
   LogOut,
   SlidersHorizontal,
@@ -20,9 +21,17 @@ type DrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   onOpenExportModal: () => void;
+  navigate: (path: string) => void;
+  pathname: string;
 };
 
-export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
+export const Menu = ({
+  isOpen,
+  onClose,
+  onOpenExportModal,
+  navigate,
+  pathname,
+}: DrawerProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [view, setView] = useState<DrawerView>('menu');
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -30,6 +39,8 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
   const { ready, authenticated } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
+
+  const isPaymentLinks = pathname === '/payment-links';
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -59,6 +70,11 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
       login();
     }
 
+    onClose();
+  };
+
+  const handleNavigateToPaymentLinks = () => {
+    navigate('/payment-links');
     onClose();
   };
 
@@ -92,20 +108,30 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
           {/* Content */}
           {view === 'menu' ? (
             <nav className="flex flex-col px-csw-2xl gap-csw-md sm:items-center">
+              {!isPaymentLinks && (
+                <>
+                  <MenuItem
+                    icon={<SlidersHorizontal className="size-5" />}
+                    label="Customize"
+                    onClick={() => setView('customize')}
+                  />
+                  <MenuItem
+                    icon={<Code className="size-5" />}
+                    label="Export code"
+                    onClick={onOpenExportModal}
+                  />
+                  <MenuItem
+                    icon={<LinkIcon className="size-5" />}
+                    label={copyFeedback ? 'Copied!' : 'Copy shareable link'}
+                    onClick={handleCopyLink}
+                  />
+                </>
+              )}
               <MenuItem
-                icon={<SlidersHorizontal className="size-5" />}
-                label="Customize"
-                onClick={() => setView('customize')}
-              />
-              <MenuItem
-                icon={<Code className="size-5" />}
-                label="Export code"
-                onClick={onOpenExportModal}
-              />
-              <MenuItem
-                icon={<Link className="size-5" />}
-                label={copyFeedback ? 'Copied!' : 'Copy shareable link'}
-                onClick={handleCopyLink}
+                icon={<Link2 className="size-5" />}
+                label="Payment Links"
+                to="/payment-links"
+                navigate={(_path) => handleNavigateToPaymentLinks()}
               />
               <MenuItem
                 icon={<Book className="size-5" />}
