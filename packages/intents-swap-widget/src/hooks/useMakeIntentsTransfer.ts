@@ -338,6 +338,8 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
 
         // User rejected
         if (isUserDeniedSigning(e)) {
+          logger.warn('User denied signing the transaction');
+
           return undefined;
         }
       }

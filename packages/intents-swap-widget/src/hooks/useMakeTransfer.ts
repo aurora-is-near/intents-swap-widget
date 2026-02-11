@@ -38,6 +38,8 @@ export const useMakeTransfer = ({
 
   const make = async () => {
     if (!ctx.targetToken) {
+      logger.warn('No target token selected for transfer');
+
       return;
     }
 
