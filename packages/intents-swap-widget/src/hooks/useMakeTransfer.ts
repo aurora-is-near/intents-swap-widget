@@ -38,9 +38,10 @@ export const useMakeTransfer = ({
 
   const make = async () => {
     if (!ctx.targetToken) {
-      logger.warn('No target token selected for transfer');
-
-      return;
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'No target token selected' },
+      });
     }
 
     let transferResult: TransferResult | undefined;
