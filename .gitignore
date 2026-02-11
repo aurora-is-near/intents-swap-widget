@@ -38,4 +38,4 @@ spec.json
 .env.sentry-build-plugin
 
 # VSCode
-.vscode/
+.vscode/mcp.json
