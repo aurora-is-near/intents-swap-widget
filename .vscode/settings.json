@@ -3,46 +3,15 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.fixAll.markdownlint": "explicit"
   },
-  "eslint.runtime": "node",
   "editor.rulers": [80],
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
     "typescriptreact"
-  ],
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": false,
-    "editor.formatOnSave": false,
-    "files.autoSave": "off"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": false,
-    "editor.formatOnSave": false,
-    "files.autoSave": "off"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": false,
-    "editor.formatOnSave": false,
-    "files.autoSave": "off"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": false,
-    "editor.formatOnSave": false,
-    "files.autoSave": "off"
-  }
+  ]
 }
