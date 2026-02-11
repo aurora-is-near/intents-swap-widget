@@ -29,7 +29,7 @@ import PolIcon from './pol.svg';
 import PublicIcon from './public.svg';
 import PurgeIcon from './purge.svg';
 import RheaIcon from './rhea.svg';
-import SolIcon from './sol.svg';
+import { SolIcon } from './SolIcon';
 import SuiIcon from './sui.svg';
 import TonIcon from './ton.svg';
 import TronIcon from './tron.svg';
