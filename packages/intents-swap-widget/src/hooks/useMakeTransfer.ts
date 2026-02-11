@@ -90,7 +90,11 @@ export const useMakeTransfer = ({
         logger.error(error.data);
         fireEvent('transferSetStatus', { status: 'error' });
         fireEvent('errorSet', error.data);
+
+        return;
       }
+
+      throw error;
     }
 
     if (!transferResult) {
