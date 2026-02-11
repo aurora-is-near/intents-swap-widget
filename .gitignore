@@ -37,5 +37,5 @@ spec.json
 # Sentry
 .env.sentry-build-plugin
 
-# VSCode
-.vscode/
+# VSCode mcp settings
+.vscode/mcp.json
