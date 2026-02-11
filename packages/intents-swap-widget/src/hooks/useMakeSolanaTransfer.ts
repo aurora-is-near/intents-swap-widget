@@ -65,8 +65,11 @@ export const useMakeSolanaTransfer = ({
       };
     }
 
-    const { getAssociatedTokenAddress, createTransferInstruction } =
-      await import('@solana/spl-token');
+    const {
+      getAssociatedTokenAddress,
+      createTransferInstruction,
+      createAssociatedTokenAccountInstruction,
+    } = await import('@solana/spl-token');
 
     // Validate amount
     const tokenAmount = BigInt(args.amount);
@@ -86,7 +89,21 @@ export const useMakeSolanaTransfer = ({
       toPubkey,
     );
 
-    const transaction = new Transaction().add(
+    const toAccountInfo = await connection.getAccountInfo(toTokenAccount);
+    const transaction = new Transaction();
+
+    if (!toAccountInfo) {
+      transaction.add(
+        createAssociatedTokenAccountInstruction(
+          fromPubkey,
+          toTokenAccount,
+          toPubkey,
+          mintPubkey,
+        ),
+      );
+    }
+
+    transaction.add(
       createTransferInstruction(
         fromTokenAccount,
         toTokenAccount,
