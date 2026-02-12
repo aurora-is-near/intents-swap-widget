@@ -20,8 +20,8 @@ export const SolIcon = () => {
           x2="20.5"
           y2="7.5"
           gradientUnits="userSpaceOnUse">
-          <stop stop-color="#CF41E8" />
-          <stop offset="1" stop-color="#10F2B0" />
+          <stop stopColor="#CF41E8" />
+          <stop offset="1" stopColor="#10F2B0" />
         </linearGradient>
       </defs>
       <rect width="28" height="28" fill="#232323" />
