@@ -127,6 +127,67 @@ const config = {
 };
 ```
 
+### Solana example with Privy
+
+[Privy](https://docs.privy.io/) wallets don't expose `signMessage` and
+`signTransaction` in the same shape the widget expects, so you need a small
+adapter. Here's a complete example:
+
+```tsx
+import { type Providers } from '@aurora-is-near/intents-swap-widget';
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+
+function solanaProviderFromPrivy(
+  privyWallet: PrivySolanaWallet,
+): NonNullable<Providers['sol']> {
+  const account = privyWallet.standardWallet.accounts.find(
+    (a) => a.address === privyWallet.address,
+  );
+
+  return {
+    publicKey: account?.publicKey
+      ? new PublicKey(account.publicKey)
+      : undefined,
+
+    signMessage: async (message) => {
+      const result = await privyWallet.signMessage({ message });
+      return result.signature;
+    },
+
+    signTransaction: async (transaction) => {
+      if (transaction instanceof VersionedTransaction) {
+        const result = await privyWallet.signTransaction({
+          transaction: transaction.serialize(),
+        });
+        return VersionedTransaction.deserialize(result.signedTransaction);
+      }
+
+      const result = await privyWallet.signTransaction({
+        transaction: transaction.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false,
+        }),
+      });
+      return Transaction.from(result.signedTransaction);
+    },
+  } as NonNullable<Providers['sol']>;
+}
+```
+
+Then pass it into the config:
+
+```tsx
+const config = {
+  appName: 'MyApp',
+  connectedWallets: { default: privyWallet.address },
+  providers: {
+    sol: solanaProviderFromPrivy(privyWallet),
+  },
+  onWalletSignin: connect,
+  onWalletSignout: disconnect,
+};
+```
+
 ### NEAR example
 
 ```tsx
