@@ -259,9 +259,11 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'SPX',
   },
   eure: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/20920.png',
     name: 'EURe',
   },
   gbpe: {
+    icon: 'https://assets.coingecko.com/coins/images/39004/standard/gbp.png?1719840784',
     name: 'GBPE',
   },
   cfi: {
@@ -283,5 +285,5 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
   evaa: {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/38376.png',
     name: 'EVAA Protocol',
-  }
+  },
 };

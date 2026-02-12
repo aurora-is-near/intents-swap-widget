@@ -15,9 +15,7 @@ import CardanoIcon from './cardano.svg';
 import DaiIcon from './dai.svg';
 import DogeIcon from './doge.svg';
 import EthIcon from './eth.svg';
-import EureIcon from './eure.svg';
 import FraxIcon from './frax.svg';
-import GbpeIcon from './gbpe.svg';
 import GnearIcon from './gnear.svg';
 import GnosisIcon from './gnosis.svg';
 import ItlxIcon from './itlx.svg';
@@ -97,9 +95,7 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   dai: <DaiIcon />,
   doge: <DogeIcon />,
   eth: <EthIcon />,
-  eure: <EureIcon />,
   frax: <FraxIcon />,
-  gbpe: <GbpeIcon />,
   gnear: <GnearIcon />,
   gnosis: <GnosisIcon />,
   itlx: <ItlxIcon />,
