@@ -255,6 +255,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'ASTER',
   },
   spx: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/28081.png',
     name: 'SPX',
   },
   eure: {
@@ -267,4 +268,20 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/39057.png',
     name: 'ConsumerFi Protocol',
   },
+  pengu: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/39057.png',
+    name: 'Pudgy Penguins',
+  },
+  inx: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/39461.png',
+    name: 'Infinex',
+  },
+  titn: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/36271.png',
+    name: 'Titan',
+  },
+  evaa: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/38376.png',
+    name: 'EVAA Protocol',
+  }
 };

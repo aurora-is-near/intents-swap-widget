@@ -5,7 +5,6 @@ import AdaIcon from './ada.svg';
 import AdiIcon from './adi.svg';
 import ArbIcon from './arb.svg';
 import AsterIcon from './aster.svg';
-import AuroraIcon from './aurora.svg';
 import AvaxIcon from './avax.svg';
 import BaseIcon from './base.svg';
 import BeraIcon from './bera.svg';
@@ -30,6 +29,7 @@ import MonIcon from './mon.svg';
 import MpdaoIcon from './mpdao.svg';
 import NearIcon from './near.svg';
 import NoearIcon from './noear.svg';
+import NproIcon from './npro.svg';
 import OpIcon from './op.svg';
 import PolIcon from './pol.svg';
 import PublicIcon from './public.svg';
@@ -87,7 +87,6 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   adi: <AdiIcon />,
   arb: <ArbIcon />,
   aster: <AsterIcon />,
-  aurora: <AuroraIcon />,
   avax: <AvaxIcon />,
   base: <BaseIcon />,
   bera: <BeraIcon />,
@@ -112,6 +111,7 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   mpdao: <MpdaoIcon />,
   near: <NearIcon />,
   noear: <NoearIcon />,
+  npro: <NproIcon />,
   op: <OpIcon />,
   pol: <PolIcon />,
   public: <PublicIcon />,
