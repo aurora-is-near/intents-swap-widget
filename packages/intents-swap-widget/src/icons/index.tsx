@@ -1,12 +1,14 @@
 /* eslint-disable import/extensions */
 import { ReactElement, SVGAttributes } from 'react';
 import AbgIcon from './abg.svg';
+import AdiIcon from './adi.svg';
 import ArbIcon from './arb.svg';
 import AsterIcon from './aster.svg';
 import AuroraIcon from './aurora.svg';
 import AvaxIcon from './avax.svg';
 import BaseIcon from './base.svg';
 import BeraIcon from './bera.svg';
+import BnbIcon from './bnb.svg';
 import BscIcon from './bsc.svg';
 import BtcIcon from './btc.svg';
 import CardanoIcon from './cardano.svg';
@@ -73,12 +75,14 @@ export const CHAIN_ICONS: Record<
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
   abg: <AbgIcon />,
+  adi: <AdiIcon />,
   arb: <ArbIcon />,
   aster: <AsterIcon />,
   aurora: <AuroraIcon />,
   avax: <AvaxIcon />,
   base: <BaseIcon />,
   bera: <BeraIcon />,
+  bnb: <BnbIcon />,
   bsc: <BscIcon />,
   btc: <BtcIcon />,
   cardano: <CardanoIcon />,
