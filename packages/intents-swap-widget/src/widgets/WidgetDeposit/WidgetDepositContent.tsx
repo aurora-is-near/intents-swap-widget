@@ -53,7 +53,6 @@ export const WidgetDepositContent = ({
     chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
-    disableTokenSelection,
   } = useConfig();
 
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
@@ -197,7 +196,7 @@ export const WidgetDepositContent = ({
       );
 
     case 'success': {
-      if (tokenModalOpen !== 'none' && !disableTokenSelection) {
+      if (tokenModalOpen !== 'none') {
         return (
           <TokensModal
             showBalances

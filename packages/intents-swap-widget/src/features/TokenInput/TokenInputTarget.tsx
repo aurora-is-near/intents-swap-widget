@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { useTokenInputBalance } from './hooks';
-import { useConfig } from '../../config';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 
@@ -19,15 +18,10 @@ export const TokenInputTarget = ({
   heading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { disableTokenSelection } = useConfig();
   const { usdTradeDelta } = useComputedSnapshot();
   const targetTokenBalance = useTokenInputBalance(ctx.targetToken);
 
   const sourceInputState = useMemo(() => {
-    if (disableTokenSelection) {
-      return 'disabled' as const;
-    }
-
     if (!isChanging && ctx.quoteStatus === 'pending') {
       return 'disabled' as const;
     }

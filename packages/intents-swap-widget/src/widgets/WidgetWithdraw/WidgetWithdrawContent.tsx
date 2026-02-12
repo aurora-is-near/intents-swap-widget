@@ -53,7 +53,6 @@ export const WidgetWithdrawContent = ({
     chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
-    disableTokenSelection,
   } = useConfig();
 
   const {
@@ -180,7 +179,7 @@ export const WidgetWithdrawContent = ({
       );
 
     case 'success': {
-      if (tokenModalOpen !== 'none' && !disableTokenSelection) {
+      if (tokenModalOpen !== 'none') {
         return (
           <TokensModal
             showBalances
