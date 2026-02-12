@@ -44,13 +44,42 @@ export default function App() {
 }
 ```
 
-## Standalone mode
+## Core options
 
-To render the widget with its own AppKit-based wallet connection mechanism
-install and import components from `@aurora-is-near/intents-swap-widget-standalone`
-instead.
+The following options are available if you are not using standalone mode
+(i.e. you installed `@aurora-is-near/intents-swap-widget`).
 
-## Options
+### `connectedWallets`
+
+A map of connected wallet addresses keyed by chain. Used to determine which
+accounts can send or receive tokens on each network.
+
+### `providers`
+
+The provider(s) for interacting with the `connectedWallets`. Used for signing
+messages.
+
+### `onWalletSignin`
+
+Used to trigger wallet connection for main action button. If this function is
+not provided the button will have the label "Connect wallet" and not be clickable.
+
+### `onWalletSignout`
+
+Used to sign out user's wallet. Currently used for compatibility check modal if
+a wallet is incompatible. NB: some wallets don't support programmatic logout
+make sure you guide user accordingly if required on your side.
+
+### `showProfileButton`
+
+Show a profile button at the top of the widget via which you can connect
+(by calling `onWalletSignin`) or disconnect (by calling `onWalletSignout`).
+
+## Common Options
+
+The following options are available for all widget packages
+(i.e. you installed `@aurora-is-near/intents-swap-widget` or
+`@aurora-is-near/intents-swap-widget-standalone`):
 
 ### `appName`
 
@@ -75,11 +104,6 @@ A list of blockchain networks supported by the connected wallet(s).
 
 If this is not provided we will attempt to establish the supported chains based
 on the format of the wallet address.
-
-### `connectedWallets`
-
-A map of connected wallet addresses keyed by chain. Used to determine which
-accounts can send or receive tokens on each network.
 
 ### `sendAddress`
 
@@ -395,22 +419,6 @@ Used to hide the send address when swapping or withdrawing.
 
 Used to hide the headings on the token input boxes.
 
-### `showProfileButton`
-
-Show a profile button at the top of the widget via which you can connect
-(by calling `onWalletSignin`) or disconnect (by calling `onWalletSignout`).
-
-### `onWalletSignin`
-
-Used to trigger wallet connection for main action button. If this function is
-not provided the button will have the label "Connect wallet" and not be clickable.
-
-### `onWalletSignout`
-
-Used to sign out user's wallet. Currently used for compatibility check modal if
-a wallet is incompatible. NB: some wallets don't support programmatic logout
-make sure you guide user accordingly if required on your side.
-
 ### `themeParentElementSelector`
 
 HTML element that defines CSS theming variables. If not set, the `body` element
@@ -420,8 +428,3 @@ is used.
 
 By default, when using the swap widget, we can click the arrow in the middle
 to switch the swap direction. This option disables that feature.
-
-### `providers`
-
-The provider(s) for interacting with the `connectedWallets`. Used for signing
-messages.
