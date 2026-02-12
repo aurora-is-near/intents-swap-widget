@@ -23,6 +23,9 @@ export function TokenRow({
     />
   ) : undefined;
 
+  const tokenSymbol =
+    token.symbol.toLowerCase() === 'wnear' ? 'NEAR' : token.symbol;
+
   return (
     <div
       className={`flex items-center justify-between px-csw-md py-csw-md bg-csw-gray-800 rounded-csw-md transition-colors ${
@@ -33,7 +36,7 @@ export function TokenRow({
       onClick={() => !isDisabled && onToggle()}>
       <TokenTag
         tokenIcon={tokenIcon}
-        tokenSymbol={token.symbol}
+        tokenSymbol={tokenSymbol}
         className="flex-1 justify-start bg-transparent"
       />
 

@@ -21,7 +21,7 @@ const POPULAR_TOKENS: string[] = [
   'SOL',
   'USDC',
   'USDT',
-  'NEAR',
+  'wNEAR',
   'AURORA',
 ];
 
@@ -86,7 +86,9 @@ export function TokenSelectionModal({
   );
 
   const otherAvailable = availableFilteredTokens.filter(
-    (token: TokenType) => !POPULAR_TOKENS.includes(token.symbol),
+    (token: TokenType) =>
+      !POPULAR_TOKENS.includes(token.symbol) &&
+      token.symbol.toLocaleLowerCase() !== 'near',
   );
 
   const handleToggleToken = (tokenId: string) => {

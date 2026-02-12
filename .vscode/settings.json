@@ -8,6 +8,7 @@
     "source.fixAll.eslint": "explicit",
     "source.fixAll.markdownlint": "explicit"
   },
+  "eslint.runtime": "node",
   "editor.rulers": [80],
   "eslint.validate": [
     "javascript",
