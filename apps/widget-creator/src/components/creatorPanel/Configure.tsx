@@ -267,6 +267,11 @@ export function Configure() {
                         chain.id === state.defaultSellToken?.blockchain,
                     );
 
+                    const sellTokenSymbol =
+                      sellToken?.symbol.toLowerCase() === 'wnear'
+                        ? 'NEAR'
+                        : sellToken?.symbol;
+
                     return (
                       <div
                         onClick={() => {
@@ -292,7 +297,9 @@ export function Configure() {
                                 </div>
                               ) : undefined
                             }
-                            tokenSymbol={state.defaultSellToken.symbol}
+                            tokenSymbol={
+                              sellTokenSymbol ?? state.defaultSellToken.symbol
+                            }
                           />
                         ) : (
                           <SelectATokenText />
@@ -330,6 +337,11 @@ export function Configure() {
                       (chain) => chain.id === state.defaultBuyToken?.blockchain,
                     );
 
+                    const buyTokenSymbol =
+                      buyToken?.symbol.toLowerCase() === 'wnear'
+                        ? 'NEAR'
+                        : buyToken?.symbol;
+
                     return (
                       <div
                         onClick={() => {
@@ -355,7 +367,9 @@ export function Configure() {
                                 </div>
                               ) : undefined
                             }
-                            tokenSymbol={state.defaultBuyToken.symbol}
+                            tokenSymbol={
+                              buyTokenSymbol ?? state.defaultBuyToken.symbol
+                            }
                           />
                         ) : (
                           <SelectATokenText />
