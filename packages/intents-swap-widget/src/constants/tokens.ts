@@ -217,6 +217,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'USDf',
   },
   $wif: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/28752.png',
     name: 'WIF',
   },
   xdai: {
@@ -261,5 +262,9 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
   },
   gbpe: {
     name: 'GBPE',
+  },
+  cfi: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/39057.png',
+    name: 'ConsumerFi Protocol',
   },
 };

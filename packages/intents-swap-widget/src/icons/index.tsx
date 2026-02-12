@@ -1,6 +1,7 @@
 /* eslint-disable import/extensions */
 import { ReactElement, SVGAttributes } from 'react';
 import AbgIcon from './abg.svg';
+import AdaIcon from './ada.svg';
 import AdiIcon from './adi.svg';
 import ArbIcon from './arb.svg';
 import AsterIcon from './aster.svg';
@@ -12,9 +13,12 @@ import BnbIcon from './bnb.svg';
 import BscIcon from './bsc.svg';
 import BtcIcon from './btc.svg';
 import CardanoIcon from './cardano.svg';
+import DaiIcon from './dai.svg';
 import DogeIcon from './doge.svg';
 import EthIcon from './eth.svg';
+import EureIcon from './eure.svg';
 import FraxIcon from './frax.svg';
+import GbpeIcon from './gbpe.svg';
 import GnearIcon from './gnear.svg';
 import GnosisIcon from './gnosis.svg';
 import ItlxIcon from './itlx.svg';
@@ -37,8 +41,12 @@ import TonIcon from './ton.svg';
 import TronIcon from './tron.svg';
 import UnknownIcon from './unknown.svg';
 import Usd1Icon from './usd1.svg';
+import UsdcIcon from './usdc.svg';
 import UsdfIcon from './usdf.svg';
+import UsdtIcon from './usdt.svg';
+import WbtcIcon from './wbtc.svg';
 import WifIcon from './wif.svg';
+import XbtcIcon from './xbtc.svg';
 import XdaiIcon from './xdai.svg';
 import XrpIcon from './xrp.svg';
 import ZecIcon from './zec.svg';
@@ -75,6 +83,7 @@ export const CHAIN_ICONS: Record<
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
   abg: <AbgIcon />,
+  ada: <AdaIcon />,
   adi: <AdiIcon />,
   arb: <ArbIcon />,
   aster: <AsterIcon />,
@@ -86,9 +95,12 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   bsc: <BscIcon />,
   btc: <BtcIcon />,
   cardano: <CardanoIcon />,
+  dai: <DaiIcon />,
   doge: <DogeIcon />,
   eth: <EthIcon />,
+  eure: <EureIcon />,
   frax: <FraxIcon />,
+  gbpe: <GbpeIcon />,
   gnear: <GnearIcon />,
   gnosis: <GnosisIcon />,
   itlx: <ItlxIcon />,
@@ -110,9 +122,13 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   ton: <TonIcon />,
   tron: <TronIcon />,
   usd1: <Usd1Icon />,
+  usdc: <UsdcIcon />,
   usdf: <UsdfIcon />,
+  usdt: <UsdtIcon />,
   unknown: <UnknownIcon />,
+  wbtc: <WbtcIcon />,
   wif: <WifIcon />,
+  xbtc: <XbtcIcon />,
   xdai: <XdaiIcon />,
   xrp: <XrpIcon />,
   zec: <ZecIcon />,
