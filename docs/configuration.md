@@ -138,6 +138,11 @@ Predefine the default source token. Can be set to `null` to keep it not selected
 
 Predefine the default target token. Can be set to `null` to keep it not selected.
 
+### `disableTokenSelection`
+
+Prevent token selection, either manual or automatic. This is useful if you want
+to fix your widget to a particular token and be sure that deffault won't be schanged.
+
 ### `chainsOrder`
 
 Defines the order in which supported chains are displayed.

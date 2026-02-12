@@ -18,6 +18,10 @@ export const tokenSelect = (
   const { variant, token } = payload;
   const { config } = snapshot(configStore);
 
+  if (config.disableTokenSelection) {
+    return;
+  }
+
   switch (variant) {
     case 'source':
       if (

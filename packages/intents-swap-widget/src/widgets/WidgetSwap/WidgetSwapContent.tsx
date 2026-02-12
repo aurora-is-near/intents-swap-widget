@@ -54,6 +54,7 @@ export const WidgetSwapContent = ({
     enableAccountAbstraction,
     alchemyApiKey,
     refetchQuoteInterval,
+    disableTokenSelection,
   } = useConfig();
 
   const { t } = useTypedTranslation();
@@ -182,7 +183,7 @@ export const WidgetSwapContent = ({
       );
 
     case 'success': {
-      if (tokenModalOpen !== 'none') {
+      if (tokenModalOpen !== 'none' && !disableTokenSelection) {
         return (
           <TokensModal
             showBalances

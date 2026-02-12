@@ -49,16 +49,15 @@ export type WidgetConfig = {
     fee: number;
   }[];
 
-  // Default tokens
+  // Tokens
   defaultSourceToken?: DefaultToken | null;
   defaultTargetToken?: DefaultToken | null;
-
-  // Tokens filtering
   allowedTokensList?: string[]; // assetIDs
   allowedSourceTokensList?: string[];
   allowedTargetTokensList?: string[];
   priorityAssets?: PriorityAssets;
   filterTokens: (token: Token) => boolean;
+  disableTokenSelection?: boolean;
 
   // Chains filtering
   chainsOrder: Chains[];
