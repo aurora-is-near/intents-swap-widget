@@ -16,7 +16,7 @@ import {
 } from '../constants';
 
 type CreatorState = {
-  // Configure - User authentication
+  // Configure - Wallet connection
   userAuthMode: 'standalone' | 'dapp';
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
@@ -76,7 +76,7 @@ const initialState: CreatorState = {
 };
 
 type Action =
-  // Configure - User authentication
+  // Configure - Wallet connection
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
