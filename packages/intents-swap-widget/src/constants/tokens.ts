@@ -239,6 +239,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'wNEAR',
   },
   weth: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2396.png',
     name: 'wETH',
   },
   nearkat: {
