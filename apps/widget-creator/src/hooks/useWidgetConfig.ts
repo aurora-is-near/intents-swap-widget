@@ -10,7 +10,7 @@ export const useWidgetConfig = () => {
 
   const widgetConfig = useMemo(
     (): Partial<WidgetConfig> => ({
-      appName: 'Widget Creator',
+      appName: 'Near Intents',
       apiKey:
         // we don't want to expose our default app key to the exported code
         // but want a widget to function in a studio so we swap them here

@@ -10,91 +10,91 @@ export const WNEAR_ASSET_ID = 'nep141:wrap.near';
 
 export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
   usdc: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png',
     name: 'USD Coin',
   },
   usdt: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/825.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/825.png',
     name: 'Tether USD',
   },
   dai: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/4943.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/4943.png',
     name: 'DAI',
   },
   aurora: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/14803.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/14803.png',
     name: 'Aurora',
   },
   turbo: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/24911.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24911.png',
     name: 'Turbo',
   },
   hapi: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/8567.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/8567.png',
     name: 'HAPI Protocol',
   },
   cbbtc: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/32994.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/32994.png',
     name: 'Coinbase Wrapped BTC',
   },
   trump: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/35336.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35336.png',
     name: 'OFFICIAL TRUMP',
   },
   melania: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/35347.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/35347.png',
     name: 'Official Melania Meme',
   },
   pepe: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/24478.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/24478.png',
     name: 'Pepe',
   },
   shib: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/5994.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5994.png',
     name: 'Shiba Inu',
   },
   link: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1975.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1975.png',
     name: 'Chainlink',
   },
   uni: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/7083.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7083.png',
     name: 'Uniswap',
   },
   aave: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/7278.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7278.png',
     name: 'Aave',
   },
   gmx: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/11857.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11857.png',
     name: 'GMX',
   },
   mog: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/27659.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/27659.png',
     name: 'Mog Coin',
   },
   brett: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/29743.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/29743.png',
     name: 'Brett',
   },
   sweat: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/21351.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21351.png',
     name: 'Sweat Economy',
   },
   bome: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/29870.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/29870.png',
     name: 'BOOK OF MEME',
   },
   blackdragon: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/29627.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/29627.png',
     name: 'Black Dragon',
   },
   shitzu: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/19354.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/19354.png',
     name: 'Shitzu',
   },
   brrr: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/20604.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/20604.png',
     name: 'Burrow',
   },
   abg: {
@@ -110,15 +110,15 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'gNear',
   },
   gno: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1659.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1659.png',
     name: 'Gnosis',
   },
   cow: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/19269.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/19269.png',
     name: 'CoW Protocol',
   },
   safe: {
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/128x128/21585.png',
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21585.png',
     name: 'Safe',
   },
   score: {
@@ -217,6 +217,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'USDf',
   },
   $wif: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/28752.png',
     name: 'WIF',
   },
   xdai: {
@@ -238,6 +239,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'wNEAR',
   },
   weth: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2396.png',
     name: 'wETH',
   },
   nearkat: {
@@ -254,12 +256,35 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     name: 'ASTER',
   },
   spx: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/28081.png',
     name: 'SPX',
   },
   eure: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/20920.png',
     name: 'EURe',
   },
   gbpe: {
+    icon: 'https://assets.coingecko.com/coins/images/39004/standard/gbp.png?1719840784',
     name: 'GBPE',
+  },
+  cfi: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/39057.png',
+    name: 'ConsumerFi Protocol',
+  },
+  pengu: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/34466.png',
+    name: 'Pudgy Penguins',
+  },
+  inx: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/39461.png',
+    name: 'Infinex',
+  },
+  titn: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/36271.png',
+    name: 'Titan',
+  },
+  evaa: {
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/38376.png',
+    name: 'EVAA Protocol',
   },
 };

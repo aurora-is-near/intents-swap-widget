@@ -30,7 +30,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const DISABLED_TOKENS = ['fms', 'abg', 'stjack', 'noear', 'testnebula'];
+const DISABLED_TOKENS = [
+  'fms',
+  'abg',
+  'stjack',
+  'noear',
+  'testnebula',
+  'susdc',
+];
 
 const DEFAULT_CONFIG: WidgetConfig = {
   appName: 'Unknown',
