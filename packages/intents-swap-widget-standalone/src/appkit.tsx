@@ -1,15 +1,15 @@
 'use client';
 
 import {
-  createContext,
   type ReactNode,
   useEffect,
   useMemo,
   useRef,
   useState,
+  createContext,
 } from 'react';
 
-import { AppKit, createAppKit } from '@reown/appkit/react';
+import { type AppKit, createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
@@ -26,11 +26,11 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import { useTheme } from './hooks/useTheme';
-import { Theme } from './types/theme';
-import { useConfig } from '@/config';
+import type { Theme } from '@aurora-is-near/intents-swap-widget';
 
 type AppKitProviderProps = {
+  appName?: string;
+  theme?: Theme;
   children: ReactNode;
 };
 
@@ -46,7 +46,7 @@ export const initAppKit = ({
   appName,
   theme,
 }: {
-  appName: string;
+  appName?: string;
   theme?: Theme;
 }) => {
   const projectId = '76f61d4322c80976d1a24a1263a9d082';
@@ -89,7 +89,7 @@ export const initAppKit = ({
     ],
     projectId,
     metadata: {
-      name: appName,
+      name: appName ?? 'Intents Swap Widget',
       description: 'Cross-chain swap widget powered by Intents',
       url: window.location.origin,
       icons: websiteFavicon ? [websiteFavicon] : [],
@@ -107,22 +107,23 @@ export const AppKitContext = createContext<AppKitContextType | undefined>(
   undefined,
 );
 
-export const AppKitProvider = ({ children }: AppKitProviderProps) => {
+export const AppKitProvider = ({
+  appName,
+  theme,
+  children,
+}: AppKitProviderProps) => {
   const wasEnabled = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [appKit, setAppKit] = useState<AppKit | null>(null);
-  const config = useConfig();
-  const theme = useTheme();
 
   useEffect(() => {
-    if (config.enableStandaloneMode && !wasEnabled.current) {
-      setAppKit(initAppKit({ appName: config.appName, theme }));
-
+    if (!wasEnabled.current) {
+      setAppKit(initAppKit({ appName, theme }));
       wasEnabled.current = true;
     }
 
     setIsLoading(false);
-  }, [config, theme]);
+  }, [appName, theme]);
 
   const value = useMemo(
     () => ({

@@ -82,15 +82,18 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
   const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
+  const isStandaloneMode = state.userAuthMode === 'standalone';
 
-  const sampleCode = `import { WidgetSwap } from '@aurora-is-near/intents-swap-widget';
+  const sampleCode = `import { Widget, WidgetConfigProvider } from '@aurora-is-near/intents-swap-widget${isStandaloneMode ? '-standalone' : ''}';
 
 export function App() {
   return (
-    <Widget
+    <WidgetConfigProvider
       config={${stringifyAsJS(widgetConfig, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
-    />
+    >
+      <Widget />
+    </WidgetConfigProvider>
   );
 }`;
 

@@ -16,7 +16,6 @@ export const useWidgetConfig = () => {
         // but want a widget to function in a studio so we swap them here
         state.apiKey === PLACEHOLDER_APP_KEY ? DEFAULT_APP_KEY : state.apiKey,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
-      enableStandaloneMode: state.userAuthMode === 'standalone',
       allowedChainsList: state.selectedNetworks,
       allowedTokensList: state.selectedTokenSymbols,
       defaultSourceToken: state.enableSellToken

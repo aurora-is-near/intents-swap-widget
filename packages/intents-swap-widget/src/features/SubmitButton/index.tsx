@@ -1,8 +1,6 @@
 import { Trans } from 'react-i18next';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 
-import { useProviders } from '../../hooks';
-
 import { useConfig } from '@/config';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
@@ -269,7 +267,7 @@ const ConnectWalletButton = () => {
 };
 
 const SubmitButtonBase = (props: Props) => {
-  const { providers } = useProviders();
+  const { providers } = useConfig();
 
   const { makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();

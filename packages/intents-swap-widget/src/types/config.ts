@@ -25,9 +25,6 @@ export type WidgetConfig = {
   // Account abstraction
   enableAccountAbstraction?: boolean;
 
-  // Standalone mode
-  enableStandaloneMode?: boolean;
-
   // Providers
   providers?: Providers;
 
@@ -83,6 +80,7 @@ export type WidgetConfig = {
   tonCenterApiKey?: string;
 
   // UI
+  showProfileButton?: boolean;
   hideSendAddress?: boolean;
   hideTokenInputHeadings?: boolean;
   themeParentElementSelector?: string;

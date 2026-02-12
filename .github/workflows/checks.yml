@@ -13,7 +13,7 @@ jobs:
       - name: Install
         run: yarn install --frozen-lockfile --non-interactive
       - name: Build
-        run: yarn build --filter=@aurora-is-near/intents-swap-widget
+        run: yarn build --filter=@aurora-is-near/intents-swap-widget --filter=@aurora-is-near/intents-swap-widget-standalone
       - name: Lint
         run: NODE_OPTIONS='--max-old-space-size=6000' yarn lint
       - name: Check types

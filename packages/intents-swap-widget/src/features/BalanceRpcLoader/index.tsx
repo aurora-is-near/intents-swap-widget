@@ -3,11 +3,11 @@ import { useCallback, useMemo } from 'react';
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { useConfig } from '../../config';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token, TokenBalances } from '@/types/token';
-import { useConnectedWallets } from '@/hooks/useConnectedWallets';
 
 type Props = {
   rpcs: ChainRpcUrls;
@@ -65,7 +65,7 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
 };
 
 export const BalanceRpcLoader = ({ rpcs }: Props) => {
-  const { connectedWallets } = useConnectedWallets();
+  const { connectedWallets } = useConfig();
   const { tokens } = useAllTokens();
   const { supportedChains } = useSupportedChains();
   const { setWalletBalance } = useWalletBalance(connectedWallets);

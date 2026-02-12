@@ -15,12 +15,23 @@ npm install @aurora-is-near/intents-swap-widget
 yarn add @aurora-is-near/intents-swap-widget
 ```
 
+Alternatively, if you want to use the widget in standalone mode with embedded
+wallet connection mechanisms:
+
+```bash
+npm install @aurora-is-near/intents-swap-widget-standalone
+
+# or
+
+yarn add @aurora-is-near/intents-swap-widget-standalone
+```
+
 ## 2. Setup
 
 Wrap your app, or just the area where the widget appears, with the `WidgetConfigProvider`,
 then render one of our prebuilt widgets within it.
 
-For example, the snippet below shows how to render the swap widget.
+For example, the snippet below shows how to render the combined widget.
 
 ```tsx
 import {
@@ -37,7 +48,7 @@ export default function App() {
 }
 ```
 
-There are also `WidgetTransfer` and `WidgetWithdraw` widgets.
+There are also individual `WidgetSwap`, `WidgetTransfer` and `WidgetWithdraw` widgets.
 
 For a full list of configuration options see the [Configuration](./configuration.md) page.
 
@@ -58,8 +69,10 @@ For more details about the available theming options see the [Theming](./theming
 
 ### 4. Connect a wallet
 
-Use your existing wallet integration (e.g. AppKit, Provy, TonConnect, etc.)
-and pass the connected address via the `connectedWallets` config option.
+If you are using standalone mode the wallet connection mechanism is built in.
+
+If you want to use your existing wallet integration (e.g. AppKit, Provy, TonConnect, etc.)
+you can pass the connected address via the `connectedWallets` config option.
 
 Here is an example that assumes you are using [AppKit](https://docs.reown.com/appkit/overview)
 and have a hook for providing the wallet address and a button for connecting.

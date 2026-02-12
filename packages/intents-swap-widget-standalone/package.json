@@ -1,0 +1,38 @@
+{
+  "name": "@aurora-is-near/intents-swap-widget-standalone",
+  "version": "5.4.2",
+  "description": "Standalone wrapper for the Intents swap widget",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "./dist/index.js",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "build": "vite build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
+  },
+  "dependencies": {
+    "@aurora-is-near/intents-swap-widget": "^5.4.2",
+    "@reown/appkit": "^1.8.10",
+    "@reown/appkit-adapter-solana": "^1.8.10",
+    "@reown/appkit-adapter-wagmi": "^1.8.11",
+    "@solana/wallet-adapter-wallets": "^0.19.32"
+  }
+}

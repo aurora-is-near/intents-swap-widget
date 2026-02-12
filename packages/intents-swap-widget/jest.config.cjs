@@ -16,7 +16,6 @@ const nodeModulesToTransform = [
   '@lit',
   '@wagmi',
   '@walletconnect',
-  '@reown',
 ].join('|');
 
 module.exports = {

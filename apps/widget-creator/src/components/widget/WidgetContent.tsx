@@ -7,6 +7,7 @@ import {
   WidgetConfigProvider,
   WidgetContainer,
 } from '@aurora-is-near/intents-swap-widget';
+import { WidgetConfigProvider as StandaloneWidgetConfigProvider } from '@aurora-is-near/intents-swap-widget-standalone';
 import { noop } from '@aurora-is-near/intents-swap-widget/utils';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import '@aurora-is-near/intents-swap-widget/styles.css';
@@ -71,8 +72,13 @@ export function WidgetContent() {
     );
   }
 
+  const Provider =
+    state.userAuthMode === 'standalone'
+      ? StandaloneWidgetConfigProvider
+      : WidgetConfigProvider;
+
   return (
-    <WidgetConfigProvider
+    <Provider
       config={{
         ...widgetConfig,
         alchemyApiKey: ALCHEMY_API_KEY,
@@ -88,6 +94,6 @@ export function WidgetContent() {
           />
         </div>
       )}
-    </WidgetConfigProvider>
+    </Provider>
   );
 }

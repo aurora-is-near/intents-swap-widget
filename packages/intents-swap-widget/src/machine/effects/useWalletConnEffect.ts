@@ -2,14 +2,14 @@ import { useEffect } from 'react';
 
 import type { ListenerProps } from './types';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
-import { useConnectedWallets } from '../../hooks/useConnectedWallets';
 
+import { useConfig } from '../../config';
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 export const useWalletConnEffect = ({ isEnabled }: ListenerProps) => {
-  const { connectedWallets } = useConnectedWallets();
+  const { connectedWallets } = useConfig();
   const { ctx, state } = useUnsafeSnapshot();
   const { walletAddress } = useWalletAddressForToken(
     connectedWallets,

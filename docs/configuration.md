@@ -44,6 +44,12 @@ export default function App() {
 }
 ```
 
+## Standalone mode
+
+To render the widget with its own AppKit-based wallet connection mechanism
+install and import components from `@aurora-is-near/intents-swap-widget-standalone`
+instead.
+
 ## Options
 
 ### `appName`
@@ -62,12 +68,6 @@ URL to your app's icon. Shown in the chain selection dropdown.
 
 Used to allow uses to deposit to and withdraw from your app's internal Intents
 account.
-
-### `enableStandaloneMode`
-
-Render the widget with its own AppKit-based wallet connection mechanism, as an
-alternative to controlling the connection externally and passing in walled
-addresses via `connectedWallets`.
 
 ### `walletSupportedChains`
 
@@ -395,11 +395,15 @@ Used to hide the send address when swapping or withdrawing.
 
 Used to hide the headings on the token input boxes.
 
+### `showProfileButton`
+
+Show a profile button at the top of the widget via which you can connect
+(by calling `onWalletSignin`) or disconnect (by calling `onWalletSignout`).
+
 ### `onWalletSignin`
 
 Used to trigger wallet connection for main action button. If this function is
-not provided and you are not using standlone mode (see `enableStandaloneMode`)
-the button will have the label "Connect wallet" and not be clickable.
+not provided the button will have the label "Connect wallet" and not be clickable.
 
 ### `onWalletSignout`
 

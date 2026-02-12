@@ -1,5 +1,5 @@
 import type { ListenerProps } from './types';
-import { useConnectedWallets } from '@/hooks/useConnectedWallets';
+import { useConfig } from '../../config';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 
 export type Props = ListenerProps & {
@@ -10,7 +10,7 @@ export const useAlchemyBalanceEffect = ({
   isEnabled,
   alchemyApiKey,
 }: Props) => {
-  const { connectedWallets } = useConnectedWallets();
+  const { connectedWallets } = useConfig();
 
   useAlchemyBalanceIntegration({
     isEnabled,

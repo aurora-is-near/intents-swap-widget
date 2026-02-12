@@ -1,6 +1,6 @@
 import './tailwind.css'; // import so CSS is emitted in dist
 
-export { WidgetConfigProvider } from './config';
+export { WidgetConfigProvider, type WidgetConfigProviderProps } from './config';
 export { DEFAULT_RPCS } from './rpcs';
 export { CHAINS } from './chains';
 

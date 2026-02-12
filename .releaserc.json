@@ -18,10 +18,17 @@
       }
     ],
     [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/intents-swap-widget-standalone"
+      }
+    ],
+    [
       "@semantic-release/git",
       {
         "assets": [
-          "packages/intents-swap-widget/package.json"
+          "packages/intents-swap-widget/package.json",
+          "packages/intents-swap-widget-standalone/package.json"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }

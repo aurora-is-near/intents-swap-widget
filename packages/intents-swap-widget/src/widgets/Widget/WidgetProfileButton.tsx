@@ -1,9 +1,38 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { PersonFillW700 as Person } from '@material-symbols-svg/react-rounded/icons/person';
-import { useAppKitWallet } from '../../hooks';
+import { useWalletConnection } from '../../hooks/useWalletConnection';
+import { useConfig } from '../../config';
 
 export const WidgetProfileButton = () => {
-  const { isConnected, connect, disconnect } = useAppKitWallet();
+  const { walletSignIn, walletSignOut } = useWalletConnection();
+  const { connectedWallets } = useConfig();
+  const isConnected = Object.values(connectedWallets).some((addr) => !!addr);
+
+  const onClick = () => {
+    if (isConnected) {
+      if (!walletSignOut) {
+        throw new Error(
+          'A walletSignOut function was not provided via the widget config',
+        );
+
+        return;
+      }
+
+      walletSignOut?.();
+
+      return;
+    }
+
+    if (!walletSignIn) {
+      throw new Error(
+        'A walletSignIn function was not provided via the widget config',
+      );
+
+      return;
+    }
+
+    walletSignIn?.();
+  };
 
   return (
     <Menu>
@@ -16,7 +45,7 @@ export const WidgetProfileButton = () => {
         <MenuItem>
           <button
             type="button"
-            onClick={isConnected ? disconnect : connect}
+            onClick={onClick}
             className="w-full flex items-center gap-sw-md px-sw-lg py-sw-sm rounded-sw-sm text-sm text-sw-gray-200 bg-sw-gray-900 border border-sw-gray-800 select-none cursor-pointer data-focus:outline-none">
             {isConnected ? 'Disconnect' : 'Connect Wallet'}
           </button>

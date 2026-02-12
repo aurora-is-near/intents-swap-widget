@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -25,7 +25,6 @@ import {
 } from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
-import { useAppKitWallet } from '../../hooks';
 import { useUnsafeSnapshot } from '../../machine';
 
 export type Props = Omit<
@@ -58,11 +57,9 @@ const wrapMakeTransfer = (
 };
 
 export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
-  const wasStandaloneModeEnabled = useRef(false);
   const [isTabsVisible, setIsTabsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
-  const { enableAccountAbstraction, enableStandaloneMode } = useConfig();
-  const { disconnect, isConnected } = useAppKitWallet();
+  const { enableAccountAbstraction, showProfileButton } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
   const switchTab = (tab: WidgetTab) => {
@@ -87,20 +84,6 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
     }
   }, [enableAccountAbstraction]);
 
-  // Disconnect any connected AppKit wallet when standalone mode is disabled and
-  // was previously enabled
-  useEffect(() => {
-    if (enableStandaloneMode) {
-      wasStandaloneModeEnabled.current = true;
-
-      return;
-    }
-
-    if (isConnected) {
-      void disconnect();
-    }
-  }, [enableStandaloneMode, isConnected]);
-
   const showHeader = ctx.state !== 'transfer_success';
 
   return (
@@ -114,7 +97,7 @@ export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
           ) : (
             <div className="w-full" />
           )}
-          {enableStandaloneMode && <WidgetProfileButton />}
+          {showProfileButton && <WidgetProfileButton />}
         </div>
       )}
 

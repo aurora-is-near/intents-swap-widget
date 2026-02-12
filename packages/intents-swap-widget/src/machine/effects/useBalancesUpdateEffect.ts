@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type { ListenerProps } from './types';
+import { useConfig } from '../../config';
 import { guardStates } from '@/machine';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
-import { useConnectedWallets } from '@/hooks/useConnectedWallets';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
 
@@ -17,7 +17,7 @@ export const useBalancesUpdateEffect = ({
   isEnabled,
   alchemyApiKey,
 }: Props) => {
-  const { connectedWallets } = useConnectedWallets();
+  const { connectedWallets } = useConfig();
   const { ctx } = useUnsafeSnapshot();
   const queryClient = useQueryClient();
 
