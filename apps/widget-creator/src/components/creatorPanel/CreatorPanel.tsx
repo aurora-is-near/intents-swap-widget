@@ -16,7 +16,7 @@ const CONFIGURE_PANEL_ID = 'configure-panel';
 type TabKey = 'design' | 'configure';
 
 export function CreatorPanel() {
-  const [activeTab, setActiveTab] = useState<TabKey>('design');
+  const [activeTab, setActiveTab] = useState<TabKey>('configure');
   const { dispatch } = useCreator();
 
   // preload API keys
@@ -33,23 +33,6 @@ export function CreatorPanel() {
           <button
             role="tab"
             type="button"
-            id={DESIGN_TAB_ID}
-            aria-selected={activeTab === 'design'}
-            aria-controls={DESIGN_PANEL_ID}
-            tabIndex={activeTab === 'design' ? 0 : -1}
-            onClick={() => setActiveTab('design')}
-            className={cn(
-              'font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-csw-accent-500 cursor-pointer',
-              activeTab === 'design'
-                ? 'text-csw-gray-50 border-b-csw-gray-50'
-                : 'text-csw-gray-200 border-b-transparent',
-            )}>
-            Design
-          </button>
-
-          <button
-            role="tab"
-            type="button"
             id={CONFIGURE_TAB_ID}
             aria-selected={activeTab === 'configure'}
             aria-controls={CONFIGURE_PANEL_ID}
@@ -62,6 +45,22 @@ export function CreatorPanel() {
                 : 'text-csw-gray-200 border-b-transparent',
             )}>
             Configure
+          </button>
+          <button
+            role="tab"
+            type="button"
+            id={DESIGN_TAB_ID}
+            aria-selected={activeTab === 'design'}
+            aria-controls={DESIGN_PANEL_ID}
+            tabIndex={activeTab === 'design' ? 0 : -1}
+            onClick={() => setActiveTab('design')}
+            className={cn(
+              'font-medium text-xl leading-[22px] tracking-[-0.5px] pb-2 border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-csw-accent-500 cursor-pointer',
+              activeTab === 'design'
+                ? 'text-csw-gray-50 border-b-csw-gray-50'
+                : 'text-csw-gray-200 border-b-transparent',
+            )}>
+            Design
           </button>
         </div>
 

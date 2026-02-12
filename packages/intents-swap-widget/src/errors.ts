@@ -17,8 +17,16 @@ export class WidgetError extends Error {
 
   _is_widget_error = true;
 
-  constructor(message: string, meta?: { cause?: unknown }) {
-    super(message);
+  constructor(message: string, meta?: { cause?: unknown; message?: string }) {
+    let msg = message;
+
+    // e.g. "TRANSFER_INVALID_INITIAL: No token selected to transfer."
+    if (meta?.message) {
+      msg += `: ${meta.message}`;
+    }
+
+    super(msg);
+
     this.name = 'WidgetError';
     this.cause = meta?.cause;
     this.context = snapshot(store).context;
