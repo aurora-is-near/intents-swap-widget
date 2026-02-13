@@ -56,7 +56,7 @@ export function useConfigLink() {
     const baseUrl = window.location.origin + window.location.pathname;
     const params = new URLSearchParams();
 
-    // Configure - User authentication
+    // Configure - Wallet connection
     params.append('userAuthMode', state.userAuthMode);
 
     // Configure - Account abstraction
@@ -133,7 +133,7 @@ export function useDecodeConfigLink() {
     const urlObj = new URL(url);
     const params = urlObj.searchParams;
 
-    // Configure - User authentication
+    // Configure - Wallet connection
     const userAuthMode = params.get('userAuthMode');
 
     if (userAuthMode === 'standalone' || userAuthMode === 'dapp') {

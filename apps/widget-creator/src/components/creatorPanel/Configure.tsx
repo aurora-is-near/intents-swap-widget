@@ -94,66 +94,6 @@ export function Configure() {
         }}
       />
       <div className="flex flex-col gap-csw-2xl">
-        <ConfigSection title="User authentication">
-          <div className="space-y-csw-2md">
-            <RadioButton
-              label="Standalone"
-              description="Use the built-in wallet connector."
-              isSelected={state.userAuthMode === 'standalone'}
-              onChange={() =>
-                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'standalone' })
-              }
-            />
-            <RadioButton
-              label="Dapp"
-              description="Use your own wallet connector. Some networks may not be supported."
-              isSelected={state.userAuthMode === 'dapp'}
-              onChange={() =>
-                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'dapp' })
-              }
-            />
-          </div>
-        </ConfigSection>
-
-        <ConfigSection title="Account abstraction">
-          <div className="space-y-csw-2md">
-            <RadioButton
-              label="Enabled"
-              description={
-                <span className="space-y-1.5">
-                  Users can deposit to or withdraw from their chain abstracted
-                  intents balance in addition to using their connected wallet
-                  balances.
-                  <a
-                    href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
-                    className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
-                    <span>Learn more</span>
-                    <ExternalLink className="w-csw-xl h-csw-xl" />
-                  </a>
-                </span>
-              }
-              isSelected={state.accountAbstractionMode === 'enabled'}
-              onChange={() =>
-                dispatch({
-                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                  payload: 'enabled',
-                })
-              }
-            />
-            <RadioButton
-              label="Disabled"
-              description="Users can only use assets in their connected wallet."
-              isSelected={state.accountAbstractionMode === 'disabled'}
-              onChange={() =>
-                dispatch({
-                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                  payload: 'disabled',
-                })
-              }
-            />
-          </div>
-        </ConfigSection>
-
         <ConfigSection title="Networks">
           <div className="space-y-csw-xl">
             <div className="flex gap-csw-md items-center">
@@ -380,6 +320,67 @@ export function Configure() {
                 </div>
               )}
             </div>
+          </div>
+        </ConfigSection>
+
+        <ConfigSection title="Wallet connection">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Standalone"
+              description="Use the built-in wallet connector."
+              isSelected={state.userAuthMode === 'standalone'}
+              onChange={() =>
+                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'standalone' })
+              }
+            />
+            <RadioButton
+              label="Dapp"
+              description="Use your own wallet connector. Some networks may not be supported."
+              isSelected={state.userAuthMode === 'dapp'}
+              onChange={() =>
+                dispatch({ type: 'SET_USER_AUTH_MODE', payload: 'dapp' })
+              }
+            />
+          </div>
+        </ConfigSection>
+
+        <ConfigSection title="Account abstraction">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Enabled"
+              description={
+                <span className="space-y-1.5">
+                  Users can deposit to or withdraw from their chain abstracted
+                  intents balance in addition to using their connected wallet
+                  balances.
+                  <a
+                    href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
+                    target="_blank"
+                    className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
+                    <span>Learn more</span>
+                    <ExternalLink className="w-csw-xl h-csw-xl" />
+                  </a>
+                </span>
+              }
+              isSelected={state.accountAbstractionMode === 'enabled'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                  payload: 'enabled',
+                })
+              }
+            />
+            <RadioButton
+              label="Disabled"
+              description="Users can only use assets in their connected wallet."
+              isSelected={state.accountAbstractionMode === 'disabled'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                  payload: 'disabled',
+                })
+              }
+            />
           </div>
         </ConfigSection>
 
