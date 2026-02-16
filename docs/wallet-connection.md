@@ -66,7 +66,7 @@ This is the default mode. You manage the wallet connection on your side (using w
 * **`onWalletSignin`** — Called when the user taps the action button while disconnected. Use this to trigger your own connect flow.
 * **`onWalletSignout`** — Called when the widget needs to disconnect the wallet (e.g. during an incompatible-wallet check).
 
-See the [Configuration](./) page for the full reference on each prop.
+See the [Configuration](<README (1).md>) page for the full reference on each prop.
 
 ### EVM example
 

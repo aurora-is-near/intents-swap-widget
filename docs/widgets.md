@@ -14,7 +14,7 @@ import { Widget } from '@aurora-is-near/intents-swap-widget';
 <Widget />
 ```
 
-As well as the global configuration properties provided via the `WidgetConfigProvider` (see [Configuration](./)), the widgets each accept a number of properties.
+As well as the global configuration properties provided via the `WidgetConfigProvider` (see [Configuration](<README (1).md>)), the widgets each accept a number of properties.
 
 ## Making transfers
 
