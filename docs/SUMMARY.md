@@ -1,7 +1,8 @@
 # Table of contents
 
-* [Getting Started](README.md)
-* [Configuration](<README (1).md>)
+* [Intro](README.md)
+* [Getting Started](<README (1).md>)
+* [Configuration](<README (1) (1).md>)
 * [Localisation](localisation.md)
 * [Theming](theming.md)
 * [Troubleshooting](troubleshooting.md)
