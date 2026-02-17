@@ -3,8 +3,8 @@ import {
   WidgetConfigProviderProps,
 } from '@aurora-is-near/intents-swap-widget';
 import { AppKitProvider } from './appkit';
-import { useAppKitWallet } from './useAppKitWallet';
-import { useAppKitProviders } from './useAppKitProviders';
+import { useWalletSelector } from './useWalletSelector';
+import { WalletSelectorModal } from './WalletSelectorModal';
 
 export type StandaloneWidgetConfigProviderProps = Omit<WidgetConfigProviderProps, 'config'> & {
   config: Omit<
@@ -22,22 +22,30 @@ function StandaloneWalletBridge({
   children,
   ...restProps
 }: StandaloneWidgetConfigProviderProps) {
-  const wallet = useAppKitWallet();
-  const providers = useAppKitProviders();
+  const wallet = useWalletSelector();
 
   return (
-    <WidgetConfigProvider
-      config={{
-        ...config,
-        connectedWallets: { default: wallet.address },
-        providers,
-        onWalletSignin: wallet.connect,
-        onWalletSignout: wallet.disconnect,
-        showProfileButton: true,
-      }}
-      {...restProps}>
-      {children}
-    </WidgetConfigProvider>
+    <>
+      <WidgetConfigProvider
+        config={{
+          ...config,
+          connectedWallets: wallet.connectedWallets,
+          providers: wallet.providers,
+          onWalletSignin: wallet.connect,
+          onWalletSignout: wallet.disconnect,
+          showProfileButton: true,
+        }}
+        {...restProps}>
+        {children}
+      </WidgetConfigProvider>
+
+      <WalletSelectorModal
+        open={wallet.showSelector}
+        onClose={wallet.closeSelector}
+        onSelectNear={wallet.selectNear}
+        onSelectEvmSolana={wallet.selectEvmSolana}
+      />
+    </>
   );
 }
 

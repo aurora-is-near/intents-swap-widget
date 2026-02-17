@@ -29,10 +29,13 @@
     "react-dom": ">=18.2.0"
   },
   "dependencies": {
-    "@aurora-is-near/intents-swap-widget": "^5.4.2",
+    "@aurora-is-near/intents-swap-widget": "^6.0.0",
+    "@headlessui/react": "^2.2.4",
+    "@hot-labs/near-connect": "^0.6.8",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
-    "@solana/wallet-adapter-wallets": "^0.19.32"
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "clsx": "^2.1.1"
   }
 }
