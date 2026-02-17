@@ -47,21 +47,17 @@ export const useWalletSelector = () => {
     setShowSelector(false);
   }, []);
 
-  const connectedWallets = nearWallet.isConnected
-    ? { near: nearWallet.accountId }
-    : { default: appKitWallet.address };
-
-  const providers = {
-    ...appKitProviders,
-    near: nearWallet.nearBasedWallet
-      ? () => nearWallet.nearBasedWallet!
-      : undefined,
-  };
-
   return {
     showSelector,
-    connectedWallets,
-    providers,
+    connectedWallets: {
+      default: nearWallet.isConnected
+        ? nearWallet.accountId
+        : appKitWallet.address
+    },
+    providers: {
+      ...appKitProviders,
+      near: nearWallet.nearBasedWallet
+    },
     connect,
     disconnect,
     selectNear,
