@@ -2,7 +2,7 @@
 
 export const TrustIcon = () => (
   <svg width="17" height="18" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clip-path="url(#clip0_2297_15148)">
+    <g clipPath="url(#clip0_2297_15148)">
     <path d="M0.777954 2.89789L8.50563 0.354004V17.9649C2.98581 15.6166 0.777954 11.1161 0.777954 8.57256V2.89789Z" fill="#0500FF"/>
     <path d="M16.2337 2.89789L8.50598 0.354004V17.9649C14.0258 15.6166 16.2337 11.1161 16.2337 8.57256V2.89789Z" fill="url(#paint0_linear_2297_15148)"/>
     </g>
