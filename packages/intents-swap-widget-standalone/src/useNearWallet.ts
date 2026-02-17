@@ -5,7 +5,7 @@ import type { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
 type NearWalletState = {
   isConnected: boolean;
   accountId: string | undefined;
-  nearBasedWallet: NearWalletBase | undefined;
+  nearWalletBase: NearWalletBase | undefined;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
 };
@@ -13,7 +13,7 @@ type NearWalletState = {
 export const useNearWallet = (): NearWalletState => {
   const connectorRef = useRef<NearConnector | null>(null);
   const [accountId, setAccountId] = useState<string | undefined>();
-  const [nearBasedWallet, setNearBasedWallet] = useState<
+  const [nearWalletBase, setNearWalletBase] = useState<
     NearWalletBase | undefined
   >();
 
@@ -28,13 +28,13 @@ export const useNearWallet = (): NearWalletState => {
 
       connector.on('wallet:signIn', ({ wallet, accounts }) => {
         if (cancelled) return;
-        setNearBasedWallet(wallet);
+        setNearWalletBase(wallet);
         setAccountId(accounts[0]?.accountId);
       });
 
       connector.on('wallet:signOut', () => {
         if (cancelled) return;
-        setNearBasedWallet(undefined);
+        setNearWalletBase(undefined);
         setAccountId(undefined);
       });
 
@@ -45,7 +45,7 @@ export const useNearWallet = (): NearWalletState => {
         const accounts = await wallet.getAccounts();
         if (cancelled) return;
         if (accounts.length > 0) {
-          setNearBasedWallet(wallet);
+          setNearWalletBase(wallet);
           setAccountId(accounts[0].accountId);
         }
       } catch {
@@ -72,14 +72,14 @@ export const useNearWallet = (): NearWalletState => {
     if (!connector) return;
 
     await connector.disconnect();
-    setNearBasedWallet(undefined);
+    setNearWalletBase(undefined);
     setAccountId(undefined);
   }, []);
 
   return {
     isConnected: !!accountId,
     accountId,
-    nearBasedWallet,
+    nearWalletBase,
     connect,
     disconnect,
   };

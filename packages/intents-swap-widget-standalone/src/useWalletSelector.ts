@@ -1,7 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAppKitWallet } from './useAppKitWallet';
 import { useAppKitProviders } from './useAppKitProviders';
 import { useNearWallet } from './useNearWallet';
+import { Providers } from '@aurora-is-near/intents-swap-widget';
+import { NearWalletBase } from '@hot-labs/near-connect';
+
+const isNearWallet = (nearWallet?: NearWalletBase):
+  nearWallet is NearWalletBase => !!nearWallet;
 
 export const useWalletSelector = () => {
   const appKitWallet = useAppKitWallet();
@@ -47,17 +52,30 @@ export const useWalletSelector = () => {
     setShowSelector(false);
   }, []);
 
+  const providers = useMemo(() => {
+    const walletProviders: Providers = {
+      ...appKitProviders,
+    };
+
+    const { nearWalletBase } = nearWallet;
+
+    if (isNearWallet(nearWalletBase)) {
+      walletProviders.near = () =>  nearWalletBase
+    }
+
+    return walletProviders;
+  }, [appKitProviders, nearWallet]);
+
+  const connectedWallets = useMemo(() => ({
+    default: nearWallet.isConnected
+      ? nearWallet.accountId
+      : appKitWallet.address
+  }), [nearWallet, appKitWallet])
+
   return {
     showSelector,
-    connectedWallets: {
-      default: nearWallet.isConnected
-        ? nearWallet.accountId
-        : appKitWallet.address
-    },
-    providers: {
-      ...appKitProviders,
-      near: nearWallet.nearBasedWallet
-    },
+    connectedWallets,
+    providers,
     connect,
     disconnect,
     selectNear,
