@@ -84,6 +84,11 @@
     .hide-scrollbar::-webkit-scrollbar {
         display: none;
     }
+
+    /* disable mynearwallet & okx-wallet from hot-wallet-connector */
+    [data-type='mynearwallet'], [data-type='okx-wallet'] {
+      display:none !important;
+    }
 }
 
 @layer utilities {
