@@ -1,4 +1,4 @@
-import { WalletIcon, WalletIconProps } from "./WalletIcon";
+import { WalletIcon, WalletIconProps } from './WalletIcon';
 
 type WalletOptionCardProps = {
   onClick: () => void;

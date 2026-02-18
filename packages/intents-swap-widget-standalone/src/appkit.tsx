@@ -1,12 +1,12 @@
 'use client';
 
 import {
+  createContext,
   type ReactNode,
   useEffect,
   useMemo,
   useRef,
   useState,
-  createContext,
 } from 'react';
 
 import { type AppKit, createAppKit } from '@reown/appkit/react';

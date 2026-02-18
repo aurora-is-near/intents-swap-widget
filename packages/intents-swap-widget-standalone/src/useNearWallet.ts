@@ -21,19 +21,28 @@ export const useNearWallet = (): NearWalletState => {
     let cancelled = false;
 
     const init = async () => {
-      if (cancelled) return;
+      if (cancelled) {
+        return;
+      }
 
       const connector = new NearConnector();
+
       connectorRef.current = connector;
 
       connector.on('wallet:signIn', ({ wallet, accounts }) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
+
         setNearWalletBase(wallet);
         setAccountId(accounts[0]?.accountId);
       });
 
       connector.on('wallet:signOut', () => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
+
         setNearWalletBase(undefined);
         setAccountId(undefined);
       });
@@ -41,9 +50,17 @@ export const useNearWallet = (): NearWalletState => {
       // Restore existing session
       try {
         const wallet = await connector.wallet();
-        if (cancelled) return;
+
+        if (cancelled) {
+          return;
+        }
+
         const accounts = await wallet.getAccounts();
-        if (cancelled) return;
+
+        if (cancelled) {
+          return;
+        }
+
         if (accounts.length > 0) {
           setNearWalletBase(wallet);
           setAccountId(accounts[0].accountId);
@@ -53,7 +70,7 @@ export const useNearWallet = (): NearWalletState => {
       }
     };
 
-    init();
+    void init();
 
     return () => {
       cancelled = true;
@@ -62,14 +79,20 @@ export const useNearWallet = (): NearWalletState => {
 
   const connect = useCallback(async () => {
     const connector = connectorRef.current;
-    if (!connector) return;
+
+    if (!connector) {
+      return;
+    }
 
     await connector.connect();
   }, []);
 
   const disconnect = useCallback(async () => {
     const connector = connectorRef.current;
-    if (!connector) return;
+
+    if (!connector) {
+      return;
+    }
 
     await connector.disconnect();
     setNearWalletBase(undefined);
