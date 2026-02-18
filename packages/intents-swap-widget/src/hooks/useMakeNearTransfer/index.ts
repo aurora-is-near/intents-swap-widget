@@ -32,7 +32,8 @@ function decodeQueryResult<T extends z.ZodTypeAny>(
   const decoder = new TextDecoder();
   const result = decoder.decode(uint8Array);
 
-  return schema.parse(JSON.parse(result)) as unknown as z.infer<T>;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return schema.parse(JSON.parse(result)) as z.infer<T>;
 }
 
 export type OptionalBlockReference = {
