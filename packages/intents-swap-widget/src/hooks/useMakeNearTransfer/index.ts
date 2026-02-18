@@ -1,10 +1,5 @@
-import z from 'zod'
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import z from 'zod';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   BlockId,
   BlockReference,
@@ -13,17 +8,16 @@ import type {
 } from 'near-api-js/lib/providers/provider';
 import type {
   NearConnector,
-  SignMessageParams,
   SignAndSendTransactionsParams,
+  SignMessageParams,
 } from '@hot-labs/near-connect';
 import { base64 } from '@scure/base';
 import type { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
 import type { Action } from '@hot-labs/near-connect/build/types/transactions';
 
+import { nearClient } from './nearClient';
 import { logger } from '@/logger';
 import type { MakeTransferArgs, TransferResult } from '@/types';
-
-import { nearClient } from './nearClient';
 
 /**
  * Use this function to decode a raw response from `nearClient.query()`
@@ -37,7 +31,7 @@ function decodeQueryResult<T extends z.ZodTypeAny>(
   const decoder = new TextDecoder();
   const result = decoder.decode(uint8Array);
 
-  return schema.parse(JSON.parse(result));
+  return schema.parse(JSON.parse(result)) as z.infer<T>;
 }
 
 export type OptionalBlockReference = {
@@ -61,7 +55,7 @@ function getBlockReference({
 }
 
 export async function queryContract({
-  nearClient,
+  nearClient: provider,
   contractId,
   methodName,
   args,
@@ -75,7 +69,7 @@ export async function queryContract({
   blockId?: BlockId;
   finality?: Finality;
 }): Promise<unknown> {
-  const response = await nearClient.query({
+  const response = await provider.query({
     request_type: 'call_function',
     account_id: contractId,
     method_name: methodName,
@@ -110,7 +104,7 @@ export const getNearNep141StorageBalance = async ({
       z.union([z.null(), z.object({ total: z.string() })]),
     );
 
-    return BigInt(parsed?.total || '0');
+    return BigInt(parsed?.total ?? '0');
   } catch (err: unknown) {
     throw new Error('Error fetching balance', { cause: err });
   }
@@ -158,8 +152,9 @@ export const useNearProvider = () => {
 
     // NearConnector uses window object, so we need to import it dynamically,
     // otherwise compiler complains that window is not defined, even though it is "use client"
-    const { NearConnector } =
-      await import('@hot-labs/near-connect/build/NearConnector');
+    const { NearConnector } = await import(
+      '@hot-labs/near-connect/build/NearConnector'
+    );
 
     let newConnector: NearConnector | null = null;
 
@@ -208,7 +203,7 @@ export const useNearProvider = () => {
   }, [connector]);
 
   useEffect(() => {
-    init();
+    void init();
   }, [init]);
 
   const connect = useCallback(async () => {
@@ -275,7 +270,7 @@ export const useNearProvider = () => {
     signMessage,
     signAndSendTransactions,
   ]);
-}
+};
 
 const transferNativeNear = async ({
   wallet,
@@ -305,7 +300,7 @@ const transferNativeNear = async ({
     ],
   });
 
-  if (tx && tx?.[0]) {
+  if (tx?.[0]) {
     return {
       hash: tx[0].transaction?.hash ?? '',
       transactionLink: `https://nearblocks.io/txns/${tx[0].transaction?.hash}`,
@@ -317,7 +312,6 @@ const transferNativeNear = async ({
     transactionLink: '',
   };
 };
-
 
 async function transferNEARToken(
   nearWallet: ReturnType<typeof useNearProvider>,
@@ -409,24 +403,25 @@ export function useMakeNearTransfer() {
     tokenAddress,
   }: MakeTransferArgs): Promise<TransferResult | undefined | null> {
     if (!tokenAddress) {
-        throw new Error(
-          'Token address is required for NEAR transfers. Or no intents account id.',
-        );
-      }
-
-      const txHash = await transferNEARToken(
-        nearBaseWallet,
-        tokenAddress,
-        to,
-        amount,
-        nearBaseWallet.accountId,
+      throw new Error(
+        'Token address is required for NEAR transfers. Or no intents account id.',
       );
+    }
 
-      return txHash;
+    const txHash = await transferNEARToken(
+      nearBaseWallet,
+      tokenAddress,
+      to,
+      amount,
+      nearBaseWallet.accountId,
+    );
+
+    return txHash;
   }
 
   const make = async (transferArgs: MakeTransferArgs) => {
     const tx = await send(transferArgs);
+
     return tx ?? null;
   };
 

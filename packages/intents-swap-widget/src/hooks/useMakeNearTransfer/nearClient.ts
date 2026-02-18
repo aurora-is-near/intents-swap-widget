@@ -22,6 +22,33 @@ export type SupportedIntentsChainName =
   | 'berachain'
   | 'tron';
 
+interface Settings {
+  swapExpirySec: number;
+  quoteMinDeadlineMs: number;
+  maxQuoteMinDeadlineMs: number;
+  rpcUrls: {
+    [key in SupportedIntentsChainName]: string;
+  };
+}
+
+/**
+ * @note This function is specifically designed for NEAR RPC providers and should not be used with other blockchain networks.
+ * It creates a failover provider that will automatically switch between the provided RPC endpoints if one fails.
+ */
+function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
+  const rpcProviders = urls.map((url) => new providers.JsonRpcProvider({ url }));
+
+  return createNearFailoverRpcProvider({ rpcProviders });
+}
+
+function createNearFailoverRpcProvider({
+  rpcProviders,
+}: {
+  rpcProviders: JsonRpcProvider[];
+}) {
+  return new FailoverRpcProvider(rpcProviders);
+}
+
 const settings: Settings = {
   swapExpirySec: 600, // 10 minutes
   /**
@@ -69,30 +96,3 @@ const reserveRpcUrls = [
 export const nearClient = nearFailoverRpcProvider({
   urls: reserveRpcUrls,
 });
-
-interface Settings {
-  swapExpirySec: number;
-  quoteMinDeadlineMs: number;
-  maxQuoteMinDeadlineMs: number;
-  rpcUrls: {
-    [key in SupportedIntentsChainName]: string;
-  };
-}
-
-/**
- * @note This function is specifically designed for NEAR RPC providers and should not be used with other blockchain networks.
- * It creates a failover provider that will automatically switch between the provided RPC endpoints if one fails.
- */
-function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
-  const providers_ = urls.map((url) => new providers.JsonRpcProvider({ url }));
-
-  return createNearFailoverRpcProvider({ providers: providers_ });
-}
-
-function createNearFailoverRpcProvider({
-  providers,
-}: {
-  providers: JsonRpcProvider[];
-}) {
-  return new FailoverRpcProvider(providers);
-}
