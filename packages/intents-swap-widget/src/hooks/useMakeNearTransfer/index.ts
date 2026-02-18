@@ -16,6 +16,7 @@ import type { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
 import type { Action } from '@hot-labs/near-connect/build/types/transactions';
 
 import { nearClient } from './nearClient';
+
 import { logger } from '@/logger';
 import type { MakeTransferArgs, TransferResult } from '@/types';
 
@@ -31,7 +32,7 @@ function decodeQueryResult<T extends z.ZodTypeAny>(
   const decoder = new TextDecoder();
   const result = decoder.decode(uint8Array);
 
-  return schema.parse(JSON.parse(result)) as z.infer<T>;
+  return schema.parse(JSON.parse(result)) as unknown as z.infer<T>;
 }
 
 export type OptionalBlockReference = {

@@ -36,7 +36,9 @@ interface Settings {
  * It creates a failover provider that will automatically switch between the provided RPC endpoints if one fails.
  */
 function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
-  const rpcProviders = urls.map((url) => new providers.JsonRpcProvider({ url }));
+  const rpcProviders = urls.map(
+    (url) => new providers.JsonRpcProvider({ url }),
+  );
 
   return createNearFailoverRpcProvider({ rpcProviders });
 }
