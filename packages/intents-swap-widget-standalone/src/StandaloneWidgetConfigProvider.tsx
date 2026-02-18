@@ -6,7 +6,10 @@ import { AppKitProvider } from './appkit';
 import { useWalletSelector } from './useWalletSelector';
 import { WalletSelectorModal } from './WalletSelectorModal';
 
-export type StandaloneWidgetConfigProviderProps = Omit<WidgetConfigProviderProps, 'config'> & {
+export type StandaloneWidgetConfigProviderProps = Omit<
+  WidgetConfigProviderProps,
+  'config'
+> & {
   config: Omit<
     WidgetConfigProviderProps['config'],
     | 'connectedWallets'
