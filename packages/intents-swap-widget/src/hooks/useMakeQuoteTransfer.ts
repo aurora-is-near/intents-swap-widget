@@ -3,11 +3,11 @@ import axios from 'axios';
 import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
 import { isEvmBaseToken, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
-import { isEvmAddress } from '../utils/chains/isEvmAddress';
+import { useMakeNearTransfer } from './useMakeNearTransfer';
 import { Providers } from '../types/providers';
 import { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
 import { useConfig } from '../config';
-import { isSolanaAddress } from '../utils/chains/isSolanaAddress';
+import { getSupportedProviderType } from '../utils/chains/getSupportedProviderType';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -40,17 +40,25 @@ export const useMakeQuoteTransfer = ({
     alchemyApiKey,
   });
 
+  const { make: makeNearTransfer } = useMakeNearTransfer();
+
   const getTransferFunction = (depositAddress: string) => {
+    const providerType = getSupportedProviderType(depositAddress);
+
     if (makeTransfer) {
       return makeTransfer;
     }
 
-    if (isEvmAddress(depositAddress)) {
+    if (providerType === 'evm') {
       return makeEvmTransfer;
     }
 
-    if (isSolanaAddress(depositAddress)) {
+    if (providerType === 'sol') {
       return makeSolanaTransfer;
+    }
+
+    if (providerType === 'near') {
+      return makeNearTransfer;
     }
 
     throw new TransferError({
