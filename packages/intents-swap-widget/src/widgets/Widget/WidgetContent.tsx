@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
