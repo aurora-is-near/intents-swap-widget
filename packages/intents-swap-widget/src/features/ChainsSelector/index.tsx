@@ -40,13 +40,13 @@ export const ChainsSelector = ({
 
   return (
     <div
-      className={cn('flex items-center justify-between gap-sw-md', className)}>
+      className={cn('flex items-start justify-between gap-sw-md', className)}>
       <ChainShortcut.All
         isSelected={selectedChain === 'all'}
         onClick={() => onMsg({ type: 'on_select_chain', chain: 'all' })}
       />
 
-      <ul className="flex items-center gap-sw-md mr-auto">
+      <ul className="flex items-center gap-sw-md mr-auto flex-wrap h-[36px] overflow-hidden">
         {enableAccountAbstraction && (
           <ChainShortcut
             icon={appIcon}

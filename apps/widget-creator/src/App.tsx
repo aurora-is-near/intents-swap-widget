@@ -26,7 +26,7 @@ function App() {
           />
           <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
             <WidgetSection>
-              <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw">
+              <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full lg:w-auto">
                 <WidgetContent />
               </aside>
             </WidgetSection>
