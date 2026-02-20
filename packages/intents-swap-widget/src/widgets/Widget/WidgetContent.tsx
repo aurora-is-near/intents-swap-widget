@@ -31,6 +31,7 @@ export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
   'onMsg' | 'makeTransfer'
 > & {
+  defaultTab?: WidgetTab;
   onMsg?: (msg: Msg, widgetType: WidgetType) => void;
   makeTransfer?: (
     args: MakeTransferArgs,
@@ -56,9 +57,14 @@ const wrapMakeTransfer = (
   };
 };
 
-export const WidgetContent = ({ onMsg, makeTransfer, ...restProps }: Props) => {
+export const WidgetContent = ({
+    defaultTab = 'swap',
+    makeTransfer,
+    onMsg,
+    ...restProps
+}: Props) => {
   const [isTabsVisible, setIsTabsVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState<WidgetTab>('swap');
+  const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
   const { enableAccountAbstraction, showProfileButton } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 

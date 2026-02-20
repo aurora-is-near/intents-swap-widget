@@ -84,7 +84,7 @@ export function WidgetContent() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <Widget />
+      <Widget defaultTab="deposit" />
       {exampleBanner && (
         <div className="flex justify-center">
           <Banner

@@ -6,6 +6,9 @@ The **Intents Swap Widget** package exports multiple pre-built widget components
 The `Widget` component is the one you will want to use in most cases. The others
 being used when you want to build more specific UIs.
 
+By default `Swap` tab is active when widget is rendered. You can change this by
+passing the `defaultTab` property to the `Widget` component.
+
 ## Usage
 
 In their most basic form, all of these components can be rendered with no
