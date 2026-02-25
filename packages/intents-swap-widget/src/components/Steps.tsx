@@ -49,11 +49,13 @@ const StepsBase = ({
   children,
 }: {
   className?: string;
-  children: ReactNode[];
+  children: ReactNode;
 }) => {
+  const normalizedChildren = Children.toArray(children);
+
   return (
     <section className={cn('flex flex-col gap-sw-sm', className)}>
-      {Children.map(children, (child) => (
+      {Children.map(normalizedChildren, (child) => (
         <>
           <Hr />
           {child}
