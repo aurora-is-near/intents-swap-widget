@@ -93,6 +93,7 @@ export type LocalisationKeys =
   | 'submit.disabled.selectTokenToReceive'
   | 'submit.disabled.enterRecipientAddress'
   | 'submit.disabled.enterAmount'
+  | 'submit.disabled.waitingForQuote'
   // submit - pending
   | 'submit.pending.quote.finalizing'
   | 'submit.pending.quote.refreshing'
