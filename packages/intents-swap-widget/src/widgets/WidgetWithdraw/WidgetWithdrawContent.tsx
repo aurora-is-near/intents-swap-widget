@@ -214,7 +214,7 @@ export const WidgetWithdrawContent = ({
       }
 
       return (
-        <div className="gap-sw-2xl relative flex flex-col w-full">
+        <div className="gap-sw-lg relative flex flex-col w-full">
           <div className="gap-[10px] relative flex flex-col">
             <Card padding="none">
               <TokenInput.Source

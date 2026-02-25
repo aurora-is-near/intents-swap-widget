@@ -47,6 +47,12 @@ export type LocalisationKeys =
   | 'deposit.method.switcher.label'
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
+  | 'deposit.external.stepSelectToken.title'
+  | 'deposit.external.stepSelectToken.description'
+  | 'deposit.external.stepAddress.title'
+  | 'deposit.external.showQrCode'
+  | 'deposit.external.hideQrCode'
+  | 'deposit.external.tryAgain'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'

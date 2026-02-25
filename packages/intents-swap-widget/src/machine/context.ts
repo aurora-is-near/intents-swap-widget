@@ -7,7 +7,12 @@ import type {
   QuoteSuccessError,
 } from './errors';
 import { DefaultToken } from '../types';
-import type { Quote, QuoteDry, QuoteReal } from '@/types/quote';
+import type {
+  Quote,
+  QuoteDepositAnyAmount,
+  QuoteDry,
+  QuoteReal,
+} from '@/types/quote';
 import type { Token, TokenBalance } from '@/types/token';
 
 export const initialContext: Readonly<InitialDryContext> = Object.freeze({
@@ -218,7 +223,7 @@ export type QuoteSuccessInternalContext = {
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
-  quote: QuoteReal;
+  quote: QuoteReal | QuoteDepositAnyAmount;
   quoteStatus: 'success';
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }

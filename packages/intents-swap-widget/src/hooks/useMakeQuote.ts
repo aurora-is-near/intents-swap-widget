@@ -310,6 +310,7 @@ export const useMakeQuote = () => {
     if (isDry) {
       return {
         dry: true,
+        type: 'QUOTE_DRY_WITH_AMOUNT',
         ...quoteResponse,
         deadline: undefined,
         depositAddress: undefined,
@@ -325,6 +326,7 @@ export const useMakeQuote = () => {
 
     return {
       dry: false,
+      type: 'QUOTE_REAL_WITH_AMOUNT',
       ...quoteResponse,
       deadline: quoteResponse.deadline,
       depositAddress: quoteResponse.depositAddress,

@@ -1,13 +1,14 @@
-import { useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useEffect, useState } from 'react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
+import { QrCodeW700 as QrCodeIcon } from '@material-symbols-svg/react-rounded/icons/qr-code';
 
 import { notReachable } from '@/utils';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
-import { CopyButton, StatusWidget } from '@/components';
+import { Button, StatusWidget } from '@/components';
 import {
   fireEvent,
   guardStates,
@@ -15,7 +16,6 @@ import {
   useComputedSnapshot,
   useUnsafeSnapshot,
 } from '@/machine';
-import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { TransferResult } from '@/types';
@@ -28,19 +28,34 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-const QrCode = ({ address }: { address: string }) => (
-  <div className="flex flex-col gap-sw-2xl items-center">
-    <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
-      <QRCodeSVG size={156} value={address} fgColor="#161926" />
+const QrCode = ({ address }: { address: string }) => {
+  const { t } = useTypedTranslation();
+  const [isQrCodeOpen, setIsQrCodeOpen] = useState(false);
+
+  const toggleQrCode = () => {
+    setIsQrCodeOpen((prev) => !prev);
+  };
+
+  return (
+    <div className="flex flex-col gap-sw-lg">
+      {isQrCodeOpen && (
+        <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
+          <QRCodeSVG size={156} value={address} fgColor="#161926" />
+        </div>
+      )}
+      <Button
+        size="md"
+        color="primary"
+        variant="outlined"
+        onClick={toggleQrCode}>
+        <QrCodeIcon size={16} />
+        {isQrCodeOpen
+          ? t('deposit.external.hideQrCode', 'Hide QR code')
+          : t('deposit.external.showQrCode', 'Show QR code')}
+      </Button>
     </div>
-    <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
-      <span className="text-sw-label-md text-sw-gray-100">
-        {formatAddressTruncate(address, 38)}
-      </span>
-      <CopyButton value={address} />
-    </div>
-  </div>
-);
+  );
+};
 
 const Skeleton = () => {
   const { t } = useTypedTranslation();

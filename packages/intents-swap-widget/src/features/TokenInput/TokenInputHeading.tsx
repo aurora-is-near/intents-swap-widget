@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react';
 
 export const TokenInputHeading = ({ children }: PropsWithChildren) => {
   return (
-    <div className="border-b border-sw-gray-800 w-full pb-sw-lg text-sw-gray-50">
+    <div className="border-b border-sw-gray-800 w-full pb-sw-lg text-sw-gray-50 text-sw-label-md">
       {children}
     </div>
   );

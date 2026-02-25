@@ -431,7 +431,10 @@ const SubmitButtonWithWallet = (props: Props) => {
 
   // 1. External deposit (QR code) mode? Show waiting/processing state
   if (ctx.isDepositFromExternalWallet) {
-    if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+    if (
+      (!ctx.quote || ctx.quote.type === 'QUOTE_REAL_WITH_AMOUNT') &&
+      !isNotEmptyAmount(ctx.sourceTokenAmount)
+    ) {
       return (
         <Button {...commonBtnProps} state="disabled">
           {t('submit.disabled.enterAmount', 'Enter amount')}

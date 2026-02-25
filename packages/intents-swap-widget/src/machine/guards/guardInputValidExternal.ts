@@ -4,6 +4,7 @@ import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 
 import type { Context, InputValidExternalContext } from '@/machine/context';
 
+// External -- target token IS NOT intent
 export const guardInputValidExternal = (
   ctx: Context,
 ): ctx is InputValidExternalContext => {

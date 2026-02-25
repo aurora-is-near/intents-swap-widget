@@ -8,7 +8,7 @@ export type InitialDryStateError =
 
 export type InitialInternalStateError =
   | InitialDryStateError
-  | { code: 'SOURCE_TOKEN_NOT_INTENT' }
+  | { code: 'TARGET_TOKEN_NOT_INTENT' }
   | { code: 'INVALID_SOURCE_BALANCE' };
 
 type SendAddressValidationError =

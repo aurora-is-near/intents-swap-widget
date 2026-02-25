@@ -9,13 +9,11 @@ import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import { cn as clsx } from '@/utils/cn';
 
 type Size = 'sm' | 'md' | 'lg';
-type Variant = 'primary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 
 type Props = {
   size: Size;
   state?: State;
-  variant: Variant;
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
@@ -27,6 +25,10 @@ type Props = {
   (
     | { as?: 'button'; href?: never; target?: never }
     | { as: 'a'; href: string; target?: '_blank' | '_self' }
+  ) &
+  (
+    | { variant: 'outlined'; color?: 'primary' | 'secondary' }
+    | { variant: 'primary'; color?: never }
   );
 
 const styles = {
@@ -52,15 +54,24 @@ const ButtonChildren = ({
   icon,
   iconPosition,
   children,
-  state,
-}: Pick<Props, 'icon' | 'iconPosition' | 'children' | 'state'>) => {
+  color,
+  state = 'default',
+}: Pick<Props, 'icon' | 'iconPosition' | 'children' | 'state' | 'color'>) => {
   const hasIcon = !!icon;
+  const classNameIconColor = clsx(styles.icon, {
+    'text-sw-status-error': state === 'error',
+    'text-sw-gray-400': state === 'loading' || state === 'disabled',
+    'text-sw-gray-100': state === 'default' && color !== 'primary',
+    'text-sw-accent-500':
+      color === 'primary' && ['default', 'active'].includes(state),
+  });
+
   const Icon =
     hasIcon && state !== 'loading'
       ? (icon ?? (() => <span />))
       : ({ className, ...iconProps }: IconProps) => (
           <ProgressActivity
-            className={clsx(styles.icon, 'animate-spin', className)}
+            className={clsx(classNameIconColor, 'animate-spin', className)}
             {...iconProps}
           />
         );
@@ -69,10 +80,12 @@ const ButtonChildren = ({
     <span className="text-sw-label-md flex w-full items-center justify-center gap-sw-lg py-sw-xs">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
-        <Icon className={styles.icon} />
+        <Icon className={classNameIconColor} />
       ) : null}
       {children}
-      {hasIcon && iconPosition === 'tail' && <Icon className={styles.icon} />}
+      {hasIcon && iconPosition === 'tail' && (
+        <Icon className={classNameIconColor} />
+      )}
     </span>
   );
 };
@@ -133,6 +146,7 @@ const ButtonOutlined = ({
   children,
   as = 'button',
   state = 'default',
+  color = 'secondary',
   onClick,
   fluid,
   href,
@@ -162,6 +176,8 @@ const ButtonOutlined = ({
             state === 'loading' || state === 'disabled',
           'bg-transparent text-sw-gray-50 ring-1 ring-inset ring-sw-gray-600 hover:ring-sw-gray-100 cursor-pointer':
             ['active', 'default'].includes(state),
+          'bg-transparent text-sw-accent-300 ring-1 ring-inset ring-sw-accent-300 hover:text-sw-accent-500 hover:ring-sw-accent-500 cursor-pointer':
+            color === 'primary' && ['active', 'default'].includes(state),
         },
         className,
       )}>
