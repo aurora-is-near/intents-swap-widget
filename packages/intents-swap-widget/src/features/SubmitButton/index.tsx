@@ -444,22 +444,10 @@ const SubmitButtonWithWallet = (props: Props) => {
       );
     }
 
-    if (!ctx.quote || ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+    if (!ctx.quote) {
       return (
         <Button {...commonBtnProps} state="loading">
           {t('submit.disabled.waitingForQuote', 'Waiting for a quote')}
-        </Button>
-      );
-    }
-
-    if (
-      ctx.quote &&
-      ctx.quote.type === 'QUOTE_REAL_WITH_AMOUNT' &&
-      !isNotEmptyAmount(ctx.sourceTokenAmount)
-    ) {
-      return (
-        <Button {...commonBtnProps} state="disabled">
-          {t('submit.disabled.enterAmount', 'Enter amount')}
         </Button>
       );
     }
