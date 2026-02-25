@@ -61,7 +61,7 @@ const ExtendedContent = ({ onMsg }: Props) => {
       />
       <Steps.Step
         stepNumber={2}
-        title={t('deposit.external.stepAddress.title', 'Send to address')}
+        title={`Send ${ctx.sourceToken ? `${ctx.sourceToken?.symbol} ` : ''}to address`}
         description={
           ctx.sourceToken
             ? `Use ${ctx.sourceToken.chainName} network`
@@ -69,10 +69,10 @@ const ExtendedContent = ({ onMsg }: Props) => {
         }
         asideElement={(() => {
           switch (ctx.quoteStatus) {
+            case 'idle':
             case 'error':
             case 'success':
               return null;
-            case 'idle':
             case 'pending':
             default:
               return (
@@ -93,7 +93,8 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
 
   const canBeToggled =
-    !!ctx.sourceToken && !ctx.sourceToken.isIntent && !!ctx.walletAddress;
+    ((!!ctx.sourceToken && !ctx.sourceToken.isIntent) || !ctx.sourceToken) &&
+    !!ctx.walletAddress;
 
   const onToggle = (isExternal: boolean) => {
     if (!canBeToggled) {

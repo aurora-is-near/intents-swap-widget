@@ -34,7 +34,7 @@ export const TokenSelectButton = ({
         />
       )}
       <span className="text-sw-label-md text-sw-gray-50">
-        {token ? token.symbol : 'Select'}
+        {token ? token.symbol : 'Select token'}
       </span>
     </button>
   );

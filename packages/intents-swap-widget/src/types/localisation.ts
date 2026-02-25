@@ -49,7 +49,7 @@ export type LocalisationKeys =
   | 'deposit.summary.title'
   | 'deposit.external.stepSelectToken.title'
   | 'deposit.external.stepSelectToken.description'
-  | 'deposit.external.stepAddress.title'
+  | 'submit.disabled.selectTokenToDeposit'
   | 'deposit.external.showQrCode'
   | 'deposit.external.hideQrCode'
   | 'deposit.external.tryAgain'
