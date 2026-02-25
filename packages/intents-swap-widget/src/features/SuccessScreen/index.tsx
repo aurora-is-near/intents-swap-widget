@@ -35,7 +35,7 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
-const getAnyDepositAmounts = (amount: number | undefined) => {
+const useAnyDepositAmounts = (amount: number | undefined) => {
   const { ctx } = useUnsafeSnapshot();
 
   if (!amount || !ctx.quote || ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
@@ -111,7 +111,7 @@ export const SuccessScreen = ({
   const summaryItemsCount = useSummaryItemsCount(!!transferResult.intent);
 
   const quoteAmounts = useQuoteAmounts();
-  const anyDepositAmounts = getAnyDepositAmounts(transferResult.amount);
+  const anyDepositAmounts = useAnyDepositAmounts(transferResult.amount);
 
   const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 

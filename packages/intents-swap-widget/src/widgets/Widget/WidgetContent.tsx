@@ -32,7 +32,7 @@ export type Props = Omit<
   makeTransfer?: (
     args: MakeTransferArgs,
     widgetType: WidgetType,
-  ) => TransferResult | Promise<TransferResult>;
+  ) => TransferResult | null | Promise<TransferResult | null>;
 };
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;

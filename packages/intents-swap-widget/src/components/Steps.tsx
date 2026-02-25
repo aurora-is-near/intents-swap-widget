@@ -27,7 +27,7 @@ const Step = ({
   return (
     <Wrapper>
       <div className="flex items-center justify-between py-sw-md">
-        <span className="flex items-center justify-center gap-y-sw-lg h-[28px] w-[28px] rounded-full bg-sw-gray-50 text-gray-950 text-sw-label-sm">
+        <span className="flex items-center justify-center gap-y-sw-lg h-[28px] w-[28px] rounded-full bg-sw-gray-50 text-sw-gray-950 text-sw-label-sm">
           {stepNumber}
         </span>
         <div className="flex flex-col gap-sw-xs mr-auto ml-sw-lg">

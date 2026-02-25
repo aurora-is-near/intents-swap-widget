@@ -17,6 +17,7 @@ export const TokenSelectButton = ({
   return (
     <button
       type="button"
+      disabled={state === 'disabled'}
       onClick={state === 'disabled' ? undefined : onClick}
       className={cn(
         'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 items-center rounded-sw-md transition-colors bg-sw-gray-800 hover:bg-sw-gray-700 group',
