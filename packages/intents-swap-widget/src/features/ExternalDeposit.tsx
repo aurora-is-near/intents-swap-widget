@@ -8,7 +8,7 @@ import { notReachable } from '@/utils';
 import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
-import { Button, StatusWidget } from '@/components';
+import { Button, CopyButton, StatusWidget } from '@/components';
 import {
   fireEvent,
   guardStates,
@@ -16,6 +16,7 @@ import {
   useComputedSnapshot,
   useUnsafeSnapshot,
 } from '@/machine';
+import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { TransferResult } from '@/types';
@@ -30,29 +31,44 @@ type Props = {
 
 const QrCode = ({ address }: { address: string }) => {
   const { t } = useTypedTranslation();
+  const { ctx } = useUnsafeSnapshot();
+
   const [isQrCodeOpen, setIsQrCodeOpen] = useState(false);
+  const isValidState = guardStates(ctx, ['quote_success_internal']);
 
   const toggleQrCode = () => {
     setIsQrCodeOpen((prev) => !prev);
   };
 
+  if (!isValidState) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col gap-sw-lg">
-      {isQrCodeOpen && (
-        <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
-          <QRCodeSVG size={156} value={address} fgColor="#161926" />
-        </div>
-      )}
-      <Button
-        size="md"
-        color="primary"
-        variant="outlined"
-        onClick={toggleQrCode}>
-        <QrCodeIcon size={16} />
-        {isQrCodeOpen
-          ? t('deposit.external.hideQrCode', 'Hide QR code')
-          : t('deposit.external.showQrCode', 'Show QR code')}
-      </Button>
+    <div className="flex flex-col gap-y-sw-lg">
+      <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
+        <span className="text-sw-label-md text-sw-gray-100">
+          {formatAddressTruncate(address, 38)}
+        </span>
+        <CopyButton value={address} />
+      </div>
+      <div className="flex flex-col gap-sw-lg">
+        {isQrCodeOpen && (
+          <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
+            <QRCodeSVG size={156} value={address} fgColor="#161926" />
+          </div>
+        )}
+        <Button
+          size="md"
+          color="primary"
+          variant="outlined"
+          onClick={toggleQrCode}>
+          <QrCodeIcon size={16} />
+          {isQrCodeOpen
+            ? t('deposit.external.hideQrCode', 'Hide QR code')
+            : t('deposit.external.showQrCode', 'Show QR code')}
+        </Button>
+      </div>
     </div>
   );
 };
@@ -115,6 +131,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
           type: 'on_successful_transfer',
           transferResult: {
             hash: txHash ?? '',
+            // @ts-expect-error SwapDetails.amount is not defined
+            amount: depositStatusQuery.data.swapDetails.amount,
             intent: depositStatusQuery.data.swapDetails.intentHashes[0],
             transactionLink:
               (ctx.sourceToken &&

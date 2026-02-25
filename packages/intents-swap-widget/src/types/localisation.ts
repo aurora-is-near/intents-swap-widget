@@ -53,6 +53,9 @@ export type LocalisationKeys =
   | 'deposit.external.showQrCode'
   | 'deposit.external.hideQrCode'
   | 'deposit.external.tryAgain'
+  | 'deposit.external.transactionDetected.title'
+  | 'deposit.external.transactionDetected.description'
+  | 'deposit.external.transactionDetected.error'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'

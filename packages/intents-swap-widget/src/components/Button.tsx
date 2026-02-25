@@ -54,24 +54,15 @@ const ButtonChildren = ({
   icon,
   iconPosition,
   children,
-  color,
   state = 'default',
-}: Pick<Props, 'icon' | 'iconPosition' | 'children' | 'state' | 'color'>) => {
+}: Pick<Props, 'icon' | 'iconPosition' | 'children' | 'state'>) => {
   const hasIcon = !!icon;
-  const classNameIconColor = clsx(styles.icon, {
-    'text-sw-status-error': state === 'error',
-    'text-sw-gray-400': state === 'loading' || state === 'disabled',
-    'text-sw-gray-100': state === 'default' && color !== 'primary',
-    'text-sw-accent-500':
-      color === 'primary' && ['default', 'active'].includes(state),
-  });
-
   const Icon =
     hasIcon && state !== 'loading'
       ? (icon ?? (() => <span />))
       : ({ className, ...iconProps }: IconProps) => (
           <ProgressActivity
-            className={clsx(classNameIconColor, 'animate-spin', className)}
+            className={clsx(styles.icon, 'animate-spin', className)}
             {...iconProps}
           />
         );
@@ -80,12 +71,10 @@ const ButtonChildren = ({
     <span className="text-sw-label-md flex w-full items-center justify-center gap-sw-lg py-sw-xs">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
-        <Icon className={classNameIconColor} />
+        <Icon className={styles.icon} />
       ) : null}
       {children}
-      {hasIcon && iconPosition === 'tail' && (
-        <Icon className={classNameIconColor} />
-      )}
+      {hasIcon && iconPosition === 'tail' && <Icon className={styles.icon} />}
     </span>
   );
 };

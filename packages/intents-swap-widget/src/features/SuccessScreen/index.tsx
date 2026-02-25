@@ -35,6 +35,26 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
+const getAnyDepositAmounts = (amount: number | undefined) => {
+  const { ctx } = useUnsafeSnapshot();
+
+  if (!amount || !ctx.quote || ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+    return undefined;
+  }
+
+  const sourceAmount = formatBigToHuman(
+    String(amount),
+    ctx.sourceToken.decimals,
+  );
+
+  const sourceAmountUsd = ctx.sourceToken.price * parseFloat(sourceAmount);
+
+  return {
+    amount: sourceAmount,
+    amountUsd: sourceAmountUsd,
+  };
+};
+
 const useQuoteAmounts = () => {
   const { ctx } = useUnsafeSnapshot();
 
@@ -88,9 +108,12 @@ export const SuccessScreen = ({
   const { ctx } = useUnsafeSnapshot();
 
   const isValidState = guardStates(ctx, ['transfer_success']);
-  const handleClose = () => onMsg({ type: 'on_dismiss_success' });
   const summaryItemsCount = useSummaryItemsCount(!!transferResult.intent);
+
   const quoteAmounts = useQuoteAmounts();
+  const anyDepositAmounts = getAnyDepositAmounts(transferResult.amount);
+
+  const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 
   useHandleKeyDown('Escape', handleClose);
 
@@ -142,11 +165,15 @@ export const SuccessScreen = ({
         </div>
       )}
 
+      {!quoteAmounts && !!anyDepositAmounts && (
+        <TokenRow token={ctx.sourceToken} {...anyDepositAmounts} />
+      )}
+
       <Accordion
         expandedByDefault={false}
         expandedHeightPx={
           // edge case if only Rate is present
-          summaryItemsCount === 1 ? 52 : summaryItemsCount * NOTES_ITEM_HEIGHT
+          summaryItemsCount === 1 ? 58 : summaryItemsCount * NOTES_ITEM_HEIGHT
         }
         title={t('transfer.success.details.label', 'Transaction details')}>
         <Notes>
