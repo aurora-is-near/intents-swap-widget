@@ -1,5 +1,6 @@
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { snakeCase } from 'change-case';
+import { useMutation } from '@tanstack/react-query';
 import {
   Quote as OneClickQuote,
   QuoteRequest,
@@ -55,14 +56,16 @@ export const useMakeQuote = () => {
 
   const isDry = isDryQuote(ctx);
 
-  const request = useRef<Promise<OneClickQuote>>(null);
   const abortController = useRef<AbortController>(new AbortController());
 
-  const requestQuote = useMemo(() => {
-    return async (
-      data: QuoteRequest,
-      metadata: { isRefetch?: boolean },
-    ): Promise<OneClickQuote> => {
+  const { mutateAsync: requestQuote } = useMutation({
+    mutationFn: async ({
+      data,
+      metadata,
+    }: {
+      data: QuoteRequest;
+      metadata: { isRefetch?: boolean };
+    }): Promise<OneClickQuote> => {
       const { signal } = abortController.current;
 
       if (fetchQuote) {
@@ -74,14 +77,27 @@ export const useMakeQuote = () => {
 
       return (
         await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          // no need for extra check API will return missing API key error
           `https://intents-api.aurora.dev/api/quote/${apiKey ?? ''}`,
           data,
           { signal },
         )
       ).data.quote;
-    };
-  }, [apiKey, oneClickApi]);
+    },
+    retry: (failureCount, error) => {
+      if (
+        error instanceof CanceledError ||
+        abortController.current.signal.aborted
+      ) {
+        return false;
+      }
+
+      // Quotes often fail due to issues outside of our control. Here we retry
+      // a couple of times with exponential backoff to give the quote a chance
+      // to succeed before showing an error to the user.
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => 1000 * 2 ** attempt,
+  });
 
   const make = async ({
     message,
@@ -155,10 +171,8 @@ export const useMakeQuote = () => {
       });
     }
 
-    if (request.current) {
-      abortController.current.abort('Abort previous quote (auto)');
-      abortController.current = new AbortController();
-    }
+    abortController.current.abort('Abort previous quote (auto)');
+    abortController.current = new AbortController();
 
     let quoteResponse: OneClickQuote;
 
@@ -211,8 +225,8 @@ export const useMakeQuote = () => {
 
     try {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
-        request.current = requestQuote(
-          {
+        quoteResponse = await requestQuote({
+          data: {
             ...commonQuoteParams,
             recipient: recipientIntentsAccountId,
             recipientType: QuoteRequest.recipientType.INTENTS,
@@ -222,14 +236,12 @@ export const useMakeQuote = () => {
             refundTo: recipientIntentsAccountId,
             refundType: QuoteRequest.refundType.INTENTS,
           },
-          options,
-        );
-
-        quoteResponse = await request.current;
+          metadata: options,
+        });
       }
 
-      request.current = requestQuote(
-        {
+      quoteResponse = await requestQuote({
+        data: {
           ...commonQuoteParams,
           recipient:
             !ctx.targetToken.isIntent && ctx.sendAddress
@@ -248,10 +260,8 @@ export const useMakeQuote = () => {
             ? QuoteRequest.refundType.INTENTS
             : QuoteRequest.refundType.ORIGIN_CHAIN,
         },
-        options,
-      );
-
-      quoteResponse = await request.current;
+        metadata: options,
+      });
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
         return;
