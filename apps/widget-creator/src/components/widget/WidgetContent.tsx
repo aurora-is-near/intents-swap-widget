@@ -4,7 +4,6 @@ import {
   Button,
   SuccessScreen,
   Widget,
-  WidgetConfigProvider,
   WidgetContainer,
 } from '@aurora-is-near/intents-swap-widget';
 import { WidgetConfigProvider as StandaloneWidgetConfigProvider } from '@aurora-is-near/intents-swap-widget-standalone';
@@ -13,6 +12,7 @@ import { useCreator } from '../../hooks/useCreatorConfig';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 import { useWidgetConfig } from '../../hooks/useWidgetConfig';
 import { useThemeConfig } from '../../hooks/useThemeConfig';
+import { DappWalletBridge } from './DappWalletBridge';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
@@ -75,7 +75,7 @@ export function WidgetContent() {
   const Provider =
     state.userAuthMode === 'standalone'
       ? StandaloneWidgetConfigProvider
-      : WidgetConfigProvider;
+      : DappWalletBridge;
 
   return (
     <Provider

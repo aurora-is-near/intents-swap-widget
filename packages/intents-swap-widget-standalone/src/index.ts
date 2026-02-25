@@ -5,3 +5,7 @@ export {
   StandaloneWidgetConfigProvider as WidgetConfigProvider,
   type StandaloneWidgetConfigProviderProps as WidgetConfigProviderProps,
 } from './StandaloneWidgetConfigProvider';
+
+export { AppKitProvider } from './appkit';
+export { useAppKitWallet } from './useAppKitWallet';
+export { useAppKitProviders } from './useAppKitProviders';
