@@ -1,15 +1,17 @@
-import { Children, Fragment } from 'react';
-import type { PropsWithChildren, ReactNode } from 'react';
+import { Children, cloneElement, Fragment, isValidElement } from 'react';
+import type { PropsWithChildren, ReactElement, ReactNode } from 'react';
 
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 
 type StepProps = PropsWithChildren<{
-  stepNumber: number;
+  stepNumber?: number;
   title: ReactNode;
   description: ReactNode;
   asideElement?: ReactNode;
 }>;
+
+type StepElement = ReactElement<StepProps, typeof Step>;
 
 const StepWrapper = ({ children }: PropsWithChildren) => {
   return <div className="flex flex-col gap-y-sw-xl">{children}</div>;
@@ -44,21 +46,22 @@ const Step = ({
   );
 };
 
-const StepsBase = ({
-  className,
-  children,
-}: {
+type Props = {
   className?: string;
-  children: ReactNode;
-}) => {
+  children: StepElement | StepElement[];
+};
+
+const StepsBase = ({ className, children }: Props) => {
   const normalizedChildren = Children.toArray(children);
 
   return (
     <section className={cn('flex flex-col gap-sw-sm', className)}>
-      {Children.map(normalizedChildren, (child) => (
+      {Children.map(normalizedChildren, (child, index) => (
         <>
           <Hr />
-          {child}
+          {isValidElement<StepProps>(child)
+            ? cloneElement(child, { stepNumber: index + 1 })
+            : child}
         </>
       ))}
     </section>

@@ -50,7 +50,6 @@ const ExtendedContent = ({ onMsg }: Props) => {
   return (
     <Steps className="pt-sw-2xl">
       <Steps.Step
-        stepNumber={1}
         title={t(
           'deposit.external.stepSelectToken.title',
           'Select token to deposit',
@@ -70,7 +69,6 @@ const ExtendedContent = ({ onMsg }: Props) => {
         }
       />
       <Steps.Step
-        stepNumber={2}
         title={`Send ${ctx.sourceToken ? `${ctx.sourceToken?.symbol} ` : ''}to address`}
         description={
           ctx.sourceToken
