@@ -122,6 +122,7 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
       return;
     }
 
+    fireEvent('externalDepositTxSet', undefined);
     fireEvent('depositTypeSet', { isExternal });
   };
 
