@@ -55,6 +55,7 @@ export type LocalisationKeys =
   | 'deposit.external.transactionDetected.title'
   | 'deposit.external.transactionDetected.description'
   | 'deposit.external.transactionDetected.error'
+  | 'deposit.external.stepSelectToken.retry'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'

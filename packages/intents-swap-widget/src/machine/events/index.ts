@@ -1,3 +1,4 @@
+import { quoteReset } from './quoteReset';
 import { reset, type ResetPayload } from './reset';
 import { tokenSelectRotate } from './tokenSelectRotate';
 import { errorSet, type ErrorSetPayload } from './errorSet';
@@ -50,6 +51,7 @@ export type TradeEvents = {
   addressSet: AddressSetPayload;
   errorSet: ErrorSetPayload;
   quoteSet: QuoteSetPayload;
+  quoteReset: null;
   depositTypeSet: DepositTypeSetPayload;
   externalDepositTxSet: boolean | undefined;
   quoteSetStatus: QuoteSetStatusPayload;
@@ -82,6 +84,7 @@ export const registerEvents = () => {
   onEvent('addressSet', addressSet);
   onEvent('errorSet', errorSet);
   onEvent('quoteSet', quoteSet);
+  onEvent('quoteReset', quoteReset);
   onEvent('reset', reset);
 
   // use with caution since these just return a boolean flag and set

@@ -1,10 +1,12 @@
 import { QrCodeW700 as QrCodeIcon } from '@material-symbols-svg/react-rounded/icons/qr-code';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
+import { RefreshW700 as RefreshIcon } from '@material-symbols-svg/react-rounded/icons/refresh';
 
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { Steps } from '@/components/Steps';
 import { Toggle } from '@/components/Toggle';
+import { Button } from '@/components/Button';
 import { ExternalDeposit } from '@/features/ExternalDeposit';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -78,15 +80,28 @@ const ExtendedContent = ({ onMsg }: Props) => {
         asideElement={(() => {
           switch (ctx.quoteStatus) {
             case 'idle':
-            case 'error':
             case 'success':
-              return null;
+              // to avoid step container height jump on switching between error and loading state
+              return <span className="h-[36px]" />;
+            case 'error':
+              return (
+                <Button
+                  size="md"
+                  variant="primary"
+                  className="w-fit py-sw-sm px-sw-lg"
+                  onClick={() => fireEvent('quoteReset', null)}>
+                  <RefreshIcon size={16} />
+                  {t('deposit.external.stepSelectToken.retry', 'Try again')}
+                </Button>
+              );
             case 'pending':
             default:
               return (
-                <span className="animate-spin">
-                  <ProgressActivity size={24} className="text-sw-gray-200" />
-                </span>
+                <div className="flex items-center justify-center h-[36px]">
+                  <span className="animate-spin">
+                    <ProgressActivity size={24} className="text-sw-gray-200" />
+                  </span>
+                </div>
               );
           }
         })()}>
