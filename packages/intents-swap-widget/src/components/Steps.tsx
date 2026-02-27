@@ -60,7 +60,9 @@ const StepsBase = ({ className, children }: Props) => {
         <>
           <Hr />
           {isValidElement<StepProps>(child)
-            ? cloneElement(child, { stepNumber: index + 1 })
+            ? cloneElement(child, {
+                stepNumber: child.props.stepNumber ?? index + 1,
+              })
             : child}
         </>
       ))}
