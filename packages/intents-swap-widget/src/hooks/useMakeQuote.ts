@@ -215,7 +215,7 @@ export const useMakeQuote = () => {
       commonQuoteParams = {
         ...commonQuoteParams,
         swapType: QuoteRequest.swapType.FLEX_INPUT,
-        amount: String(minDepositTokenAmount),
+        amount: minDepositTokenAmount,
       };
     }
 

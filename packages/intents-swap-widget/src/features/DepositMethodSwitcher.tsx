@@ -44,7 +44,7 @@ const ExtendedContent = ({ onMsg }: Props) => {
 
   // limit minimum deposit amount to 1 USD to avoid FLEX_INPUT quote failure
   const minDepositAmount = ctx.sourceToken
-    ? formatBigToHuman(String(minDepositTokenAmount), ctx.sourceToken.decimals)
+    ? formatBigToHuman(minDepositTokenAmount, ctx.sourceToken.decimals)
     : 0;
 
   return (
