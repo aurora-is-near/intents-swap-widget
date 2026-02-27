@@ -7,8 +7,9 @@ import { Steps } from '@/components/Steps';
 import { Toggle } from '@/components/Toggle';
 import { ExternalDeposit } from '@/features/ExternalDeposit';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { useTypedTranslation } from '@/localisation';
-import { useUnsafeSnapshot } from '@/machine/snap';
 import { guardStates } from '@/machine/guards';
 import { fireEvent } from '@/machine';
 
@@ -27,6 +28,7 @@ type Props = {
 const ExtendedContent = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
+  const { minDepositTokenAmount } = useComputedSnapshot();
 
   const isValidState = guardStates(ctx, [
     'initial_wallet',
@@ -38,6 +40,11 @@ const ExtendedContent = ({ onMsg }: Props) => {
     return null;
   }
 
+  // limit minimum deposit amount to 1 USD to avoid FLEX_INPUT quote failure
+  const minDepositAmount = ctx.sourceToken
+    ? formatBigToHuman(String(minDepositTokenAmount), ctx.sourceToken.decimals)
+    : 0;
+
   return (
     <Steps className="pt-sw-2xl">
       <Steps.Step
@@ -46,10 +53,11 @@ const ExtendedContent = ({ onMsg }: Props) => {
           'deposit.external.stepSelectToken.title',
           'Select token to deposit',
         )}
-        description={t(
-          'deposit.external.stepSelectToken.description',
-          'Make sure you send exactly this token',
-        )}
+        description={
+          ctx.sourceToken
+            ? `Minimum deposit ${minDepositAmount} ${ctx.sourceToken.symbol}`
+            : 'You can send any amount of this token'
+        }
         asideElement={
           <TokenSelectButton
             token={ctx.sourceToken}

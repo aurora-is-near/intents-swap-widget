@@ -15,7 +15,7 @@ import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
 import { oneClickApi } from '@/network';
 import { guardStates } from '@/machine/guards';
-import { useUnsafeSnapshot } from '@/machine/snap';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -48,6 +48,7 @@ const validateQuoteProperties = (
 
 export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
+  const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
   const { appName, apiKey, appFees, fetchQuote, slippageTolerance } =
@@ -162,7 +163,7 @@ export const useMakeQuote = () => {
 
     let quoteResponse: OneClickQuote;
 
-    const commonQuoteParams: Omit<
+    let commonQuoteParams: Omit<
       QuoteRequest,
       'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
     > = {
@@ -170,10 +171,6 @@ export const useMakeQuote = () => {
       dry: isDry,
       slippageTolerance,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
-      swapType:
-        quoteType === 'exact_out'
-          ? QuoteRequest.swapType.EXACT_OUTPUT
-          : QuoteRequest.swapType.EXACT_INPUT,
 
       // Target
       destinationAsset:
@@ -187,14 +184,40 @@ export const useMakeQuote = () => {
           ? WNEAR_ASSET_ID
           : ctx.sourceToken.assetId,
 
-      amount:
-        quoteType === 'exact_out'
-          ? ctx.targetTokenAmount
-          : ctx.sourceTokenAmount,
-
       // Experimental
       quoteWaitingTimeMs: 0,
+
+      // to be overridden below
+      amount: '0',
+      swapType: QuoteRequest.swapType.EXACT_INPUT,
     };
+
+    if (!ctx.isDepositFromExternalWallet) {
+      if (quoteType === 'exact_out' && ctx.targetTokenAmount) {
+        commonQuoteParams = {
+          ...commonQuoteParams,
+          amount: ctx.targetTokenAmount,
+          swapType: QuoteRequest.swapType.EXACT_OUTPUT,
+        };
+      } else if (quoteType === 'exact_in' && ctx.sourceTokenAmount) {
+        commonQuoteParams = {
+          ...commonQuoteParams,
+          amount: ctx.sourceTokenAmount,
+          swapType: QuoteRequest.swapType.EXACT_INPUT,
+        };
+      } else {
+        throw new QuoteError({
+          code: 'QUOTE_INVALID_INITIAL',
+          meta: { isDry, message: 'No source token amount' },
+        });
+      }
+    } else {
+      commonQuoteParams = {
+        ...commonQuoteParams,
+        swapType: QuoteRequest.swapType.FLEX_INPUT,
+        amount: String(minDepositTokenAmount),
+      };
+    }
 
     if (message) {
       // @ts-expect-error customRecipientMsg is not in the types

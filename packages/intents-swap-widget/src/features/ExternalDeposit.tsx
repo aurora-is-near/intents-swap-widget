@@ -38,7 +38,7 @@ const QrCode = ({ address }: { address: string }) => {
   }
 
   return (
-    <div className="flex flex-col gap-y-sw-xl">
+    <div className="flex flex-col gap-y-sw-xl mb-sw-lg">
       <div className="mx-auto w-fit">
         <QRCode
           qrStyle="dots"
@@ -54,7 +54,7 @@ const QrCode = ({ address }: { address: string }) => {
         />
       </div>
       <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
-        <span className="text-sw-label-md text-sw-gray-100">
+        <span className="text-sw-label-md text-sw-gray-100 w-full text-center">
           {formatAddressTruncate(address, {
             mode: 'manual',
             leftVisible: 8,

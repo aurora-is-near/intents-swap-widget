@@ -48,7 +48,6 @@ export type LocalisationKeys =
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
   | 'deposit.external.stepSelectToken.title'
-  | 'deposit.external.stepSelectToken.description'
   | 'submit.disabled.selectTokenToDeposit'
   | 'deposit.external.showQrCode'
   | 'deposit.external.hideQrCode'
