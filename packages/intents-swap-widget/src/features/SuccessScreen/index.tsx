@@ -24,7 +24,7 @@ import { logger } from '@/logger';
 
 import type { TransferResult } from '@/types/transfer';
 
-const NOTES_ITEM_HEIGHT = 44;
+const NOTES_ITEM_HEIGHT = 46;
 
 type Msg = { type: 'on_dismiss_success' };
 
@@ -123,7 +123,7 @@ export const SuccessScreen = ({
   }
 
   return (
-    <div className="flex flex-col gap-sw-2xl w-full">
+    <div className="flex flex-col gap-sw-lg w-full">
       <header className="flex items-center gap-sw-lg">
         <div className="flex items-center justify-center p-sw-md bg-sw-status-success rounded-sw-md">
           <Check size={20} className="text-sw-gray-900" />
@@ -222,6 +222,7 @@ export const SuccessScreen = ({
           variant="primary"
           iconPosition="tail"
           href={transactionLink}
+          state={transactionLink ? 'default' : 'disabled'}
           icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>

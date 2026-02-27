@@ -221,7 +221,13 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   5001: 'https://explorer.testnet.mantle.xyz/tx/', // Mantle Testnet
   167000: 'https://taikoscan.io/tx/', // Taiko
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
-  397: 'https://nearblocks.io/txns/',
+  397: 'https://nearblocks.io/txns/', // Near
+};
+
+// some chains e.g. Solana have no chain ID
+export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
+  sol: 'https://solscan.io/tx/',
+  near: 'https://nearblocks.io/txns/',
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [

@@ -7,7 +7,7 @@ import { notReachable } from '@/utils';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
-import { AURORA_BASE64_LOGO, CHAIN_IDS_MAP } from '@/constants/chains';
+import { AURORA_BASE64_LOGO } from '@/constants/chains';
 import {
   fireEvent,
   guardStates,
@@ -130,10 +130,7 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
             transactionLink:
               (ctx.sourceToken &&
                 txHash &&
-                getTransactionLink(
-                  CHAIN_IDS_MAP[ctx.sourceToken.blockchain],
-                  txHash,
-                )) ??
+                getTransactionLink(ctx.sourceToken.blockchain, txHash)) ??
               '',
           },
         });

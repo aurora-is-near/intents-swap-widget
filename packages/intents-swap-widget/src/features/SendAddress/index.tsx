@@ -60,14 +60,14 @@ export const SendAddress = ({ error, className }: Props) => {
 
   return (
     <Card className={cn('flex flex-col', className)}>
-      <h5 className="text-sw-label-md text-sw-gray-50 mb-sw-2xl">
+      <h5 className="text-sw-label-md text-sw-gray-50 pb-sw-md">
         {t('sendAddress.label', 'Send to')}
       </h5>
       <Input
         fontSize="sm"
         defaultValue={ctx.sendAddress}
         state={inputState}
-        className="mb-sw-xl"
+        className="mb-sw-md"
         placeholder={t(
           'wallet.recipient.placeholder',
           'Enter recipient wallet address',
