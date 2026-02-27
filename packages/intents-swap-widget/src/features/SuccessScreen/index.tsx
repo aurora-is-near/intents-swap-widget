@@ -35,17 +35,14 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
-const useAnyDepositAmounts = (amount: number | undefined) => {
+const useAnyDepositAmounts = (amount: string | undefined) => {
   const { ctx } = useUnsafeSnapshot();
 
   if (!amount || !ctx.quote || ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
     return undefined;
   }
 
-  const sourceAmount = formatBigToHuman(
-    String(amount),
-    ctx.sourceToken.decimals,
-  );
+  const sourceAmount = formatBigToHuman(amount, ctx.sourceToken.decimals);
 
   const sourceAmountUsd = ctx.sourceToken.price * parseFloat(sourceAmount);
 

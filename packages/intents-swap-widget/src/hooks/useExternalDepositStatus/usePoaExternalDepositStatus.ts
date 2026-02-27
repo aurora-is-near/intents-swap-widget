@@ -181,7 +181,7 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
       swapDetails: {
         intentHashes: [''],
         destinationChainTxHashes: [{ hash: matchedDeposit.tx_hash ?? '' }],
-        amount: matchedDeposit.amount,
+        amount: String(matchedDeposit.amount),
       },
     };
   };

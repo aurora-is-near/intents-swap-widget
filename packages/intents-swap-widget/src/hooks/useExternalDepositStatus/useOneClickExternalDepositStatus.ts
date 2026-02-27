@@ -6,7 +6,15 @@ type Args = {
 
 export const useOneClickExternalDepositStatus = ({ depositAddress }: Args) => {
   const pollDepositStatus = async () => {
-    return OneClickService.getExecutionStatus(depositAddress);
+    const result = await OneClickService.getExecutionStatus(depositAddress);
+
+    return {
+      ...result,
+      swapDetails: {
+        ...result.swapDetails,
+        amount: result.quoteResponse.quote.amountIn,
+      },
+    };
   };
 
   return { pollDepositStatus };

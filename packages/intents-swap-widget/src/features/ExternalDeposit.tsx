@@ -125,7 +125,6 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
           type: 'on_successful_transfer',
           transferResult: {
             hash: txHash ?? '',
-            // @ts-expect-error SwapDetails.amount is not defined
             amount: depositStatusQuery.data.swapDetails.amount,
             intent: depositStatusQuery.data.swapDetails.intentHashes[0],
             transactionLink:
