@@ -6,7 +6,7 @@ import * as Icons from 'lucide-react';
 
 import { cn as clsx } from '../utils/cn';
 
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'xs' | 'sm' | 'md' | 'lg';
 type Variant = 'primary' | 'tertiary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 type Detail = 'default' | 'dimmed' | 'accent';
@@ -29,6 +29,7 @@ const styles = {
   icon: 'h-csw-xl w-csw-xl',
 
   size: (size: Size) => ({
+    'px-csw-2md py-csw-sm': size === 'xs',
     'px-csw-lg py-csw-2md': size === 'sm',
     'px-csw-2xl py-csw-lg': size === 'md',
     'px-csw-3xl py-csw-xl': size === 'lg',

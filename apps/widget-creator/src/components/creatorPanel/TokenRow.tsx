@@ -28,10 +28,10 @@ export function TokenRow({
 
   return (
     <div
-      className={`flex items-center justify-between px-csw-md py-csw-md bg-csw-gray-800 rounded-csw-md transition-colors ${
+      className={`flex items-center justify-between px-csw-md py-csw-sm bg-csw-gray-900 rounded-csw-md transition-colors ${
         isDisabled
           ? 'opacity-40 cursor-not-allowed'
-          : 'hover:bg-csw-gray-700 transition-colors cursor-pointer'
+          : 'hover:bg-csw-gray-800 transition-colors cursor-pointer'
       }`}
       onClick={() => !isDisabled && onToggle()}>
       <TokenTag
@@ -42,6 +42,7 @@ export function TokenRow({
 
       {/* Toggle Switch */}
       <ToggleOnly
+        size="sm"
         isEnabled={isSelected}
         onChange={() => !isDisabled && onToggle()}
       />

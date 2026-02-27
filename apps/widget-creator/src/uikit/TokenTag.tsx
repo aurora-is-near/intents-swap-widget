@@ -21,19 +21,17 @@ export function TokenTag({
   return (
     <div
       className={cn(
-        'flex items-center justify-center gap-csw-sm px-csw-md py-csw-sm rounded-csw-md',
+        'flex items-center justify-center gap-csw-md rounded-csw-md',
         'bg-csw-gray-800',
         className,
       )}>
       {/* Token Container */}
-      <div className="relative flex items-end shrink-0 w-[30px]">
+      <div className="relative flex items-end shrink-0">
         {/* Token Icon */}
         {tokenIcon ? (
-          <div className="relative shrink-0 size-[28px] mr-[-10px]">
-            {tokenIcon}
-          </div>
+          <div className="relative shrink-0 size-[24px]">{tokenIcon}</div>
         ) : (
-          <div className="relative shrink-0 size-[28px] mr-[-10px] flex items-center justify-center bg-csw-gray-700 rounded-full">
+          <div className="relative shrink-0 size-[24px] flex items-center justify-center bg-csw-gray-700 rounded-full">
             <HelpCircle className="w-4 h-4 text-csw-gray-950" />
           </div>
         )}
