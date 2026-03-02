@@ -26,6 +26,7 @@ export const useTransactions = () => {
             params: {
               page: pageParam,
               perPage: PER_PAGE,
+              walletAddress,
             },
           },
         );
