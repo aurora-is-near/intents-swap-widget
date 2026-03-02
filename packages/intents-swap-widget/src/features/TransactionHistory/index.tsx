@@ -2,9 +2,11 @@ import { TransactionCard } from './TransactionCard';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
 import { Button } from '@/components/Button';
-import { useTokens, useTransactions } from '@/hooks';
+import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
 export const TransactionHistory = () => {
+  const { isConnected } = useWalletConnection();
+
   const { tokens, isLoading: isLoadingTokens } = useTokens();
   const {
     transactions,
@@ -14,12 +16,16 @@ export const TransactionHistory = () => {
     isFetchingNextPage,
   } = useTransactions();
 
+  if (!isConnected) {
+    return <TransactionHistoryEmpty type="connect" />;
+  }
+
   if (isLoadingTokens || isLoadingTransactions) {
     return <TransactionHistorySkeleton />;
   }
 
   if (transactions.length === 0) {
-    return <TransactionHistoryEmpty />;
+    return <TransactionHistoryEmpty type="empty" />;
   }
 
   return (

@@ -2,15 +2,19 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useConfig } from '../config';
 import { feeServiceApi } from '../network';
 import type { TransactionsResponse } from '../types/transaction';
+import { useUnsafeSnapshot } from '../machine';
 
 const PER_PAGE = 7;
 
 export const useTransactions = () => {
   const { apiKey } = useConfig();
+  const {
+    ctx: { walletAddress },
+  } = useUnsafeSnapshot();
 
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ['transactions'],
+      queryKey: ['transactions', walletAddress].filter(Boolean),
       queryFn: ({ pageParam }) => {
         if (!apiKey) {
           throw new Error('An API key is required to fetch transactions');

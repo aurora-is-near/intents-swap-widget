@@ -1,12 +1,9 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { PersonFillW700 as Person } from '@material-symbols-svg/react-rounded/icons/person';
 import { useWalletConnection } from '../../hooks/useWalletConnection';
-import { useConfig } from '../../config';
 
 export const WidgetProfileButton = () => {
-  const { walletSignIn, walletSignOut } = useWalletConnection();
-  const { connectedWallets } = useConfig();
-  const isConnected = Object.values(connectedWallets).some((addr) => !!addr);
+  const { walletSignIn, walletSignOut, isConnected } = useWalletConnection();
 
   const onClick = () => {
     if (isConnected) {
