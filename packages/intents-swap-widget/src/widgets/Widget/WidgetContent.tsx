@@ -18,11 +18,7 @@ import {
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
-import {
-  MakeTransfer,
-  MakeTransferArgs,
-  MakeTransferResponse,
-} from '../../types';
+import { MakeTransfer, MakeTransferArgs, TransferResult } from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { useUnsafeSnapshot } from '../../machine';
@@ -36,7 +32,7 @@ export type Props = Omit<
   makeTransfer?: (
     args: MakeTransferArgs,
     widgetType: WidgetType,
-  ) => MakeTransferResponse | Promise<MakeTransferResponse>;
+  ) => TransferResult | null | Promise<TransferResult | null>;
 };
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;
@@ -58,10 +54,10 @@ const wrapMakeTransfer = (
 };
 
 export const WidgetContent = ({
-    defaultTab = 'swap',
-    makeTransfer,
-    onMsg,
-    ...restProps
+  defaultTab = 'swap',
+  makeTransfer,
+  onMsg,
+  ...restProps
 }: Props) => {
   const [isTabsVisible, setIsTabsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);

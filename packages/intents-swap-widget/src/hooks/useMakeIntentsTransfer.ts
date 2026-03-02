@@ -17,7 +17,6 @@ import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
 import { INTENTS_CONTRACT } from '@/constants';
-import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { notReachable } from '@/utils/notReachable';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
@@ -302,7 +301,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         hash: completionResult.hash ?? '',
         transactionLink: completionResult.hash
           ? getTransactionLink(
-              CHAIN_IDS_MAP[ctx.targetToken.blockchain],
+              ctx.targetToken.blockchain,
               completionResult.hash,
             )
           : '',

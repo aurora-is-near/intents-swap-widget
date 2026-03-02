@@ -156,24 +156,45 @@ export const useMakeDepositAddress = () => {
 
       const response = (await request.current).data;
 
+      if (!ctx.isDepositFromExternalWallet && !ctx.sourceTokenAmount) {
+        throw new QuoteError({
+          code: 'QUOTE_INVALID_INITIAL',
+          meta: {
+            isDry: false,
+            message: 'Connected wallet quote has no amount',
+          },
+        });
+      }
+
       return {
+        ...(!ctx.sourceTokenAmount
+          ? { type: 'QUOTE_DEPOSIT_ANY_AMOUNT' }
+          : {
+              type: 'QUOTE_REAL_WITH_AMOUNT',
+              amountIn: ctx.sourceTokenAmount,
+              amountOut: ctx.targetTokenAmount,
+              amountInUsd: `${
+                parseFloat(
+                  formatBigToHuman(
+                    ctx.sourceTokenAmount,
+                    ctx.sourceToken.decimals,
+                  ),
+                ) * ctx.sourceToken.price
+              }`,
+              amountOutUsd: `${
+                parseFloat(
+                  formatBigToHuman(
+                    ctx.targetTokenAmount,
+                    ctx.targetToken.decimals,
+                  ),
+                ) * ctx.targetToken.price
+              }`,
+              amountOutFormatted: formatBigToHuman(
+                ctx.targetTokenAmount,
+                ctx.targetToken.decimals,
+              ),
+            }),
         depositAddress: response.result.address,
-        amountIn: ctx.sourceTokenAmount,
-        amountOut: ctx.targetTokenAmount,
-        amountInUsd: `${
-          parseFloat(
-            formatBigToHuman(ctx.sourceTokenAmount, ctx.sourceToken.decimals),
-          ) * ctx.sourceToken.price
-        }`,
-        amountOutUsd: `${
-          parseFloat(
-            formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken.decimals),
-          ) * ctx.targetToken.price
-        }`,
-        amountOutFormatted: formatBigToHuman(
-          ctx.targetTokenAmount,
-          ctx.targetToken.decimals,
-        ),
         // dummy values to match quote type
         deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         timeEstimate: 0,

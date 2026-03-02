@@ -14,8 +14,8 @@ import { useTypedTranslation } from '@/localisation';
 
 import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
-import { TokenIcon } from '@/components/TokenIcon';
 import { InputAmount } from '@/components/InputAmount';
+import { TokenSelectButton } from '@/components/TokenSelectButton';
 import type { Token, TokenBalance } from '@/types/token';
 
 export type Msg =
@@ -83,29 +83,11 @@ export const TokenInputWithToken = ({
             onMsg({ type: 'on_change_amount', amount: e.target.value });
           }}
         />
-        <button
-          type="button"
-          onClick={
-            state === 'disabled'
-              ? undefined
-              : () => onMsg({ type: 'on_click_select_token' })
-          }
-          className={cn(
-            'gap-sw-md pl-sw-sm pr-sw-md flex h-[36px] min-w-[80px] shrink-0 items-center rounded-sw-md transition-colors bg-sw-gray-800 hover:bg-sw-gray-700 group',
-            {
-              'cursor-pointer': state !== 'disabled',
-              'animate-pulse cursor-default': state === 'disabled',
-            },
-          )}>
-          <TokenIcon
-            token={token}
-            chainShowIcon={!token.isIntent}
-            className="border-sw-gray-800 group-hover:border-sw-gray-700 transition-colors top-[14px]"
-          />
-          <span className="text-sw-label-md text-sw-gray-50">
-            {token.symbol}
-          </span>
-        </button>
+        <TokenSelectButton
+          token={token}
+          state={state === 'disabled' ? 'disabled' : 'default'}
+          onClick={() => onMsg({ type: 'on_click_select_token' })}
+        />
       </div>
       <div className="gap-sw-sm min-h-sw-2xl flex items-center justify-between mt-sw-lg">
         <div className="gap-sw-md flex items-center">

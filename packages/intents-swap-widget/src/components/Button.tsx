@@ -9,13 +9,11 @@ import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import { cn as clsx } from '@/utils/cn';
 
 type Size = 'sm' | 'md' | 'lg';
-type Variant = 'primary' | 'outlined';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 
 type Props = {
   size: Size;
   state?: State;
-  variant: Variant;
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
@@ -27,6 +25,10 @@ type Props = {
   (
     | { as?: 'button'; href?: never; target?: never }
     | { as: 'a'; href: string; target?: '_blank' | '_self' }
+  ) &
+  (
+    | { variant: 'outlined'; color?: 'primary' | 'secondary' }
+    | { variant: 'primary'; color?: never }
   );
 
 const styles = {
@@ -52,7 +54,7 @@ const ButtonChildren = ({
   icon,
   iconPosition,
   children,
-  state,
+  state = 'default',
 }: Pick<Props, 'icon' | 'iconPosition' | 'children' | 'state'>) => {
   const hasIcon = !!icon;
   const Icon =
@@ -133,6 +135,7 @@ const ButtonOutlined = ({
   children,
   as = 'button',
   state = 'default',
+  color = 'secondary',
   onClick,
   fluid,
   href,
@@ -162,6 +165,8 @@ const ButtonOutlined = ({
             state === 'loading' || state === 'disabled',
           'bg-transparent text-sw-gray-50 ring-1 ring-inset ring-sw-gray-600 hover:ring-sw-gray-100 cursor-pointer':
             ['active', 'default'].includes(state),
+          'bg-transparent text-sw-accent-300 ring-1 ring-inset ring-sw-accent-300 hover:text-sw-accent-500 hover:ring-sw-accent-500 cursor-pointer':
+            color === 'primary' && ['active', 'default'].includes(state),
         },
         className,
       )}>

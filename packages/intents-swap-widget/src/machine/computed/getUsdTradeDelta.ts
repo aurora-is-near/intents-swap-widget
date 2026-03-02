@@ -9,7 +9,7 @@ type Delta = {
 export const getUsdTradeDelta = (
   ctx: DeepReadonly<Context>,
 ): Delta | undefined => {
-  if (!ctx.quote) {
+  if (!ctx.quote || ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
     return undefined;
   }
 

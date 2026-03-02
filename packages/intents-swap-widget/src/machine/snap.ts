@@ -11,6 +11,7 @@ import { getIsDirectNonNearWithdrawal } from '@/machine/computed/getIsDirectNonN
 import { getIsDirectTokenOnNearTransfer } from '@/machine/computed/getIsDirectTokenOnNearTransfer';
 import { getIsDirectNearTokenWithdrawal } from '@/machine/computed/getIsDirectNearTokenWithdrawal';
 import { getIsSameAssetDiffChainWithdrawal } from '@/machine/computed/getIsSameAssetDiffChainWithdrawal';
+import { getMinDepositTokenAmount } from '@/machine/computed/getMinDepositTokenAmount';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
 
@@ -18,6 +19,7 @@ const store = machine.getStore();
 
 const computed = derive({
   usdTradeDelta: (get) => getUsdTradeDelta(get(store.context)),
+  minDepositTokenAmount: (get) => getMinDepositTokenAmount(get(store.context)),
   isDirectNearTokenWithdrawal: (get) =>
     getIsDirectNearTokenWithdrawal(get(store.context)),
   isDirectNonNearWithdrawal: (get) =>

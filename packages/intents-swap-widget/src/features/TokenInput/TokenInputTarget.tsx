@@ -39,7 +39,11 @@ export const TokenInputTarget = ({
       token={ctx.targetToken}
       balance={targetTokenBalance}
       quoteUsdDelta={usdTradeDelta?.percentage}
-      quoteUsdValue={ctx.quote && parseFloat(ctx.quote.amountOutUsd)}
+      quoteUsdValue={
+        ctx.quote && ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT'
+          ? parseFloat(ctx.quote.amountOutUsd)
+          : undefined
+      }
       value={formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken?.decimals)}
       state={sourceInputState}
       showQuickBalanceActions={false}

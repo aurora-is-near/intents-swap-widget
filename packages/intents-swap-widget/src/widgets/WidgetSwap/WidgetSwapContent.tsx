@@ -217,7 +217,7 @@ export const WidgetSwapContent = ({
       }
 
       return (
-        <div className="gap-sw-2xl flex flex-col w-full">
+        <div className="gap-sw-lg flex flex-col w-full">
           <div className="gap-[10px] relative flex flex-col">
             <TokenInput.Source
               heading={t('tokenInput.heading.source.swap', 'Sell')}

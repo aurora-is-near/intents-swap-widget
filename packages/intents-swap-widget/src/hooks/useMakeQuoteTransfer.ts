@@ -95,6 +95,13 @@ export const useMakeQuoteTransfer = ({
       });
     }
 
+    if (ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Quote has no source amount' },
+      });
+    }
+
     const makeTransferArgs: MakeTransferArgs = {
       amount: ctx.quote.amountIn,
       decimals: ctx.sourceToken.decimals,

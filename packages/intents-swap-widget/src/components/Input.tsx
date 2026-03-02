@@ -114,11 +114,11 @@ export const Input = forwardRef<HTMLInputElement, PropsWithChildren<Props>>(
                   <button
                     type="button"
                     className={cn(
-                      'opacity-0 transition-opacity duration-150 ease-in-out hover:text-sw-gray-50',
+                      'opacity-0 transition-opacity duration-150 ease-in-out cursor-pointer hover:text-sw-gray-50',
                       {
-                        'cursor-pointer opacity-100': !!value,
-                        'cursor-default text-sw-gray-200': isFocused,
-                        'cursor-default text-sw-gray-300': !isFocused,
+                        'opacity-100': !!value,
+                        'text-sw-gray-200': isFocused,
+                        'text-sw-gray-300': !isFocused,
                       },
                     )}
                     onClick={handleClear}>

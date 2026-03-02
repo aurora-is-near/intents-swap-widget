@@ -8,6 +8,10 @@ export const isAmountChangedFromQuote = (
   changes: ContextChange[],
   debug: boolean,
 ) => {
+  if (!ctx.quote || ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+    return false;
+  }
+
   if (isTargetAmountChanged(ctx, changes)) {
     const newTargetAmount = changes.find(
       (change) => change?.key === 'targetTokenAmount',

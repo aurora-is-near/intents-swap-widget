@@ -5,11 +5,13 @@ import {
   mockAlchemyApi,
   mockOneClickApi,
 } from '../../tests/mock-axios-requests';
+import '../../tests/mock-qr-code';
 import { mockEvmWallet } from '../../tests/mock-evm-wallet';
 import { mockMakeTransfer } from '../../tests/mock-make-transfer';
 import { mockAlchemyResponse } from '../../tests/mock-alchemy-response';
 import { mockGetIntentsBalances } from '../../tests/mock-get-intents-balances';
 import { mockConnectedWalletAddress } from '../../tests/mock-connected-wallet-address';
+import { getMockPendingDepositStatus } from '../../tests/mock-quote';
 import { mockOneClickQuote } from '../../tests/mock-one-click-quote';
 import { mockedLocalStorage } from '../../tests/mock-localstorage';
 import { mockOneClickSDK } from '../../tests/mock-one-click-sdk';
@@ -35,6 +37,7 @@ const WidgetDepositSetup = () => {
   const config: Partial<WidgetConfig> = {
     appName: 'Test',
     appIcon: '/test-icon.png',
+    apiKey: 'test-api-key',
     enableAccountAbstraction: true,
     alchemyApiKey: 'test-alchemy-api-key',
     connectedWallets: { default: mockConnectedWalletAddress('evm') },
@@ -104,6 +107,10 @@ describe('Deposit', () => {
 
     mockOneClickSDK.getQuote.mockResolvedValue(quoteMock);
     mockOneClickSDK.getTokens.mockResolvedValue([sourceToken, targetToken]);
+    mockOneClickSDK.getExecutionStatus.mockResolvedValue(
+      getMockPendingDepositStatus(quoteMock),
+    );
+
     mockOneClickApi.post.mockResolvedValue({ data: quoteMock });
   });
 
@@ -113,7 +120,7 @@ describe('Deposit', () => {
   });
 
   it('renders deposit widget layout', async () => {
-    const { screen, within } = setup(<WidgetDepositSetup />);
+    const { screen, within, user, container } = setup(<WidgetDepositSetup />);
 
     // 1. Input initial state
     const tokenInput = await screen.findByLabelText('Sell');
@@ -126,27 +133,24 @@ describe('Deposit', () => {
     // 2. Tokens are fetched
     expect(mockOneClickSDK.getTokens).toHaveBeenCalled();
 
-    // 3. Deposit selector
-    const depositMethodLabel = screen.getByText('Select deposit method');
+    // 3. Toggle QR code
+    const depositMethodLabel = screen.getByText('Deposit from external wallet');
     expect(depositMethodLabel).toBeInTheDocument();
 
-    const myWalletBtn = screen.getByRole('button', { name: 'My wallet' });
-    expect(myWalletBtn).toHaveAttribute('data-active');
-    expect(myWalletBtn).toBeInTheDocument();
-    expect(myWalletBtn).toBeEnabled();
+    const toggleContainer = depositMethodLabel.parentElement;
+    expect(toggleContainer).toBeInTheDocument();
 
-    const qrCodeBtn = screen.getByRole('button', { name: 'QR / Address' });
-    expect(qrCodeBtn).not.toHaveAttribute('data-active');
-    expect(qrCodeBtn).toBeInTheDocument();
-    expect(qrCodeBtn).toBeEnabled();
+    const qrToggle = within(toggleContainer!).getByRole('switch');
+    expect(qrToggle).not.toBeChecked();
+    await user.click(qrToggle);
 
-    // 4. Submit button
-    const submitBtn = screen.getByRole('button', { name: 'Enter amount' });
-    expect(submitBtn).toBeInTheDocument();
-    expect(submitBtn).toBeDisabled();
-
-    // 5. Selected asset
-    const selectedAsset = within(tokenInput).getByRole('button');
-    expect(selectedAsset).toHaveTextContent('ETH');
+    // 4. Make a quote
+    expect(qrToggle).toBeChecked();
+    expect(screen.getByRole('button', { name: 'ETH' })).toBeInTheDocument();
+    expect(screen.getByText('Minimum deposit 0.00034 ETH')).toBeInTheDocument();
+    expect(screen.getByText('Use Ethereum network')).toBeInTheDocument();
+    expect(screen.getByLabelText('qr-code')).toBeInTheDocument();
+    expect(screen.getByText('test-dep...ddress')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for transaction')).toBeInTheDocument();
   });
 });
