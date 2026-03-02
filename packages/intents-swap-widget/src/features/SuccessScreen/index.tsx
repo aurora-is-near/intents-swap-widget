@@ -35,6 +35,16 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
+const getAmounts = (amount: string, decimals: number, price: number) => {
+  const sourceAmount = formatBigToHuman(amount, decimals);
+  const sourceAmountUsd = price * parseFloat(sourceAmount);
+
+  return {
+    amount: sourceAmount,
+    amountUsd: sourceAmountUsd,
+  };
+};
+
 const useAnyDepositAmounts = (amount: string | undefined) => {
   const { ctx } = useUnsafeSnapshot();
 
@@ -42,14 +52,7 @@ const useAnyDepositAmounts = (amount: string | undefined) => {
     return undefined;
   }
 
-  const sourceAmount = formatBigToHuman(amount, ctx.sourceToken.decimals);
-
-  const sourceAmountUsd = ctx.sourceToken.price * parseFloat(sourceAmount);
-
-  return {
-    amount: sourceAmount,
-    amountUsd: sourceAmountUsd,
-  };
+  return getAmounts(amount, ctx.sourceToken.decimals, ctx.sourceToken.price);
 };
 
 const useQuoteAmounts = () => {
@@ -164,6 +167,17 @@ export const SuccessScreen = ({
 
       {!quoteAmounts && !!anyDepositAmounts && (
         <TokenRow token={ctx.sourceToken} {...anyDepositAmounts} />
+      )}
+
+      {!quoteAmounts && !anyDepositAmounts && (
+        <TokenRow
+          token={ctx.sourceToken}
+          {...getAmounts(
+            ctx.sourceTokenAmount,
+            ctx.sourceToken.decimals,
+            ctx.sourceToken.price,
+          )}
+        />
       )}
 
       <Accordion
