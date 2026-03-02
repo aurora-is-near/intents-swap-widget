@@ -9,19 +9,24 @@ export const DepositSummary = () => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { slippageTolerance } = useConfig();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
+  const {
+    isDirectNearTokenWithdrawal,
+    isDirectTokenOnNearTransfer,
+    isNativeNearDeposit,
+  } = useComputedSnapshot();
 
   const getDepositAmount = () => {
     let amount: string | undefined;
 
-    if (!ctx.quote) {
-      return '—';
-    }
-
-    if (ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
-      amount = formatBigToHuman(ctx.quote.amountOut, ctx.sourceToken.decimals);
-    } else if (ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
-      return `any amount of ${ctx.sourceToken.symbol}`;
+    if (ctx.quote) {
+      if (ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+        amount = formatBigToHuman(
+          ctx.quote.amountOut,
+          ctx.sourceToken.decimals,
+        );
+      } else if (ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+        return `any amount of ${ctx.sourceToken.symbol}`;
+      }
     }
 
     if (!ctx.sourceTokenAmount || ctx.sourceTokenAmount === '0') {
@@ -47,7 +52,11 @@ export const DepositSummary = () => {
       return `${ctx.quote.timeEstimate} sec.`;
     }
 
-    if (isDirectNearTokenWithdrawal) {
+    if (
+      isDirectNearTokenWithdrawal ||
+      isDirectTokenOnNearTransfer ||
+      isNativeNearDeposit
+    ) {
       return '1 sec.';
     }
 
