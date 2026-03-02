@@ -176,12 +176,23 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
       };
     }
 
+    // due to POA API amount conversion problem (it may return just 1e+24 string)
+    // we try to convert whatever string we receive to BigInt and if it fails
+    // set amount to undefined
+    let convertedAmount: string | undefined;
+
+    try {
+      convertedAmount = BigInt(matchedDeposit.amount).toString();
+    } catch (e) {
+      convertedAmount = undefined;
+    }
+
     return {
       status: oneClickBridgeStatusMap[matchedDeposit.status],
       swapDetails: {
         intentHashes: [''],
         destinationChainTxHashes: [{ hash: matchedDeposit.tx_hash ?? '' }],
-        amount: String(matchedDeposit.amount),
+        amount: convertedAmount,
       },
     };
   };
