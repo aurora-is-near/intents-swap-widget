@@ -1,13 +1,13 @@
-import { ScheduleFillW700 as Schedule } from '@material-symbols-svg/react-rounded/icons/schedule';
-import { AccountBalanceWalletFillW700 as Wallet } from '@material-symbols-svg/react-rounded/icons/account-balance-wallet';
+import { ReceiptFillW700 as ReceiptIcon } from '@material-symbols-svg/react-rounded/icons/receipt';
+import { AccountBalanceWalletFillW700 as WalletIcon } from '@material-symbols-svg/react-rounded/icons/account-balance-wallet';
 
 const CONTENT = {
   connect: {
-    Icon: Wallet,
+    Icon: WalletIcon,
     description: 'Connect your wallet to see your transaction history',
   },
   empty: {
-    Icon: Schedule,
+    Icon: ReceiptIcon,
     description:
       'Once you make some transactions, the details will appear here.',
   },
