@@ -8,7 +8,8 @@ const CONTENT = {
   },
   empty: {
     Icon: Schedule,
-    description: 'Your transactions will appear here.',
+    description:
+      'Once you make some transactions, the details will appear here.',
   },
 } as const;
 
