@@ -38,7 +38,7 @@ export const WidgetProfileButton = () => {
     <Menu>
       <MenuButton>
         <div className="px-sw-md cursor-pointer">
-          <Person className="w-sw-2xl h-sw-2xl text-sw-gray-200" />
+          <Person className="w-sw-2xl h-sw-2xl text-sw-gray-200 hover:text-sw-gray-50" />
         </div>
       </MenuButton>
       <MenuItems anchor="bottom" className="mt-sw-lg">

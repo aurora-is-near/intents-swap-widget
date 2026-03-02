@@ -54,7 +54,6 @@ export const TokenItem = ({
         }>
         <TokenIcon
           token={token}
-          chainShowIcon={!token.isIntent}
           className={cn('group-hover:border-sw-gray-800 transition-colors', {
             'border-sw-gray-800': isFocused,
             'border-sw-gray-900': !isFocused,

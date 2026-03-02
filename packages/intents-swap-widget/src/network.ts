@@ -23,3 +23,10 @@ export const oneClickApi = createNetworkClient();
 export const alchemyApi = createNetworkClient({
   baseURL: 'https://api.g.alchemy.com/data/v1',
 });
+
+export const feeServiceApi = createNetworkClient({
+  baseURL: 'http://localhost:3000',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});

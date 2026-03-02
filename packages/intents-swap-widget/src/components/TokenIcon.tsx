@@ -7,17 +7,13 @@ import type { Token } from '@/types/token';
 
 type TokenItemProps = {
   token: Token;
-  chainShowIcon: boolean;
   className?: string;
 };
 
 const BORDER_RADIUS = 4;
 
-export const TokenIcon = ({
-  token,
-  chainShowIcon,
-  className,
-}: TokenItemProps) => {
+export const TokenIcon = ({ token, className }: TokenItemProps) => {
+  const chainShowIcon = !token.isIntent;
   const tokenSymbolLowerCase = token.symbol.toLowerCase();
   const chainIcon = CHAIN_ICONS[token.blockchain] ?? UNKNOWN_ICON;
   const tokenIcon =

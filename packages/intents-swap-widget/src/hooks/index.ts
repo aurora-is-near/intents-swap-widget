@@ -19,3 +19,4 @@ export { useHandleKeyDown } from './useHandleKeyDown';
 export { useWalletConnection } from './useWalletConnection';
 export { useIsDarkMode } from './useIsDarkMode';
 export { useIntentsAccountType } from './useIntentsAccountType';
+export { useTransactions } from './useTransactions';
