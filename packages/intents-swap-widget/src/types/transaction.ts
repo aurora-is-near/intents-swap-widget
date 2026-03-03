@@ -4,6 +4,7 @@ export type TransactionStatus =
   | 'SUCCESS'
   | 'PROCESSING'
   | 'WAITING_FOR_FUNDS'
+  | 'PENDING'
   | 'FAILED'
   | 'REFUNDED';
 
@@ -37,6 +38,19 @@ export type Transaction = {
   senders: string[];
   refundReason: string | null;
 };
+
+export type FakeTransaction = Pick<
+  Transaction,
+  | 'originAsset'
+  | 'destinationAsset'
+  | 'amountInFormatted'
+  | 'amountOutFormatted'
+  | 'createdAt'
+  | 'status'
+  | 'senders'
+  | 'recipient'
+  | 'originChainTxHashes'
+>;
 
 export type TransactionsResponse = {
   data: Transaction[];

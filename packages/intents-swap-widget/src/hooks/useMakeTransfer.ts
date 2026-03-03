@@ -1,6 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 import { Providers } from '../types';
+import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
+import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
@@ -10,7 +13,6 @@ import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
-import { TRANSACTIONS_QUERY_KEY } from '@/hooks/useTransactions';
 
 export const useMakeTransfer = ({
   message,
@@ -113,7 +115,31 @@ export const useMakeTransfer = ({
     fireEvent('transferSetStatus', { status: 'success' });
     moveTo('transfer_success');
 
-    void queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
+    // Add optimistic transaction so it appears immediately in the history.
+    // It gets naturally replaced once polling picks up the real transaction.
+    if (ctx.walletAddress && ctx.sourceToken && ctx.targetToken) {
+      addOptimisticTransaction(transferResult.hash, {
+        status: 'PENDING',
+        originAsset: ctx.sourceToken.assetId,
+        destinationAsset: ctx.targetToken.assetId,
+        amountInFormatted: formatBigToHuman(
+          ctx.sourceTokenAmount,
+          ctx.sourceToken.decimals,
+        ),
+        amountOutFormatted: formatBigToHuman(
+          ctx.targetTokenAmount,
+          ctx.targetToken.decimals,
+        ),
+        createdAt: new Date().toISOString(),
+        senders: [ctx.walletAddress],
+        recipient: ctx.sendAddress ?? '',
+        originChainTxHashes: [transferResult.hash],
+      });
+    }
+
+    void queryClient.invalidateQueries({
+      queryKey: getTransactionHistoryQueryKey(),
+    });
 
     return transferResult;
   };

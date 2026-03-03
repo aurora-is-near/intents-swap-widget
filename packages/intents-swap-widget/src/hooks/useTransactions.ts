@@ -6,21 +6,27 @@ import type {
   TransactionStatus,
 } from '../types/transaction';
 import { useUnsafeSnapshot } from '../machine';
+import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
+import {
+  getOptimisticTransactions,
+  removeOptimisticTransaction,
+} from '../utils/transactions/addOptimisticTransaction';
 
 const PER_PAGE = 7;
 const POLLING_INTERVAL_MS = 5_000;
 const PENDING_STATUSES: TransactionStatus[] = [
+  'PENDING',
   'PROCESSING',
   'WAITING_FOR_FUNDS',
 ];
-
-export const TRANSACTIONS_QUERY_KEY = 'transactions';
 
 export const useTransactions = () => {
   const { apiKey } = useConfig();
   const {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();
+
+  const queryKey = getTransactionHistoryQueryKey(walletAddress);
 
   const {
     data,
@@ -31,7 +37,7 @@ export const useTransactions = () => {
     fetchNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: [TRANSACTIONS_QUERY_KEY, walletAddress].filter(Boolean),
+    queryKey,
     queryFn: ({ pageParam }) => {
       if (!apiKey) {
         throw new Error('An API key is required to fetch transactions');
@@ -52,18 +58,36 @@ export const useTransactions = () => {
     getNextPageParam: (lastPage) => lastPage.data.nextPage,
     initialPageParam: 1,
     refetchInterval: (query) => {
-      const transactions =
-        query.state.data?.pages.flatMap((p) => p.data.data) ?? [];
+      const apiTxs = query.state.data?.pages.flatMap((p) => p.data.data) ?? [];
 
-      const hasPending = transactions.some((tx) =>
-        PENDING_STATUSES.includes(tx.status),
-      );
+      const hasPending =
+        apiTxs.some((tx) => PENDING_STATUSES.includes(tx.status)) ||
+        getOptimisticTransactions().length > 0;
 
       return hasPending ? POLLING_INTERVAL_MS : false;
     },
   });
 
-  const transactions = data?.pages.flatMap((page) => page.data.data) ?? [];
+  const apiTransactions = data?.pages.flatMap((page) => page.data.data) ?? [];
+  const optimistic = getOptimisticTransactions();
+
+  // Remove optimistic entries once the real transaction appears in the API.
+  // The optimistic intentHashes (origin chain tx hash) appears in the real
+  // transaction's originChainTxHashes array.
+  const apiOriginHashes = new Set(
+    apiTransactions.flatMap((tx) => tx.originChainTxHashes ?? []),
+  );
+
+  optimistic.forEach((tx) => {
+    const hash = tx.originChainTxHashes.find((h) => apiOriginHashes.has(h));
+
+    if (hash) {
+      removeOptimisticTransaction(hash);
+    }
+  });
+
+  const transactions = [...getOptimisticTransactions(), ...apiTransactions];
+
   const pendingTransactionsCount = transactions.filter((tx) =>
     PENDING_STATUSES.includes(tx.status),
   ).length;

@@ -11,15 +11,9 @@ export const getTransactionStatusLabel = (
   status: TransactionStatus,
 ): TransactionsStatusLabel => {
   switch (status) {
-    case 'SUCCESS':
+    case 'PENDING':
       return {
-        label: 'Completed',
-        colorClassName: 'text-sw-status-success',
-        Icon: CheckCircleIcon,
-      };
-    case 'PROCESSING':
-      return {
-        label: 'Processing',
+        label: 'Waiting...',
         colorClassName: 'text-sw-accent-50',
         Icon: ProgressActivityIcon,
         iconIsSpinning: true,
@@ -30,6 +24,19 @@ export const getTransactionStatusLabel = (
         colorClassName: 'text-sw-accent-50',
         Icon: ProgressActivityIcon,
         iconIsSpinning: true,
+      };
+    case 'PROCESSING':
+      return {
+        label: 'Processing',
+        colorClassName: 'text-sw-accent-50',
+        Icon: ProgressActivityIcon,
+        iconIsSpinning: true,
+      };
+    case 'SUCCESS':
+      return {
+        label: 'Completed',
+        colorClassName: 'text-sw-status-success',
+        Icon: CheckCircleIcon,
       };
     case 'FAILED':
       return {

@@ -33,7 +33,7 @@ const DetailRow = ({
 );
 
 const calculateFee = (tx: Transaction): number => {
-  if (tx.appFees.length === 0) {
+  if (!tx.appFees || tx.appFees.length === 0) {
     return 0;
   }
 
@@ -166,16 +166,18 @@ export const TransactionDetails = ({
           </DetailRow>
         )}
 
-        <DetailRow label="Explorer link">
-          <a
-            href={`https://explorer.near-intents.org/transactions/${explorerHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-x-sw-sm text-sw-body-md text-sw-gray-50 hover:text-sw-accent-50 transition-colors">
-            {formatAddressTruncate(explorerHash, 14)}
-            <OpenInNew className="h-sw-lg w-sw-lg" />
-          </a>
-        </DetailRow>
+        {!!explorerHash && (
+          <DetailRow label="Explorer link">
+            <a
+              href={`https://explorer.near-intents.org/transactions/${explorerHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-x-sw-sm text-sw-body-md text-sw-gray-50 hover:text-sw-accent-50 transition-colors">
+              {formatAddressTruncate(explorerHash, 14)}
+              <OpenInNew className="h-sw-lg w-sw-lg" />
+            </a>
+          </DetailRow>
+        )}
 
         {!!tx.intentHashes && (
           <DetailRow label="Intent hash">
