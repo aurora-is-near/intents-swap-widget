@@ -39,7 +39,7 @@ export const useTransactions = () => {
       }
 
       return feeServiceApi.get<TransactionsResponse>(
-        `/api/transactions-pages/${apiKey}`,
+        `/api/transactions/${apiKey}`,
         {
           params: {
             page: pageParam,
