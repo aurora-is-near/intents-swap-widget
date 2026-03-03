@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
 import { TransactionCard } from './TransactionCard';
@@ -8,13 +8,20 @@ import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
 import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
-export const TransactionHistory = () => {
+type Props = {
+  onPendingTransactionsCountChange: (count: number) => void;
+};
+
+export const TransactionHistory = ({
+  onPendingTransactionsCountChange,
+}: Props) => {
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
   const { isConnected } = useWalletConnection();
 
   const { tokens, isLoading: isLoadingTokens } = useTokens();
   const {
     transactions,
+    pendingTransactionsCount,
     isLoading: isLoadingTransactions,
     isError,
     refetch,
@@ -22,6 +29,10 @@ export const TransactionHistory = () => {
     fetchNextPage,
     isFetchingNextPage,
   } = useTransactions();
+
+  useEffect(() => {
+    onPendingTransactionsCountChange(pendingTransactionsCount);
+  }, [pendingTransactionsCount, onPendingTransactionsCountChange]);
 
   if (!isConnected) {
     return <TransactionHistoryEmpty type="connect" />;

@@ -34,10 +34,6 @@ import {
   transferSetStatus,
   type TransferSetStatusPayload,
 } from './transferSetStatus';
-import {
-  pendingTransactionsCountSet,
-  type PendingTransactionsCountSetPayload,
-} from './pendingTransactionsCountSet';
 import { machine } from '@/machine/machine';
 import type { Context } from '@/machine/context';
 import type { Machine } from '@/machine/machine';
@@ -62,7 +58,6 @@ export type TradeEvents = {
   transferSetStatus: TransferSetStatusPayload;
   walletAddressSet: WalletAddressSetPayload;
   setInputsValidating: InputsValidatingPayload;
-  pendingTransactionsCountSet: PendingTransactionsCountSetPayload;
 };
 
 const onEvent = <E extends keyof TradeEvents>(
@@ -91,7 +86,6 @@ export const registerEvents = () => {
   onEvent('quoteSet', quoteSet);
   onEvent('quoteReset', quoteReset);
   onEvent('reset', reset);
-  onEvent('pendingTransactionsCountSet', pendingTransactionsCountSet);
 
   // use with caution since these just return a boolean flag and set
   // a specific error to the context

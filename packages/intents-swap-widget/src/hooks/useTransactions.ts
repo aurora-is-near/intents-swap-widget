@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useConfig } from '../config';
 import { feeServiceApi } from '../network';
@@ -6,7 +5,7 @@ import type {
   TransactionsResponse,
   TransactionStatus,
 } from '../types/transaction';
-import { fireEvent, useUnsafeSnapshot } from '../machine';
+import { useUnsafeSnapshot } from '../machine';
 
 const PER_PAGE = 7;
 const POLLING_INTERVAL_MS = 5_000;
@@ -65,16 +64,13 @@ export const useTransactions = () => {
   });
 
   const transactions = data?.pages.flatMap((page) => page.data.data) ?? [];
-  const pendingCount = transactions.filter((tx) =>
+  const pendingTransactionsCount = transactions.filter((tx) =>
     PENDING_STATUSES.includes(tx.status),
   ).length;
 
-  useEffect(() => {
-    fireEvent('pendingTransactionsCountSet', pendingCount);
-  }, [pendingCount]);
-
   return {
     transactions,
+    pendingTransactionsCount,
     isLoading,
     isError,
     refetch,

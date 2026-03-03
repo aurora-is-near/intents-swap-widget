@@ -4,13 +4,13 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   isActive: boolean;
-  pendingCount: number;
+  pendingTransactionsCount: number;
   onClick: () => void;
 };
 
 export const WidgetHistoryButton = ({
   isActive,
-  pendingCount,
+  pendingTransactionsCount,
   onClick,
 }: Props) => (
   <button
@@ -21,9 +21,9 @@ export const WidgetHistoryButton = ({
       isActive ? 'text-sw-gray-50' : 'text-sw-gray-200 hover:text-sw-gray-50',
     )}>
     <Schedule className="w-sw-2xl h-sw-2xl" />
-    {pendingCount > 0 && (
+    {pendingTransactionsCount > 0 && (
       <span className="absolute -top-[8px] right-[0px] flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-sw-accent-500 text-sw-gray-950 text-sw-label-sm border-2 border-sw-gray-950">
-        {pendingCount}
+        {pendingTransactionsCount}
       </span>
     )}
   </button>

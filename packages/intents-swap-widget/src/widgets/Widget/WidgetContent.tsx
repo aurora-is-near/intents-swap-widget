@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -65,6 +65,7 @@ export const WidgetContent = ({
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
+  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
 
   const { ctx } = useUnsafeSnapshot();
@@ -92,6 +93,10 @@ export const WidgetContent = ({
     }
   }, [enableAccountAbstraction]);
 
+  const onPendingTransactionsCountChange = useCallback((count: number) => {
+    setPendingTransactionsCount(count);
+  }, []);
+
   const showHeader =
     (!isHeaderHidden || showHistory) && ctx.state !== 'transfer_success';
 
@@ -110,7 +115,7 @@ export const WidgetContent = ({
           {!!apiKey && (
             <WidgetHistoryButton
               isActive={showHistory}
-              pendingCount={ctx.pendingTransactionsCount}
+              pendingTransactionsCount={pendingTransactionsCount}
               onClick={() => {
                 setShowHistory((prev) => !prev);
                 setIsHeaderHidden(false);
@@ -122,7 +127,9 @@ export const WidgetContent = ({
       )}
 
       <div className={cn('w-full', { hidden: !showHistory })}>
-        <TransactionHistory />
+        <TransactionHistory
+          onPendingTransactionsCountChange={onPendingTransactionsCountChange}
+        />
       </div>
 
       {!showHistory &&
