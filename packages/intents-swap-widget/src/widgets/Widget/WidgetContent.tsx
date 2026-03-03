@@ -124,7 +124,7 @@ export const WidgetContent = ({
         <TransactionHistory />
       </div>
 
-      {showHistory &&
+      {!showHistory &&
         (() => {
           switch (activeTab) {
             case 'swap': {
