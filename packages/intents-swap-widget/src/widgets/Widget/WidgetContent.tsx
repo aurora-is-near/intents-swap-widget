@@ -116,7 +116,10 @@ export const WidgetContent = ({
             <WidgetHistoryButton
               isActive={showHistory}
               pendingCount={ctx.pendingTransactionsCount}
-              onClick={() => setShowHistory((prev) => !prev)}
+              onClick={() => {
+                setShowHistory((prev) => !prev);
+                setIsTabsVisible(true);
+              }}
             />
           )}
           {showProfileButton && <WidgetProfileButton />}
