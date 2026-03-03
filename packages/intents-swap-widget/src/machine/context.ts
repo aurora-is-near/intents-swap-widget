@@ -32,6 +32,9 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   quote: undefined,
   quoteStatus: 'idle' as const,
   transferStatus: { status: 'idle' as const },
+
+  pendingTransactionsCount: 0,
+  pollingTransactionsStartedAt: null,
 });
 
 export type Context =
@@ -77,6 +80,8 @@ export type InitialDryContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type InitialWalletContext = {
@@ -101,6 +106,8 @@ export type InitialWalletContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type InputValidDryContext = {
@@ -125,6 +132,8 @@ export type InputValidDryContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type InputValidInternalContext = {
@@ -149,6 +158,8 @@ export type InputValidInternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type InputValidExternalContext = {
@@ -173,6 +184,8 @@ export type InputValidExternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type QuoteSuccessDryContext = {
@@ -197,6 +210,8 @@ export type QuoteSuccessDryContext = {
   quote: QuoteDry;
   quoteStatus: 'success';
   transferStatus: { status: 'idle' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type QuoteSuccessInternalContext = {
@@ -223,6 +238,8 @@ export type QuoteSuccessInternalContext = {
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }
     | { status: 'pending'; reason: 'PROCESSING' | 'WAITING_CONFIRMATION' };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type QuoteSuccessExternalContext = {
@@ -249,6 +266,8 @@ export type QuoteSuccessExternalContext = {
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }
     | { status: 'pending'; reason: string };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };
 
 export type TransferSuccessContext = {
@@ -273,4 +292,6 @@ export type TransferSuccessContext = {
   quote: Quote | undefined;
   quoteStatus: 'idle' | 'error' | 'pending' | 'success';
   transferStatus: { status: 'success'; reason: never };
+  pendingTransactionsCount: number;
+  pollingTransactionsStartedAt: number | null;
 };

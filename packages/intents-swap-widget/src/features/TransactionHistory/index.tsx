@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
 import { TransactionCard } from './TransactionCard';
 import { TransactionDetails } from './TransactionDetails';
@@ -16,6 +17,8 @@ export const TransactionHistory = () => {
   const {
     transactions,
     isLoading: isLoadingTransactions,
+    isError,
+    refetch,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -27,6 +30,20 @@ export const TransactionHistory = () => {
 
   if (isLoadingTokens || isLoadingTransactions) {
     return <TransactionHistorySkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-sw-3xl">
+        <ErrorIcon className="w-[32px] h-[32px] text-sw-gray-200 mb-sw-lg" />
+        <p className="text-sw-body-md text-sw-gray-300 text-center max-w-[265px] mb-sw-2xl">
+          Failed to load transactions history.
+        </p>
+        <Button size="md" variant="primary" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
   }
 
   if (transactions.length === 0) {

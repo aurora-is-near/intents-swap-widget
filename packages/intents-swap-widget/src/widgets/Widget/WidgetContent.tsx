@@ -28,6 +28,7 @@ import { WidgetProfileButton } from './WidgetProfileButton';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
 import { TransactionHistory } from '../../features/TransactionHistory';
 import { useUnsafeSnapshot } from '../../machine';
+import { cn } from '../../utils/cn';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
@@ -111,6 +112,7 @@ export const WidgetContent = ({
           {!!apiKey && (
             <WidgetHistoryButton
               isActive={showHistory}
+              pendingCount={ctx.pendingTransactionsCount}
               onClick={() => setShowHistory((prev) => !prev)}
             />
           )}
@@ -118,9 +120,11 @@ export const WidgetContent = ({
         </div>
       )}
 
-      {showHistory ? (
+      <div className={cn('w-full', { hidden: !showHistory })}>
         <TransactionHistory />
-      ) : (
+      </div>
+
+      {showHistory &&
         (() => {
           switch (activeTab) {
             case 'swap': {
@@ -162,8 +166,7 @@ export const WidgetContent = ({
             default:
               return null;
           }
-        })()
-      )}
+        })()}
     </>
   );
 };

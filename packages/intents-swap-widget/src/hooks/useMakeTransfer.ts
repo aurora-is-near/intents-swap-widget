@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 import { Providers } from '../types';
 import { logger } from '@/logger';
@@ -9,6 +10,7 @@ import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
+import { TRANSACTIONS_QUERY_KEY } from '@/hooks/useTransactions';
 
 export const useMakeTransfer = ({
   message,
@@ -35,6 +37,8 @@ export const useMakeTransfer = ({
   const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(
     providers?.near,
   );
+
+  const queryClient = useQueryClient();
 
   const make = async () => {
     if (!ctx.targetToken) {
@@ -108,6 +112,9 @@ export const useMakeTransfer = ({
 
     fireEvent('transferSetStatus', { status: 'success' });
     moveTo('transfer_success');
+
+    fireEvent('pollingTransactionsSet', Date.now());
+    void queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
 
     return transferResult;
   };
