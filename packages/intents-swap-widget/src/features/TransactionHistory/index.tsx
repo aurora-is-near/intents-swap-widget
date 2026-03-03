@@ -1,10 +1,15 @@
+import { useState } from 'react';
+
 import { TransactionCard } from './TransactionCard';
+import { TransactionDetails } from './TransactionDetails';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
 import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
+import type { Transaction } from '@/types/transaction';
 
 export const TransactionHistory = () => {
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const { isConnected } = useWalletConnection();
 
   const { tokens, isLoading: isLoadingTokens } = useTokens();
@@ -28,6 +33,18 @@ export const TransactionHistory = () => {
     return <TransactionHistoryEmpty type="empty" />;
   }
 
+  if (selectedTx) {
+    return (
+      <TransactionDetails
+        transaction={selectedTx}
+        tokens={tokens}
+        onClose={() => {
+          setSelectedTx(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-sw-md w-full">
       {transactions.map((tx, index) => (
@@ -35,6 +52,9 @@ export const TransactionHistory = () => {
           key={`${tx.intentHashes}-${index}`}
           transaction={tx}
           tokens={tokens}
+          onClick={() => {
+            setSelectedTx(tx);
+          }}
         />
       ))}
 

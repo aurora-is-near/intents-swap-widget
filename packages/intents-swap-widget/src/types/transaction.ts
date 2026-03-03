@@ -1,3 +1,5 @@
+import { ComponentType } from 'react';
+
 export type TransactionStatus =
   | 'SUCCESS'
   | 'PROCESSING'
@@ -44,4 +46,11 @@ export type TransactionsResponse = {
   total: number;
   nextPage: number | null;
   prevPage: number | null;
+};
+
+export type TransactionsStatusLabel = {
+  label: string;
+  colorClassName: string;
+  Icon?: ComponentType<{ className?: string }>;
+  iconIsSpinning?: boolean;
 };

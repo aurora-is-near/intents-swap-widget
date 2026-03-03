@@ -1,8 +1,8 @@
 import { Token } from '../../types';
 import { TokenIcon } from '../../components';
+import { TransactionStatusBadge } from './TransactionStatusBadge';
 import { Card } from '@/components/Card';
 import { CopyButton } from '@/components/CopyButton';
-import { cn } from '@/utils/cn';
 import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
 import { TinyNumber } from '@/components/TinyNumber';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
@@ -12,9 +12,14 @@ import type { Transaction } from '@/types/transaction';
 type Props = {
   transaction: Transaction;
   tokens: Token[];
+  onClick: () => void;
 };
 
-export const TransactionCard = ({ transaction: tx, tokens }: Props) => {
+export const TransactionCard = ({
+  transaction: tx,
+  tokens,
+  onClick,
+}: Props) => {
   const type = getTransactionType(tx);
   const status = getTransactionStatusLabel(tx.status);
   const time = formatRelativeTime(tx.createdAt);
@@ -22,21 +27,22 @@ export const TransactionCard = ({ transaction: tx, tokens }: Props) => {
   const originToken = tokens.find((t) => t.assetId === tx.originAsset);
   const destToken = tokens.find((t) => t.assetId === tx.destinationAsset);
 
-  const isSwap =
-    tx.originAsset &&
-    tx.destinationAsset &&
-    tx.originAsset !== tx.destinationAsset;
+  const isSwap = type === 'Swap';
 
   const copyValue = tx.senders?.[0] ?? tx.recipient;
 
   return (
-    <Card padding="none">
-      <div className="p-sw-lg flex flex-col gap-x-sw-md">
+    <Card
+      isClickable
+      padding="none"
+      onClick={onClick}
+      className="hover:bg-sw-gray-800">
+      <div className="p-sw-xl flex flex-col gap-x-sw-md">
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
           <div className="flex items-center gap-x-sw-sm">
-            <span className="text-sw-label-sm text-sw-gray-50">{type}</span>
-            {!!copyValue && !copyValue && <CopyButton value={copyValue} />}
+            <span className="text-sw-label-md text-sw-gray-200">{type}</span>
+            {!!copyValue && !isSwap && <CopyButton value={copyValue} />}
           </div>
           <span className="text-sw-label-sm text-sw-gray-400">{time}</span>
         </div>
@@ -47,7 +53,7 @@ export const TransactionCard = ({ transaction: tx, tokens }: Props) => {
             {!!originToken && (
               <div className="flex items-center gap-x-sw-md">
                 <TokenIcon token={originToken} />
-                <span className="text-sw-body-sm text-sw-gray-50">
+                <span className="text-sw-label-md text-sw-gray-50">
                   <TinyNumber value={tx.amountInFormatted} />{' '}
                   {originToken.symbol}
                 </span>
@@ -56,10 +62,12 @@ export const TransactionCard = ({ transaction: tx, tokens }: Props) => {
 
             {!!isSwap && !!destToken && (
               <>
-                <span className="text-sw-gray-100 text-sw-body-sm">&rarr;</span>
-                <div className="flex items-center gap-x-sw-xs">
+                <span className="text-sw-gray-200 text-sw-label-md">
+                  &rarr;
+                </span>
+                <div className="flex items-center gap-x-sw-md">
                   <TokenIcon token={destToken} />
-                  <span className="text-sw-body-sm text-sw-gray-50">
+                  <span className="text-sw-label-md text-sw-gray-50">
                     <TinyNumber value={tx.amountOutFormatted} />{' '}
                     {destToken.symbol}
                   </span>
@@ -69,16 +77,7 @@ export const TransactionCard = ({ transaction: tx, tokens }: Props) => {
           </div>
 
           {/* Status badge */}
-          <div
-            className={cn(
-              'flex items-center gap-x-sw-sm',
-              status.colorClassName,
-            )}>
-            {status.Icon && (
-              <status.Icon className="h-sw-lg w-sw-lg animate-spin" />
-            )}
-            <span className="text-sw-label-sm">{status.label}</span>
-          </div>
+          <TransactionStatusBadge status={status} />
         </div>
       </div>
     </Card>
