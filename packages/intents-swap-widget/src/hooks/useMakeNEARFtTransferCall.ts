@@ -17,7 +17,10 @@ export function useMakeNEARFtTransferCall(
   const { ctx } = useUnsafeSnapshot();
   const { isNativeNearDeposit } = useComputedSnapshot();
   const sourceTokenAddress = ctx.sourceToken?.contractAddress;
-  const amount = ctx.quote?.amountIn ?? ctx.sourceTokenAmount;
+  const amount =
+    ctx.quote && ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT'
+      ? ctx.quote.amountIn
+      : ctx.sourceTokenAmount;
 
   const NEARFtTransferCall = async (
     recipient: string,

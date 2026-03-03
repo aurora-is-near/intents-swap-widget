@@ -113,10 +113,12 @@ export const useMakeQuoteEffect = ({
           fireEvent('errorSet', null);
         }
 
-        fireEvent('tokenSetAmount', {
-          variant: 'target',
-          amount: quote.amountOut,
-        });
+        if (quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+          fireEvent('tokenSetAmount', {
+            variant: 'target',
+            amount: quote.amountOut,
+          });
+        }
 
         if (ctx.state === 'input_valid_dry') {
           moveTo('quote_success_dry');

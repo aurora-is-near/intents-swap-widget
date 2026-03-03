@@ -1,13 +1,13 @@
+import { QRCode } from 'react-qrcode-logo';
 import { useEffect } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 
 import { notReachable } from '@/utils';
-import { CHAIN_IDS_MAP } from '@/constants/chains';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
+import { AURORA_BASE64_LOGO } from '@/constants/chains';
 import {
   fireEvent,
   guardStates,
@@ -28,19 +28,44 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-const QrCode = ({ address }: { address: string }) => (
-  <div className="flex flex-col gap-sw-2xl items-center">
-    <div className="p-sw-lg m-sw-lg mx-auto w-fit rounded-sw-md bg-[#fff]">
-      <QRCodeSVG size={156} value={address} fgColor="#161926" />
+const QrCode = ({ address }: { address: string }) => {
+  const { ctx } = useUnsafeSnapshot();
+
+  const isValidState = guardStates(ctx, ['quote_success_internal']);
+
+  if (!isValidState) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-y-sw-xl mb-sw-lg">
+      <div className="mx-auto w-fit">
+        <QRCode
+          qrStyle="dots"
+          value={address}
+          size={200}
+          logoWidth={60}
+          logoPadding={5}
+          logoPaddingStyle="circle"
+          logoImage={AURORA_BASE64_LOGO}
+          eyeRadius={[10, 10, 10]}
+          fgColor="#161926"
+          style={{ borderRadius: '16px' }}
+        />
+      </div>
+      <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
+        <span className="text-sw-label-md text-sw-gray-100 w-full text-center">
+          {formatAddressTruncate(address, {
+            mode: 'manual',
+            leftVisible: 8,
+            rightVisible: 6,
+          })}
+        </span>
+        <CopyButton value={address} />
+      </div>
     </div>
-    <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
-      <span className="text-sw-label-md text-sw-gray-100">
-        {formatAddressTruncate(address, 38)}
-      </span>
-      <CopyButton value={address} />
-    </div>
-  </div>
-);
+  );
+};
 
 const Skeleton = () => {
   const { t } = useTypedTranslation();
@@ -100,14 +125,12 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
           type: 'on_successful_transfer',
           transferResult: {
             hash: txHash ?? '',
+            amount: depositStatusQuery.data.swapDetails.amount,
             intent: depositStatusQuery.data.swapDetails.intentHashes[0],
             transactionLink:
               (ctx.sourceToken &&
                 txHash &&
-                getTransactionLink(
-                  CHAIN_IDS_MAP[ctx.sourceToken.blockchain],
-                  txHash,
-                )) ??
+                getTransactionLink(ctx.sourceToken.blockchain, txHash)) ??
               '',
           },
         });

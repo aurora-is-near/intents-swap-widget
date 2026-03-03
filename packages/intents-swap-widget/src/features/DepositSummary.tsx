@@ -1,6 +1,6 @@
 import { useConfig } from '@/config';
-import { Card } from '@/components/Card';
 import { Notes } from '@/components/Notes';
+import { Accordion } from '@/components/Accordion';
 import { useTypedTranslation } from '@/localisation';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -9,13 +9,24 @@ export const DepositSummary = () => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { slippageTolerance } = useConfig();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
+  const {
+    isDirectNearTokenWithdrawal,
+    isDirectTokenOnNearTransfer,
+    isNativeNearDeposit,
+  } = useComputedSnapshot();
 
   const getDepositAmount = () => {
     let amount: string | undefined;
 
     if (ctx.quote) {
-      amount = formatBigToHuman(ctx.quote.amountOut, ctx.sourceToken.decimals);
+      if (ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+        amount = formatBigToHuman(
+          ctx.quote.amountOut,
+          ctx.sourceToken.decimals,
+        );
+      } else if (ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+        return `any amount of ${ctx.sourceToken.symbol}`;
+      }
     }
 
     if (!ctx.sourceTokenAmount || ctx.sourceTokenAmount === '0') {
@@ -41,7 +52,11 @@ export const DepositSummary = () => {
       return `${ctx.quote.timeEstimate} sec.`;
     }
 
-    if (isDirectNearTokenWithdrawal) {
+    if (
+      isDirectNearTokenWithdrawal ||
+      isDirectTokenOnNearTransfer ||
+      isNativeNearDeposit
+    ) {
       return '1 sec.';
     }
 
@@ -49,10 +64,12 @@ export const DepositSummary = () => {
   };
 
   return (
-    <Card className="flex flex-col gap-sw-2xl">
-      <span className="text-sw-label-md text-sw-gray-50">
-        {t('deposit.summary.title', 'Summary')}
-      </span>
+    <Accordion
+      expandedHeightPx={106}
+      expandedByDefault={false}
+      isBadgeLoading={ctx.quoteStatus === 'pending'}
+      badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}
+      title={t('deposit.summary.title', 'Transaction details')}>
       <Notes>
         <Notes.Item
           label={t('deposit.summary.youWillDeposit.label', 'You will deposit')}
@@ -68,6 +85,6 @@ export const DepositSummary = () => {
           value={getProcessingTime()}
         />
       </Notes>
-    </Card>
+    </Accordion>
   );
 };

@@ -429,12 +429,25 @@ const SubmitButtonWithWallet = (props: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const errorButton = useGetErrorButton(ctx);
 
-  // 1. External deposit (QR code) mode? Show waiting/processing state
+  // 1. Has errors? Show error button
+  if (errorButton) {
+    return errorButton;
+  }
+
+  // 2. External deposit (QR code) mode? Show waiting/processing state
   if (ctx.isDepositFromExternalWallet) {
-    if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
+    if (!ctx.sourceToken) {
       return (
         <Button {...commonBtnProps} state="disabled">
-          {t('submit.disabled.enterAmount', 'Enter amount')}
+          {t('submit.disabled.selectTokenToDeposit', 'Select token to deposit')}
+        </Button>
+      );
+    }
+
+    if (!ctx.quote) {
+      return (
+        <Button {...commonBtnProps} state="loading">
+          {t('submit.disabled.waitingForQuote', 'Waiting for a quote')}
         </Button>
       );
     }
@@ -452,11 +465,6 @@ const SubmitButtonWithWallet = (props: Props) => {
         {t('submit.pending.externalDeposit.waiting', 'Waiting for transaction')}
       </Button>
     );
-  }
-
-  // 2. Has errors? Show error button
-  if (errorButton) {
-    return errorButton;
   }
 
   // 3. All good - show active button

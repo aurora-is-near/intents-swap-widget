@@ -19696,6 +19696,11 @@ qr.js@0.0.0:
   resolved "https://registry.yarnpkg.com/qr.js/-/qr.js-0.0.0.tgz#cace86386f59a0db8050fa90d9b6b0e88a1e364f"
   integrity sha512-c4iYnWb+k2E+vYpRimHqSu575b1/wKl4XFeJGpFmrJQz5I88v9aY2czh7s0w36srfCM1sXgC/xpoJz5dJfq+OQ==
 
+qrcode-generator@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/qrcode-generator/-/qrcode-generator-2.0.4.tgz#e8b3f30922577eba52078aa9c0d5a2a74fe1fd94"
+  integrity sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==
+
 qrcode-terminal@^0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz#bb5b699ef7f9f0505092a3748be4464fe71b5819"
@@ -19709,11 +19714,6 @@ qrcode.react@^1.0.1:
     loose-envify "^1.4.0"
     prop-types "^15.6.0"
     qr.js "0.0.0"
-
-qrcode.react@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/qrcode.react/-/qrcode.react-4.2.0.tgz#1bce8363f348197d145c0da640929a24c83cbca3"
-  integrity sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA==
 
 qrcode@1.5.3:
   version "1.5.3"
@@ -19901,6 +19901,13 @@ react-qr-reader@^2.2.1:
     jsqr "^1.2.0"
     prop-types "^15.7.2"
     webrtc-adapter "^7.2.1"
+
+react-qrcode-logo@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/react-qrcode-logo/-/react-qrcode-logo-4.0.0.tgz#e26558ed16cc4f5aa3a8e84cdd39844bb9fc669f"
+  integrity sha512-TcDdsJQe7P0OY7uA7Do4Z0DfIIjjqx81RbBGQY+90T2Ba42pUCx/cSI2UTwPPoH9WwE0StLb8A98mFgKIAI4JQ==
+  dependencies:
+    qrcode-generator "^2.0.4"
 
 react-refresh@^0.17.0:
   version "0.17.0"

@@ -4,8 +4,8 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 import {
   AppKitProvider,
-  useAppKitWallet,
   useAppKitProviders,
+  useAppKitWallet,
 } from '@aurora-is-near/intents-swap-widget-standalone';
 
 export type DappWalletBridgeProps = Omit<

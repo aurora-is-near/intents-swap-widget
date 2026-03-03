@@ -1,5 +1,8 @@
 import type { Chain, Chains, EvmChains } from '@/types/chain';
 
+export const AURORA_BASE64_LOGO =
+  'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIKCSB2aWV3Qm94PSIwIDAgMjg4IDI4OCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMjg4IDI4ODsiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPgoJLnN0MHtmaWxsOiMxNjE5MjY7fQoJLnN0MXtmaWxsOiNGRkZGRkY7fQo8L3N0eWxlPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTQ0LDBMMTQ0LDBjNzkuNSwwLDE0NCw2NC41LDE0NCwxNDR2MGMwLDc5LjUtNjQuNSwxNDQtMTQ0LDE0NGgwQzY0LjUsMjg4LDAsMjIzLjUsMCwxNDR2MAoJQzAsNjQuNSw2NC41LDAsMTQ0LDB6Ii8+CjxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xNDQsNTguOGM3LjYsMCwxNC41LDQuMywxNy45LDExLjFsNTYuMiwxMTIuNWM0LjksOS45LDAuOSwyMS45LTksMjYuOGMtMi44LDEuNC01LjgsMi4xLTguOSwyLjFIODcuOAoJYy0xMSwwLTIwLTktMjAtMjBjMC0zLjEsMC43LTYuMiwyLjEtOC45bDU2LjItMTEyLjVDMTI5LjUsNjMsMTM2LjQsNTguNywxNDQsNTguOCBNMTQ0LDQ1Yy0xMi44LDAtMjQuNSw3LjItMzAuMiwxOC43TDU3LjYsMTc2LjIKCWMtOC4zLDE2LjctMS42LDM2LjksMTUuMSw0NS4zYzQuNywyLjMsOS45LDMuNiwxNS4xLDMuNmgxMTIuNWMxOC42LDAsMzMuOC0xNS4xLDMzLjgtMzMuN2MwLTUuMi0xLjItMTAuNC0zLjYtMTUuMUwxNzQuMiw2My43CglDMTY4LjUsNTIuMiwxNTYuOCw0NSwxNDQsNDV6Ii8+Cjwvc3ZnPgo=';
+
 export const EVM_CHAINS = [
   'eth',
   'bera',
@@ -218,7 +221,13 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   5001: 'https://explorer.testnet.mantle.xyz/tx/', // Mantle Testnet
   167000: 'https://taikoscan.io/tx/', // Taiko
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
-  397: 'https://nearblocks.io/txns/',
+  397: 'https://nearblocks.io/txns/', // Near
+};
+
+// some chains e.g. Solana have no chain ID
+export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
+  sol: 'https://solscan.io/tx/',
+  near: 'https://nearblocks.io/txns/',
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [

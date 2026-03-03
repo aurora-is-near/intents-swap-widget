@@ -41,9 +41,11 @@ export const TokensListPlaceholder = ({
     {hasAction && (
       <Button
         size="md"
-        variant={actionType}
         className="w-fit mt-sw-lg"
-        onClick={onClick}>
+        onClick={onClick}
+        {...(actionType === 'outlined'
+          ? { variant: 'outlined' }
+          : { variant: 'primary' })}>
         {actionLabel}
       </Button>
     )}

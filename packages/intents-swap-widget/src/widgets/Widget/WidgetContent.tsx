@@ -18,11 +18,7 @@ import {
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
-import {
-  MakeTransfer,
-  MakeTransferArgs,
-  MakeTransferResponse,
-} from '../../types';
+import { MakeTransfer, MakeTransferArgs, TransferResult } from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
@@ -39,7 +35,7 @@ export type Props = Omit<
   makeTransfer?: (
     args: MakeTransferArgs,
     widgetType: WidgetType,
-  ) => MakeTransferResponse | Promise<MakeTransferResponse>;
+  ) => TransferResult | null | Promise<TransferResult | null>;
 };
 
 type Msg = SwapMsg | DepositMsg | WithdrawMsg;

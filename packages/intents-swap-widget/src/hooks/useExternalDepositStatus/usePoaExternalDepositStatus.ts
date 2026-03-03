@@ -46,7 +46,7 @@ const getMatchedDeposit = (
     depositAddress: string;
     assetId: string;
     chainId: string;
-    amount: string;
+    amount: string | undefined;
   },
 ) => {
   // remove nep141: prefix as Bridge API response doesn't have it
@@ -55,6 +55,10 @@ const getMatchedDeposit = (
   // API returns amount as a number so if decimals is higher than number's precision some of the digits can be lost
   // so here we check only that amount starts with the expected value
   const isAmountMatched = (deposit: DepositResult) => {
+    if (!data.amount) {
+      return true;
+    }
+
     const normalize = (value: string) =>
       value.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
 
@@ -172,11 +176,23 @@ export const usePoaExternalDepositStatus = ({ depositAddress }: Args) => {
       };
     }
 
+    // due to POA API amount conversion problem (it may return just 1e+24 string)
+    // we try to convert whatever string we receive to BigInt and if it fails
+    // set amount to undefined
+    let convertedAmount: string | undefined;
+
+    try {
+      convertedAmount = BigInt(matchedDeposit.amount).toString();
+    } catch (e) {
+      convertedAmount = undefined;
+    }
+
     return {
       status: oneClickBridgeStatusMap[matchedDeposit.status],
       swapDetails: {
         intentHashes: [''],
         destinationChainTxHashes: [{ hash: matchedDeposit.tx_hash ?? '' }],
+        amount: convertedAmount,
       },
     };
   };

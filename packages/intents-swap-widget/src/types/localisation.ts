@@ -47,6 +47,15 @@ export type LocalisationKeys =
   | 'deposit.method.switcher.label'
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
+  | 'deposit.external.stepSelectToken.title'
+  | 'submit.disabled.selectTokenToDeposit'
+  | 'deposit.external.showQrCode'
+  | 'deposit.external.hideQrCode'
+  | 'deposit.external.tryAgain'
+  | 'deposit.external.transactionDetected.title'
+  | 'deposit.external.transactionDetected.description'
+  | 'deposit.external.transactionDetected.error'
+  | 'deposit.external.stepSelectToken.retry'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'
@@ -84,6 +93,7 @@ export type LocalisationKeys =
   | 'submit.disabled.selectTokenToReceive'
   | 'submit.disabled.enterRecipientAddress'
   | 'submit.disabled.enterAmount'
+  | 'submit.disabled.waitingForQuote'
   // submit - pending
   | 'submit.pending.quote.finalizing'
   | 'submit.pending.quote.refreshing'
