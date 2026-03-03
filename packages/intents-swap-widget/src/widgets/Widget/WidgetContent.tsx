@@ -104,7 +104,10 @@ export const WidgetContent = ({
         <div className="mb-sw-2xl w-full flex items-center">
           {enableAccountAbstraction && isTabsVisible ? (
             <>
-              <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
+              <WidgetTabs
+                activeTab={showHistory ? null : activeTab}
+                onSelect={switchTab}
+              />
             </>
           ) : (
             <div className="w-full" />
