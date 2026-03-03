@@ -32,15 +32,6 @@ const DetailRow = ({
   </div>
 );
 
-const getExplorerHash = (tx: Transaction): string | null => {
-  return (
-    tx.originChainTxHashes[0] ??
-    tx.destinationChainTxHashes[0] ??
-    tx.nearTxHashes[0] ??
-    null
-  );
-};
-
 const calculateFee = (tx: Transaction): number => {
   if (tx.appFees.length === 0) {
     return 0;
