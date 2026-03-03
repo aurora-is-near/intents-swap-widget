@@ -25,7 +25,7 @@ export const alchemyApi = createNetworkClient({
 });
 
 export const feeServiceApi = createNetworkClient({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'https://intents-api.aurora.dev',
   headers: {
     'Content-Type': 'application/json',
   },
