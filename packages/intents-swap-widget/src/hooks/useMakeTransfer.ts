@@ -113,7 +113,6 @@ export const useMakeTransfer = ({
     fireEvent('transferSetStatus', { status: 'success' });
     moveTo('transfer_success');
 
-    fireEvent('pollingTransactionsSet', Date.now());
     void queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
 
     return transferResult;

@@ -20,7 +20,7 @@ export const TRANSACTIONS_QUERY_KEY = 'transactions';
 export const useTransactions = () => {
   const { apiKey } = useConfig();
   const {
-    ctx: { walletAddress, pollingTransactionsStartedAt },
+    ctx: { walletAddress },
   } = useUnsafeSnapshot();
 
   const {
@@ -60,9 +60,7 @@ export const useTransactions = () => {
         PENDING_STATUSES.includes(tx.status),
       );
 
-      const isPolling = pollingTransactionsStartedAt !== null;
-
-      return hasPending || isPolling ? POLLING_INTERVAL_MS : false;
+      return hasPending ? POLLING_INTERVAL_MS : false;
     },
   });
 
@@ -71,22 +69,9 @@ export const useTransactions = () => {
     PENDING_STATUSES.includes(tx.status),
   ).length;
 
-  // createdAtTimestamp is in seconds, pollingTransactionsStartedAt is in ms
-  const mostRecentTxTimestampMs =
-    (transactions[0]?.createdAtTimestamp ?? 0) * 1000;
-
   useEffect(() => {
     fireEvent('pendingTransactionsCountSet', pendingCount);
   }, [pendingCount]);
-
-  useEffect(() => {
-    if (
-      pollingTransactionsStartedAt !== null &&
-      mostRecentTxTimestampMs >= pollingTransactionsStartedAt
-    ) {
-      fireEvent('pollingTransactionsSet', null);
-    }
-  }, [mostRecentTxTimestampMs, pollingTransactionsStartedAt]);
 
   return {
     transactions,
