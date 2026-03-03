@@ -5,7 +5,7 @@ const TABS = ['swap', 'deposit', 'withdraw'] as const;
 export type WidgetTab = (typeof TABS)[number];
 
 type Props = {
-  activeTab: WidgetTab;
+  activeTab: WidgetTab | null;
   onSelect: (tab: WidgetTab) => void;
 };
 

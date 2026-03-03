@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -21,7 +21,10 @@ import { useConfig } from '../../config';
 import { MakeTransfer, MakeTransferArgs, TransferResult } from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
+import { WidgetHistoryButton } from './WidgetHistoryButton';
+import { TransactionHistory } from '../../features/TransactionHistory';
 import { useUnsafeSnapshot } from '../../machine';
+import { cn } from '../../utils/cn';
 
 export type Props = Omit<
   WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
@@ -59,22 +62,26 @@ export const WidgetContent = ({
   onMsg,
   ...restProps
 }: Props) => {
-  const [isTabsVisible, setIsTabsVisible] = useState(true);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
-  const { enableAccountAbstraction, showProfileButton } = useConfig();
+  const [showHistory, setShowHistory] = useState(false);
+  const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
+  const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
+
   const { ctx } = useUnsafeSnapshot();
 
   const switchTab = (tab: WidgetTab) => {
     setActiveTab(tab);
+    setShowHistory(false);
   };
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {
     if (msg.type === 'on_tokens_modal_toggled') {
-      setIsTabsVisible(!msg.isOpen);
+      setIsHeaderHidden(msg.isOpen);
     }
 
     if (msg.type === 'on_select_token') {
-      setIsTabsVisible(true);
+      setIsHeaderHidden(false);
     }
 
     onMsg?.(msg, widgetType);
@@ -86,65 +93,88 @@ export const WidgetContent = ({
     }
   }, [enableAccountAbstraction]);
 
-  const showHeader = ctx.state !== 'transfer_success';
+  const onPendingTransactionsCountChange = useCallback((count: number) => {
+    setPendingTransactionsCount(count);
+  }, []);
+
+  const showHeader =
+    (!isHeaderHidden || showHistory) && ctx.state !== 'transfer_success';
 
   return (
     <>
       {showHeader && (
         <div className="mb-sw-2xl w-full flex items-center">
-          {enableAccountAbstraction && isTabsVisible ? (
-            <>
-              <WidgetTabs activeTab={activeTab} onSelect={switchTab} />
-            </>
+          {enableAccountAbstraction ? (
+            <WidgetTabs
+              activeTab={showHistory ? null : activeTab}
+              onSelect={switchTab}
+            />
           ) : (
             <div className="w-full" />
+          )}
+          {!!apiKey && (
+            <WidgetHistoryButton
+              isActive={showHistory}
+              pendingTransactionsCount={pendingTransactionsCount}
+              onClick={() => {
+                setShowHistory((prev) => !prev);
+                setIsHeaderHidden(false);
+              }}
+            />
           )}
           {showProfileButton && <WidgetProfileButton />}
         </div>
       )}
 
-      {(() => {
-        switch (activeTab) {
-          case 'swap': {
-            return (
-              <WidgetSwapContent
-                {...restProps}
-                makeTransfer={wrapMakeTransfer(makeTransfer, 'swap')}
-                onMsg={(msg) => {
-                  handleMsg(msg, 'swap');
-                }}
-              />
-            );
-          }
+      <div className={cn('w-full', { hidden: !showHistory })}>
+        <TransactionHistory
+          onPendingTransactionsCountChange={onPendingTransactionsCountChange}
+        />
+      </div>
 
-          case 'deposit': {
-            return (
-              <WidgetDepositContent
-                {...restProps}
-                makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
-                onMsg={(msg) => {
-                  handleMsg(msg, 'deposit');
-                }}
-              />
-            );
-          }
+      {!showHistory &&
+        (() => {
+          switch (activeTab) {
+            case 'swap': {
+              return (
+                <WidgetSwapContent
+                  {...restProps}
+                  makeTransfer={wrapMakeTransfer(makeTransfer, 'swap')}
+                  onMsg={(msg) => {
+                    handleMsg(msg, 'swap');
+                  }}
+                />
+              );
+            }
 
-          case 'withdraw': {
-            return (
-              <WidgetWithdrawContent
-                {...restProps}
-                makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
-                onMsg={(msg) => {
-                  handleMsg(msg, 'withdraw');
-                }}
-              />
-            );
-          }
+            case 'deposit': {
+              return (
+                <WidgetDepositContent
+                  {...restProps}
+                  makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
+                  onMsg={(msg) => {
+                    handleMsg(msg, 'deposit');
+                  }}
+                />
+              );
+            }
 
-          default:
-            return null;
-        }
-      })()}
+            case 'withdraw': {
+              return (
+                <WidgetWithdrawContent
+                  {...restProps}
+                  makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
+                  onMsg={(msg) => {
+                    handleMsg(msg, 'withdraw');
+                  }}
+                />
+              );
+            }
+
+            default:
+              return null;
+          }
+        })()}
     </>
   );
 };

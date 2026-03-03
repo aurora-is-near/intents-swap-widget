@@ -10,7 +10,7 @@ type Props = {
 export const TokenAmount = ({ token, amount }: Props) => {
   return (
     <div className="flex flex-row items-center">
-      <TokenIcon chainShowIcon token={token} />
+      <TokenIcon token={token} />
 
       <span className="text-sw-label-m ml-sw-[10px] font-medium text-sw-gray-50">
         {formatBigToHuman(amount, token.decimals)} {token.symbol}

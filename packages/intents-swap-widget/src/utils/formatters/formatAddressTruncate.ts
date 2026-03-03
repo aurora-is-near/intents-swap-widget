@@ -1,27 +1,36 @@
 type Args =
   | { mode: 'manual'; leftVisible: number; rightVisible: number }
-  | { mode: 'auto'; totalVisible: number };
+  | { mode: 'auto'; totalVisible: number }
+  | number;
+
+const autoFormat = (input: string, totalVisible: number) => {
+  if (totalVisible <= 0) {
+    return '';
+  }
+
+  if (input.length <= totalVisible) {
+    return input;
+  }
+
+  const left = Math.floor(totalVisible / 2);
+  const right = totalVisible - left;
+
+  if (totalVisible === 1) {
+    return `${input.slice(0, 1)}...`;
+  }
+
+  return `${input.slice(0, left)}...${input.slice(-right)}`;
+};
 
 export const formatAddressTruncate = (input: string, args: Args) => {
+  if (typeof args === 'number') {
+    return autoFormat(input, args);
+  }
+
   if (args.mode === 'auto') {
     const { totalVisible } = args;
 
-    if (totalVisible <= 0) {
-      return '';
-    }
-
-    if (input.length <= totalVisible) {
-      return input;
-    }
-
-    const left = Math.floor(totalVisible / 2);
-    const right = totalVisible - left;
-
-    if (totalVisible === 1) {
-      return `${input.slice(0, 1)}...`;
-    }
-
-    return `${input.slice(0, left)}...${input.slice(-right)}`;
+    return autoFormat(input, totalVisible);
   }
 
   const { leftVisible, rightVisible } = args;
