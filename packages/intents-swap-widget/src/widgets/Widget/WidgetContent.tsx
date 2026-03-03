@@ -66,7 +66,7 @@ export const WidgetContent = ({
   onMsg,
   ...restProps
 }: Props) => {
-  const [isTabsVisible, setIsTabsVisible] = useState(true);
+  const [isHeaderShown, setIsHeaderShown] = useState(true);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
   const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
@@ -80,11 +80,11 @@ export const WidgetContent = ({
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {
     if (msg.type === 'on_tokens_modal_toggled') {
-      setIsTabsVisible(!msg.isOpen);
+      setIsHeaderShown(!msg.isOpen);
     }
 
     if (msg.type === 'on_select_token') {
-      setIsTabsVisible(true);
+      setIsHeaderShown(true);
     }
 
     onMsg?.(msg, widgetType);
@@ -96,19 +96,17 @@ export const WidgetContent = ({
     }
   }, [enableAccountAbstraction]);
 
-  const showHeader = ctx.state !== 'transfer_success';
+  const showHeader = ctx.state !== 'transfer_success' && isHeaderShown;
 
   return (
     <>
       {showHeader && (
         <div className="mb-sw-2xl w-full flex items-center">
-          {enableAccountAbstraction && isTabsVisible ? (
-            <>
-              <WidgetTabs
-                activeTab={showHistory ? null : activeTab}
-                onSelect={switchTab}
-              />
-            </>
+          {enableAccountAbstraction ? (
+            <WidgetTabs
+              activeTab={showHistory ? null : activeTab}
+              onSelect={switchTab}
+            />
           ) : (
             <div className="w-full" />
           )}
@@ -118,7 +116,7 @@ export const WidgetContent = ({
               pendingCount={ctx.pendingTransactionsCount}
               onClick={() => {
                 setShowHistory((prev) => !prev);
-                setIsTabsVisible(true);
+                setIsHeaderShown(true);
               }}
             />
           )}
