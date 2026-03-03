@@ -7,10 +7,9 @@ import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
 import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
-import type { Transaction } from '@/types/transaction';
 
 export const TransactionHistory = () => {
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
   const { isConnected } = useWalletConnection();
 
   const { tokens, isLoading: isLoadingTokens } = useTokens();
@@ -50,13 +49,17 @@ export const TransactionHistory = () => {
     return <TransactionHistoryEmpty type="empty" />;
   }
 
+  const selectedTx = transactions.find(
+    (tx) => tx.intentHashes === selectedTxId,
+  );
+
   if (selectedTx) {
     return (
       <TransactionDetails
         transaction={selectedTx}
         tokens={tokens}
         onClose={() => {
-          setSelectedTx(null);
+          setSelectedTxId(null);
         }}
       />
     );
@@ -70,7 +73,7 @@ export const TransactionHistory = () => {
           transaction={tx}
           tokens={tokens}
           onClick={() => {
-            setSelectedTx(tx);
+            setSelectedTxId(tx.intentHashes);
           }}
         />
       ))}
