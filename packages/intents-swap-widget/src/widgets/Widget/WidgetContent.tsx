@@ -66,7 +66,7 @@ export const WidgetContent = ({
   onMsg,
   ...restProps
 }: Props) => {
-  const [isHeaderShown, setIsHeaderShown] = useState(true);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
   const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
@@ -80,11 +80,11 @@ export const WidgetContent = ({
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {
     if (msg.type === 'on_tokens_modal_toggled') {
-      setIsHeaderShown(!msg.isOpen);
+      setIsHeaderHidden(msg.isOpen);
     }
 
     if (msg.type === 'on_select_token') {
-      setIsHeaderShown(true);
+      setIsHeaderHidden(false);
     }
 
     onMsg?.(msg, widgetType);
@@ -96,7 +96,8 @@ export const WidgetContent = ({
     }
   }, [enableAccountAbstraction]);
 
-  const showHeader = ctx.state !== 'transfer_success' && isHeaderShown;
+  const showHeader =
+    (!isHeaderHidden || showHistory) && ctx.state !== 'transfer_success';
 
   return (
     <>
@@ -116,7 +117,7 @@ export const WidgetContent = ({
               pendingCount={ctx.pendingTransactionsCount}
               onClick={() => {
                 setShowHistory((prev) => !prev);
-                setIsHeaderShown(true);
+                setIsHeaderHidden(false);
               }}
             />
           )}
