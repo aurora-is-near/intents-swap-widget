@@ -82,7 +82,7 @@ export const useMakeQuote = () => {
         )
       ).data.quote;
     },
-    [apiKey, feeServiceApi],
+    [apiKey, fetchQuote],
   );
 
   const make = async ({
