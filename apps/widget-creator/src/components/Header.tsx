@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 
 import CopyIcon from '../assets/icons/copy.svg?react';
 import CheckIcon from '../assets/icons/check-circle.svg?react';
-import AuroraIcon from '../assets/icons/aurora.svg?react';
 
 import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
 
