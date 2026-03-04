@@ -36,7 +36,7 @@ export const TransactionCard = ({
       isClickable
       padding="none"
       onClick={onClick}
-      className="hover:bg-sw-gray-800">
+      className="hover:bg-sw-gray-800 group">
       <div className="p-sw-xl flex flex-col gap-x-sw-md">
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
@@ -52,7 +52,10 @@ export const TransactionCard = ({
           <div className="flex items-center gap-x-[10px]">
             {!!originToken && (
               <div className="flex items-center gap-x-sw-md">
-                <TokenIcon token={originToken} />
+                <TokenIcon
+                  token={originToken}
+                  className="border-sw-gray-900 group-hover:border-sw-gray-800 transition-colors"
+                />
                 <span className="text-sw-label-md text-sw-gray-50">
                   <TinyNumber value={tx.amountInFormatted} />{' '}
                   {originToken.symbol}

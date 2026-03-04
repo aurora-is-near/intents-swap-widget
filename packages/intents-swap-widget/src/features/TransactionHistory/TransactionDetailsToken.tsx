@@ -18,7 +18,7 @@ export const TransactionDetailsToken = ({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-x-sw-lg">
-        <TokenIcon token={token} size="lg" />
+        <TokenIcon token={token} size="lg" className="border-sw-gray-900" />
         <span className="text-sw-h5 text-sw-gray-50">
           <TinyNumber value={amount} /> {token.symbol}
         </span>
