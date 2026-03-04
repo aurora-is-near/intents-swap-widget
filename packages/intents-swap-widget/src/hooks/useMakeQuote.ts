@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { snakeCase } from 'change-case';
 import {
   Quote as OneClickQuote,
@@ -13,7 +13,7 @@ import { useSupportedChains } from './useSupportedChains';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
-import { oneClickApi } from '@/network';
+import { feeServiceApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
@@ -59,8 +59,8 @@ export const useMakeQuote = () => {
   const request = useRef<Promise<OneClickQuote>>(null);
   const abortController = useRef<AbortController>(new AbortController());
 
-  const requestQuote = useMemo(() => {
-    return async (
+  const requestQuote = useCallback(
+    async (
       data: QuoteRequest,
       metadata: { isRefetch?: boolean },
     ): Promise<OneClickQuote> => {
@@ -74,15 +74,16 @@ export const useMakeQuote = () => {
       }
 
       return (
-        await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
+        await feeServiceApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
           // no need for extra check API will return missing API key error
-          `https://intents-api.aurora.dev/api/quote/${apiKey ?? ''}`,
+          `/api/quote/${apiKey ?? ''}`,
           data,
           { signal },
         )
       ).data.quote;
-    };
-  }, [apiKey, oneClickApi]);
+    },
+    [apiKey, feeServiceApi],
+  );
 
   const make = async ({
     message,
