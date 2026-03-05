@@ -47,6 +47,8 @@ export type FakeTransaction = Pick<
   | 'amountOutFormatted'
   | 'createdAt'
   | 'status'
+  | 'amountInUsd'
+  | 'amountOutUsd'
   | 'senders'
   | 'recipient'
   | 'originChainTxHashes'

@@ -18,7 +18,13 @@ import {
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
 import { useConfig } from '../../config';
-import { MakeTransfer, MakeTransferArgs, TransferResult } from '../../types';
+import {
+  FakeTransaction,
+  MakeTransfer,
+  MakeTransferArgs,
+  Transaction,
+  TransferResult,
+} from '../../types';
 import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
@@ -65,6 +71,9 @@ export const WidgetContent = ({
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedHistoricalTransaction, setSelectedHistoricalTransaction] =
+    useState<Transaction | FakeTransaction | null>(null);
+
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
 
@@ -119,6 +128,7 @@ export const WidgetContent = ({
               onClick={() => {
                 setShowHistory((prev) => !prev);
                 setIsHeaderHidden(false);
+                setSelectedHistoricalTransaction(null);
               }}
             />
           )}
@@ -129,6 +139,8 @@ export const WidgetContent = ({
       <div className={cn('w-full', { hidden: !showHistory })}>
         <TransactionHistory
           onPendingTransactionsCountChange={onPendingTransactionsCountChange}
+          selectedTransaction={selectedHistoricalTransaction}
+          onSelectTransaction={setSelectedHistoricalTransaction}
         />
       </div>
 

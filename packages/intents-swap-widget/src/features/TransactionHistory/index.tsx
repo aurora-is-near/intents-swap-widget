@@ -1,21 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
 import { TransactionCard } from './TransactionCard';
 import { TransactionDetails } from './TransactionDetails';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
+import { FakeTransaction, Transaction } from '../../types';
 import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
 type Props = {
   onPendingTransactionsCountChange: (count: number) => void;
+  selectedTransaction: Transaction | FakeTransaction | null;
+  onSelectTransaction: (tx: Transaction | FakeTransaction | null) => void;
 };
 
 export const TransactionHistory = ({
   onPendingTransactionsCountChange,
+  selectedTransaction,
+  onSelectTransaction,
 }: Props) => {
-  const [selectedTxId, setSelectedTxId] = useState<string | null>(null);
   const { isConnected } = useWalletConnection();
 
   const { tokens, isLoading: isLoadingTokens } = useTokens();
@@ -60,17 +64,13 @@ export const TransactionHistory = ({
     return <TransactionHistoryEmpty type="empty" />;
   }
 
-  const selectedTx = transactions.find(
-    (tx) => tx.intentHashes === selectedTxId,
-  );
-
-  if (selectedTx) {
+  if (selectedTransaction) {
     return (
       <TransactionDetails
-        transaction={selectedTx}
+        transaction={selectedTransaction}
         tokens={tokens}
         onClose={() => {
-          setSelectedTxId(null);
+          onSelectTransaction(null);
         }}
       />
     );
@@ -80,11 +80,11 @@ export const TransactionHistory = ({
     <div className="flex flex-col gap-sw-md w-full">
       {transactions.map((tx, index) => (
         <TransactionCard
-          key={`${tx.intentHashes}-${index}`}
+          key={index}
           transaction={tx}
           tokens={tokens}
           onClick={() => {
-            setSelectedTxId(tx.intentHashes);
+            onSelectTransaction(tx);
           }}
         />
       ))}

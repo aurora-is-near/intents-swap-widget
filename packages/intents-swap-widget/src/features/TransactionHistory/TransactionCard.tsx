@@ -7,10 +7,10 @@ import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
 import { TinyNumber } from '@/components/TinyNumber';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
-import type { Transaction } from '@/types/transaction';
+import type { FakeTransaction, Transaction } from '@/types/transaction';
 
 type Props = {
-  transaction: Transaction;
+  transaction: Transaction | FakeTransaction;
   tokens: Token[];
   onClick: () => void;
 };

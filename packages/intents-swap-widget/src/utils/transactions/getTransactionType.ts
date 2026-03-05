@@ -1,9 +1,9 @@
-import type { Transaction } from '../../types/transaction';
+import type { FakeTransaction, Transaction } from '../../types/transaction';
 import type { Token } from '../../types/token';
 import { formatAddressTruncate } from '../formatters/formatAddressTruncate';
 
 export const getTransactionType = (
-  tx: Transaction,
+  tx: Transaction | FakeTransaction,
   tokens?: Token[],
 ): string => {
   const originToken = tokens?.find((t) => t.assetId === tx.originAsset);

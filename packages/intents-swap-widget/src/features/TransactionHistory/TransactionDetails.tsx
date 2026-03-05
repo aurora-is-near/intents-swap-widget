@@ -13,11 +13,11 @@ import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
-import type { Transaction } from '@/types/transaction';
+import type { FakeTransaction, Transaction } from '@/types/transaction';
 import type { Token } from '@/types';
 
 type Props = {
-  transaction: Transaction;
+  transaction: Transaction | FakeTransaction;
   tokens: Token[];
   onClose: () => void;
 };
@@ -32,7 +32,17 @@ const DetailRow = ({
   </div>
 );
 
-const calculateFee = (tx: Transaction): number => {
+const isRealTransaction = (
+  tx: Transaction | FakeTransaction,
+): tx is Transaction => {
+  return 'intentHashes' in tx;
+};
+
+const calculateFee = (tx: Transaction | FakeTransaction): number => {
+  if (!isRealTransaction(tx)) {
+    return 0;
+  }
+
   if (!tx.appFees || tx.appFees.length === 0) {
     return 0;
   }
@@ -64,7 +74,7 @@ export const TransactionDetails = ({
 
   const isSwap = type === 'Swap';
   const isDeposit = type === 'Deposit';
-  const explorerHash = tx.depositAddress;
+  const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;
 
   const fee = calculateFee(tx);
 
@@ -179,7 +189,7 @@ export const TransactionDetails = ({
           </DetailRow>
         )}
 
-        {!!tx.intentHashes && (
+        {isRealTransaction(tx) && !!tx.intentHashes && (
           <DetailRow label="Intent hash">
             <span className="text-sw-body-md text-sw-gray-50">
               {formatAddressTruncate(tx.intentHashes, 14)}

@@ -117,7 +117,14 @@ export const useMakeTransfer = ({
 
     // Add optimistic transaction so it appears immediately in the history.
     // It gets naturally replaced once polling picks up the real transaction.
-    if (ctx.walletAddress && ctx.sourceToken && ctx.targetToken) {
+    if (
+      ctx.walletAddress &&
+      ctx.sourceToken &&
+      ctx.targetToken &&
+      ctx.quote &&
+      'amountInUsd' in ctx.quote &&
+      ctx.quote.amountInUsd
+    ) {
       addOptimisticTransaction(transferResult.hash, {
         status: 'PENDING',
         originAsset: ctx.sourceToken.assetId,
@@ -130,6 +137,8 @@ export const useMakeTransfer = ({
           ctx.targetTokenAmount,
           ctx.targetToken.decimals,
         ),
+        amountInUsd: ctx.quote.amountInUsd,
+        amountOutUsd: ctx.quote.amountOutUsd,
         createdAt: new Date().toISOString(),
         senders: [ctx.walletAddress],
         recipient: ctx.sendAddress ?? '',

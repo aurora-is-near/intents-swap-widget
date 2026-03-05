@@ -2,6 +2,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useConfig } from '../config';
 import { feeServiceApi } from '../network';
 import type {
+  FakeTransaction,
+  Transaction,
   TransactionsResponse,
   TransactionStatus,
 } from '../types/transaction';
@@ -86,7 +88,10 @@ export const useTransactions = () => {
     }
   });
 
-  const transactions = [...getOptimisticTransactions(), ...apiTransactions];
+  const transactions: (Transaction | FakeTransaction)[] = [
+    ...getOptimisticTransactions(),
+    ...apiTransactions,
+  ];
 
   const pendingTransactionsCount = transactions.filter((tx) =>
     PENDING_STATUSES.includes(tx.status),
