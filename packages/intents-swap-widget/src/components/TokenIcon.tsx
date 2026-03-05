@@ -9,6 +9,7 @@ type TokenItemProps = {
   token: Token;
   className?: string;
   size?: 'md' | 'lg';
+  hideChainIcon?: boolean;
 };
 
 const BORDER_RADIUS = 4;
@@ -17,8 +18,9 @@ export const TokenIcon = ({
   token,
   className,
   size = 'md',
+  hideChainIcon,
 }: TokenItemProps) => {
-  const showChainIcon = !token.isIntent;
+  const showChainIcon = !token.isIntent && !hideChainIcon;
   const tokenSymbolLowerCase = token.symbol.toLowerCase();
   const chainIcon = CHAIN_ICONS[token.blockchain] ?? UNKNOWN_ICON;
   const tokenIcon =
