@@ -126,8 +126,8 @@ export const WidgetContent = ({
               isActive={showHistory}
               pendingTransactionsCount={pendingTransactionsCount}
               onClick={() => {
-                setShowHistory((prev) => !prev);
                 setIsHeaderHidden(false);
+                setShowHistory(true);
                 setSelectedHistoricalTransaction(null);
               }}
             />
