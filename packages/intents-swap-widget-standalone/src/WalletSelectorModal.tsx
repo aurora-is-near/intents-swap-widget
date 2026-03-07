@@ -12,6 +12,9 @@ import { CloseIcon } from './icons/CloseIcon';
 import { MyNearWalletIcon } from './icons/MyNearWalletIcon';
 import { MeteorIcon } from './icons/MeteorIcon';
 import { NearIcon } from './icons/NearIcon';
+import { StellarIcon } from './icons/StellarIcon';
+import { XbullIcon } from './icons/XbullIcon';
+import { FreighterIcon } from './icons/FreighterIcon';
 import { HotWalletIcon } from './icons/HotWalletIcon';
 import { WalletOptionCard } from './WalletOptionCard';
 
@@ -20,6 +23,7 @@ type WalletSelectorModalProps = {
   onClose: () => void;
   onSelectNear: () => void;
   onSelectEvmSolana: () => void;
+  onSelectStellar: () => void;
 };
 
 export const WalletSelectorModal = ({
@@ -27,6 +31,7 @@ export const WalletSelectorModal = ({
   onClose,
   onSelectNear,
   onSelectEvmSolana,
+  onSelectStellar,
 }: WalletSelectorModalProps) => {
   return (
     <Dialog
@@ -117,6 +122,17 @@ export const WalletSelectorModal = ({
                 { Icon: MyNearWalletIcon },
                 { Icon: MeteorIcon },
                 { Icon: HotWalletIcon },
+              ]}
+            />
+            <WalletOptionCard
+              onClick={onSelectStellar}
+              title="Stellar"
+              description="Connect via Hot, Freighter, xBull, etc..."
+              icons={[
+                { Icon: StellarIcon, backgroundColor: '#ecedf5' },
+                { Icon: HotWalletIcon },
+                { Icon: FreighterIcon },
+                { Icon: XbullIcon, backgroundColor: '#202020' },
               ]}
             />
           </div>

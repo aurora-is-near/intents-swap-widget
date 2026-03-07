@@ -270,6 +270,11 @@ export const useMakeQuote = () => {
           refundType: isRefundToIntentAccount
             ? QuoteRequest.refundType.INTENTS
             : QuoteRequest.refundType.ORIGIN_CHAIN,
+
+          depositMode:
+            ctx.sourceToken.blockchain === 'stellar'
+              ? QuoteRequest.depositMode.MEMO
+              : QuoteRequest.depositMode.SIMPLE,
         },
         options,
       );
@@ -353,6 +358,7 @@ export const useMakeQuote = () => {
       ...quoteResponse,
       deadline: quoteResponse.deadline,
       depositAddress: quoteResponse.depositAddress,
+      depositMemo: quoteResponse.depositAddress,
     };
   };
 

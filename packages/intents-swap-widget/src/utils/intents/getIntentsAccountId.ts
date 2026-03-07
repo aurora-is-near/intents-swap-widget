@@ -2,6 +2,7 @@ import { base58, hex } from '@scure/base';
 
 import { notReachable } from '../notReachable';
 import { IntentsAccountType } from '../../types';
+import { isStellarAddress } from '@/utils/chains/isStellarAddress';
 import { logger } from '@/logger';
 
 type Args = {
@@ -24,9 +25,16 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
     return;
   }
 
+  if (!isStellarAddress(walletAddress) && addressType === 'stellar') {
+    logger.error('Stellar address should start with G');
+
+    return;
+  }
+
   switch (addressType) {
     case 'evm':
     case 'near':
+    case 'stellar':
       return walletAddress.toLowerCase();
     case 'sol':
       return hex.encode(base58.decode(walletAddress));

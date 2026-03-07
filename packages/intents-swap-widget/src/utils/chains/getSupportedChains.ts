@@ -11,6 +11,7 @@ import { isLtcAddress } from './isLtcAddress';
 import { isDogeAddress } from './isDogeAddress';
 import { isZecAddress } from './isZecAddress';
 import { isSuiAddress } from './isSuiAddress';
+import { isStellarAddress } from './isStellarAddress';
 import { EVM_CHAINS } from '../../constants';
 
 const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
@@ -60,6 +61,10 @@ const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
 
   if (isEvmAddress(address)) {
     return EVM_CHAINS;
+  }
+
+  if (isStellarAddress(address)) {
+    return ['stellar'];
   }
 
   // Default to EVM chains if unable to determine based on address format.

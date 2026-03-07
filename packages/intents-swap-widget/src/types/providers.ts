@@ -1,5 +1,6 @@
 import { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
 import { Eip1193Provider } from 'ethers';
+import type { Networks } from '@stellar/stellar-sdk';
 import type {
   PublicKey,
   Transaction as SolanaWeb3Transaction,
@@ -16,8 +17,20 @@ export type SolanaProvider = {
   ) => Promise<T>;
 };
 
+export type StellarProvider = {
+  publicKey?: string;
+  signMessage: (
+    message: string,
+  ) => Promise<{ signedMessage: string; signerAddress: string | undefined }>;
+  signTransaction: (
+    tx: string,
+    options?: { networkPassphrase: Networks; address: string },
+  ) => Promise<{ signedTxXdr: string; signerAddress: string | undefined }>;
+};
+
 export type Providers = {
-  sol?: undefined | null | SolanaProvider;
   evm?: undefined | null | EvmProvider;
+  sol?: undefined | null | SolanaProvider;
+  stellar?: undefined | null | StellarProvider;
   near?: undefined | null | (() => NearWalletBase);
 };

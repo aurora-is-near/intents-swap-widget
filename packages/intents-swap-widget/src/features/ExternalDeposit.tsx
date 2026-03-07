@@ -1,5 +1,5 @@
-import { QRCode } from 'react-qrcode-logo';
 import { useEffect } from 'react';
+import { QRCode } from 'react-qrcode-logo';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 

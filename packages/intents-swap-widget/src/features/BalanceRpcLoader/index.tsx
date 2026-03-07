@@ -1,11 +1,13 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { TokenBalanceLoader } from './TokenBalanceLoader';
 import { useAllTokens } from '../../hooks/useAllTokens';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '../../config';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
+import { getStellarWalletBalances } from '@/utils/stellar/getStellarWalletBalances';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token, TokenBalances } from '@/types/token';
 
@@ -68,8 +70,17 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
   const { connectedWallets } = useConfig();
   const { tokens } = useAllTokens();
   const { supportedChains } = useSupportedChains();
+  const { ctx } = useUnsafeSnapshot();
   const { setWalletBalance } = useWalletBalance(connectedWallets);
   const sortedTokens = useMemo(() => sortTokensByPriority(tokens), [tokens]);
+
+  useEffect(() => {
+    if (ctx.walletAddress && supportedChains.includes('stellar')) {
+      void getStellarWalletBalances(ctx.walletAddress).then((balances) => {
+        setWalletBalance(connectedWallets, balances);
+      });
+    }
+  }, [supportedChains]);
 
   const onBalancesLoaded = useCallback(
     (balance: TokenBalances) => {
