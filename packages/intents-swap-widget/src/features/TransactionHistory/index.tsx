@@ -39,6 +39,18 @@ export const TransactionHistory = ({
     onPendingTransactionsCountChange(pendingTransactionsCount);
   }, [pendingTransactionsCount, onPendingTransactionsCountChange]);
 
+  const buttonText = useMemo(() => {
+    if (isFetchingNextPage) {
+      return 'Loading...';
+    }
+
+    if (isFetchNextPageError) {
+      return 'Retry';
+    }
+
+    return 'Show more';
+  }, [isFetchNextPageError, isFetchingNextPage]);
+
   if (!isConnected) {
     return <TransactionHistoryEmpty type="connect" />;
   }
@@ -76,18 +88,6 @@ export const TransactionHistory = ({
       />
     );
   }
-
-  const buttonText = useMemo(() => {
-    if (isFetchingNextPage) {
-      return 'Loading...';
-    }
-
-    if (isFetchNextPageError) {
-      return 'Retry';
-    }
-
-    return 'Show more';
-  }, [isFetchNextPageError, isFetchingNextPage]);
 
   return (
     <div className="flex flex-col gap-sw-md w-full">
