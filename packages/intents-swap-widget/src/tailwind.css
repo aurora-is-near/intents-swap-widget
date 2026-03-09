@@ -84,6 +84,15 @@
   }
 }
 
+@utility text-sw-h5 {
+	@layer components {
+		@apply font-medium;
+		font-size: 1.25rem;
+		line-height: 1.375rem;
+		letter-spacing: -0.03125rem;
+	}
+}
+
 @utility text-sw-label-lg {
 	@layer components {
 		@apply font-semibold;

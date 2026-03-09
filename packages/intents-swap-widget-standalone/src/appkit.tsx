@@ -21,6 +21,7 @@ import {
   optimism,
   polygon,
   solana,
+  berachain,
 } from '@reown/appkit/networks';
 import {
   PhantomWalletAdapter,
@@ -59,6 +60,7 @@ export const initAppKit = ({
     optimism,
     avalanche,
     base,
+    berachain,
   ];
 
   const wagmiAdapter = new WagmiAdapter({
@@ -86,6 +88,7 @@ export const initAppKit = ({
       avalanche,
       base,
       solana,
+      berachain,
     ],
     projectId,
     metadata: {

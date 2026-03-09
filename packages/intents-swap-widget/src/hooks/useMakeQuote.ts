@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { snakeCase } from 'change-case';
 import {
   Quote as OneClickQuote,
@@ -13,12 +13,13 @@ import { useSupportedChains } from './useSupportedChains';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
-import { oneClickApi } from '@/network';
+import { feeServiceApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 
@@ -59,8 +60,8 @@ export const useMakeQuote = () => {
   const request = useRef<Promise<OneClickQuote>>(null);
   const abortController = useRef<AbortController>(new AbortController());
 
-  const requestQuote = useMemo(() => {
-    return async (
+  const requestQuote = useCallback(
+    async (
       data: QuoteRequest,
       metadata: { isRefetch?: boolean },
     ): Promise<OneClickQuote> => {
@@ -74,15 +75,16 @@ export const useMakeQuote = () => {
       }
 
       return (
-        await oneClickApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
+        await feeServiceApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
           // no need for extra check API will return missing API key error
-          `https://intents-api.aurora.dev/api/quote/${apiKey ?? ''}`,
+          `/api/quote/${apiKey ?? ''}`,
           data,
           { signal },
         )
       ).data.quote;
-    };
-  }, [apiKey, oneClickApi]);
+    },
+    [apiKey, fetchQuote],
+  );
 
   const make = async ({
     message,
@@ -192,14 +194,23 @@ export const useMakeQuote = () => {
       swapType: QuoteRequest.swapType.EXACT_INPUT,
     };
 
+    // UX wise we support FLEX_INPUT only for external deposits
+    // while technically it's possible to do swaps with FLEX_INPUT as well
+    // maybe in the future we will simplify the conditions here and support FLEX_INPUT for all cases
     if (!ctx.isDepositFromExternalWallet) {
-      if (quoteType === 'exact_out' && ctx.targetTokenAmount) {
+      if (
+        quoteType === 'exact_out' &&
+        isNotEmptyAmount(ctx.targetTokenAmount)
+      ) {
         commonQuoteParams = {
           ...commonQuoteParams,
           amount: ctx.targetTokenAmount,
           swapType: QuoteRequest.swapType.EXACT_OUTPUT,
         };
-      } else if (quoteType === 'exact_in' && ctx.sourceTokenAmount) {
+      } else if (
+        quoteType === 'exact_in' &&
+        isNotEmptyAmount(ctx.sourceTokenAmount)
+      ) {
         commonQuoteParams = {
           ...commonQuoteParams,
           amount: ctx.sourceTokenAmount,
@@ -211,6 +222,12 @@ export const useMakeQuote = () => {
           meta: { isDry, message: 'No source token amount' },
         });
       }
+    } else if (isNotEmptyAmount(ctx.sourceTokenAmount)) {
+      commonQuoteParams = {
+        ...commonQuoteParams,
+        swapType: QuoteRequest.swapType.EXACT_INPUT,
+        amount: ctx.sourceTokenAmount,
+      };
     } else {
       commonQuoteParams = {
         ...commonQuoteParams,
