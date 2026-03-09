@@ -2,6 +2,7 @@ import { base58, hex } from '@scure/base';
 
 import { notReachable } from '../notReachable';
 import { IntentsAccountType } from '../../types';
+import { stellarAddressToBytes } from '../stellar/stellarAddressToBytes';
 import { isStellarAddress } from '@/utils/chains/isStellarAddress';
 import { logger } from '@/logger';
 
@@ -34,8 +35,9 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
   switch (addressType) {
     case 'evm':
     case 'near':
-    case 'stellar':
       return walletAddress.toLowerCase();
+    case 'stellar':
+      return hex.encode(stellarAddressToBytes(walletAddress));
     case 'sol':
       return hex.encode(base58.decode(walletAddress));
     default:
