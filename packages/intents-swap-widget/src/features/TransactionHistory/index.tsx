@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
 import { TransactionCard } from './TransactionCard';
@@ -32,11 +32,24 @@ export const TransactionHistory = ({
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
   } = useTransactions();
 
   useEffect(() => {
     onPendingTransactionsCountChange(pendingTransactionsCount);
   }, [pendingTransactionsCount, onPendingTransactionsCountChange]);
+
+  const buttonText = useMemo(() => {
+    if (isFetchingNextPage) {
+      return 'Loading...';
+    }
+
+    if (isFetchNextPageError) {
+      return 'Retry';
+    }
+
+    return 'Show more';
+  }, [isFetchNextPageError, isFetchingNextPage]);
 
   if (!isConnected) {
     return <TransactionHistoryEmpty type="connect" />;
@@ -46,7 +59,7 @@ export const TransactionHistory = ({
     return <TransactionHistorySkeleton />;
   }
 
-  if (isError) {
+  if (isError && !isFetchNextPageError) {
     return (
       <div className="flex flex-col items-center justify-center py-sw-3xl">
         <ErrorIcon className="w-[32px] h-[32px] text-sw-gray-200 mb-sw-lg" />
@@ -90,14 +103,21 @@ export const TransactionHistory = ({
       ))}
 
       {hasNextPage && (
-        <Button
-          size="lg"
-          variant="outlined"
-          className="mt-sw-2xl"
-          state={isFetchingNextPage ? 'loading' : 'default'}
-          onClick={() => fetchNextPage()}>
-          Show more
-        </Button>
+        <>
+          {isFetchNextPageError && (
+            <p className="text-sw-label-sm text-sw-status-error text-center mt-sw-2xl">
+              Failed to load more transactions.
+            </p>
+          )}
+          <Button
+            size="lg"
+            variant="outlined"
+            className={isFetchNextPageError ? 'mt-sw-md' : 'mt-sw-2xl'}
+            state={isFetchingNextPage ? 'loading' : 'default'}
+            onClick={() => fetchNextPage()}>
+            {buttonText}
+          </Button>
+        </>
       )}
     </div>
   );

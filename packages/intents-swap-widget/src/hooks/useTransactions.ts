@@ -38,6 +38,7 @@ export const useTransactions = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => {
@@ -106,5 +107,6 @@ export const useTransactions = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
   };
 };
