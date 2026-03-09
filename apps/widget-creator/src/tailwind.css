@@ -10,9 +10,6 @@
     --radius-*: initial;
     --color-*: initial;
 
-    /* Fonts */
-    --font-display: 'Inter', sans-serif;
-
     /* Radius */
     --radius-none: 0;
     --radius-full: 99999px;
@@ -76,6 +73,11 @@
 }
 
 @layer base {
+    body {
+      font-family: 'Inter', sans-serif;
+      font-feature-settings: 'liga' 1, 'calt' 1;
+    }
+
     .hide-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;

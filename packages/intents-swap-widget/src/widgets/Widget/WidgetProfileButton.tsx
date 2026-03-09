@@ -1,12 +1,9 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { PersonFillW700 as Person } from '@material-symbols-svg/react-rounded/icons/person';
 import { useWalletConnection } from '../../hooks/useWalletConnection';
-import { useConfig } from '../../config';
 
 export const WidgetProfileButton = () => {
-  const { walletSignIn, walletSignOut } = useWalletConnection();
-  const { connectedWallets } = useConfig();
-  const isConnected = Object.values(connectedWallets).some((addr) => !!addr);
+  const { walletSignIn, walletSignOut, isConnected } = useWalletConnection();
 
   const onClick = () => {
     if (isConnected) {
@@ -38,7 +35,7 @@ export const WidgetProfileButton = () => {
     <Menu>
       <MenuButton>
         <div className="px-sw-md cursor-pointer">
-          <Person className="w-sw-2xl h-sw-2xl text-sw-gray-200" />
+          <Person className="w-sw-2xl h-sw-2xl text-sw-gray-200 hover:text-sw-gray-50" />
         </div>
       </MenuButton>
       <MenuItems anchor="bottom" className="mt-sw-lg">
