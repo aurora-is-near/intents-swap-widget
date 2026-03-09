@@ -52,17 +52,25 @@ export const useStellarWallet = () => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    StellarWalletsKit.on(KitEventType.STATE_UPDATED, (event) => {
-      if (!event.payload.address) {
-        return;
-      }
+    const offStateUpdated = StellarWalletsKit.on(
+      KitEventType.STATE_UPDATED,
+      (event) => {
+        if (!event.payload.address) {
+          return;
+        }
 
-      setWalletAddress(event.payload.address);
-    });
+        setWalletAddress(event.payload.address);
+      },
+    );
 
-    StellarWalletsKit.on(KitEventType.DISCONNECT, () => {
+    const offDisconnect = StellarWalletsKit.on(KitEventType.DISCONNECT, () => {
       setWalletAddress(null);
     });
+
+    return () => {
+      offStateUpdated();
+      offDisconnect();
+    };
   }, []);
 
   const connect = async () => {

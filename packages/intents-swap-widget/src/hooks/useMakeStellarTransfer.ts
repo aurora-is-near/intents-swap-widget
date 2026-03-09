@@ -123,7 +123,10 @@ export const useMakeStellarTransfer = ({
       throw new Error('Could not connect to Stellar RPC to load account data.');
     }
 
-    const txAmount = (Number(amount) / 1e7).toFixed(7);
+    const rawAmount = BigInt(amount);
+    const whole = rawAmount / 10_000_000n;
+    const fraction = (rawAmount % 10_000_000n).toString().padStart(7, '0');
+    const txAmount = `${whole}.${fraction}`.replace(/\.?0+$/, '');
 
     // 2. Build the payment operation
     const paymentOp =
@@ -161,10 +164,28 @@ export const useMakeStellarTransfer = ({
 
       signedTxXdr = typeof result === 'string' ? result : result.signedTxXdr;
     } catch (err) {
-      // Fallback: If it strictly expects 1 argument (e.g. Freighter direct API)
-      const result = await provider.signTransaction(transaction.toXDR());
+      const msg = err instanceof Error ? err.message : String(err ?? '');
+      const code =
+        err && typeof err === 'object' && 'code' in err
+          ? String((err as { code: unknown }).code)
+          : '';
 
-      signedTxXdr = typeof result === 'string' ? result : result.signedTxXdr;
+      const combined = `${msg} ${code}`.toLowerCase();
+
+      const isUnsupportedArity =
+        combined.includes('unsupported') ||
+        combined.includes('arity') ||
+        combined.includes('number of arguments') ||
+        combined.includes('arguments');
+
+      if (isUnsupportedArity) {
+        // Fallback: provider strictly expects 1 argument (e.g. Freighter direct API)
+        const result = await provider.signTransaction(transaction.toXDR());
+
+        signedTxXdr = typeof result === 'string' ? result : result.signedTxXdr;
+      } else {
+        throw err;
+      }
     }
 
     if (!signedTxXdr) {

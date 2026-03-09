@@ -79,7 +79,7 @@ export const useWalletSelector = () => {
     }
 
     await stellarWallet.connect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const closeSelector = useCallback(() => {
     setShowSelector(false);
@@ -125,7 +125,7 @@ export const useWalletSelector = () => {
     return {
       default: walletAddress,
     };
-  }, [nearWallet, appKitWallet]);
+  }, [nearWallet, appKitWallet, stellarWallet]);
 
   return {
     showSelector,

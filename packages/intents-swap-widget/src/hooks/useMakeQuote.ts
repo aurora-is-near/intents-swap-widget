@@ -375,7 +375,7 @@ export const useMakeQuote = () => {
       ...quoteResponse,
       deadline: quoteResponse.deadline,
       depositAddress: quoteResponse.depositAddress,
-      depositMemo: quoteResponse.depositAddress,
+      depositMemo: quoteResponse.depositMemo,
     };
   };
 

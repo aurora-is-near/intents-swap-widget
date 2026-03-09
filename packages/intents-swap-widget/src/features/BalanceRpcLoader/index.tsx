@@ -6,6 +6,7 @@ import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '../../config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { isStellarAddress } from '@/utils/chains/isStellarAddress';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { getStellarWalletBalances } from '@/utils/stellar/getStellarWalletBalances';
 import type { ChainRpcUrls } from '@/types/chain';
@@ -75,7 +76,11 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
   const sortedTokens = useMemo(() => sortTokensByPriority(tokens), [tokens]);
 
   useEffect(() => {
-    if (ctx.walletAddress && supportedChains.includes('stellar')) {
+    if (
+      ctx.walletAddress &&
+      supportedChains.includes('stellar') &&
+      isStellarAddress(ctx.walletAddress)
+    ) {
       void getStellarWalletBalances(ctx.walletAddress).then((balances) => {
         setWalletBalance(connectedWallets, balances);
       });

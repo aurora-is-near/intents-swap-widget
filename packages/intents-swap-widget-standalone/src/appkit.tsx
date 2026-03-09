@@ -16,12 +16,12 @@ import {
   arbitrum,
   avalanche,
   base,
+  berachain,
   bsc,
   mainnet,
   optimism,
   polygon,
   solana,
-  berachain,
 } from '@reown/appkit/networks';
 import {
   PhantomWalletAdapter,

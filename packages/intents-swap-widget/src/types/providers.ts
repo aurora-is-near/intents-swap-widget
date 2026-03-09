@@ -25,7 +25,9 @@ export type StellarProvider = {
   signTransaction: (
     tx: string,
     options?: { networkPassphrase: Networks; address: string },
-  ) => Promise<{ signedTxXdr: string; signerAddress: string | undefined }>;
+  ) => Promise<
+    { signedTxXdr: string; signerAddress: string | undefined } | string
+  >;
 };
 
 export type Providers = {
