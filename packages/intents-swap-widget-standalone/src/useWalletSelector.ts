@@ -30,14 +30,14 @@ export const useWalletSelector = () => {
       return;
     }
 
-    if (await stellarWallet.getIsConnected()) {
+    if (stellarWallet.walletAddress) {
       await stellarWallet.disconnect();
 
       return;
     }
 
     await appKitWallet.disconnect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const selectNear = useCallback(async () => {
     setShowSelector(false);
@@ -46,12 +46,12 @@ export const useWalletSelector = () => {
       await appKitWallet.disconnect();
     }
 
-    if (await stellarWallet.getIsConnected()) {
+    if (stellarWallet.walletAddress) {
       await stellarWallet.disconnect();
     }
 
     await nearWallet.connect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const selectEvmSolana = useCallback(async () => {
     setShowSelector(false);
@@ -60,12 +60,12 @@ export const useWalletSelector = () => {
       await nearWallet.disconnect();
     }
 
-    if (await stellarWallet.getIsConnected()) {
+    if (stellarWallet.walletAddress) {
       await stellarWallet.disconnect();
     }
 
     await appKitWallet.connect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const selectStellar = useCallback(async () => {
     setShowSelector(false);

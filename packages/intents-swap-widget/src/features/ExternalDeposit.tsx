@@ -7,7 +7,7 @@ import { notReachable } from '@/utils';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
-import { AURORA_BASE64_LOGO } from '@/constants/chains';
+// import { AURORA_BASE64_LOGO } from '@/constants/chains';
 import {
   fireEvent,
   guardStates,
@@ -28,8 +28,31 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
+const InputReadonlyCopy = ({
+  label,
+  displayValue,
+  copyValue,
+}: {
+  label?: string;
+  copyValue: string;
+  displayValue?: string;
+}) => (
+  <div className="flex flex-col gap-y-sw-xs">
+    {!!label && (
+      <span className="text-sw-label-sm text-sw-gray-200">{label}</span>
+    )}
+    <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
+      <span className="text-sw-label-md text-sw-gray-100 w-full text-center">
+        {displayValue ?? copyValue}
+      </span>
+      <CopyButton value={copyValue} />
+    </div>
+  </div>
+);
+
 const QrCode = ({ address }: { address: string }) => {
   const { ctx } = useUnsafeSnapshot();
+  const { t } = useTypedTranslation();
 
   const isValidState = guardStates(ctx, [
     'quote_success_internal',
@@ -47,24 +70,35 @@ const QrCode = ({ address }: { address: string }) => {
           qrStyle="dots"
           value={address}
           size={200}
-          logoWidth={60}
-          logoPadding={5}
-          logoPaddingStyle="circle"
-          logoImage={AURORA_BASE64_LOGO}
+          // TODO: logo covers part of QR code maybe a package's issue
+          // logoWidth={60}
+          // logoPadding={30}
+          // logoPaddingStyle="circle"
+          // logoImage={AURORA_BASE64_LOGO}
           eyeRadius={[10, 10, 10]}
           fgColor="#161926"
           style={{ borderRadius: '16px' }}
         />
       </div>
-      <div className="py-sw-lg px-sw-lg w-full flex items-center justify-between rounded-sw-md bg-sw-gray-800">
-        <span className="text-sw-label-md text-sw-gray-100 w-full text-center">
-          {formatAddressTruncate(address, {
+      <div className="flex flex-col gap-y-sw-lg">
+        <InputReadonlyCopy
+          copyValue={address}
+          label={t('deposit.external.address.label', 'Send to this address')}
+          displayValue={formatAddressTruncate(address, {
             mode: 'manual',
             leftVisible: 8,
             rightVisible: 6,
           })}
-        </span>
-        <CopyButton value={address} />
+        />
+        {ctx.quote.depositMemo && (
+          <InputReadonlyCopy
+            copyValue={ctx.quote.depositMemo}
+            label={t(
+              'deposit.external.memo.label',
+              'Use this transaction memo (required)',
+            )}
+          />
+        )}
       </div>
     </div>
   );
