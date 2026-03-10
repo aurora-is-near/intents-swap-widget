@@ -3,4 +3,5 @@ export * from './getSimpleValueBasedFee';
 export * from './getPercentFromBasisPoints';
 export * from './getBasisPointsFromPercent';
 export * from './validateFeeConfig';
+export * from './getFeeShare';
 export * from './maskApiKey';
