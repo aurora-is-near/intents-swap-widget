@@ -10,12 +10,12 @@ export const addOptimisticTransaction = (
 };
 
 export const getOptimisticTransactions = (
-  walletAddress?: string,
+  walletAddress: string,
 ): FakeTransaction[] => {
   const allTransactions = [...optimisticTransactions.values()];
 
-  const walletTransactions = allTransactions.filter(
-    (tx) => !walletAddress || tx.senders.includes(walletAddress),
+  const walletTransactions = allTransactions.filter((tx) =>
+    tx.senders.includes(walletAddress),
   );
 
   return walletTransactions.sort(
