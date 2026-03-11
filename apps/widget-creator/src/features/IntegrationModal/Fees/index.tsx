@@ -9,6 +9,7 @@ import { FeesSummary } from './FeesSummary';
 import { NestedHeader } from '../components';
 import {
   getBasisPointsFromPercent,
+  getFeeShare,
   getPercentFromBasisPoints,
   getSimpleValueBasedFee,
   isZeroValueBasedFee,
@@ -207,7 +208,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
             <>
               Set up optional custom fees added on top of the protocol fee.{' '}
               <br className="hidden sm:block" />
-              You earn 60% of your custom fee; we retain 40%.
+              You earn 60% of your custom fee; Aurora retain 40% (min 0.02%).
             </>
           }>
           <div className="flex flex-col gap-csw-2xl">
@@ -233,6 +234,42 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                   />
                 )}
               />
+              <ul className="flex flex-col gap-csw-sm mt-csw-md">
+                {(() => {
+                  const { auroraBps, clientBps, feeBps } = getFeeShare(
+                    customFee || '0',
+                  );
+
+                  const auroraPortion = feeBps
+                    ? Math.round((auroraBps / feeBps) * 100)
+                    : 0;
+
+                  const clientPortion = feeBps
+                    ? Math.round((clientBps / feeBps) * 100)
+                    : 0;
+
+                  return (
+                    <>
+                      <li className="flex items-center justify-between text-csw-label-sm">
+                        <span className="text-csw-gray-300">
+                          Aurora fee (min 0.02%)
+                        </span>
+                        <span className="text-csw-gray-50">
+                          {getPercentFromBasisPoints(auroraBps)}% (
+                          {auroraPortion}%)
+                        </span>
+                      </li>
+                      <li className="flex items-center justify-between text-csw-label-sm">
+                        <span className="text-csw-gray-300">Your share</span>
+                        <span className="text-csw-accent-500">
+                          {getPercentFromBasisPoints(clientBps)}% (
+                          {clientPortion}%)
+                        </span>
+                      </li>
+                    </>
+                  );
+                })()}
+              </ul>
             </div>
 
             <div className="flex flex-col gap-csw-2md">

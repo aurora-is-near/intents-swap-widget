@@ -31,7 +31,10 @@ type Props = {
 const QrCode = ({ address }: { address: string }) => {
   const { ctx } = useUnsafeSnapshot();
 
-  const isValidState = guardStates(ctx, ['quote_success_internal']);
+  const isValidState = guardStates(ctx, [
+    'quote_success_internal',
+    'quote_success_external',
+  ]);
 
   if (!isValidState) {
     return null;
