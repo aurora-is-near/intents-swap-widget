@@ -9,9 +9,15 @@ export const addOptimisticTransaction = (
   optimisticTransactions.set(txHash, tx);
 };
 
-export const getOptimisticTransactions = (): FakeTransaction[] => [
-  ...optimisticTransactions.values(),
-];
+export const getOptimisticTransactions = (
+  walletAddress?: string,
+): FakeTransaction[] => {
+  const allTransactions = [...optimisticTransactions.values()];
+
+  return allTransactions.filter(
+    (tx) => !walletAddress || tx.senders.includes(walletAddress),
+  );
+};
 
 export const removeOptimisticTransaction = (txHash: string) => {
   optimisticTransactions.delete(txHash);

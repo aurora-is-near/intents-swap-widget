@@ -65,14 +65,14 @@ export const useTransactions = () => {
 
       const hasPending =
         apiTxs.some((tx) => PENDING_STATUSES.includes(tx.status)) ||
-        getOptimisticTransactions().length > 0;
+        getOptimisticTransactions(walletAddress).length > 0;
 
       return hasPending ? POLLING_INTERVAL_MS : false;
     },
   });
 
   const apiTransactions = data?.pages.flatMap((page) => page.data.data) ?? [];
-  const optimistic = getOptimisticTransactions();
+  const optimistic = getOptimisticTransactions(walletAddress);
 
   // Remove optimistic entries once the real transaction appears in the API.
   // The optimistic intentHashes (origin chain tx hash) appears in the real
@@ -90,7 +90,7 @@ export const useTransactions = () => {
   });
 
   const transactions: (Transaction | FakeTransaction)[] = [
-    ...getOptimisticTransactions(),
+    ...optimistic,
     ...apiTransactions,
   ];
 
