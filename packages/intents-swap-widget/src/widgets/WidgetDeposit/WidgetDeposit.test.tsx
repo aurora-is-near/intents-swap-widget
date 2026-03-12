@@ -3,6 +3,7 @@
 // import mocks first
 import {
   mockAlchemyApi,
+  mockFeeServiceApi,
   mockOneClickApi,
 } from '../../tests/mock-axios-requests';
 import '../../tests/mock-qr-code';
@@ -112,6 +113,7 @@ describe('Deposit', () => {
     );
 
     mockOneClickApi.post.mockResolvedValue({ data: quoteMock });
+    mockFeeServiceApi.post.mockResolvedValue({ data: quoteMock });
   });
 
   afterEach(() => {
@@ -149,7 +151,7 @@ describe('Deposit', () => {
     expect(screen.getByRole('button', { name: 'ETH' })).toBeInTheDocument();
     expect(screen.getByText('Minimum deposit 0.00034 ETH')).toBeInTheDocument();
     expect(screen.getByText('Use Ethereum network')).toBeInTheDocument();
-    expect(screen.getByLabelText('qr-code')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'qr-code' })).toBeInTheDocument();
     expect(screen.getByText('test-dep...ddress')).toBeInTheDocument();
     expect(screen.getByText('Waiting for transaction')).toBeInTheDocument();
   });
