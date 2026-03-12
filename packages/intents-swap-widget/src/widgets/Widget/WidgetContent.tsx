@@ -75,7 +75,12 @@ export const WidgetContent = ({
     useState<Transaction | FakeTransaction | null>(null);
 
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
-  const { enableAccountAbstraction, showProfileButton, apiKey } = useConfig();
+  const {
+    enableAccountAbstraction,
+    showProfileButton,
+    showTransactionHistory,
+    apiKey,
+  } = useConfig();
 
   const { ctx } = useUnsafeSnapshot();
 
@@ -121,7 +126,7 @@ export const WidgetContent = ({
           ) : (
             <div className="w-full" />
           )}
-          {!!apiKey && (
+          {!!showTransactionHistory && !!apiKey && (
             <WidgetHistoryButton
               isActive={showHistory}
               pendingTransactionsCount={pendingTransactionsCount}

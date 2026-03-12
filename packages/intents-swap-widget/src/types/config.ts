@@ -85,4 +85,5 @@ export type WidgetConfig = {
   hideTokenInputHeadings?: boolean;
   themeParentElementSelector?: string;
   lockSwapDirection?: boolean;
+  showTransactionHistory?: boolean;
 };
