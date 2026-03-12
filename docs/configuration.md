@@ -411,6 +411,10 @@ An API key for integrating with [TON Center](https://toncenter.com/).
 
 This is useful for fetching balances for the TON chain.
 
+### `showTransactionHistory`
+
+Used to show the transaction history button and associated screens.
+
 ### `hideSendAddress`
 
 Used to hide the send address when swapping or withdrawing.
