@@ -4,6 +4,7 @@ import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
 import { isEvmBaseToken, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { useMakeNearTransfer } from './useMakeNearTransfer';
+import { useMakeStellarTransfer } from './useMakeStellarTransfer';
 import { Providers } from '../types/providers';
 import { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
 import { useConfig } from '../config';
@@ -41,6 +42,9 @@ export const useMakeQuoteTransfer = ({
   });
 
   const { make: makeNearTransfer } = useMakeNearTransfer();
+  const { make: makeStellarTransfer } = useMakeStellarTransfer({
+    provider: providers?.stellar,
+  });
 
   const getTransferFunction = (depositAddress: string) => {
     const providerType = getSupportedProviderType(depositAddress);
@@ -59,6 +63,36 @@ export const useMakeQuoteTransfer = ({
 
     if (providerType === 'near') {
       return makeNearTransfer;
+    }
+
+    if (providerType === 'stellar') {
+      return (args: MakeTransferArgs) => {
+        if (!ctx.quote) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'Quote is required for a Stellar transfer.' },
+          });
+        }
+
+        // not reachable here just for type safety
+        if (ctx.quote.type === 'QUOTE_DRY_WITH_AMOUNT') {
+          return;
+        }
+
+        if (!ctx.quote.depositMemo) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: {
+              message: 'Quote has no deposit memo for Stellar transfer.',
+            },
+          });
+        }
+
+        return makeStellarTransfer({
+          ...args,
+          memo: ctx.quote.depositMemo ?? '',
+        });
+      };
     }
 
     throw new TransferError({

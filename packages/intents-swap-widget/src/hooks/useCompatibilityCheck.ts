@@ -107,6 +107,23 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
           signedData: msg.NEP413,
         };
       }
+
+      case 'stellar': {
+        assertDefined(providers?.stellar, 'No Stellar provider configured');
+
+        const { signedMessage } = await providers.stellar.signMessage(
+          msg.STELLAR.message,
+        );
+
+        const signature = new Uint8Array(Buffer.from(signedMessage, 'base64'));
+
+        return {
+          type: 'STELLAR_SEP53',
+          signatureData: signature,
+          signedData: msg.STELLAR,
+        };
+      }
+
       default:
         notReachable(intentsAccountType);
     }

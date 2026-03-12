@@ -36,6 +36,7 @@ const DISABLED_TOKENS = [
   'noear',
   'testnebula',
   'susdc',
+  'weth',
 ];
 
 const DEFAULT_CONFIG: WidgetConfig = {
@@ -58,6 +59,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
         return ['sol', 'eth', 'btc', 'near'] as const;
       case 'near':
         return ['near', 'sol', 'eth', 'btc'] as const;
+      case 'stellar':
+        return ['stellar', 'eth', 'sol', 'near'] as const;
       default:
         return ['eth', 'btc', 'sol', 'near'] as const;
     }
