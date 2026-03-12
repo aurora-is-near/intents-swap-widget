@@ -90,7 +90,7 @@ const QrCode = ({ address }: { address: string }) => {
             rightVisible: 6,
           })}
         />
-        {ctx.quote.depositMemo && (
+        {!!ctx.quote.depositMemo && (
           <InputReadonlyCopy
             copyValue={ctx.quote.depositMemo}
             label={t(
