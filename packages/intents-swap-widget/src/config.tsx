@@ -36,6 +36,7 @@ const DISABLED_TOKENS = [
   'noear',
   'testnebula',
   'susdc',
+  'weth',
 ];
 
 const DEFAULT_CONFIG: WidgetConfig = {
