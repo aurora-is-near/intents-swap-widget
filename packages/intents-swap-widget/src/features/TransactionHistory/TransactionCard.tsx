@@ -7,6 +7,7 @@ import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
 import { TinyNumber } from '@/components/TinyNumber';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
+import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
 
 type Props = {
@@ -24,8 +25,8 @@ export const TransactionCard = ({
   const status = getTransactionStatusLabel(tx.status);
   const time = formatRelativeTime(tx.createdAt);
 
-  const originToken = tokens.find((t) => t.assetId === tx.originAsset);
-  const destToken = tokens.find((t) => t.assetId === tx.destinationAsset);
+  const originToken = findTransactionToken(tokens, tx.originAsset);
+  const destToken = findTransactionToken(tokens, tx.destinationAsset);
 
   const isSwap = type === 'Swap';
 

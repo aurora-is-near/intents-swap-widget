@@ -13,6 +13,7 @@ import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
+import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
 import type { Token } from '@/types';
 
@@ -69,8 +70,8 @@ export const TransactionDetails = ({
     hour12: true,
   });
 
-  const originToken = tokens.find((t) => t.assetId === tx.originAsset);
-  const destToken = tokens.find((t) => t.assetId === tx.destinationAsset);
+  const originToken = findTransactionToken(tokens, tx.originAsset);
+  const destToken = findTransactionToken(tokens, tx.destinationAsset);
 
   const isSwap = type === 'Swap';
   const isDeposit = type === 'Deposit';
