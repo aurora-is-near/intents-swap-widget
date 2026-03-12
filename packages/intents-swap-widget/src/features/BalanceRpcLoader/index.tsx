@@ -85,7 +85,7 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
         setWalletBalance(connectedWallets, balances);
       });
     }
-  }, [supportedChains]);
+  }, [supportedChains, ctx.walletAddress, connectedWallets]);
 
   const onBalancesLoaded = useCallback(
     (balance: TokenBalances) => {

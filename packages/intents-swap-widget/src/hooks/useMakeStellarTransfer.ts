@@ -12,6 +12,7 @@ import {
 
 import type { MakeTransferArgs, Providers } from '../types';
 
+import { CHAIN_EXPLORERS_BY_CHAIN_NAME } from '@/constants/chains';
 import { isStellarAddress } from '@/utils/chains/isStellarAddress';
 import { TransferError } from '@/errors';
 
@@ -212,7 +213,7 @@ export const useMakeStellarTransfer = ({
 
     return {
       hash: submitResult.hash,
-      transactionLink: `https://stellar.expert/explorer/public/tx/${submitResult.hash}`,
+      transactionLink: `${CHAIN_EXPLORERS_BY_CHAIN_NAME.stellar}${submitResult.hash}`,
     };
   };
 

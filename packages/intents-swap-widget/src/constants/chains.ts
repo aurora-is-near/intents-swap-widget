@@ -254,7 +254,6 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'op',
   'zec',
   'tron',
-  'xrp',
   'avax',
   'bera',
   'xrp',
