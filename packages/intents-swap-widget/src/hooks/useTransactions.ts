@@ -65,32 +65,40 @@ export const useTransactions = () => {
 
       const hasPending =
         apiTxs.some((tx) => PENDING_STATUSES.includes(tx.status)) ||
-        getOptimisticTransactions().length > 0;
+        (!!walletAddress &&
+          getOptimisticTransactions(walletAddress).length > 0);
 
       return hasPending ? POLLING_INTERVAL_MS : false;
     },
   });
 
   const apiTransactions = data?.pages.flatMap((page) => page.data.data) ?? [];
-  const optimistic = getOptimisticTransactions();
+  const optimistic = walletAddress
+    ? getOptimisticTransactions(walletAddress)
+    : [];
 
   // Remove optimistic entries once the real transaction appears in the API.
-  // The optimistic intentHashes (origin chain tx hash) appears in the real
-  // transaction's originChainTxHashes array.
-  const apiOriginHashes = new Set(
-    apiTransactions.flatMap((tx) => tx.originChainTxHashes ?? []),
+  // We check all hash fields because intents withdrawals may track hashes
+  // in destinationChainTxHashes or intentHashes rather than originChainTxHashes.
+  const apiHashes = new Set(
+    apiTransactions
+      .flatMap((tx) => [
+        ...(tx.originChainTxHashes ?? []),
+        ...(tx.destinationChainTxHashes ?? []),
+        ...(tx.nearTxHashes ?? []),
+        tx.intentHashes,
+      ])
+      .filter(Boolean),
   );
 
   optimistic.forEach((tx) => {
-    const hash = tx.originChainTxHashes.find((h) => apiOriginHashes.has(h));
-
-    if (hash) {
-      removeOptimisticTransaction(hash);
-    }
+    [tx.intentHashes, ...tx.originChainTxHashes]
+      .filter((hash): hash is string => !!hash && apiHashes.has(hash))
+      .forEach(removeOptimisticTransaction);
   });
 
   const transactions: (Transaction | FakeTransaction)[] = [
-    ...getOptimisticTransactions(),
+    ...optimistic,
     ...apiTransactions,
   ];
 
