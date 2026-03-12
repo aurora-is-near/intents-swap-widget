@@ -428,3 +428,7 @@ is used.
 
 By default, when using the swap widget, we can click the arrow in the middle
 to switch the swap direction. This option disables that feature.
+
+### `showTransactionHistory`
+
+Enables swaps transaction history for a user's wallet. Disabled by default.
