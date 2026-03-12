@@ -22,6 +22,7 @@ import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
+import { IntentSignerStellar } from '@/utils/intents/signers/stellar';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -243,6 +244,23 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
 
         break;
       }
+
+      case 'stellar': {
+        if (!providers?.stellar) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No Stellar provider configured' },
+          });
+        }
+
+        signer = new IntentSignerStellar(
+          { walletAddress: ctx.walletAddress },
+          providers.stellar,
+        );
+
+        break;
+      }
+
       default:
         notReachable(intentsAccountType);
     }

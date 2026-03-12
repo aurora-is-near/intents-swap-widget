@@ -3,10 +3,11 @@ import { useUnsafeSnapshot } from '../machine';
 import { isEvmAddress } from '../utils/chains/isEvmAddress';
 import { isNearAddress } from '../utils/chains/isNearAddress';
 import { isSolanaAddress } from '../utils/chains/isSolanaAddress';
+import { isStellarAddress } from '../utils/chains/isStellarAddress';
 
 const getIntentsAccountTypeFromAddress = (
   address: string,
-): 'sol' | 'evm' | 'near' | undefined => {
+): 'sol' | 'evm' | 'near' | 'stellar' | undefined => {
   if (isSolanaAddress(address)) {
     return 'sol';
   }
@@ -17,6 +18,10 @@ const getIntentsAccountTypeFromAddress = (
 
   if (isNearAddress(address)) {
     return 'near';
+  }
+
+  if (isStellarAddress(address)) {
+    return 'stellar';
   }
 
   return undefined;

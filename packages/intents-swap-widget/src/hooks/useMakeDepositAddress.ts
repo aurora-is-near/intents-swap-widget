@@ -21,6 +21,7 @@ type DepositAddressRequest = {
 type DepositAddressResponse = {
   result: {
     address: string;
+    memo?: string;
   };
 };
 
@@ -52,6 +53,9 @@ export const useMakeDepositAddress = () => {
             {
               account_id: data.accountId,
               chain: data.chain,
+              ...(data.chain === 'stellar:mainnet'
+                ? { deposit_mode: 'MEMO' }
+                : {}),
             },
           ],
         },
@@ -119,7 +123,7 @@ export const useMakeDepositAddress = () => {
     }
 
     if (!intentsAccountId) {
-      const msg = 'No corresponding intents account to run a quote';
+      const msg = 'No corresponding intents account to run a quote (POA)';
 
       logger.error(`[WIDGET] ${msg}`);
       throw new QuoteError({
@@ -195,6 +199,7 @@ export const useMakeDepositAddress = () => {
               ),
             }),
         depositAddress: response.result.address,
+        depositMemo: response.result.memo,
         // dummy values to match quote type
         deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         timeEstimate: 0,

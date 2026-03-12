@@ -60,6 +60,7 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   cardano: 'cardano:mainnet',
   ltc: 'ltc:mainnet',
   near: 'near:mainnet',
+  stellar: 'stellar:mainnet',
 };
 
 export const NOT_EVM_CHAINS = [
@@ -74,6 +75,7 @@ export const NOT_EVM_CHAINS = [
   'zec',
   'ltc',
   'cardano',
+  'stellar',
 ] as const;
 
 export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
@@ -82,6 +84,7 @@ export const DRY_QUOTE_ZERO_ADDRESSES = {
   evm: '0x0000000000000000000000000000000000000000',
   sol: '11111111111111111111111111111111',
   near: 'system.near',
+  stellar: 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF',
 } as const;
 
 export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
@@ -100,6 +103,7 @@ export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
   ...EVM_CHAIN_BASE_TOKENS,
   sol: 'SOL',
   near: 'NEAR',
+  stellar: 'XLM',
 };
 
 export const CHAINS_LIST: Record<Chains, Chain> = {
@@ -183,6 +187,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'ltc',
     label: 'Litecoin',
   },
+  stellar: {
+    id: 'stellar',
+    label: 'Stellar',
+  },
 };
 
 export const CHAIN_EXPLORERS: Record<number, string> = {
@@ -228,6 +236,7 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
 export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
   sol: 'https://solscan.io/tx/',
   near: 'https://nearblocks.io/txns/',
+  stellar: 'https://stellar.expert/explorer/public/tx/',
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
@@ -245,10 +254,10 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'op',
   'zec',
   'tron',
-  'xrp',
   'avax',
   'bera',
   'xrp',
   'gnosis',
   'doge',
+  'stellar',
 ];

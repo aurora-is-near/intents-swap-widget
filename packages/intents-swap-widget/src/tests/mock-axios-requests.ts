@@ -28,8 +28,15 @@ export const mockOneClickApi: {
   post: jest.fn<(...args: Args) => Promise<{ data: QuoteResponse }>>(),
 };
 
+export const mockFeeServiceApi: {
+  post: Mock<(...args: Args) => Promise<{ data: QuoteResponse }>>;
+} = {
+  post: jest.fn<(...args: Args) => Promise<{ data: QuoteResponse }>>(),
+};
+
 jest.mock('../network', () => ({
   __esModule: true,
   alchemyApi: mockAlchemyApi,
   oneClickApi: mockOneClickApi,
+  feeServiceApi: mockFeeServiceApi,
 }));

@@ -48,6 +48,7 @@ import XbtcIcon from './xbtc.svg';
 import XdaiIcon from './xdai.svg';
 import XrpIcon from './xrp.svg';
 import ZecIcon from './zec.svg';
+import StellarIcon from './stellar.svg';
 
 import type { Chains } from '@/types/chain';
 
@@ -77,6 +78,7 @@ export const CHAIN_ICONS: Record<
   near: <NearIcon />,
   ltc: <LtcIcon />,
   cardano: <CardanoIcon />,
+  stellar: <StellarIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
@@ -128,4 +130,5 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   xdai: <XdaiIcon />,
   xrp: <XrpIcon />,
   zec: <ZecIcon />,
+  xlm: <StellarIcon />,
 };
