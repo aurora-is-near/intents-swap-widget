@@ -125,7 +125,9 @@ export const useMakeTransfer = ({
       'amountInUsd' in ctx.quote &&
       ctx.quote.amountInUsd
     ) {
-      addOptimisticTransaction(transferResult.hash, {
+      const optimisticKey = transferResult.intent ?? transferResult.hash;
+
+      addOptimisticTransaction(optimisticKey, {
         status: 'PENDING',
         originAsset: ctx.sourceToken.assetId,
         destinationAsset: ctx.targetToken.assetId,
@@ -143,6 +145,7 @@ export const useMakeTransfer = ({
         senders: [ctx.walletAddress],
         recipient: ctx.sendAddress ?? '',
         originChainTxHashes: [transferResult.hash],
+        intentHashes: transferResult.intent,
       });
     }
 
