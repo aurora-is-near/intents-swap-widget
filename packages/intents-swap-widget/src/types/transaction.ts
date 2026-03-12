@@ -52,7 +52,9 @@ export type FakeTransaction = Pick<
   | 'senders'
   | 'recipient'
   | 'originChainTxHashes'
->;
+> & {
+  intentHashes?: string;
+};
 
 export type TransactionsResponse = {
   data: Transaction[];
