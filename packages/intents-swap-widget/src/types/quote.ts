@@ -22,6 +22,7 @@ export type QuoteReal = QuoteResponseShort & {
   dry: false;
   deadline?: string;
   depositAddress: string;
+  depositMemo?: string;
 };
 
 export type QuoteDepositAnyAmount = {
@@ -29,6 +30,7 @@ export type QuoteDepositAnyAmount = {
   depositAddress: string;
   deadline: string;
   timeEstimate: number;
+  depositMemo?: string;
   dry: boolean;
 };
 

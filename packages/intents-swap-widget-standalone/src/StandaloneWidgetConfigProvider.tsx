@@ -47,6 +47,7 @@ function StandaloneWalletBridge({
         onClose={wallet.closeSelector}
         onSelectNear={wallet.selectNear}
         onSelectEvmSolana={wallet.selectEvmSolana}
+        onSelectStellar={wallet.selectStellar}
       />
     </>
   );

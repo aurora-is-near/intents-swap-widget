@@ -287,4 +287,7 @@ export const TOKENS_DATA: Record<string, TokenAdditionalData> = {
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/38376.png',
     name: 'EVAA Protocol',
   },
+  xlm: {
+    name: 'XLM',
+  },
 };

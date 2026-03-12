@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Providers } from '@aurora-is-near/intents-swap-widget';
 import { NearWalletBase } from '@hot-labs/near-connect';
+
 import { useAppKitWallet } from './useAppKitWallet';
 import { useAppKitProviders } from './useAppKitProviders';
 import { useNearWallet } from './useNearWallet';
+import { useStellarWallet } from './useStellarWallet';
 
 const isNearWallet = (
   nearWallet?: NearWalletBase,
@@ -13,6 +15,8 @@ export const useWalletSelector = () => {
   const appKitWallet = useAppKitWallet();
   const appKitProviders = useAppKitProviders();
   const nearWallet = useNearWallet();
+  const stellarWallet = useStellarWallet();
+
   const [showSelector, setShowSelector] = useState(false);
 
   const connect = useCallback(() => {
@@ -26,8 +30,14 @@ export const useWalletSelector = () => {
       return;
     }
 
+    if (stellarWallet.walletAddress) {
+      await stellarWallet.disconnect();
+
+      return;
+    }
+
     await appKitWallet.disconnect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const selectNear = useCallback(async () => {
     setShowSelector(false);
@@ -36,8 +46,12 @@ export const useWalletSelector = () => {
       await appKitWallet.disconnect();
     }
 
+    if (stellarWallet.walletAddress) {
+      await stellarWallet.disconnect();
+    }
+
     await nearWallet.connect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const selectEvmSolana = useCallback(async () => {
     setShowSelector(false);
@@ -46,8 +60,26 @@ export const useWalletSelector = () => {
       await nearWallet.disconnect();
     }
 
+    if (stellarWallet.walletAddress) {
+      await stellarWallet.disconnect();
+    }
+
     await appKitWallet.connect();
-  }, [appKitWallet, nearWallet]);
+  }, [appKitWallet, nearWallet, stellarWallet]);
+
+  const selectStellar = useCallback(async () => {
+    setShowSelector(false);
+
+    if (nearWallet.isConnected) {
+      await nearWallet.disconnect();
+    }
+
+    if (appKitWallet.isConnected) {
+      await appKitWallet.disconnect();
+    }
+
+    await stellarWallet.connect();
+  }, [appKitWallet, nearWallet, stellarWallet]);
 
   const closeSelector = useCallback(() => {
     setShowSelector(false);
@@ -64,17 +96,36 @@ export const useWalletSelector = () => {
       walletProviders.near = () => nearWalletBase;
     }
 
+    if (stellarWallet.walletAddress) {
+      walletProviders.stellar = {
+        publicKey: stellarWallet.walletAddress,
+        signMessage: stellarWallet.signMessage,
+        signTransaction: stellarWallet.signTransaction,
+      };
+    }
+
     return walletProviders;
   }, [appKitProviders, nearWallet]);
 
-  const connectedWallets = useMemo(
-    () => ({
-      default: nearWallet.isConnected
-        ? nearWallet.accountId
-        : appKitWallet.address,
-    }),
-    [nearWallet, appKitWallet],
-  );
+  const connectedWallets = useMemo(() => {
+    let walletAddress: string | undefined;
+
+    if (stellarWallet.walletAddress) {
+      walletAddress = stellarWallet.walletAddress;
+    }
+
+    if (nearWallet.isConnected) {
+      walletAddress = nearWallet.accountId;
+    }
+
+    if (appKitWallet.isConnected) {
+      walletAddress = appKitWallet.address;
+    }
+
+    return {
+      default: walletAddress,
+    };
+  }, [nearWallet, appKitWallet, stellarWallet]);
 
   return {
     showSelector,
@@ -84,6 +135,7 @@ export const useWalletSelector = () => {
     disconnect,
     selectNear,
     selectEvmSolana,
+    selectStellar,
     closeSelector,
   };
 };
