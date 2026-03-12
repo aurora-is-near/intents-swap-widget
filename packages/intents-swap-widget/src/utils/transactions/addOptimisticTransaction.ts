@@ -14,8 +14,9 @@ export const getOptimisticTransactions = (
 ): FakeTransaction[] => {
   const allTransactions = [...optimisticTransactions.values()];
 
-  const walletTransactions = allTransactions.filter((tx) =>
-    tx.senders.includes(walletAddress),
+  const walletTransactions = allTransactions.filter(
+    (tx) =>
+      tx.senders.includes(walletAddress) || tx.recipient === walletAddress,
   );
 
   return walletTransactions.sort(
