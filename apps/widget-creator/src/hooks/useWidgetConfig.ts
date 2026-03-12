@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { type WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
@@ -7,6 +7,13 @@ import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 
 export const useWidgetConfig = () => {
   const { state } = useCreator();
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setShowTransactionHistory(params.get('history') === '1');
+  }, []);
 
   const widgetConfig = useMemo(
     (): Partial<WidgetConfig> => ({
@@ -24,8 +31,9 @@ export const useWidgetConfig = () => {
       defaultTargetToken: state.enableBuyToken
         ? state.defaultBuyToken
         : undefined,
+      showTransactionHistory,
     }),
-    [state],
+    [state, showTransactionHistory],
   );
 
   return { widgetConfig };
