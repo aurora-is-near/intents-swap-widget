@@ -7,7 +7,6 @@ import type {
   TransactionsResponse,
   TransactionStatus,
 } from '../types/transaction';
-import { useUnsafeSnapshot } from '../machine';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import {
   getOptimisticTransactions,
@@ -23,10 +22,10 @@ const PENDING_STATUSES: TransactionStatus[] = [
 ];
 
 export const useTransactions = () => {
-  const { apiKey } = useConfig();
   const {
-    ctx: { walletAddress },
-  } = useUnsafeSnapshot();
+    apiKey,
+    connectedWallets: { default: walletAddress },
+  } = useConfig();
 
   const queryKey = getTransactionHistoryQueryKey(walletAddress);
 
