@@ -134,7 +134,7 @@ export const WidgetConfigProvider = ({
   useLocalisation(localisation);
 
   // Add tailwind parent class to portal root
-  useAddClassToPortal('headlessui-portal-root', 'sw');
+  useAddClassToPortal(['headlessui-portal-root'], 'sw');
 
   return (
     <QueryClientProvider client={queryClient}>

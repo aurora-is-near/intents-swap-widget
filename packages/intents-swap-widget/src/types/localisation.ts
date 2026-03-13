@@ -58,6 +58,7 @@ export type LocalisationKeys =
   | 'deposit.external.stepSelectToken.retry'
   | 'deposit.external.address.label'
   | 'deposit.external.memo.label'
+  | 'deposit.external.tooltip.text'
   // submit - errors
   | 'submit.error.connectWallet'
   | 'submit.error.invalidTransferData.label'
