@@ -136,7 +136,9 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
       nextPortfolioPageKey = pageKey;
     }
 
-    if (hasMonadNetwork) {
+    const isFirstPage = pageParam == null;
+
+    if (hasMonadNetwork && isFirstPage) {
       const monadWalletResults = await Promise.all(
         walletAddresses.map(async (address) => {
           const response = await alchemyApi.post(
