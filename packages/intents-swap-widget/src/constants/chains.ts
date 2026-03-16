@@ -198,7 +198,6 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   monad: {
     id: 'monad',
     label: 'Monad',
-    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/mon.svg',
   },
 };
 
@@ -239,6 +238,7 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   167000: 'https://taikoscan.io/tx/', // Taiko
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
   397: 'https://nearblocks.io/txns/', // Near
+  143: 'https://monad.socialscan.io/tx/', // Monad
 };
 
 // some chains e.g. Solana have no chain ID
