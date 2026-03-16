@@ -16,9 +16,3 @@ declare module '*.svg?url' {
   const content: string;
   export default content;
 }
-
-interface ImportMeta {
-  env: {
-    VITE_ALCHEMY_API_KEY: string;
-  };
-}
