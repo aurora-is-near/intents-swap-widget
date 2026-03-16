@@ -19,6 +19,7 @@ import {
   berachain,
   bsc,
   defineChain,
+  gnosis,
   mainnet,
   optimism,
   polygon,
@@ -86,6 +87,7 @@ export const initAppKit = ({
     base,
     berachain,
     monadMainnet,
+    gnosis,
   ];
 
   const wagmiAdapter = new WagmiAdapter({
