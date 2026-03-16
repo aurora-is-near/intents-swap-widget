@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isEvmAddress } from '../../utils/chains/isEvmAddress';
 import { isTonAddress } from '../../utils/chains/isTonAddress';
 import { CHAINS_MAP, isAlchemySupportedChain } from './types';
 import type {
@@ -139,8 +140,10 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
     const isFirstPage = pageParam == null;
 
     if (hasMonadNetwork && isFirstPage) {
-      const monadWalletResults = await Promise.all(
-        walletAddresses.map(async (address) => {
+      const evmAddresses = walletAddresses.filter(isEvmAddress);
+
+      const monadSettled = await Promise.allSettled(
+        evmAddresses.map(async (address) => {
           const response = await alchemyApi.post(
             MONAD_NODE_URL(alchemyApiKey),
             {
@@ -167,8 +170,10 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
         }),
       );
 
-      monadWalletResults.forEach(({ tokens }) => {
-        allTokens.push(...tokens);
+      monadSettled.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          allTokens.push(...result.value.tokens);
+        }
       });
     }
 
