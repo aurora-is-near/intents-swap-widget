@@ -1,5 +1,6 @@
 import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { cn } from '@/utils/cn';
+import { useTokens } from '@/hooks';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { TokenIcon } from '@/components/TokenIcon';
@@ -28,6 +29,7 @@ export const TokenItem = ({
   className,
   onMsg,
 }: Props) => {
+  const { tokens } = useTokens();
   const { ctx } = useUnsafeSnapshot();
   const { appName } = useConfig();
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
@@ -36,6 +38,18 @@ export const TokenItem = ({
     supportedChains.includes(token.blockchain) || token.isIntent;
 
   const hasBalance = balance !== '0' && balance !== 0 && balance !== undefined;
+
+  const showIntentsChain =
+    token.chainName.toLowerCase() !== 'near' &&
+    hasBalance &&
+    // do not show chain on intents for an asset that has no analog on Near
+    // but only exists on another chain e.g. Monad, Uni etc.
+    tokens.some(
+      (t) =>
+        t.isIntent &&
+        t.chainName.toLowerCase() === 'near' &&
+        t.symbol === token.symbol,
+    );
 
   return (
     <li className="list-none group">
@@ -67,7 +81,7 @@ export const TokenItem = ({
               <span className="text-sw-label-md text-sw-gray-300">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-sm text-sw-gray-300">{`on ${appName} ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-s text-sw-gray-200">{`on ${appName} ${showIntentsChain ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-sw-xs">

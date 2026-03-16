@@ -13,6 +13,7 @@ export const EVM_CHAINS = [
   'avax',
   'op',
   'pol',
+  'monad',
 ] as const;
 
 export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
@@ -25,6 +26,7 @@ export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
   bsc: 56,
   op: 10,
   pol: 137,
+  monad: 143,
 };
 
 export const CHAIN_IDS_MAP: Partial<Record<Chains, number>> = {
@@ -59,6 +61,7 @@ export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
   ton: 'ton:mainnet',
   cardano: 'cardano:mainnet',
   ltc: 'ltc:mainnet',
+  monad: 'eth:143',
   near: 'near:mainnet',
   stellar: 'stellar:mainnet',
 };
@@ -97,6 +100,7 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   bsc: 'BNB',
   op: 'ETH',
   pol: 'MATIC',
+  monad: 'MON',
 };
 
 export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
@@ -190,6 +194,11 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   stellar: {
     id: 'stellar',
     label: 'Stellar',
+  },
+  monad: {
+    id: 'monad',
+    label: 'Monad',
+    icon: 'https://wtmcxrwapthiogjpxwfr.supabase.co/storage/v1/object/public/swap-widget/mon.svg',
   },
 };
 
