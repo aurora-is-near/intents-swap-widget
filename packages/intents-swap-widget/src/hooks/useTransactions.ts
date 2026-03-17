@@ -12,6 +12,8 @@ import {
   getOptimisticTransactions,
   removeOptimisticTransaction,
 } from '../utils/transactions/addOptimisticTransaction';
+import { usePoaDeposits } from './usePoaDeposits';
+import { useTokens } from './useTokens';
 
 const PER_PAGE = 7;
 const POLLING_INTERVAL_MS = 5_000;
@@ -27,7 +29,11 @@ export const useTransactions = () => {
     connectedWallets: { default: walletAddress },
   } = useConfig();
 
+  const { tokens } = useTokens();
+
   const queryKey = getTransactionHistoryQueryKey(walletAddress);
+
+  const { data: poaDeposits = [] } = usePoaDeposits(walletAddress, tokens);
 
   const {
     data,
@@ -96,8 +102,20 @@ export const useTransactions = () => {
       .forEach(removeOptimisticTransaction);
   });
 
+  // Filter out POA deposits that already appear in the API results
+  const filteredPoaDeposits = poaDeposits.filter((poa) => {
+    const poaHashes = poa.originChainTxHashes.filter(Boolean);
+
+    if (poaHashes.length === 0) {
+      return true;
+    }
+
+    return !poaHashes.some((hash) => apiHashes.has(hash));
+  });
+
   const transactions: (Transaction | FakeTransaction)[] = [
     ...optimistic,
+    ...filteredPoaDeposits,
     ...apiTransactions,
   ];
 

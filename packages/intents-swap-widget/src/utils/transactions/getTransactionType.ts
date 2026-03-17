@@ -26,5 +26,16 @@ export const getTransactionType = (
     return `Deposit from ${sender}`;
   }
 
+  // POA deposits: same asset on origin and destination with a sender
+  if (
+    tx.originAsset === tx.destinationAsset &&
+    tx.senders.length > 0 &&
+    originToken
+  ) {
+    const sender = formatAddressTruncate(tx.senders[0] ?? '', 10);
+
+    return `Deposit from ${sender}`;
+  }
+
   return 'Swap';
 };
