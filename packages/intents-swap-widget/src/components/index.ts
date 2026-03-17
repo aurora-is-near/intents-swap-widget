@@ -21,5 +21,6 @@ export * from './CloseButton';
 export * from './ChainShortcut';
 export * from './AllNetworksIcon';
 export * from './TokenSelectButton';
+export * from './Tooltip';
 export * from './Toggle';
 export * from './Steps';

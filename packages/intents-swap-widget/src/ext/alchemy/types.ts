@@ -12,7 +12,7 @@ export const CHAINS_MAP = {
   op: 'opt-mainnet',
   pol: 'matic-mainnet',
   sol: 'solana-mainnet',
-  // btc: 'bitcoin-mainnet'
+  monad: 'monad-mainnet',
 } as const satisfies Partial<Record<Chains, string>>;
 
 export const isAlchemySupportedChain = (

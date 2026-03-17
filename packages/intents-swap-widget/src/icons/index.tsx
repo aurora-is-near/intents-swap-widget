@@ -79,6 +79,7 @@ export const CHAIN_ICONS: Record<
   ltc: <LtcIcon />,
   cardano: <CardanoIcon />,
   stellar: <StellarIcon />,
+  monad: <MonIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {

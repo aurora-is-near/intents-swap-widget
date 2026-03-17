@@ -7,6 +7,7 @@ import { Card } from '@/components/Card';
 import { Steps } from '@/components/Steps';
 import { Toggle } from '@/components/Toggle';
 import { Button } from '@/components/Button';
+import { Tooltip } from '@/components/Tooltip';
 import { ExternalDeposit } from '@/features/ExternalDeposit';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -135,9 +136,15 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
       )}>
       <header className="gap-sw-md flex items-center justify-between">
         <QrCodeIcon size={16} className="text-sw-gray-200" />
-        <span className="text-sw-label-md text-sw-gray-200 mr-auto">
+        <span className="text-sw-label-md text-sw-gray-200">
           {t('deposit.method.switcher.label', 'Deposit from external wallet')}
         </span>
+        <Tooltip className="mr-auto">
+          {t(
+            'deposit.external.tooltip.text',
+            'Generate a deposit address and QR code to fund your account. Send any amount of the selected asset and it will be credited to your Intents balance.',
+          )}
+        </Tooltip>
         <Toggle
           isOn={ctx.isDepositFromExternalWallet}
           isDisabled={!canBeToggled}

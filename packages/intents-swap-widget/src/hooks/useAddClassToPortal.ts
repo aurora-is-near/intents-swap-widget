@@ -7,15 +7,17 @@ import { useEffect } from 'react';
  * @param {string} portalId - ID of the portal root div.
  * @param {string} className - The class name to add to the portal root div.
  */
-export function useAddClassToPortal(portalId: string, className: string) {
+export function useAddClassToPortal(portalIds: string[], className: string) {
   useEffect(() => {
     // Function to add class to the target element if it exists
     const addClassIfExists = () => {
-      const portalRoot = document.getElementById(portalId);
+      portalIds.forEach((portalId) => {
+        const portalRoot = document.getElementById(portalId);
 
-      if (portalRoot) {
-        portalRoot.classList.add(className);
-      }
+        if (portalRoot) {
+          portalRoot.classList.add(className);
+        }
+      });
     };
 
     // Check immediately on mount
@@ -25,16 +27,21 @@ export function useAddClassToPortal(portalId: string, className: string) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((addedNode) => {
-          if (addedNode instanceof HTMLElement && addedNode.id === portalId) {
+          if (
+            addedNode instanceof HTMLElement &&
+            portalIds.some((portalId) => addedNode.id === portalId)
+          ) {
             addedNode.classList.add(className);
           }
           // Also check descendants if subtree additions occur, though typically it's direct
           else if (addedNode instanceof HTMLElement) {
-            const portalInSubtree = addedNode.querySelector(`#${portalId}`);
+            portalIds.forEach((portalId) => {
+              const portalInSubtree = addedNode.querySelector(`#${portalId}`);
 
-            if (portalInSubtree) {
-              portalInSubtree.classList.add(className);
-            }
+              if (portalInSubtree) {
+                portalInSubtree.classList.add(className);
+              }
+            });
           }
         });
       });

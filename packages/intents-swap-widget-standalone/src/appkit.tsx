@@ -18,6 +18,8 @@ import {
   base,
   berachain,
   bsc,
+  defineChain,
+  gnosis,
   mainnet,
   optimism,
   polygon,
@@ -43,6 +45,29 @@ type AppKitContextType = {
 const findFavicon = (): string | null =>
   document.querySelector<HTMLLinkElement>('link[rel*="icon"]')?.href ?? null;
 
+const monadMainnet = defineChain({
+  id: 143,
+  caipNetworkId: 'eip155:143',
+  chainNamespace: 'eip155',
+  name: 'Monad',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Monad',
+    symbol: 'MON',
+  },
+  blockExplorers: {
+    default: {
+      name: 'Monad Explorer',
+      url: 'https://explorer.monad.xyz',
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.monad.xyz'],
+    },
+  },
+});
+
 export const initAppKit = ({
   appName,
   theme,
@@ -61,6 +86,8 @@ export const initAppKit = ({
     avalanche,
     base,
     berachain,
+    monadMainnet,
+    gnosis,
   ];
 
   const wagmiAdapter = new WagmiAdapter({
@@ -89,6 +116,7 @@ export const initAppKit = ({
       base,
       solana,
       berachain,
+      monadMainnet,
     ],
     projectId,
     metadata: {

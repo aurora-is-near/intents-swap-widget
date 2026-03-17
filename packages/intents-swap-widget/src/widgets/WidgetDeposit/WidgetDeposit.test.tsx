@@ -151,7 +151,10 @@ describe('Deposit', () => {
     expect(screen.getByRole('button', { name: 'ETH' })).toBeInTheDocument();
     expect(screen.getByText('Minimum deposit 0.00034 ETH')).toBeInTheDocument();
     expect(screen.getByText('Use Ethereum network')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'qr-code' })).toBeInTheDocument();
+    const qrImg = screen.getByRole('img', { name: 'qr-code' });
+
+    expect(qrImg).toBeInTheDocument();
+    expect(qrImg).toHaveAttribute('data-value', 'test-deposit-address');
     expect(screen.getByText('test-dep...ddress')).toBeInTheDocument();
     expect(screen.getByText('Waiting for transaction')).toBeInTheDocument();
   });

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { QRCode } from 'react-qrcode-logo';
+import { useCallback, useEffect } from 'react';
+import QRCodeStyling from 'qr-code-styling';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 
@@ -7,7 +7,7 @@ import { notReachable } from '@/utils';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
-// import { AURORA_BASE64_LOGO } from '@/constants/chains';
+import { AURORA_BASE64_LOGO } from '@/constants/chains';
 import {
   fireEvent,
   guardStates,
@@ -50,9 +50,52 @@ const InputReadonlyCopy = ({
   </div>
 );
 
+const qrCode = new QRCodeStyling({
+  width: 200,
+  height: 200,
+  image: AURORA_BASE64_LOGO,
+  type: 'svg',
+  /** H + smaller logo area: center image must not wipe data modules without ECC */
+  qrOptions: {
+    errorCorrectionLevel: 'H',
+  },
+  dotsOptions: {
+    color: '#161926',
+    type: 'extra-rounded',
+  },
+  backgroundOptions: {
+    color: '#fff',
+  },
+  cornersSquareOptions: {
+    type: 'dot',
+  },
+  cornersDotOptions: {
+    type: 'dot',
+  },
+  imageOptions: {
+    crossOrigin: 'anonymous',
+    /** Coefficient 0–1 (not px). Over ~0.5 hurts scan reliability; default 0.4 */
+    hideBackgroundDots: true,
+    imageSize: 0.4,
+    margin: 8,
+  },
+});
+
 const QrCode = ({ address }: { address: string }) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
+
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      qrCode.append(node);
+    }
+  }, []);
+
+  useEffect(() => {
+    qrCode.update({
+      data: address,
+    });
+  }, [address]);
 
   const isValidState = guardStates(ctx, [
     'quote_success_internal',
@@ -64,21 +107,9 @@ const QrCode = ({ address }: { address: string }) => {
   }
 
   return (
-    <div className="flex flex-col gap-y-sw-xl mb-sw-lg">
-      <div className="mx-auto w-fit">
-        <QRCode
-          qrStyle="dots"
-          value={address}
-          size={200}
-          // TODO: logo covers part of QR code maybe a package's issue
-          // logoWidth={60}
-          // logoPadding={30}
-          // logoPaddingStyle="circle"
-          // logoImage={AURORA_BASE64_LOGO}
-          eyeRadius={[10, 10, 10]}
-          fgColor="#161926"
-          style={{ borderRadius: '16px' }}
-        />
+    <div className="flex flex-col gap-y-sw-xl">
+      <div className="mx-auto w-fit p-sw-lg mb-sw-xl rounded-[32px] bg-[#fff]">
+        <div ref={containerRef} />
       </div>
       <div className="flex flex-col gap-y-sw-lg">
         <InputReadonlyCopy
