@@ -117,6 +117,7 @@ export const initAppKit = ({
       solana,
       berachain,
       monadMainnet,
+      gnosis,
     ],
     projectId,
     metadata: {
