@@ -78,6 +78,7 @@ export const useTransactions = () => {
   });
 
   const apiTransactions = data?.pages.flatMap((page) => page.data.data) ?? [];
+
   const optimistic = walletAddress
     ? getOptimisticTransactions(walletAddress)
     : [];
@@ -117,7 +118,9 @@ export const useTransactions = () => {
     ...optimistic,
     ...filteredPoaDeposits,
     ...apiTransactions,
-  ];
+  ].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   const pendingTransactionsCount = transactions.filter((tx) =>
     PENDING_STATUSES.includes(tx.status),

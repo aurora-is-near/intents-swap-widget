@@ -19,9 +19,7 @@ export const getOptimisticTransactions = (
       tx.senders.includes(walletAddress) || tx.recipient === walletAddress,
   );
 
-  return walletTransactions.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  return walletTransactions;
 };
 
 export const removeOptimisticTransaction = (txHash: string) => {
