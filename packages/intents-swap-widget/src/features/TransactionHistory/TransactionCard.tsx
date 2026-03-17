@@ -21,7 +21,7 @@ export const TransactionCard = ({
   tokens,
   onClick,
 }: Props) => {
-  const type = getTransactionType(tx, tokens);
+  const type = getTransactionType(tx);
   const status = getTransactionStatusLabel(tx.status);
   const time = formatRelativeTime(tx.createdAt);
 

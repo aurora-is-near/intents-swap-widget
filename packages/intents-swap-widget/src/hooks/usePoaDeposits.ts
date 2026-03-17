@@ -90,6 +90,7 @@ const depositToFakeTransaction = (
     senders: [deposit.from ?? deposit.address],
     recipient: deposit.account_id,
     originChainTxHashes: deposit.tx_hash ? [deposit.tx_hash] : [],
+    isPoaDeposit: true,
   };
 };
 

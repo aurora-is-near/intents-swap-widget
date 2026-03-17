@@ -58,7 +58,7 @@ export const TransactionDetails = ({
   tokens,
   onClose,
 }: Props) => {
-  const fullType = getTransactionType(tx, tokens);
+  const fullType = getTransactionType(tx);
   const type = fullType.split(' ')[0];
   const status = getTransactionStatusLabel(tx.status);
   const formattedDate = new Date(tx.createdAt).toLocaleString('en-US', {
