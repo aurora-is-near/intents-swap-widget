@@ -146,10 +146,19 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
       const { data } = portfolioResponseSchema.parse(response.data);
       const { tokens, pageKey } = data;
 
-      const filteredTokens = tokens.filter(
-        (token) =>
-          !(token.network === CHAINS_MAP.monad && token.tokenAddress === null),
-      );
+      const filteredTokens = tokens.filter((token) => {
+        const isMonad = token.network === CHAINS_MAP.monad;
+        const isNativeMonad = isMonad && token.tokenAddress === null;
+        const isMonadErc20ManuallyLoaded =
+          isMonad &&
+          token.tokenAddress != null &&
+          MONAD_ERC20_CONTRACTS.some(
+            (addr) => addr.toLowerCase() === token.tokenAddress?.toLowerCase(),
+          );
+
+        // Exclude native MON and Monad ERC20s we load via direct RPC
+        return !(isNativeMonad || isMonadErc20ManuallyLoaded);
+      });
 
       allTokens.push(...(filteredTokens as AlchemyBalanceItem[]));
       nextPortfolioPageKey = pageKey;
