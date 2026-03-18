@@ -55,7 +55,7 @@ const MONAD_ERC20_CONTRACTS = [
 ] as const;
 
 const encodeBalanceOfData = (address: string): string => {
-  const selector = '70a08231'; // keccak256('balanceOf(address)').slice(0, 8)
+  const selector = '70a08231'; // as: keccak256('balanceOf(address)').slice(0, 8)
   const cleanAddress = address.toLowerCase().replace(/^0x/, '');
   const paddedAddress = cleanAddress.padStart(64, '0');
 
