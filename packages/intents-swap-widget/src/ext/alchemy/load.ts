@@ -47,6 +47,21 @@ const COMPOSITE_PAGE_KEY_PREFIX = 'alchemy-composite:';
 const MONAD_NODE_URL = (apiKey: string) =>
   `https://${CHAINS_MAP.monad}.g.alchemy.com/v2/${apiKey}`;
 
+const MONAD_ERC20_CONTRACTS = [
+  // USDC on Monad
+  '0x754704Bc059F8C67012fEd69BC8A327a5aafb603',
+  // USDT0 on Monad
+  '0xe7cd86e13AC4309349F30B3435a9d337750fC82D',
+] as const;
+
+const encodeBalanceOfData = (address: string): string => {
+  const selector = '70a08231'; // keccak256('balanceOf(address)').slice(0, 8)
+  const cleanAddress = address.toLowerCase().replace(/^0x/, '');
+  const paddedAddress = cleanAddress.padStart(64, '0');
+
+  return `0x${selector}${paddedAddress}`;
+};
+
 const encodeCompositePageKey = (value: CompositePageKey): string => {
   return `${COMPOSITE_PAGE_KEY_PREFIX}${encodeURIComponent(JSON.stringify(value))}`;
 };
@@ -94,9 +109,7 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
   }: AlchemyRequestParams): Promise<AlchemyResponse> => {
     const networks = mapAlchemyNetworks(supportedChains);
     const hasMonadNetwork = networks.includes(CHAINS_MAP.monad);
-    const portfolioNetworks = networks.filter(
-      (network) => network !== CHAINS_MAP.monad,
-    );
+    const portfolioNetworks = networks;
 
     const walletAddresses = Object.values(connectedWallets).filter(
       (walletAddress): walletAddress is string =>
@@ -133,7 +146,12 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
       const { data } = portfolioResponseSchema.parse(response.data);
       const { tokens, pageKey } = data;
 
-      allTokens.push(...(tokens as AlchemyBalanceItem[]));
+      const filteredTokens = tokens.filter(
+        (token) =>
+          !(token.network === CHAINS_MAP.monad && token.tokenAddress === null),
+      );
+
+      allTokens.push(...(filteredTokens as AlchemyBalanceItem[]));
       nextPortfolioPageKey = pageKey;
     }
 
@@ -157,6 +175,46 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
           const parsed = rpcEthGetBalanceResponseSchema.parse(response.data);
           const nativeBalance = parsed.error ? '0x0' : (parsed.result ?? '0x0');
 
+          const erc20Tokens: AlchemyBalanceItem[] = [];
+
+          // eslint-disable-next-line no-restricted-syntax
+          for (const contract of MONAD_ERC20_CONTRACTS) {
+            try {
+              // eslint-disable-next-line no-await-in-loop
+              const erc20Response = await alchemyApi.post(
+                MONAD_NODE_URL(alchemyApiKey),
+                {
+                  jsonrpc: '2.0',
+                  id: 1,
+                  method: 'eth_call',
+                  params: [
+                    {
+                      to: contract,
+                      data: encodeBalanceOfData(address),
+                    },
+                    'latest',
+                  ],
+                },
+              );
+
+              const erc20Parsed = rpcEthGetBalanceResponseSchema.parse(
+                erc20Response.data,
+              );
+
+              const erc20Balance = erc20Parsed.error
+                ? '0x0'
+                : (erc20Parsed.result ?? '0x0');
+
+              erc20Tokens.push({
+                network: CHAINS_MAP.monad,
+                tokenAddress: contract,
+                tokenBalance: erc20Balance,
+              });
+            } catch {
+              // ignore individual token failures
+            }
+          }
+
           return {
             address,
             tokens: [
@@ -165,6 +223,7 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
                 tokenAddress: null,
                 tokenBalance: nativeBalance,
               },
+              ...erc20Tokens,
             ],
           };
         }),
