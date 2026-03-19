@@ -1,4 +1,4 @@
-import { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
+import type { NearWalletBase } from './near';
 import { Eip1193Provider } from 'ethers';
 import type { Networks } from '@stellar/stellar-sdk';
 import type {

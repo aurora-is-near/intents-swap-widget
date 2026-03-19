@@ -1,4 +1,5 @@
 export * from './chain';
+export * from './near';
 export * from './token';
 export * from './quote';
 export * from './transfer';

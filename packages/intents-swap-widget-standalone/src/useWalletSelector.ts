@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Providers } from '@aurora-is-near/intents-swap-widget';
-import { NearWalletBase } from '@hot-labs/near-connect';
+import type { NearWalletBase } from '@hot-labs/near-connect';
 
 import { useAppKitWallet } from './useAppKitWallet';
 import { useStellarWallet } from './useStellarWallet';

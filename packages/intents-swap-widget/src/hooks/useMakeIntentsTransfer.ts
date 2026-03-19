@@ -7,7 +7,7 @@ import {
   MinWithdrawalAmountError,
   type RouteConfig,
 } from '@defuse-protocol/intents-sdk';
-import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
+import type { NearWalletBase as NearWallet } from '@/types/near';
 import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';

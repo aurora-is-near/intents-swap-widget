@@ -41,7 +41,11 @@ export const useMakeQuoteTransfer = ({
     alchemyApiKey,
   });
 
-  const { make: makeNearTransfer } = useMakeNearTransfer();
+  const { make: makeNearTransfer } = useMakeNearTransfer({
+    provider: providers?.near,
+    accountId: ctx.walletAddress,
+  });
+
   const { make: makeStellarTransfer } = useMakeStellarTransfer({
     provider: providers?.stellar,
   });

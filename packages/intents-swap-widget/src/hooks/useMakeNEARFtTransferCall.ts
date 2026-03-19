@@ -1,5 +1,4 @@
-import type { NearWalletBase as NearWallet } from '@hot-labs/near-connect/build/types/wallet';
-import type { Action } from '@hot-labs/near-connect/build/types/transactions';
+import type { NearWalletBase as NearWallet, NearAction as Action } from '@/types/near';
 import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
 import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
 import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';

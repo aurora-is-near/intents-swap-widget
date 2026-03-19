@@ -1,24 +1,21 @@
 import z from 'zod';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   BlockId,
   BlockReference,
   Finality,
   Provider,
 } from 'near-api-js/lib/providers/provider';
-import type {
-  NearConnector,
-  SignAndSendTransactionsParams,
-  SignMessageParams,
-} from '@hot-labs/near-connect';
 import { base64 } from '@scure/base';
-import type { NearWalletBase } from '@hot-labs/near-connect/build/types/wallet';
-import type { Action } from '@hot-labs/near-connect/build/types/transactions';
 
 import { nearClient } from './nearClient';
 
 import { logger } from '@/logger';
-import type { MakeTransferArgs, TransferResult } from '@/types';
+import type {
+  MakeTransferArgs,
+  NearAction,
+  NearWalletBase,
+  TransferResult,
+} from '@/types';
 
 /**
  * Use this function to decode a raw response from `nearClient.query()`
@@ -136,144 +133,6 @@ export const getNearNep141MinStorageBalance = async ({
 const FT_DEPOSIT_GAS = `30${'0'.repeat(12)}`; // 30 TGAS
 const FT_TRANSFER_GAS = `50${'0'.repeat(12)}`; // 30 TGAS
 
-export const useNearProvider = () => {
-  const [connector, setConnector] = useState<NearConnector | null>(null);
-  const [accountId, setAccountId] = useState<string | null>(null);
-  const [walletProviderName, setWalletProviderName] = useState<string | null>(
-    null,
-  );
-
-  const [nearBasedWallet, setNearBasedWallet] = useState<NearWalletBase | null>(
-    null,
-  );
-
-  const init = useCallback(async () => {
-    if (connector) {
-      return connector;
-    }
-
-    // NearConnector uses window object, so we need to import it dynamically,
-    // otherwise compiler complains that window is not defined, even though it is "use client"
-    const { NearConnector } = await import(
-      '@hot-labs/near-connect/build/NearConnector'
-    );
-
-    let newConnector: NearConnector | null = null;
-
-    try {
-      newConnector = new NearConnector({
-        network: 'mainnet',
-      });
-    } catch (err) {
-      const error = err as Error;
-
-      logger.error(error);
-
-      return;
-    }
-
-    // Set up event listeners
-    newConnector.on('wallet:signOut', () => {
-      setAccountId(null);
-      setNearBasedWallet(null);
-      setWalletProviderName(null);
-    });
-    newConnector.on('wallet:signIn', (t) => {
-      setNearBasedWallet(t.wallet);
-      setAccountId(t.accounts?.[0]?.accountId ?? null);
-      setWalletProviderName(t.wallet?.manifest?.name ?? null);
-    });
-
-    setConnector(newConnector);
-
-    try {
-      const wallet = await newConnector.wallet();
-      const accounts = await wallet.getAccounts();
-
-      if (accounts?.[0]) {
-        setNearBasedWallet(wallet);
-        setAccountId(accounts[0].accountId);
-        setWalletProviderName(wallet.manifest?.name ?? null);
-      }
-    } catch (err) {
-      const error = err as Error;
-
-      logger.error(error);
-    }
-
-    return newConnector;
-  }, [connector]);
-
-  useEffect(() => {
-    void init();
-  }, [init]);
-
-  const connect = useCallback(async () => {
-    const newConnector = connector ?? (await init());
-
-    if (newConnector) {
-      await newConnector.connect();
-    }
-  }, [connector, init]);
-
-  const disconnect = useCallback(async () => {
-    if (!connector) {
-      return;
-    }
-
-    await connector.disconnect();
-  }, [connector]);
-
-  const signMessage = useCallback(
-    async (message: SignMessageParams) => {
-      if (!connector) {
-        throw new Error('Connector not initialized');
-      }
-
-      const wallet = await connector.wallet();
-      const signatureData = await wallet.signMessage(message);
-
-      return { signatureData, signedData: message };
-    },
-    [connector],
-  );
-
-  const signAndSendTransactions = useCallback(
-    async (params: SignAndSendTransactionsParams) => {
-      if (!connector) {
-        throw new Error('Connector not initialized');
-      }
-
-      const wallet = await connector.wallet();
-
-      return wallet.signAndSendTransactions(params);
-    },
-    [connector],
-  );
-
-  return useMemo(() => {
-    return {
-      connector,
-      accountId,
-      nearBasedWallet,
-      walletProviderName,
-      connect,
-      disconnect,
-      signMessage,
-      signAndSendTransactions,
-    };
-  }, [
-    connector,
-    walletProviderName,
-    accountId,
-    nearBasedWallet,
-    connect,
-    disconnect,
-    signMessage,
-    signAndSendTransactions,
-  ]);
-};
-
 const transferNativeNear = async ({
   wallet,
   sender,
@@ -283,7 +142,7 @@ const transferNativeNear = async ({
   sender: string;
   amount: string; // Amount in yoctoNEAR
   recipient: string;
-  wallet: ReturnType<typeof useNearProvider>;
+  wallet: NearWalletBase;
 }) => {
   const tx = await wallet.signAndSendTransactions({
     transactions: [
@@ -316,28 +175,28 @@ const transferNativeNear = async ({
 };
 
 async function transferNEARToken(
-  nearWallet: ReturnType<typeof useNearProvider>,
+  wallet: NearWalletBase,
   tokenAddress: string,
   to: string,
   amount: string,
   signedAccountId?: string | null,
 ): Promise<TransferResult | null> {
   if (tokenAddress === 'native-near') {
-    if (!signedAccountId || !nearWallet) {
+    if (!signedAccountId || !wallet) {
       throw new Error('No signed account found. Please connect your wallet.');
     }
 
     const response = await transferNativeNear({
       amount,
       recipient: to,
-      wallet: nearWallet,
+      wallet,
       sender: signedAccountId,
     });
 
     return response;
   }
 
-  const tokenContractActions: Action[] = [];
+  const tokenContractActions: NearAction[] = [];
   const [minStorageBalanceResult, userStorageBalanceResult] = await Promise.all(
     [
       getNearNep141MinStorageBalance({
@@ -377,7 +236,7 @@ async function transferNEARToken(
       deposit: '1',
     },
   });
-  const tx = await nearWallet.signAndSendTransactions({
+  const tx = await wallet.signAndSendTransactions({
     transactions: [
       {
         receiverId: tokenAddress,
@@ -396,26 +255,37 @@ async function transferNEARToken(
   return null;
 }
 
-export function useMakeNearTransfer() {
-  const nearBaseWallet = useNearProvider();
-
+export function useMakeNearTransfer({
+  provider,
+  accountId,
+}: {
+  provider: (() => NearWalletBase) | null | undefined,
+  accountId: string | null | undefined,
+}
+) {
   async function send({
     address: to,
     amount,
     tokenAddress,
   }: MakeTransferArgs): Promise<TransferResult | undefined | null> {
+    if (!provider) {
+      throw new Error('No NEAR wallet provider configured.');
+    }
+
     if (!tokenAddress) {
       throw new Error(
         'Token address is required for NEAR transfers. Or no intents account id.',
       );
     }
 
+    const wallet = provider();
+
     const txHash = await transferNEARToken(
-      nearBaseWallet,
+      wallet,
       tokenAddress,
       to,
       amount,
-      nearBaseWallet.accountId,
+      accountId,
     );
 
     return txHash;
