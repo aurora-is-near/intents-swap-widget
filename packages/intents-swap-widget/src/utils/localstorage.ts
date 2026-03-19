@@ -32,7 +32,7 @@ const getItem = <T extends keyof LocalStorage>(key: T): LocalStorage[T] => {
     const storedValueLegacy = window.localStorage.getItem(key);
     let storedValue = window.localStorage.getItem(getStorageKey(key));
 
-    // Migrate legacy key to new namespaced key
+    // Migrate legacy key to new namespaced key.
     if (storedValueLegacy && !storedValue) {
       storedValue = storedValueLegacy;
       window.localStorage.setItem(getStorageKey(key), storedValueLegacy);
