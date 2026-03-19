@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget-standalone",
-  "version": "6.16.2",
+  "version": "6.16.4",
   "description": "Standalone wrapper for the Intents swap widget",
   "license": "MIT",
   "main": "dist/index.js",

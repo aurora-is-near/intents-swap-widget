@@ -5,6 +5,27 @@ import type { Token, TokenBalances } from '@/types/token';
 import type { PriorityAssets } from '@/types/config';
 import type { Chains } from '@/types/chain';
 
+const isPriorityToken = (
+  token: Token,
+  priorityAssets: PriorityAssets,
+): boolean => {
+  if (priorityAssets.length === 0) {
+    return false;
+  }
+
+  // by assetId
+  if (typeof priorityAssets[0] === 'string') {
+    return (priorityAssets as ReadonlyArray<string>).includes(token.assetId);
+  }
+
+  // by blockchain and symbol
+  return (priorityAssets as ReadonlyArray<readonly [Chains, string]>).some(
+    ([blockchain, symbol]) =>
+      token.blockchain === blockchain &&
+      token.symbol.toLowerCase() === symbol.toLowerCase(),
+  );
+};
+
 const compareByPriority = (
   a: Token,
   b: Token,
@@ -13,20 +34,6 @@ const compareByPriority = (
   if (a.isIntent || b.isIntent || priorityAssets.length === 0) {
     return null;
   }
-
-  const isPriorityToken = (token: Token): boolean => {
-    // by assetId
-    if (typeof priorityAssets[0] === 'string') {
-      return (priorityAssets as ReadonlyArray<string>).includes(token.assetId);
-    }
-
-    // by blockchain and symbol
-    return (priorityAssets as ReadonlyArray<readonly [Chains, string]>).some(
-      ([blockchain, symbol]) =>
-        token.blockchain === blockchain &&
-        token.symbol.toLowerCase() === symbol.toLowerCase(),
-    );
-  };
 
   const getPriorityIndex = (token: Token): number => {
     // by assetId
@@ -44,8 +51,8 @@ const compareByPriority = (
     );
   };
 
-  const aIsPriority = isPriorityToken(a);
-  const bIsPriority = isPriorityToken(b);
+  const aIsPriority = isPriorityToken(a, priorityAssets);
+  const bIsPriority = isPriorityToken(b, priorityAssets);
 
   if (aIsPriority && !bIsPriority) {
     return -1;
@@ -144,6 +151,7 @@ const sortTokens = (
   usdBalanceA: number | undefined,
   usdBalanceB: number | undefined,
   searchStr: string | undefined,
+  volumeRank: Map<string, number>,
   a: Token,
   b: Token,
 ): number => {
@@ -190,6 +198,32 @@ const sortTokens = (
     return priorityComparison;
   }
 
+  // 3.5. Sort by volume rank from fee service (higher volume = lower rank index = comes first).
+  // Skip if priorityAssets is configured and either token is a priority asset — priority always wins.
+  const eitherIsPriority =
+    priorityAssets.length > 0 &&
+    (isPriorityToken(a, priorityAssets) || isPriorityToken(b, priorityAssets));
+
+  if (!eitherIsPriority && volumeRank && volumeRank.size > 0) {
+    const rankA = volumeRank.get(a.assetId);
+    const rankB = volumeRank.get(b.assetId);
+
+    const aHasRank = rankA !== undefined;
+    const bHasRank = rankB !== undefined;
+
+    if (aHasRank && !bHasRank) {
+      return -1;
+    }
+
+    if (!aHasRank && bHasRank) {
+      return 1;
+    }
+
+    if (aHasRank && bHasRank && rankA !== rankB) {
+      return rankA - rankB;
+    }
+  }
+
   // 4. For tokens without balance and not in priority list, sort by supported chains
   const aSupported = supportedChains.includes(a.blockchain);
   const bSupported = supportedChains.includes(b.blockchain);
@@ -209,6 +243,7 @@ const sortTokens = (
 export const createTokenSorter = (
   tokensBalance: TokenBalances,
   supportedChains: ReadonlyArray<Chains>,
+  volumeRank: Map<string, number>,
   searchStr?: string | undefined,
   priorityAssets: PriorityAssets = [],
 ) => {
@@ -237,6 +272,7 @@ export const createTokenSorter = (
       usdBalanceA,
       usdBalanceB,
       searchLower,
+      volumeRank,
       a,
       b,
     );
