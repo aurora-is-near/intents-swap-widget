@@ -6,6 +6,10 @@ import { useConfig } from '@/config';
 import { CHAINS_LIST } from '@/constants/chains';
 import { NATIVE_NEAR_DUMB_ASSET_ID, TOKENS_DATA } from '@/constants/tokens';
 import { isValidChain } from '@/utils/checkers/isValidChain';
+import {
+  FEE_SERVICE_TOKENS_QUERY_KEY,
+  fetchFeeServiceTokens,
+} from '@/utils/feeServiceTokens';
 import type { SimpleToken, Token } from '@/types/token';
 
 const getTokenIcon = (tokenSymbol: string): string => {
@@ -30,9 +34,25 @@ export const useTokens = (variant?: 'source' | 'target') => {
     filterTokens,
     fetchSourceTokens,
     fetchTargetTokens,
+    apiKey,
   } = useConfig();
 
-  const { data: queryData, ...query } = useQuery<SimpleToken[]>({
+  const hasCustomFetch =
+    (variant === 'source' && !!fetchSourceTokens) ||
+    (variant === 'target' && !!fetchTargetTokens);
+
+  // Primary: fee service (returns both tokens + asset_stats in one request).
+  // Shares the same cache entry with useTokenVolumeStats — no duplicate network call.
+  const { data: feeServiceData, ...feeQuery } = useQuery({
+    queryKey: [FEE_SERVICE_TOKENS_QUERY_KEY, apiKey],
+    queryFn: () => fetchFeeServiceTokens(apiKey!),
+    enabled: !!apiKey && !hasCustomFetch,
+    staleTime: 10 * 60 * 1000,
+    select: (response) => response.tokens,
+  });
+
+  // Fallback: 1Click API (used when no apiKey) or custom variant fetch.
+  const { data: fallbackData, ...fallbackQuery } = useQuery<SimpleToken[]>({
     queryKey: ['tokens', variant].filter(Boolean),
     queryFn: async (): Promise<SimpleToken[]> => {
       if (variant === 'source' && fetchSourceTokens) {
@@ -45,7 +65,11 @@ export const useTokens = (variant?: 'source' | 'target') => {
 
       return OneClickService.getTokens();
     },
+    enabled: !apiKey || hasCustomFetch,
   });
+
+  const queryData = feeServiceData ?? fallbackData;
+  const query = !!apiKey && !hasCustomFetch ? feeQuery : fallbackQuery;
 
   const data = useMemo(() => {
     if (!queryData) {

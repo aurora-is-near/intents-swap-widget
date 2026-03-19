@@ -3,6 +3,7 @@ import { useTokens } from './useTokens';
 import { useMergedBalance } from './useMergedBalance';
 import { useIntentsBalance } from './useIntentsBalance';
 import { useTokensIntentsUnique } from './useTokensIntentsUnique';
+import { useTokenVolumeStats } from './useTokenVolumeStats';
 import { isAllowedChain } from '../utils/chains/isAllowedChain';
 import { useConfig } from '../config';
 import { createTokenSorter } from '@/utils/tokens/sort';
@@ -35,6 +36,7 @@ export const useTokensFiltered = ({
   const { mergedBalance } = useMergedBalance();
   const { intentBalances } = useIntentsBalance();
   const { uniqueIntentsTokens } = useTokensIntentsUnique();
+  const { volumeRank } = useTokenVolumeStats();
   const {
     allowedChainsList,
     allowedSourceChainsList,
@@ -44,6 +46,7 @@ export const useTokensFiltered = ({
   const sorter = createTokenSorter(
     mergedBalance,
     supportedChains,
+    volumeRank,
     search,
     priorityAssets,
   );
