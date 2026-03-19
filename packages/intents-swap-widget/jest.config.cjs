@@ -3,6 +3,7 @@ const nodeModulesToTransform = [
   'change-case',
   'copy-text-to-clipboard',
   'react-error-boundary',
+  '@hot-labs',
   '@scure',
   '@noble',
   'omni-bridge-sdk',
