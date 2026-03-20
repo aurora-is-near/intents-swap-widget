@@ -12,6 +12,7 @@ import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import { Providers } from '../types/providers';
+
 import { useIntentsAccountType } from './useIntentsAccountType';
 
 import { logger } from '@/logger';
@@ -30,6 +31,7 @@ import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import type { NearWalletBase as NearWallet } from '@/types/near';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
