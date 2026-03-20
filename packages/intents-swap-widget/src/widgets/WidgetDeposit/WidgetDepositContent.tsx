@@ -12,9 +12,9 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-
-import { BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
+import { BlockingError } from '@/components';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
@@ -40,7 +40,7 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-export const WidgetDepositContent = ({
+const WidgetDepositContentInner = ({
   onMsg,
   makeTransfer,
   isLoading,
@@ -89,6 +89,7 @@ export const WidgetDepositContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
       'setSourceTokenIntentsTarget',
@@ -306,3 +307,9 @@ export const WidgetDepositContent = ({
       return <WidgetDepositSkeleton />;
   }
 };
+
+export const WidgetDepositContent = (props: Props) => (
+  <BalancesUpdateProvider>
+    <WidgetDepositContentInner {...props} />
+  </BalancesUpdateProvider>
+);

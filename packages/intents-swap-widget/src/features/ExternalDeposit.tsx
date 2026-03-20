@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import QRCodeStyling from 'qr-code-styling';
 import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
@@ -15,6 +15,9 @@ import {
   useComputedSnapshot,
   useUnsafeSnapshot,
 } from '@/machine';
+import { useMergedBalance } from '@/hooks/useMergedBalance';
+import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
@@ -159,6 +162,18 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isNativeNearDeposit } = useComputedSnapshot();
 
+  const { addPendingTokens } = useBalancesUpdate();
+  const { mergedBalance } = useMergedBalance();
+
+  // Refs keep latest values accessible inside the depositStatusQuery effect
+  // without adding them to its dependency array (which would cause re-runs
+  // that could call moveTo / addPendingTokens multiple times).
+  const addPendingTokensRef = useRef(addPendingTokens);
+  const mergedBalanceRef = useRef(mergedBalance);
+
+  addPendingTokensRef.current = addPendingTokens;
+  mergedBalanceRef.current = mergedBalance;
+
   const isValidState = guardStates(ctx, [
     'quote_success_external',
     'quote_success_internal',
@@ -187,6 +202,23 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
           depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
 
         fireEvent('transferSetStatus', { status: 'success' });
+
+        if (ctx.sourceToken && ctx.targetToken) {
+          const sourceKey = getTokenBalanceKey(ctx.sourceToken);
+          const targetKey = getTokenBalanceKey(ctx.targetToken);
+
+          addPendingTokensRef.current([
+            {
+              balanceKey: sourceKey,
+              priorBalance: mergedBalanceRef.current[sourceKey],
+            },
+            {
+              balanceKey: targetKey,
+              priorBalance: mergedBalanceRef.current[targetKey],
+            },
+          ]);
+        }
+
         moveTo('transfer_success');
 
         onMsg({

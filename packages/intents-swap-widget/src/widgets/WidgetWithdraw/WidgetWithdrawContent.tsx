@@ -12,9 +12,9 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-
-import { BlockingError, Card, DirectionSwitcher } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { BlockingError, Card, DirectionSwitcher } from '@/components';
+import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -40,7 +40,7 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-export const WidgetWithdrawContent = ({
+const WidgetWithdrawContentInner = ({
   makeTransfer,
   onMsg,
   isLoading,
@@ -86,6 +86,7 @@ export const WidgetWithdrawContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
       [
@@ -292,3 +293,9 @@ export const WidgetWithdrawContent = ({
       return <WidgetWithdrawSkeleton />;
   }
 };
+
+export const WidgetWithdrawContent = (props: Props) => (
+  <BalancesUpdateProvider>
+    <WidgetWithdrawContentInner {...props} />
+  </BalancesUpdateProvider>
+);

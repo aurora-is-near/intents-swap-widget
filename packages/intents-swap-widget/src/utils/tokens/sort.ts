@@ -243,7 +243,7 @@ const sortTokens = (
 export const createTokenSorter = (
   tokensBalance: TokenBalances,
   supportedChains: ReadonlyArray<Chains>,
-  volumeRank: Map<string, number>,
+  volumeRank: Map<string, number> = new Map(),
   searchStr?: string | undefined,
   priorityAssets: PriorityAssets = [],
 ) => {

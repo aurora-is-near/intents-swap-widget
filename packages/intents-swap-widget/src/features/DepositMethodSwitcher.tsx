@@ -139,12 +139,13 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
         <span className="text-sw-label-md text-sw-gray-200">
           {t('deposit.method.switcher.label', 'Deposit from external wallet')}
         </span>
-        <Tooltip className="mr-auto">
-          {t(
+        <Tooltip
+          className="mr-auto"
+          text={t(
             'deposit.external.tooltip.text',
             'Generate a deposit address and QR code to fund your account. Send any amount of the selected asset and it will be credited to your Intents balance.',
           )}
-        </Tooltip>
+        />
         <Toggle
           isOn={ctx.isDepositFromExternalWallet}
           isDisabled={!canBeToggled}
