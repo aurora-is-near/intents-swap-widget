@@ -11,6 +11,7 @@ import { cn } from '@/utils/cn';
 
 type Props = {
   text: string;
+  isDisabled?: boolean;
   className?: string;
 } & (
   | { iconSize?: number; children?: never }
@@ -19,6 +20,7 @@ type Props = {
 
 export const Tooltip = ({
   className,
+  isDisabled = false,
   iconSize = 16,
   children,
   text,
@@ -35,23 +37,25 @@ export const Tooltip = ({
         )}
       </Trigger>
       <Portal>
-        <Content
-          sideOffset={6}
-          collisionPadding={8}
-          className="sw"
-          style={{
-            maxWidth: 250,
-            width: 'max-content',
-            boxSizing: 'border-box',
-          }}>
-          <div
-            className={cn(
-              'z-50 rounded-sw-md border border-sw-gray-600 bg-sw-gray-800 px-sw-lg py-sw-md shadow-lg',
-              'text-sw-body-sm text-sw-gray-100 leading-relaxed w-full',
-            )}>
-            {text}
-          </div>
-        </Content>
+        {isDisabled ? null : (
+          <Content
+            sideOffset={6}
+            collisionPadding={8}
+            className="sw"
+            style={{
+              maxWidth: 250,
+              width: 'max-content',
+              boxSizing: 'border-box',
+            }}>
+            <div
+              className={cn(
+                'z-50 rounded-sw-md border border-sw-gray-600 bg-sw-gray-800 px-sw-lg py-sw-md shadow-lg',
+                'text-sw-body-sm text-sw-gray-100 leading-relaxed w-full',
+              )}>
+              {text}
+            </div>
+          </Content>
+        )}
       </Portal>
     </Root>
   </TooltipProvider>

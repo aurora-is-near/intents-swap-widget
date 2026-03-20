@@ -7,12 +7,13 @@ import {
   MinWithdrawalAmountError,
   type RouteConfig,
 } from '@defuse-protocol/intents-sdk';
-import type { NearWalletBase as NearWallet } from '@/types/near';
 import { snakeCase } from 'change-case';
+
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import { Providers } from '../types/providers';
 import { useIntentsAccountType } from './useIntentsAccountType';
+
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';

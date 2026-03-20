@@ -42,34 +42,33 @@ export const WalletBalance = ({
 
   return (
     <div className="flex items-center">
-      {isBalanceUpdating && (
-        <Tooltip
-          className="mr-sw-xs"
-          text={t(
-            'tokenInput.balanceUpdating.tooltip',
-            'You just made a swap with this token. Balance is updating and maybe a bit different than expected. It will be updated in a few seconds.',
-          )}>
-          <span
-            onClick={balance ? onClick : undefined}
-            // unable to make border-bottom work via tailwind
-            style={
-              balance
-                ? { borderBottomWidth: '2px', borderStyle: 'dotted' }
-                : undefined
-            }
-            className={clsx('text-sw-label-sm', {
-              'text-sw-status-error': isNotSufficient,
-              'text-sw-gray-100': !isNotSufficient,
-              'cursor-pointer': !!balance && !!onClick,
-              'animate-pulse': isBalanceUpdating,
-            })}>
-            <TinyNumber
-              decimals={token.decimals}
-              value={balance === undefined ? '0' : `${balance}`}
-            />
-          </span>
-        </Tooltip>
-      )}
+      <Tooltip
+        isDisabled={!isBalanceUpdating}
+        className="mr-sw-xs"
+        text={t(
+          'tokenInput.balanceUpdating.tooltip',
+          'You just made a swap with this token. Balance is updating and maybe a bit different than expected. It will be updated in a few seconds.',
+        )}>
+        <span
+          onClick={balance ? onClick : undefined}
+          // unable to make border-bottom work via tailwind
+          style={
+            balance
+              ? { borderBottomWidth: '2px', borderStyle: 'dotted' }
+              : undefined
+          }
+          className={clsx('text-sw-label-sm', {
+            'text-sw-status-error': isNotSufficient,
+            'text-sw-gray-100': !isNotSufficient,
+            'cursor-pointer': !!balance && !!onClick,
+            'animate-pulse': isBalanceUpdating,
+          })}>
+          <TinyNumber
+            decimals={token.decimals}
+            value={balance === undefined ? '0' : `${balance}`}
+          />
+        </span>
+      </Tooltip>
     </div>
   );
 };
