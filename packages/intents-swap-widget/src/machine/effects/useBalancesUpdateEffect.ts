@@ -43,6 +43,7 @@ export const useBalancesUpdateEffect = ({
 
     try {
       await queryClient.invalidateQueries({ queryKey: ['intentsBalances'] });
+      await queryClient.invalidateQueries({ queryKey: ['tokenBalance'] });
 
       if (alchemyApiKey) {
         await new Promise((resolve) => {
@@ -52,8 +53,6 @@ export const useBalancesUpdateEffect = ({
         await refetchAlchemyBalances();
       }
 
-      // Balances loaded with RPCs
-      await queryClient.invalidateQueries({ queryKey: ['tokenBalance'] });
       notifyRefreshed();
     } finally {
       isRefreshingRef.current = false;
