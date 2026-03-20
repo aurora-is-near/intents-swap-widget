@@ -6,23 +6,33 @@ import {
   Trigger,
 } from '@radix-ui/react-tooltip';
 import { InfoW700 as InfoIcon } from '@material-symbols-svg/react-rounded/icons/info';
-import type { PropsWithChildren } from 'react';
 
 import { cn } from '@/utils/cn';
 
-type Props = PropsWithChildren<{
+type Props = {
+  text: string;
   className?: string;
-}>;
+} & (
+  | { iconSize?: number; children?: never }
+  | { children: React.ReactNode; iconSize?: never }
+);
 
-export const Tooltip = ({ className, children }: Props) => (
+export const Tooltip = ({
+  className,
+  iconSize = 16,
+  children,
+  text,
+}: Props) => (
   <TooltipProvider delayDuration={200} skipDelayDuration={100}>
     <Root>
       <Trigger asChild className={cn('outline-none', className)}>
-        <button
-          type="button"
-          className="cursor-pointer p-sw-xs text-sw-gray-400 transition-colors hover:text-sw-gray-100">
-          <InfoIcon size={16} />
-        </button>
+        {children ?? (
+          <button
+            type="button"
+            className="cursor-pointer p-sw-xs text-sw-gray-400 transition-colors hover:text-sw-gray-100">
+            <InfoIcon size={iconSize} />
+          </button>
+        )}
       </Trigger>
       <Portal>
         <Content
@@ -39,7 +49,7 @@ export const Tooltip = ({ className, children }: Props) => (
               'z-50 rounded-sw-md border border-sw-gray-600 bg-sw-gray-800 px-sw-lg py-sw-md shadow-lg',
               'text-sw-body-sm text-sw-gray-100 leading-relaxed w-full',
             )}>
-            {children}
+            {text}
           </div>
         </Content>
       </Portal>

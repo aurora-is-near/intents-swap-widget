@@ -13,6 +13,9 @@ import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import { INTENTS_CONTRACT } from '@/constants';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
+import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
+import { useMergedBalance } from '@/hooks/useMergedBalance';
 
 export const useMakeTransfer = ({
   message,
@@ -41,6 +44,8 @@ export const useMakeTransfer = ({
   );
 
   const queryClient = useQueryClient();
+  const { mergedBalance } = useMergedBalance();
+  const { addPendingTokens } = useBalancesUpdate();
 
   const make = async () => {
     if (!ctx.targetToken) {
@@ -113,6 +118,17 @@ export const useMakeTransfer = ({
     }
 
     fireEvent('transferSetStatus', { status: 'success' });
+
+    if (ctx.sourceToken && ctx.targetToken) {
+      const sourceKey = getTokenBalanceKey(ctx.sourceToken);
+      const targetKey = getTokenBalanceKey(ctx.targetToken);
+
+      addPendingTokens([
+        { balanceKey: sourceKey, priorBalance: mergedBalance[sourceKey] },
+        { balanceKey: targetKey, priorBalance: mergedBalance[targetKey] },
+      ]);
+    }
+
     moveTo('transfer_success');
 
     // Add optimistic transaction so it appears immediately in the history.

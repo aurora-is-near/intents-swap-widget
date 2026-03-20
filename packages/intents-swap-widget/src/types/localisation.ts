@@ -38,6 +38,7 @@ export type LocalisationKeys =
   | 'tokens.list.searchEmpty.label'
   | 'tokens.list.searchEmpty.subLabel'
   | 'tokens.list.searchReset.label'
+  | 'tokens.list.refreshBalances.label'
   // deposit
   | 'deposit.external.error.noStatus'
   | 'deposit.external.error.incomplete'
@@ -126,6 +127,7 @@ export type LocalisationKeys =
   | 'tokenInput.heading.target.withdraw'
   | 'tokenInput.heading.source.deposit'
   | 'tokenInput.heading.source.swap'
-  | 'tokenInput.heading.target.swap';
+  | 'tokenInput.heading.target.swap'
+  | 'tokenInput.balanceUpdating.tooltip';
 
 export type LocalisationDict = Partial<Record<LocalisationKeys, string>>;

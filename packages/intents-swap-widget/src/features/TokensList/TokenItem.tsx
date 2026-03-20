@@ -1,9 +1,12 @@
 import { useSupportedChains } from '../../hooks/useSupportedChains';
+
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { TokenIcon } from '@/components/TokenIcon';
 import { TinyNumber } from '@/components/TinyNumber';
+import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { getUsdDisplayBalance } from '@/utils/formatters/getUsdDisplayBalance';
 import type { Token, TokenBalance } from '@/types/token';
 
@@ -30,8 +33,11 @@ export const TokenItem = ({
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { appName } = useConfig();
+
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
   const { supportedChains } = useSupportedChains();
+  const { pendingBalances } = useBalancesUpdate();
+
   const isTokenSupported =
     supportedChains.includes(token.blockchain) || token.isIntent;
 
@@ -84,7 +90,12 @@ export const TokenItem = ({
             {balance === undefined && !token.isIntent ? (
               <span className="h-[16px] w-[60px] animate-pulse rounded-full bg-sw-gray-700" />
             ) : (
-              <span className="h-[16px] text-sw-label-md text-sw-gray-50">
+              <span
+                className={cn('h-[16px] text-sw-label-md text-sw-gray-50', {
+                  'animate-pulse': Object.keys(pendingBalances).includes(
+                    getTokenBalanceKey(token),
+                  ),
+                })}>
                 {hasBalance && (
                   <TinyNumber
                     decimals={token.decimals}
