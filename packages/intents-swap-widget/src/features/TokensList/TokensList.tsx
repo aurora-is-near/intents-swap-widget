@@ -80,8 +80,11 @@ export const TokensList = ({
   const ref = useRef<VListHandle>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
-  const tokensUngrouped = useMemo<ListGroup<1>>(
-    () => [{ tokens: filteredTokens.all }],
+  const tokensUngrouped = useMemo<ListGroup<2>>(
+    () => [
+      { label: 'All tokens', count: filteredTokens.all.length },
+      { tokens: filteredTokens.all },
+    ],
     [filteredTokens.all],
   );
 
