@@ -21,7 +21,7 @@ export function TokenTag({
   return (
     <div
       className={cn(
-        'flex items-center justify-center gap-csw-md rounded-csw-md',
+        'flex items-center justify-center gap-csw-md rounded-csw-md py-csw-xs px-csw-md',
         'bg-csw-gray-800',
         className,
       )}>
