@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import { useTypedTranslation } from '../../localisation';
 import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+
 import {
   SendAddress,
   SubmitButton,
@@ -14,9 +15,9 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-
-import { BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
+import { BlockingError } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -41,11 +42,7 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-export const WidgetSwapContent = ({
-  makeTransfer,
-  onMsg,
-  isLoading,
-}: Props) => {
+const WidgetSwapContentInner = ({ isLoading, makeTransfer, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
@@ -94,6 +91,7 @@ export const WidgetSwapContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
       ['setDefaultSelectedTokens', { skipIntents: false }],
@@ -289,3 +287,9 @@ export const WidgetSwapContent = ({
       return <WidgetSwapSkeleton />;
   }
 };
+
+export const WidgetSwapContent = (props: Props) => (
+  <BalancesUpdateProvider>
+    <WidgetSwapContentInner {...props} />
+  </BalancesUpdateProvider>
+);
