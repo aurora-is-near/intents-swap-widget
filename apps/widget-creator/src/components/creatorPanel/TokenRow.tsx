@@ -24,7 +24,9 @@ export function TokenRow({
     setIsTokenIconBroken(false);
   }, [token.icon]);
 
-  let tokenIcon = ASSET_ICONS[token.symbol.toLowerCase()] ?? undefined;
+  const isWrappedNear = token.symbol.toLowerCase() === 'wnear';
+  const assetIconKey = isWrappedNear ? 'near' : token.symbol.toLowerCase();
+  let tokenIcon = ASSET_ICONS[assetIconKey] ?? undefined;
 
   if (token.icon && !isTokenIconBroken) {
     tokenIcon = (
@@ -37,8 +39,7 @@ export function TokenRow({
     );
   }
 
-  const tokenSymbol =
-    token.symbol.toLowerCase() === 'wnear' ? 'NEAR' : token.symbol;
+  const tokenSymbol = isWrappedNear ? 'NEAR' : token.symbol;
 
   return (
     <div
