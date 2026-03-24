@@ -56,6 +56,7 @@ export type WidgetConfig = {
   allowedTargetTokensList?: string[];
   priorityAssets?: PriorityAssets;
   filterTokens: (token: Token) => boolean;
+  disabledInternalBalanceTokens?: string[];
 
   // Chains filtering
   chainsOrder: Chains[];
