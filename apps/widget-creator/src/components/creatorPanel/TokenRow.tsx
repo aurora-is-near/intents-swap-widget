@@ -26,8 +26,8 @@ export function TokenRow({
 
   let tokenIcon = ASSET_ICONS[token.symbol.toLowerCase()] ?? undefined;
 
-  if (token.icon) {
-    tokenIcon = isTokenIconBroken ? undefined : (
+  if (token.icon && !isTokenIconBroken) {
+    tokenIcon = (
       <img
         src={token.icon}
         alt={token.symbol}
