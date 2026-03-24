@@ -31,6 +31,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
     allowedSourceTokensList,
     allowedTargetTokensList,
     enableAccountAbstraction,
+    disabledInternalBalanceTokens,
     filterTokens,
     fetchSourceTokens,
     fetchTargetTokens,
@@ -160,11 +161,22 @@ export const useTokens = (variant?: 'source' | 'target') => {
       ? [
           ...tokensWithoutWNEAR,
           // add intents tokens to the full list
-          ...tokens.map((t) =>
-            t.symbol.toLowerCase() === 'wnear'
-              ? { ...t, symbol: 'NEAR', name: 'NEAR', isIntent: true } // do not expose that it's wrapped
-              : { ...t, isIntent: true },
-          ),
+          ...tokens
+            .filter(
+              (t) =>
+                ![
+                  ...(disabledInternalBalanceTokens ?? []).map((tkn) =>
+                    tkn.toLowerCase(),
+                  ),
+                  // USDT0 exists on different chains as a synthetic version of native multi-chain USDT
+                  'usdt0',
+                ].includes(t.symbol.toLowerCase()),
+            )
+            .map((t) =>
+              t.symbol.toLowerCase() === 'wnear'
+                ? { ...t, symbol: 'NEAR', name: 'NEAR', isIntent: true } // do not expose that it's wrapped
+                : { ...t, isIntent: true },
+            ),
         ]
       : tokensWithoutWNEAR;
   }, [
