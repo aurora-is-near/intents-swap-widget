@@ -6,7 +6,7 @@ import { useTokens } from '@/hooks/useTokens';
 import { fireEvent } from '@/machine';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
-const intentDepositTokensMap: Record<string, string> = {
+export const INTENT_DEPOSIT_TOKENS_MAP: Record<string, string> = {
   // cbBTC (eth)
   'nep141:eth-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near':
     'nep141:nbtc.bridge.near',
@@ -26,6 +26,15 @@ const intentDepositTokensMap: Record<string, string> = {
   'nep245:v2_1.omni.hot.tg:56_SZzgw3HSudhZcTwPWUTi2RJB19t': 'nep141:wrap.near',
   // BTC (near)
   'nep141:btc.omft.near': 'nep141:nbtc.bridge.near',
+  // USDT0 (bera)
+  'nep141:bera-0x779ded0c9e1022225f8e0630b35a9b54be713736.omft.near':
+    'nep141:usdt.tether-token.near',
+  // USDT0 (arbitrum)
+  'nep141:arb-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9.omft.near':
+    'nep141:usdt.tether-token.near',
+  // USDT0 (monad)
+  'nep245:v2_1.omni.hot.tg:143_4EJiJxSALvGoTZbnc8K7Ft9533et':
+    'nep141:usdt.tether-token.near',
 };
 
 export const useSetTokenIntentsTargetEffect = ({
@@ -50,11 +59,11 @@ export const useSetTokenIntentsTargetEffect = ({
     const { sourceToken } = ctx;
 
     // 2. If source token is BTC/ETH/NEAR select corresponding target token
-    if (ctx.sourceToken.assetId in intentDepositTokensMap) {
+    if (ctx.sourceToken.assetId in INTENT_DEPOSIT_TOKENS_MAP) {
       const tkn = tokens.find(
         (t) =>
           t.isIntent &&
-          t.assetId === intentDepositTokensMap[sourceToken.assetId],
+          t.assetId === INTENT_DEPOSIT_TOKENS_MAP[sourceToken.assetId],
       );
 
       fireEvent('tokenSelect', {
