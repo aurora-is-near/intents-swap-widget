@@ -38,6 +38,9 @@ type DepositStatusResponse = {
   };
 };
 
+const normalizeAddress = (address: string) =>
+  address.startsWith('0x') ? address.toLowerCase() : address;
+
 const getMatchedDeposit = (
   response: DepositStatusResponse,
   data: {
@@ -85,7 +88,8 @@ const getMatchedDeposit = (
     (deposit) =>
       deposit.chain === data.chainId &&
       deposit.account_id === data.intentsAccountId &&
-      deposit.address === data.depositAddress &&
+      normalizeAddress(deposit.address) ===
+        normalizeAddress(data.depositAddress) &&
       deposit.near_token_id === nearTokenId &&
       isCreatedAfterInitiation(deposit) &&
       isAmountMatched(deposit),
