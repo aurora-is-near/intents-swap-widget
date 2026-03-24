@@ -134,7 +134,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
       .filter(filterTokens ?? (() => true));
 
     // remove wNEAR token
-    const tokensWithoutWNEAR = tokens.filter(
+    let tokensWithoutWNEAR = tokens.filter(
       (t) => t.symbol.toLowerCase() !== 'wnear',
     );
 
@@ -157,26 +157,43 @@ export const useTokens = (variant?: 'source' | 'target') => {
       });
     }
 
+    // rename USDT0 tokens to USDT
+    tokensWithoutWNEAR = tokensWithoutWNEAR.map((t) => {
+      if (t.symbol.toLowerCase() === 'usdt0') {
+        return {
+          ...t,
+          name: 'USDT',
+          symbol: 'USDT',
+          icon: getTokenIcon('USDT'),
+          isIntent: false,
+        };
+      }
+
+      return t;
+    });
+
+    const intentsTokens = tokens
+      .filter(
+        (t) =>
+          ![
+            ...(disabledInternalBalanceTokens ?? []).map((tkn) =>
+              tkn.toLowerCase(),
+            ),
+            // USDT0 exists on different chains as a synthetic version of native multi-chain USDT
+            'usdt0',
+          ].includes(t.symbol.toLowerCase()),
+      )
+      .map((t) =>
+        t.symbol.toLowerCase() === 'wnear'
+          ? { ...t, symbol: 'NEAR', name: 'NEAR', isIntent: true } // do not expose that it's wrapped
+          : { ...t, isIntent: true },
+      );
+
     return enableAccountAbstraction
       ? [
           ...tokensWithoutWNEAR,
           // add intents tokens to the full list
-          ...tokens
-            .filter(
-              (t) =>
-                ![
-                  ...(disabledInternalBalanceTokens ?? []).map((tkn) =>
-                    tkn.toLowerCase(),
-                  ),
-                  // USDT0 exists on different chains as a synthetic version of native multi-chain USDT
-                  'usdt0',
-                ].includes(t.symbol.toLowerCase()),
-            )
-            .map((t) =>
-              t.symbol.toLowerCase() === 'wnear'
-                ? { ...t, symbol: 'NEAR', name: 'NEAR', isIntent: true } // do not expose that it's wrapped
-                : { ...t, isIntent: true },
-            ),
+          ...intentsTokens,
         ]
       : tokensWithoutWNEAR;
   }, [
