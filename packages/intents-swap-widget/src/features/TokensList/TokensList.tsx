@@ -248,6 +248,7 @@ export const TokensList = ({
                     return (
                       <TokenItem
                         token={token}
+                        variant={variant}
                         key={tokenBalanceKey}
                         showBalance={showBalances}
                         balance={mergedBalance[tokenBalanceKey]}

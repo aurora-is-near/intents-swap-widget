@@ -46,6 +46,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   slippageTolerance: 100, // 1%
   connectedWallets: {},
 
+  showConversionPreview: true,
   enableAutoTokensSwitching: true,
   chainsOrder: DEFAULT_CHAINS_ORDER,
 
