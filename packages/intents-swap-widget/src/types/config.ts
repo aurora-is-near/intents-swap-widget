@@ -86,4 +86,5 @@ export type WidgetConfig = {
   themeParentElementSelector?: string;
   lockSwapDirection?: boolean;
   showTransactionHistory?: boolean;
+  showConversionPreview?: boolean;
 };
