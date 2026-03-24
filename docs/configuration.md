@@ -440,3 +440,6 @@ Enables swaps transaction history for a user's wallet. Disabled by default.
 ### `disabledInternalBalanceTokens`
 
 Filters out some tokens from internal balance list.
+### `showConversionPreview`
+
+Enables live swap conversion preview in the tokens list on hover.

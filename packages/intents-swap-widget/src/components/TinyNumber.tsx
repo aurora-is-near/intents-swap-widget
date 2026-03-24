@@ -6,11 +6,13 @@ type Props = {
   value: string;
   decimals?: number;
   className?: string;
+  options?: Parameters<typeof formatTinyNumber>[1];
 };
 
-export const TinyNumber = ({ decimals, value, className }: Props) => {
+export const TinyNumber = ({ decimals, value, options, className }: Props) => {
   const formattedPrice = formatTinyNumber(
     parseFloat(decimals ? formatUnits(value, decimals) : value) ?? 0,
+    options,
   );
 
   if (!Array.isArray(formattedPrice)) {
