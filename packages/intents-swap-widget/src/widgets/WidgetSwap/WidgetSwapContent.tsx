@@ -16,7 +16,6 @@ import {
   TokensModal,
 } from '@/features';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
-import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
 import { BlockingError } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
@@ -42,7 +41,11 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-const WidgetSwapContentInner = ({ isLoading, makeTransfer, onMsg }: Props) => {
+export const WidgetSwapContent = ({
+  isLoading,
+  makeTransfer,
+  onMsg,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
@@ -287,9 +290,3 @@ const WidgetSwapContentInner = ({ isLoading, makeTransfer, onMsg }: Props) => {
       return <WidgetSwapSkeleton />;
   }
 };
-
-export const WidgetSwapContent = (props: Props) => (
-  <BalancesUpdateProvider>
-    <WidgetSwapContentInner {...props} />
-  </BalancesUpdateProvider>
-);

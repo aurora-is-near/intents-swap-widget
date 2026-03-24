@@ -14,7 +14,6 @@ import {
 } from '@/features';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { BlockingError, Card, DirectionSwitcher } from '@/components';
-import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -40,7 +39,7 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-const WidgetWithdrawContentInner = ({
+export const WidgetWithdrawContent = ({
   makeTransfer,
   onMsg,
   isLoading,
@@ -293,9 +292,3 @@ const WidgetWithdrawContentInner = ({
       return <WidgetWithdrawSkeleton />;
   }
 };
-
-export const WidgetWithdrawContent = (props: Props) => (
-  <BalancesUpdateProvider>
-    <WidgetWithdrawContentInner {...props} />
-  </BalancesUpdateProvider>
-);

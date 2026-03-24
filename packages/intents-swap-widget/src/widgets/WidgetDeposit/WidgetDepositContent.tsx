@@ -13,7 +13,6 @@ import {
   TokensModal,
 } from '@/features';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
-import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
 import { BlockingError } from '@/components';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -40,7 +39,7 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
-const WidgetDepositContentInner = ({
+export const WidgetDepositContent = ({
   onMsg,
   makeTransfer,
   isLoading,
@@ -307,9 +306,3 @@ const WidgetDepositContentInner = ({
       return <WidgetDepositSkeleton />;
   }
 };
-
-export const WidgetDepositContent = (props: Props) => (
-  <BalancesUpdateProvider>
-    <WidgetDepositContentInner {...props} />
-  </BalancesUpdateProvider>
-);
