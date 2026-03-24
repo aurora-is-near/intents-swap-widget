@@ -36,7 +36,7 @@ export const TokenItem = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { appName } = useConfig();
+  const { appName, showConversionPreview } = useConfig();
 
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
   const { supportedChains } = useSupportedChains();
@@ -71,14 +71,18 @@ export const TokenItem = ({
         />
 
         <div className="gap-sw-xs mr-auto flex flex-col">
-          <span className="text-sw-label-md text-sw-gray-50 flex items-center gap-sw-sm">
-            {token.name}
-            <ImmediatePrice
-              currentToken={token}
-              variant={variant}
-              className="hidden group-hover:block"
-            />
-          </span>
+          <div className="flex items-center gap-sw-sm">
+            <span className="text-sw-label-md text-sw-gray-50">
+              {token.name}
+            </span>
+            {showConversionPreview && (
+              <ImmediatePrice
+                currentToken={token}
+                variant={variant}
+                className="hidden group-hover:block"
+              />
+            )}
+          </div>
           {token.isIntent ? (
             <div className="flex items-center gap-sw-xs">
               <span className="text-sw-label-md text-sw-gray-300">
