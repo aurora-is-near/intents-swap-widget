@@ -436,3 +436,7 @@ to switch the swap direction. This option disables that feature.
 ### `showTransactionHistory`
 
 Enables swaps transaction history for a user's wallet. Disabled by default.
+
+### `disabledInternalBalanceTokens`
+
+Filters out some tokens from internal balance list.
