@@ -11,6 +11,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { MakeTransfer, TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
+import { INTENT_DEPOSIT_TOKENS_MAP } from '@/machine/effects/useSetTokenIntentsTargetEffect';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
@@ -120,8 +121,21 @@ export const useMakeTransfer = ({
     fireEvent('transferSetStatus', { status: 'success' });
 
     if (ctx.sourceToken && ctx.targetToken) {
-      const sourceKey = getTokenBalanceKey(ctx.sourceToken);
-      const targetKey = getTokenBalanceKey(ctx.targetToken);
+      const sourceKey = getTokenBalanceKey({
+        ...ctx.sourceToken,
+        assetId: ctx.sourceToken.isIntent
+          ? (INTENT_DEPOSIT_TOKENS_MAP[ctx.sourceToken.assetId] ??
+            ctx.sourceToken.assetId)
+          : ctx.sourceToken.assetId,
+      });
+
+      const targetKey = getTokenBalanceKey({
+        ...ctx.targetToken,
+        assetId: ctx.targetToken.isIntent
+          ? (INTENT_DEPOSIT_TOKENS_MAP[ctx.targetToken.assetId] ??
+            ctx.targetToken.assetId)
+          : ctx.targetToken.assetId,
+      });
 
       addPendingTokens([
         { balanceKey: sourceKey, priorBalance: mergedBalance[sourceKey] },

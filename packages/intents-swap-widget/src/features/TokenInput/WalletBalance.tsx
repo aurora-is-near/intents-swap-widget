@@ -47,7 +47,7 @@ export const WalletBalance = ({
         className="mr-sw-xs"
         text={t(
           'tokenInput.balanceUpdating.tooltip',
-          'You just made a swap with this token. Balance is updating and maybe a bit different than expected. It will be updated in a few seconds.',
+          'You just swapped this token. The balance is updating and will refresh in a few seconds.',
         )}>
         <span
           onClick={balance ? onClick : undefined}
