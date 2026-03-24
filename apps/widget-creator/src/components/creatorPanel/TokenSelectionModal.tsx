@@ -25,6 +25,16 @@ const POPULAR_TOKENS: string[] = [
   'AURORA',
 ];
 
+const DISABLED_TOKENS = [
+  'fms',
+  'abg',
+  'stjack',
+  'noear',
+  'testnebula',
+  'susdc',
+  'weth',
+];
+
 export function TokenSelectionModal({
   isOpen,
   onClose,
@@ -66,9 +76,13 @@ export function TokenSelectionModal({
 
   // Filter tokens based on search and deduplicate by symbol
   const filteredTokens = useMemo(() => {
-    return allTokens.filter((token: TokenType) => {
-      return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
-    });
+    return allTokens
+      .filter(
+        (token) => !DISABLED_TOKENS.includes(token.symbol.toLocaleLowerCase()),
+      )
+      .filter((token: TokenType) => {
+        return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
+      });
   }, [searchQuery, allTokens]);
 
   // Separate available and unavailable tokens

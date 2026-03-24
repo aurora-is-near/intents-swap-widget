@@ -4,6 +4,7 @@ export { WidgetConfigProvider, type WidgetConfigProviderProps } from './config';
 export { DEFAULT_RPCS } from './rpcs';
 export { CHAINS } from './chains';
 
+export * from './icons';
 export * from './components';
 export * from './features';
 export * from './hooks';
