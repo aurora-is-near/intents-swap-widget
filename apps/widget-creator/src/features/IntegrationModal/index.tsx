@@ -3,6 +3,7 @@ import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/cl
 
 import { Fees } from './Fees';
 import { Export } from './Export';
+import { Report } from './Report';
 import { ApiKeys } from './ApiKeys';
 import { Navigation } from './components';
 import type { NavigationTabs } from './components';
@@ -97,6 +98,12 @@ export const IntegrationModal = ({
                     apiKey={selectedApiKey}
                     onClickBack={() => setSelected('api-keys')}
                   />
+                );
+              }
+
+              if (selected === 'report') {
+                return (
+                  <Report onClickApiKeys={() => setSelected('api-keys')} />
                 );
               }
 
