@@ -137,10 +137,17 @@ export const useMakeTransfer = ({
           : ctx.targetToken.assetId,
       });
 
-      addPendingTokens([
-        { balanceKey: sourceKey, priorBalance: mergedBalance[sourceKey] },
-        { balanceKey: targetKey, priorBalance: mergedBalance[targetKey] },
-      ]);
+      if (!ctx.sendAddress || ctx.sendAddress === ctx.walletAddress) {
+        addPendingTokens([
+          { balanceKey: targetKey, priorBalance: mergedBalance[targetKey] },
+        ]);
+      }
+
+      if (!ctx.isDepositFromExternalWallet) {
+        addPendingTokens([
+          { balanceKey: sourceKey, priorBalance: mergedBalance[sourceKey] },
+        ]);
+      }
     }
 
     moveTo('transfer_success');
