@@ -62,11 +62,7 @@ export const ReportForm = () => {
   };
 
   const handleDownload = () => {
-    setDownloadState('loading');
-    setTimeout(() => {
-      setDownloadState('success');
-      setTimeout(() => setDownloadState('idle'), 3000);
-    }, 2000);
+    // TODO: Implement download
   };
 
   const renderCta = () => {
