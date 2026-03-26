@@ -46,7 +46,23 @@ export function TokenSelectionModal({
   const selectedTokens = state.selectedTokenSymbols || [];
 
   const onTokensChange = (tokens: string[]) => {
-    dispatch({ type: 'SET_SELECTED_TOKEN_SYMBOLS', payload: tokens });
+    let tokenSymbols = tokens.filter(
+      (symbol) => !DISABLED_TOKENS.includes(symbol.toLocaleLowerCase()),
+    );
+
+    // there is an edge case with USDT0 tokens
+    // we need to remove USDT0 from list but make a general USDT token
+    // to toggle them on and off along with normal USDT tokens
+    if (tokenSymbols.includes('USDT')) {
+      tokenSymbols.push('USDT0');
+    } else {
+      tokenSymbols = tokenSymbols.filter((symbol) => symbol !== 'USDT0');
+    }
+
+    dispatch({
+      type: 'SET_SELECTED_TOKEN_SYMBOLS',
+      payload: tokenSymbols,
+    });
 
     if (
       state.defaultSellToken?.symbol &&
@@ -76,13 +92,19 @@ export function TokenSelectionModal({
 
   // Filter tokens based on search and deduplicate by symbol
   const filteredTokens = useMemo(() => {
-    return allTokens
-      .filter(
-        (token) => !DISABLED_TOKENS.includes(token.symbol.toLocaleLowerCase()),
-      )
-      .filter((token: TokenType) => {
-        return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
-      });
+    return (
+      allTokens
+        // remove USDT0 from displayed list but not tokens data
+        // we display USDT0 as a general USDT token in the widget
+        .filter((token) => token.symbol !== 'USDT0')
+        .filter(
+          (token) =>
+            !DISABLED_TOKENS.includes(token.symbol.toLocaleLowerCase()),
+        )
+        .filter((token: TokenType) => {
+          return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
+        })
+    );
   }, [searchQuery, allTokens]);
 
   // Separate available and unavailable tokens
