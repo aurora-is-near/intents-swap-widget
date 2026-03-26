@@ -23,7 +23,7 @@ export const useWidgetConfig = () => {
       defaultTargetToken: state.enableBuyToken
         ? state.defaultBuyToken
         : undefined,
-      showTransactionHistory: false,
+      showTransactionHistory: true,
     }),
     [state],
   );

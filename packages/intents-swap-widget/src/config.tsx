@@ -47,6 +47,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   connectedWallets: {},
 
   showConversionPreview: true,
+  showTransactionHistory: true,
   enableAutoTokensSwitching: true,
   chainsOrder: DEFAULT_CHAINS_ORDER,
 
