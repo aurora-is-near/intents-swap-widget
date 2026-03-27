@@ -1,97 +1,19 @@
-# Getting Started
+# What is Intents Connect?
 
-The **Intents Swap Widget** lets you integrate a fully functional, cross-chain swap interface into your application in just a few lines of code.
+Intents Connect lets a user with a wallet on one chain perform actions on a completely different chain - without manual bridging, switching wallets or managing gas on the destination chain.
 
-## 1. Installation
+<figure><img src=".gitbook/assets/image 18.png" alt=""><figcaption></figcaption></figure>
 
-Install the widget package using your preferred package manager:
+The classic example: a user with a Solana wallet depositing USDC into Aave on Ethereum. Today, that requires bridging funds, switching to an Ethereum wallet, acquiring ETH for gas, and manually completing each step. With Intents Connect, the user signs a single intent from their existing wallet. Everything else is handled.
 
-```bash
-npm install @aurora-is-near/intents-swap-widget
+**What makes it non-custodial**
 
-# or
+The user's signature authorises one specific, bounded outcome. Intents Connect never holds funds or acts beyond what the user has explicitly approved.&#x20;
 
-yarn add @aurora-is-near/intents-swap-widget
-```
+An intermediary account on the destination chain executes the action, but it is fully owned by the origin wallet and controled via Chain Signature, an MPC technology based on Near protocol.
 
-Alternatively, if you want to use the widget in standalone mode with embedded wallet connection mechanisms:
+**Who it's for**
 
-```bash
-npm install @aurora-is-near/intents-swap-widget-standalone
+Intents Connect is built for dApps that want to open their protocol to users on any chain, without requiring those users to manage the complexity of cross-chain execution themselves.
 
-# or
-
-yarn add @aurora-is-near/intents-swap-widget-standalone
-```
-
-## 2. Setup
-
-Wrap your app, or just the area where the widget appears, with the `WidgetConfigProvider`, then render one of our prebuilt widgets within it.
-
-For example, the snippet below shows how to render the combined widget.
-
-```tsx
-import {
-  WidgetConfigProvider,
-  Widget,
-} from '@aurora-is-near/intents-swap-widget';
-
-export default function App() {
-  return (
-    <WidgetConfigProvider config={{ appName: 'MyApp' }}>
-      <Widget />
-    </WidgetConfigProvider>
-  );
-}
-```
-
-There are also individual `WidgetSwap`, `WidgetTransfer` and `WidgetWithdraw` widgets.
-
-For a full list of configuration options see the [Configuration](swap-widget/readme-1-1.md) page.
-
-### 3. Styling
-
-To apply the package styles you need to import the package styles into your apps stylesheet, for example:
-
-```css
-@import '@aurora-is-near/intents-swap-widget/styles.css';
-
-.my-class {
-  background-color: #fff;
-}
-```
-
-For more details about the available theming options see the [Theming](swap-widget/theming.md) page.
-
-### 4. Connect a wallet
-
-If you are using standalone mode the wallet connection mechanism is built in.
-
-If you want to use your existing wallet integration (e.g. AppKit, Provy, TonConnect, etc.) you can pass the connected address via the `connectedWallets` config option.
-
-Here is an example that assumes you are using [AppKit](https://docs.reown.com/appkit/overview) and have a hook for providing the wallet address and a button for connecting.
-
-```tsx
-import {
-  WidgetConfigProvider,
-  Widget,
-} from '@aurora-is-near/intents-swap-widget';
-import { useAppKitWallet } from './hooks/useAppKitWallet';
-import { WalletConnectButton } from './components/WalletConnectButton';
-
-export const SimpleWidgetDemo = () => {
-  const { address: walletAddress, isConnecting: isLoading } = useAppKitWallet();
-
-  return (
-    <WidgetConfigProvider
-      config={{ connectedWallets: { default: walletAddress } }}
-    >
-      <Widget
-        isFullPage
-        isLoading={isLoading}
-        FooterComponent={<WalletConnectButton />}
-      />
-    </WidgetConfigProvider>
-  );
-};
-```
+It can also be used as an API by apps, backend systems and AI agents who need a straightforward solution to perform any type of operations on chain.
