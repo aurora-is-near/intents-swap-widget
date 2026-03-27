@@ -23,7 +23,10 @@ export const CopyButton = ({ value, className }: Props) => {
     [],
   );
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     copy(value);
     setCopied(true);
 
