@@ -1,6 +1,8 @@
 import { Token } from '../../types';
 import { TokenIcon } from '../../components';
 import { TransactionStatusBadge } from './TransactionStatusBadge';
+
+import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { CopyButton } from '@/components/CopyButton';
 import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
@@ -11,14 +13,16 @@ import { findTransactionToken } from '@/utils/transactions/findTransactionToken'
 import type { FakeTransaction, Transaction } from '@/types/transaction';
 
 type Props = {
-  transaction: Transaction | FakeTransaction;
   tokens: Token[];
+  transaction: Transaction | FakeTransaction;
+  className?: string;
   onClick: () => void;
 };
 
 export const TransactionCard = ({
-  transaction: tx,
   tokens,
+  transaction: tx,
+  className,
   onClick,
 }: Props) => {
   const type = getTransactionType(tx);
@@ -37,7 +41,7 @@ export const TransactionCard = ({
       isClickable
       padding="none"
       onClick={onClick}
-      className="hover:bg-sw-gray-800 group">
+      className={cn('hover:bg-sw-gray-800 group', className)}>
       <div className="p-sw-xl flex flex-col gap-x-sw-md">
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
