@@ -1,3 +1,4 @@
+import { VList } from 'virtua';
 import { useEffect, useMemo } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
@@ -6,16 +7,26 @@ import { TransactionDetails } from './TransactionDetails';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
 import { FakeTransaction, Transaction } from '../../types';
+
+import {
+  LIST_CONTAINER_ID,
+  MAX_LIST_VIEW_AREA_HEIGHT,
+  MIN_LIST_VIEW_AREA_HEIGHT,
+  TX_ITEM_HEIGHT,
+} from './constants';
+import { useTransactionHistoryListHeight } from './useTransactionHistoryListHeight';
 import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
 type Props = {
+  isVisible: boolean;
   onPendingTransactionsCountChange: (count: number) => void;
   selectedTransaction: Transaction | FakeTransaction | null;
   onSelectTransaction: (tx: Transaction | FakeTransaction | null) => void;
 };
 
 export const TransactionHistory = ({
+  isVisible,
   onPendingTransactionsCountChange,
   selectedTransaction,
   onSelectTransaction,
@@ -50,6 +61,12 @@ export const TransactionHistory = ({
 
     return 'Show more';
   }, [isFetchNextPageError, isFetchingNextPage]);
+
+  const listHeight = useTransactionHistoryListHeight({
+    transactionsCount: transactions.length,
+    hasNextPage,
+    isVisible,
+  });
 
   if (!isConnected) {
     return <TransactionHistoryEmpty type="connect" />;
@@ -91,34 +108,47 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col gap-sw-md w-full">
-      {transactions.map((tx, index) => (
-        <TransactionCard
-          key={index}
-          transaction={tx}
-          tokens={tokens}
-          onClick={() => {
-            onSelectTransaction(tx);
-          }}
-        />
-      ))}
+      <VList
+        id={LIST_CONTAINER_ID}
+        itemSize={TX_ITEM_HEIGHT}
+        className="hide-scrollbar"
+        style={{
+          height: listHeight,
+          minHeight: MIN_LIST_VIEW_AREA_HEIGHT,
+          maxHeight: MAX_LIST_VIEW_AREA_HEIGHT,
+          overflowAnchor: 'none',
+          outline: 'none',
+        }}>
+        {transactions.map((tx, index) => (
+          <TransactionCard
+            key={index}
+            transaction={tx}
+            tokens={tokens}
+            className="mb-sw-lg"
+            onClick={() => {
+              onSelectTransaction(tx);
+            }}
+          />
+        ))}
 
-      {hasNextPage && (
-        <>
-          {isFetchNextPageError && (
-            <p className="text-sw-label-sm text-sw-status-error text-center mt-sw-2xl">
-              Failed to load more transactions.
-            </p>
-          )}
-          <Button
-            size="lg"
-            variant="outlined"
-            className={isFetchNextPageError ? 'mt-sw-md' : 'mt-sw-2xl'}
-            state={isFetchingNextPage ? 'loading' : 'default'}
-            onClick={() => fetchNextPage()}>
-            {buttonText}
-          </Button>
-        </>
-      )}
+        {hasNextPage && (
+          <>
+            {isFetchNextPageError && (
+              <p className="text-sw-label-sm text-sw-status-error text-center mt-sw-2xl">
+                Failed to load more transactions.
+              </p>
+            )}
+            <Button
+              size="lg"
+              variant="outlined"
+              className={isFetchNextPageError ? 'mt-sw-md' : 'mt-sw-2xl'}
+              state={isFetchingNextPage ? 'loading' : 'default'}
+              onClick={() => fetchNextPage()}>
+              {buttonText}
+            </Button>
+          </>
+        )}
+      </VList>
     </div>
   );
 };

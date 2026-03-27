@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+
+import { CloseButton } from '../../components/CloseButton';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -119,14 +121,18 @@ export const WidgetContent = ({
     <BalancesUpdateProvider>
       <>
         {showHeader && (
-          <div className="mb-sw-2xl w-full flex items-center">
+          <div className="mb-sw-xl h-[34px] w-full flex items-center">
             {enableAccountAbstraction ? (
               <WidgetTabs
                 activeTab={showHistory ? null : activeTab}
                 onSelect={switchTab}
               />
             ) : (
-              <div className="w-full" />
+              <div className="w-full flex items-center">
+                {showHistory && (
+                  <CloseButton onClick={() => setShowHistory(false)} />
+                )}
+              </div>
             )}
             {!!showTransactionHistory && !!apiKey && (
               <WidgetHistoryButton
@@ -134,7 +140,7 @@ export const WidgetContent = ({
                 pendingTransactionsCount={pendingTransactionsCount}
                 onClick={() => {
                   setIsHeaderHidden(false);
-                  setShowHistory(true);
+                  setShowHistory((p) => !p);
                   setSelectedHistoricalTransaction(null);
                 }}
               />
@@ -145,6 +151,7 @@ export const WidgetContent = ({
 
         <div className={cn('w-full', { hidden: !showHistory })}>
           <TransactionHistory
+            isVisible={showHistory}
             onPendingTransactionsCountChange={onPendingTransactionsCountChange}
             selectedTransaction={selectedHistoricalTransaction}
             onSelectTransaction={setSelectedHistoricalTransaction}
