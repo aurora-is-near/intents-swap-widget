@@ -151,6 +151,7 @@ export const WidgetContent = ({
 
         <div className={cn('w-full', { hidden: !showHistory })}>
           <TransactionHistory
+            isVisible={showHistory}
             onPendingTransactionsCountChange={onPendingTransactionsCountChange}
             selectedTransaction={selectedHistoricalTransaction}
             onSelectTransaction={setSelectedHistoricalTransaction}

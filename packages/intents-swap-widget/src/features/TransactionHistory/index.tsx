@@ -19,12 +19,14 @@ import { Button } from '@/components/Button';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
 type Props = {
+  isVisible: boolean;
   onPendingTransactionsCountChange: (count: number) => void;
   selectedTransaction: Transaction | FakeTransaction | null;
   onSelectTransaction: (tx: Transaction | FakeTransaction | null) => void;
 };
 
 export const TransactionHistory = ({
+  isVisible,
   onPendingTransactionsCountChange,
   selectedTransaction,
   onSelectTransaction,
@@ -63,6 +65,7 @@ export const TransactionHistory = ({
   const listHeight = useTransactionHistoryListHeight({
     transactionsCount: transactions.length,
     hasNextPage,
+    isVisible,
   });
 
   if (!isConnected) {
@@ -106,7 +109,6 @@ export const TransactionHistory = ({
   return (
     <div className="flex flex-col gap-sw-md w-full">
       <VList
-        tabIndex={0}
         id={LIST_CONTAINER_ID}
         itemSize={TX_ITEM_HEIGHT}
         className="hide-scrollbar"

@@ -10,17 +10,23 @@ import {
 type Params = {
   transactionsCount: number;
   hasNextPage: boolean;
+  isVisible: boolean;
 };
 
 export const useTransactionHistoryListHeight = ({
   transactionsCount,
   hasNextPage,
+  isVisible,
 }: Params) => {
   const [availableListHeight, setAvailableListHeight] = useState(
     MAX_LIST_VIEW_AREA_HEIGHT,
   );
 
   useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
     const updateAvailableListHeight = () => {
       const listElement = document.getElementById(LIST_CONTAINER_ID);
 
@@ -59,7 +65,7 @@ export const useTransactionHistoryListHeight = ({
         updateAvailableListHeight,
       );
     };
-  }, [transactionsCount, hasNextPage]);
+  }, [transactionsCount, hasNextPage, isVisible]);
 
   return useMemo(() => {
     const actionsHeight = hasNextPage ? TX_ITEM_HEIGHT : 0;
