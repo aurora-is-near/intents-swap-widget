@@ -47,7 +47,7 @@ export default function App() {
 
 There are also individual `WidgetSwap`, `WidgetTransfer` and `WidgetWithdraw` widgets.
 
-For a full list of configuration options see the [Configuration](<README (1) (1).md>) page.
+For a full list of configuration options see the [Configuration](swap-widget/readme-1-1.md) page.
 
 ### 3. Styling
 
@@ -61,7 +61,7 @@ To apply the package styles you need to import the package styles into your apps
 }
 ```
 
-For more details about the available theming options see the [Theming](theming.md) page.
+For more details about the available theming options see the [Theming](swap-widget/theming.md) page.
 
 ### 4. Connect a wallet
 
