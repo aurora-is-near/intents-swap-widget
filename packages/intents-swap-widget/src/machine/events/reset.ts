@@ -23,6 +23,8 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
   if (!payload.keepSelectedTokens) {
     ctx.sourceToken = undefined;
     ctx.targetToken = undefined;
+    ctx.sourceTokenDefault = undefined;
+    ctx.targetTokenDefault = undefined;
   }
 
   if (payload.clearWalletAddress) {
