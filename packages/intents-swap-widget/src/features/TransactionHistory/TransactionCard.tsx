@@ -1,9 +1,12 @@
 import { Token } from '../../types';
 import { TokenIcon } from '../../components';
 import { TransactionStatusBadge } from './TransactionStatusBadge';
+
+import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { CopyButton } from '@/components/CopyButton';
 import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
+import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { TinyNumber } from '@/components/TinyNumber';
 import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
@@ -11,14 +14,16 @@ import { findTransactionToken } from '@/utils/transactions/findTransactionToken'
 import type { FakeTransaction, Transaction } from '@/types/transaction';
 
 type Props = {
-  transaction: Transaction | FakeTransaction;
   tokens: Token[];
+  transaction: Transaction | FakeTransaction;
+  className?: string;
   onClick: () => void;
 };
 
 export const TransactionCard = ({
-  transaction: tx,
   tokens,
+  transaction: tx,
+  className,
   onClick,
 }: Props) => {
   const type = getTransactionType(tx);
@@ -28,8 +33,7 @@ export const TransactionCard = ({
   const originToken = findTransactionToken(tokens, tx.originAsset);
   const destToken = findTransactionToken(tokens, tx.destinationAsset);
 
-  const isSwap = type === 'Swap';
-
+  const isSwap = type === 'SWAP';
   const copyValue = tx.senders?.[0] ?? tx.recipient;
 
   return (
@@ -37,12 +41,16 @@ export const TransactionCard = ({
       isClickable
       padding="none"
       onClick={onClick}
-      className="hover:bg-sw-gray-800 group">
+      className={cn('hover:bg-sw-gray-800 group', className)}>
       <div className="p-sw-xl flex flex-col gap-x-sw-md">
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
           <div className="flex items-center gap-x-sw-sm">
-            <span className="text-sw-label-md text-sw-gray-200">{type}</span>
+            <span className="text-sw-label-md text-sw-gray-200">
+              {type === 'DEPOSIT'
+                ? `Deposit from ${formatAddressTruncate(tx.senders[0] ?? '', 10)}`
+                : 'Swap'}
+            </span>
             {!!copyValue && !isSwap && <CopyButton value={copyValue} />}
           </div>
           <span className="text-sw-label-sm text-sw-gray-400">{time}</span>

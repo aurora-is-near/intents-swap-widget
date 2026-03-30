@@ -1,4 +1,3 @@
-import type { NearWalletBase } from './near';
 import { Eip1193Provider } from 'ethers';
 import type { Networks } from '@stellar/stellar-sdk';
 import type {
@@ -6,6 +5,8 @@ import type {
   Transaction as SolanaWeb3Transaction,
   VersionedTransaction,
 } from '@solana/web3.js';
+
+import type { NearWalletBase } from './near';
 
 export type EvmProvider = Eip1193Provider | (() => Promise<Eip1193Provider>);
 

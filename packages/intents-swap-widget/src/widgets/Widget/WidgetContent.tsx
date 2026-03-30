@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+
+import { CloseButton } from '../../components/CloseButton';
 import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
@@ -29,6 +31,7 @@ import { WidgetType } from '../../types/widget';
 import { WidgetProfileButton } from './WidgetProfileButton';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
 import { TransactionHistory } from '../../features/TransactionHistory';
+import { BalancesUpdateProvider } from '../../context/BalancesUpdateContext';
 import { useUnsafeSnapshot } from '../../machine';
 import { cn } from '../../utils/cn';
 
@@ -115,83 +118,90 @@ export const WidgetContent = ({
     (!isHeaderHidden || showHistory) && ctx.state !== 'transfer_success';
 
   return (
-    <>
-      {showHeader && (
-        <div className="mb-sw-2xl w-full flex items-center">
-          {enableAccountAbstraction ? (
-            <WidgetTabs
-              activeTab={showHistory ? null : activeTab}
-              onSelect={switchTab}
-            />
-          ) : (
-            <div className="w-full" />
-          )}
-          {!!showTransactionHistory && !!apiKey && (
-            <WidgetHistoryButton
-              isActive={showHistory}
-              pendingTransactionsCount={pendingTransactionsCount}
-              onClick={() => {
-                setIsHeaderHidden(false);
-                setShowHistory(true);
-                setSelectedHistoricalTransaction(null);
-              }}
-            />
-          )}
-          {showProfileButton && <WidgetProfileButton />}
+    <BalancesUpdateProvider>
+      <>
+        {showHeader && (
+          <div className="mb-sw-xl h-[34px] w-full flex items-center">
+            {enableAccountAbstraction ? (
+              <WidgetTabs
+                activeTab={showHistory ? null : activeTab}
+                onSelect={switchTab}
+              />
+            ) : (
+              <div className="w-full flex items-center">
+                {showHistory && (
+                  <CloseButton onClick={() => setShowHistory(false)} />
+                )}
+              </div>
+            )}
+            {!!showTransactionHistory && !!apiKey && (
+              <WidgetHistoryButton
+                isActive={showHistory}
+                pendingTransactionsCount={pendingTransactionsCount}
+                onClick={() => {
+                  setIsHeaderHidden(false);
+                  setShowHistory((p) => !p);
+                  setSelectedHistoricalTransaction(null);
+                }}
+              />
+            )}
+            {showProfileButton && <WidgetProfileButton />}
+          </div>
+        )}
+
+        <div className={cn('w-full', { hidden: !showHistory })}>
+          <TransactionHistory
+            isVisible={showHistory}
+            onPendingTransactionsCountChange={onPendingTransactionsCountChange}
+            selectedTransaction={selectedHistoricalTransaction}
+            onSelectTransaction={setSelectedHistoricalTransaction}
+          />
         </div>
-      )}
 
-      <div className={cn('w-full', { hidden: !showHistory })}>
-        <TransactionHistory
-          onPendingTransactionsCountChange={onPendingTransactionsCountChange}
-          selectedTransaction={selectedHistoricalTransaction}
-          onSelectTransaction={setSelectedHistoricalTransaction}
-        />
-      </div>
+        {!showHistory &&
+          (() => {
+            switch (activeTab) {
+              case 'swap': {
+                return (
+                  <WidgetSwapContent
+                    {...restProps}
+                    makeTransfer={wrapMakeTransfer(makeTransfer, 'swap')}
+                    onMsg={(msg) => {
+                      handleMsg(msg, 'swap');
+                    }}
+                  />
+                );
+              }
 
-      {!showHistory &&
-        (() => {
-          switch (activeTab) {
-            case 'swap': {
-              return (
-                <WidgetSwapContent
-                  {...restProps}
-                  makeTransfer={wrapMakeTransfer(makeTransfer, 'swap')}
-                  onMsg={(msg) => {
-                    handleMsg(msg, 'swap');
-                  }}
-                />
-              );
+              case 'deposit': {
+                return (
+                  <WidgetDepositContent
+                    {...restProps}
+                    makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
+                    onMsg={(msg) => {
+                      handleMsg(msg, 'deposit');
+                    }}
+                  />
+                );
+              }
+
+              case 'withdraw': {
+                return (
+                  <WidgetWithdrawContent
+                    {...restProps}
+                    makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
+                    onMsg={(msg) => {
+                      handleMsg(msg, 'withdraw');
+                    }}
+                  />
+                );
+              }
+
+              default:
+                return null;
             }
-
-            case 'deposit': {
-              return (
-                <WidgetDepositContent
-                  {...restProps}
-                  makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
-                  onMsg={(msg) => {
-                    handleMsg(msg, 'deposit');
-                  }}
-                />
-              );
-            }
-
-            case 'withdraw': {
-              return (
-                <WidgetWithdrawContent
-                  {...restProps}
-                  makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
-                  onMsg={(msg) => {
-                    handleMsg(msg, 'withdraw');
-                  }}
-                />
-              );
-            }
-
-            default:
-              return null;
-          }
-        })()}
-    </>
+          })()}
+      </>
+    </BalancesUpdateProvider>
   );
 };

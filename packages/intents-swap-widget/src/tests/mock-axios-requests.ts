@@ -30,8 +30,10 @@ export const mockOneClickApi: {
 
 export const mockFeeServiceApi: {
   post: Mock<(...args: Args) => Promise<{ data: QuoteResponse }>>;
+  get: Mock<(url: string) => Promise<{ data: unknown }>>;
 } = {
   post: jest.fn<(...args: Args) => Promise<{ data: QuoteResponse }>>(),
+  get: jest.fn<(url: string) => Promise<{ data: unknown }>>(),
 };
 
 jest.mock('../network', () => ({

@@ -25,35 +25,48 @@ const NavigationItem = ({
   </UIButton>
 );
 
-export type NavigationTabs = 'embed-code' | 'api-keys';
+export type NavigationTabs = 'embed-code' | 'api-keys' | 'report';
 
 type Props = {
   className?: string;
   selected: NavigationTabs;
-  onSelect: (selected: 'embed-code' | 'api-keys') => void;
+  onSelect: (selected: NavigationTabs) => void;
 };
 
-export const Navigation = ({ selected, className, onSelect }: Props) => (
-  <nav
-    className={clsx(
-      'w-full sm:w-[190px] flex-shrink-0 border-b sm:border-r border-csw-gray-900 px-csw-2xl py-csw-2xl',
-      className,
-    )}>
-    <ul className="flex flex-row items-center sm:items-start sm:flex-col gap-csw-md">
-      <li className="w-auto sm:w-full">
-        <NavigationItem
-          isActive={selected === 'embed-code'}
-          onClick={() => onSelect('embed-code')}>
-          Embed code
-        </NavigationItem>
-      </li>
-      <li className="w-auto sm:w-full">
-        <NavigationItem
-          isActive={selected === 'api-keys'}
-          onClick={() => onSelect('api-keys')}>
-          API keys
-        </NavigationItem>
-      </li>
-    </ul>
-  </nav>
-);
+export const Navigation = ({ selected, className, onSelect }: Props) => {
+  const params = new URLSearchParams(window.location.search);
+
+  return (
+    <nav
+      className={clsx(
+        'w-full sm:w-[190px] flex-shrink-0 border-b sm:border-r border-csw-gray-900 px-csw-2xl py-csw-2xl',
+        className,
+      )}>
+      <ul className="flex flex-row items-center sm:items-start sm:flex-col gap-csw-md">
+        <li className="w-auto sm:w-full">
+          <NavigationItem
+            isActive={selected === 'embed-code'}
+            onClick={() => onSelect('embed-code')}>
+            Embed code
+          </NavigationItem>
+        </li>
+        <li className="w-auto sm:w-full">
+          <NavigationItem
+            isActive={selected === 'api-keys'}
+            onClick={() => onSelect('api-keys')}>
+            API keys
+          </NavigationItem>
+        </li>
+        {params.get('reports') === '1' && (
+          <li className="w-auto sm:w-full">
+            <NavigationItem
+              isActive={selected === 'report'}
+              onClick={() => onSelect('report')}>
+              Reports
+            </NavigationItem>
+          </li>
+        )}
+      </ul>
+    </nav>
+  );
+};

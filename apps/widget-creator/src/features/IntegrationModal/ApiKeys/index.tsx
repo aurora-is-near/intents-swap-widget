@@ -75,10 +75,10 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     return (
       <>
         <ApiKeysHeader />
-        <ApiKeysEmpty
-          message="Unable to load API keys"
-          isCreatingKey={mutation.status === 'pending'}
-          onClickCreate={createApiKey}
+        <ApiKeysEmpty message="Unable to load API keys" />
+        <CreateApiKey
+          isLoading={mutation.status === 'pending'}
+          onClick={createApiKey}
         />
       </>
     );
@@ -88,9 +88,10 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     return (
       <>
         <ApiKeysHeader />
-        <ApiKeysEmpty
-          isCreatingKey={mutation.status === 'pending'}
-          onClickCreate={createApiKey}
+        <ApiKeysEmpty />
+        <CreateApiKey
+          isLoading={mutation.status === 'pending'}
+          onClick={createApiKey}
         />
       </>
     );

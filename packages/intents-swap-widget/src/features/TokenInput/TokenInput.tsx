@@ -7,6 +7,7 @@ import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
 import { TokenInputHeading } from './TokenInputHeading';
 import { useUnsafeSnapshot } from '../../machine';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
+
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -51,6 +52,7 @@ export const TokenInputWithToken = ({
   const inputName = useId();
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
+
   const { hideTokenInputHeadings } = useConfig();
   const { supportedChains } = useSupportedChains();
 

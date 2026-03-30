@@ -1,4 +1,3 @@
-import { HelpCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 interface TokenTagProps {
@@ -21,7 +20,7 @@ export function TokenTag({
   return (
     <div
       className={cn(
-        'flex items-center justify-center gap-csw-md rounded-csw-md',
+        'flex items-center justify-center gap-csw-md rounded-csw-md py-csw-xs px-csw-md',
         'bg-csw-gray-800',
         className,
       )}>
@@ -29,10 +28,14 @@ export function TokenTag({
       <div className="relative flex items-end shrink-0">
         {/* Token Icon */}
         {tokenIcon ? (
-          <div className="relative shrink-0 size-[24px]">{tokenIcon}</div>
+          <div className="relative shrink-0 size-[24px] overflow-hidden [&>svg]:size-full [&>svg]:block [&>img]:size-full [&>img]:block rounded-full overflow-hidden">
+            {tokenIcon}
+          </div>
         ) : (
           <div className="relative shrink-0 size-[24px] flex items-center justify-center bg-csw-gray-700 rounded-full">
-            <HelpCircle className="w-4 h-4 text-csw-gray-950" />
+            <span className="text-csw-label-md text-csw-gray-950">
+              {tokenSymbol.charAt(0).toUpperCase()}
+            </span>
           </div>
         )}
 
@@ -42,7 +45,7 @@ export function TokenTag({
             className={cn(
               'relative shrink-0 size-[12px]',
               'rounded-[4px] border-2 border-csw-gray-800 bg-white',
-              'mr-[-10px] overflow-clip',
+              'mr-[-10px] overflow-hidden [&>svg]:size-full [&>svg]:block [&>img]:size-full [&>img]:block',
             )}>
             {networkIcon}
           </div>

@@ -21,7 +21,21 @@ export const findTransactionToken = (
   const match = tokens.find((t) => t.assetId === assetId && !t.isIntent);
 
   if (!match) {
-    return tokens.find((t) => t.assetId === assetId);
+    const tokenByAssetId = tokens.find((t) => t.assetId === assetId);
+
+    if (tokenByAssetId) {
+      return tokenByAssetId;
+    }
+
+    // Some tokens changed their asset ID on intents side to multi token
+    // which means nep141 is now nep245
+    if (assetId.startsWith('nep141:')) {
+      const nep245AssetId = assetId.replace('nep141:', 'nep245:');
+
+      return tokens.find((t) => t.assetId === nep245AssetId);
+    }
+
+    return undefined;
   }
 
   // Token is not on NEAR — the chain badge is already correct

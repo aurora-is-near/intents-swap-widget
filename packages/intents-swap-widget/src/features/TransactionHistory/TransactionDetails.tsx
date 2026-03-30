@@ -58,8 +58,7 @@ export const TransactionDetails = ({
   tokens,
   onClose,
 }: Props) => {
-  const fullType = getTransactionType(tx);
-  const type = fullType.split(' ')[0];
+  const type = getTransactionType(tx);
   const status = getTransactionStatusLabel(tx.status);
   const formattedDate = new Date(tx.createdAt).toLocaleString('en-US', {
     month: 'short',
@@ -73,8 +72,8 @@ export const TransactionDetails = ({
   const originToken = findTransactionToken(tokens, tx.originAsset);
   const destToken = findTransactionToken(tokens, tx.destinationAsset);
 
-  const isSwap = type === 'Swap';
-  const isDeposit = type === 'Deposit';
+  const isSwap = type === 'SWAP';
+  const isDeposit = type === 'DEPOSIT';
   const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;
 
   const fee = calculateFee(tx);
@@ -89,7 +88,9 @@ export const TransactionDetails = ({
       <div className="flex items-center justify-between pb-sw-2xl">
         <div className="flex flex-col">
           <span className="text-sw-label-lg text-sw-gray-50 mb-sw-md">
-            {type}
+            {type === 'DEPOSIT'
+              ? `Deposit from ${formatAddressTruncate(tx.senders[0] ?? '', 10)}`
+              : 'Swap'}
           </span>
           <span className="text-sw-label-sm text-sw-gray-200">
             {formattedDate}

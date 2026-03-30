@@ -12,9 +12,8 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-
-import { BlockingError, Card, DirectionSwitcher } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { BlockingError, Card, DirectionSwitcher } from '@/components';
 
 import { useStoreSideEffects } from '@/machine/effects';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -86,6 +85,7 @@ export const WidgetWithdrawContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
       [

@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { TokenItem } from './TokenItem';
 import { useFocusOnList } from './hooks';
+import { RefreshBalanceButton } from './RefreshBalanceButton';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
 import {
   LIST_CONTAINER_ID,
@@ -20,6 +21,7 @@ import {
 import type { ListGroup } from './types';
 
 import { useSupportedChains } from '../../hooks/useSupportedChains';
+
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -80,8 +82,11 @@ export const TokensList = ({
   const ref = useRef<VListHandle>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
-  const tokensUngrouped = useMemo<ListGroup<1>>(
-    () => [{ tokens: filteredTokens.all }],
+  const tokensUngrouped = useMemo<ListGroup<2>>(
+    () => [
+      { label: 'All tokens', count: filteredTokens.all.length },
+      { tokens: filteredTokens.all },
+    ],
     [filteredTokens.all],
   );
 
@@ -228,7 +233,10 @@ export const TokensList = ({
                       key={label}
                       className="pb-sw-lg pt-sw-sm flex flex-col">
                       <Hr />
-                      <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${count}`}</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sw-label-sm pt-sw-xl text-sw-gray-100">{`${label} — ${count}`}</span>
+                        <RefreshBalanceButton />
+                      </div>
                     </header>
                   );
                 }
@@ -240,6 +248,7 @@ export const TokensList = ({
                     return (
                       <TokenItem
                         token={token}
+                        variant={variant}
                         key={tokenBalanceKey}
                         showBalance={showBalances}
                         balance={mergedBalance[tokenBalanceKey]}

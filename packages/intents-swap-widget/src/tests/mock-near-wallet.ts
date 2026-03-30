@@ -1,10 +1,10 @@
 import { jest } from '@jest/globals';
 import type { FinalExecutionOutcome } from '@near-js/types';
 import type {
-  NearWalletBase,
+  NearSignAndSendTransactionsParams,
   NearSignedMessage,
   NearSignMessageParams,
-  NearSignAndSendTransactionsParams,
+  NearWalletBase,
 } from '@/types/near';
 
 const mockSignedMessage: NearSignedMessage = {

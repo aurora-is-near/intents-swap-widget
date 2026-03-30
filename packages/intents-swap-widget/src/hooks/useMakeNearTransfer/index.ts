@@ -9,7 +9,6 @@ import { base64 } from '@scure/base';
 
 import { nearClient } from './nearClient';
 
-import { logger } from '@/logger';
 import type {
   MakeTransferArgs,
   NearAction,
@@ -259,10 +258,9 @@ export function useMakeNearTransfer({
   provider,
   accountId,
 }: {
-  provider: (() => NearWalletBase) | null | undefined,
-  accountId: string | null | undefined,
-}
-) {
+  provider: (() => NearWalletBase) | null | undefined;
+  accountId: string | null | undefined;
+}) {
   async function send({
     address: to,
     amount,

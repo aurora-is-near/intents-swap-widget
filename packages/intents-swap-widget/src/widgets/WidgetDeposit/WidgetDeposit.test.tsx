@@ -114,6 +114,9 @@ describe('Deposit', () => {
 
     mockOneClickApi.post.mockResolvedValue({ data: quoteMock });
     mockFeeServiceApi.post.mockResolvedValue({ data: quoteMock });
+    mockFeeServiceApi.get.mockResolvedValue({
+      data: { asset_stats: [], tokens: [sourceToken, targetToken] },
+    });
   });
 
   afterEach(() => {
@@ -132,8 +135,8 @@ describe('Deposit', () => {
     expect(inputAmount).toHaveValue('');
     expect(inputAmount).toBeEnabled();
 
-    // 2. Tokens are fetched
-    expect(mockOneClickSDK.getTokens).toHaveBeenCalled();
+    // 2. Tokens are fetched via fee service (apiKey is set in test config)
+    expect(mockFeeServiceApi.get).toHaveBeenCalled();
 
     // 3. Toggle QR code
     const depositMethodLabel = screen.getByText('Deposit from external wallet');

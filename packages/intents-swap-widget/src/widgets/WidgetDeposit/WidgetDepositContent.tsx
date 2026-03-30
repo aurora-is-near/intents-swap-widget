@@ -12,9 +12,8 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-
-import { BlockingError } from '@/components';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { BlockingError } from '@/components';
 
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
@@ -89,6 +88,7 @@ export const WidgetDepositContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
       'setSourceTokenIntentsTarget',
