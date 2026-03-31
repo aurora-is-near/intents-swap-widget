@@ -4,12 +4,15 @@ import { CheckCircleFillW700 as CheckCircle } from '@material-symbols-svg/react-
 import { DownloadW700 as Download } from '@material-symbols-svg/react-rounded/icons/download';
 
 import { addMonths, getMonthKey, MonthSelect } from './MonthSelect';
+import { useDownloadCsvReport } from './hooks';
 
 import { Button } from '@/uikit/Button';
 
-type DownloadState = 'idle' | 'loading' | 'success';
+type Props = {
+  widgetAppKey: string;
+};
 
-export const ReportForm = () => {
+export const ReportForm = ({ widgetAppKey }: Props) => {
   const { user } = usePrivy();
 
   const now = new Date();
@@ -20,7 +23,10 @@ export const ReportForm = () => {
   const [fromDate, setFromDate] = useState<string>(registrationMonthKey);
   const [toDate, setToDate] = useState<string>(currentMonthKey);
   const [activeShortcut, setActiveShortcut] = useState<string>('All time');
-  const [downloadState, setDownloadState] = useState<DownloadState>('idle');
+  const { downloadState, downloadCsvReport, resetDownloadState } =
+    useDownloadCsvReport({
+      widgetAppKey,
+    });
 
   const clamp = (d: string) => (d > currentMonthKey ? currentMonthKey : d);
 
@@ -61,8 +67,11 @@ export const ReportForm = () => {
     }
   };
 
-  const handleDownload = () => {
-    // TODO: Implement download
+  const handleDownload = async () => {
+    await downloadCsvReport({
+      fromMonth: fromDate,
+      toMonth: toDate,
+    });
   };
 
   const renderCta = () => {
@@ -89,7 +98,7 @@ export const ReportForm = () => {
           detail="accent"
           className="w-full !bg-csw-status-success/20 !text-csw-status-success hover:!bg-csw-status-success/30"
           icon={CheckCircle}
-          onClick={() => setDownloadState('idle')}>
+          onClick={resetDownloadState}>
           Downloaded successfully
         </Button>
       );

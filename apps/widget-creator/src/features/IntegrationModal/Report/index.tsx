@@ -9,6 +9,7 @@ import { GotoApiKeys } from './GotoApiKeys';
 import { ReportForm } from './ReportForm';
 
 import { useApiKeys } from '@/api/hooks';
+import { useCreator } from '@/hooks/useCreatorConfig';
 
 const ReportHeader = () => (
   <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
@@ -26,6 +27,7 @@ type Props = {
 export const Report = ({ onClickApiKeys }: Props) => {
   const { authenticated } = usePrivy();
   const { status, data: apiKeys = [] } = useApiKeys();
+  const { state } = useCreator();
 
   if (!authenticated) {
     return (
@@ -65,10 +67,26 @@ export const Report = ({ onClickApiKeys }: Props) => {
     );
   }
 
+  const selectedKey = apiKeys.find(
+    (apiKey) => apiKey.widgetApiKey === state.apiKey,
+  );
+
+  const widgetAppKey = selectedKey?.widgetApiKey ?? apiKeys[0]?.widgetApiKey;
+
+  if (!widgetAppKey) {
+    return (
+      <>
+        <ReportHeader />
+        <ApiKeysEmpty message="No API keys available to generate reports" />
+        <GotoApiKeys onClick={onClickApiKeys} />
+      </>
+    );
+  }
+
   return (
     <>
       <ReportHeader />
-      <ReportForm />
+      <ReportForm widgetAppKey={widgetAppKey} />
     </>
   );
 };
