@@ -6,7 +6,7 @@ import {
   CHAINS,
   SimpleToken,
 } from '@aurora-is-near/intents-swap-widget';
-import { useTokens } from '../../hooks/useTokens';
+import { getTokenIcon, useTokens } from '../../hooks/useTokens';
 import { getChainName } from '../../utils/get-chain-name';
 
 interface TokenWithChainSelectorProps {
@@ -41,6 +41,17 @@ export function TokenWithChainSelector({
   }
 
   const selectedChainData = CHAINS.find((c) => c.id === selectedChain);
+  const normalizeToken = (token: SimpleToken): SimpleToken => {
+    if (token.symbol.toLowerCase() === 'usdt0') {
+      return {
+        ...token,
+        symbol: 'USDT',
+        icon: getTokenIcon('USDT') ?? token.icon,
+      };
+    }
+
+    return token;
+  };
 
   return (
     <div className="z-50 w-full h-full fixed top-[0px] right-[0px]">
@@ -172,8 +183,10 @@ export function TokenWithChainSelector({
                     return true;
                   })
                   .filter((token) => {
+                    const normalizedToken = normalizeToken(token);
+
                     if (searchQuery) {
-                      return token.symbol
+                      return normalizedToken.symbol
                         .toLowerCase()
                         .includes(searchQuery.toLowerCase());
                     }
@@ -181,24 +194,25 @@ export function TokenWithChainSelector({
                     return true;
                   })
                   .map((token) => {
+                    const normalizedToken = normalizeToken(token);
                     const tokenSymbol =
-                      token.symbol.toLowerCase() === 'wnear'
+                      normalizedToken.symbol.toLowerCase() === 'wnear'
                         ? 'NEAR'
-                        : token.symbol;
+                        : normalizedToken.symbol;
 
                     return (
                       <div
                         key={token.assetId}
                         onClick={() => {
-                          onSelectToken(token, token.blockchain);
+                          onSelectToken(normalizedToken, token.blockchain);
                           onClose();
                         }}
                         className="gap-[6px] px-[12px] py-[10px] flex cursor-pointer items-center rounded-csw-md transition-colors hover:bg-csw-gray-700">
                         {/* Token Icon */}
                         <div className="relative h-full">
-                          {token.icon ? (
+                          {normalizedToken.icon ? (
                             <img
-                              src={token.icon}
+                              src={normalizedToken.icon}
                               alt={tokenSymbol}
                               className="w-[28px] h-[28px] rounded-full"
                             />
