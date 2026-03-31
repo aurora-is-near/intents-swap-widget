@@ -8,26 +8,37 @@ Intents Connect is designed to support any combination of source and destination
 
 All chains supported by Near Intents will be supported by Intents Connect:
 
+{% tabs %}
+{% tab title="EVM Chains" %}
 * Ethereum
-* Bitcoin
-* NEAR
-* Solana
 * Binance Smart Chain
 * Base
 * Arbitrum
+* Polygon
+* Optimism
+* Bera
+* Gnosis
+* Avalanche
+* Monad
+{% endtab %}
+
+{% tab title="Bitcoin & Forks" %}
+* Bitcoin
+* Zcash
+* Dogecoin
+* Litecoin
+{% endtab %}
+
+{% tab title="Layer 1 Chains" %}
+* NEAR
+* Solana
 * Cardano
 * Sui
 * TON
-* Polygon
-* Optimism
-* Zcash
 * Tron
-* Avalanche
-* Bera
 * XRP
-* Gnosis
-* Dogecoin
 * Stellar
-* Litecoin
+{% endtab %}
+{% endtabs %}
 
 That said, at launch, coverage will include a subset of these chains. We will then roll out more support as the product develops.
