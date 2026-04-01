@@ -68,8 +68,8 @@ export const Icon = ({
     if (typeof icon === 'string') {
       return (
         <img
-          width={28}
-          height={28}
+          width={size}
+          height={size}
           src={icon}
           alt={label}
           onLoad={() => setImageState('loaded')}
