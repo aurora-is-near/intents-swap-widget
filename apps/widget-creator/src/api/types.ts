@@ -5,4 +5,5 @@ export type ApiKey = {
   createdAt: string;
   widgetApiKey: string;
   feeRules: FeeConfig;
+  role?: 'admin';
 };

@@ -5,10 +5,13 @@ import { feeServiceClient } from '@/api/network';
 
 export type DownloadState = 'idle' | 'loading' | 'success';
 
-type DownloadCsvParams = {
-  fromMonth: string;
-  toMonth: string;
-};
+type DownloadCsvParams =
+  | {
+      isAdminReport: false;
+      fromMonth: string;
+      toMonth: string;
+    }
+  | { isAdminReport: true; fromMonth?: never; toMonth?: never };
 
 type UseDownloadCsvReportParams = {
   widgetAppKey: string;
@@ -84,7 +87,7 @@ export const useDownloadCsvReport = ({
   );
 
   const downloadCsvReport = useCallback(
-    async ({ fromMonth, toMonth }: DownloadCsvParams) => {
+    async (params: DownloadCsvParams) => {
       try {
         setDownloadState('loading');
 
@@ -94,23 +97,35 @@ export const useDownloadCsvReport = ({
           throw new Error('Authorization token is required');
         }
 
-        const from = toMonthStartIso(fromMonth);
-        const to = toMonthEndIso(toMonth);
+        const from = params.isAdminReport
+          ? undefined
+          : toMonthStartIso(params.fromMonth);
 
-        const response = await feeServiceClient.get(`/report/${widgetAppKey}`, {
-          headers: {
-            Authorization: authToken,
+        const to = params.isAdminReport
+          ? undefined
+          : toMonthEndIso(params.toMonth);
+
+        const response = await feeServiceClient.get(
+          `/report${params.isAdminReport ? '-admin' : ''}`,
+          {
+            headers: {
+              Authorization: authToken,
+            },
+            responseType: 'blob',
+            params: params.isAdminReport
+              ? undefined
+              : {
+                  from,
+                  to,
+                },
           },
-          params: {
-            from,
-            to,
-          },
-          responseType: 'blob',
-        });
+        );
 
         const fileName =
           getFileNameFromDisposition(response.headers['content-disposition']) ??
-          `transaction-report-${from}-${to}.csv`;
+          (params.isAdminReport
+            ? 'transaction-report-admin.zip'
+            : `transaction-report-${from}-${to}.zip`);
 
         triggerCsvDownload(response.data, fileName);
 

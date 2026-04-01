@@ -180,10 +180,8 @@ export const OutlinedButton = ({
           'border-[1.5px] border-csw-gray-300 bg-csw-gray-800':
             state === 'active',
           'border border-csw-gray-700': state === 'default',
-          'cursor-not-allowed opacity-50 bg-transparent': [
-            'disabled',
-            'loading',
-          ].includes(state),
+          'cursor-not-allowed opacity-50 bg-transparent border-[1.5px] border-transparent':
+            ['disabled', 'loading'].includes(state),
           'text-csw-gray-950': detail === 'dimmed',
         },
         className,
