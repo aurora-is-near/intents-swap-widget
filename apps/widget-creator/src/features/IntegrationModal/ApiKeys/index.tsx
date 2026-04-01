@@ -9,7 +9,6 @@ import { ApiKeysNoAuth } from './ApiKeysNoAuth';
 import { ApiKeysSkeleton } from './ApiKeysSkeleton';
 import { CreateApiKey } from './CreateApiKey';
 
-import { DEFAULT_APP_KEY } from '@/constants';
 import { useCreator } from '@/hooks/useCreatorConfig';
 import { useApiKeys, useCreateApiKey } from '@/api/hooks';
 import type { ApiKey } from '@/api/types';
@@ -34,15 +33,6 @@ export const ApiKeys = ({ onClickFees }: Props) => {
 
   const { status, data: apiKeys = [] } = useApiKeys();
   const { mutate: createApiKey, ...mutation } = useCreateApiKey();
-
-  const handleKeyRemoved = (key: string) => {
-    const newApiKeys = apiKeys.filter((apiKey) => apiKey.widgetApiKey !== key);
-
-    dispatch({
-      type: 'SET_API_KEY',
-      payload: newApiKeys[0]?.widgetApiKey ?? DEFAULT_APP_KEY,
-    });
-  };
 
   useEffect(() => {
     if (mutation.status === 'success') {
@@ -106,7 +96,6 @@ export const ApiKeys = ({ onClickFees }: Props) => {
             apiKey={apiKey}
             key={apiKey.widgetApiKey}
             onClickFees={onClickFees}
-            onKeyRemoved={handleKeyRemoved}
           />
         ))}
       </div>
