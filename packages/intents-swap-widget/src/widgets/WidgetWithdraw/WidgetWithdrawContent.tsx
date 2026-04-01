@@ -89,10 +89,6 @@ export const WidgetWithdrawContent = ({
       'checkWalletConnection',
       'setSourceTokenBalance',
       [
-        'setDefaultSelectedTokens',
-        { skipIntents: false, target: 'same-asset' },
-      ],
-      [
         'makeQuote',
         {
           message: undefined,

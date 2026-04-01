@@ -19,7 +19,10 @@ const isSameToken = (
   );
 };
 
-export const useExternalDefaultToken = (variant: 'source' | 'target') => {
+export const useExternalDefaultToken = (
+  variant: 'source' | 'target',
+  { enabled = true }: { enabled?: boolean } = {},
+) => {
   const { tokens } = useTokens(variant);
   const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { ctx } = useUnsafeSnapshot();
@@ -76,6 +79,10 @@ export const useExternalDefaultToken = (variant: 'source' | 'target') => {
   };
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     // Wait for the tokens to load
     if (!tokens.length) {
       return;
@@ -103,5 +110,5 @@ export const useExternalDefaultToken = (variant: 'source' | 'target') => {
       default:
         notReachable(variant, { throwError: false });
     }
-  }, [tokens, defaultSourceToken, defaultTargetToken]);
+  }, [tokens, defaultSourceToken, defaultTargetToken, enabled]);
 };

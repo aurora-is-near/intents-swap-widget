@@ -55,8 +55,8 @@ export const useSelectedTokensEffect = ({
   const shouldLoadInternalDefaultTargetToken =
     !ctx.targetToken && !defaultTargetToken;
 
-  useExternalDefaultToken('source');
-  useExternalDefaultToken('target');
+  useExternalDefaultToken('source', { enabled: isEnabled });
+  useExternalDefaultToken('target', { enabled: isEnabled });
 
   const highestIntentsToken = getTokenWithHighBalance({
     tokens,

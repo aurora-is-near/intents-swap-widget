@@ -154,7 +154,9 @@ export function Configure() {
           <div className="space-y-csw-2xl">
             <div className="space-y-csw-sm font-medium text-csw-gray-200">
               <p className="text-sm leading-5 tracking-[-0.4px]">
-                Selected tokens apply to all chosen networks.
+                Selected tokens apply to all chosen networks
+                {state.accountAbstractionMode === 'enabled' &&
+                  ' and to the swap tab only'}.
               </p>
               <a
                 href="https://docs.intents.aurora.dev/configuration"
