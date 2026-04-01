@@ -8,8 +8,8 @@ import {
   CHAINS,
   Chains,
   SimpleToken,
+  TOKENS_DATA,
 } from '@aurora-is-near/intents-swap-widget';
-import { TOKENS_DATA } from '../config';
 
 export type TokenType = {
   decimals: number;

@@ -86,7 +86,10 @@ export const Report = ({ onClickApiKeys }: Props) => {
   return (
     <>
       <ReportHeader />
-      <ReportForm widgetAppKey={widgetAppKey} />
+      <ReportForm
+        widgetAppKey={widgetAppKey}
+        isAdmin={apiKeys[0]?.role === 'admin'}
+      />
     </>
   );
 };

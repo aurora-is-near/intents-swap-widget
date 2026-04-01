@@ -59,6 +59,7 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
     createdAt: z.string(),
     widgetAppKey: z.string(),
     feeRules: FeeConfigSchema,
+    role: z.enum(['admin']).optional(),
   })
   .transform((data) => ({
     ...data,

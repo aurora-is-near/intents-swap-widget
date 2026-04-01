@@ -17,7 +17,7 @@ import type { ApiKey } from '@/api/types';
 type Props = {
   apiKey: ApiKey;
   onClickFees: (apiKey: ApiKey) => void;
-  onKeyRemoved: (apiKey: string) => void;
+  onKeyRemoved?: (apiKey: string) => void;
 };
 
 const formatDate = (dateString: string) => {
@@ -47,7 +47,7 @@ export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
 
   useEffect(() => {
     if (deleteApiKeyStatus === 'success') {
-      onKeyRemoved(apiKey.widgetApiKey);
+      onKeyRemoved?.(apiKey.widgetApiKey);
     }
   }, [deleteApiKeyStatus]);
 

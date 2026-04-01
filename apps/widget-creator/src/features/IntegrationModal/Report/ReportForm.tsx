@@ -10,9 +10,10 @@ import { Button } from '@/uikit/Button';
 
 type Props = {
   widgetAppKey: string;
+  isAdmin: boolean;
 };
 
-export const ReportForm = ({ widgetAppKey }: Props) => {
+export const ReportForm = ({ widgetAppKey, isAdmin }: Props) => {
   const { user } = usePrivy();
 
   const now = new Date();
@@ -22,6 +23,10 @@ export const ReportForm = ({ widgetAppKey }: Props) => {
 
   const [fromDate, setFromDate] = useState<string>(registrationMonthKey);
   const [toDate, setToDate] = useState<string>(currentMonthKey);
+
+  const [isAdminReportDownloading, setIsAdminReportDownloading] =
+    useState<boolean>(false);
+
   const [activeShortcut, setActiveShortcut] = useState<string>('All time');
   const { downloadState, downloadCsvReport, resetDownloadState } =
     useDownloadCsvReport({
@@ -67,14 +72,43 @@ export const ReportForm = ({ widgetAppKey }: Props) => {
     }
   };
 
-  const handleDownload = async () => {
-    await downloadCsvReport({
-      fromMonth: fromDate,
-      toMonth: toDate,
-    });
+  const handleDownload = async (isAdminReport: boolean) => {
+    if (isAdminReport) {
+      setIsAdminReportDownloading(true);
+      await downloadCsvReport({
+        isAdminReport: true,
+      });
+    } else {
+      setIsAdminReportDownloading(false);
+      await downloadCsvReport({
+        isAdminReport: false,
+        fromMonth: fromDate,
+        toMonth: toDate,
+      });
+    }
+
+    setIsAdminReportDownloading(false);
   };
 
   const renderCta = () => {
+    if (
+      (downloadState !== 'loading' && downloadState !== 'success') ||
+      isAdminReportDownloading
+    ) {
+      return (
+        <Button
+          fluid
+          size="sm"
+          variant="primary"
+          detail="accent"
+          className="w-full"
+          icon={Download}
+          onClick={() => handleDownload(false)}>
+          Download CSV report
+        </Button>
+      );
+    }
+
     if (downloadState === 'loading') {
       return (
         <Button
@@ -103,19 +137,6 @@ export const ReportForm = ({ widgetAppKey }: Props) => {
         </Button>
       );
     }
-
-    return (
-      <Button
-        fluid
-        size="sm"
-        variant="primary"
-        detail="accent"
-        className="w-full"
-        icon={Download}
-        onClick={handleDownload}>
-        Download CSV report
-      </Button>
-    );
   };
 
   return (
@@ -141,8 +162,25 @@ export const ReportForm = ({ widgetAppKey }: Props) => {
         />
       </div>
 
-      <div className="py-csw-2xl mt-csw-2xl border-t border-csw-gray-900">
+      <div className="flex items-center gap-csw-2md w-full py-csw-2xl mt-csw-2xl border-t border-csw-gray-900">
         {renderCta()}
+        {isAdmin && (
+          <Button
+            fluid
+            size="sm"
+            variant="outlined"
+            detail="accent"
+            icon={Download}
+            className="w-full"
+            state={
+              downloadState === 'loading' && isAdminReportDownloading
+                ? 'loading'
+                : 'default'
+            }
+            onClick={() => handleDownload(true)}>
+            Download all reports
+          </Button>
+        )}
       </div>
     </div>
   );

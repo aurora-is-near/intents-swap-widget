@@ -16,6 +16,7 @@ import { useConfigLink } from '@/hooks/useConfigLink';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
+import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
 
 const applyIndent = (code: string, spaces: number): string => {
@@ -73,7 +74,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
-  const { refetch: refetchApiKeys } = useApiKeys();
+  const { refetch: refetchApiKeys, data: apiKeys = [] } = useApiKeys();
 
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
@@ -84,12 +85,14 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
   const isStandaloneMode = state.userAuthMode === 'standalone';
 
+  // we don't want to expose our default app key to the exported code
+  // but want a widget to function in a studio so we swap them here
   const sampleCode = `import { Widget, WidgetConfigProvider } from '@aurora-is-near/intents-swap-widget${isStandaloneMode ? '-standalone' : ''}';
 
 export function App() {
   return (
     <WidgetConfigProvider
-      config={${stringifyAsJS(widgetConfig, 6)}}
+      config={${stringifyAsJS({ ...widgetConfig, apiKey: apiKeys[0]?.widgetApiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     >
       <Widget />
