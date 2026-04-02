@@ -16,9 +16,20 @@ export const useHandleKeyDown = (
   key: 'Escape' | 'ArrowDown' | 'ArrowUp' | 'Alphanumeric',
   onKeyPress: (key: string) => void,
   deps: unknown[] = [],
+  options?: {
+    enabled?: boolean;
+  },
 ) => {
   useEffect(() => {
+    if (options?.enabled === false) {
+      return;
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
       if (key === 'Alphanumeric' && isAlphanumeric(event.key)) {
         onKeyPress(event.key);
 
@@ -35,5 +46,5 @@ export const useHandleKeyDown = (
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [key, ...deps]);
+  }, [key, options?.enabled, ...deps]);
 };

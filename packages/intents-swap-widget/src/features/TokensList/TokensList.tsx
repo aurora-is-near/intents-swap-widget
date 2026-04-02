@@ -43,6 +43,7 @@ type Props = {
   search: string;
   groupTokens: boolean;
   showBalances: boolean;
+  keyboardNavigationEnabled: boolean;
   chainsFilter: ChainsFilter;
   selectedChain: 'all' | 'intents' | Chains;
   chainIsNotSupported: boolean;
@@ -56,6 +57,7 @@ export const TokensList = ({
   className,
   groupTokens,
   showBalances,
+  keyboardNavigationEnabled,
   chainsFilter,
   selectedChain,
   chainIsNotSupported,
@@ -123,6 +125,7 @@ export const TokensList = ({
   useFocusOnList({
     listRef: ref.current,
     initialFocusedIndex: areTokensGrouped ? 1 : 0,
+    isEnabled: keyboardNavigationEnabled,
     onFocus: (index) => setFocusedIndex(index),
     onBlur: handleBlur,
   });
