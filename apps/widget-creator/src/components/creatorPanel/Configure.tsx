@@ -1,6 +1,10 @@
 import { Edit, ExternalLink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { CHAINS, Chains } from '@aurora-is-near/intents-swap-widget';
+import {
+  ASSET_ICONS,
+  CHAINS,
+  Chains,
+} from '@aurora-is-near/intents-swap-widget';
 import { Button, OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
@@ -156,7 +160,8 @@ export function Configure() {
               <p className="text-sm leading-5 tracking-[-0.4px]">
                 Selected tokens apply to all chosen networks
                 {state.accountAbstractionMode === 'enabled' &&
-                  ' and to the swap tab only'}.
+                  ' and to the swap tab only'}
+                .
               </p>
               <a
                 href="https://docs.intents.aurora.dev/configuration"
@@ -224,20 +229,28 @@ export function Configure() {
                         {state.defaultSellToken?.symbol ? (
                           <TokenTag
                             tokenIcon={
-                              sellToken?.icon ? (
-                                <div>
+                              <div>
+                                {sellToken?.icon ? (
                                   <img
                                     src={sellToken.icon}
                                     alt={sellToken.symbol}
                                     className="size-full rounded-full"
                                   />
-                                  {sellTokenChain && (
-                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                      {sellTokenChain.icon}
-                                    </div>
-                                  )}
-                                </div>
-                              ) : undefined
+                                ) : (
+                                  <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700">
+                                    {
+                                      ASSET_ICONS[
+                                        sellToken?.symbol.toLowerCase() ?? ''
+                                      ]
+                                    }
+                                  </div>
+                                )}
+                                {sellTokenChain && (
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                    {sellTokenChain.icon}
+                                  </div>
+                                )}
+                              </div>
                             }
                             tokenSymbol={
                               sellTokenSymbol ?? state.defaultSellToken.symbol

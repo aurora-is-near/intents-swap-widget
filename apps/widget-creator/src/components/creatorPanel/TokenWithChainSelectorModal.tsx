@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
 
 import {
+  ASSET_ICONS,
   Chains,
   CHAINS,
   SimpleToken,
@@ -209,7 +210,7 @@ export function TokenWithChainSelector({
                         }}
                         className="gap-[6px] px-[12px] py-[10px] flex cursor-pointer items-center rounded-csw-md transition-colors hover:bg-csw-gray-700">
                         {/* Token Icon */}
-                        <div className="relative h-full">
+                        <div className="relative w-[28px] h-full">
                           {normalizedToken.icon ? (
                             <img
                               src={normalizedToken.icon}
@@ -217,7 +218,9 @@ export function TokenWithChainSelector({
                               className="w-[28px] h-[28px] rounded-full"
                             />
                           ) : (
-                            <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700" />
+                            (ASSET_ICONS[tokenSymbol.toLowerCase()] ?? (
+                              <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700" />
+                            ))
                           )}
                           {(() => {
                             const chain = CHAINS.find(
