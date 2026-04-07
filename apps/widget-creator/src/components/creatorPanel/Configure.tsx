@@ -4,6 +4,7 @@ import {
   ASSET_ICONS,
   CHAINS,
   Chains,
+  Icon,
 } from '@aurora-is-near/intents-swap-widget';
 import { Button, OutlinedButton } from '../../uikit/Button';
 import { ConfigSection } from '../../uikit/ConfigSection';
@@ -231,13 +232,14 @@ export function Configure() {
                             tokenIcon={
                               <div>
                                 {sellToken?.icon ? (
-                                  <img
-                                    src={sellToken.icon}
-                                    alt={sellToken.symbol}
-                                    className="size-full rounded-full"
+                                  <Icon
+                                    className="text-csw-gray-100 bg-csw-gray-600"
+                                    icon={sellToken.icon}
+                                    label={sellToken.symbol}
+                                    size={24}
                                   />
                                 ) : (
-                                  <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700">
+                                  <div className="w-[28px] h-[28px] rounded-full">
                                     {
                                       ASSET_ICONS[
                                         sellToken?.symbol.toLowerCase() ?? ''

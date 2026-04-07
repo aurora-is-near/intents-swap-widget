@@ -3,8 +3,9 @@ import { ChevronDown, ChevronUp, Search, Target, X } from 'lucide-react';
 
 import {
   ASSET_ICONS,
-  Chains,
   CHAINS,
+  Chains,
+  Icon,
   SimpleToken,
 } from '@aurora-is-near/intents-swap-widget';
 import { getTokenIcon, useTokens } from '../../hooks/useTokens';
@@ -212,14 +213,15 @@ export function TokenWithChainSelector({
                         {/* Token Icon */}
                         <div className="relative w-[28px] h-full">
                           {normalizedToken.icon ? (
-                            <img
-                              src={normalizedToken.icon}
-                              alt={tokenSymbol}
-                              className="w-[28px] h-[28px] rounded-full"
+                            <Icon
+                              className="text-csw-gray-100 bg-csw-gray-800"
+                              icon={normalizedToken.icon}
+                              label={normalizedToken.symbol}
+                              size={28}
                             />
                           ) : (
                             (ASSET_ICONS[tokenSymbol.toLowerCase()] ?? (
-                              <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-700" />
+                              <div className="w-[28px] h-[28px] rounded-full bg-csw-gray-800" />
                             ))
                           )}
                           {(() => {
