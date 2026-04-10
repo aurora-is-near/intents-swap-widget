@@ -18,8 +18,8 @@ import {
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { BlockingError } from '@/components';
 
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
@@ -47,7 +47,6 @@ export const WidgetSwapContent = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const {
     chainsFilter: customChainsFilter,
@@ -267,7 +266,7 @@ export const WidgetSwapContent = ({
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
 
-          {!isDirectNearTokenWithdrawal && ctx.sourceToken && <SwapQuote />}
+          {ctx.sourceToken && <SwapQuote />}
 
           <SubmitButton
             makeTransfer={makeTransfer}
