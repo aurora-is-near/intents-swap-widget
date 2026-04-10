@@ -5,6 +5,10 @@
 * [What is Intents Connect?](README.md)
 * [How It Works](intents-connect/how-it-works.md)
 
+## Deposit addresses
+
+* [Page 1](deposit-addresses/page-1.md)
+
 ## Intents Connect API
 
 * [Introduction](intents-connect-api/introduction.md)
