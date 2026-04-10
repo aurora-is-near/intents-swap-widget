@@ -131,7 +131,9 @@ describe('Deposit', () => {
     const tokenInput = await screen.findByLabelText('Sell');
     expect(within(tokenInput).getByText('0')).toBeInTheDocument();
     expect(within(tokenInput).getByText('Select token')).toBeInTheDocument();
-    expect(within(tokenInput).queryByPlaceholderText('0')).not.toBeInTheDocument();
+    expect(
+      within(tokenInput).queryByPlaceholderText('0'),
+    ).not.toBeInTheDocument();
 
     // 2. Tokens are fetched via fee service (apiKey is set in test config)
     expect(mockFeeServiceApi.get).toHaveBeenCalled();
@@ -148,7 +150,9 @@ describe('Deposit', () => {
     await user.click(qrToggle);
 
     expect(qrToggle).toBeChecked();
-    expect(screen.getAllByText('Select token to deposit').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText('Select token to deposit').length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText('Send to address')).toBeInTheDocument();
   });
 });
