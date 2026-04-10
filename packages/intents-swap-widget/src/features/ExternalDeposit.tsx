@@ -94,12 +94,9 @@ const QrCode = ({ address }: { address: string }) => {
     });
   }, [address]);
 
-  const isValidState = guardStates(ctx, [
-    'quote_success_internal',
-    'quote_success_external',
-  ]);
+  const isInternalQuoteSuccess = guardStates(ctx, ['quote_success_internal']);
 
-  if (!isValidState) {
+  if (!isInternalQuoteSuccess) {
     return null;
   }
 
@@ -171,6 +168,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
     'quote_success_external',
     'quote_success_internal',
   ]);
+
+  const isInternalQuoteSuccess = guardStates(ctx, ['quote_success_internal']);
 
   const depositStatusQuery = useExternalDepositStatus(
     isValidState ? ctx.quote.depositAddress : '',
@@ -257,7 +256,11 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   }
 
   if (!depositStatusQuery.data) {
-    return <QrCode address={ctx.quote.depositAddress} />;
+    return isInternalQuoteSuccess ? (
+      <QrCode address={ctx.quote.depositAddress} />
+    ) : (
+      <Skeleton />
+    );
   }
 
   switch (depositStatusQuery.status) {
@@ -304,7 +307,11 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
         case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
           return <StatusWidget.Success />;
         case GetExecutionStatusResponse.status.PENDING_DEPOSIT:
-          return <QrCode address={ctx.quote.depositAddress} />;
+          return isInternalQuoteSuccess ? (
+            <QrCode address={ctx.quote.depositAddress} />
+          ) : (
+            <Skeleton />
+          );
         case GetExecutionStatusResponse.status.SUCCESS:
           return <StatusWidget.Success />;
         default:

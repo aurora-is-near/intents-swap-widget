@@ -63,7 +63,10 @@ export const useMakeQuoteEffect = ({
   const run = useCallback(
     async (options: FetchQuoteOptions) => {
       try {
-        fireEvent('quoteSetStatus', 'pending');
+        if (!options.isRefetch) {
+          fireEvent('quoteSetStatus', 'pending');
+        }
+
         const quote = await makeQuote({ message, quoteType, options });
 
         if (!quote) {
