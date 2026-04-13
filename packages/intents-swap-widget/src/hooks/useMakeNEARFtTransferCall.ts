@@ -121,10 +121,22 @@ export function useMakeNEARFtTransferCall(
         accountId: ctx.walletAddress,
       });
 
-      const amountWithoutStorageDeposit =
-        !wrappedNearBalance || wrappedNearBalance === BigInt(0)
-          ? (BigInt(amount) - WNEAR_STORAGE_DEPOSIT).toString()
-          : amount;
+      let amountWithoutStorageDeposit = amount;
+
+      if (!wrappedNearBalance || wrappedNearBalance === 0n) {
+        const spendableAmount = BigInt(amount) - WNEAR_STORAGE_DEPOSIT;
+
+        if (spendableAmount <= 0n) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: {
+              message: 'Amount must exceed the initial wNEAR storage deposit.',
+            },
+          });
+        }
+
+        amountWithoutStorageDeposit = spendableAmount.toString();
+      }
 
       try {
         tokenContractActions.push({

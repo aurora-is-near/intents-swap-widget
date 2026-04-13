@@ -64,6 +64,10 @@ export const useMakeQuoteEffect = ({
 
   const run = useCallback(
     async (options: FetchQuoteOptions) => {
+      if (!shouldRun) {
+        return;
+      }
+
       try {
         if (!options.isRefetch) {
           fireEvent('quoteSetStatus', 'pending');
