@@ -5,6 +5,7 @@ type TokenAdditionalData = {
   name: string;
 };
 
+export const WNEAR_CONTRACT_ID = 'wrap.near';
 export const NATIVE_NEAR_DUMB_ASSET_ID = 'native-near';
 export const WNEAR_ASSET_ID = 'nep141:wrap.near';
 

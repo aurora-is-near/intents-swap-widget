@@ -1,4 +1,8 @@
-import { FT_DEPOSIT_GAS, FT_TRANSFER_GAS } from '../utils/near/config';
+import {
+  FT_DEPOSIT_GAS,
+  FT_TRANSFER_GAS,
+  WNEAR_STORAGE_DEPOSIT,
+} from '../utils/near/config';
 import { getNearNep141StorageBalance } from '../utils/near/getNearNep141StorageBalance';
 import { getNearNep141MinStorageBalance } from '../utils/near/getNearNep141MinStorageBalance';
 
@@ -7,7 +11,11 @@ import { TransferError } from '@/errors';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
+import {
+  NATIVE_NEAR_DUMB_ASSET_ID,
+  WNEAR_ASSET_ID,
+  WNEAR_CONTRACT_ID,
+} from '@/constants/tokens';
 import type { TransferResult } from '@/types/transfer';
 import type {
   NearAction as Action,
@@ -60,6 +68,13 @@ export function useMakeNEARFtTransferCall(
       });
     }
 
+    if (!ctx.walletAddress) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'No connected wallet address.' },
+      });
+    }
+
     const wallet = nearWallet();
 
     if (
@@ -101,6 +116,16 @@ export function useMakeNEARFtTransferCall(
     const tokenContractActions: Action[] = [];
 
     if (ctx.targetToken && isNativeNearDeposit) {
+      const wrappedNearBalance = await getNearNep141StorageBalance({
+        contractId: WNEAR_CONTRACT_ID,
+        accountId: ctx.walletAddress,
+      });
+
+      const amountWithoutStorageDeposit =
+        !wrappedNearBalance || wrappedNearBalance === BigInt(0)
+          ? (BigInt(amount) - WNEAR_STORAGE_DEPOSIT).toString()
+          : amount;
+
       try {
         tokenContractActions.push({
           type: 'FunctionCall',
@@ -119,7 +144,7 @@ export function useMakeNEARFtTransferCall(
             deposit: '1', // 1 yocto required by NEP-141
             gas: FT_TRANSFER_GAS,
             args: {
-              amount,
+              amount: amountWithoutStorageDeposit,
               receiver_id: recipient,
               msg: msgRecipient ?? '',
             },

@@ -9,7 +9,7 @@ import { QuoteError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useMakeQuote } from '@/hooks/useMakeQuote';
-import { useUnsafeSnapshot } from '@/machine/snap';
+import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import type { FetchQuoteOptions } from '@/types/quote';
 
@@ -26,12 +26,14 @@ export const useMakeQuoteEffect = ({
   refetchQuoteInterval,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
   const { apiKey, fetchQuote } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
   const shouldRun =
     isEnabled &&
+    !isNativeNearDeposit &&
     !ctx.areInputsValidating &&
     (!!fetchQuote || (!!apiKey && !fetchQuote));
 
