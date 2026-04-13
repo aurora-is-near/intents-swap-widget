@@ -18,6 +18,7 @@ import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
+import { getIntentsAccountTypeFromAddress } from '@/utils/chains/getIntentsAccountTypeFromAddress';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
@@ -117,16 +118,17 @@ export const useMakeQuote = () => {
       });
     }
 
-    const recipientIntentsAccountId = isDry
-      ? getIntentsAccountId({
-          addressType: intentsAccountType ?? 'evm',
-          // address on the target chain should be a dry quote recipient
-          walletAddress: getDryQuoteAddress(ctx.targetToken.blockchain),
-        })
-      : getIntentsAccountId({
-          addressType: intentsAccountType,
-          walletAddress: ctx.walletAddress ?? '',
-        });
+    // address on the target chain should be a dry quote recipient
+    const recipientWalletAddress = isDry
+      ? getDryQuoteAddress(ctx.targetToken.blockchain)
+      : (ctx.walletAddress ?? '');
+
+    const recipientIntentsAccountId = getIntentsAccountId({
+      addressType:
+        getIntentsAccountTypeFromAddress(recipientWalletAddress) ??
+        intentsAccountType,
+      walletAddress: recipientWalletAddress,
+    });
 
     const isRefundToIntentAccount =
       recipientIntentsAccountId &&
