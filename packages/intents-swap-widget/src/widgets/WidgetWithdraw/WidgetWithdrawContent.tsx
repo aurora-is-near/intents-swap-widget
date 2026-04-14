@@ -15,8 +15,8 @@ import {
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { BlockingError, Card, DirectionSwitcher } from '@/components';
 
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 
 import {
@@ -46,7 +46,6 @@ export const WidgetWithdrawContent = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const {
     chainsFilter: customChainsFilter,
@@ -269,7 +268,7 @@ export const WidgetWithdrawContent = ({
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
 
-          {!isDirectNearTokenWithdrawal && ctx.sourceToken && <SwapQuote />}
+          {ctx.sourceToken && <SwapQuote />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

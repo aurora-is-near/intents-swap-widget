@@ -125,20 +125,20 @@ describe('Deposit', () => {
   });
 
   it('renders deposit widget layout', async () => {
-    const { screen, within, user, container } = setup(<WidgetDepositSetup />);
+    const { screen, within, user } = setup(<WidgetDepositSetup />);
 
-    // 1. Input initial state
+    // 1. Input initial state (no token: card shows static "0", not an amount field)
     const tokenInput = await screen.findByLabelText('Sell');
-    const inputAmount = within(tokenInput).getByPlaceholderText('0');
-    expect(inputAmount).toBeInTheDocument();
-    expect(inputAmount).not.toHaveFocus();
-    expect(inputAmount).toHaveValue('');
-    expect(inputAmount).toBeEnabled();
+    expect(within(tokenInput).getByText('0')).toBeInTheDocument();
+    expect(within(tokenInput).getByText('Select token')).toBeInTheDocument();
+    expect(
+      within(tokenInput).queryByPlaceholderText('0'),
+    ).not.toBeInTheDocument();
 
     // 2. Tokens are fetched via fee service (apiKey is set in test config)
     expect(mockFeeServiceApi.get).toHaveBeenCalled();
 
-    // 3. Toggle QR code
+    // 3. External deposit: steps appear after toggle (token must be chosen before a quote / QR flow)
     const depositMethodLabel = screen.getByText('Deposit from external wallet');
     expect(depositMethodLabel).toBeInTheDocument();
 
@@ -149,16 +149,10 @@ describe('Deposit', () => {
     expect(qrToggle).not.toBeChecked();
     await user.click(qrToggle);
 
-    // 4. Make a quote
     expect(qrToggle).toBeChecked();
-    expect(screen.getByRole('button', { name: 'ETH' })).toBeInTheDocument();
-    expect(screen.getByText('Minimum deposit 0.00034 ETH')).toBeInTheDocument();
-    expect(screen.getByText('Use Ethereum network')).toBeInTheDocument();
-    const qrImg = screen.getByRole('img', { name: 'qr-code' });
-
-    expect(qrImg).toBeInTheDocument();
-    expect(qrImg).toHaveAttribute('data-value', 'test-deposit-address');
-    expect(screen.getByText('test-dep...ddress')).toBeInTheDocument();
-    expect(screen.getByText('Waiting for transaction')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('Select token to deposit').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Send to address')).toBeInTheDocument();
   });
 });

@@ -3,14 +3,13 @@ import { derive } from 'derive-valtio';
 
 import { getIsNativeNearDeposit } from './computed/getIsNativeNearDeposit';
 import { getIsDirectTokenOnNearDeposit } from './computed/getIsDirectTokenOnNearDeposit';
+
 import { WidgetError } from '@/errors';
 import { machine } from '@/machine/machine';
 import { guardStates } from '@/machine/guards';
 import { getUsdTradeDelta } from '@/machine/computed/getUsdTradeDelta';
-import { getIsDirectNonNearWithdrawal } from '@/machine/computed/getIsDirectNonNearWithdrawal';
 import { getIsDirectTokenOnNearTransfer } from '@/machine/computed/getIsDirectTokenOnNearTransfer';
 import { getIsDirectNearTokenWithdrawal } from '@/machine/computed/getIsDirectNearTokenWithdrawal';
-import { getIsSameAssetDiffChainWithdrawal } from '@/machine/computed/getIsSameAssetDiffChainWithdrawal';
 import { getMinDepositTokenAmount } from '@/machine/computed/getMinDepositTokenAmount';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
@@ -22,13 +21,9 @@ const computed = derive({
   minDepositTokenAmount: (get) => getMinDepositTokenAmount(get(store.context)),
   isDirectNearTokenWithdrawal: (get) =>
     getIsDirectNearTokenWithdrawal(get(store.context)),
-  isDirectNonNearWithdrawal: (get) =>
-    getIsDirectNonNearWithdrawal(get(store.context)),
   isDirectTokenOnNearDeposit: (get) =>
     getIsDirectTokenOnNearDeposit(get(store.context)),
   isNativeNearDeposit: (get) => getIsNativeNearDeposit(get(store.context)),
-  isSameAssetDiffChainWithdrawal: (get) =>
-    getIsSameAssetDiffChainWithdrawal(get(store.context)),
   isDirectTokenOnNearTransfer: (get) =>
     getIsDirectTokenOnNearTransfer(get(store.context)),
 });

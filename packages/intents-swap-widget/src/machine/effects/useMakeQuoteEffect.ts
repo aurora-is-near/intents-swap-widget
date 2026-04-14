@@ -9,10 +9,9 @@ import { QuoteError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useMakeQuote } from '@/hooks/useMakeQuote';
-import { useMakeDepositAddress } from '@/hooks/useMakeDepositAddress';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
-import type { FetchQuoteOptions, Quote } from '@/types/quote';
+import type { FetchQuoteOptions } from '@/types/quote';
 
 export type Props = ListenerProps & {
   message?: string;
@@ -27,39 +26,23 @@ export const useMakeQuoteEffect = ({
   refetchQuoteInterval,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const { isNativeNearDeposit } = useComputedSnapshot();
   const { apiKey, fetchQuote } = useConfig();
-  const {
-    isNativeNearDeposit,
-    isDirectNonNearWithdrawal,
-    isDirectTokenOnNearDeposit,
-    isDirectNearTokenWithdrawal,
-    isDirectTokenOnNearTransfer,
-    isSameAssetDiffChainWithdrawal,
-  } = useComputedSnapshot();
 
   const isDry = isDryQuote(ctx);
 
   const shouldRun =
     isEnabled &&
-    (!!fetchQuote || (!!apiKey && !fetchQuote)) &&
+    !isNativeNearDeposit &&
     !ctx.areInputsValidating &&
-    (isSameAssetDiffChainWithdrawal ||
-      ((isDirectTokenOnNearDeposit || isNativeNearDeposit) &&
-        ctx.isDepositFromExternalWallet) ||
-      (!isDirectNearTokenWithdrawal &&
-        !isDirectNonNearWithdrawal &&
-        !isDirectTokenOnNearDeposit &&
-        !isDirectTokenOnNearTransfer));
+    (!!fetchQuote || (!!apiKey && !fetchQuote));
 
   const { make: makeQuote, cancel: cancelQuote } = useMakeQuote();
-  const { make: makeDepositAddress, cancel: cancelDepositAddress } =
-    useMakeDepositAddress();
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const cancel = () => {
     cancelQuote();
-    cancelDepositAddress();
   };
 
   // cancels any ongoing quote request if input becomes invalid
@@ -81,25 +64,16 @@ export const useMakeQuoteEffect = ({
 
   const run = useCallback(
     async (options: FetchQuoteOptions) => {
+      if (!shouldRun) {
+        return;
+      }
+
       try {
-        let quote: Quote | undefined;
-
-        if (
-          ctx.sourceToken?.assetId === ctx.targetToken?.assetId ||
-          (isNativeNearDeposit && ctx.isDepositFromExternalWallet)
-        ) {
-          if (isDry) {
-            // since here it's not a real quote but just a deposit address generation
-            // we don't want to run it for dry runs
-            return;
-          }
-
+        if (!options.isRefetch) {
           fireEvent('quoteSetStatus', 'pending');
-          quote = await makeDepositAddress();
-        } else {
-          fireEvent('quoteSetStatus', 'pending');
-          quote = await makeQuote({ message, quoteType, options });
         }
+
+        const quote = await makeQuote({ message, quoteType, options });
 
         if (!quote) {
           return;
@@ -160,7 +134,7 @@ export const useMakeQuoteEffect = ({
         });
       }
     },
-    [ctx, isDry, makeDepositAddress, makeQuote, message, quoteType, shouldRun],
+    [ctx, isDry, makeQuote, message, quoteType, shouldRun],
   );
 
   useEffect(() => {
@@ -179,11 +153,6 @@ export const useMakeQuoteEffect = ({
 
     // do not refetch failed quotes - persist an error instead
     if (ctx.quoteStatus === 'error') {
-      return;
-    }
-
-    // not used for depositing native Near token without QR code
-    if (isNativeNearDeposit && !ctx.isDepositFromExternalWallet) {
       return;
     }
 

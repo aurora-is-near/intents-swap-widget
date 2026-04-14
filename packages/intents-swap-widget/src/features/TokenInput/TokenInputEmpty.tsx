@@ -16,6 +16,7 @@ export const TokenInputEmpty = ({ onMsg, heading }: Props) => {
   return (
     <Card
       isClickable
+      aria-label={heading}
       className="flex flex-col"
       onClick={() => onMsg({ type: 'on_click_select_token' })}>
       {!hideTokenInputHeadings && (

@@ -1,10 +1,4 @@
 import z from 'zod';
-import type {
-  BlockId,
-  BlockReference,
-  Finality,
-  Provider,
-} from 'near-api-js/lib/providers/provider';
 import { base64 } from '@scure/base';
 
 import { nearClient } from './nearClient';
@@ -32,53 +26,7 @@ function decodeQueryResult<T extends z.ZodTypeAny>(
   return schema.parse(JSON.parse(result)) as z.infer<T>;
 }
 
-export type OptionalBlockReference = {
-  blockId?: BlockId;
-  finality?: Finality;
-};
-
-function getBlockReference({
-  blockId,
-  finality,
-}: OptionalBlockReference): BlockReference {
-  if (blockId != null) {
-    return { blockId };
-  }
-
-  if (finality != null) {
-    return { finality };
-  }
-
-  return { finality: 'optimistic' };
-}
-
-export async function queryContract({
-  nearClient: provider,
-  contractId,
-  methodName,
-  args,
-  blockId,
-  finality,
-}: {
-  nearClient: Provider;
-  contractId: string;
-  methodName: string;
-  args: Record<string, unknown>;
-  blockId?: BlockId;
-  finality?: Finality;
-}): Promise<unknown> {
-  const response = await provider.query({
-    request_type: 'call_function',
-    account_id: contractId,
-    method_name: methodName,
-    args_base64: btoa(JSON.stringify(args)),
-    ...getBlockReference({ blockId, finality }),
-  });
-
-  return decodeQueryResult(response, z.unknown());
-}
-
-export const getNearNep141StorageBalance = async ({
+const getNearNep141StorageBalance = async ({
   contractId,
   accountId,
 }: {
@@ -108,7 +56,7 @@ export const getNearNep141StorageBalance = async ({
   }
 };
 
-export const getNearNep141MinStorageBalance = async ({
+const getNearNep141MinStorageBalance = async ({
   contractId,
 }: {
   contractId: string;

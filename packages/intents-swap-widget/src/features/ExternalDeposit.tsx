@@ -8,13 +8,7 @@ import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
 import { CopyButton, StatusWidget } from '@/components';
 import { AURORA_BASE64_LOGO } from '@/constants/chains';
-import {
-  fireEvent,
-  guardStates,
-  moveTo,
-  useComputedSnapshot,
-  useUnsafeSnapshot,
-} from '@/machine';
+import { fireEvent, guardStates, moveTo, useUnsafeSnapshot } from '@/machine';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
@@ -100,12 +94,9 @@ const QrCode = ({ address }: { address: string }) => {
     });
   }, [address]);
 
-  const isValidState = guardStates(ctx, [
-    'quote_success_internal',
-    'quote_success_external',
-  ]);
+  const isInternalQuoteSuccess = guardStates(ctx, ['quote_success_internal']);
 
-  if (!isValidState) {
+  if (!isInternalQuoteSuccess) {
     return null;
   }
 
@@ -160,7 +151,6 @@ const Skeleton = () => {
 export const ExternalDeposit = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { isNativeNearDeposit } = useComputedSnapshot();
 
   const { addPendingTokens } = useBalancesUpdate();
   const { mergedBalance } = useMergedBalance();
@@ -179,15 +169,11 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
     'quote_success_internal',
   ]);
 
-  const isBridgePoaDeposit =
-    (isNativeNearDeposit && ctx.isDepositFromExternalWallet) ||
-    (!isNativeNearDeposit &&
-      ctx.sourceToken?.assetId === ctx.targetToken?.assetId);
+  const isInternalQuoteSuccess = guardStates(ctx, ['quote_success_internal']);
 
-  const depositStatusQuery = useExternalDepositStatus({
-    depositAddress: isValidState ? ctx.quote.depositAddress : '',
-    depositAddressType: isBridgePoaDeposit ? 'poa' : 'one_click',
-  });
+  const depositStatusQuery = useExternalDepositStatus(
+    isValidState ? ctx.quote.depositAddress : '',
+  );
 
   useEffect(() => {
     const status = depositStatusQuery.data?.status;
@@ -270,7 +256,11 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   }
 
   if (!depositStatusQuery.data) {
-    return <QrCode address={ctx.quote.depositAddress} />;
+    return isInternalQuoteSuccess ? (
+      <QrCode address={ctx.quote.depositAddress} />
+    ) : (
+      <Skeleton />
+    );
   }
 
   switch (depositStatusQuery.status) {
@@ -317,7 +307,11 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
         case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
           return <StatusWidget.Success />;
         case GetExecutionStatusResponse.status.PENDING_DEPOSIT:
-          return <QrCode address={ctx.quote.depositAddress} />;
+          return isInternalQuoteSuccess ? (
+            <QrCode address={ctx.quote.depositAddress} />
+          ) : (
+            <Skeleton />
+          );
         case GetExecutionStatusResponse.status.SUCCESS:
           return <StatusWidget.Success />;
         default:

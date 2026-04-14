@@ -9,9 +9,5 @@ export const DEFAULT_RPCS: ChainRpcUrls = {
   sui: ['https://sui-mainnet-endpoint.blockvision.org'],
   cardano: ['https://rpc-mainnet-cardano-evm.c1.milkomeda.com'],
   doge: ['https://go.getblock.io/5f7f5fba970e4f7a907fcd2c5f4c38a2'],
-  near: [
-    'https://nearrpc.aurora.dev',
-    'https://free.rpc.fastnear.com',
-    'https://rpc.mainnet.near.org',
-  ],
+  near: ['https://free.rpc.fastnear.com', 'https://rpc.mainnet.near.org'],
 };
