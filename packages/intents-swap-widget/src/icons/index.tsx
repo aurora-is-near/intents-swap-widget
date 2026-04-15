@@ -49,10 +49,12 @@ import XdaiIcon from './xdai.svg';
 import XrpIcon from './xrp.svg';
 import ZecIcon from './zec.svg';
 import StellarIcon from './stellar.svg';
+import NearIntentsIcon from './intents.svg';
 
 import type { Chains } from '@/types/chain';
 
 export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
+export const NEAR_INTENTS_ICON: React.ReactElement = <NearIntentsIcon />;
 
 export const CHAIN_ICONS: Record<
   Chains,

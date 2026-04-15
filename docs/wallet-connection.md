@@ -96,7 +96,6 @@ export default function App() {
   return (
     <WidgetConfigProvider
       config={{
-        appName: 'MyApp',
         connectedWallets: { default: address },
         providers: { evm: window.ethereum },
         onWalletSignin: connect,
@@ -115,7 +114,6 @@ export default function App() {
 const { publicKey, signMessage, signTransaction } = useYourSolanaWallet();
 
 const config = {
-  appName: 'MyApp',
   connectedWallets: { default: publicKey?.toBase58() },
   providers: {
     sol: { publicKey, signMessage, signTransaction },
@@ -176,7 +174,6 @@ Then pass it into the config:
 
 ```tsx
 const config = {
-  appName: 'MyApp',
   connectedWallets: { default: privyWallet.address },
   providers: {
     sol: solanaProviderFromPrivy(privyWallet),
@@ -192,7 +189,6 @@ const config = {
 const nearWallet = useYourNearWallet();
 
 const config = {
-  appName: 'MyApp',
   connectedWallets: { default: nearWallet.accountId },
   providers: {
     near: () => nearWallet,
@@ -209,7 +205,6 @@ providers together:
 
 ```tsx
 const config = {
-  appName: 'MyApp',
   connectedWallets: {
     default: evmAddress,
     sol: solanaAddress,

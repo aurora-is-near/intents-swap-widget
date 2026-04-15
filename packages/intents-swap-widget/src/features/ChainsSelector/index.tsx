@@ -1,6 +1,6 @@
 import { ChainsDropdown } from '../ChainsDropdown';
 
-import { CHAIN_ICONS } from '@/icons';
+import { CHAIN_ICONS, NEAR_INTENTS_ICON } from '@/icons';
 import { ChainShortcut } from '@/components/ChainShortcut';
 
 import { cn } from '@/utils/cn';
@@ -31,8 +31,7 @@ export const ChainsSelector = ({
 }: Props) => {
   const chains = useChains(variant);
   const { intentsAccountType } = useIntentsAccountType();
-  const { appIcon, appName, topChainShortcuts, enableAccountAbstraction } =
-    useConfig();
+  const { topChainShortcuts, enableAccountAbstraction } = useConfig();
 
   const topChains =
     topChainShortcuts?.(intentsAccountType) ??
@@ -49,8 +48,8 @@ export const ChainsSelector = ({
       <ul className="flex items-center gap-sw-md mr-auto flex-wrap h-[36px] overflow-hidden">
         {enableAccountAbstraction && (
           <ChainShortcut
-            icon={appIcon}
-            label={appName}
+            icon={NEAR_INTENTS_ICON}
+            label="Intents Account"
             isSelected={selectedChain === 'intents'}
             onClick={() => onMsg({ type: 'on_select_chain', chain: 'intents' })}
           />

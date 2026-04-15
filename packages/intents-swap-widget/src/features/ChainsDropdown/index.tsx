@@ -4,13 +4,14 @@ import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-roun
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { ChainItem } from './ChainItem';
-import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { AllNetworksIcon } from '@/components/AllNetworksIcon';
 import { useChains } from '@/hooks/useChains';
+import { useTheme } from '@/hooks/useTheme';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
-import { CHAIN_ICONS, UNKNOWN_ICON } from '@/icons';
+import { CHAIN_ICONS, NEAR_INTENTS_ICON, UNKNOWN_ICON } from '@/icons';
+import { getThemeCssVariables } from '@/theme/getThemeCssVariables';
 import type { Chains, ChainsFilter } from '@/types/chain';
 
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
@@ -29,9 +30,10 @@ export const ChainsDropdown = ({
   onMsg,
 }: Props) => {
   const { t } = useTypedTranslation();
+  const theme = useTheme();
+  const themeCssVariables = getThemeCssVariables(theme);
 
   const chains = useChains(variant);
-  const { appIcon, appName } = useConfig();
 
   const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
   const numberOfItems = chains.length + (hasIntentsAccountMenuItem ? 1 : 0);
@@ -74,6 +76,7 @@ export const ChainsDropdown = ({
                 animate={{ opacity: 1, scale: 1 }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 anchor={{ to: 'bottom end', gap: 8, padding: 32 }}
+                style={themeCssVariables}
                 className="hide-scrollbar gap-sw-xxs p-sw-md z-10 flex max-h-[400px] min-w-[200px] flex-col rounded-sw-lg bg-sw-gray-800 shadow-[0_6px_48px_0_rgba(36,38,45,0.3)] ring-1 ring-inset ring-sw-gray-700 outline-none">
                 {chains.length > 1 && (
                   <MenuItem>
@@ -105,10 +108,10 @@ export const ChainsDropdown = ({
                     {({ focus }) => (
                       <ChainItem
                         chain="intents"
-                        label={appName}
+                        label="Near Intents"
                         isSelected={selected === 'intents'}
                         isFocused={focus}
-                        icon={appIcon ?? UNKNOWN_ICON}
+                        icon={NEAR_INTENTS_ICON}
                         onMsg={(msg) => {
                           switch (msg.type) {
                             case 'on_click_chain':

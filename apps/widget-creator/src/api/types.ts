@@ -10,8 +10,6 @@ export type ApiKey = {
 };
 
 type SerializableWidgetConfigKeys =
-  | 'appName'
-  | 'appIcon'
   | 'apiKey'
   | 'enableAccountAbstraction'
   | 'walletSupportedChains'

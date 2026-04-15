@@ -142,7 +142,7 @@ const validateNearPublicKey = async (
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
-  const { appName } = useConfig();
+  const { referral } = useConfig();
   const { isNativeNearDeposit, isDirectNearTokenWithdrawal } =
     useComputedSnapshot();
 
@@ -258,7 +258,9 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         notReachable(intentsAccountType);
     }
 
-    const sdk = new IntentsSDK({ referral: snakeCase(appName) });
+    const sdk = new IntentsSDK({
+      referral: snakeCase(referral ?? 'near-intents-widget'),
+    });
 
     sdk.setIntentSigner(signer);
 

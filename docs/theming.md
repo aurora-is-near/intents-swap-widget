@@ -18,7 +18,6 @@ export default function App() {
   return (
     <WidgetConfigProvider
       config={{
-        appName: 'My App',
         theme: {
           colorScheme: 'dark',
           accentColor: '#0098EA',

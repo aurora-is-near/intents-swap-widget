@@ -18,9 +18,8 @@ export type PriorityAssets =
 
 export type WidgetConfig = {
   // Application metadata
-  appName: string;
-  appIcon?: string;
   apiKey?: string;
+  referral?: string;
 
   // Account abstraction
   enableAccountAbstraction?: boolean;

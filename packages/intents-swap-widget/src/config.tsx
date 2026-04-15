@@ -18,7 +18,6 @@ import { useLocalisation } from './localisation';
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { DEFAULT_CHAINS_ORDER } from '@/constants/chains';
-import { useFaviconUrl } from '@/hooks';
 import type { Token } from '@/types/token';
 
 const queryClient = new QueryClient({
@@ -41,8 +40,6 @@ const DISABLED_TOKENS = [
 ];
 
 const DEFAULT_CONFIG: WidgetConfig = {
-  appName: 'Unknown',
-
   slippageTolerance: 100, // 1%
   connectedWallets: {},
 
@@ -114,13 +111,10 @@ export const WidgetConfigProvider = ({
   rpcs,
   theme,
 }: WidgetConfigProviderProps) => {
-  const faviconUrl = useFaviconUrl();
-
   const storeRef = useRef(
     proxy({
       config: deepClone({
         ...DEFAULT_CONFIG,
-        appIcon: userConfig.appIcon ?? faviconUrl ?? undefined,
         ...userConfig,
       }),
     }),
@@ -129,13 +123,12 @@ export const WidgetConfigProvider = ({
   useEffect(() => {
     const next = deepClone({
       ...DEFAULT_CONFIG,
-      appIcon: userConfig.appIcon ?? faviconUrl ?? undefined,
       ...userConfig,
     });
 
     Object.assign(storeRef.current.config, next);
     resetConfig(next);
-  }, [userConfig, faviconUrl]);
+  }, [userConfig]);
 
   // Initialise localisation
   useLocalisation(localisation);

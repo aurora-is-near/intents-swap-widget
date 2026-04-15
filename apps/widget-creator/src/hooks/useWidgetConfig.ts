@@ -10,7 +10,6 @@ export const useWidgetConfig = () => {
   const { state } = useCreator();
   const widgetConfig = useMemo(
     (): SerializableWidgetConfig & Partial<WidgetConfig> => ({
-      appName: 'Near Intents',
       apiKey: DEFAULT_APP_KEY,
       connectedWallets: {},
       slippageTolerance: 100,

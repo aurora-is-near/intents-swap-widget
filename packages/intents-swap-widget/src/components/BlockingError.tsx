@@ -18,7 +18,8 @@ export const BlockingError = ({ message, onClickRetry }: Props) => (
           <h3 className="text-sw-value-lg text-sw-accent-500">Ooops...</h3>
         </header>
         <p className="text-sw-body-md text-center text-sw-gray-100">
-          {message} <br /> Please try again or contact support.
+          {message} <br />{' '}
+          {onClickRetry && 'Please try again or contact support.'}
         </p>
       </div>
       {onClickRetry && (

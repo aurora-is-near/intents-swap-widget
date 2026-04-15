@@ -24,7 +24,7 @@ export const useNotification = (
 ): Notification => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { appName, sendAddress } = useConfig();
+  const { sendAddress } = useConfig();
   const { supportedChains } = useSupportedChains();
 
   return useMemo(() => {
@@ -166,8 +166,7 @@ export const useNotification = (
         variant: 'success',
         state: 'default',
         message: t('wallet.recipient.message.receiveFunds', {
-          defaultValue: 'You will receive funds on your {{appName}} account',
-          appName,
+          defaultValue: 'You will receive funds on your Intents account',
         }),
       };
     }

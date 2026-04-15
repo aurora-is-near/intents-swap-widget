@@ -81,7 +81,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
 export function App() {
   return (
-    <WidgetConfigProvider configID="${remoteConfigId ?? ''}" apiKey="${selectedApiKey}">
+    <WidgetConfigProvider configId="${remoteConfigId ?? ''}" apiKey="${selectedApiKey}">
       <Widget />
     </WidgetConfigProvider>
   );

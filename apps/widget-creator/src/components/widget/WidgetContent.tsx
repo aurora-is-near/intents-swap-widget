@@ -89,7 +89,7 @@ export function WidgetContent() {
         tabs={
           state.widgetMode === 'deposit'
             ? ['topup']
-            : ['swap', 'deposit', 'withdraw', 'topup']
+            : ['swap', 'deposit', 'withdraw']
         }
       />
       {exampleBanner && (

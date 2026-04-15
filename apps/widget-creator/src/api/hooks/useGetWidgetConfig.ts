@@ -8,6 +8,7 @@ export const useGetWidgetConfig = (uuid?: string | null) => {
   return useQuery<WidgetConfigRecord, FeeServiceGetWidgetConfigError>({
     queryKey: ['widgetConfig', uuid ?? 'missing'],
     enabled: Boolean(uuid),
+    retry: 3,
     queryFn: async () => {
       if (!uuid) {
         throw new FeeServiceGetWidgetConfigError('FAILED_TO_GET_WIDGET_CONFIG');

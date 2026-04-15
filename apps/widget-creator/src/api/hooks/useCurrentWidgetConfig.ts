@@ -5,12 +5,16 @@ import { getCurrentWidgetConfig } from '../requests/getCurrentWidgetConfig';
 import { FeeServiceGetWidgetConfigError } from '../errors';
 import type { WidgetConfigRecord } from '../types';
 
-export const useCurrentWidgetConfig = () => {
+export const useCurrentWidgetConfig = ({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}) => {
   const { authenticated, getAccessToken, user } = usePrivy();
 
   return useQuery<WidgetConfigRecord, FeeServiceGetWidgetConfigError>({
     queryKey: ['widgetConfig', 'current', user?.id ?? 'anonymous'],
-    enabled: authenticated,
+    enabled: enabled && authenticated,
     retry: false,
     queryFn: async () => {
       const authToken = await getAccessToken();

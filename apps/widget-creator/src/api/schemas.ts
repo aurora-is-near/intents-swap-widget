@@ -162,8 +162,6 @@ export const widgetThemeSchema: z.ZodType<SerializableTheme> = z
 
 export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
   .object({
-    appName: z.string(),
-    appIcon: z.string().optional(),
     apiKey: z.string().optional(),
     enableAccountAbstraction: z.boolean().optional(),
     walletSupportedChains: z.array(chainsSchema).readonly().optional(),

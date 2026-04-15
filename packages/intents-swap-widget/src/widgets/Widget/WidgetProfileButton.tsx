@@ -11,8 +11,6 @@ export const WidgetProfileButton = () => {
         throw new Error(
           'A walletSignOut function was not provided via the widget config',
         );
-
-        return;
       }
 
       walletSignOut?.();
@@ -24,8 +22,6 @@ export const WidgetProfileButton = () => {
       throw new Error(
         'A walletSignIn function was not provided via the widget config',
       );
-
-      return;
     }
 
     walletSignIn?.();

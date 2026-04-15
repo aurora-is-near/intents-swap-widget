@@ -36,8 +36,6 @@ jest.useFakeTimers();
 
 const WidgetDepositSetup = () => {
   const config: Partial<WidgetConfig> = {
-    appName: 'Test',
-    appIcon: '/test-icon.png',
     apiKey: 'test-api-key',
     enableAccountAbstraction: true,
     alchemyApiKey: 'test-alchemy-api-key',
@@ -128,7 +126,7 @@ describe('Deposit', () => {
     const { screen, within, user } = setup(<WidgetDepositSetup />);
 
     // 1. Input initial state (no token: card shows static "0", not an amount field)
-    const tokenInput = await screen.findByLabelText('Sell');
+    const tokenInput = await screen.findByLabelText('Deposit');
     expect(within(tokenInput).getByText('0')).toBeInTheDocument();
     expect(within(tokenInput).getByText('Select token')).toBeInTheDocument();
     expect(

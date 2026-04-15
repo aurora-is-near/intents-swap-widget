@@ -7,7 +7,11 @@ import { useCreator } from '@/hooks/useCreatorConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 
-export const useApplyRemoteWidgetConfig = () => {
+export const useApplyRemoteWidgetConfig = ({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}) => {
   const { authenticated, user } = usePrivy();
   const { dispatch } = useCreator();
   const { widgetConfig } = useWidgetConfig();
@@ -17,7 +21,7 @@ export const useApplyRemoteWidgetConfig = () => {
     error: currentWidgetConfigError,
     refetch: refetchCurrentWidgetConfig,
     status: currentWidgetConfigStatus,
-  } = useCurrentWidgetConfig();
+  } = useCurrentWidgetConfig({ enabled });
 
   const createWidgetConfigMutation = useCreateWidgetConfig();
   const {
@@ -42,9 +46,13 @@ export const useApplyRemoteWidgetConfig = () => {
     appliedRemoteConfigKeyRef.current = null;
     attemptedCreateConfigKeyRef.current = null;
     reset();
-  }, [reset, user?.id]);
+  }, [enabled, reset, user?.id]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (!authenticated || currentWidgetConfigStatus !== 'error') {
       return;
     }
@@ -88,6 +96,10 @@ export const useApplyRemoteWidgetConfig = () => {
   ]);
 
   useLayoutEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (!authenticated || currentWidgetConfigStatus !== 'success') {
       return;
     }
@@ -116,6 +128,7 @@ export const useApplyRemoteWidgetConfig = () => {
     currentWidgetConfig,
     currentWidgetConfigStatus,
     dispatch,
+    enabled,
     user?.id,
   ]);
 
@@ -123,6 +136,7 @@ export const useApplyRemoteWidgetConfig = () => {
     currentWidgetConfig,
     hasRemoteWidgetConfig: Boolean(currentWidgetConfig),
     isRemoteWidgetConfigLoading:
+      enabled &&
       authenticated &&
       (currentWidgetConfigStatus === 'pending' ||
         (currentWidgetConfigError?.code === 'WIDGET_CONFIG_NOT_FOUND' &&

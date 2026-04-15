@@ -45,7 +45,11 @@ const stableSerialize = (value: unknown): string => {
   return `{${entries.join(',')}}`;
 };
 
-export const useSyncRemoteWidgetConfig = () => {
+export const useSyncRemoteWidgetConfig = ({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}) => {
   const { authenticated } = usePrivy();
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
@@ -53,7 +57,7 @@ export const useSyncRemoteWidgetConfig = () => {
     data: currentWidgetConfig,
     error: currentWidgetConfigError,
     status: currentWidgetConfigStatus,
-  } = useCurrentWidgetConfig();
+  } = useCurrentWidgetConfig({ enabled });
 
   const remoteWidgetConfigPayload = useMemo(() => {
     const { apiKey: _apiKey, ...configWithoutApiKey } = widgetConfig;
@@ -110,6 +114,10 @@ export const useSyncRemoteWidgetConfig = () => {
   } = updateWidgetConfigMutation;
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (!authenticated || currentWidgetConfigStatus !== 'success') {
       return;
     }
@@ -133,6 +141,7 @@ export const useSyncRemoteWidgetConfig = () => {
     authenticated,
     currentWidgetConfig,
     currentWidgetConfigStatus,
+    enabled,
     hasRemoteConfigChanged,
     mutateAsync,
     remoteWidgetConfigPayload,
@@ -140,6 +149,10 @@ export const useSyncRemoteWidgetConfig = () => {
   ]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (currentWidgetConfigStatus !== 'error') {
       return;
     }
@@ -149,5 +162,5 @@ export const useSyncRemoteWidgetConfig = () => {
     }
 
     reset();
-  }, [currentWidgetConfigError, currentWidgetConfigStatus, reset]);
+  }, [currentWidgetConfigError, currentWidgetConfigStatus, enabled, reset]);
 };
