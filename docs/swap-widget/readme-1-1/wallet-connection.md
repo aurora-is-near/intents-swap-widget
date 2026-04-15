@@ -1,3 +1,7 @@
+---
+icon: link
+---
+
 # Wallet Connection
 
 The **Intents Swap Widget** needs access to a wallet to sign transactions and fetch balances. You choose how that wallet connection happens: either the widget manages it for you, or you handle it yourself and pass the details in.
@@ -63,7 +67,7 @@ This is the default mode when installing the `@aurora-is-near/intents-swap-widge
 * **`onWalletSignin`** — Called when the user taps the action button while disconnected. Use this to trigger your own connect flow.
 * **`onWalletSignout`** — Called when the widget needs to disconnect the wallet (e.g. during an incompatible-wallet check).
 
-See the [Configuration](../configuration.md) page for the full reference on each prop.
+See the [Configuration](../../configuration.md) page for the full reference on each prop.
 
 ### EVM example
 

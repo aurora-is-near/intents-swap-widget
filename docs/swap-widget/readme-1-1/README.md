@@ -1,3 +1,7 @@
+---
+icon: wrench
+---
+
 # Configuration
 
 The **Intents Swap Widget** is highly configurable, allowing developers to tailor its appearance and behavior to fit their application.
@@ -350,7 +354,7 @@ const config = {
 
 ### `alchemyApiKey`
 
-An API key for integrating with [Alchemy](../alchemy.com).
+An API key for integrating with [Alchemy](../../alchemy.com).
 
 This is useful for enabling more reliable balance fetching for EVM chains.
 

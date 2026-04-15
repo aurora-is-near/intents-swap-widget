@@ -1,3 +1,7 @@
+---
+icon: grip
+---
+
 # Widgets
 
 The **Intents Swap Widget** package exports multiple pre-built widget components, `Widget`, `WidgetSwap`, `WidgetWithdraw` and `WidgetDeposit`.
@@ -14,7 +18,7 @@ import { Widget } from '@aurora-is-near/intents-swap-widget';
 <Widget />
 ```
 
-As well as the global configuration properties provided via the `WidgetConfigProvider` (see [Configuration](readme-1-1.md)), the widgets each accept a number of properties.
+As well as the global configuration properties provided via the `WidgetConfigProvider` (see [Configuration](./)), the widgets each accept a number of properties.
 
 ## Making transfers
 
