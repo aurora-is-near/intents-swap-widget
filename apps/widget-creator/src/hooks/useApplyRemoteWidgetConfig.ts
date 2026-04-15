@@ -80,7 +80,11 @@ export const useApplyRemoteWidgetConfig = ({
         error.code === 'WIDGET_CONFIG_ALREADY_EXISTS'
       ) {
         void refetchCurrentWidgetConfig();
+
+        return;
       }
+
+      attemptedCreateConfigKeyRef.current = null;
     });
   }, [
     authenticated,

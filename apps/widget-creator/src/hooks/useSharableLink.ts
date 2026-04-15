@@ -16,9 +16,9 @@ export const useSharableLink = () => {
   const selectedApiKey = state.apiKey || apiKeys?.[0]?.widgetApiKey;
 
   const currentDomain =
-    (typeof window !== 'undefined' &&
-      window.location.origin.includes('localhost')) ||
-    window.location.origin.includes('auroraisnear.vercel.app')
+    typeof window !== 'undefined' &&
+    (window.location.origin.includes('localhost') ||
+      window.location.origin.includes('auroraisnear.vercel.app'))
       ? window.location.origin
       : SHARABLE_LINK_BASE_URL;
 
@@ -49,7 +49,15 @@ export const useSharableLink = () => {
       return null;
     }
 
-    await navigator.clipboard.writeText(sharableLink);
+    if (!navigator.clipboard?.writeText) {
+      return null;
+    }
+
+    try {
+      await navigator.clipboard.writeText(sharableLink);
+    } catch {
+      return null;
+    }
 
     return sharableLink;
   };

@@ -126,7 +126,7 @@ export const useSyncRemoteWidgetConfig = ({
       return;
     }
 
-    if (updateStatus === 'pending') {
+    if (updateStatus === 'pending' || updateStatus === 'error') {
       return;
     }
 

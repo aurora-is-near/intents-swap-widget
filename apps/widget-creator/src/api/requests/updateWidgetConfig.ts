@@ -36,7 +36,7 @@ export const updateWidgetConfig = async (
     let message = 'Failed to update widget config';
 
     if (error instanceof AxiosError) {
-      message = error.response?.data?.message;
+      message = error.response?.data?.message ?? message;
 
       if (error.response?.status === 401) {
         throw new FeeServiceUpdateWidgetConfigError('INVALID_AUTHORIZATION');

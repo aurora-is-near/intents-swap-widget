@@ -283,9 +283,10 @@ export const TokensList = ({
             'tokens.list.noBalanceOnApp.subLabel',
             'Deposit funds to get started',
           )}
-          heading={t('tokens.list.noBalanceOnApp.label', {
-            defaultValue: 'You have no balances on Near Intents',
-          })}
+          heading={t(
+            'tokens.list.noBalanceOnApp.label',
+            'You have no balances on Near Intents',
+          )}
         />
       );
   }

@@ -15,7 +15,7 @@ export const getWidgetConfig = async (uuid: string) => {
     let message = 'Failed to get widget config';
 
     if (error instanceof AxiosError) {
-      message = error.response?.data?.message;
+      message = error.response?.data?.message ?? message;
 
       if (error.response?.status === 404) {
         throw new FeeServiceGetWidgetConfigError(

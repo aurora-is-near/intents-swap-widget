@@ -18,7 +18,7 @@ import { useIntentsAccountType } from './useIntentsAccountType';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
-import { INTENTS_CONTRACT } from '@/constants';
+import { FALLBACK_REFERRAL, INTENTS_CONTRACT } from '@/constants';
 import { notReachable } from '@/utils/notReachable';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
@@ -259,7 +259,7 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
     }
 
     const sdk = new IntentsSDK({
-      referral: snakeCase(referral ?? 'near-intents-widget'),
+      referral: snakeCase(referral ?? FALLBACK_REFERRAL),
     });
 
     sdk.setIntentSigner(signer);

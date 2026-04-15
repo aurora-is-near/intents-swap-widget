@@ -143,7 +143,11 @@ const chainsFiltersSchema = z.object({
 });
 
 const hexColorSchema = z.custom<`#${string}`>(
-  (value) => typeof value === 'string' && /^#[0-9a-fA-F]+$/.test(value),
+  (value) =>
+    typeof value === 'string' &&
+    /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(
+      value,
+    ),
 );
 
 export const widgetThemeSchema: z.ZodType<SerializableTheme> = z

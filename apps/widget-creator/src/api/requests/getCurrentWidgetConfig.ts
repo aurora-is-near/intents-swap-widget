@@ -17,7 +17,7 @@ export const getCurrentWidgetConfig = async (authToken: string) => {
     let message = 'Failed to get widget config';
 
     if (error instanceof AxiosError) {
-      message = error.response?.data?.message;
+      message = error.response?.data?.message ?? message;
 
       if (error.response?.status === 401) {
         throw new FeeServiceGetWidgetConfigError('INVALID_AUTHORIZATION');

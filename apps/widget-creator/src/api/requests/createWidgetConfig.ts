@@ -35,7 +35,7 @@ export const createWidgetConfig = async (
     let message = 'Failed to create widget config';
 
     if (error instanceof AxiosError) {
-      message = error.response?.data?.message;
+      message = error.response?.data?.message ?? message;
 
       if (error.response?.status === 401) {
         throw new FeeServiceCreateWidgetConfigError('INVALID_AUTHORIZATION');

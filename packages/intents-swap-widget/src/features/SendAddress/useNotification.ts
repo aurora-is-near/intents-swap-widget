@@ -170,5 +170,5 @@ export const useNotification = (
         }),
       };
     }
-  }, [ctx, userError, supportedChains]);
+  }, [ctx, sendAddress, userError, supportedChains]);
 };

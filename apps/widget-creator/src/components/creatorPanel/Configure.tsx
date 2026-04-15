@@ -30,7 +30,6 @@ export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
 
-  const [depositAddress, setDepositAddress] = useState('');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
@@ -188,10 +187,9 @@ export function Configure() {
                   })()}
                 </div>
                 <TextInput
-                  value={depositAddress}
+                  value={state.depositModeReceiverAddress}
                   placeholder="Receiver address"
                   onChange={(value) => {
-                    setDepositAddress(value);
                     dispatch({
                       type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
                       payload: value,
