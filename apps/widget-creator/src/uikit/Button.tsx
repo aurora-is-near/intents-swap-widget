@@ -1,8 +1,8 @@
 import { Button as UIButton } from '@headlessui/react';
+import { Loader as LoaderIcon } from 'lucide-react';
 import type { LucideIcon, LucideProps } from 'lucide-react';
 import type { IconProps } from '@material-symbols-svg/react-rounded';
 import type { FC } from 'react';
-import * as Icons from 'lucide-react';
 
 import { cn as clsx } from '../utils/cn';
 
@@ -68,7 +68,7 @@ const ButtonChildren = ({
     hasIcon && state !== 'loading'
       ? (icon ?? (() => <span />))
       : ({ className, ...lucidProps }: LucideProps) => (
-          <Icons.Loader
+          <LoaderIcon
             className={clsx(styles.icon, 'animate-spin', className)}
             {...lucidProps}
           />
