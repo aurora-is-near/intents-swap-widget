@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
 import { useCurrentWidgetConfig } from '@/api/hooks/useCurrentWidgetConfig';
@@ -50,6 +50,7 @@ export const useSyncRemoteWidgetConfig = ({
 }: {
   enabled?: boolean;
 } = {}) => {
+  const failedPayloadSignatureRef = useRef<string | null>(null);
   const { authenticated } = usePrivy();
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
@@ -115,6 +116,27 @@ export const useSyncRemoteWidgetConfig = ({
 
   useEffect(() => {
     if (!enabled) {
+      failedPayloadSignatureRef.current = null;
+
+      return;
+    }
+
+    if (updateStatus !== 'error') {
+      return;
+    }
+
+    if (
+      failedPayloadSignatureRef.current === remoteWidgetConfigPayloadSignature
+    ) {
+      return;
+    }
+
+    failedPayloadSignatureRef.current = null;
+    reset();
+  }, [enabled, remoteWidgetConfigPayloadSignature, reset, updateStatus]);
+
+  useEffect(() => {
+    if (!enabled) {
       return;
     }
 
@@ -131,7 +153,10 @@ export const useSyncRemoteWidgetConfig = ({
     }
 
     const timeoutId = window.setTimeout(() => {
-      void mutateAsync(remoteWidgetConfigPayload);
+      failedPayloadSignatureRef.current = null;
+      void mutateAsync(remoteWidgetConfigPayload).catch(() => {
+        failedPayloadSignatureRef.current = remoteWidgetConfigPayloadSignature;
+      });
     }, SYNC_DEBOUNCE_MS);
 
     return () => {
@@ -145,6 +170,7 @@ export const useSyncRemoteWidgetConfig = ({
     hasRemoteConfigChanged,
     mutateAsync,
     remoteWidgetConfigPayload,
+    remoteWidgetConfigPayloadSignature,
     updateStatus,
   ]);
 
@@ -161,6 +187,7 @@ export const useSyncRemoteWidgetConfig = ({
       return;
     }
 
+    failedPayloadSignatureRef.current = null;
     reset();
   }, [currentWidgetConfigError, currentWidgetConfigStatus, enabled, reset]);
 };
