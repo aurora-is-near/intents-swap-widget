@@ -14,3 +14,7 @@ export * from './ext';
 export * from './types';
 export * from './errors';
 export * from './widgets';
+
+export { WidgetSwapSkeleton } from './widgets/WidgetSwap/WidgetSwapSkeleton';
+export { WidgetWithdrawSkeleton } from './widgets/WidgetWithdraw/WidgetWithdrawSkeleton';
+export { WidgetDepositSkeleton } from './widgets/WidgetDeposit/WidgetDepositSkeleton';

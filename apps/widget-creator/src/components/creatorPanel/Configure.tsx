@@ -7,6 +7,7 @@ import {
   Icon,
 } from '@aurora-is-near/intents-swap-widget';
 import { Button, OutlinedButton } from '../../uikit/Button';
+import { TextInput } from '../../uikit/TextInput';
 import { ConfigSection } from '../../uikit/ConfigSection';
 import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
@@ -23,11 +24,13 @@ import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
 
 import { useApiKeys } from '@/api/hooks';
+import { InfoBanner } from '@/components/InfoBanner';
 
 export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
 
+  const [depositAddress, setDepositAddress] = useState('');
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
@@ -99,6 +102,111 @@ export function Configure() {
         }}
       />
       <div className="flex flex-col gap-csw-2xl">
+        <ConfigSection title="Widget mode">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Swap"
+              description="Full featured swap widget with swap, deposit and withdraw capabilities."
+              isSelected={state.widgetMode === 'swap'}
+              onChange={() =>
+                dispatch({ type: 'SET_WIDGET_MODE', payload: 'swap' })
+              }
+            />
+            <RadioButton
+              label="Deposit"
+              description="Deposit from connected wallet or with QR code to any asset on any account."
+              isSelected={state.widgetMode === 'deposit'}
+              onChange={() =>
+                dispatch({ type: 'SET_WIDGET_MODE', payload: 'deposit' })
+              }
+            />
+            {state.widgetMode === 'deposit' && (
+              <>
+                <div className="my-csw-2xl border-t border-csw-gray-800" />
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                    Deposit asset
+                  </p>
+                  {(() => {
+                    const buyToken = allTokens.find(
+                      (token: TokenType) =>
+                        token.symbol === state.defaultBuyToken?.symbol,
+                    );
+
+                    const buyTokenChain = CHAINS.find(
+                      (chain) => chain.id === state.defaultBuyToken?.blockchain,
+                    );
+
+                    const buyTokenSymbol =
+                      buyToken?.symbol.toLowerCase() === 'wnear'
+                        ? 'NEAR'
+                        : buyToken?.symbol;
+
+                    return (
+                      <div
+                        onClick={() => {
+                          setTokenSelectorType('buy');
+                          setIsTokenSelectorOpen(true);
+                        }}
+                        className="cursor-pointer">
+                        {state.defaultBuyToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              <div>
+                                {buyToken?.icon ? (
+                                  <Icon
+                                    className="text-csw-gray-100 bg-csw-gray-600"
+                                    icon={buyToken.icon}
+                                    label={buyToken.symbol}
+                                    size={24}
+                                  />
+                                ) : (
+                                  <div className="w-[28px] h-[28px] rounded-full">
+                                    {
+                                      ASSET_ICONS[
+                                        buyToken?.symbol.toLowerCase() ?? ''
+                                      ]
+                                    }
+                                  </div>
+                                )}
+                                {buyTokenChain && (
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                    {buyTokenChain.icon}
+                                  </div>
+                                )}
+                              </div>
+                            }
+                            tokenSymbol={
+                              buyTokenSymbol ?? state.defaultBuyToken.symbol
+                            }
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <TextInput
+                  value={depositAddress}
+                  placeholder="Receiver address"
+                  onChange={(value) => {
+                    setDepositAddress(value);
+                    dispatch({
+                      type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
+                      payload: value,
+                    });
+                  }}
+                />
+                <InfoBanner
+                  title="Check receiver address"
+                  description="Make sure your receiver address is on the same network as the selected token. Otherwise, users may lose funds."
+                />
+              </>
+            )}
+          </div>
+        </ConfigSection>
+
         <ConfigSection title="Networks">
           <div className="space-y-csw-xl">
             <div className="flex gap-csw-md items-center">
@@ -268,75 +376,82 @@ export function Configure() {
               )}
             </div>
 
-            <div className="border-t border-csw-gray-800" />
+            {state.widgetMode === 'swap' && (
+              <>
+                <div className="border-t border-csw-gray-800" />
+                <div className="space-y-csw-xl">
+                  <Toggle
+                    label="Set default buy token"
+                    isEnabled={state.enableBuyToken}
+                    onChange={(enabled) =>
+                      dispatch({
+                        type: 'SET_ENABLE_BUY_TOKEN',
+                        payload: enabled,
+                      })
+                    }
+                  />
 
-            <div className="space-y-csw-xl">
-              <Toggle
-                label="Set default buy token"
-                isEnabled={state.enableBuyToken}
-                onChange={(enabled) =>
-                  dispatch({ type: 'SET_ENABLE_BUY_TOKEN', payload: enabled })
-                }
-              />
+                  {state.enableBuyToken && (
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                        Default buy token
+                      </p>
+                      {(() => {
+                        const buyToken = allTokens.find(
+                          (token: TokenType) =>
+                            token.symbol === state.defaultBuyToken?.symbol,
+                        );
 
-              {state.enableBuyToken && (
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
-                    Default buy token
-                  </p>
-                  {(() => {
-                    const buyToken = allTokens.find(
-                      (token: TokenType) =>
-                        token.symbol === state.defaultBuyToken?.symbol,
-                    );
+                        const buyTokenChain = CHAINS.find(
+                          (chain) =>
+                            chain.id === state.defaultBuyToken?.blockchain,
+                        );
 
-                    const buyTokenChain = CHAINS.find(
-                      (chain) => chain.id === state.defaultBuyToken?.blockchain,
-                    );
+                        const buyTokenSymbol =
+                          buyToken?.symbol.toLowerCase() === 'wnear'
+                            ? 'NEAR'
+                            : buyToken?.symbol;
 
-                    const buyTokenSymbol =
-                      buyToken?.symbol.toLowerCase() === 'wnear'
-                        ? 'NEAR'
-                        : buyToken?.symbol;
-
-                    return (
-                      <div
-                        onClick={() => {
-                          setTokenSelectorType('buy');
-                          setIsTokenSelectorOpen(true);
-                        }}
-                        className="cursor-pointer">
-                        {state.defaultBuyToken?.symbol ? (
-                          <TokenTag
-                            tokenIcon={
-                              buyToken?.icon ? (
-                                <div>
-                                  <img
-                                    src={buyToken.icon}
-                                    alt={buyToken.symbol}
-                                    className="size-full rounded-full"
-                                  />
-                                  {buyTokenChain && (
-                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                      {buyTokenChain.icon}
+                        return (
+                          <div
+                            onClick={() => {
+                              setTokenSelectorType('buy');
+                              setIsTokenSelectorOpen(true);
+                            }}
+                            className="cursor-pointer">
+                            {state.defaultBuyToken?.symbol ? (
+                              <TokenTag
+                                tokenIcon={
+                                  buyToken?.icon ? (
+                                    <div>
+                                      <img
+                                        src={buyToken.icon}
+                                        alt={buyToken.symbol}
+                                        className="size-full rounded-full"
+                                      />
+                                      {buyTokenChain && (
+                                        <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                          {buyTokenChain.icon}
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                              ) : undefined
-                            }
-                            tokenSymbol={
-                              buyTokenSymbol ?? state.defaultBuyToken.symbol
-                            }
-                          />
-                        ) : (
-                          <SelectATokenText />
-                        )}
-                      </div>
-                    );
-                  })()}
+                                  ) : undefined
+                                }
+                                tokenSymbol={
+                                  buyTokenSymbol ?? state.defaultBuyToken.symbol
+                                }
+                              />
+                            ) : (
+                              <SelectATokenText />
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </ConfigSection>
 

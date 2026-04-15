@@ -65,7 +65,7 @@ export const DepositSummary = () => {
 
   return (
     <Accordion
-      expandedHeightPx={106}
+      expandedHeightPx={91}
       expandedByDefault={false}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}

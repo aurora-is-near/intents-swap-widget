@@ -84,7 +84,14 @@ export function WidgetContent() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <Widget />
+      <Widget
+        defaultTab={state.widgetMode === 'deposit' ? 'topup' : 'swap'}
+        tabs={
+          state.widgetMode === 'deposit'
+            ? ['topup']
+            : ['swap', 'deposit', 'withdraw', 'topup']
+        }
+      />
       {exampleBanner && (
         <div className="flex justify-center">
           <Banner

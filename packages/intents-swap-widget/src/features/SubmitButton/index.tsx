@@ -26,8 +26,24 @@ const commonBtnProps = {
 };
 
 const useGetErrorButton = (ctx: Context) => {
-  const { apiKey, fetchQuote } = useConfig();
+  const { apiKey, sendAddress, fetchQuote } = useConfig();
   const { t } = useTypedTranslation();
+
+  if (
+    (ctx.state === 'quote_success_external' ||
+      ctx.state === 'quote_success_internal') &&
+    !!sendAddress &&
+    ctx.sendAddress !== sendAddress
+  ) {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t(
+          'submit.error.sendToAddressOverridden',
+          'Overridden recipient address',
+        )}
+      </Button>
+    );
+  }
 
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
     return (

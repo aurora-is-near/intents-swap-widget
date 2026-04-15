@@ -1,13 +1,13 @@
 import { Code, ExternalLink, Menu } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
+import { useState } from 'react';
 
 import CopyIcon from '../assets/icons/copy.svg?react';
 import CheckIcon from '../assets/icons/check-circle.svg?react';
 
-import { useConfigLink, useDecodeConfigLink } from '../hooks/useConfigLink';
-
 import { HeaderButton } from './HeaderButton';
 import { AuthButton } from './auth';
+import { useSharableLink } from '@/hooks/useSharableLink';
 
 type HeaderProps = {
   onOpenDrawer?: () => void;
@@ -15,25 +15,20 @@ type HeaderProps = {
 };
 
 export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
+  const { authenticated } = usePrivy();
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-  const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
-  const { decodeConfigLink } = useDecodeConfigLink();
+  const { copySharableLink } = useSharableLink();
 
   const copyConfigLink = async () => {
-    await originalCopyConfigLink();
+    const sharableLink = await copySharableLink();
+
+    if (!sharableLink) {
+      return;
+    }
+
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
-
-  useEffect(() => {
-    const currentUrl = window.location.href;
-    const params = new URLSearchParams(window.location.search);
-
-    // Check if there are any config parameters in the URL
-    if (params.toString()) {
-      decodeConfigLink(currentUrl);
-    }
-  }, []);
 
   return (
     <header className="w-full flex items-center justify-between px-csw-2xl sm:px-csw-auto">
@@ -57,12 +52,14 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
 
       {/* Desktop nav */}
       <nav className="hidden lg:flex gap-csw-2md items-center">
-        <HeaderButton
-          variant={copyLinkFeedback ? 'success' : 'dark'}
-          LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}
-          onClick={copyConfigLink}>
-          {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
-        </HeaderButton>
+        {authenticated && (
+          <HeaderButton
+            variant={copyLinkFeedback ? 'success' : 'dark'}
+            LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}
+            onClick={copyConfigLink}>
+            {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
+          </HeaderButton>
+        )}
         <HeaderButton
           variant="primary"
           LeadingIcon={Code}

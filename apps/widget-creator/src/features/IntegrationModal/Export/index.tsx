@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
@@ -10,38 +10,19 @@ import { Button as UIButton } from '@headlessui/react';
 import { ApiKeySelect, Header } from '../components';
 
 import { Button } from '@/uikit/Button';
-import { useApiKeys } from '@/api/hooks';
+import {
+  useApiKeys,
+  useCreateWidgetConfig,
+  useCurrentWidgetConfig,
+} from '@/api/hooks';
+import { FeeServiceCreateWidgetConfigError } from '@/api/errors';
 import { useCreator } from '@/hooks/useCreatorConfig';
-import { useConfigLink } from '@/hooks/useConfigLink';
-import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
+import { useWidgetConfig } from '@/hooks/useWidgetConfig';
+import { useSharableLink } from '@/hooks/useSharableLink';
 import { InfoBanner } from '@/components/InfoBanner';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
-
-const applyIndent = (code: string, spaces: number): string => {
-  const pad = ' '.repeat(spaces);
-
-  return code
-    .split('\n')
-    .map((line, index) => {
-      if (!index) {
-        return line;
-      }
-
-      return line ? pad + line : line;
-    })
-    .join('\n');
-};
-
-const stringifyAsJS = (value: unknown, indent: number): string => {
-  const json = JSON.stringify(value, null, 2);
-
-  // Remove quotes from valid JS identifiers
-  const cleanJson = json.replace(/"([a-zA-Z_$][a-zA-Z0-9_$]*)":/g, '$1:');
-
-  return applyIndent(cleanJson, indent);
-};
 
 type Props = {
   onClickApiKeys: () => void;
@@ -74,16 +55,64 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
-  const { refetch: refetchApiKeys, data: apiKeys = [] } = useApiKeys();
+  const { refetch: refetchApiKeys } = useApiKeys();
+  const {
+    data: currentWidgetConfig,
+    error: currentWidgetConfigError,
+    isFetching: isFetchingCurrentWidgetConfig,
+    refetch: refetchCurrentWidgetConfig,
+    status: currentWidgetConfigStatus,
+  } = useCurrentWidgetConfig();
+
+  const createWidgetConfigMutation = useCreateWidgetConfig();
 
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
+  const { copySharableLink } = useSharableLink();
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
-  const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
+  const isUnauthenticated = apiKeysState.state === 'unauthenticated';
   const isStandaloneMode = state.userAuthMode === 'standalone';
+
+  const selectedApiKey =
+    state.apiKey ||
+    (apiKeysState.state === 'has-api-keys'
+      ? apiKeysState.apiKeys[0].widgetApiKey
+      : PLACEHOLDER_APP_KEY);
+
+  const apiKeySelectValue =
+    state.apiKey ||
+    (apiKeysState.state === 'has-api-keys'
+      ? apiKeysState.apiKeys[0].widgetApiKey
+      : undefined);
+
+  const remoteWidgetConfigPayload = useMemo(() => {
+    const { apiKey: _apiKey, ...configWithoutApiKey } = widgetConfig;
+
+    return {
+      config: configWithoutApiKey,
+      theme: themeConfig,
+    };
+  }, [themeConfig, widgetConfig]);
+
+  const remoteConfigId = (
+    currentWidgetConfig ?? createWidgetConfigMutation.data
+  )?.uuid;
+
+  const remoteConfigError =
+    createWidgetConfigMutation.error ??
+    (currentWidgetConfigError?.code !== 'WIDGET_CONFIG_NOT_FOUND'
+      ? currentWidgetConfigError
+      : null);
+
+  const isCodeSnippetLoading =
+    isFetchingCurrentWidgetConfig ||
+    currentWidgetConfigStatus === 'pending' ||
+    createWidgetConfigMutation.status === 'pending' ||
+    (!remoteConfigId &&
+      currentWidgetConfigError?.code === 'WIDGET_CONFIG_NOT_FOUND');
 
   // we don't want to expose our default app key to the exported code
   // but want a widget to function in a studio so we swap them here
@@ -91,10 +120,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
 export function App() {
   return (
-    <WidgetConfigProvider
-      config={${stringifyAsJS({ ...widgetConfig, apiKey: apiKeys[0]?.widgetApiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
-      theme={${stringifyAsJS(themeConfig, 6)}}
-    >
+    <WidgetConfigProvider configID="${remoteConfigId ?? ''}" apiKey="${selectedApiKey}">
       <Widget />
     </WidgetConfigProvider>
   );
@@ -105,13 +131,22 @@ export function App() {
   };
 
   const handleCopyCode = async () => {
+    if (!remoteConfigId) {
+      return;
+    }
+
     await navigator.clipboard.writeText(sampleCode);
     setCopyCodeFeedback(true);
     setTimeout(() => setCopyCodeFeedback(false), 2000);
   };
 
   const handleCopySharableLink = async () => {
-    await originalCopyConfigLink();
+    const sharableLink = await copySharableLink();
+
+    if (!sharableLink) {
+      return;
+    }
+
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
@@ -122,34 +157,67 @@ export function App() {
     }
   }, [apiKeysState.state]);
 
+  useEffect(() => {
+    if (currentWidgetConfigStatus !== 'error') {
+      return;
+    }
+
+    if (currentWidgetConfigError?.code !== 'WIDGET_CONFIG_NOT_FOUND') {
+      return;
+    }
+
+    if (
+      createWidgetConfigMutation.status === 'pending' ||
+      createWidgetConfigMutation.status === 'success'
+    ) {
+      return;
+    }
+
+    void createWidgetConfigMutation
+      .mutateAsync(remoteWidgetConfigPayload)
+      .catch((error: unknown) => {
+        if (
+          error instanceof FeeServiceCreateWidgetConfigError &&
+          error.code === 'WIDGET_CONFIG_ALREADY_EXISTS'
+        ) {
+          void refetchCurrentWidgetConfig();
+        }
+      });
+  }, [
+    createWidgetConfigMutation,
+    currentWidgetConfigError,
+    currentWidgetConfigStatus,
+    refetchCurrentWidgetConfig,
+    remoteWidgetConfigPayload,
+  ]);
+
   return (
     <>
-      <div className="px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
-        <Header
-          title="Embed code"
-          description={
-            <>
-              Add the Intents Widget to your app using an API key.{' '}
-              <br className="hidden sm:block" />
-              Your API key controls configuration, fees, and reporting for your
-              integration.
-            </>
-          }
-          warning={
-            <>
-              For more details, check out{' '}
-              <a
-                href="https://docs.intents.aurora.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-csw-xxs underline">
-                Developer Quick Start
-                <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
-              </a>
-            </>
-          }
-        />
-      </div>
+      <Header
+        title="Embed code"
+        className="px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900"
+        description={
+          <>
+            Add the Intents Widget to your app using an API key.{' '}
+            <br className="hidden sm:block" />
+            Your API key controls configuration, fees, and reporting for your
+            integration.
+          </>
+        }
+        warning={
+          <>
+            For more details, check out{' '}
+            <a
+              href="https://docs.intents.aurora.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-csw-xxs underline">
+              Developer Quick Start
+              <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
+            </a>
+          </>
+        }
+      />
 
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
         {(() => {
@@ -184,9 +252,6 @@ export function App() {
               );
 
             case 'has-api-keys': {
-              const apiKeySelected =
-                state.apiKey ?? apiKeysState.apiKeys[0].widgetApiKey;
-
               return (
                 <div className="flex flex-col gap-csw-md">
                   <header className="flex items-center justify-between">
@@ -206,12 +271,12 @@ export function App() {
                     </UIButton>
                   </header>
 
-                  {apiKeySelected ? (
+                  {apiKeySelectValue ? (
                     <ApiKeySelect
                       keys={apiKeysState.apiKeys.map(
                         (apiKey) => apiKey.widgetApiKey,
                       )}
-                      selected={apiKeySelected}
+                      selected={apiKeySelectValue}
                       onChange={handleApiKeySelect}
                     />
                   ) : (
@@ -227,81 +292,118 @@ export function App() {
           }
         })()}
 
-        <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
-          <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
-            <span className="text-csw-label-md text-csw-gray-50">React</span>
-            <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
-            <Highlight theme={themes.dracula} code={sampleCode} language="tsx">
-              {({ tokens, getLineProps, getTokenProps }) => (
-                <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
-                  {tokens.map((line, i) => {
-                    const {
-                      style: lineStyle,
-                      className: lineClassName,
-                      ...lineOtherProps
-                    } = getLineProps({
-                      line,
-                    });
+        {!isUnauthenticated &&
+          // eslint-disable-next-line no-nested-ternary
+          (remoteConfigError ? (
+            <InfoBanner
+              state="error"
+              action="Try again"
+              title="Unable to prepare embed code"
+              description="We couldn't load or create your remote widget configuration. Please try again."
+              onClick={() => {
+                createWidgetConfigMutation.reset();
+                void refetchCurrentWidgetConfig();
+              }}
+            />
+          ) : isCodeSnippetLoading ? (
+            <div className="space-y-csw-md bg-csw-gray-800 animate-pulse h-[250px] rounded-csw-md" />
+          ) : (
+            <div className="overflow-y-auto flex-shrink-1 min-h-[250px] pb-csw-2xl w-full">
+              <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
+                <span className="text-csw-label-md text-csw-gray-50">
+                  React
+                </span>
+                <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
+                <Highlight
+                  theme={themes.dracula}
+                  code={sampleCode}
+                  language="tsx">
+                  {({ tokens, getLineProps, getTokenProps }) => (
+                    <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
+                      {tokens.map((line, i) => {
+                        const {
+                          style: lineStyle,
+                          className: lineClassName,
+                          ...lineOtherProps
+                        } = getLineProps({
+                          line,
+                        });
 
-                    return (
-                      <div
-                        key={i}
-                        className={`table-row ${lineClassName || ''}`}
-                        style={lineStyle as React.CSSProperties}
-                        {...lineOtherProps}>
-                        <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
-                          {i + 1}
-                        </span>
-                        <span className="table-cell">
-                          {line.map((token, key) => {
-                            const {
-                              style: tokenStyle,
-                              className: tokenClassName,
-                              ...tokenOtherProps
-                            } = getTokenProps({ token });
+                        return (
+                          <div
+                            key={i}
+                            className={`table-row ${lineClassName || ''}`}
+                            style={lineStyle as React.CSSProperties}
+                            {...lineOtherProps}>
+                            <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
+                              {i + 1}
+                            </span>
+                            <span className="table-cell">
+                              {line.map((token, key) => {
+                                const {
+                                  style: tokenStyle,
+                                  className: tokenClassName,
+                                  ...tokenOtherProps
+                                } = getTokenProps({ token });
 
-                            return (
-                              <span
-                                key={key}
-                                className={tokenClassName || ''}
-                                style={tokenStyle as React.CSSProperties}
-                                {...tokenOtherProps}
-                              />
-                            );
-                          })}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </pre>
-              )}
-            </Highlight>
-          </div>
+                                return (
+                                  <span
+                                    key={key}
+                                    className={tokenClassName || ''}
+                                    style={tokenStyle as React.CSSProperties}
+                                    {...tokenOtherProps}
+                                  />
+                                );
+                              })}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </pre>
+                  )}
+                </Highlight>
+              </div>
+            </div>
+          ))}
+      </div>
+
+      {!isUnauthenticated && (
+        <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
+          <Button
+            variant="primary"
+            detail="dimmed"
+            size="sm"
+            fluid
+            icon={Link}
+            className="w-full"
+            onClick={handleCopySharableLink}>
+            {copyLinkFeedback ? 'Copied!' : 'Copy sharable link'}
+          </Button>
+          <Button
+            variant="primary"
+            detail="accent"
+            size="sm"
+            fluid
+            icon={ContentCopy}
+            state={
+              // eslint-disable-next-line no-nested-ternary
+              isCodeSnippetLoading
+                ? 'loading'
+                : remoteConfigId
+                  ? 'default'
+                  : 'disabled'
+            }
+            className="w-full"
+            onClick={handleCopyCode}>
+            {/* eslint-disable-next-line no-nested-ternary */}
+            {copyCodeFeedback
+              ? 'Copied!'
+              : isCodeSnippetLoading
+                ? 'Preparing code...'
+                : 'Copy code'}
+          </Button>
         </div>
-      </div>
-
-      <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
-        <Button
-          variant="primary"
-          detail="dimmed"
-          size="sm"
-          fluid
-          icon={Link}
-          className="w-full"
-          onClick={handleCopySharableLink}>
-          {copyLinkFeedback ? 'Copied!' : 'Copy sharable link'}
-        </Button>
-        <Button
-          variant="primary"
-          detail="accent"
-          size="sm"
-          fluid
-          icon={ContentCopy}
-          className="w-full"
-          onClick={handleCopyCode}>
-          {copyCodeFeedback ? 'Copied!' : 'Copy code'}
-        </Button>
-      </div>
+      )}
     </>
   );
 };

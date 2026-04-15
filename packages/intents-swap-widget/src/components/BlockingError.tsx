@@ -6,7 +6,7 @@ import { Card } from './Card';
 
 type Props = {
   message: string;
-  onClickRetry: () => void;
+  onClickRetry?: () => void;
 };
 
 export const BlockingError = ({ message, onClickRetry }: Props) => (
@@ -21,14 +21,16 @@ export const BlockingError = ({ message, onClickRetry }: Props) => (
           {message} <br /> Please try again or contact support.
         </p>
       </div>
-      <Button
-        size="md"
-        variant="primary"
-        icon={Cached}
-        onClick={onClickRetry}
-        className="w-fit">
-        Try again
-      </Button>
+      {onClickRetry && (
+        <Button
+          size="md"
+          variant="primary"
+          icon={Cached}
+          onClick={onClickRetry}
+          className="w-fit">
+          Try again
+        </Button>
+      )}
     </div>
   </Card>
 );

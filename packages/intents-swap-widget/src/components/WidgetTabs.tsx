@@ -1,18 +1,21 @@
 import { cn } from '../utils';
 
-const TABS = ['swap', 'deposit', 'withdraw'] as const;
-
-export type WidgetTab = (typeof TABS)[number];
+export type WidgetTab = 'swap' | 'deposit' | 'withdraw' | 'topup';
 
 type Props = {
+  tabs: WidgetTab[];
   activeTab: WidgetTab | null;
   onSelect: (tab: WidgetTab) => void;
 };
 
-export const WidgetTabs = ({ activeTab, onSelect }: Props) => {
+export const WidgetTabs = ({ tabs, activeTab, onSelect }: Props) => {
+  if (tabs.length < 2) {
+    return <span className="w-full" />;
+  }
+
   return (
     <nav className="space-x-[10px] w-full">
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = activeTab === tab;
 
         return (
