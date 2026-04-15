@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
@@ -10,15 +10,8 @@ import { Button as UIButton } from '@headlessui/react';
 import { ApiKeySelect, Header } from '../components';
 
 import { Button } from '@/uikit/Button';
-import {
-  useApiKeys,
-  useCreateWidgetConfig,
-  useCurrentWidgetConfig,
-} from '@/api/hooks';
-import { FeeServiceCreateWidgetConfigError } from '@/api/errors';
+import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
-import { useThemeConfig } from '@/hooks/useThemeConfig';
-import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useSharableLink } from '@/hooks/useSharableLink';
 import { InfoBanner } from '@/components/InfoBanner';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
@@ -56,19 +49,10 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
   const apiKeysState = useApiKeysState();
   const { refetch: refetchApiKeys } = useApiKeys();
-  const {
-    data: currentWidgetConfig,
-    error: currentWidgetConfigError,
-    isFetching: isFetchingCurrentWidgetConfig,
-    refetch: refetchCurrentWidgetConfig,
-    status: currentWidgetConfigStatus,
-  } = useCurrentWidgetConfig();
+  const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
+    useCurrentWidgetConfig();
 
-  const createWidgetConfigMutation = useCreateWidgetConfig();
-
-  const { widgetConfig } = useWidgetConfig();
-  const { themeConfig } = useThemeConfig();
-  const { copySharableLink } = useSharableLink();
+  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
@@ -88,31 +72,8 @@ export const Export = ({ onClickApiKeys }: Props) => {
       ? apiKeysState.apiKeys[0].widgetApiKey
       : undefined);
 
-  const remoteWidgetConfigPayload = useMemo(() => {
-    const { apiKey: _apiKey, ...configWithoutApiKey } = widgetConfig;
-
-    return {
-      config: configWithoutApiKey,
-      theme: themeConfig,
-    };
-  }, [themeConfig, widgetConfig]);
-
-  const remoteConfigId = (
-    currentWidgetConfig ?? createWidgetConfigMutation.data
-  )?.uuid;
-
-  const remoteConfigError =
-    createWidgetConfigMutation.error ??
-    (currentWidgetConfigError?.code !== 'WIDGET_CONFIG_NOT_FOUND'
-      ? currentWidgetConfigError
-      : null);
-
-  const isCodeSnippetLoading =
-    isFetchingCurrentWidgetConfig ||
-    currentWidgetConfigStatus === 'pending' ||
-    createWidgetConfigMutation.status === 'pending' ||
-    (!remoteConfigId &&
-      currentWidgetConfigError?.code === 'WIDGET_CONFIG_NOT_FOUND');
+  const remoteConfigId = currentWidgetConfig?.uuid;
+  const hasRemoteConfig = Boolean(remoteConfigId);
 
   // we don't want to expose our default app key to the exported code
   // but want a widget to function in a studio so we swap them here
@@ -156,40 +117,6 @@ export function App() {
       handleApiKeySelect(apiKeysState.apiKeys[0].widgetApiKey);
     }
   }, [apiKeysState.state]);
-
-  useEffect(() => {
-    if (currentWidgetConfigStatus !== 'error') {
-      return;
-    }
-
-    if (currentWidgetConfigError?.code !== 'WIDGET_CONFIG_NOT_FOUND') {
-      return;
-    }
-
-    if (
-      createWidgetConfigMutation.status === 'pending' ||
-      createWidgetConfigMutation.status === 'success'
-    ) {
-      return;
-    }
-
-    void createWidgetConfigMutation
-      .mutateAsync(remoteWidgetConfigPayload)
-      .catch((error: unknown) => {
-        if (
-          error instanceof FeeServiceCreateWidgetConfigError &&
-          error.code === 'WIDGET_CONFIG_ALREADY_EXISTS'
-        ) {
-          void refetchCurrentWidgetConfig();
-        }
-      });
-  }, [
-    createWidgetConfigMutation,
-    currentWidgetConfigError,
-    currentWidgetConfigStatus,
-    refetchCurrentWidgetConfig,
-    remoteWidgetConfigPayload,
-  ]);
 
   return (
     <>
@@ -293,21 +220,8 @@ export function App() {
         })()}
 
         {!isUnauthenticated &&
-          // eslint-disable-next-line no-nested-ternary
-          (remoteConfigError ? (
-            <InfoBanner
-              state="error"
-              action="Try again"
-              title="Unable to prepare embed code"
-              description="We couldn't load or create your remote widget configuration. Please try again."
-              onClick={() => {
-                createWidgetConfigMutation.reset();
-                void refetchCurrentWidgetConfig();
-              }}
-            />
-          ) : isCodeSnippetLoading ? (
-            <div className="space-y-csw-md bg-csw-gray-800 animate-pulse h-[250px] rounded-csw-md" />
-          ) : (
+          hasRemoteConfig &&
+          currentWidgetConfigStatus === 'success' && (
             <div className="overflow-y-auto flex-shrink-1 min-h-[250px] pb-csw-2xl w-full">
               <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
                 <span className="text-csw-label-md text-csw-gray-50">
@@ -364,10 +278,10 @@ export function App() {
                 </Highlight>
               </div>
             </div>
-          ))}
+          )}
       </div>
 
-      {!isUnauthenticated && (
+      {!isUnauthenticated && hasRemoteConfig && isSharableLinkAvailable && (
         <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
           <Button
             variant="primary"
@@ -385,22 +299,9 @@ export function App() {
             size="sm"
             fluid
             icon={ContentCopy}
-            state={
-              // eslint-disable-next-line no-nested-ternary
-              isCodeSnippetLoading
-                ? 'loading'
-                : remoteConfigId
-                  ? 'default'
-                  : 'disabled'
-            }
             className="w-full"
             onClick={handleCopyCode}>
-            {/* eslint-disable-next-line no-nested-ternary */}
-            {copyCodeFeedback
-              ? 'Copied!'
-              : isCodeSnippetLoading
-                ? 'Preparing code...'
-                : 'Copy code'}
+            {copyCodeFeedback ? 'Copied!' : 'Copy code'}
           </Button>
         </div>
       )}

@@ -17,7 +17,7 @@ type HeaderProps = {
 export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
   const { authenticated } = usePrivy();
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-  const { copySharableLink } = useSharableLink();
+  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
 
   const copyConfigLink = async () => {
     const sharableLink = await copySharableLink();
@@ -52,7 +52,7 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
 
       {/* Desktop nav */}
       <nav className="hidden lg:flex gap-csw-2md items-center">
-        {authenticated && (
+        {authenticated && isSharableLinkAvailable && (
           <HeaderButton
             variant={copyLinkFeedback ? 'success' : 'dark'}
             LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}

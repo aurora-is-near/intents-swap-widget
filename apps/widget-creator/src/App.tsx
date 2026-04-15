@@ -12,17 +12,21 @@ import { CreatorPanel } from './components/creatorPanel/CreatorPanel';
 import { WidgetSection } from './components/widget/WidgetSection';
 import { WidgetContent } from './components/widget/WidgetContent';
 
-import { useCurrentWidgetConfig } from '@/api/hooks';
+const getEmbedParamValue = (): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return new URLSearchParams(window.location.search).get('embed');
+};
 
 const AppContent = () => {
   useSyncRemoteWidgetConfig();
-  useApplyRemoteWidgetConfig();
+  const { isRemoteWidgetConfigLoading } = useApplyRemoteWidgetConfig();
 
-  const { authenticated, ready } = usePrivy();
-  const { status: currentWidgetConfigStatus } = useCurrentWidgetConfig();
-
-  const isRemoteConfigLoading =
-    !ready || (authenticated && currentWidgetConfigStatus === 'pending');
+  const { ready } = usePrivy();
+  const isRemoteConfigLoading = !ready || isRemoteWidgetConfigLoading;
+  const isEmbedded = getEmbedParamValue();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -31,6 +35,35 @@ const AppContent = () => {
     setIsDrawerOpen(false);
     setIsExportModalOpen(true);
   };
+
+  if (isEmbedded && isRemoteConfigLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <WidgetSection>
+          <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full max-w-[456px] sm:w-[456px]">
+            <div className="w-full gap-csw-lg relative flex flex-col">
+              <div className="gap-csw-lg relative flex flex-col">
+                <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
+                <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
+              </div>
+              <div className="gap-csw-lg relative flex flex-col">
+                <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[44px]" />
+                <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[48px]" />
+              </div>
+            </div>
+          </aside>
+        </WidgetSection>
+      </div>
+    );
+  }
+
+  if (isEmbedded) {
+    return (
+      <WidgetSection isEmbedded>
+        <WidgetContent />
+      </WidgetSection>
+    );
+  }
 
   if (isRemoteConfigLoading) {
     return (

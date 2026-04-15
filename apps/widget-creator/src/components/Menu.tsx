@@ -29,7 +29,7 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
   const { ready, authenticated } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
-  const { copySharableLink } = useSharableLink();
+  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -107,7 +107,7 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
                 label="Export code"
                 onClick={onOpenExportModal}
               />
-              {authenticated && (
+              {authenticated && isSharableLinkAvailable && (
                 <MenuItem
                   icon={<Link className="size-5" />}
                   label={copyFeedback ? 'Copied!' : 'Copy shareable link'}
