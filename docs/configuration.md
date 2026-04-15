@@ -84,6 +84,10 @@ The following options are available for all widget packages
 
 Your widget integration API Key. Visit [Intents Widget Studio](https://intents.aurora.dev) to obtain.
 
+### `referral`
+
+Your application name that used as an alias for quotes. Optional.
+
 ### `enableAccountAbstraction`
 
 Used to allow uses to deposit to and withdraw from your app's internal Intents
@@ -431,6 +435,7 @@ Enables swaps transaction history for a user's wallet. Disabled by default.
 ### `disabledInternalBalanceTokens`
 
 Filters out some tokens from internal balance list.
+
 ### `showConversionPreview`
 
 Enables live swap conversion preview in the tokens list on hover.
