@@ -13,7 +13,7 @@ export const useCurrentWidgetConfig = ({
   const { authenticated, getAccessToken, user } = usePrivy();
 
   return useQuery<WidgetConfigRecord, FeeServiceGetWidgetConfigError>({
-    queryKey: ['widgetConfig', 'current', user?.id ?? 'anonymous'],
+    queryKey: ['widgetConfig', 'current', user?.id],
     enabled: enabled && authenticated,
     retry: false,
     queryFn: async () => {

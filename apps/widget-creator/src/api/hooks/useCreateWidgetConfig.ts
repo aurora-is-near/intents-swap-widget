@@ -26,10 +26,7 @@ export const useCreateWidgetConfig = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['widgetConfig', data.uuid], data);
-      queryClient.setQueryData(
-        ['widgetConfig', 'current', user?.id ?? 'anonymous'],
-        data,
-      );
+      queryClient.setQueryData(['widgetConfig', 'current', user?.id], data);
     },
   });
 };

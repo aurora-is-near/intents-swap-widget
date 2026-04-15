@@ -9,7 +9,7 @@ export const useApiKeys = () => {
   const { authenticated, getAccessToken, user } = usePrivy();
 
   return useQuery<ApiKey[], FeeServiceGetApiKeysError>({
-    queryKey: ['apiKeys', user?.id ?? 'anonymous'],
+    queryKey: ['apiKeys', user?.id],
     enabled: authenticated,
     queryFn: async () => {
       const authToken = await getAccessToken();

@@ -61,8 +61,6 @@ export const useApplyRemoteWidgetConfig = ({
       return;
     }
 
-    const currentUserConfigKey = user?.id ?? 'anonymous';
-
     if (
       createWidgetConfigStatus === 'pending' ||
       createWidgetConfigStatus === 'success'
@@ -70,11 +68,11 @@ export const useApplyRemoteWidgetConfig = ({
       return;
     }
 
-    if (attemptedCreateConfigKeyRef.current === currentUserConfigKey) {
+    if (!user?.id || attemptedCreateConfigKeyRef.current === user.id) {
       return;
     }
 
-    attemptedCreateConfigKeyRef.current = currentUserConfigKey;
+    attemptedCreateConfigKeyRef.current = user.id;
 
     void mutateAsync(remoteWidgetConfigPayload).catch((error: unknown) => {
       if (
@@ -100,15 +98,16 @@ export const useApplyRemoteWidgetConfig = ({
       return;
     }
 
-    if (!authenticated || currentWidgetConfigStatus !== 'success') {
+    if (
+      !authenticated ||
+      currentWidgetConfigStatus !== 'success' ||
+      !user?.id ||
+      !currentWidgetConfig
+    ) {
       return;
     }
 
-    if (!currentWidgetConfig) {
-      return;
-    }
-
-    const appliedRemoteConfigKey = `${user?.id ?? 'anonymous'}:${currentWidgetConfig.uuid}`;
+    const appliedRemoteConfigKey = `${user.id}:${currentWidgetConfig.uuid}`;
 
     if (appliedRemoteConfigKeyRef.current === appliedRemoteConfigKey) {
       return;
