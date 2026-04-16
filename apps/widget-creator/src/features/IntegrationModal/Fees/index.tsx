@@ -8,9 +8,11 @@ import { FeesSummary } from './FeesSummary';
 
 import { NestedHeader } from '../components';
 import {
+  getBasicFeeConfig,
   getBasisPointsFromPercent,
   getFeeShare,
   getPercentFromBasisPoints,
+  getRecipientErrorFromJson,
   getSimpleValueBasedFee,
   isZeroValueBasedFee,
   validateFeeConfig,
@@ -24,20 +26,35 @@ import { useUpdateApiKey } from '@/api/hooks';
 import { DEFAULT_ZERO_FEE } from '@/constants';
 import type { ApiKey } from '@/api/types';
 
-const formSchema = z.object({
-  walletAddress: z.string().min(1, 'Wallet address is required'),
-  customFee: z.string().min(0.00001, 'Custom fee is required'),
-  feeJson: z
-    .string()
-    .min(1, 'JSON configuration is required')
-    .superRefine((data, ctx) => {
-      const { error } = validateFeeConfig(data);
+const formSchema = z
+  .object({
+    walletAddress: z.string().min(1, 'Wallet address is required'),
+    customFee: z.string().min(0.00001, 'Custom fee is required'),
+    feeJson: z.string().min(1, 'JSON configuration is required'),
+  })
+  .superRefine(({ feeJson }, ctx) => {
+    const { error } = validateFeeConfig(feeJson);
 
-      if (error) {
-        ctx.addIssue({ code: 'custom', message: error });
-      }
-    }),
-});
+    if (!error) {
+      return;
+    }
+
+    ctx.addIssue({
+      code: 'custom',
+      path: ['feeJson'],
+      message: error,
+    });
+
+    const walletAddressError = getRecipientErrorFromJson(error);
+
+    if (walletAddressError) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['walletAddress'],
+        message: walletAddressError,
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -103,7 +120,24 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     }
   };
 
+  const syncCustomFeeInputsFromJson = (fee: string) => {
+    const { data: config, error } = validateFeeConfig(fee);
+
+    if (error !== undefined || !config) {
+      return false;
+    }
+
+    setValue('walletAddress', config.default_fee.recipient);
+    setValue('customFee', getPercentFromBasisPoints(config.default_fee.bps));
+
+    return true;
+  };
+
   const handleToggleCustomFee = (isOpen: boolean) => {
+    if (isOpen) {
+      syncCustomFeeInputsFromJson(feeJson);
+    }
+
     setIsCustomFeeOpen(isOpen);
     setHasConfigAssetRules(false);
 
@@ -161,37 +195,27 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
     }
   }, [mutation.status]);
 
-  // sync values from custom fee to fee JSON
+  // sync values from custom fee inputs to fee JSON
   useEffect(() => {
     if (isCustomFeeOpen) {
-      const defaultFee = {
-        version: '1.0.0',
-        default_fee: {
-          type: 'bps',
-          recipient: walletAddress,
-          bps: getBasisPointsFromPercent(customFee),
-        },
-        rules: [],
-      };
-
-      setValue('feeJson', JSON.stringify(defaultFee, null, 2));
+      setValue(
+        'feeJson',
+        JSON.stringify(
+          getBasicFeeConfig(
+            getBasisPointsFromPercent(customFee),
+            walletAddress,
+          ),
+          null,
+          2,
+        ),
+      );
     }
   }, [customFee, walletAddress, isCustomFeeOpen]);
 
   // sync values from fee JSON to custom fee
   useEffect(() => {
     if (isJsonCodeOpen) {
-      const { data: rules, error } = validateFeeConfig(feeJson);
-
-      if (!!error || !rules) {
-        setValue('customFee', '');
-        setValue('walletAddress', '');
-
-        return;
-      }
-
-      setValue('customFee', getPercentFromBasisPoints(rules.default_fee.bps));
-      setValue('walletAddress', rules.default_fee.recipient);
+      syncCustomFeeInputsFromJson(feeJson);
     }
   }, [feeJson, isJsonCodeOpen]);
 
