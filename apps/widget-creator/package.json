@@ -19,7 +19,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@privy-io/react-auth": "^1.96.5",
     "@tanstack/react-query": "^5.90.11",
-    "intents-1click-rule-engine": "1.2.0",
+    "intents-1click-rule-engine": "1.2.1",
     "lucide-react": "^0.554.0",
     "prism-react-renderer": "^2.4.1",
     "react": "^18.2.0",
