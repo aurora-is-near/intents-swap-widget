@@ -14,8 +14,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "outDir": "./dist",
-    "rootDir": "src",
-    "baseUrl": "."
+    "rootDir": "src"
   },
   "include": ["src"]
 }
