@@ -110,6 +110,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   );
 
   const handleFeeJsonChange = (fee: string) => {
+    const jsonData = JSON.parse(fee ?? '{}');
     const { data: config, error } = validateFeeConfig(fee);
 
     if (!error) {
@@ -117,6 +118,13 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       setHasConfigAssetRules((config?.rules.length ?? 0) > 0);
     } else {
       setError('feeJson', { message: error });
+
+      const walletAddressError = getRecipientErrorFromJson(error);
+
+      if (walletAddressError) {
+        setValue('walletAddress', jsonData?.default_fee?.recipient ?? '');
+        setError('walletAddress', { message: walletAddressError });
+      }
     }
   };
 
