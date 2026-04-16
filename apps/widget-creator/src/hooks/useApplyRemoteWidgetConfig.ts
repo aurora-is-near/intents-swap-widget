@@ -13,9 +13,11 @@ export const useApplyRemoteWidgetConfig = ({
   enabled?: boolean;
 } = {}) => {
   const { authenticated, user } = usePrivy();
+
   const { dispatch } = useCreator();
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
+
   const {
     data: currentWidgetConfig,
     error: currentWidgetConfigError,

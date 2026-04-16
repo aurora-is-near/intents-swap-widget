@@ -3,6 +3,7 @@ import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
 import { useCreator } from './useCreatorConfig';
+
 import { DEFAULT_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
 

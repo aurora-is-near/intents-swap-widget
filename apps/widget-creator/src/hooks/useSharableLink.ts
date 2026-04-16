@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
+import { DEFAULT_APP_KEY } from '@/constants';
 import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
-import { useCreator } from '@/hooks/useCreatorConfig';
 
 const SHARABLE_LINK_BASE_URL = 'https://intents.aurora.dev';
 
@@ -10,10 +10,9 @@ export const useSharableLink = () => {
   const { authenticated } = usePrivy();
   const { data: apiKeys } = useApiKeys();
   const { data: currentWidgetConfig } = useCurrentWidgetConfig();
-  const { state } = useCreator();
   const [isPreparingSharableLink, setIsPreparingSharableLink] = useState(false);
 
-  const selectedApiKey = state.apiKey || apiKeys?.[0]?.widgetApiKey;
+  const selectedApiKey = apiKeys?.[0]?.widgetApiKey ?? DEFAULT_APP_KEY;
 
   const currentDomain =
     typeof window !== 'undefined' &&
