@@ -57,11 +57,13 @@ const getCreatorStateFromRemoteWidgetConfig = (
   state: CreatorState,
   config: SerializableWidgetConfig,
   theme: SerializableTheme,
+  apiKey?: string,
 ): CreatorState => {
   const isDepositMode = Boolean(config.sendAddress);
 
   return {
     ...state,
+    apiKey: apiKey ?? state.apiKey,
     widgetMode: isDepositMode ? 'deposit' : 'swap',
     depositModeReceiverAddress: config.sendAddress ?? '',
     accountAbstractionMode:
@@ -162,6 +164,7 @@ type Action =
       payload: {
         config: SerializableWidgetConfig;
         theme: SerializableTheme;
+        apiKey?: string;
       };
     }
   // Reset
@@ -236,6 +239,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         state,
         action.payload.config,
         action.payload.theme,
+        action.payload.apiKey,
       );
     case 'RESET_DESIGN':
       return {

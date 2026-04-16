@@ -3,15 +3,31 @@ import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
 import { useCreator } from './useCreatorConfig';
+import { useTokensGroupedBySymbol } from './useTokens';
 
-import { DEFAULT_APP_KEY } from '@/constants';
+import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
 
 export const useWidgetConfig = () => {
   const { state } = useCreator();
-  const widgetConfig = useMemo(
-    (): SerializableWidgetConfig & Partial<WidgetConfig> => ({
-      apiKey: DEFAULT_APP_KEY,
+  const allTokens = useTokensGroupedBySymbol();
+  const widgetConfig = useMemo((): SerializableWidgetConfig &
+    Partial<WidgetConfig> => {
+    const allTokenSymbols = allTokens.map((token) => token.symbol);
+    const hasExplicitAllowedTokens = state.selectedTokenSymbols.length > 0;
+    const hasAllTokensSelected =
+      hasExplicitAllowedTokens &&
+      allTokenSymbols.length > 0 &&
+      state.selectedTokenSymbols.length === allTokenSymbols.length &&
+      allTokenSymbols.every((symbol) =>
+        state.selectedTokenSymbols.includes(symbol),
+      );
+
+    return {
+      apiKey:
+        state.apiKey && state.apiKey !== PLACEHOLDER_APP_KEY
+          ? state.apiKey
+          : DEFAULT_APP_KEY,
       connectedWallets: {},
       slippageTolerance: 100,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
@@ -19,7 +35,7 @@ export const useWidgetConfig = () => {
       chainsOrder: state.selectedNetworks,
       allowedChainsList: state.selectedNetworks,
       allowedTokensList:
-        state.selectedTokenSymbols.length > 0
+        hasExplicitAllowedTokens && !hasAllTokensSelected
           ? state.selectedTokenSymbols
           : undefined,
       defaultSourceToken: state.enableSellToken
@@ -35,9 +51,8 @@ export const useWidgetConfig = () => {
           : undefined,
       showTransactionHistory: true,
       showConversionPreview: true,
-    }),
-    [state],
-  );
+    };
+  }, [allTokens, state]);
 
   return { widgetConfig };
 };

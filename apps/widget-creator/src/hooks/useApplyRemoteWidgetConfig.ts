@@ -140,6 +140,13 @@ export const useApplyRemoteWidgetConfig = ({
   return {
     currentWidgetConfig,
     hasRemoteWidgetConfig: Boolean(currentWidgetConfig),
+    isRemoteWidgetConfigApplied:
+      enabled &&
+      authenticated &&
+      currentWidgetConfigStatus === 'success' &&
+      Boolean(currentWidgetConfig) &&
+      appliedRemoteConfigKeyRef.current ===
+        `${user?.id}:${currentWidgetConfig?.uuid}`,
     isRemoteWidgetConfigLoading:
       enabled &&
       authenticated &&

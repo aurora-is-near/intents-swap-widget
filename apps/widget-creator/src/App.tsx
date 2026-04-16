@@ -46,9 +46,13 @@ const AppContent = () => {
 
   const appliedConfigIdRef = useRef<string | null>(null);
 
-  useSyncRemoteWidgetConfig({ enabled: !isConfigIdMode });
-  const { isRemoteWidgetConfigLoading } = useApplyRemoteWidgetConfig({
-    enabled: !isConfigIdMode,
+  const { isRemoteWidgetConfigApplied, isRemoteWidgetConfigLoading } =
+    useApplyRemoteWidgetConfig({
+      enabled: !isConfigIdMode,
+    });
+
+  useSyncRemoteWidgetConfig({
+    enabled: !isConfigIdMode && isRemoteWidgetConfigApplied,
   });
 
   const {
@@ -62,7 +66,9 @@ const AppContent = () => {
       return;
     }
 
-    if (appliedConfigIdRef.current === publicWidgetConfig.uuid) {
+    const appliedConfigKey = `${publicWidgetConfig.uuid}:${apiKey ?? ''}`;
+
+    if (appliedConfigIdRef.current === appliedConfigKey) {
       return;
     }
 
@@ -71,11 +77,12 @@ const AppContent = () => {
       payload: {
         config: publicWidgetConfig.config,
         theme: publicWidgetConfig.theme,
+        apiKey: apiKey ?? undefined,
       },
     });
 
-    appliedConfigIdRef.current = publicWidgetConfig.uuid;
-  }, [dispatch, publicWidgetConfig, publicWidgetConfigStatus]);
+    appliedConfigIdRef.current = appliedConfigKey;
+  }, [apiKey, dispatch, publicWidgetConfig, publicWidgetConfigStatus]);
 
   const { ready } = usePrivy();
   const isRemoteConfigLoading = isConfigIdMode

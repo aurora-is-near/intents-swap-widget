@@ -1,5 +1,6 @@
 import { Edit, ExternalLink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import {
   ASSET_ICONS,
   CHAINS,
@@ -23,12 +24,13 @@ import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
 
-import { useApiKeys } from '@/api/hooks';
+import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
 import { InfoBanner } from '@/components/InfoBanner';
 
 export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
+  const { authenticated } = usePrivy();
 
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -41,6 +43,8 @@ export function Configure() {
   const allTokenSymbols = allTokens.map((token) => token.symbol);
 
   const { data: apiKeys } = useApiKeys();
+  const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
+    useCurrentWidgetConfig();
 
   // Once the tokens have loaded, select them all initially
   useEffect(() => {
@@ -48,12 +52,37 @@ export function Configure() {
       return;
     }
 
+    if (state.selectedTokenSymbols.length > 0) {
+      wereInitialTokensSet.current = true;
+
+      return;
+    }
+
+    if (authenticated && currentWidgetConfigStatus === 'pending') {
+      return;
+    }
+
+    if (authenticated && currentWidgetConfigStatus === 'success') {
+      wereInitialTokensSet.current = true;
+
+      if (currentWidgetConfig?.config.allowedTokensList?.length) {
+        return;
+      }
+    }
+
     wereInitialTokensSet.current = true;
     dispatch({
       type: 'SET_SELECTED_TOKEN_SYMBOLS',
       payload: allTokenSymbols,
     });
-  }, [allTokenSymbols]);
+  }, [
+    allTokenSymbols,
+    authenticated,
+    currentWidgetConfig,
+    currentWidgetConfigStatus,
+    dispatch,
+    state.selectedTokenSymbols.length,
+  ]);
 
   const handleNetworksChange = (newNetworks: Chains[]) => {
     dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
