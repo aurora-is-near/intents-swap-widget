@@ -4,18 +4,42 @@ import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
 import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
-import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
 import { Button as UIButton } from '@headlessui/react';
 
 import { ApiKeySelect, Header } from '../components';
 
 import { Button } from '@/uikit/Button';
-import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
+import { useApiKeys } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
-import { useSharableLink } from '@/hooks/useSharableLink';
+import { useWidgetConfig } from '@/hooks/useWidgetConfig';
+import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
+
+const applyIndent = (code: string, spaces: number): string => {
+  const pad = ' '.repeat(spaces);
+
+  return code
+    .split('\n')
+    .map((line, index) => {
+      if (!index) {
+        return line;
+      }
+
+      return line ? pad + line : line;
+    })
+    .join('\n');
+};
+
+const stringifyAsJS = (value: unknown, indent: number): string => {
+  const json = JSON.stringify(value, null, 2);
+
+  // Remove quotes from valid JS identifiers
+  const cleanJson = json.replace(/"([a-zA-Z_$][a-zA-Z0-9_$]*)":/g, '$1:');
+
+  return applyIndent(cleanJson, indent);
+};
 
 type Props = {
   onClickApiKeys: () => void;
@@ -48,32 +72,14 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
-  const { refetch: refetchApiKeys } = useApiKeys();
-  const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
-    useCurrentWidgetConfig();
+  const { refetch: refetchApiKeys, data: apiKeys = [] } = useApiKeys();
 
-  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
+  const { widgetConfig } = useWidgetConfig();
+  const { themeConfig } = useThemeConfig();
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
-  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
-  const isUnauthenticated = apiKeysState.state === 'unauthenticated';
   const isStandaloneMode = state.userAuthMode === 'standalone';
-
-  const selectedApiKey =
-    state.apiKey ||
-    (apiKeysState.state === 'has-api-keys'
-      ? apiKeysState.apiKeys[0].widgetApiKey
-      : PLACEHOLDER_APP_KEY);
-
-  const apiKeySelectValue =
-    state.apiKey ||
-    (apiKeysState.state === 'has-api-keys'
-      ? apiKeysState.apiKeys[0].widgetApiKey
-      : undefined);
-
-  const remoteConfigId = currentWidgetConfig?.uuid;
-  const hasRemoteConfig = Boolean(remoteConfigId);
 
   // we don't want to expose our default app key to the exported code
   // but want a widget to function in a studio so we swap them here
@@ -81,7 +87,10 @@ export const Export = ({ onClickApiKeys }: Props) => {
 
 export function App() {
   return (
-    <WidgetConfigProvider configId="${remoteConfigId ?? ''}" apiKey="${selectedApiKey}">
+    <WidgetConfigProvider
+      config={${stringifyAsJS({ ...widgetConfig, apiKey: apiKeys[0]?.widgetApiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
+      theme={${stringifyAsJS(themeConfig, 6)}}
+    >
       <Widget />
     </WidgetConfigProvider>
   );
@@ -92,24 +101,9 @@ export function App() {
   };
 
   const handleCopyCode = async () => {
-    if (!remoteConfigId) {
-      return;
-    }
-
     await navigator.clipboard.writeText(sampleCode);
     setCopyCodeFeedback(true);
     setTimeout(() => setCopyCodeFeedback(false), 2000);
-  };
-
-  const handleCopySharableLink = async () => {
-    const sharableLink = await copySharableLink();
-
-    if (!sharableLink) {
-      return;
-    }
-
-    setCopyLinkFeedback(true);
-    setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
 
   useEffect(() => {
@@ -120,10 +114,9 @@ export function App() {
 
   return (
     <>
-      <div className="pt-csw-2xl">
+      <div className="px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
         <Header
           title="Embed code"
-          className="pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900"
           description={
             <>
               Add the Intents Widget to your app using an API key.{' '}
@@ -181,6 +174,9 @@ export function App() {
               );
 
             case 'has-api-keys': {
+              const apiKeySelected =
+                state.apiKey ?? apiKeysState.apiKeys[0].widgetApiKey;
+
               return (
                 <div className="flex flex-col gap-csw-md">
                   <header className="flex items-center justify-between">
@@ -200,12 +196,12 @@ export function App() {
                     </UIButton>
                   </header>
 
-                  {apiKeySelectValue ? (
+                  {apiKeySelected ? (
                     <ApiKeySelect
                       keys={apiKeysState.apiKeys.map(
                         (apiKey) => apiKey.widgetApiKey,
                       )}
-                      selected={apiKeySelectValue}
+                      selected={apiKeySelected}
                       onChange={handleApiKeySelect}
                     />
                   ) : (
@@ -221,92 +217,71 @@ export function App() {
           }
         })()}
 
-        {!isUnauthenticated &&
-          hasRemoteConfig &&
-          currentWidgetConfigStatus === 'success' && (
-            <div className="overflow-y-auto flex-shrink-1 min-h-[250px] pb-csw-2xl w-full">
-              <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
-                <span className="text-csw-label-md text-csw-gray-50">
-                  React
-                </span>
-                <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
-                <Highlight
-                  theme={themes.dracula}
-                  code={sampleCode}
-                  language="tsx">
-                  {({ tokens, getLineProps, getTokenProps }) => (
-                    <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
-                      {tokens.map((line, i) => {
-                        const {
-                          style: lineStyle,
-                          className: lineClassName,
-                          ...lineOtherProps
-                        } = getLineProps({
-                          line,
-                        });
+        <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
+          <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
+            <span className="text-csw-label-md text-csw-gray-50">React</span>
+            <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
+            <Highlight theme={themes.dracula} code={sampleCode} language="tsx">
+              {({ tokens, getLineProps, getTokenProps }) => (
+                <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
+                  {tokens.map((line, i) => {
+                    const {
+                      style: lineStyle,
+                      className: lineClassName,
+                      ...lineOtherProps
+                    } = getLineProps({
+                      line,
+                    });
 
-                        return (
-                          <div
-                            key={i}
-                            className={`table-row ${lineClassName || ''}`}
-                            style={lineStyle as React.CSSProperties}
-                            {...lineOtherProps}>
-                            <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
-                              {i + 1}
-                            </span>
-                            <span className="table-cell">
-                              {line.map((token, key) => {
-                                const {
-                                  style: tokenStyle,
-                                  className: tokenClassName,
-                                  ...tokenOtherProps
-                                } = getTokenProps({ token });
+                    return (
+                      <div
+                        key={i}
+                        className={`table-row ${lineClassName || ''}`}
+                        style={lineStyle as React.CSSProperties}
+                        {...lineOtherProps}>
+                        <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
+                          {i + 1}
+                        </span>
+                        <span className="table-cell">
+                          {line.map((token, key) => {
+                            const {
+                              style: tokenStyle,
+                              className: tokenClassName,
+                              ...tokenOtherProps
+                            } = getTokenProps({ token });
 
-                                return (
-                                  <span
-                                    key={key}
-                                    className={tokenClassName || ''}
-                                    style={tokenStyle as React.CSSProperties}
-                                    {...tokenOtherProps}
-                                  />
-                                );
-                              })}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </pre>
-                  )}
-                </Highlight>
-              </div>
-            </div>
-          )}
+                            return (
+                              <span
+                                key={key}
+                                className={tokenClassName || ''}
+                                style={tokenStyle as React.CSSProperties}
+                                {...tokenOtherProps}
+                              />
+                            );
+                          })}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </pre>
+              )}
+            </Highlight>
+          </div>
+        </div>
       </div>
 
-      {!isUnauthenticated && hasRemoteConfig && isSharableLinkAvailable && (
-        <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
-          <Button
-            variant="primary"
-            detail="dimmed"
-            size="sm"
-            fluid
-            icon={Link}
-            className="w-full"
-            onClick={handleCopySharableLink}>
-            {copyLinkFeedback ? 'Copied!' : 'Copy sharable link'}
-          </Button>
-          <Button
-            variant="primary"
-            detail="accent"
-            size="sm"
-            fluid
-            icon={ContentCopy}
-            className="w-full"
-            onClick={handleCopyCode}>
-            {copyCodeFeedback ? 'Copied!' : 'Copy code'}
-          </Button>
-        </div>
-      )}
+      <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
+        <Button
+          variant="primary"
+          detail="accent"
+          size="sm"
+          fluid
+          icon={ContentCopy}
+          className="w-full"
+          onClick={handleCopyCode}>
+          {copyCodeFeedback ? 'Copied!' : 'Copy code'}
+        </Button>
+      </div>
     </>
   );
 };
