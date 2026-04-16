@@ -17,7 +17,6 @@ import { feeServiceApi } from '@/network';
 import { guardStates } from '@/machine/guards';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
-import { FALLBACK_REFERRAL } from '@/constants/intents';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getIntentsAccountTypeFromAddress } from '@/utils/chains/getIntentsAccountTypeFromAddress';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -244,7 +243,9 @@ export const useMakeQuote = () => {
       commonQuoteParams.customRecipientMsg = message;
     }
 
-    commonQuoteParams.referral = snakeCase(referral ?? FALLBACK_REFERRAL);
+    if (referral) {
+      commonQuoteParams.referral = snakeCase(referral);
+    }
 
     if (appFees) {
       commonQuoteParams.appFees = [...appFees];

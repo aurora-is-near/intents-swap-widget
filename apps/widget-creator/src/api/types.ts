@@ -11,6 +11,7 @@ export type ApiKey = {
 
 type SerializableWidgetConfigKeys =
   | 'apiKey'
+  | 'referral'
   | 'enableAccountAbstraction'
   | 'walletSupportedChains'
   | 'connectedWallets'
