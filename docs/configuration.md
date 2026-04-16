@@ -86,7 +86,7 @@ Your widget integration API Key. Visit [Intents Widget Studio](https://intents.a
 
 ### `referral`
 
-Your application name that used as an alias for quotes. Optional.
+Your application name that is used as an alias for quotes. Optional.
 
 ### `enableAccountAbstraction`
 
