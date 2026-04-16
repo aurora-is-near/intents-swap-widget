@@ -14,7 +14,7 @@ import { useApiKeys, useCreateApiKey } from '@/api/hooks';
 import type { ApiKey } from '@/api/types';
 
 const ApiKeysHeader = () => (
-  <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
+  <div className="pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
     <Header
       title="API keys"
       description="Create and manage API keys required to activate the Intents Studio widget. Each API key is linked to a specific fee setup."

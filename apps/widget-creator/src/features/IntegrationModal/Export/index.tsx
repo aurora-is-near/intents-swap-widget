@@ -120,31 +120,33 @@ export function App() {
 
   return (
     <>
-      <Header
-        title="Embed code"
-        className="px-csw-2xl pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900"
-        description={
-          <>
-            Add the Intents Widget to your app using an API key.{' '}
-            <br className="hidden sm:block" />
-            Your API key controls configuration, fees, and reporting for your
-            integration.
-          </>
-        }
-        warning={
-          <>
-            For more details, check out{' '}
-            <a
-              href="https://docs.intents.aurora.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-csw-xxs underline">
-              Developer Quick Start
-              <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
-            </a>
-          </>
-        }
-      />
+      <div className="pt-csw-2xl">
+        <Header
+          title="Embed code"
+          className="pt-csw-2xl pb-csw-xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900"
+          description={
+            <>
+              Add the Intents Widget to your app using an API key.{' '}
+              <br className="hidden sm:block" />
+              Your API key controls configuration, fees, and reporting for your
+              integration.
+            </>
+          }
+          warning={
+            <>
+              For more details, check out{' '}
+              <a
+                href="https://docs.intents.aurora.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-csw-xxs underline">
+                Developer Quick Start
+                <OpenInNew size={12} className="ml-csw-xs -mb-[3px]" />
+              </a>
+            </>
+          }
+        />
+      </div>
 
       <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
         {(() => {
