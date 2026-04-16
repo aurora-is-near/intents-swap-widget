@@ -30,10 +30,9 @@ const useGetErrorButton = (ctx: Context) => {
   const { t } = useTypedTranslation();
 
   if (
-    (ctx.state === 'quote_success_external' ||
-      ctx.state === 'quote_success_internal') &&
     !!sendAddress &&
-    ctx.sendAddress !== sendAddress
+    ctx.sendAddress !== sendAddress &&
+    ctx.state === 'quote_success_external'
   ) {
     return (
       <Button state="error" {...commonBtnProps}>
