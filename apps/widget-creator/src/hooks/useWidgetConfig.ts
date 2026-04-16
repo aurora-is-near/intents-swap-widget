@@ -7,6 +7,10 @@ import { useTokensGroupedBySymbol } from './useTokens';
 
 import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
+import {
+  hasAllSelectableTokensSelected,
+  normalizeSelectedTokenSymbols,
+} from '@/utils/tokenSelection';
 
 export const useWidgetConfig = () => {
   const { state } = useCreator();
@@ -14,14 +18,14 @@ export const useWidgetConfig = () => {
   const widgetConfig = useMemo((): SerializableWidgetConfig &
     Partial<WidgetConfig> => {
     const allTokenSymbols = allTokens.map((token) => token.symbol);
-    const hasExplicitAllowedTokens = state.selectedTokenSymbols.length > 0;
-    const hasAllTokensSelected =
-      hasExplicitAllowedTokens &&
-      allTokenSymbols.length > 0 &&
-      state.selectedTokenSymbols.length === allTokenSymbols.length &&
-      allTokenSymbols.every((symbol) =>
-        state.selectedTokenSymbols.includes(symbol),
-      );
+    const normalizedSelectedTokenSymbols = normalizeSelectedTokenSymbols(
+      state.selectedTokenSymbols,
+    );
+    const hasExplicitAllowedTokens = normalizedSelectedTokenSymbols.length > 0;
+    const hasAllTokensSelected = hasAllSelectableTokensSelected(
+      normalizedSelectedTokenSymbols,
+      allTokenSymbols,
+    );
 
     return {
       apiKey:
@@ -36,7 +40,7 @@ export const useWidgetConfig = () => {
       allowedChainsList: state.selectedNetworks,
       allowedTokensList:
         hasExplicitAllowedTokens && !hasAllTokensSelected
-          ? state.selectedTokenSymbols
+          ? normalizedSelectedTokenSymbols
           : undefined,
       defaultSourceToken: state.enableSellToken
         ? state.defaultSellToken

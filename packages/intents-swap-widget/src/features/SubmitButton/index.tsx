@@ -319,7 +319,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
+        {t('submit.disabled.selectTokenToReceive', 'Select token to deposit')}
       </Button>
     );
   }

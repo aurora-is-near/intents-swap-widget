@@ -7,6 +7,7 @@ import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
 import type { SerializableTheme, SerializableWidgetConfig } from '../api/types';
+import { normalizeSelectedTokenSymbols } from '../utils/tokenSelection';
 import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_BACKGROUND_COLOR,
@@ -70,7 +71,9 @@ const getCreatorStateFromRemoteWidgetConfig = (
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
     selectedNetworks:
       config.allowedChainsList ?? config.chainsOrder ?? state.selectedNetworks,
-    selectedTokenSymbols: config.allowedTokensList ?? [],
+    selectedTokenSymbols: normalizeSelectedTokenSymbols(
+      config.allowedTokensList ?? [],
+    ),
     enableSellToken: Boolean(config.defaultSourceToken),
     defaultSellToken: config.defaultSourceToken ?? null,
     enableBuyToken: isDepositMode ? false : Boolean(config.defaultTargetToken),
@@ -188,7 +191,7 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     case 'SET_SELECTED_TOKEN_SYMBOLS':
       return {
         ...state,
-        selectedTokenSymbols: Array.from(new Set(action.payload)),
+        selectedTokenSymbols: normalizeSelectedTokenSymbols(action.payload),
       };
     case 'SET_ENABLE_SELL_TOKEN':
       return { ...state, enableSellToken: action.payload };

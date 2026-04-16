@@ -21,6 +21,7 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import { getUrlBooleanParam } from '../../utils/get-url-param';
+import { getSelectableTokenSymbols } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
@@ -44,6 +45,9 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
   const allTokenSymbols = allTokens.map((token) => token.symbol);
+  const selectedTokenCount = getSelectableTokenSymbols(
+    state.selectedTokenSymbols,
+  ).length;
 
   const { data: apiKeys } = useApiKeys();
   const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
@@ -317,8 +321,8 @@ export function Configure() {
             <div className="flex gap-csw-2md items-center">
               <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
                 <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  {state.selectedTokenSymbols.length} token
-                  {state.selectedTokenSymbols.length !== 1 ? 's' : ''} selected
+                  {selectedTokenCount} token
+                  {selectedTokenCount !== 1 ? 's' : ''} selected
                 </p>
               </div>
               <OutlinedButton

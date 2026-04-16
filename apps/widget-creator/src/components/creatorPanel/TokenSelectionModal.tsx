@@ -7,6 +7,10 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import { useCreator } from '../../hooks/useCreatorConfig';
+import {
+  getSelectableTokenSymbols,
+  isDisabledTokenSymbol,
+} from '../../utils/tokenSelection';
 import { TokenRow } from './TokenRow';
 
 interface TokenSelectionModalProps {
@@ -25,16 +29,6 @@ const POPULAR_TOKENS: string[] = [
   'AURORA',
 ];
 
-const DISABLED_TOKENS = [
-  'fms',
-  'abg',
-  'stjack',
-  'noear',
-  'testnebula',
-  'susdc',
-  'weth',
-];
-
 export function TokenSelectionModal({
   isOpen,
   onClose,
@@ -44,24 +38,12 @@ export function TokenSelectionModal({
   const { state, dispatch } = useCreator();
 
   const selectedTokens = state.selectedTokenSymbols || [];
+  const selectedTokenCount = getSelectableTokenSymbols(selectedTokens).length;
 
   const onTokensChange = (tokens: string[]) => {
-    let tokenSymbols = tokens.filter(
-      (symbol) => !DISABLED_TOKENS.includes(symbol.toLocaleLowerCase()),
-    );
-
-    // there is an edge case with USDT0 tokens
-    // we need to remove USDT0 from list but make a general USDT token
-    // to toggle them on and off along with normal USDT tokens
-    if (tokenSymbols.includes('USDT')) {
-      tokenSymbols.push('USDT0');
-    } else {
-      tokenSymbols = tokenSymbols.filter((symbol) => symbol !== 'USDT0');
-    }
-
     dispatch({
       type: 'SET_SELECTED_TOKEN_SYMBOLS',
-      payload: tokenSymbols,
+      payload: tokens,
     });
 
     if (
@@ -97,10 +79,7 @@ export function TokenSelectionModal({
         // remove USDT0 from displayed list but not tokens data
         // we display USDT0 as a general USDT token in the widget
         .filter((token) => token.symbol !== 'USDT0')
-        .filter(
-          (token) =>
-            !DISABLED_TOKENS.includes(token.symbol.toLocaleLowerCase()),
-        )
+        .filter((token) => !isDisabledTokenSymbol(token.symbol))
         .filter((token: TokenType) => {
           return token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
         })
@@ -200,7 +179,7 @@ export function TokenSelectionModal({
           <div className="flex items-start justify-between gap-csw-lg flex-shrink-0">
             <div className="flex flex-col gap-csw-md flex-1">
               <h2 className="font-semibold text-base leading-4 tracking-[-0.4px] text-csw-gray-50">
-                {selectedTokens.length} tokens selected
+                {selectedTokenCount} tokens selected
               </h2>
               <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
                 Selected tokens apply to all chosen networks.
