@@ -16,12 +16,16 @@ import { useCreator } from './hooks/useCreatorConfig';
 
 import { useGetWidgetConfig } from '@/api/hooks';
 
-const getEmbedParamValue = (): string | null => {
+const getEmbedParamValue = (): boolean => {
   if (typeof window === 'undefined') {
-    return null;
+    return false;
   }
 
-  return new URLSearchParams(window.location.search).get('embed');
+  const embedParamValue = new URLSearchParams(window.location.search).get(
+    'embed',
+  );
+
+  return embedParamValue === 'true' || embedParamValue === '1';
 };
 
 const getConfigIdParamValue = (param: string): string | null => {
