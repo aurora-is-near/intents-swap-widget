@@ -6,6 +6,7 @@ import { CreatorProvider, QueryProvider } from './providers';
 import { IntegrationModal } from './features/IntegrationModal';
 import { useApplyRemoteWidgetConfig } from './hooks/useApplyRemoteWidgetConfig';
 import { useSyncRemoteWidgetConfig } from './hooks/useSyncRemoteWidgetConfig';
+import { getUrlBooleanParam, getUrlParam } from './utils/get-url-param';
 
 import { Menu } from './components/Menu';
 import { Header } from './components/Header';
@@ -16,32 +17,11 @@ import { useCreator } from './hooks/useCreatorConfig';
 
 import { useGetWidgetConfig } from '@/api/hooks';
 
-const getEmbedParamValue = (): boolean => {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const embedParamValue = new URLSearchParams(window.location.search).get(
-    'embed',
-  );
-
-  return embedParamValue === 'true' || embedParamValue === '1';
-};
-
-const getConfigIdParamValue = (param: string): string | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  const searchParams = new URLSearchParams(window.location.search);
-
-  return searchParams.get(param);
-};
-
 const AppContent = () => {
   const { dispatch } = useCreator();
-  const configId = getConfigIdParamValue('configId');
-  const apiKey = getConfigIdParamValue('apiKey');
+
+  const apiKey = getUrlParam('apiKey');
+  const configId = getUrlParam('configId');
   const isConfigIdMode = Boolean(configId);
 
   const appliedConfigIdRef = useRef<string | null>(null);
@@ -89,7 +69,7 @@ const AppContent = () => {
     ? publicWidgetConfigStatus === 'pending'
     : !ready || isRemoteWidgetConfigLoading;
 
-  const isEmbedded = getEmbedParamValue();
+  const isEmbedded = getUrlBooleanParam('embed');
   const widgetConfigLoadError = isConfigIdMode ? publicWidgetConfigError : null;
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
