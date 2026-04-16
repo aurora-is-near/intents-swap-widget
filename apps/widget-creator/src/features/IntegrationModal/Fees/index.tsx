@@ -127,6 +127,8 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       return false;
     }
 
+    clearErrors('walletAddress');
+
     setValue('walletAddress', config.default_fee.recipient);
     setValue('customFee', getPercentFromBasisPoints(config.default_fee.bps));
 
