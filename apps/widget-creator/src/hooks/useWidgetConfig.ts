@@ -21,6 +21,7 @@ export const useWidgetConfig = () => {
     const normalizedSelectedTokenSymbols = normalizeSelectedTokenSymbols(
       state.selectedTokenSymbols,
     );
+
     const hasExplicitAllowedTokens = normalizedSelectedTokenSymbols.length > 0;
     const hasAllTokensSelected = hasAllSelectableTokensSelected(
       normalizedSelectedTokenSymbols,
