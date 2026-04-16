@@ -110,7 +110,6 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   );
 
   const handleFeeJsonChange = (fee: string) => {
-    const jsonData = JSON.parse(fee ?? '{}');
     const { data: config, error } = validateFeeConfig(fee);
 
     if (!error) {
@@ -122,7 +121,17 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       const walletAddressError = getRecipientErrorFromJson(error);
 
       if (walletAddressError) {
-        setValue('walletAddress', jsonData?.default_fee?.recipient ?? '');
+        let recipient = '';
+
+        try {
+          const jsonData = JSON.parse(fee ?? '{}');
+
+          recipient = jsonData?.default_fee?.recipient ?? '';
+        } catch {
+          recipient = '';
+        }
+
+        setValue('walletAddress', recipient);
         setError('walletAddress', { message: walletAddressError });
       }
     }
@@ -135,7 +144,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       return false;
     }
 
-    clearErrors('walletAddress');
+    clearErrors(['walletAddress', 'customFee']);
 
     setValue('walletAddress', config.default_fee.recipient);
     setValue('customFee', getPercentFromBasisPoints(config.default_fee.bps));
@@ -208,6 +217,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   // sync values from custom fee inputs to fee JSON
   useEffect(() => {
     if (isCustomFeeOpen) {
+      clearErrors('feeJson');
       setValue(
         'feeJson',
         JSON.stringify(
