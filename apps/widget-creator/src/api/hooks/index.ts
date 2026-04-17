@@ -5,4 +5,3 @@ export * from './useCreateWidgetConfig';
 export * from './useDeleteApiKey';
 export * from './useGetWidgetConfig';
 export * from './useUpdateApiKey';
-export * from './useUpdateWidgetConfig';

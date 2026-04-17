@@ -12,7 +12,7 @@ export const useCurrentWidgetConfig = ({
 } = {}) => {
   const { authenticated, getAccessToken, user } = usePrivy();
 
-  return useQuery<WidgetConfigRecord, FeeServiceGetWidgetConfigError>({
+  return useQuery<WidgetConfigRecord | null, FeeServiceGetWidgetConfigError>({
     queryKey: ['widgetConfig', 'current', user?.id],
     enabled: enabled && authenticated,
     retry: false,
@@ -23,7 +23,11 @@ export const useCurrentWidgetConfig = ({
         throw new FeeServiceGetWidgetConfigError('NOT_AUTHORIZED');
       }
 
-      return getCurrentWidgetConfig(authToken);
+      try {
+        return await getCurrentWidgetConfig(authToken);
+      } catch {
+        return null;
+      }
     },
   });
 };

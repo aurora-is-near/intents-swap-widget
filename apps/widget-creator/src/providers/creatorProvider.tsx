@@ -52,6 +52,7 @@ type CreatorState = {
   warningColor: string;
   errorColor: string;
   openThemeColorPickerId: ThemeColorPickerId | null;
+  isConfigurationSyncedToRemote: boolean;
 };
 
 const getCreatorStateFromRemoteWidgetConfig = (
@@ -116,6 +117,7 @@ const initialState: CreatorState = {
   warningColor: DEFAULT_WARNING_COLOR_LIGHT,
   errorColor: DEFAULT_ERROR_COLOR_LIGHT,
   openThemeColorPickerId: null,
+  isConfigurationSyncedToRemote: false,
 };
 
 type Action =
@@ -172,78 +174,164 @@ type Action =
     }
   // Reset
   | { type: 'RESET_ALL' }
-  | { type: 'RESET_DESIGN' };
+  | { type: 'RESET_DESIGN' }
+  // Sync
+  | { type: 'SET_CONFIGURATION_SYNCED_TO_REMOTE' };
 
 // 4. Reducer function
 function creatorReducer(state: CreatorState, action: Action): CreatorState {
   switch (action.type) {
     // Configure
     case 'SET_USER_AUTH_MODE':
-      return { ...state, userAuthMode: action.payload };
+      return {
+        ...state,
+        userAuthMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_WIDGET_MODE':
-      return { ...state, widgetMode: action.payload };
+      return {
+        ...state,
+        widgetMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_ACCOUNT_ABSTRACTION_MODE':
-      return { ...state, accountAbstractionMode: action.payload };
+      return {
+        ...state,
+        accountAbstractionMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_SELECTED_NETWORKS':
-      return { ...state, selectedNetworks: action.payload };
+      return {
+        ...state,
+        selectedNetworks: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS':
-      return { ...state, depositModeReceiverAddress: action.payload };
+      return {
+        ...state,
+        depositModeReceiverAddress: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_SELECTED_TOKEN_SYMBOLS':
       return {
         ...state,
         selectedTokenSymbols: normalizeSelectedTokenSymbols(action.payload),
+        isConfigurationSyncedToRemote: false,
       };
     case 'SET_ENABLE_SELL_TOKEN':
-      return { ...state, enableSellToken: action.payload };
+      return {
+        ...state,
+        enableSellToken: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_DEFAULT_SELL_TOKEN':
       return {
         ...state,
         defaultSellToken: action.payload,
+        isConfigurationSyncedToRemote: false,
       };
     case 'SET_ENABLE_BUY_TOKEN':
-      return { ...state, enableBuyToken: action.payload };
+      return {
+        ...state,
+        enableBuyToken: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_DEFAULT_BUY_TOKEN':
       return {
         ...state,
         defaultBuyToken: action.payload,
+        isConfigurationSyncedToRemote: false,
       };
     case 'SET_ENABLE_CUSTOM_FEES':
-      return { ...state, enableCustomFees: action.payload };
+      return {
+        ...state,
+        enableCustomFees: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_FEE_PERCENTAGE':
-      return { ...state, feePercentage: action.payload };
+      return {
+        ...state,
+        feePercentage: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_COLLECTOR_ADDRESS':
-      return { ...state, collectorAddress: action.payload };
+      return {
+        ...state,
+        collectorAddress: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
+    // apiKey is stripped before saving to remote, so it does not affect sync status
     case 'SET_API_KEY':
       return { ...state, apiKey: action.payload };
 
     // Design
     case 'SET_DEFAULT_MODE':
-      return { ...state, defaultMode: action.payload };
+      return {
+        ...state,
+        defaultMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_STYLE_PRESET':
-      return { ...state, stylePreset: action.payload };
+      return {
+        ...state,
+        stylePreset: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_BORDER_RADIUS':
-      return { ...state, borderRadius: action.payload };
+      return {
+        ...state,
+        borderRadius: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_SHOW_CONTAINER_WRAPPER':
-      return { ...state, showContainerWrapper: action.payload };
+      return {
+        ...state,
+        showContainerWrapper: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_ACCENT_COLOR':
-      return { ...state, accentColor: action.payload };
+      return {
+        ...state,
+        accentColor: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_BACKGROUND_COLOR':
-      return { ...state, backgroundColor: action.payload };
+      return {
+        ...state,
+        backgroundColor: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_SUCCESS_COLOR':
-      return { ...state, successColor: action.payload };
+      return {
+        ...state,
+        successColor: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_WARNING_COLOR':
-      return { ...state, warningColor: action.payload };
+      return {
+        ...state,
+        warningColor: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
     case 'SET_ERROR_COLOR':
-      return { ...state, errorColor: action.payload };
+      return {
+        ...state,
+        errorColor: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
+    // openThemeColorPickerId is UI-only state, does not affect sync status
     case 'SET_OPEN_THEME_COLOR_PICKER_ID':
       return { ...state, openThemeColorPickerId: action.payload };
     case 'APPLY_REMOTE_WIDGET_CONFIG':
-      return getCreatorStateFromRemoteWidgetConfig(
-        state,
-        action.payload.config,
-        action.payload.theme,
-        action.payload.apiKey,
-      );
+      return {
+        ...getCreatorStateFromRemoteWidgetConfig(
+          state,
+          action.payload.config,
+          action.payload.theme,
+          action.payload.apiKey,
+        ),
+        isConfigurationSyncedToRemote: true,
+      };
     case 'RESET_DESIGN':
       return {
         ...state,
@@ -256,9 +344,12 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         successColor: DEFAULT_SUCCESS_COLOR_LIGHT,
         warningColor: DEFAULT_WARNING_COLOR_LIGHT,
         errorColor: DEFAULT_ERROR_COLOR_LIGHT,
+        isConfigurationSyncedToRemote: false,
       };
     case 'RESET_ALL':
       return initialState;
+    case 'SET_CONFIGURATION_SYNCED_TO_REMOTE':
+      return { ...state, isConfigurationSyncedToRemote: true };
     default:
       return state;
   }

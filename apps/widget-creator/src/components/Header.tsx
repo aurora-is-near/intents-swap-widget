@@ -1,13 +1,7 @@
 import { Code, ExternalLink, Menu } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
-import { useState } from 'react';
-
-import CopyIcon from '../assets/icons/copy.svg?react';
-import CheckIcon from '../assets/icons/check-circle.svg?react';
 
 import { HeaderButton } from './HeaderButton';
 import { AuthButton } from './auth';
-import { useSharableLink } from '@/hooks/useSharableLink';
 
 type HeaderProps = {
   onOpenDrawer?: () => void;
@@ -15,21 +9,6 @@ type HeaderProps = {
 };
 
 export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
-  const { authenticated } = usePrivy();
-  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
-  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
-
-  const copyConfigLink = async () => {
-    const sharableLink = await copySharableLink();
-
-    if (!sharableLink) {
-      return;
-    }
-
-    setCopyLinkFeedback(true);
-    setTimeout(() => setCopyLinkFeedback(false), 2000);
-  };
-
   return (
     <header className="w-full flex items-center justify-between px-csw-2xl sm:px-csw-auto">
       <div className="gap-csw-2xl items-center flex">
@@ -52,19 +31,11 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
 
       {/* Desktop nav */}
       <nav className="hidden lg:flex gap-csw-2md items-center">
-        {authenticated && isSharableLinkAvailable && (
-          <HeaderButton
-            variant={copyLinkFeedback ? 'success' : 'dark'}
-            LeadingIcon={copyLinkFeedback ? CheckIcon : CopyIcon}
-            onClick={copyConfigLink}>
-            {copyLinkFeedback ? 'Copied!' : 'Copy shareable link'}
-          </HeaderButton>
-        )}
         <HeaderButton
           variant="primary"
           LeadingIcon={Code}
           onClick={onOpenExportModal}>
-          Export code
+          Embed in your app
         </HeaderButton>
         <AuthButton />
       </nav>

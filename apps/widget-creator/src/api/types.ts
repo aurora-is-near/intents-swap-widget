@@ -65,4 +65,5 @@ export type WidgetConfigRecord = {
   config: SerializableWidgetConfig;
   theme: SerializableTheme;
   createdAt: string;
+  lastTimeUsed: string | null;
 };
