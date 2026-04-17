@@ -40,7 +40,8 @@ type SerializableWidgetConfigKeys =
   | 'themeParentElementSelector'
   | 'lockSwapDirection'
   | 'showTransactionHistory'
-  | 'showConversionPreview';
+  | 'showConversionPreview'
+  | 'extraQuoteParameters';
 
 export type SerializableWidgetConfig = Pick<
   WidgetConfig,

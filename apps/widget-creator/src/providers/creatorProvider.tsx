@@ -69,6 +69,8 @@ const getCreatorStateFromRemoteWidgetConfig = (
     apiKey: apiKey ?? state.apiKey,
     widgetMode: isDepositMode ? 'deposit' : 'swap',
     depositModeReceiverAddress: config.sendAddress ?? '',
+    depositModeVirtualChainRecipient:
+      config.extraQuoteParameters?.virtualChainRecipient ?? '',
     accountAbstractionMode:
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
     selectedNetworks:
