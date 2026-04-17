@@ -1,3 +1,7 @@
+---
+icon: ellipsis
+---
+
 # Coming Soon
 
 {% hint style="warning" %}
@@ -8,6 +12,7 @@ Full integration documentation — including installation, configuration, themin
 
 In the meantime, you can:
 
-* Read about [how Intents Connect works](../intents-connect/how-it-works.md) to understand the execution model
-* Explore the [Intents Connect API](/broken/pages/mHRqL7RV9uK4tf4e437F) if you prefer a programmatic integration
+* Read about [How Intents Connect Works](../deep-dive/how-it-works.md) to understand the execution model
+* Explore the [Intents Connect AP](../intents-connect-api-reference/)I if you prefer a programmatic integration
 * Get in touch to register interest or request early access
+

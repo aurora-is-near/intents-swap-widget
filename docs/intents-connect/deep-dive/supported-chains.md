@@ -1,3 +1,7 @@
+---
+icon: link-horizontal
+---
+
 # Supported Chains
 
 {% hint style="warning" %}
@@ -23,21 +27,21 @@ All chains supported by Near Intents will be supported by Intents Connect:
 {% endtab %}
 
 {% tab title="Bitcoin & Forks" %}
-* Bitcoin
-* Zcash
-* Dogecoin
-* Litecoin
+* Bitcoin (coming soon)
+* Zcash (coming soon)
+* Dogecoin (coming soon)
+* Litecoin (coming soon)
 {% endtab %}
 
 {% tab title="Layer 1 Chains" %}
-* NEAR
 * Solana
-* Cardano
-* Sui
-* TON
-* Tron
-* XRP
-* Stellar
+* NEAR (coming soon)
+* Cardano (coming soon)
+* Sui (coming soon)
+* TON (coming soon)
+* Tron (coming soon)
+* XRP (coming soon)
+* Stellar (coming soon)
 {% endtab %}
 {% endtabs %}
 

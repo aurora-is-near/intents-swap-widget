@@ -2,7 +2,7 @@
 icon: book-open-lines
 ---
 
-# Getting Started
+# What is Swap Widget?
 
 The **Intents Swap Widget** lets you integrate a fully functional, cross-chain swap interface into your application in just a few lines of code.
 
@@ -99,3 +99,15 @@ export const SimpleWidgetDemo = () => {
   );
 };
 ```
+
+{% hint style="info" %}
+### Supported Chains and Assets
+
+**Supported Chains**
+
+See a full list of supported chains here [Supported Chains →](https://docs.near-intents.org/resources/chain-support)
+
+**Supported Assets**
+
+See a full list of supported assets here [Supported Assets →](https://docs.near-intents.org/resources/asset-support)
+{% endhint %}
