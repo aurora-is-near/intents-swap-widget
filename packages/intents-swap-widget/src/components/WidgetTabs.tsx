@@ -9,16 +9,16 @@ type Props = {
   onSelect: (tab: WidgetTab) => void;
 };
 
-export const WidgetTabs = ({ tabs, activeTab, onSelect }: Props) => {
-  if (tabs.length < 2) {
-    return <span className="w-full" />;
-  }
-
 export const WidgetTabs = ({
+  tabs,
   activeTab,
   isEnabled = true,
   onSelect,
 }: Props) => {
+  if (tabs.length < 2) {
+    return <span className="w-full" />;
+  }
+
   return (
     <nav className="space-x-[10px] w-full">
       {tabs.map((tab) => {
