@@ -234,6 +234,16 @@ export function Configure() {
                       });
                     }}
                   />
+                  <TextInput
+                    value={state.depositModeVirtualChainRecipient}
+                    placeholder="Virtual chain recipient (optional)"
+                    onChange={(value) => {
+                      dispatch({
+                        type: 'SET_DEPOSIT_MODE_VIRTUAL_CHAIN_RECIPIENT',
+                        payload: value,
+                      });
+                    }}
+                  />
                   <InfoBanner
                     title="Check receiver address"
                     description="Make sure your receiver address is on the same network as the selected token. Otherwise, users may lose funds."

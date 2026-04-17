@@ -40,10 +40,17 @@ export type WidgetConfig = {
   slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
+
   appFees?: {
     recipient: string;
     fee: number;
   }[];
+
+  extraQuoteParameters?: {
+    sessionId?: string;
+    virtualChainRecipient?: string;
+    virtualChainRefundRecipient?: string;
+  };
 
   // Default tokens
   defaultSourceToken?: DefaultToken | null;

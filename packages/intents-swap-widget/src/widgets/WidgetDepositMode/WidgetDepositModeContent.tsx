@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { CommonWidgetProps, TokenInputType } from '../types';
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+
 import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
+
 import {
   DepositMethodSwitcher,
   DepositSummary,
@@ -12,23 +14,13 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
-
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { isDebug, noop, notReachable } from '@/utils';
+import { useTokenInputPair, useTokens } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
-
-import {
-  useIntentsAccountType,
-  useIsCompatibilityCheckRequired,
-  useTokenInputPair,
-  useTokens,
-  useWalletConnection,
-} from '@/hooks';
-
-import { useConfig } from '@/config';
-import { isDebug, noop, notReachable } from '@/utils';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 export type Msg =
@@ -48,36 +40,68 @@ export const WidgetDepositModeContent = ({
   const { t } = useTypedTranslation();
 
   const {
-    chainsFilter: customChainsFilter,
     alchemyApiKey,
     refetchQuoteInterval,
-    defaultTargetToken,
-    sendAddress,
+    chainsFilter: customChainsFilter,
+    ...config
   } = useConfig();
 
-  const { intentsAccountType } = useIntentsAccountType();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const {
     status: tokensStatus,
     refetch: refetchTokens,
     isLoading: isLoadingTokens,
+    tokens,
   } = useTokens();
 
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
-  const { walletSignOut } = useWalletConnection();
-
-  const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
-  const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
-
-  useEffect(() => {
-    if (isCompatibilityCheckRequired) {
-      setIsCompatibilityOpen(true);
-    }
-  }, [isCompatibilityCheckRequired]);
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
+
+  useEffect(() => {
+    if (isLoadingTokens || tokens.length === 0) {
+      return;
+    }
+
+    if (ctx.sendAddress === config.sendAddress) {
+      return;
+    }
+
+    if (
+      ctx.targetToken &&
+      config.defaultTargetToken &&
+      config.defaultTargetToken.symbol === ctx.targetToken.symbol &&
+      config.defaultTargetToken.blockchain === ctx.targetToken.blockchain
+    ) {
+      return;
+    }
+
+    if (config.sendAddress) {
+      fireEvent('addressSet', config.sendAddress);
+    }
+
+    if (config.defaultTargetToken) {
+      const token = tokens.find(
+        (tkn) =>
+          tkn.symbol.toLowerCase() ===
+            config.defaultTargetToken?.symbol.toLowerCase() &&
+          tkn.blockchain.toLowerCase() ===
+            config.defaultTargetToken?.blockchain.toLowerCase(),
+      );
+
+      fireEvent('tokenSelect', {
+        token,
+        variant: 'target',
+      });
+    }
+  }, [
+    config.defaultTargetToken,
+    config.sendAddress,
+    ctx.sendAddress,
+    ctx.targetToken,
+  ]);
 
   useEffect(() => {
     fireEvent('reset', { clearWalletAddress: true });
@@ -93,7 +117,6 @@ export const WidgetDepositModeContent = ({
       'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
-      'setSourceTokenIntentsTarget',
       ['makeQuote', { message: undefined, refetchQuoteInterval }],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
@@ -124,39 +147,29 @@ export const WidgetDepositModeContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
-  if (!!isLoading || isLoadingTokens) {
+  if (
+    !!isLoading ||
+    isLoadingTokens ||
+    // wait for useEffect to set target token
+    (!!config.sendAddress && !ctx.sendAddress) ||
+    (!!config.defaultTargetToken && !ctx.targetToken)
+  ) {
     return <WidgetDepositModeSkeleton />;
   }
 
-  if (!defaultTargetToken) {
+  if (!config.sendAddress || !config.defaultTargetToken) {
     return (
-      <BlockingError message="Target token is required for deposit mode." />
+      <BlockingError message="Target token & send address must be explicitly set via config for Deposit Mode." />
     );
   }
 
-  if (!sendAddress) {
+  if (
+    config.sendAddress !== ctx.sendAddress ||
+    config.defaultTargetToken.symbol !== ctx.targetToken?.symbol ||
+    config.defaultTargetToken.blockchain !== ctx.targetToken?.blockchain
+  ) {
     return (
-      <BlockingError message="Send address is required for deposit mode." />
-    );
-  }
-
-  if (isCompatibilityOpen) {
-    return (
-      <WalletCompatibilityCheck
-        onMsg={(msg) => {
-          switch (msg.type) {
-            case 'on_sign_out':
-              walletSignOut?.(intentsAccountType);
-              setIsCompatibilityOpen(false);
-              break;
-            case 'on_close':
-              setIsCompatibilityOpen(false);
-              break;
-            default:
-              notReachable(msg.type);
-          }
-        }}
-      />
+      <BlockingError message="Target for Deposit Mode set via config does not match the current context." />
     );
   }
 

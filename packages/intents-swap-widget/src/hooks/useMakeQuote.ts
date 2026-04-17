@@ -53,8 +53,14 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const { apiKey, appFees, fetchQuote, referral, slippageTolerance } =
-    useConfig();
+  const {
+    apiKey,
+    appFees,
+    fetchQuote,
+    referral,
+    slippageTolerance,
+    extraQuoteParameters,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -273,6 +279,7 @@ export const useMakeQuote = () => {
       request.current = requestQuote(
         {
           ...commonQuoteParams,
+          ...extraQuoteParameters,
           recipient:
             !ctx.targetToken.isIntent && ctx.sendAddress
               ? ctx.sendAddress
