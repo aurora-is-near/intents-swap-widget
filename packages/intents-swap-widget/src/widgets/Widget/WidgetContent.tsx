@@ -124,6 +124,7 @@ export const WidgetContent = ({
           <div className="mb-sw-xl h-[34px] w-full flex items-center">
             {enableAccountAbstraction ? (
               <WidgetTabs
+                isEnabled={ctx.quoteStatus !== 'pending'}
                 activeTab={showHistory ? null : activeTab}
                 onSelect={switchTab}
               />
