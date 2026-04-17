@@ -31,6 +31,22 @@ export type Msg =
 
 export type Props = CommonWidgetProps<Msg>;
 
+const compareTokenSymbols = (symbolA?: string, symbolB?: string) => {
+  if (!symbolA || !symbolB) {
+    return false;
+  }
+
+  if (symbolA.toLowerCase() === 'wnear') {
+    return ['near', 'wnear'].includes(symbolB.toLowerCase());
+  }
+
+  if (symbolB.toLowerCase() === 'wnear') {
+    return ['near', 'wnear'].includes(symbolA.toLowerCase());
+  }
+
+  return symbolA.toLowerCase() === symbolB.toLowerCase();
+};
+
 export const WidgetDepositModeContent = ({
   onMsg,
   makeTransfer,
@@ -72,20 +88,23 @@ export const WidgetDepositModeContent = ({
     if (
       ctx.targetToken &&
       config.defaultTargetToken &&
-      config.defaultTargetToken.symbol === ctx.targetToken.symbol &&
-      config.defaultTargetToken.blockchain === ctx.targetToken.blockchain
+      config.defaultTargetToken.blockchain === ctx.targetToken.blockchain &&
+      compareTokenSymbols(
+        config.defaultTargetToken.symbol,
+        ctx.targetToken.symbol,
+      )
     ) {
       return;
     }
 
     if (config.defaultTargetToken) {
-      const token = tokens.find(
-        (tkn) =>
-          tkn.symbol.toLowerCase() ===
-            config.defaultTargetToken?.symbol.toLowerCase() &&
+      const token = tokens.find((tkn) => {
+        return (
+          compareTokenSymbols(tkn.symbol, config.defaultTargetToken?.symbol) &&
           tkn.blockchain.toLowerCase() ===
-            config.defaultTargetToken?.blockchain.toLowerCase(),
-      );
+            config.defaultTargetToken?.blockchain.toLowerCase()
+        );
+      });
 
       fireEvent('tokenSelect', {
         token,
@@ -145,6 +164,16 @@ export const WidgetDepositModeContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
+  console.log(
+    '---1',
+    isLoading,
+    isLoadingTokens,
+    config.sendAddress,
+    ctx.sendAddress,
+    config.defaultTargetToken,
+    ctx.targetToken,
+  );
+
   if (
     !!isLoading ||
     isLoadingTokens ||
@@ -163,8 +192,11 @@ export const WidgetDepositModeContent = ({
 
   if (
     config.sendAddress !== ctx.sendAddress ||
-    config.defaultTargetToken.symbol !== ctx.targetToken?.symbol ||
-    config.defaultTargetToken.blockchain !== ctx.targetToken?.blockchain
+    config.defaultTargetToken.blockchain !== ctx.targetToken?.blockchain ||
+    !compareTokenSymbols(
+      config.defaultTargetToken.symbol,
+      ctx.targetToken?.symbol,
+    )
   ) {
     return (
       <BlockingError message="Target for Deposit Mode set via config does not match the current context." />
@@ -176,6 +208,10 @@ export const WidgetDepositModeContent = ({
       <SuccessScreen
         {...transferResult}
         title={t('transfer.success.deposit.title', 'Deposit successful')}
+        backButtonLabel={t(
+          'transfer.success.deposit.backToDeposit',
+          'Back to deposit',
+        )}
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':

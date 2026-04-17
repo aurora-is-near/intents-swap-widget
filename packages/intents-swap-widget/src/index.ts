@@ -18,3 +18,17 @@ export * from './widgets';
 export { WidgetSwapSkeleton } from './widgets/WidgetSwap/WidgetSwapSkeleton';
 export { WidgetWithdrawSkeleton } from './widgets/WidgetWithdraw/WidgetWithdrawSkeleton';
 export { WidgetDepositSkeleton } from './widgets/WidgetDeposit/WidgetDepositSkeleton';
+
+export { isBtcAddress } from './utils/chains/isBtcAddress';
+export { isEvmAddress } from './utils/chains/isEvmAddress';
+export { isCardanoAddress } from './utils/chains/isCardanoAddress';
+export { isDogeAddress } from './utils/chains/isDogeAddress';
+export { isTronAddress } from './utils/chains/isTronAddress';
+export { isXrpAddress } from './utils/chains/isXrpAddress';
+export { isNearAddress } from './utils/chains/isNearAddress';
+export { isLtcAddress } from './utils/chains/isLtcAddress';
+export { isStellarAddress } from './utils/chains/isStellarAddress';
+export { isSuiAddress } from './utils/chains/isSuiAddress';
+export { isSolanaAddress } from './utils/chains/isSolanaAddress';
+export { isTonAddress } from './utils/chains/isTonAddress';
+export { isZecAddress } from './utils/chains/isZecAddress';

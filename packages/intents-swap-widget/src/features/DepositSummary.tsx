@@ -1,6 +1,7 @@
 import { useConfig } from '@/config';
 import { Notes } from '@/components/Notes';
 import { Accordion } from '@/components/Accordion';
+import { TinyNumber } from '@/components/TinyNumber';
 import { useTypedTranslation } from '@/localisation';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
@@ -78,16 +79,19 @@ export const DepositSummary = () => {
     return (
       <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
         {`${getDepositAmount()} ≈ `}{' '}
-        {formatBigToHuman(ctx.quote.amountIn, ctx.targetToken.decimals)}{' '}
+        <TinyNumber
+          value={ctx.quote.amountOut}
+          decimals={ctx.targetToken.decimals}
+        />{' '}
         {`${ctx.targetToken.symbol}`}
-        <span className="text-sw-gray-50">{` (${formatUsdAmount(parseFloat(ctx.quote.amountInUsd))})`}</span>
+        <span className="text-sw-gray-50">{` (${formatUsdAmount(parseFloat(ctx.quote.amountOutUsd))})`}</span>
       </span>
     );
   })();
 
   return (
     <Accordion
-      expandedHeightPx={91}
+      expandedHeightPx={121}
       expandedByDefault={false}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}

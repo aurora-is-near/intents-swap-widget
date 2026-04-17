@@ -29,7 +29,7 @@ export const SwapQuote = ({ className }: Props) => {
   return (
     <Accordion
       expandedByDefault={false}
-      expandedHeightPx={ctx.walletAddress ? 80 : 50}
+      expandedHeightPx={ctx.walletAddress ? 90 : 60}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate} sec` : undefined}
       className={className}

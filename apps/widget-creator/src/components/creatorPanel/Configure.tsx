@@ -21,6 +21,7 @@ import {
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import { getUrlBooleanParam } from '../../utils/get-url-param';
+import { validateAddressByChain } from '../../utils/validate-address-by-chain';
 import { getSelectableTokenSymbols } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
@@ -108,6 +109,16 @@ export function Configure() {
       payload: availableTokenSymbols,
     });
   };
+
+  const isDepositModeRecipientValid =
+    state.widgetMode === 'deposit' &&
+    state.depositModeReceiverAddress &&
+    state.defaultBuyToken
+      ? validateAddressByChain(
+          state.defaultBuyToken.blockchain,
+          state.depositModeReceiverAddress,
+        )
+      : true;
 
   return (
     <>
@@ -227,6 +238,11 @@ export function Configure() {
                   <TextInput
                     value={state.depositModeReceiverAddress}
                     placeholder="Receiver address"
+                    state={
+                      isDepositModeRecipientValid === false
+                        ? 'error'
+                        : undefined
+                    }
                     onChange={(value) => {
                       dispatch({
                         type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
@@ -244,10 +260,36 @@ export function Configure() {
                       });
                     }}
                   />
-                  <InfoBanner
-                    title="Check receiver address"
-                    description="Make sure your receiver address is on the same network as the selected token. Otherwise, users may lose funds."
-                  />
+                  {!state.depositModeReceiverAddress && (
+                    <InfoBanner
+                      state="error"
+                      title="Empty recipient address"
+                      description="Recipient address is required for deposit mode to work. Please enter a valid address."
+                    />
+                  )}
+                  {!!state.depositModeReceiverAddress &&
+                    !state.defaultBuyToken && (
+                      <InfoBanner
+                        state="error"
+                        title="Empty target token"
+                        description="Target token is required for deposit mode to work. Please select a valid token."
+                      />
+                    )}
+                  {isDepositModeRecipientValid === false && (
+                    <InfoBanner
+                      state="error"
+                      title="Invalid recipient address"
+                      description={`The recipient address entered is not valid for the selected token's blockchain (${state.defaultBuyToken?.blockchain.toUpperCase()}).`}
+                    />
+                  )}
+                  {!!state.depositModeReceiverAddress &&
+                    state.defaultBuyToken &&
+                    isDepositModeRecipientValid !== false && (
+                      <InfoBanner
+                        title="Always check recipient address"
+                        description={`Make sure that address exists on ${state.defaultBuyToken?.blockchain.toUpperCase()} chain and is correct to avoid losing users funds.`}
+                      />
+                    )}
                 </>
               )}
             </div>
