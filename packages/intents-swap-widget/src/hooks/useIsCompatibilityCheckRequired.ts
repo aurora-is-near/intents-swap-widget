@@ -9,7 +9,7 @@ export const useIsCompatibilityCheckRequired = () => {
 
   return !!(
     ctx.walletAddress &&
-    !verifiedWallets.includes(ctx.walletAddress) &&
-    enableAccountAbstraction
+    enableAccountAbstraction &&
+    !verifiedWallets.includes(ctx.walletAddress)
   );
 };
