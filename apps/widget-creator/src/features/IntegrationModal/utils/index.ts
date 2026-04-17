@@ -2,6 +2,8 @@ export * from './isZeroValueBasedFee';
 export * from './getSimpleValueBasedFee';
 export * from './getPercentFromBasisPoints';
 export * from './getBasisPointsFromPercent';
+export * from './getRecipientErrorFromJson';
 export * from './validateFeeConfig';
+export * from './getBasicFeeConfig';
 export * from './getFeeShare';
 export * from './maskApiKey';
