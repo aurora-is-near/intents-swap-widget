@@ -438,6 +438,6 @@ Enables live swap conversion preview in the tokens list on hover.
 
 ### `extraQuoteParameters`
 
-Allows you to pass extra attribute for each of the 1Click quote request.
+Allows you to pass extra attributes for each of the 1Click quote request.
 Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`.
 More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
