@@ -77,7 +77,7 @@ export const DepositSummary = () => {
 
     return (
       <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
-        {`${getDepositAmount()} ${ctx.sourceToken.symbol} ≈ `}{' '}
+        {`${getDepositAmount()} ≈ `}{' '}
         {formatBigToHuman(ctx.quote.amountIn, ctx.targetToken.decimals)}{' '}
         {`${ctx.targetToken.symbol}`}
         <span className="text-sw-gray-50">{` (${formatUsdAmount(parseFloat(ctx.quote.amountInUsd))})`}</span>

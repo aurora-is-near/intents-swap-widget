@@ -65,8 +65,8 @@ export const WidgetDepositModeContent = ({
       return;
     }
 
-    if (ctx.sendAddress === config.sendAddress) {
-      return;
+    if (config.sendAddress && ctx.sendAddress !== config.sendAddress) {
+      fireEvent('addressSet', config.sendAddress);
     }
 
     if (
@@ -76,10 +76,6 @@ export const WidgetDepositModeContent = ({
       config.defaultTargetToken.blockchain === ctx.targetToken.blockchain
     ) {
       return;
-    }
-
-    if (config.sendAddress) {
-      fireEvent('addressSet', config.sendAddress);
     }
 
     if (config.defaultTargetToken) {
@@ -97,6 +93,8 @@ export const WidgetDepositModeContent = ({
       });
     }
   }, [
+    tokens.length,
+    isLoadingTokens,
     config.defaultTargetToken,
     config.sendAddress,
     ctx.sendAddress,
