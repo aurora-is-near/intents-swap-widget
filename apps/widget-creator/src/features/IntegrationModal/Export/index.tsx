@@ -8,12 +8,18 @@ import { Button as UIButton } from '@headlessui/react';
 
 import { ApiKeySelect, Header } from '../components';
 
+import {
+  useApiKeys,
+  useCreateWidgetConfig,
+  useCurrentWidgetConfig,
+} from '@/api/hooks';
 import { Button } from '@/uikit/Button';
-import { useApiKeys } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
+import { ExpandableToggleCard } from '@/uikit/ToggleCard';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
+import { useShareableLink } from '@/hooks/useShareableLink';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
 
@@ -72,12 +78,77 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
-  const { refetch: refetchApiKeys, data: apiKeys = [] } = useApiKeys();
+  const { refetch: refetchApiKeys } = useApiKeys();
+  const { data: currentWidgetConfig } = useCurrentWidgetConfig({
+    enabled: true,
+  });
 
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
 
+  const createWidgetConfigMutation = useCreateWidgetConfig();
+  const [embeddableLinkConfigId, setEmbeddableLinkConfigId] = useState<
+    string | null
+  >(null);
+
+  const shareableLink = useShareableLink(
+    embeddableLinkConfigId,
+    state.apiKey ?? null,
+  );
+
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
+  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
+  const [isCodeSnippetExpanded, setIsCodeSnippetExpanded] = useState(true);
+  const [isEmbeddedLinkExpanded, setIsEmbeddedLinkExpanded] = useState(
+    state.isConfigurationSyncedToRemote,
+  );
+
+  useEffect(() => {
+    if (state.isConfigurationSyncedToRemote && currentWidgetConfig) {
+      setEmbeddableLinkConfigId(currentWidgetConfig.uuid);
+    }
+  }, []);
+
+  const handleEmbeddedLinkToggle = async (enabled: boolean) => {
+    setIsEmbeddedLinkExpanded(enabled);
+
+    if (!enabled) {
+      setEmbeddableLinkConfigId(null);
+      createWidgetConfigMutation.reset();
+
+      return;
+    }
+
+    if (state.isConfigurationSyncedToRemote && currentWidgetConfig) {
+      setEmbeddableLinkConfigId(currentWidgetConfig.uuid);
+
+      return;
+    }
+
+    const { apiKey: _apiKey, ...configWithoutApiKey } = widgetConfig;
+
+    try {
+      const created = await createWidgetConfigMutation.mutateAsync({
+        config: configWithoutApiKey,
+        theme: themeConfig,
+      });
+
+      setEmbeddableLinkConfigId(created.uuid);
+      dispatch({ type: 'SET_CONFIGURATION_SYNCED_TO_REMOTE' });
+    } catch {
+      // error state is reflected via createWidgetConfigMutation.status
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!shareableLink) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareableLink);
+    setCopyLinkFeedback(true);
+    setTimeout(() => setCopyLinkFeedback(false), 2000);
+  };
 
   const isStandaloneMode = state.userAuthMode === 'standalone';
 
@@ -88,7 +159,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 export function App() {
   return (
     <WidgetConfigProvider
-      config={${stringifyAsJS({ ...widgetConfig, apiKey: apiKeys[0]?.widgetApiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
+      config={${stringifyAsJS({ ...widgetConfig, apiKey: state.apiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     >
       <Widget />
@@ -141,7 +212,7 @@ export function App() {
         />
       </div>
 
-      <div className="flex flex-col gap-csw-2xl mt-csw-2xl">
+      <div className="flex flex-col gap-csw-2xl mt-csw-2xl pb-csw-2xl">
         {(() => {
           switch (apiKeysState.state) {
             case 'unauthenticated':
@@ -217,70 +288,129 @@ export function App() {
           }
         })()}
 
-        <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
-          <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
-            <span className="text-csw-label-md text-csw-gray-50">React</span>
-            <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
-            <Highlight theme={themes.dracula} code={sampleCode} language="tsx">
-              {({ tokens, getLineProps, getTokenProps }) => (
-                <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
-                  {tokens.map((line, i) => {
-                    const {
-                      style: lineStyle,
-                      className: lineClassName,
-                      ...lineOtherProps
-                    } = getLineProps({
-                      line,
-                    });
+        <ExpandableToggleCard
+          label="Generate a new link to embed"
+          isExpanded={isEmbeddedLinkExpanded}
+          onToggle={handleEmbeddedLinkToggle}
+          description={
+            <>
+              Integrate the widget with one line into any application using an
+              iframe. <br className="hidden sm:block" />
+              No code needed, non React apps are supported.
+            </>
+          }>
+          {(createWidgetConfigMutation.status === 'pending' ||
+            !shareableLink) && (
+            <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
+          )}
+          {createWidgetConfigMutation.status === 'error' && (
+            <InfoBanner
+              state="error"
+              action="Try again"
+              title="Unable to generate link"
+              description="We couldn't create the shareable config. Please try again."
+              onClick={handleEmbeddedLinkToggle.bind(null, true)}
+            />
+          )}
+          {(createWidgetConfigMutation.status === 'success' ||
+            (state.isConfigurationSyncedToRemote && currentWidgetConfig)) &&
+            shareableLink !== null && (
+              <div className="flex items-center gap-csw-sm h-[36px]">
+                <div className="flex items-center bg-csw-gray-800 rounded-csw-md px-csw-lg overflow-hidden flex-1 h-full">
+                  <span className="text-csw-body-sm text-csw-gray-300 truncate">
+                    {shareableLink}
+                  </span>
+                </div>
+                <Button
+                  variant="primary"
+                  detail="accent"
+                  size="sm"
+                  fluid
+                  icon={ContentCopy}
+                  className="h-full shrink-0"
+                  onClick={handleCopyLink}>
+                  {copyLinkFeedback ? 'Copied!' : 'Copy link'}
+                </Button>
+              </div>
+            )}
+        </ExpandableToggleCard>
 
-                    return (
-                      <div
-                        key={i}
-                        className={`table-row ${lineClassName || ''}`}
-                        style={lineStyle as React.CSSProperties}
-                        {...lineOtherProps}>
-                        <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
-                          {i + 1}
-                        </span>
-                        <span className="table-cell">
-                          {line.map((token, key) => {
-                            const {
-                              style: tokenStyle,
-                              className: tokenClassName,
-                              ...tokenOtherProps
-                            } = getTokenProps({ token });
+        <ExpandableToggleCard
+          label="Use React code snippet"
+          isExpanded={isCodeSnippetExpanded}
+          onToggle={setIsCodeSnippetExpanded}
+          description={
+            <>
+              Code snippet to be paste into your app's source code.{' '}
+              <br className="hidden sm:block" />
+              You can extend your config and have full control over the widget.
+            </>
+          }>
+          <Button
+            variant="primary"
+            detail="accent"
+            size="sm"
+            fluid
+            icon={ContentCopy}
+            className="w-full mb-csw-2xl"
+            onClick={handleCopyCode}>
+            {copyCodeFeedback ? 'Copied!' : 'Copy code'}
+          </Button>
+          <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
+            <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
+              <span className="text-csw-label-md text-csw-gray-50">React</span>
+              <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
+              <Highlight
+                theme={themes.dracula}
+                code={sampleCode}
+                language="tsx">
+                {({ tokens, getLineProps, getTokenProps }) => (
+                  <pre className="font-normal text-sm leading-[1.3em] text-csw-gray-50 m-0 p-0 table w-full">
+                    {tokens.map((line, i) => {
+                      const {
+                        style: lineStyle,
+                        className: lineClassName,
+                        ...lineOtherProps
+                      } = getLineProps({
+                        line,
+                      });
 
-                            return (
-                              <span
-                                key={key}
-                                className={tokenClassName || ''}
-                                style={tokenStyle as React.CSSProperties}
-                                {...tokenOtherProps}
-                              />
-                            );
-                          })}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </pre>
-              )}
-            </Highlight>
+                      return (
+                        <div
+                          key={i}
+                          className={`table-row ${lineClassName || ''}`}
+                          style={lineStyle as React.CSSProperties}
+                          {...lineOtherProps}>
+                          <span className="table-cell text-right pr-csw-lg select-none opacity-50 text-csw-gray-400">
+                            {i + 1}
+                          </span>
+                          <span className="table-cell">
+                            {line.map((token, key) => {
+                              const {
+                                style: tokenStyle,
+                                className: tokenClassName,
+                                ...tokenOtherProps
+                              } = getTokenProps({ token });
+
+                              return (
+                                <span
+                                  key={key}
+                                  className={tokenClassName || ''}
+                                  style={tokenStyle as React.CSSProperties}
+                                  {...tokenOtherProps}
+                                />
+                              );
+                            })}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </pre>
+                )}
+              </Highlight>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
-        <Button
-          variant="primary"
-          detail="accent"
-          size="sm"
-          fluid
-          icon={ContentCopy}
-          className="w-full"
-          onClick={handleCopyCode}>
-          {copyCodeFeedback ? 'Copied!' : 'Copy code'}
-        </Button>
+        </ExpandableToggleCard>
       </div>
     </>
   );

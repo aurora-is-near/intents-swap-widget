@@ -214,5 +214,6 @@ export const widgetConfigRecordSchema: z.ZodType<WidgetConfigRecord> = z
     config: widgetConfigSchema,
     theme: widgetThemeSchema,
     createdAt: z.string(),
+    lastTimeUsed: z.string().nullable(),
   })
   .strict();

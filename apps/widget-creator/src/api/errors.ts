@@ -98,18 +98,3 @@ export class FeeServiceCreateWidgetConfigError extends FeeServiceApiError {
     this.name = 'FeeServiceCreateWidgetConfigError';
   }
 }
-
-// ------------------------------------------------------------
-
-type FeeServiceUpdateWidgetConfigErrorCodes =
-  | 'FAILED_TO_UPDATE_WIDGET_CONFIG'
-  | 'WIDGET_CONFIG_NOT_FOUND'
-  | 'INVALID_WIDGET_CONFIG'
-  | FeeServiceCommonErrorCodes;
-
-export class FeeServiceUpdateWidgetConfigError extends FeeServiceApiError {
-  constructor(code: FeeServiceUpdateWidgetConfigErrorCodes, message?: string) {
-    super(code, message);
-    this.name = 'FeeServiceUpdateWidgetConfigError';
-  }
-}

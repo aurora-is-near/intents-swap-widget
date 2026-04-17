@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { BlockingError } from '@aurora-is-near/intents-swap-widget';
 
@@ -16,23 +16,23 @@ import { WidgetContent } from './components/widget/WidgetContent';
 import { useCreator } from './hooks/useCreatorConfig';
 
 import { useGetWidgetConfig } from '@/api/hooks';
+import { patchWidgetConfigUsed } from '@/api/requests/patchWidgetConfigUsed';
 
 const AppContent = () => {
   const { dispatch } = useCreator();
 
   const apiKey = getUrlParam('apiKey');
   const configId = getUrlParam('configId');
-  const isConfigIdMode = Boolean(configId);
 
   const appliedConfigIdRef = useRef<string | null>(null);
 
   const { isRemoteWidgetConfigApplied, isRemoteWidgetConfigLoading } =
     useApplyRemoteWidgetConfig({
-      enabled: !isConfigIdMode,
+      enabled: !configId,
     });
 
   useSyncRemoteWidgetConfig({
-    enabled: !isConfigIdMode && isRemoteWidgetConfigApplied,
+    enabled: !configId && isRemoteWidgetConfigApplied,
   });
 
   const {
@@ -65,12 +65,32 @@ const AppContent = () => {
   }, [apiKey, dispatch, publicWidgetConfig, publicWidgetConfigStatus]);
 
   const { ready } = usePrivy();
-  const isRemoteConfigLoading = isConfigIdMode
+  const isRemoteConfigLoading = configId
     ? publicWidgetConfigStatus === 'pending'
     : !ready || isRemoteWidgetConfigLoading;
 
   const isEmbedded = getUrlBooleanParam('embed');
-  const widgetConfigLoadError = isConfigIdMode ? publicWidgetConfigError : null;
+  const widgetConfigLoadError = configId ? publicWidgetConfigError : null;
+
+  useEffect(() => {
+    if (
+      !configId ||
+      !isEmbedded ||
+      !publicWidgetConfig ||
+      publicWidgetConfigStatus !== 'success'
+    ) {
+      return;
+    }
+
+    const { lastTimeUsed } = publicWidgetConfig;
+    const isStale =
+      !lastTimeUsed ||
+      Date.now() - new Date(lastTimeUsed).getTime() > 24 * 60 * 60 * 1000;
+
+    if (isStale) {
+      void patchWidgetConfigUsed(configId);
+    }
+  }, [isEmbedded, configId, publicWidgetConfig, publicWidgetConfigStatus]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);

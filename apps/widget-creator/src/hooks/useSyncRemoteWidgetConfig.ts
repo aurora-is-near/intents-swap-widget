@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
-import { useCurrentWidgetConfig } from '@/api/hooks/useCurrentWidgetConfig';
-import { useUpdateWidgetConfig } from '@/api/hooks/useUpdateWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
-
-const SYNC_DEBOUNCE_MS = 400;
+import { useCurrentWidgetConfig } from '@/api/hooks/useCurrentWidgetConfig';
+import type { RequestBody } from '@/api/requests/createWidgetConfig';
 
 const stripUndefined = (value: unknown): unknown => {
   if (Array.isArray(value)) {
@@ -49,16 +47,12 @@ export const useSyncRemoteWidgetConfig = ({
   enabled = true,
 }: {
   enabled?: boolean;
-} = {}) => {
-  const failedPayloadSignatureRef = useRef<string | null>(null);
+} = {}): { body: RequestBody } | null => {
   const { authenticated } = usePrivy();
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
-  const {
-    data: currentWidgetConfig,
-    error: currentWidgetConfigError,
-    status: currentWidgetConfigStatus,
-  } = useCurrentWidgetConfig({ enabled });
+  const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
+    useCurrentWidgetConfig({ enabled });
 
   const remoteWidgetConfigPayload = useMemo(() => {
     const { apiKey: _apiKey, ...configWithoutApiKey } = widgetConfig;
@@ -66,15 +60,8 @@ export const useSyncRemoteWidgetConfig = ({
     return stripUndefined({
       config: configWithoutApiKey,
       theme: themeConfig,
-    }) as {
-      config: typeof configWithoutApiKey;
-      theme: typeof themeConfig;
-    };
+    }) as RequestBody;
   }, [themeConfig, widgetConfig]);
-
-  const updateWidgetConfigMutation = useUpdateWidgetConfig(
-    currentWidgetConfig?.uuid ?? '',
-  );
 
   const currentRemotePayload = useMemo(() => {
     if (!currentWidgetConfig) {
@@ -108,86 +95,24 @@ export const useSyncRemoteWidgetConfig = ({
     return currentRemotePayloadSignature !== remoteWidgetConfigPayloadSignature;
   }, [currentRemotePayloadSignature, remoteWidgetConfigPayloadSignature]);
 
-  const {
-    mutateAsync,
-    reset,
-    status: updateStatus,
-  } = updateWidgetConfigMutation;
-
-  useEffect(() => {
-    if (!enabled) {
-      failedPayloadSignatureRef.current = null;
-
-      return;
-    }
-
-    if (updateStatus !== 'error') {
-      return;
-    }
-
+  return useMemo(() => {
     if (
-      failedPayloadSignatureRef.current === remoteWidgetConfigPayloadSignature
+      !enabled ||
+      !authenticated ||
+      currentWidgetConfigStatus !== 'success' ||
+      !currentWidgetConfig ||
+      !hasRemoteConfigChanged
     ) {
-      return;
+      return null;
     }
 
-    failedPayloadSignatureRef.current = null;
-    reset();
-  }, [enabled, remoteWidgetConfigPayloadSignature, reset, updateStatus]);
-
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-
-    if (!authenticated || currentWidgetConfigStatus !== 'success') {
-      return;
-    }
-
-    if (!currentWidgetConfig || !hasRemoteConfigChanged) {
-      return;
-    }
-
-    if (updateStatus === 'pending' || updateStatus === 'error') {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      failedPayloadSignatureRef.current = null;
-      void mutateAsync(remoteWidgetConfigPayload).catch(() => {
-        failedPayloadSignatureRef.current = remoteWidgetConfigPayloadSignature;
-      });
-    }, SYNC_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return { body: remoteWidgetConfigPayload };
   }, [
     authenticated,
     currentWidgetConfig,
     currentWidgetConfigStatus,
     enabled,
     hasRemoteConfigChanged,
-    mutateAsync,
     remoteWidgetConfigPayload,
-    remoteWidgetConfigPayloadSignature,
-    updateStatus,
   ]);
-
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-
-    if (currentWidgetConfigStatus !== 'error') {
-      return;
-    }
-
-    if (currentWidgetConfigError?.code !== 'WIDGET_CONFIG_NOT_FOUND') {
-      return;
-    }
-
-    failedPayloadSignatureRef.current = null;
-    reset();
-  }, [currentWidgetConfigError, currentWidgetConfigStatus, enabled, reset]);
 };
