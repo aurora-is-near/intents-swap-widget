@@ -60,7 +60,7 @@ export const DappWalletBridge = ({
   ...restProps
 }: DappWalletBridgeProps) => {
   return (
-    <AppKitProvider appName={config.appName} theme={restProps.theme}>
+    <AppKitProvider appName={config.referral} theme={restProps.theme}>
       <DappWalletBridgeInner config={config} {...restProps}>
         {children}
       </DappWalletBridgeInner>

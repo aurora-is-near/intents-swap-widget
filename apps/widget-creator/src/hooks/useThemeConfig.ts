@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Theme } from '@aurora-is-near/intents-swap-widget';
+import type { Theme } from '@aurora-is-near/intents-swap-widget';
 import { useCreator } from './useCreatorConfig';
 import { isHexColor } from '../utils/is-hex-color';
 

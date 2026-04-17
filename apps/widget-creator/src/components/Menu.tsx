@@ -10,9 +10,9 @@ import {
 import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 import { useLogin, useLogout, usePrivy } from '@privy-io/react-auth';
 import { cn } from '../utils/cn';
-import { useConfigLink } from '../hooks/useConfigLink';
 import { CreatorPanel } from './creatorPanel/CreatorPanel';
 import { MenuItem } from './MenuItem';
+import { useSharableLink } from '@/hooks/useSharableLink';
 
 type DrawerView = 'menu' | 'customize';
 
@@ -26,10 +26,10 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [view, setView] = useState<DrawerView>('menu');
   const [copyFeedback, setCopyFeedback] = useState(false);
-  const { copyConfigLink } = useConfigLink();
   const { ready, authenticated } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
+  const { copySharableLink, isSharableLinkAvailable } = useSharableLink();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -47,7 +47,12 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
   }, [isOpen]);
 
   const handleCopyLink = async () => {
-    await copyConfigLink();
+    const sharableLink = await copySharableLink();
+
+    if (!sharableLink) {
+      return;
+    }
+
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2000);
   };
@@ -102,11 +107,13 @@ export const Menu = ({ isOpen, onClose, onOpenExportModal }: DrawerProps) => {
                 label="Export code"
                 onClick={onOpenExportModal}
               />
-              <MenuItem
-                icon={<Link className="size-5" />}
-                label={copyFeedback ? 'Copied!' : 'Copy shareable link'}
-                onClick={handleCopyLink}
-              />
+              {authenticated && isSharableLinkAvailable && (
+                <MenuItem
+                  icon={<Link className="size-5" />}
+                  label={copyFeedback ? 'Copied!' : 'Copy shareable link'}
+                  onClick={handleCopyLink}
+                />
+              )}
               <MenuItem
                 icon={<Book className="size-5" />}
                 label="Get started guide"

@@ -12,7 +12,7 @@ import { useApiKeys } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
 
 const ReportHeader = () => (
-  <div className="px-csw-2xl pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
+  <div className="pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">
     <Header
       title="Reports"
       description="Download a CSV report of all transactions for the selected widget configuration within your chosen date range."

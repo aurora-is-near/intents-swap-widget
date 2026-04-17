@@ -68,3 +68,48 @@ export class FeeServiceUpdateApiKeyError extends FeeServiceApiError {
     this.name = 'FeeServiceUpdateApiKeyError';
   }
 }
+
+// ------------------------------------------------------------
+
+type FeeServiceGetWidgetConfigErrorCodes =
+  | 'FAILED_TO_GET_WIDGET_CONFIG'
+  | 'WIDGET_CONFIG_NOT_FOUND'
+  | 'INVALID_WIDGET_CONFIG'
+  | FeeServiceCommonErrorCodes;
+
+export class FeeServiceGetWidgetConfigError extends FeeServiceApiError {
+  constructor(code: FeeServiceGetWidgetConfigErrorCodes, message?: string) {
+    super(code, message);
+    this.name = 'FeeServiceGetWidgetConfigError';
+  }
+}
+
+// ------------------------------------------------------------
+
+type FeeServiceCreateWidgetConfigErrorCodes =
+  | 'FAILED_TO_CREATE_WIDGET_CONFIG'
+  | 'WIDGET_CONFIG_ALREADY_EXISTS'
+  | 'INVALID_WIDGET_CONFIG'
+  | FeeServiceCommonErrorCodes;
+
+export class FeeServiceCreateWidgetConfigError extends FeeServiceApiError {
+  constructor(code: FeeServiceCreateWidgetConfigErrorCodes, message?: string) {
+    super(code, message);
+    this.name = 'FeeServiceCreateWidgetConfigError';
+  }
+}
+
+// ------------------------------------------------------------
+
+type FeeServiceUpdateWidgetConfigErrorCodes =
+  | 'FAILED_TO_UPDATE_WIDGET_CONFIG'
+  | 'WIDGET_CONFIG_NOT_FOUND'
+  | 'INVALID_WIDGET_CONFIG'
+  | FeeServiceCommonErrorCodes;
+
+export class FeeServiceUpdateWidgetConfigError extends FeeServiceApiError {
+  constructor(code: FeeServiceUpdateWidgetConfigErrorCodes, message?: string) {
+    super(code, message);
+    this.name = 'FeeServiceUpdateWidgetConfigError';
+  }
+}

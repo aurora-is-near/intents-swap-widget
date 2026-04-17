@@ -19,6 +19,11 @@ import {
   Props as WidgetWithdrawProps,
   Msg as WithdrawMsg,
 } from '../WidgetWithdraw/WidgetWithdrawContent';
+import {
+  Msg as DepositModeMsg,
+  WidgetDepositModeContent,
+  Props as WidgetDepositModeProps,
+} from '../WidgetDepositMode/WidgetDepositModeContent';
 import { useConfig } from '../../config';
 import {
   FakeTransaction,
@@ -36,10 +41,14 @@ import { useUnsafeSnapshot } from '../../machine';
 import { cn } from '../../utils/cn';
 
 export type Props = Omit<
-  WidgetSwapProps | WidgetDepositProps | WidgetWithdrawProps,
+  | WidgetSwapProps
+  | WidgetDepositProps
+  | WidgetWithdrawProps
+  | WidgetDepositModeProps,
   'onMsg' | 'makeTransfer'
 > & {
   defaultTab?: WidgetTab;
+  tabs?: WidgetTab[];
   onMsg?: (msg: Msg, widgetType: WidgetType) => void;
   makeTransfer?: (
     args: MakeTransferArgs,
@@ -47,7 +56,7 @@ export type Props = Omit<
   ) => TransferResult | null | Promise<TransferResult | null>;
 };
 
-type Msg = SwapMsg | DepositMsg | WithdrawMsg;
+type Msg = SwapMsg | DepositMsg | WithdrawMsg | DepositModeMsg;
 
 const wrapMakeTransfer = (
   makeTransfer: Props['makeTransfer'],
@@ -67,6 +76,7 @@ const wrapMakeTransfer = (
 
 export const WidgetContent = ({
   defaultTab = 'swap',
+  tabs = ['swap', 'deposit', 'withdraw'],
   makeTransfer,
   onMsg,
   ...restProps
@@ -105,6 +115,10 @@ export const WidgetContent = ({
   };
 
   useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
+
+  useEffect(() => {
     if (!enableAccountAbstraction) {
       setActiveTab('swap');
     }
@@ -122,8 +136,9 @@ export const WidgetContent = ({
       <>
         {showHeader && (
           <div className="mb-sw-xl h-[34px] w-full flex items-center">
-            {enableAccountAbstraction ? (
+            {!!enableAccountAbstraction || tabs.includes('topup') ? (
               <WidgetTabs
+                tabs={tabs}
                 isEnabled={ctx.quoteStatus !== 'pending'}
                 activeTab={showHistory ? null : activeTab}
                 onSelect={switchTab}
@@ -177,6 +192,18 @@ export const WidgetContent = ({
               case 'deposit': {
                 return (
                   <WidgetDepositContent
+                    {...restProps}
+                    makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
+                    onMsg={(msg) => {
+                      handleMsg(msg, 'deposit');
+                    }}
+                  />
+                );
+              }
+
+              case 'topup': {
+                return (
+                  <WidgetDepositModeContent
                     {...restProps}
                     makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
                     onMsg={(msg) => {

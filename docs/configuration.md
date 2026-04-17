@@ -22,7 +22,6 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 
 const config: WidgetConfig = {
-  appName: 'Intents Demo',
   connectedWallets: {
     default: '0x...',
     ton: 'ABC123',
@@ -81,17 +80,13 @@ The following options are available for all widget packages
 (i.e. you installed `@aurora-is-near/intents-swap-widget` or
 `@aurora-is-near/intents-swap-widget-standalone`):
 
-### `appName`
-
-The name used to refer to your app when making NEAR Intents transfers.
-
 ### `apiKey`
 
 Your widget integration API Key. Visit [Intents Widget Studio](https://intents.aurora.dev) to obtain.
 
-### `appIcon`
+### `referral`
 
-URL to your app's icon. Shown in the chain selection dropdown.
+Your application name that is used as an alias for quotes. Optional.
 
 ### `enableAccountAbstraction`
 
@@ -440,6 +435,7 @@ Enables swaps transaction history for a user's wallet. Disabled by default.
 ### `disabledInternalBalanceTokens`
 
 Filters out some tokens from internal balance list.
+
 ### `showConversionPreview`
 
 Enables live swap conversion preview in the tokens list on hover.

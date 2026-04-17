@@ -36,7 +36,7 @@ export const TokenItem = ({
   onMsg,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
-  const { appName, showConversionPreview } = useConfig();
+  const { showConversionPreview } = useConfig();
 
   const displayUsdBalance = getUsdDisplayBalance(balance, token);
   const { supportedChains } = useSupportedChains();
@@ -88,7 +88,7 @@ export const TokenItem = ({
               <span className="text-sw-label-md text-sw-gray-300">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-sm text-sw-gray-300">{`on ${appName} ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-sm text-sw-gray-300">{`on Near Intents ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-sw-xs">

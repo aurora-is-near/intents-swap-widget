@@ -3,11 +3,21 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import vercel from 'vite-plugin-vercel';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react(), svgr({}), nodePolyfills(), vercel()] as Plugin[],
+  plugins: [
+    react(),
+    svgr({}),
+    nodePolyfills({
+      include: ['crypto', 'buffer', 'process', 'util'],
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+    }),
+  ] as Plugin[],
   css: {
     postcss: './postcss.config.cjs',
     modules: false,
@@ -30,6 +40,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    target: 'esnext',
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          privy: ['@privy-io/react-auth'],
+          prism: ['prism-react-renderer'],
+          standalone: ['@aurora-is-near/intents-swap-widget-standalone'],
+        },
+      },
+    },
   },
 
   // Due to @near-js versions mismatch across hot wallet and intents sdk

@@ -35,7 +35,7 @@ export function RadioButton({
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-1.5 text-left flex-1 min-w-0">
+      <div className="flex flex-col gap-csw-xs text-left flex-1 min-w-0">
         <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-50 whitespace-nowrap">
           {label}
         </p>

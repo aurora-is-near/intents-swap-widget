@@ -22,7 +22,7 @@ export const useUpdateApiKey = (apiKey: string) => {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: ['apiKeys', user?.id ?? 'anonymous'],
+        queryKey: ['apiKeys', user?.id],
       });
     },
   });

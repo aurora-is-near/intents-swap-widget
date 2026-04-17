@@ -59,7 +59,7 @@ export const StandaloneWidgetConfigProvider = ({
   ...restProps
 }: StandaloneWidgetConfigProviderProps) => {
   return (
-    <AppKitProvider appName={config.appName} theme={restProps.theme}>
+    <AppKitProvider appName="Near Intents" theme={restProps.theme}>
       <StandaloneWalletBridge config={config} {...restProps}>
         {children}
       </StandaloneWalletBridge>

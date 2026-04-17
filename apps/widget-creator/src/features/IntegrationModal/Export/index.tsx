@@ -4,7 +4,6 @@ import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { AddW700 as Add } from '@material-symbols-svg/react-rounded/icons/add';
 import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
-import { LinkW700 as Link } from '@material-symbols-svg/react-rounded/icons/link';
 import { Button as UIButton } from '@headlessui/react';
 
 import { ApiKeySelect, Header } from '../components';
@@ -12,7 +11,6 @@ import { ApiKeySelect, Header } from '../components';
 import { Button } from '@/uikit/Button';
 import { useApiKeys } from '@/api/hooks';
 import { useCreator } from '@/hooks/useCreatorConfig';
-import { useConfigLink } from '@/hooks/useConfigLink';
 import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -80,9 +78,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { themeConfig } = useThemeConfig();
 
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
-  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
 
-  const { copyConfigLink: originalCopyConfigLink } = useConfigLink();
   const isStandaloneMode = state.userAuthMode === 'standalone';
 
   // we don't want to expose our default app key to the exported code
@@ -108,12 +104,6 @@ export function App() {
     await navigator.clipboard.writeText(sampleCode);
     setCopyCodeFeedback(true);
     setTimeout(() => setCopyCodeFeedback(false), 2000);
-  };
-
-  const handleCopySharableLink = async () => {
-    await originalCopyConfigLink();
-    setCopyLinkFeedback(true);
-    setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
 
   useEffect(() => {
@@ -281,16 +271,6 @@ export function App() {
       </div>
 
       <div className="border-t border-csw-gray-900 py-csw-2xl flex flex-col sm:flex-row items-center gap-csw-lg">
-        <Button
-          variant="primary"
-          detail="dimmed"
-          size="sm"
-          fluid
-          icon={Link}
-          className="w-full"
-          onClick={handleCopySharableLink}>
-          {copyLinkFeedback ? 'Copied!' : 'Copy sharable link'}
-        </Button>
         <Button
           variant="primary"
           detail="accent"

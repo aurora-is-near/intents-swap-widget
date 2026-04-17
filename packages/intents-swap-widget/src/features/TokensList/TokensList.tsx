@@ -65,7 +65,7 @@ export const TokensList = ({
 }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { appName, priorityAssets = [] } = useConfig();
+  const { priorityAssets = [] } = useConfig();
   const { supportedChains } = useSupportedChains();
   const { mergedBalance } = useMergedBalance();
 
@@ -96,7 +96,7 @@ export const TokensList = ({
     return [
       ...(filteredTokens.intents.length > 0
         ? [
-            { label: appName, count: filteredTokens.intents.length },
+            { label: 'Near Intents', count: filteredTokens.intents.length },
             { tokens: filteredTokens.intents },
           ]
         : []),
@@ -283,10 +283,10 @@ export const TokensList = ({
             'tokens.list.noBalanceOnApp.subLabel',
             'Deposit funds to get started',
           )}
-          heading={t('tokens.list.noBalanceOnApp.label', {
-            defaultValue: 'You have no balances on {{appName}}',
-            appName,
-          })}
+          heading={t(
+            'tokens.list.noBalanceOnApp.label',
+            'You have no balances on Near Intents',
+          )}
         />
       );
   }

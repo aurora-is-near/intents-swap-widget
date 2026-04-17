@@ -33,7 +33,7 @@ export const updateApiKey = async (
     let message = 'Failed to update API key';
 
     if (error instanceof AxiosError) {
-      message = error.response?.data?.message;
+      message = error.response?.data?.message ?? message;
 
       if (error.response?.status === 401) {
         throw new FeeServiceUpdateApiKeyError('INVALID_AUTHORIZATION');

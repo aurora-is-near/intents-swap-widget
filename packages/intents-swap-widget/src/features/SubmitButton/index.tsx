@@ -26,8 +26,23 @@ const commonBtnProps = {
 };
 
 const useGetErrorButton = (ctx: Context) => {
-  const { apiKey, fetchQuote } = useConfig();
+  const { apiKey, sendAddress, fetchQuote } = useConfig();
   const { t } = useTypedTranslation();
+
+  if (
+    !!sendAddress &&
+    ctx.sendAddress !== sendAddress &&
+    ctx.state === 'quote_success_external'
+  ) {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t(
+          'submit.error.sendToAddressOverridden',
+          'Overridden recipient address',
+        )}
+      </Button>
+    );
+  }
 
   if (ctx.error?.code === 'TOKEN_IS_NOT_SUPPORTED') {
     return (
@@ -304,7 +319,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
+        {t('submit.disabled.selectTokenToReceive', 'Select token to deposit')}
       </Button>
     );
   }

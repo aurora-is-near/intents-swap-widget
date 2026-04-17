@@ -53,7 +53,7 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const { appName, apiKey, appFees, fetchQuote, slippageTolerance } =
+  const { apiKey, appFees, fetchQuote, referral, slippageTolerance } =
     useConfig();
 
   const isDry = isDryQuote(ctx);
@@ -243,8 +243,8 @@ export const useMakeQuote = () => {
       commonQuoteParams.customRecipientMsg = message;
     }
 
-    if (appName) {
-      commonQuoteParams.referral = snakeCase(appName);
+    if (referral) {
+      commonQuoteParams.referral = snakeCase(referral);
     }
 
     if (appFees) {

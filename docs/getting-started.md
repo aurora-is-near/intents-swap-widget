@@ -41,7 +41,7 @@ import {
 
 export default function App() {
   return (
-    <WidgetConfigProvider config={{ appName: 'MyApp' }}>
+    <WidgetConfigProvider config={{ ... }}>
       <Widget />
     </WidgetConfigProvider>
   );

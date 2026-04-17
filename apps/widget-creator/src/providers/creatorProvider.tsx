@@ -6,6 +6,8 @@ import {
 import React, { createContext, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeColorPickerId } from '../types/colors';
+import type { SerializableTheme, SerializableWidgetConfig } from '../api/types';
+import { normalizeSelectedTokenSymbols } from '../utils/tokenSelection';
 import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_BACKGROUND_COLOR,
@@ -18,6 +20,9 @@ import {
 type CreatorState = {
   // Configure - Wallet connection
   userAuthMode: 'standalone' | 'dapp';
+  // Configure - Widget mode
+  widgetMode: 'swap' | 'deposit';
+  depositModeReceiverAddress: string;
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
@@ -49,7 +54,44 @@ type CreatorState = {
   openThemeColorPickerId: ThemeColorPickerId | null;
 };
 
+const getCreatorStateFromRemoteWidgetConfig = (
+  state: CreatorState,
+  config: SerializableWidgetConfig,
+  theme: SerializableTheme,
+  apiKey?: string,
+): CreatorState => {
+  const isDepositMode = Boolean(config.sendAddress);
+
+  return {
+    ...state,
+    apiKey: apiKey ?? state.apiKey,
+    widgetMode: isDepositMode ? 'deposit' : 'swap',
+    depositModeReceiverAddress: config.sendAddress ?? '',
+    accountAbstractionMode:
+      config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
+    selectedNetworks:
+      config.allowedChainsList ?? config.chainsOrder ?? state.selectedNetworks,
+    selectedTokenSymbols: normalizeSelectedTokenSymbols(
+      config.allowedTokensList ?? [],
+    ),
+    enableSellToken: Boolean(config.defaultSourceToken),
+    defaultSellToken: config.defaultSourceToken ?? null,
+    enableBuyToken: isDepositMode ? false : Boolean(config.defaultTargetToken),
+    defaultBuyToken: config.defaultTargetToken ?? null,
+    defaultMode: theme.colorScheme ?? 'dark',
+    stylePreset: theme.stylePreset ?? 'clean',
+    borderRadius: theme.borderRadius ?? 'md',
+    showContainerWrapper: Boolean(theme.showContainer),
+    accentColor: theme.accentColor ?? DEFAULT_ACCENT_COLOR,
+    backgroundColor: theme.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+    successColor: theme.successColor ?? DEFAULT_SUCCESS_COLOR_LIGHT,
+    warningColor: theme.warningColor ?? DEFAULT_WARNING_COLOR_LIGHT,
+    errorColor: theme.errorColor ?? DEFAULT_ERROR_COLOR_LIGHT,
+  };
+};
+
 const initialState: CreatorState = {
+  widgetMode: 'swap',
   userAuthMode: 'standalone',
   accountAbstractionMode: 'enabled',
   selectedNetworks: CHAINS.map((chain) => chain.id),
@@ -58,6 +100,7 @@ const initialState: CreatorState = {
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
   enableBuyToken: false,
   defaultBuyToken: { symbol: 'USDT', blockchain: 'eth' },
+  depositModeReceiverAddress: '',
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
@@ -78,6 +121,9 @@ const initialState: CreatorState = {
 type Action =
   // Configure - Wallet connection
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
+  // Configure - Widget mode
+  | { type: 'SET_WIDGET_MODE'; payload: 'swap' | 'deposit' }
+  | { type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS'; payload: string }
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
   // Configure - Networks
@@ -116,6 +162,14 @@ type Action =
       type: 'SET_OPEN_THEME_COLOR_PICKER_ID';
       payload: ThemeColorPickerId | null;
     }
+  | {
+      type: 'APPLY_REMOTE_WIDGET_CONFIG';
+      payload: {
+        config: SerializableWidgetConfig;
+        theme: SerializableTheme;
+        apiKey?: string;
+      };
+    }
   // Reset
   | { type: 'RESET_ALL' }
   | { type: 'RESET_DESIGN' };
@@ -126,14 +180,18 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
     // Configure
     case 'SET_USER_AUTH_MODE':
       return { ...state, userAuthMode: action.payload };
+    case 'SET_WIDGET_MODE':
+      return { ...state, widgetMode: action.payload };
     case 'SET_ACCOUNT_ABSTRACTION_MODE':
       return { ...state, accountAbstractionMode: action.payload };
     case 'SET_SELECTED_NETWORKS':
       return { ...state, selectedNetworks: action.payload };
+    case 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS':
+      return { ...state, depositModeReceiverAddress: action.payload };
     case 'SET_SELECTED_TOKEN_SYMBOLS':
       return {
         ...state,
-        selectedTokenSymbols: Array.from(new Set(action.payload)),
+        selectedTokenSymbols: normalizeSelectedTokenSymbols(action.payload),
       };
     case 'SET_ENABLE_SELL_TOKEN':
       return { ...state, enableSellToken: action.payload };
@@ -179,6 +237,13 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return { ...state, errorColor: action.payload };
     case 'SET_OPEN_THEME_COLOR_PICKER_ID':
       return { ...state, openThemeColorPickerId: action.payload };
+    case 'APPLY_REMOTE_WIDGET_CONFIG':
+      return getCreatorStateFromRemoteWidgetConfig(
+        state,
+        action.payload.config,
+        action.payload.theme,
+        action.payload.apiKey,
+      );
     case 'RESET_DESIGN':
       return {
         ...state,

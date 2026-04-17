@@ -18,7 +18,7 @@ import { useIntentsAccountType } from './useIntentsAccountType';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
-import { INTENTS_CONTRACT } from '@/constants';
+import { FALLBACK_REFERRAL, INTENTS_CONTRACT } from '@/constants';
 import { notReachable } from '@/utils/notReachable';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
@@ -142,7 +142,7 @@ const validateNearPublicKey = async (
 export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
-  const { appName } = useConfig();
+  const { referral } = useConfig();
   const { isNativeNearDeposit, isDirectNearTokenWithdrawal } =
     useComputedSnapshot();
 
@@ -258,7 +258,9 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         notReachable(intentsAccountType);
     }
 
-    const sdk = new IntentsSDK({ referral: snakeCase(appName) });
+    const sdk = new IntentsSDK({
+      referral: snakeCase(referral ?? FALLBACK_REFERRAL),
+    });
 
     sdk.setIntentSigner(signer);
 
