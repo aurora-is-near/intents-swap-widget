@@ -72,7 +72,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const { dispatch, state } = useCreator();
 
   const apiKeysState = useApiKeysState();
-  const { refetch: refetchApiKeys, data: apiKeys = [] } = useApiKeys();
+  const { refetch: refetchApiKeys } = useApiKeys();
 
   const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
@@ -88,7 +88,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
 export function App() {
   return (
     <WidgetConfigProvider
-      config={${stringifyAsJS({ ...widgetConfig, apiKey: apiKeys[0]?.widgetApiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
+      config={${stringifyAsJS({ ...widgetConfig, apiKey: state.apiKey ?? PLACEHOLDER_APP_KEY }, 6)}}
       theme={${stringifyAsJS(themeConfig, 6)}}
     >
       <Widget />
