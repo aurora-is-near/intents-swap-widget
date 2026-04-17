@@ -139,6 +139,7 @@ export const WidgetContent = ({
             {!!enableAccountAbstraction || tabs.includes('topup') ? (
               <WidgetTabs
                 tabs={tabs}
+                isEnabled={ctx.quoteStatus !== 'pending'}
                 activeTab={showHistory ? null : activeTab}
                 onSelect={switchTab}
               />
