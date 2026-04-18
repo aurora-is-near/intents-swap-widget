@@ -3,9 +3,10 @@ import { Notes } from '@/components/Notes';
 import { Accordion } from '@/components/Accordion';
 import { TinyNumber } from '@/components/TinyNumber';
 import { useTypedTranslation } from '@/localisation';
-import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
+import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 
 export const DepositSummary = () => {
   const { t } = useTypedTranslation();
@@ -65,6 +66,11 @@ export const DepositSummary = () => {
     return '—';
   };
 
+  const price =
+    ctx.sourceToken &&
+    ctx.targetToken &&
+    ctx.sourceToken.price / ctx.targetToken.price;
+
   const detailsTitle = (() => {
     if (
       !ctx.quote ||
@@ -76,7 +82,13 @@ export const DepositSummary = () => {
       return t('deposit.summary.title', 'Transaction details');
     }
 
-    return (
+    return ctx.isDepositFromExternalWallet ? (
+      <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
+        {`1 ${ctx.sourceToken.symbol} ≈ `}
+        {formatTinyNumber(price ?? 0)} {`${ctx.targetToken.symbol}`}
+        <span className="text-sw-gray-50">{` (${formatUsdAmount(ctx.sourceToken.price)})`}</span>
+      </span>
+    ) : (
       <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
         {`${getDepositAmount()} ≈ `}{' '}
         <TinyNumber

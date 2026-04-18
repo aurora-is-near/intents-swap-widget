@@ -164,16 +164,6 @@ export const WidgetDepositModeContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
-  console.log(
-    '---1',
-    isLoading,
-    isLoadingTokens,
-    config.sendAddress,
-    ctx.sendAddress,
-    config.defaultTargetToken,
-    ctx.targetToken,
-  );
-
   if (
     !!isLoading ||
     isLoadingTokens ||

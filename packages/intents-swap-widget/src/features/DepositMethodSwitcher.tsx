@@ -36,7 +36,9 @@ const ExtendedContent = ({ onMsg }: Props) => {
   const isValidState = guardStates(ctx, [
     'initial_wallet',
     'input_valid_internal',
+    'input_valid_external',
     'quote_success_internal',
+    'quote_success_external',
   ]);
 
   if (!isValidState) {
