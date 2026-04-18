@@ -5,6 +5,7 @@ import { Toggle } from '@/uikit/Toggle';
 type Props = {
   label: string;
   description: ReactNode;
+  isEnabled?: boolean;
   isExpanded?: boolean;
   onToggle: (enabled: boolean) => void;
 };
@@ -13,6 +14,7 @@ export const ExpandableToggleCard = ({
   label,
   children,
   description,
+  isEnabled = true,
   isExpanded = false,
   onToggle,
 }: PropsWithChildren<Props>) => (
@@ -21,11 +23,14 @@ export const ExpandableToggleCard = ({
       <Toggle
         label={label}
         labelPosition="right"
+        disabled={!isEnabled}
         isEnabled={isExpanded}
-        onChange={onToggle}
+        onChange={isEnabled ? onToggle : () => {}}
       />
     </header>
     <p className="text-csw-body-md text-csw-gray-300">{description}</p>
-    {isExpanded ? <div className="mt-csw-xl">{children}</div> : null}
+    {isExpanded && isEnabled ? (
+      <div className="mt-csw-xl">{children}</div>
+    ) : null}
   </div>
 );

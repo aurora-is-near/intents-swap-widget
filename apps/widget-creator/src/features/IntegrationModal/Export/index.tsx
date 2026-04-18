@@ -100,7 +100,8 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
   const [isCodeSnippetExpanded, setIsCodeSnippetExpanded] = useState(true);
   const [isEmbeddedLinkExpanded, setIsEmbeddedLinkExpanded] = useState(
-    state.isConfigurationSyncedToRemote,
+    state.isConfigurationSyncedToRemote &&
+      apiKeysState.state !== 'unauthenticated',
   );
 
   useEffect(() => {
@@ -290,13 +291,16 @@ export function App() {
 
         <ExpandableToggleCard
           label="Generate a new link to embed"
+          isEnabled={apiKeysState.state !== 'unauthenticated'}
           isExpanded={isEmbeddedLinkExpanded}
           onToggle={handleEmbeddedLinkToggle}
           description={
             <>
               Integrate the widget with one line into any application using an
               iframe. <br className="hidden sm:block" />
-              No code needed, non React apps are supported.
+              No code needed, non React apps are supported.{' '}
+              {apiKeysState.state === 'unauthenticated' &&
+                'Log in to generate an URL.'}
             </>
           }>
           <div className="flex flex-col gap-csw-xl">
