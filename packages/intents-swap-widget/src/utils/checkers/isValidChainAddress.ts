@@ -1,21 +1,20 @@
-import {
-  type Chains,
-  isBtcAddress,
-  isCardanoAddress,
-  isDogeAddress,
-  isEvmAddress,
-  isLtcAddress,
-  isNearAddress,
-  isSolanaAddress,
-  isStellarAddress,
-  isSuiAddress,
-  isTonAddress,
-  isTronAddress,
-  isXrpAddress,
-  isZecAddress,
-} from '@aurora-is-near/intents-swap-widget';
+import { isBtcAddress } from '../chains/isBtcAddress';
+import { isEvmAddress } from '../chains/isEvmAddress';
+import { isCardanoAddress } from '../chains/isCardanoAddress';
+import { isDogeAddress } from '../chains/isDogeAddress';
+import { isTronAddress } from '../chains/isTronAddress';
+import { isXrpAddress } from '../chains/isXrpAddress';
+import { isNearAddress } from '../chains/isNearAddress';
+import { isLtcAddress } from '../chains/isLtcAddress';
+import { isStellarAddress } from '../chains/isStellarAddress';
+import { isSuiAddress } from '../chains/isSuiAddress';
+import { isSolanaAddress } from '../chains/isSolanaAddress';
+import { isTonAddress } from '../chains/isTonAddress';
+import { isZecAddress } from '../chains/isZecAddress';
 
-export const validateAddressByChain = (
+import { Chains } from '@/types';
+
+export const isValidChainAddress = (
   chain: Chains,
   address: string,
 ): boolean | null => {

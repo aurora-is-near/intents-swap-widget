@@ -6,6 +6,7 @@ import {
   CHAINS,
   Chains,
   Icon,
+  isValidChainAddress,
 } from '@aurora-is-near/intents-swap-widget';
 import { Button, OutlinedButton } from '../../uikit/Button';
 import { TextInput } from '../../uikit/TextInput';
@@ -14,18 +15,18 @@ import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
-import { TokenSelectionModal } from './TokenSelectionModal';
-import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 import {
   isTokenAvailable,
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
 import { getUrlBooleanParam } from '../../utils/get-url-param';
-import { validateAddressByChain } from '../../utils/validate-address-by-chain';
 import { getSelectableTokenSymbols } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
+
 import { SelectATokenText } from './SelectATokenText';
+import { TokenSelectionModal } from './TokenSelectionModal';
+import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 
 import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -114,7 +115,7 @@ export function Configure() {
     state.widgetMode === 'deposit' &&
     state.depositModeReceiverAddress &&
     state.defaultBuyToken
-      ? validateAddressByChain(
+      ? isValidChainAddress(
           state.defaultBuyToken.blockchain,
           state.depositModeReceiverAddress,
         )
