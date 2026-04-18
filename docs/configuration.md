@@ -406,10 +406,6 @@ An API key for integrating with [TON Center](https://toncenter.com/).
 
 This is useful for fetching balances for the TON chain.
 
-### `showTransactionHistory`
-
-Used to show the transaction history button and associated screens.
-
 ### `hideSendAddress`
 
 Used to hide the send address when swapping or withdrawing.
@@ -439,3 +435,9 @@ Filters out some tokens from internal balance list.
 ### `showConversionPreview`
 
 Enables live swap conversion preview in the tokens list on hover.
+
+### `extraQuoteParameters`
+
+Allows you to pass extra attributes for each of the 1Click quote request.
+Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`.
+More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)

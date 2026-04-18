@@ -16,7 +16,7 @@ const NoteItem = ({
   value?: React.ReactNode;
   isLoading?: boolean;
 }) => (
-  <li className="flex w-full items-center justify-between">
+  <li className="flex w-full items-center justify-between min-h-[24px]">
     <span className="text-sw-label-sm text-sw-gray-200">{label}</span>
     {isLoading ? (
       <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-sw-gray-600" />

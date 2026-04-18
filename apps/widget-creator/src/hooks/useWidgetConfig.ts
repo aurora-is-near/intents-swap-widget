@@ -50,6 +50,10 @@ export const useWidgetConfig = () => {
         state.widgetMode === 'deposit' && state.depositModeReceiverAddress
           ? state.depositModeReceiverAddress
           : undefined,
+      extraQuoteParameters:
+        state.widgetMode === 'deposit' && state.depositModeVirtualChainRecipient
+          ? { virtualChainRecipient: state.depositModeVirtualChainRecipient }
+          : undefined,
       defaultTargetToken:
         state.enableBuyToken || state.widgetMode === 'deposit'
           ? state.defaultBuyToken

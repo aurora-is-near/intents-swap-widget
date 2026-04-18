@@ -1,9 +1,12 @@
 import { useConfig } from '@/config';
 import { Notes } from '@/components/Notes';
 import { Accordion } from '@/components/Accordion';
+import { TinyNumber } from '@/components/TinyNumber';
 import { useTypedTranslation } from '@/localisation';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
+import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 
 export const DepositSummary = () => {
   const { t } = useTypedTranslation();
@@ -63,13 +66,48 @@ export const DepositSummary = () => {
     return '—';
   };
 
+  const price =
+    ctx.sourceToken &&
+    ctx.targetToken &&
+    ctx.sourceToken.price / ctx.targetToken.price;
+
+  const detailsTitle = (() => {
+    if (
+      !ctx.quote ||
+      !ctx.sourceToken ||
+      !ctx.targetToken ||
+      ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT' ||
+      ctx.sourceToken.symbol === ctx.targetToken.symbol
+    ) {
+      return t('deposit.summary.title', 'Transaction details');
+    }
+
+    return ctx.isDepositFromExternalWallet ? (
+      <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
+        {`1 ${ctx.sourceToken.symbol} ≈ `}
+        {formatTinyNumber(price ?? 0)} {`${ctx.targetToken.symbol}`}
+        <span className="text-sw-gray-50">{` (${formatUsdAmount(ctx.sourceToken.price)})`}</span>
+      </span>
+    ) : (
+      <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
+        {`${getDepositAmount()} ≈ `}{' '}
+        <TinyNumber
+          value={ctx.quote.amountOut}
+          decimals={ctx.targetToken.decimals}
+        />{' '}
+        {`${ctx.targetToken.symbol}`}
+        <span className="text-sw-gray-50">{` (${formatUsdAmount(parseFloat(ctx.quote.amountOutUsd))})`}</span>
+      </span>
+    );
+  })();
+
   return (
     <Accordion
-      expandedHeightPx={91}
+      expandedHeightPx={121}
       expandedByDefault={false}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}
-      title={t('deposit.summary.title', 'Transaction details')}>
+      title={detailsTitle}>
       <Notes>
         <Notes.Item
           label={t('deposit.summary.youWillDeposit.label', 'You will deposit')}

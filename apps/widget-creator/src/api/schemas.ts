@@ -205,6 +205,13 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
     lockSwapDirection: z.boolean().optional(),
     showTransactionHistory: z.boolean().optional(),
     showConversionPreview: z.boolean().optional(),
+    extraQuoteParameters: z
+      .object({
+        sessionId: z.string().optional(),
+        virtualChainRecipient: z.string().optional(),
+        virtualChainRefundRecipient: z.string().optional(),
+      })
+      .optional(),
   })
   .strict();
 

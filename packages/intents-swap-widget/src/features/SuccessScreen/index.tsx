@@ -24,7 +24,7 @@ import { logger } from '@/logger';
 
 import type { TransferResult } from '@/types/transfer';
 
-const NOTES_ITEM_HEIGHT = 46;
+const NOTES_ITEM_HEIGHT = 41;
 
 type Msg = { type: 'on_dismiss_success' };
 
@@ -32,6 +32,7 @@ type Props = TransferResult & {
   title: string;
   message?: string;
   showTargetToken?: boolean;
+  backButtonLabel?: string;
   onMsg: (msg: Msg) => void;
 };
 
@@ -101,6 +102,7 @@ export const SuccessScreen = ({
   message,
   showTargetToken = true,
   transactionLink,
+  backButtonLabel,
   onMsg,
   ...transferResult
 }: Props) => {
@@ -241,7 +243,8 @@ export const SuccessScreen = ({
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>
         <Button fluid size="lg" variant="outlined" onClick={handleClose}>
-          {t('transfer.success.action.backToSwap', 'Back to swap')}
+          {backButtonLabel ??
+            t('transfer.success.action.backToSwap', 'Back to swap')}
         </Button>
       </div>
     </div>

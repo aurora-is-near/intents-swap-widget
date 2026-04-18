@@ -53,8 +53,14 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const { apiKey, appFees, fetchQuote, referral, slippageTolerance } =
-    useConfig();
+  const {
+    apiKey,
+    appFees,
+    fetchQuote,
+    referral,
+    slippageTolerance,
+    extraQuoteParameters,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -251,11 +257,21 @@ export const useMakeQuote = () => {
       commonQuoteParams.appFees = [...appFees];
     }
 
+    const { sessionId, virtualChainRecipient, virtualChainRefundRecipient } =
+      extraQuoteParameters ?? {};
+
+    const filteredExtraQuoteParameters = {
+      ...(sessionId ? { sessionId } : {}),
+      ...(virtualChainRecipient ? { virtualChainRecipient } : {}),
+      ...(virtualChainRefundRecipient ? { virtualChainRefundRecipient } : {}),
+    };
+
     try {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
         request.current = requestQuote(
           {
             ...commonQuoteParams,
+            ...filteredExtraQuoteParameters,
             recipient: recipientIntentsAccountId,
             recipientType: QuoteRequest.recipientType.INTENTS,
             depositType: QuoteRequest.depositType.INTENTS,
@@ -268,37 +284,38 @@ export const useMakeQuote = () => {
         );
 
         quoteResponse = await request.current;
+      } else {
+        request.current = requestQuote(
+          {
+            ...commonQuoteParams,
+            ...filteredExtraQuoteParameters,
+            recipient:
+              !ctx.targetToken.isIntent && ctx.sendAddress
+                ? ctx.sendAddress
+                : recipientIntentsAccountId,
+            recipientType: ctx.targetToken.isIntent
+              ? QuoteRequest.recipientType.INTENTS
+              : QuoteRequest.recipientType.DESTINATION_CHAIN,
+            depositType: ctx.sourceToken.isIntent
+              ? QuoteRequest.depositType.INTENTS
+              : QuoteRequest.depositType.ORIGIN_CHAIN,
+
+            // Refund
+            refundTo: getRefundToAccountId(),
+            refundType: isRefundToIntentAccount
+              ? QuoteRequest.refundType.INTENTS
+              : QuoteRequest.refundType.ORIGIN_CHAIN,
+
+            depositMode:
+              ctx.sourceToken.blockchain === 'stellar'
+                ? QuoteRequest.depositMode.MEMO
+                : QuoteRequest.depositMode.SIMPLE,
+          },
+          options,
+        );
+
+        quoteResponse = await request.current;
       }
-
-      request.current = requestQuote(
-        {
-          ...commonQuoteParams,
-          recipient:
-            !ctx.targetToken.isIntent && ctx.sendAddress
-              ? ctx.sendAddress
-              : recipientIntentsAccountId,
-          recipientType: ctx.targetToken.isIntent
-            ? QuoteRequest.recipientType.INTENTS
-            : QuoteRequest.recipientType.DESTINATION_CHAIN,
-          depositType: ctx.sourceToken.isIntent
-            ? QuoteRequest.depositType.INTENTS
-            : QuoteRequest.depositType.ORIGIN_CHAIN,
-
-          // Refund
-          refundTo: getRefundToAccountId(),
-          refundType: isRefundToIntentAccount
-            ? QuoteRequest.refundType.INTENTS
-            : QuoteRequest.refundType.ORIGIN_CHAIN,
-
-          depositMode:
-            ctx.sourceToken.blockchain === 'stellar'
-              ? QuoteRequest.depositMode.MEMO
-              : QuoteRequest.depositMode.SIMPLE,
-        },
-        options,
-      );
-
-      quoteResponse = await request.current;
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
         return;

@@ -23,6 +23,7 @@ type CreatorState = {
   // Configure - Widget mode
   widgetMode: 'swap' | 'deposit';
   depositModeReceiverAddress: string;
+  depositModeVirtualChainRecipient: string;
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
@@ -68,6 +69,8 @@ const getCreatorStateFromRemoteWidgetConfig = (
     apiKey: apiKey ?? state.apiKey,
     widgetMode: isDepositMode ? 'deposit' : 'swap',
     depositModeReceiverAddress: config.sendAddress ?? '',
+    depositModeVirtualChainRecipient:
+      config.extraQuoteParameters?.virtualChainRecipient ?? '',
     accountAbstractionMode:
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
     selectedNetworks:
@@ -102,6 +105,7 @@ const initialState: CreatorState = {
   enableBuyToken: false,
   defaultBuyToken: { symbol: 'USDT', blockchain: 'eth' },
   depositModeReceiverAddress: '',
+  depositModeVirtualChainRecipient: '',
   enableCustomFees: false,
   feePercentage: '1',
   collectorAddress: '0x92c21eB298128FDE1b7f8A9332910A614DC7df0A',
@@ -126,6 +130,7 @@ type Action =
   // Configure - Widget mode
   | { type: 'SET_WIDGET_MODE'; payload: 'swap' | 'deposit' }
   | { type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS'; payload: string }
+  | { type: 'SET_DEPOSIT_MODE_VIRTUAL_CHAIN_RECIPIENT'; payload: string }
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }
   // Configure - Networks
@@ -210,6 +215,12 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return {
         ...state,
         depositModeReceiverAddress: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
+    case 'SET_DEPOSIT_MODE_VIRTUAL_CHAIN_RECIPIENT':
+      return {
+        ...state,
+        depositModeVirtualChainRecipient: action.payload,
         isConfigurationSyncedToRemote: false,
       };
     case 'SET_SELECTED_TOKEN_SYMBOLS':

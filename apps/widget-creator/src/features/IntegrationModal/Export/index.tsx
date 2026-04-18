@@ -100,7 +100,8 @@ export const Export = ({ onClickApiKeys }: Props) => {
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
   const [isCodeSnippetExpanded, setIsCodeSnippetExpanded] = useState(true);
   const [isEmbeddedLinkExpanded, setIsEmbeddedLinkExpanded] = useState(
-    state.isConfigurationSyncedToRemote,
+    state.isConfigurationSyncedToRemote &&
+      apiKeysState.state !== 'unauthenticated',
   );
 
   useEffect(() => {
@@ -290,49 +291,54 @@ export function App() {
 
         <ExpandableToggleCard
           label="Generate a new link to embed"
+          isEnabled={apiKeysState.state !== 'unauthenticated'}
           isExpanded={isEmbeddedLinkExpanded}
           onToggle={handleEmbeddedLinkToggle}
           description={
             <>
               Integrate the widget with one line into any application using an
               iframe. <br className="hidden sm:block" />
-              No code needed, non React apps are supported.
+              No code needed, non React apps are supported.{' '}
+              {apiKeysState.state === 'unauthenticated' &&
+                'Log in to generate an URL.'}
             </>
           }>
-          {(createWidgetConfigMutation.status === 'pending' ||
-            !shareableLink) && (
-            <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
-          )}
-          {createWidgetConfigMutation.status === 'error' && (
-            <InfoBanner
-              state="error"
-              action="Try again"
-              title="Unable to generate link"
-              description="We couldn't create the shareable config. Please try again."
-              onClick={handleEmbeddedLinkToggle.bind(null, true)}
-            />
-          )}
-          {(createWidgetConfigMutation.status === 'success' ||
-            (state.isConfigurationSyncedToRemote && currentWidgetConfig)) &&
-            shareableLink !== null && (
-              <div className="flex items-center gap-csw-sm h-[36px]">
-                <div className="flex items-center bg-csw-gray-800 rounded-csw-md px-csw-lg overflow-hidden flex-1 h-full">
-                  <span className="text-csw-body-sm text-csw-gray-300 truncate">
-                    {shareableLink}
-                  </span>
-                </div>
-                <Button
-                  variant="primary"
-                  detail="accent"
-                  size="sm"
-                  fluid
-                  icon={ContentCopy}
-                  className="h-full shrink-0"
-                  onClick={handleCopyLink}>
-                  {copyLinkFeedback ? 'Copied!' : 'Copy link'}
-                </Button>
-              </div>
+          <div className="flex flex-col gap-csw-xl">
+            {(createWidgetConfigMutation.status === 'pending' ||
+              !shareableLink) && (
+              <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
             )}
+            {(createWidgetConfigMutation.status === 'success' ||
+              (state.isConfigurationSyncedToRemote && currentWidgetConfig)) &&
+              shareableLink !== null && (
+                <div className="flex items-center gap-csw-sm h-[36px]">
+                  <div className="flex items-center bg-csw-gray-800 rounded-csw-md px-csw-lg overflow-hidden flex-1 h-full">
+                    <span className="text-csw-body-sm text-csw-gray-300 truncate">
+                      {shareableLink}
+                    </span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    detail="accent"
+                    size="sm"
+                    fluid
+                    icon={ContentCopy}
+                    className="h-full shrink-0"
+                    onClick={handleCopyLink}>
+                    {copyLinkFeedback ? 'Copied!' : 'Copy link'}
+                  </Button>
+                </div>
+              )}
+            {createWidgetConfigMutation.status === 'error' && (
+              <InfoBanner
+                state="error"
+                action="Try again"
+                title="Unable to generate link"
+                description="We couldn't create the shareable config. Please try again."
+                onClick={handleEmbeddedLinkToggle.bind(null, true)}
+              />
+            )}
+          </div>
         </ExpandableToggleCard>
 
         <ExpandableToggleCard

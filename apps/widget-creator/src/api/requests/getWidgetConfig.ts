@@ -33,7 +33,10 @@ export const getWidgetConfig = async (uuid: string) => {
 
   try {
     return widgetConfigRecordSchema.parse(res);
-  } catch {
-    throw new FeeServiceGetWidgetConfigError('INVALID_WIDGET_CONFIG');
+  } catch (e) {
+    throw new FeeServiceGetWidgetConfigError(
+      'INVALID_WIDGET_CONFIG',
+      e instanceof Error ? e.message : undefined,
+    );
   }
 };

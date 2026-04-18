@@ -18,6 +18,7 @@ export type LocalisationKeys =
   | 'transfer.success.swap.title'
   | 'transfer.success.withdrawal.title'
   | 'transfer.success.deposit.title'
+  | 'transfer.success.deposit.backToDeposit'
   | 'transfer.success.details.label'
   | 'transfer.success.details.hash'
   | 'transfer.success.details.rate'
