@@ -57,7 +57,10 @@ export const createWidgetConfig = async (
 
   try {
     return widgetConfigRecordSchema.parse(res);
-  } catch {
-    throw new FeeServiceCreateWidgetConfigError('INVALID_WIDGET_CONFIG');
+  } catch (e) {
+    throw new FeeServiceCreateWidgetConfigError(
+      'INVALID_WIDGET_CONFIG',
+      e instanceof Error ? e.message : undefined,
+    );
   }
 };

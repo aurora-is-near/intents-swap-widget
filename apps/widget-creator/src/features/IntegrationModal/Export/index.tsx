@@ -299,40 +299,42 @@ export function App() {
               No code needed, non React apps are supported.
             </>
           }>
-          {(createWidgetConfigMutation.status === 'pending' ||
-            !shareableLink) && (
-            <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
-          )}
-          {createWidgetConfigMutation.status === 'error' && (
-            <InfoBanner
-              state="error"
-              action="Try again"
-              title="Unable to generate link"
-              description="We couldn't create the shareable config. Please try again."
-              onClick={handleEmbeddedLinkToggle.bind(null, true)}
-            />
-          )}
-          {(createWidgetConfigMutation.status === 'success' ||
-            (state.isConfigurationSyncedToRemote && currentWidgetConfig)) &&
-            shareableLink !== null && (
-              <div className="flex items-center gap-csw-sm h-[36px]">
-                <div className="flex items-center bg-csw-gray-800 rounded-csw-md px-csw-lg overflow-hidden flex-1 h-full">
-                  <span className="text-csw-body-sm text-csw-gray-300 truncate">
-                    {shareableLink}
-                  </span>
-                </div>
-                <Button
-                  variant="primary"
-                  detail="accent"
-                  size="sm"
-                  fluid
-                  icon={ContentCopy}
-                  className="h-full shrink-0"
-                  onClick={handleCopyLink}>
-                  {copyLinkFeedback ? 'Copied!' : 'Copy link'}
-                </Button>
-              </div>
+          <div className="flex flex-col gap-csw-xl">
+            {(createWidgetConfigMutation.status === 'pending' ||
+              !shareableLink) && (
+              <div className="w-full rounded-csw-md bg-csw-gray-800 h-[44px] animate-pulse" />
             )}
+            {(createWidgetConfigMutation.status === 'success' ||
+              (state.isConfigurationSyncedToRemote && currentWidgetConfig)) &&
+              shareableLink !== null && (
+                <div className="flex items-center gap-csw-sm h-[36px]">
+                  <div className="flex items-center bg-csw-gray-800 rounded-csw-md px-csw-lg overflow-hidden flex-1 h-full">
+                    <span className="text-csw-body-sm text-csw-gray-300 truncate">
+                      {shareableLink}
+                    </span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    detail="accent"
+                    size="sm"
+                    fluid
+                    icon={ContentCopy}
+                    className="h-full shrink-0"
+                    onClick={handleCopyLink}>
+                    {copyLinkFeedback ? 'Copied!' : 'Copy link'}
+                  </Button>
+                </div>
+              )}
+            {createWidgetConfigMutation.status === 'error' && (
+              <InfoBanner
+                state="error"
+                action="Try again"
+                title="Unable to generate link"
+                description="We couldn't create the shareable config. Please try again."
+                onClick={handleEmbeddedLinkToggle.bind(null, true)}
+              />
+            )}
+          </div>
         </ExpandableToggleCard>
 
         <ExpandableToggleCard
