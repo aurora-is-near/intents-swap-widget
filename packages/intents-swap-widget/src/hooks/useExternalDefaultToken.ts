@@ -52,10 +52,12 @@ export const useExternalDefaultToken = (
       return;
     }
 
-    const foundToken = tokens.find(
-      (token) =>
-        token.symbol.toUpperCase() === defaultToken.symbol.toUpperCase() &&
-        token.blockchain === defaultToken.blockchain,
+    const foundToken = tokens.find((token) =>
+      defaultToken.symbol.toLowerCase() === 'wnear' &&
+      defaultToken.blockchain === 'near'
+        ? token.symbol.toLowerCase() === 'near' && token.blockchain === 'near'
+        : token.symbol.toUpperCase() === defaultToken.symbol.toUpperCase() &&
+          token.blockchain === defaultToken.blockchain,
     );
 
     if (!foundToken) {
