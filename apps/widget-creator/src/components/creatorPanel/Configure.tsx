@@ -19,7 +19,6 @@ import {
   isTokenAvailable,
   useTokensGroupedBySymbol,
 } from '../../hooks/useTokens';
-import { getUrlBooleanParam } from '../../utils/get-url-param';
 import { getSelectableTokenSymbols } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
@@ -35,8 +34,6 @@ export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
   const { authenticated } = usePrivy();
-
-  const depositModeLive = getUrlBooleanParam('depositMode');
 
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -149,153 +146,138 @@ export function Configure() {
         }}
       />
       <div className="flex flex-col gap-csw-2xl">
-        {depositModeLive && (
-          <ConfigSection title="Widget mode">
-            <div className="space-y-csw-2md">
-              <RadioButton
-                label="Swap"
-                description="Full featured swap widget with swap, deposit and withdraw capabilities."
-                isSelected={state.widgetMode === 'swap'}
-                onChange={() =>
-                  dispatch({ type: 'SET_WIDGET_MODE', payload: 'swap' })
-                }
-              />
-              <RadioButton
-                label="Deposit"
-                description="Deposit from connected wallet or with QR code to any asset on any account."
-                isSelected={state.widgetMode === 'deposit'}
-                onChange={() =>
-                  dispatch({ type: 'SET_WIDGET_MODE', payload: 'deposit' })
-                }
-              />
-              {state.widgetMode === 'deposit' && (
-                <>
-                  <div className="my-csw-2xl border-t border-csw-gray-800" />
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
-                      Deposit asset
-                    </p>
-                    {(() => {
-                      const buyToken = allTokens.find(
-                        (token: TokenType) =>
-                          token.symbol === state.defaultBuyToken?.symbol,
-                      );
+        <ConfigSection title="Widget mode">
+          <div className="space-y-csw-2md">
+            <RadioButton
+              label="Swap"
+              description="Full featured swap widget with swap, deposit and withdraw capabilities."
+              isSelected={state.widgetMode === 'swap'}
+              onChange={() =>
+                dispatch({ type: 'SET_WIDGET_MODE', payload: 'swap' })
+              }
+            />
+            <RadioButton
+              label="Deposit"
+              description="Deposit from connected wallet or with QR code to any asset on any account."
+              isSelected={state.widgetMode === 'deposit'}
+              onChange={() =>
+                dispatch({ type: 'SET_WIDGET_MODE', payload: 'deposit' })
+              }
+            />
+            {state.widgetMode === 'deposit' && (
+              <>
+                <div className="my-csw-2xl border-t border-csw-gray-800" />
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-200">
+                    Destination asset
+                  </p>
+                  {(() => {
+                    const buyToken = allTokens.find(
+                      (token: TokenType) =>
+                        token.symbol === state.defaultBuyToken?.symbol,
+                    );
 
-                      const buyTokenChain = CHAINS.find(
-                        (chain) =>
-                          chain.id === state.defaultBuyToken?.blockchain,
-                      );
+                    const buyTokenChain = CHAINS.find(
+                      (chain) => chain.id === state.defaultBuyToken?.blockchain,
+                    );
 
-                      const buyTokenSymbol =
-                        buyToken?.symbol.toLowerCase() === 'wnear'
-                          ? 'NEAR'
-                          : buyToken?.symbol;
+                    const buyTokenSymbol =
+                      buyToken?.symbol.toLowerCase() === 'wnear'
+                        ? 'NEAR'
+                        : buyToken?.symbol;
 
-                      return (
-                        <div
-                          onClick={() => {
-                            setTokenSelectorType('buy');
-                            setIsTokenSelectorOpen(true);
-                          }}
-                          className="cursor-pointer">
-                          {state.defaultBuyToken?.symbol ? (
-                            <TokenTag
-                              tokenIcon={
-                                <div>
-                                  {buyToken?.icon ? (
-                                    <Icon
-                                      className="text-csw-gray-100 bg-csw-gray-600"
-                                      icon={buyToken.icon}
-                                      label={buyToken.symbol}
-                                      size={24}
-                                    />
-                                  ) : (
-                                    <div className="w-[28px] h-[28px] rounded-full">
-                                      {
-                                        ASSET_ICONS[
-                                          buyToken?.symbol.toLowerCase() ?? ''
-                                        ]
-                                      }
-                                    </div>
-                                  )}
-                                  {buyTokenChain && (
-                                    <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
-                                      {buyTokenChain.icon}
-                                    </div>
-                                  )}
-                                </div>
-                              }
-                              tokenSymbol={
-                                buyTokenSymbol ?? state.defaultBuyToken.symbol
-                              }
-                            />
-                          ) : (
-                            <SelectATokenText />
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  <TextInput
-                    value={state.depositModeReceiverAddress}
-                    placeholder="Receiver address"
-                    state={
-                      isDepositModeRecipientValid === false
-                        ? 'error'
-                        : undefined
-                    }
-                    onChange={(value) => {
-                      dispatch({
-                        type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
-                        payload: value,
-                      });
-                    }}
+                    return (
+                      <div
+                        onClick={() => {
+                          setTokenSelectorType('buy');
+                          setIsTokenSelectorOpen(true);
+                        }}
+                        className="cursor-pointer">
+                        {state.defaultBuyToken?.symbol ? (
+                          <TokenTag
+                            tokenIcon={
+                              <div>
+                                {buyToken?.icon ? (
+                                  <Icon
+                                    className="text-csw-gray-100 bg-csw-gray-600"
+                                    icon={buyToken.icon}
+                                    label={buyToken.symbol}
+                                    size={24}
+                                  />
+                                ) : (
+                                  <div className="w-[28px] h-[28px] rounded-full">
+                                    {
+                                      ASSET_ICONS[
+                                        buyToken?.symbol.toLowerCase() ?? ''
+                                      ]
+                                    }
+                                  </div>
+                                )}
+                                {buyTokenChain && (
+                                  <div className="absolute bottom-[0px] right-[0px] w-[12px] h-[12px] rounded-[4px] border-2 border-csw-gray-900 bg-white">
+                                    {buyTokenChain.icon}
+                                  </div>
+                                )}
+                              </div>
+                            }
+                            tokenSymbol={
+                              buyTokenSymbol ?? state.defaultBuyToken.symbol
+                            }
+                          />
+                        ) : (
+                          <SelectATokenText />
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <TextInput
+                  value={state.depositModeReceiverAddress}
+                  placeholder="Receiver address"
+                  state={
+                    isDepositModeRecipientValid === false ? 'error' : undefined
+                  }
+                  onChange={(value) => {
+                    dispatch({
+                      type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
+                      payload: value,
+                    });
+                  }}
+                />
+                {!state.depositModeReceiverAddress && (
+                  <InfoBanner
+                    state="error"
+                    title="Empty recipient address"
+                    description="Recipient address is required for deposit mode to work. Please enter a valid address."
                   />
-                  <TextInput
-                    value={state.depositModeVirtualChainRecipient}
-                    placeholder="Virtual chain recipient (optional)"
-                    onChange={(value) => {
-                      dispatch({
-                        type: 'SET_DEPOSIT_MODE_VIRTUAL_CHAIN_RECIPIENT',
-                        payload: value,
-                      });
-                    }}
-                  />
-                  {!state.depositModeReceiverAddress && (
+                )}
+                {!!state.depositModeReceiverAddress &&
+                  !state.defaultBuyToken && (
                     <InfoBanner
                       state="error"
-                      title="Empty recipient address"
-                      description="Recipient address is required for deposit mode to work. Please enter a valid address."
+                      title="Empty target token"
+                      description="Target token is required for deposit mode to work. Please select a valid token."
                     />
                   )}
-                  {!!state.depositModeReceiverAddress &&
-                    !state.defaultBuyToken && (
-                      <InfoBanner
-                        state="error"
-                        title="Empty target token"
-                        description="Target token is required for deposit mode to work. Please select a valid token."
-                      />
-                    )}
-                  {isDepositModeRecipientValid === false && (
+                {isDepositModeRecipientValid === false && (
+                  <InfoBanner
+                    state="error"
+                    title="Invalid recipient address"
+                    description={`The recipient address entered is not valid for the selected token's blockchain (${state.defaultBuyToken?.blockchain.toUpperCase()}).`}
+                  />
+                )}
+                {!!state.depositModeReceiverAddress &&
+                  state.defaultBuyToken &&
+                  isDepositModeRecipientValid !== false && (
                     <InfoBanner
-                      state="error"
-                      title="Invalid recipient address"
-                      description={`The recipient address entered is not valid for the selected token's blockchain (${state.defaultBuyToken?.blockchain.toUpperCase()}).`}
+                      title="Always check recipient address"
+                      description={`Make sure that address exists on ${state.defaultBuyToken?.blockchain.toUpperCase()} chain and is correct to avoid losing users funds.`}
                     />
                   )}
-                  {!!state.depositModeReceiverAddress &&
-                    state.defaultBuyToken &&
-                    isDepositModeRecipientValid !== false && (
-                      <InfoBanner
-                        title="Always check recipient address"
-                        description={`Make sure that address exists on ${state.defaultBuyToken?.blockchain.toUpperCase()} chain and is correct to avoid losing users funds.`}
-                      />
-                    )}
-                </>
-              )}
-            </div>
-          </ConfigSection>
-        )}
+              </>
+            )}
+          </div>
+        </ConfigSection>
 
         <ConfigSection title="Networks">
           <div className="space-y-csw-xl">
@@ -566,45 +548,47 @@ export function Configure() {
           </div>
         </ConfigSection>
 
-        <ConfigSection title="Account abstraction">
-          <div className="space-y-csw-2md">
-            <RadioButton
-              label="Enabled"
-              description={
-                <span className="space-y-1.5">
-                  Users can deposit to or withdraw from their chain abstracted
-                  intents balance in addition to using their connected wallet
-                  balances.
-                  <a
-                    href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
-                    target="_blank"
-                    className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
-                    <span>Learn more</span>
-                    <ExternalLink className="w-csw-xl h-csw-xl" />
-                  </a>
-                </span>
-              }
-              isSelected={state.accountAbstractionMode === 'enabled'}
-              onChange={() =>
-                dispatch({
-                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                  payload: 'enabled',
-                })
-              }
-            />
-            <RadioButton
-              label="Disabled"
-              description="Users can only use assets in their connected wallet."
-              isSelected={state.accountAbstractionMode === 'disabled'}
-              onChange={() =>
-                dispatch({
-                  type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                  payload: 'disabled',
-                })
-              }
-            />
-          </div>
-        </ConfigSection>
+        {state.widgetMode !== 'deposit' && (
+          <ConfigSection title="Account abstraction">
+            <div className="space-y-csw-2md">
+              <RadioButton
+                label="Enabled"
+                description={
+                  <span className="space-y-1.5">
+                    Users can deposit to or withdraw from their chain abstracted
+                    intents balance in addition to using their connected wallet
+                    balances.
+                    <a
+                      href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
+                      target="_blank"
+                      className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
+                      <span>Learn more</span>
+                      <ExternalLink className="w-csw-xl h-csw-xl" />
+                    </a>
+                  </span>
+                }
+                isSelected={state.accountAbstractionMode === 'enabled'}
+                onChange={() =>
+                  dispatch({
+                    type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                    payload: 'enabled',
+                  })
+                }
+              />
+              <RadioButton
+                label="Disabled"
+                description="Users can only use assets in their connected wallet."
+                isSelected={state.accountAbstractionMode === 'disabled'}
+                onChange={() =>
+                  dispatch({
+                    type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                    payload: 'disabled',
+                  })
+                }
+              />
+            </div>
+          </ConfigSection>
+        )}
 
         <ConfigSection title="Fee collection">
           <div className="space-y-csw-xl text-csw-gray-200">
