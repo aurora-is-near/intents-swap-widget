@@ -11,6 +11,9 @@ import {
   hasAllSelectableTokensSelected,
   normalizeSelectedTokenSymbols,
 } from '@/utils/tokenSelection';
+import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
+
+const configOverrides = getConfigOverridesFromUrl();
 
 export const useWidgetConfig = () => {
   const { state } = useCreator();
@@ -56,6 +59,10 @@ export const useWidgetConfig = () => {
           : undefined,
       showTransactionHistory: true,
       showConversionPreview: true,
+      extraQuoteParameters: {
+        ...state.extraQuoteParameters,
+        ...configOverrides?.extraQuoteParameters,
+      },
     };
   }, [allTokens, state]);
 

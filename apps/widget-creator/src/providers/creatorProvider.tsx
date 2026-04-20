@@ -53,6 +53,11 @@ type CreatorState = {
   errorColor: string;
   openThemeColorPickerId: ThemeColorPickerId | null;
   isConfigurationSyncedToRemote: boolean;
+  extraQuoteParameters?: {
+    sessionId?: string;
+    virtualChainRecipient?: string;
+    virtualChainRefundRecipient?: string;
+  };
 };
 
 const getCreatorStateFromRemoteWidgetConfig = (
@@ -88,6 +93,7 @@ const getCreatorStateFromRemoteWidgetConfig = (
     successColor: theme.successColor ?? DEFAULT_SUCCESS_COLOR_LIGHT,
     warningColor: theme.warningColor ?? DEFAULT_WARNING_COLOR_LIGHT,
     errorColor: theme.errorColor ?? DEFAULT_ERROR_COLOR_LIGHT,
+    extraQuoteParameters: config.extraQuoteParameters,
   };
 };
 
