@@ -8,15 +8,15 @@
   * [Security & Trust Model](intents-connect/deep-dive/security-and-trust-model.md)
   * [Supported Chains](intents-connect/deep-dive/supported-chains.md)
   * [API Usage](intents-connect/deep-dive/api-usage.md)
+* [Intents Connect Widget](intents-connect/intents-connect-widget/README.md)
+  * [Introduction](intents-connect/intents-connect-widget/introduction.md)
+  * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
 * [Intents Connect API Reference](intents-connect/intents-connect-api-reference/README.md)
   * [Fetch executions](intents-connect/intents-connect-api-reference/fetch-executions.md)
   * [Request an execution](intents-connect/intents-connect-api-reference/request-an-execution.md)
   * [Request steps execution](intents-connect/intents-connect-api-reference/request-steps-execution.md)
   * [Submit digest](intents-connect/intents-connect-api-reference/submit-digest.md)
   * [Fetch intermediary accounts](intents-connect/intents-connect-api-reference/fetch-intermediary-accounts.md)
-* [Intents Connect Widget](intents-connect/intents-connect-widget/README.md)
-  * [Introduction](intents-connect/intents-connect-widget/introduction.md)
-  * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
 
 ## Universal Deposit Addresses
 
