@@ -6,6 +6,8 @@ icon: book-open-lines
 
 The **Intents Swap Widget** lets you integrate a fully functional, cross-chain swap interface into your application in just a few lines of code.
 
+<figure><img src=".gitbook/assets/swap-widget-2.png" alt=""><figcaption></figcaption></figure>
+
 ## 1. Installation
 
 Install the widget package using your preferred package manager:
@@ -51,7 +53,7 @@ export default function App() {
 
 There are also individual `WidgetSwap`, `WidgetTransfer` and `WidgetWithdraw` widgets.
 
-For a full list of configuration options see the [Configuration](swap-widget/readme-1-1/) page.
+For a full list of configuration options, see the [Configuration](swap-widget/readme-1-1/) page.
 
 ### 3. Styling
 
