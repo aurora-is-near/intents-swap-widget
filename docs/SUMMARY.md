@@ -30,12 +30,10 @@
 
 ## Universal Deposit Addresses
 
-***
-
-* [What are UADs?](what-are-uads.md)
-* [UDA API Reference](uda-api-reference/README.md)
-  * [Get a deposit address](uda-api-reference/get-a-deposit-address.md)
-  * [Get an estimate](uda-api-reference/get-an-estimate.md)
+* [What are UADs?](universal-deposit-addresses/what-are-uads.md)
+* [UDA API Reference](universal-deposit-addresses/uda-api-reference/README.md)
+  * [Get a deposit address](universal-deposit-addresses/uda-api-reference/get-a-deposit-address.md)
+  * [Get an estimate](universal-deposit-addresses/uda-api-reference/get-an-estimate.md)
 
 ## Swap Widget
 
