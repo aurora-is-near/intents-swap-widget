@@ -2,13 +2,13 @@
 icon: key
 ---
 
-# API Keys & Reports
+# API Keys & Fees
 
 {% hint style="info" %}
 You can generate as many API keys as you need and use them across different distribution channels in [Intents Studio](https://intents.aurora.dev/).
 {% endhint %}
 
-Once you have created your API key, you can use it either with the [Swap Widget](<../README (1).md>) or the [API](swap-api-reference/). The key is not confidential, allowing its use in public-facing services such as websites.
+Once you have created your API key, you can use it either with the [Swap Widget](/broken/pages/WDpfh0kroISpVsdJQ6oM) or the [API](../deposit-addresses/swap-api-reference/). The key is not confidential, allowing its use in public-facing services such as websites.
 
 ### Fees
 

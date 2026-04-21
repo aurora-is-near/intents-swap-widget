@@ -29,22 +29,23 @@
 ## Deposit Addresses
 
 * [What is Deposit Widget?](deposit-addresses/what-is-deposit-widget.md)
+* [Supported Chains and Assets](deposit-addresses/supported-chains-and-assets.md)
+* [Swap API Reference](deposit-addresses/swap-api-reference/README.md)
+  * [Get supported tokens](deposit-addresses/swap-api-reference/get-supported-tokens.md)
+  * [Request a quote](deposit-addresses/swap-api-reference/request-a-quote.md)
+  * [Get transactions history](deposit-addresses/swap-api-reference/get-transactions-history.md)
 
 ## Swap Widget
 
 * [Quickstart](swap-widget/quickstart.md)
 * [API Keys & Fees](swap-widget/api-keys-and-fees.md)
-* [What is Swap Widget?](<README (1).md>)
 * [Widget Configuration](swap-widget/readme-1-1/README.md)
+  * [Get started](swap-widget/readme-1-1/get-started.md)
   * [Theming](swap-widget/readme-1-1/theming.md)
   * [Wallet Connection](swap-widget/readme-1-1/wallet-connection.md)
   * [Troubleshooting](swap-widget/readme-1-1/troubleshooting.md)
   * [Localisation](swap-widget/readme-1-1/localisation.md)
   * [Widgets](swap-widget/readme-1-1/widgets.md)
-* [Swap API Reference](swap-widget/swap-api-reference/README.md)
-  * [Get supported tokens](swap-widget/swap-api-reference/get-supported-tokens.md)
-  * [Request a quote](swap-widget/swap-api-reference/request-a-quote.md)
-  * [Get transactions history](swap-widget/swap-api-reference/get-transactions-history.md)
 
 ## About
 

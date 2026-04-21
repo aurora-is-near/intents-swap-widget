@@ -4,26 +4,16 @@ icon: forward-fast
 
 # Quickstart
 
-Let's get started with two steps:
+The **Intents Swap Widget** lets you integrate a fully functional, cross-chain swap interface into your application in just a few lines of code.
 
-{% stepper %}
-{% step %}
-### Decide on the integration path
+<figure><img src="../.gitbook/assets/swap-widget-2.png" alt=""><figcaption></figcaption></figure>
 
-* The [Swap Widget](<../README (1).md>) lets you embed a battle-tested cross-chain swapping component into your UI in minutes.
-* If you need a tighter integration and more flexibility with your system, use the [Swap API](swap-api-reference/).
-{% endstep %}
+1. First, create an account and an [API key](api-keys-and-fees.md) for your integration, and decide on the fee structures.
+2. Then, decide on the integration path. You can use our battle-tested widget or integrate directly with the API.
 
-{% step %}
-### Create API key
+### <i class="fa-box">:box:</i> Widget integration path
 
-Create an account and an [API key](api-keys-and-fees.md) for your integration, and decide on the fee structures.
-{% endstep %}
-{% endstepper %}
-
-## Widget integration path
-
-Navigate to the Swap Widget, configure it, and embed it in your app using an iframe or a React component.
+You can embed the widget directly into your app using an **iframe** or a **React component**.
 
 {% stepper %}
 {% step %}
@@ -42,15 +32,23 @@ Click the **Embed in your app** button on the top right of the interface, either
 * An iframe by using **Generate a new link to embed** section
 * Or React component using **Use React code snippet**
 {% endstep %}
+
+{% step %}
+### (Optional) Use advanced settings of the widget
+
+If you decide to embed a React component, you can use more advanced settings, such as your own wallet connection or use widget hooks. Check the detailed docs on the [Widget Configuration](readme-1-1/).
+{% endstep %}
 {% endstepper %}
 
-## API integration path
+### <i class="fa-gear-api">:gear-api:</i> API integration path
+
+If you don't need to use the widget but just want to integrate with the API, you can use the Swap API directly.
 
 {% stepper %}
 {% step %}
 ### Get supported tokens
 
-[Get supported tokens](swap-api-reference/get-supported-tokens.md) to find the `assetId` values you will need.
+[Get supported tokens](../deposit-addresses/swap-api-reference/get-supported-tokens.md) to find the `assetId` values you will need.
 
 {% tabs %}
 {% tab title="cURL" %}
@@ -71,7 +69,7 @@ const tokens = await response.json();
 {% step %}
 ### Request a quote
 
-[Request a quote](swap-api-reference/request-a-quote.md) with your desired parameters
+[Request a quote](../deposit-addresses/swap-api-reference/request-a-quote.md) with your desired parameters
 
 {% tabs %}
 {% tab title="cURL" %}
@@ -132,7 +130,7 @@ Transfer tokens to  `depositAddress` from the quote response. The swap will be p
 {% step %}
 ### Monitor the swap
 
-[Get transaction history](swap-api-reference/get-transactions-history.md) for your account to monitor the status of the swap.
+[Get transaction history](../deposit-addresses/swap-api-reference/get-transactions-history.md) for your account to monitor the status of the swap.
 
 {% tabs %}
 {% tab title="cURL" %}
