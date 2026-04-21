@@ -1,48 +1,10 @@
 ---
-icon: forward-fast
+icon: gear-complex-api
 ---
 
-# Quickstart
+# API integration
 
-The **Intents Swap Widget** lets you integrate a fully functional, cross-chain swap interface into your application in just a few lines of code.
-
-<figure><img src="../.gitbook/assets/swap-widget-2.png" alt=""><figcaption></figcaption></figure>
-
-1. First, create an account and an [API key](api-keys-and-fees.md) for your integration, and decide on the fee structures.
-2. Then, decide on the integration path. You can use our battle-tested widget or integrate directly with the API.
-
-### <i class="fa-box">:box:</i> Widget integration path
-
-You can embed the widget directly into your app using an **iframe** or a **React component**.
-
-{% stepper %}
-{% step %}
-### Configure the Swap Widget
-
-Navigate to [Widget Studio](https://intents.aurora.dev/), log in with your email and configure the widget using the self-explanatory interface. You can configure settings such as displayed Networks, Tokens, and how the Wallet Connection is handled.
-
-You can also customise the design to match your branding with different Styles, Accents, or Layouts. Reach out to our team for more advanced styling options.
-{% endstep %}
-
-{% step %}
-### Embed the widget
-
-Click the **Embed in your app** button on the top right of the interface, either through:
-
-* An iframe by using **Generate a new link to embed** section
-* Or React component using **Use React code snippet**
-{% endstep %}
-
-{% step %}
-### (Optional) Use advanced settings of the widget
-
-If you decide to embed a React component, you can use more advanced settings, such as your own wallet connection or use widget hooks. Check the detailed docs on the [Widget Configuration](readme-1-1/).
-{% endstep %}
-{% endstepper %}
-
-### <i class="fa-gear-api">:gear-api:</i> API integration path
-
-If you don't need to use the widget but just want to integrate with the API, you can use the Swap API directly.
+If you don't need to use the widget but just want to integrate with the API, you can use the [Swap API](../deposit-addresses/swap-api-reference/) directly.
 
 {% stepper %}
 {% step %}

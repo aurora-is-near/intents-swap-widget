@@ -18,27 +18,25 @@
   * [Submit digest](intents-connect/intents-connect-api-reference/submit-digest.md)
   * [Fetch intermediary accounts](intents-connect/intents-connect-api-reference/fetch-intermediary-accounts.md)
 
-## Universal Deposit Addresses
-
-* [What are Deposit Addresses?](universal-deposit-addresses/what-are-deposit-addresses.md)
-* [How It Works](universal-deposit-addresses/how-it-works.md)
-* [Deposit Addresses API Reference](universal-deposit-addresses/deposit-addresses-api-reference/README.md)
-  * [Get a deposit address](universal-deposit-addresses/deposit-addresses-api-reference/get-a-deposit-address.md)
-  * [Get an estimate](universal-deposit-addresses/deposit-addresses-api-reference/get-an-estimate.md)
-
 ## Deposit Addresses
 
-* [What is Deposit Widget?](deposit-addresses/what-is-deposit-widget.md)
+* [What are Deposit Addresses?](deposit-addresses/what-are-deposit-addresses.md)
 * [Supported Chains and Assets](deposit-addresses/supported-chains-and-assets.md)
+* [Universal Deposit Addresses](deposit-addresses/universal-deposit-addresses.md)
 * [Swap API Reference](deposit-addresses/swap-api-reference/README.md)
   * [Get supported tokens](deposit-addresses/swap-api-reference/get-supported-tokens.md)
   * [Request a quote](deposit-addresses/swap-api-reference/request-a-quote.md)
   * [Get transactions history](deposit-addresses/swap-api-reference/get-transactions-history.md)
+* [UDA API Reference](deposit-addresses/uda-api-reference/README.md)
+  * [Get a deposit address](deposit-addresses/uda-api-reference/get-a-deposit-address.md)
+  * [Get an estimate](deposit-addresses/uda-api-reference/get-an-estimate.md)
 
 ## Swap Widget
 
-* [Quickstart](swap-widget/quickstart.md)
+* [What is Swap Widget?](swap-widget/what-is-swap-widget.md)
 * [API Keys & Fees](swap-widget/api-keys-and-fees.md)
+* [Widget integration](swap-widget/widget-integration.md)
+* [API integration](swap-widget/api-integration.md)
 * [Widget Configuration](swap-widget/readme-1-1/README.md)
   * [Get started](swap-widget/readme-1-1/get-started.md)
   * [Theming](swap-widget/readme-1-1/theming.md)
