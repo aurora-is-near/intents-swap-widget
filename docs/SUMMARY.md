@@ -22,21 +22,26 @@
 
 * [What are Deposit Addresses?](deposit-addresses/what-are-deposit-addresses.md)
 * [Supported Chains and Assets](deposit-addresses/supported-chains-and-assets.md)
-* [Universal Deposit Addresses](deposit-addresses/universal-deposit-addresses.md)
+* [API integration](deposit-addresses/api-integration.md)
 * [Swap API Reference](deposit-addresses/swap-api-reference/README.md)
   * [Get supported tokens](deposit-addresses/swap-api-reference/get-supported-tokens.md)
   * [Request a quote](deposit-addresses/swap-api-reference/request-a-quote.md)
   * [Get transactions history](deposit-addresses/swap-api-reference/get-transactions-history.md)
-* [UDA API Reference](deposit-addresses/uda-api-reference/README.md)
-  * [Get a deposit address](deposit-addresses/uda-api-reference/get-a-deposit-address.md)
-  * [Get an estimate](deposit-addresses/uda-api-reference/get-an-estimate.md)
+
+## Universal Deposit Addresses
+
+***
+
+* [What are UADs?](what-are-uads.md)
+* [UDA API Reference](uda-api-reference/README.md)
+  * [Get a deposit address](uda-api-reference/get-a-deposit-address.md)
+  * [Get an estimate](uda-api-reference/get-an-estimate.md)
 
 ## Swap Widget
 
 * [What is Swap Widget?](swap-widget/what-is-swap-widget.md)
 * [API Keys & Fees](swap-widget/api-keys-and-fees.md)
 * [Widget integration](swap-widget/widget-integration.md)
-* [API integration](swap-widget/api-integration.md)
 * [Widget Configuration](swap-widget/readme-1-1/README.md)
   * [Get started](swap-widget/readme-1-1/get-started.md)
   * [Theming](swap-widget/readme-1-1/theming.md)

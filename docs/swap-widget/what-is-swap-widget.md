@@ -95,12 +95,9 @@ First, create an account and an [API key](api-keys-and-fees.md) for your integra
 {% endstep %}
 
 {% step %}
-### Decide on the integration path
+### Integrate the widget
 
-Then, decide on the integration path. You can go down two paths:
-
-* [Widget integration](widget-integration.md), if you want to integrate easily, but still have configuration flexibility
-* [API integration](api-integration.md), if you need a tighter integration with your system
+Go to the [Widget integration](widget-integration.md) page.
 {% endstep %}
 {% endstepper %}
 

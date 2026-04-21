@@ -30,10 +30,20 @@ No allowlist, no approval process. API keys are issued immediately. Start genera
 
 Stay informed about transaction status updates with webhooks. Set up URL endpoints to receive event notifications directly from the system, allowing seamless integration into your existing workflows.
 
-## Before You Start
+## Next Steps
 
-* No account approval required. API keys are issued immediately via the developer console.
-* Default rate limits apply during testing. Contact us to increase production limits.
-* No setup cost. No per-seat or support charges. Pricing is usage-based: you are billed only on transaction volume. There are no minimum commitments and no charges until your first settled transaction.
+{% stepper %}
+{% step %}
+### Create API key
+
+First, create an account and an [API key](../swap-widget/api-keys-and-fees.md) for your integration, and decide on the fee structures.
+{% endstep %}
+
+{% step %}
+### Integrate the widget
+
+Go to the [API integration](api-integration.md) page.
+{% endstep %}
+{% endstepper %}
 
 > **Questions?** [Talk to the team →](mailto:contact@aurora.dev)

@@ -1,8 +1,8 @@
 ---
-icon: book
+icon: book-open-lines
 ---
 
-# Universal Deposit Addresses
+# What are UADs?
 
 {% hint style="warning" %}
 **Pre-release** — Details are subject to change as the architecture is finalised.
@@ -18,7 +18,7 @@ The UDA is unique per chain and supports multiple asset deposits.
 
 When your app calls the UDA (Universal Deposit Address) API, it receives a reusable deposit address tied to a specific source chain and destination. The user sends a regular token transfer to that address — no bridging UI, no extra steps. The system detects the deposit, routes it through NEAR Intents, executes any required swap, and funds the destination.
 
-<figure><img src="../.gitbook/assets/uda.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/uda.png" alt=""><figcaption></figcaption></figure>
 
 {% stepper %}
 {% step %}
