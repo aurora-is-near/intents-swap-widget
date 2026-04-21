@@ -14,19 +14,19 @@ The user performs a standard token transfer to the address. Everything after tha
 
 ## Features
 
-#### Cross-chain routing
+### Cross-chain routing
 
 Deposits from any supported source chain are automatically detected and routed. The integrating application does not need to handle per-chain logic or monitor incoming transactions.
 
-#### Non-EVM Support
+### Non-EVM Support
 
 Source chains include EVM networks and non-EVM chains: Tron, Bitcoin, Zcash, Solana, TON, and NEAR. See [Supported Chains →](https://docs.near-intents.org/resources/chain-support) for the full list.
 
-#### Permissionless
+### Permissionless
 
 No allowlist, no approval process. API keys are issued immediately. Start generating addresses and testing end-to-end flows without contacting the team.
 
-#### Webhooks (coming soon)
+### Webhooks (coming soon)
 
 Stay informed about transaction status updates with webhooks. Set up URL endpoints to receive event notifications directly from the system, allowing seamless integration into your existing workflows.
 
