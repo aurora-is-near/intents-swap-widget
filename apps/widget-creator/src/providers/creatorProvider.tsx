@@ -106,7 +106,7 @@ const initialState: CreatorState = {
   enableSellToken: true,
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
   enableBuyToken: false,
-  defaultBuyToken: { symbol: 'USDT', blockchain: 'eth' },
+  defaultBuyToken: null,
   depositModeReceiverAddress: '',
   enableCustomFees: false,
   feePercentage: '1',

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
+import { useTokenModal } from '../../hooks/useTokenModal';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
@@ -21,6 +21,7 @@ import { isDebug, noop, notReachable } from '@/utils';
 import { useTokenInputPair, useTokens } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 export type Msg =
@@ -140,6 +141,12 @@ export const WidgetDepositModeContent = ({
   });
 
   useEffect(() => {
+    if (!ctx.sourceToken && config.defaultSourceToken && tokens.length > 0) {
+      fireEvent('tokenSelect', { variant: 'source', token: tokens[0] });
+    }
+  }, [ctx.walletAddress, tokens.length]);
+
+  useEffect(() => {
     onMsg?.({
       type: 'on_change_deposit_type',
       isExternal: ctx.isDepositFromExternalWallet,
@@ -164,6 +171,11 @@ export const WidgetDepositModeContent = ({
     fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
   };
 
+  const isTargetTokenAddressValid =
+    ctx.sendAddress &&
+    ctx.targetToken?.blockchain &&
+    isValidChainAddress(ctx.targetToken?.blockchain, ctx.sendAddress);
+
   if (
     !!isLoading ||
     isLoadingTokens ||
@@ -177,6 +189,12 @@ export const WidgetDepositModeContent = ({
   if (!config.sendAddress || !config.defaultTargetToken) {
     return (
       <BlockingError message="Target token & send address must be explicitly set via config for Deposit Mode." />
+    );
+  }
+
+  if (!isTargetTokenAddressValid) {
+    return (
+      <BlockingError message="Target token chain doesn't match chain of a given address/account." />
     );
   }
 
