@@ -156,6 +156,7 @@ export const Export = ({ onClickApiKeys }: Props) => {
   // we don't want to expose our default app key to the exported code
   // but want a widget to function in a studio so we swap them here
   const sampleCode = `import { Widget, WidgetConfigProvider } from '@aurora-is-near/intents-swap-widget${isStandaloneMode ? '-standalone' : ''}';
+import '@aurora-is-near/intents-swap-widget/styles.css';
 
 export function App() {
   return (
