@@ -90,7 +90,7 @@ export function WidgetContent() {
   }, [state.widgetMode]);
 
   useEffect(() => {
-    if (!state.defaultBuyToken) {
+    if (state.widgetMode === 'deposit' && !state.defaultBuyToken) {
       dispatch({
         type: 'SET_DEFAULT_BUY_TOKEN',
         payload: {
