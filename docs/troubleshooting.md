@@ -18,6 +18,7 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 **Causes & Solutions:**
 
 1. **Missing API key** - The widget will try to use a set of RPCs by default, but Alchemy is more reliable and you can have better control with Alchemy API key.
+
    ```tsx
    <SwapWidget
      alchemyApiKey="your-alchemy-api-key"
@@ -28,6 +29,7 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 2. **API rate limits** - Alchemy free tier has request limits. Check your Alchemy dashboard for quota usage.
 
 3. **TON balances not loading** - TON requires a separate API key.
+
    ```tsx
    <SwapWidget
      tonCenterApiKey="your-toncenter-api-key"
@@ -77,6 +79,7 @@ For **Yarn**, resolutions work as shown above. For **npm** or **bun**, use `over
 ```
 
 Please refer to your package manager documentation for ways of doing this:
+
 - [npm](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#overrides)
 - [yarn](https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/)
 - [pnpm](https://pnpm.io/9.x/package_json#resolutions)
@@ -101,6 +104,7 @@ Please refer to your package manager documentation for ways of doing this:
    ```
 
 2. **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
+
    ```tsx
    walletSupportedChains={['eth', 'base', 'arb']}
    ```
@@ -118,6 +122,28 @@ import '@aurora-is-near/intents-swap-widget/styles.css';
 ```
 
 Check our detailed [theming](./theming.md) documentation.
+
+### Tailwind & CSS reset
+
+If you use global CSS reset e.g.:
+
+```css
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+```
+
+It will break widget's styles due to Tailwind layering system. If you face that
+issue and see no paddings, margins or other style issues in a widget please
+scope your CSS resetting styles with a `@layer base` as below:
+
+```css
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+```
 
 ## Still Having Issues?
 
