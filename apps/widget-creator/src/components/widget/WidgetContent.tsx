@@ -99,7 +99,7 @@ export function WidgetContent() {
         },
       });
     }
-  }, [state.defaultBuyToken]);
+  }, [state.widgetMode]);
 
   return (
     <Provider
