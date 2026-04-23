@@ -7,4 +7,9 @@ export const depositTypeSet = (
   payload: DepositTypeSetPayload,
 ): void => {
   ctx.isDepositFromExternalWallet = payload.isExternal;
+
+  if (payload.isExternal) {
+    ctx.sourceTokenAmount = '';
+    ctx.targetTokenAmount = '';
+  }
 };
