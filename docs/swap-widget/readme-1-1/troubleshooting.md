@@ -123,6 +123,26 @@ import '@aurora-is-near/intents-swap-widget/styles.css';
 
 Check our detailed [theming](theming.md) documentation.
 
+#### Tailwind & CSS reset
+
+If you use global CSS reset e.g.:
+
+```css
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+```
+
+It will break widget's styles due to Tailwind layering system. If you face that issue and see no paddings, margins or other style issues in a widget please scope your CSS resetting styles with a `@layer base` as below:
+
+```css
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+```
+
 ## Still Having Issues?
 
 If this guide didn't solve your problem:

@@ -1,8 +1,9 @@
 ---
+hidden: true
 icon: book-open-lines
 ---
 
-# What are UADs?
+# Persistent Addresses (coming soon)
 
 {% hint style="warning" %}
 **Pre-release** — Details are subject to change as the architecture is finalised.

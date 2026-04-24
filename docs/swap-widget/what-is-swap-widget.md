@@ -91,13 +91,13 @@ Export and analyse usage.
 {% step %}
 ### Create API key
 
-First, create an account and an [API key](api-keys-and-fees.md) for your integration, and decide on the fee structures.
+First, create an account and set up [api-keys-and-fees.md](api-keys-and-fees.md "mention") for your integration.
 {% endstep %}
 
 {% step %}
 ### Integrate the widget
 
-Go to the [Widget integration](widget-integration.md) page.
+Go to [widget-integration.md](widget-integration.md "mention") page.
 {% endstep %}
 {% endstepper %}
 

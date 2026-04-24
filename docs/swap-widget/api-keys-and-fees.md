@@ -8,7 +8,7 @@ icon: key
 You can generate as many API keys as you need and use them across different distribution channels in [Intents Studio](https://intents.aurora.dev/).
 {% endhint %}
 
-Once you have created your API key, you can use it either with the [Swap Widget](/broken/pages/WDpfh0kroISpVsdJQ6oM) or the [API](../deposit-addresses/swap-api-reference/). The key is not confidential, allowing its use in public-facing services such as websites.
+Once you have created your API key, you can do [widget-integration.md](../intents-deposits/quickstart/widget-integration.md "mention") or [api-integration.md](../intents-deposits/quickstart/api-integration.md "mention"). The API key is not confidential, allowing its use in public-facing services such as websites.
 
 ### Fees
 

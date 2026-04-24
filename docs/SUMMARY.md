@@ -1,16 +1,22 @@
 # Table of contents
 
+* [Welcome to Aurora Intents](README.md)
+
 ## Intents Connect
 
-* [What is Intents Connect?](README.md)
+* [What is Intents Connect?](<README (1).md>)
+* [Use cases](intents-connect/use-cases.md)
+* [Supported Chains](intents-connect/supported-chains.md)
 * [Deep dive](intents-connect/deep-dive/README.md)
   * [How It Works](intents-connect/deep-dive/how-it-works.md)
   * [Security & Trust Model](intents-connect/deep-dive/security-and-trust-model.md)
-  * [Supported Chains](intents-connect/deep-dive/supported-chains.md)
   * [API Usage](intents-connect/deep-dive/api-usage.md)
 * [Intents Connect Widget](intents-connect/intents-connect-widget/README.md)
   * [Introduction](intents-connect/intents-connect-widget/introduction.md)
   * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
+* [Examples](intents-connect/examples/README.md)
+  * [Deposit into Aave from Solana](intents-connect/examples/deposit-into-aave-from-solana.md)
+  * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)
 * [Intents Connect API Reference](intents-connect/intents-connect-api-reference/README.md)
   * [Fetch executions](intents-connect/intents-connect-api-reference/fetch-executions.md)
   * [Request an execution](intents-connect/intents-connect-api-reference/request-an-execution.md)
@@ -18,22 +24,24 @@
   * [Submit digest](intents-connect/intents-connect-api-reference/submit-digest.md)
   * [Fetch intermediary accounts](intents-connect/intents-connect-api-reference/fetch-intermediary-accounts.md)
 
-## Deposit Addresses
+## Intents Deposits
 
-* [What are Deposit Addresses?](deposit-addresses/what-are-deposit-addresses.md)
-* [Supported Chains and Assets](deposit-addresses/supported-chains-and-assets.md)
-* [API integration](deposit-addresses/api-integration.md)
-* [Swap API Reference](deposit-addresses/swap-api-reference/README.md)
-  * [Get supported tokens](deposit-addresses/swap-api-reference/get-supported-tokens.md)
-  * [Request a quote](deposit-addresses/swap-api-reference/request-a-quote.md)
-  * [Get transactions history](deposit-addresses/swap-api-reference/get-transactions-history.md)
-
-## Universal Deposit Addresses
-
-* [What are UADs?](universal-deposit-addresses/what-are-uads.md)
-* [UDA API Reference](universal-deposit-addresses/uda-api-reference/README.md)
-  * [Get a deposit address](universal-deposit-addresses/uda-api-reference/get-a-deposit-address.md)
-  * [Get an estimate](universal-deposit-addresses/uda-api-reference/get-an-estimate.md)
+* [What are Intents Deposits?](intents-deposits/what-are-intents-deposits.md)
+* [Quickstart](intents-deposits/quickstart/README.md)
+  * [Widget integration](intents-deposits/quickstart/widget-integration.md)
+  * [API integration](intents-deposits/quickstart/api-integration.md)
+* [Supported Chains and Assets](intents-deposits/supported-chains-and-assets.md)
+* [Persistent Addresses (coming soon)](intents-deposits/persistent-addresses-coming-soon.md)
+* [Custom Actions](intents-deposits/custom-actions/README.md)
+  * [Custom actions - Widget](intents-deposits/custom-actions/custom-actions-widget.md)
+  * [Custom actions - API](intents-deposits/custom-actions/custom-actions-api.md)
+* [API Reference](intents-deposits/api-reference/README.md)
+  * [Get supported tokens](intents-deposits/api-reference/get-supported-tokens.md)
+  * [Request a quote](intents-deposits/api-reference/request-a-quote.md)
+  * [Get transactions history](intents-deposits/api-reference/get-transactions-history.md)
+  * [Light Deposit API](intents-deposits/api-reference/light-deposit-api/README.md)
+    * [Get a deposit address](intents-deposits/api-reference/light-deposit-api/get-a-deposit-address.md)
+    * [Get an estimate](intents-deposits/api-reference/light-deposit-api/get-an-estimate.md)
 
 ## Swap Widget
 
