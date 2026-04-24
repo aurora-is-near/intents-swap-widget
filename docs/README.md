@@ -1,3 +1,7 @@
+---
+icon: house-chimney
+---
+
 # Welcome to Aurora Intents
 
 **Aurora Intents** is the **cross-chain execution layer** for on-chain **applications**.
