@@ -30,6 +30,10 @@ No allowlist, no approval process. API keys are issued immediately. Start genera
 
 Stay informed about transaction status updates with webhooks. Set up URL endpoints to receive event notifications directly from the system, allowing seamless integration into your existing workflows.
 
+### Persistent addresses (coming soon)
+
+expl
+
 ## Next Steps
 
 {% stepper %}

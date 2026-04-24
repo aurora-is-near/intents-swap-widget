@@ -31,7 +31,7 @@
   * [Widget integration](intents-deposits/quickstart/widget-integration.md)
   * [API integration](intents-deposits/quickstart/api-integration.md)
 * [Supported Chains and Assets](intents-deposits/supported-chains-and-assets.md)
-* [Persistent Addresses (coming soon)](intents-deposits/persistent-addresses-coming-soon.md)
+* [Persistent Addresses](intents-deposits/persistent-addresses.md)
 * [Custom Actions](intents-deposits/custom-actions/README.md)
   * [Custom actions - Widget](intents-deposits/custom-actions/custom-actions-widget.md)
   * [Custom actions - API](intents-deposits/custom-actions/custom-actions-api.md)

@@ -1,9 +1,10 @@
 ---
-hidden: true
-icon: book-open-lines
+icon: cloud-word
+tags:
+  - coming-soon
 ---
 
-# Persistent Addresses (coming soon)
+# Persistent Addresses
 
 {% hint style="warning" %}
 **Pre-release** — Details are subject to change as the architecture is finalised.
