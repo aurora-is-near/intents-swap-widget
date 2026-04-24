@@ -1,6 +1,6 @@
 # Welcome to Aurora Intents
 
-**Aurora Intents** is the **cross-chain interaction layer** for on-chain **applications**.
+**Aurora Intents** is the **cross-chain execution layer** for on-chain **applications**.
 
 It enables **users** and **systems** to move assets, execute actions, and access liquidity across chains without friction.
 
