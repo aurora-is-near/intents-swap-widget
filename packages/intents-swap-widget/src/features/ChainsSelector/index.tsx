@@ -46,7 +46,7 @@ export const ChainsSelector = ({
       />
 
       <ul className="flex items-center gap-sw-md mr-auto flex-wrap h-[36px] overflow-hidden">
-        {enableAccountAbstraction && (
+        {enableAccountAbstraction && chainsFilter.intents !== 'none' && (
           <ChainShortcut
             icon={NEAR_INTENTS_ICON}
             label="Intents Account"

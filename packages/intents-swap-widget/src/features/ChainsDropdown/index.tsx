@@ -4,6 +4,8 @@ import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-roun
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { ChainItem } from './ChainItem';
+
+import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { AllNetworksIcon } from '@/components/AllNetworksIcon';
 import { useChains } from '@/hooks/useChains';
@@ -34,8 +36,11 @@ export const ChainsDropdown = ({
   const themeCssVariables = getThemeCssVariables(theme);
 
   const chains = useChains(variant);
+  const { enableAccountAbstraction } = useConfig();
 
-  const hasIntentsAccountMenuItem = chainsFilter.intents !== 'none';
+  const hasIntentsAccountMenuItem =
+    enableAccountAbstraction && chainsFilter.intents !== 'none';
+
   const numberOfItems = chains.length + (hasIntentsAccountMenuItem ? 1 : 0);
 
   if (numberOfItems < 2) {
