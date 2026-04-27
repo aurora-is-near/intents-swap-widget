@@ -37,7 +37,11 @@ export function TokenSelectionModal({
   const allTokens = useTokensGroupedBySymbol();
   const { state, dispatch } = useCreator();
 
-  const selectedTokens = state.selectedTokenSymbols || [];
+  const selectedTokens =
+    state.selectedTokenSymbols.length > 0
+      ? state.selectedTokenSymbols
+      : allTokens.map((token) => token.symbol);
+
   const selectedTokenCount = getSelectableTokenSymbols(selectedTokens).length;
 
   const onTokensChange = (tokens: string[]) => {
