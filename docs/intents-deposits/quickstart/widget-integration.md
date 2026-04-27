@@ -4,7 +4,15 @@ icon: palette
 
 # Widget integration
 
-You can embed ready-to-be used **Deposit Widget** directly into your app using an **iframe** or a **React component**.
+{% hint style="info" %}
+### Try it out in the Studio
+
+You can check out the Deposit Widget in the [**Intents Widget Studio**](https://intents.aurora.dev/?configId=8cb195f4-f1ae-45cb-9726-43830954d029). It uses [USDC on Base](https://basescan.org/token/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?a=0x195954FBa43C1A4266F5A66B4Fe468f459Fd0611) as the destination asset and our [test EVM account](https://basescan.org/address/0x195954FBa43C1A4266F5A66B4Fe468f459Fd0611) as the recipient.
+{% endhint %}
+
+## Step by step
+
+You can embed a ready-to-use **Deposit Widget** directly into your app using an **iframe** or a **React component**.
 
 {% stepper %}
 {% step %}

@@ -34,13 +34,13 @@ The user signs the intent message from their source wallet and deposits the sour
 {% step %}
 ### **Cross-chain execution**&#x20;
 
-Intents Connect handles the cross-chain swap using Near Intents — converting the source asset into the required destination asset — and funds the intermediary account on the target chain.
+Intents Connect handles the cross-chain swap using [Near Intents](https://docs.near-intents.org/) — converting the source asset into the required destination asset — and funds the intermediary account on the target chain.
 {% endstep %}
 
 {% step %}
 ### **The intermediary account acts**
 
-The intermediary account, authorised by the user's signature and remotely controlled by Chain Signature, executes the target-chain transaction — in this example, depositing USDC into Aave. The user's intent is fulfilled.
+The intermediary account, authorised by the user's signature and remotely controlled by [Chain Signature](https://docs.near.org/chain-abstraction/chain-signatures/getting-started), executes the target-chain transaction — in this example, depositing USDC into Aave. The user's intent is fulfilled.
 
 The user sees the result in the UI: transaction hashes, status updates, and a clear record of exactly what was executed.
 {% endstep %}

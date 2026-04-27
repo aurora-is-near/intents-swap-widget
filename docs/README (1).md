@@ -14,7 +14,7 @@ The classic example: a user with a Solana wallet depositing USDC into Aave on Et
 
 The user's signature authorises one specific, bounded outcome. Intents Connect never holds funds or acts beyond what the user has explicitly approved.&#x20;
 
-An intermediary account on the destination chain executes the action, but it is fully owned by the origin wallet and controlled via Chain Signature, an MPC technology based on Near protocol.
+An intermediary account on the destination chain executes the action, but it is fully owned by the origin wallet and controlled via Chain Signature, an [MPC technology](https://docs.near.org/chain-abstraction/chain-signatures/getting-started) based on Near protocol.
 
 ### **Who it's for**
 

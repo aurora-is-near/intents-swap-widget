@@ -4,7 +4,7 @@ icon: gear-complex-api
 
 # API integration
 
-Intents API allows you to perform cross-chain swaps across all [supported-chains-and-assets.md](../supported-chains-and-assets.md "mention").
+Intents API allows you to perform cross-chain deposits across all [supported-chains-and-assets.md](../supported-chains-and-assets.md "mention").
 
 You'll need to reference supported assets by their IDs, then request a quote that generates a deposited address to which the requested funds need to be transferred. After that, the swap will be processed, and the destination asset will land in the recipient's account.
 

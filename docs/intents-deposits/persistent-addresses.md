@@ -10,7 +10,7 @@ tags:
 **Pre-release** — Details are subject to change as the architecture is finalised.
 {% endhint %}
 
-A UDA is a deterministic, chain-specific address derived from a fixed set of inputs: user identifier, source chain, recipient address, and output asset. Given the same inputs, the API always returns the same address. There is no expiry, no regeneration, and no per-transaction state to manage.
+Persistent Addresses are deterministic, chain-specific addresses derived from a fixed set of inputs: the user identifier, the source chain, the recipient address, and the output asset. Given the same inputs, the API always returns the same address. There is no expiry, no regeneration, and no per-transaction state to manage.
 
 {% hint style="info" %}
 The UDA is unique per chain and supports multiple asset deposits.

@@ -1,11 +1,11 @@
 # Table of contents
 
 * [Welcome to Aurora Intents](README.md)
+* [Use cases](use-cases.md)
 
 ## Intents Connect
 
 * [What is Intents Connect?](<README (1).md>)
-* [Use cases](intents-connect/use-cases.md)
 * [Supported Chains](intents-connect/supported-chains.md)
 * [Deep dive](intents-connect/deep-dive/README.md)
   * [How It Works](intents-connect/deep-dive/how-it-works.md)

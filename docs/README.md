@@ -12,7 +12,7 @@ It enables **users** and **systems** to move assets, execute actions, and access
 
 ### Our Products
 
-<table data-view="cards"><thead><tr><th></th><th data-type="content-ref"></th><th data-type="content-ref"></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="image">Cover image</th></tr></thead><tbody><tr><td><strong>Intents Connect</strong><br><br>The core infrastructure for <strong>cross-chain execution</strong>.</td><td><a href="README (1).md">README (1).md</a></td><td><a href="intents-connect/intents-connect-api-reference/">intents-connect-api-reference</a></td><td><a href="README (1).md">README (1).md</a></td><td><a href=".gitbook/assets/connect_card.png">connect_card.png</a></td></tr><tr><td><strong>Intents Deposits</strong><br><br>The simplest way to enable <strong>cross-chain deposits</strong> into your app or protocol.</td><td><a href="intents-deposits/what-are-intents-deposits.md">what-are-intents-deposits.md</a></td><td><a href="intents-deposits/api-reference/">api-reference</a></td><td><a href="/broken/pages/ltTn81ZbsMSwwhqPZybz">Broken link</a></td><td><a href=".gitbook/assets/deposits_card.png">deposits_card.png</a></td></tr><tr><td><strong>Swap widget</strong><br><br>A plug-and-play component to enable <strong>cross-chain swaps</strong> inside <strong>your app</strong>.</td><td><a href="swap-widget/what-is-swap-widget.md">what-is-swap-widget.md</a></td><td><a href="swap-widget/api-keys-and-fees.md">api-keys-and-fees.md</a></td><td><a href="/broken/pages/qc0T1RdEvA8HxEcaOX4y">Broken link</a></td><td><a href=".gitbook/assets/swaps_card.png">swaps_card.png</a></td></tr></tbody></table>
+<table data-view="cards"><thead><tr><th></th><th data-type="content-ref"></th><th data-type="content-ref"></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="image">Cover image</th></tr></thead><tbody><tr><td><a href="/broken/pages/ETiitsNKbnDcUtk53eBi"><strong>Intents Connect</strong></a><br><br>The core infrastructure for <strong>cross-chain execution</strong>.</td><td><a href="README (1).md">README (1).md</a></td><td><a href="intents-connect/intents-connect-api-reference/">intents-connect-api-reference</a></td><td><a href="README (1).md">README (1).md</a></td><td><a href=".gitbook/assets/connect_card.png">connect_card.png</a></td></tr><tr><td><a href="/broken/pages/ltTn81ZbsMSwwhqPZybz"><strong>Intents Deposits</strong></a><br><br>The simplest way to enable <strong>cross-chain deposits</strong> into your app or protocol.</td><td><a href="intents-deposits/what-are-intents-deposits.md">what-are-intents-deposits.md</a></td><td><a href="intents-deposits/api-reference/">api-reference</a></td><td><a href="/broken/pages/ltTn81ZbsMSwwhqPZybz">Broken link</a></td><td><a href=".gitbook/assets/deposits_card.png">deposits_card.png</a></td></tr><tr><td><a href="/broken/pages/qc0T1RdEvA8HxEcaOX4y"><strong>Swap Widget</strong></a><br><br>A plug-and-play component to enable <strong>cross-chain swaps</strong> inside <strong>your app</strong>.</td><td><a href="swap-widget/what-is-swap-widget.md">what-is-swap-widget.md</a></td><td><a href="swap-widget/api-keys-and-fees.md">api-keys-and-fees.md</a></td><td><a href="/broken/pages/qc0T1RdEvA8HxEcaOX4y">Broken link</a></td><td><a href=".gitbook/assets/swaps_card.png">swaps_card.png</a></td></tr></tbody></table>
 
 ***
 
@@ -22,7 +22,7 @@ Intents Connect allows applications to execute cross-chain actions without manag
 
 #### Use it to:
 
-* Enable cross-chain swaps and actions
+* Enable cross-chain swaps and on-chain actions
 * Route transactions across chains automatically
 * Chain on chain actions
 
@@ -88,5 +88,5 @@ Not sure where to begin?
 
 * Join the community on [Telegram](https://t.me/auroraisnear/377725)
 * Reach out to the team on Telegram
-* Explore [Use Cases](intents-connect/use-cases.md) in the docs
+* Explore [Use Cases](use-cases.md) in the docs
 

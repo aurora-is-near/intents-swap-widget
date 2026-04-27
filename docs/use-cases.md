@@ -4,9 +4,9 @@ icon: mobile-screen-button
 
 # Use cases
 
-Aurora Intents enables a wide range of cross-chain interactions, from simple swaps to fully automated onchain flows.
+Aurora Intents enables a wide range of cross-chain interactions, from simple swaps to fully automated on-chain flows.
 
-This page highlights common use cases and how they can be implemented.
+This page highlights common use cases and how to implement them.
 
 ***
 
@@ -26,7 +26,7 @@ No bridging, no network switching — just a seamless experience.
 
 [**https://swap.nearmobile.app/**](https://swap.nearmobile.app/)<br>
 
-👉 **Best fit:** [Swap Widget](../swap-widget/what-is-swap-widget.md)
+👉 **Best fit:** [Swap Widget](swap-widget/what-is-swap-widget.md)
 
 ***
 
@@ -108,10 +108,5 @@ Multiple actions can be bundled and executed in sequence.
 
 ### 🧭 Choosing the right approach
 
-| Use case                         | Recommended product                                         |
-| -------------------------------- | ----------------------------------------------------------- |
-| Add swaps to your app            | [Swap Widget](/broken/pages/qc0T1RdEvA8HxEcaOX4y)           |
-| Accept deposits                  | [Intents Deposits](/broken/pages/ltTn81ZbsMSwwhqPZybz)      |
-| Execute contract actions         | [Intents Connect](/broken/pages/ETiitsNKbnDcUtk53eBi)       |
-| Build advanced cross-chain flows | [Intents Connect (API)](/broken/pages/ETiitsNKbnDcUtk53eBi) |
+<table><thead><tr><th width="371.0703125">Use case</th><th>Recommended product</th></tr></thead><tbody><tr><td>Add cross-chain swaps widget to your app</td><td><a href="/broken/pages/qc0T1RdEvA8HxEcaOX4y">Swap Widget</a></td></tr><tr><td>Accept cross-chain deposits via a widget</td><td><a href="/broken/pages/ltTn81ZbsMSwwhqPZybz">Intents Deposits</a></td></tr><tr><td>Execute contract actions via a widget</td><td><a href="/broken/pages/ETiitsNKbnDcUtk53eBi">Intents Connect</a></td></tr><tr><td>Build tailored cross-chain flows</td><td><a href="/broken/pages/ETiitsNKbnDcUtk53eBi">Intents Connect API</a></td></tr></tbody></table>
 

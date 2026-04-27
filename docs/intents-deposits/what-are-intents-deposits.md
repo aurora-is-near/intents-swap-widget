@@ -32,7 +32,7 @@ Stay informed about transaction status updates with webhooks. Set up URL endpoin
 
 ### Persistent addresses (coming soon)
 
-expl
+Each address is permanent and reusable. There is no TTL, no session, and no requirement to re-generate between deposits. The same address accepts unlimited sequential deposits. Read more about [persistent-addresses.md](persistent-addresses.md "mention").
 
 ## Next Steps
 

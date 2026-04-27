@@ -26,7 +26,3 @@ Below is a list of blockchains for which Intents Connect can integrate with:
 * [ ] Stellar (coming soon)
 {% endcolumn %}
 {% endcolumns %}
-
-{% hint style="info" %}
-If you're looking for a list of assets supported, you can navigate to [supported-chains-and-assets.md](../intents-deposits/supported-chains-and-assets.md "mention")
-{% endhint %}
