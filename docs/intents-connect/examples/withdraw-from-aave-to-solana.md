@@ -12,7 +12,7 @@ tags:
 
 Below is an example flow withdrawing from Aave using a Solana wallet using the Intents Connect API.
 
-You'll need to run a dry execution to get the estimated output amount, estimate costs for the destination chain action, and sign the intent (withdraw from Aave). As a result, you'll withdraw from Aave into your Solana wallet.
+You'll need to run an execution to get the estimated output amount, estimate costs for the destination chain action, and sign the intent (withdraw from Aave). As a result, you'll withdraw from Aave into your Solana wallet.
 
 {% hint style="info" %}
 You need to [create an API key](../../swap-widget/api-keys-and-fees.md) to interact with the API.
@@ -70,148 +70,14 @@ The response includes tokens with their `assetId` in this format:
 {% endstep %}
 
 {% step %}
-### Get the estimated output amount
-
-Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") with `dry: true` to get an estimated output amount
-
-{% tabs %}
-{% tab title="JavaScript" %}
-```javascript
-const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    "dry": true,
-    "metadata": {
-      "intent": "aave_withdraw",
-      "title": "Withdraw from Aave"
-    },
-    "outOperation": true,
-    "quote": {
-      "amount": "282174",
-      "destinationAsset": "nep141:sol.omft.near",
-      "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
-      "slippageTolerance": 100
-    },
-    "steps": [
-      {
-        "functionSignature": "withdraw(address,uint256,address)",
-        "parameters": [
-          "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-          "282174",
-          "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
-        ],
-        "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-        "value": "0"
-      }
-    ],
-    "type": "evm"
-  })
-});
-const result = await quote.json();
-```
-{% endtab %}
-{% endtabs %}
-
-<details>
-
-<summary>Request data explanation</summary>
-
-* `dry` is used to get a quote estimate
-* `metadata` contains information displayed in the UI - it's optional
-* `outOperation` means that it's out operations and does not require a deposit
-* `quote`
-  * `amount` contains the input amount used for the action
-  * `destinationAsset` assetId used for the action on the destination chain
-  * `originChain` assetId deposited into the deposit account
-  * `slippageTolerance` value is basis points, so 100 is 1%
-* `steps` are now used, and this is how we defined an action on the destination chain
-  * `functionSignature` [function signature](https://docs.soliditylang.org/en/latest/contracts.html#function-signatures-and-selectors-in-libraries) to be called on the EVM chain
-  * `parameters` arguments to be passed to the function
-  * `to` contact to interact with
-  * `value` native value - in case a native token needs to be used
-* `type` type of the action
-
-</details>
-
-<details>
-
-<summary>Example response</summary>
-
-The response includes information useful to the frontend and a quote for the second request.
-
-```json
-{
-    "result": {
-        "createdAt": "2026-04-23T18:43:35Z",
-        "details": {
-            "estimatedTime": "32",
-            "intermediaryAddress": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
-            "networkFee": "5948",
-            "serviceFee": "0"
-        },
-        "metadata": {
-            "title": "Withdraw from Aave",
-            "intent": "aave_withdraw"
-        },
-        "quote": {
-            "amount": "282174",
-            "amountIn": "276226",
-            "amountInUsd": "0.2762",
-            "amountOut": "3177528",
-            "amountOutUsd": "0.2719",
-            "deadline": "2026-04-23T18:53:31Z",
-            "depositAddress": "0xf9a3a3f6A7d0C235eFc35F1978E3F53c264eeE45",
-            "destinationAsset": "nep141:sol.omft.near",
-            "minAmountOut": "3145752",
-            "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
-            "recipient": "BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4"
-        },
-        "status": "OPERATION_PENDING",
-        "steps": [
-            {
-                "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-                "functionSignature": "withdraw(address,uint256,address)",
-                "parameters": [
-                    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-                    "282174",
-                    "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
-                ],
-                "value": "0"
-            },
-            {
-                "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-                "functionSignature": "transfer(address,uint256)",
-                "parameters": [
-                    "0x546252c9a0E974f75892b4c54b7a67B69a0aFf45",
-                    "5948"
-                ],
-                "value": "0",
-                "metadata": {
-                    "name": "Fee Transfer",
-                    "description": "Gas fee reimbursement"
-                }
-            }
-        ],
-        "type": "evm"
-    }
-}
-```
-
-</details>
-{% endstep %}
-
-{% step %}
-### Populate the steps with the output amount
+### Request an execution
 
 Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") with `dry: false` to get actual execution details. Include steps this time.
 
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -224,7 +90,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
     },
     "outOperation": true,
     "quote": {
-      "amount": "282174",
+      "amount": "197373",
       "destinationAsset": "nep141:sol.omft.near",
       "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
       "slippageTolerance": 100
@@ -234,7 +100,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
         "functionSignature": "withdraw(address,uint256,address)",
         "parameters": [
           "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-          "282174",
+          "197373",
           "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
         ],
         "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
@@ -243,17 +109,17 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
       {
         "functionSignature": "transfer(address,uint256)",
         "parameters": [
-          "0xf9a3a3f6A7d0C235eFc35F1978E3F53c264eeE45",
-          "282174"
+          "{DEPOSIT_ADDRESS}",
+          "197373"
         ],
         "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
         "value": "0"
       }
     ],
     "type": "evm"
-  })
+  });
 });
-const result = await quote.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
@@ -262,8 +128,21 @@ const result = await quote.json();
 
 <summary>Request data explanation</summary>
 
-* `dry` is not true anymore, because we're sending an actual request
-* `steps` are now populated with amounts from the quote
+* `metadata` contains information displayed in the UI - it's optional
+* `outOperation` means that it's outbound operations and does not require a deposit
+* `quote`
+  * `amount` contains the input amount used for the action
+  * `destinationAsset` assetId used for the action on the destination chain
+  * `originChain` assetId deposited into the deposit account
+  * `slippageTolerance` value is basis points, so 100 is 1%
+* `steps` is used to define an operation on the destination chain
+  * `functionSignature` [function signature](https://docs.soliditylang.org/en/latest/contracts.html#function-signatures-and-selectors-in-libraries) to be called on the EVM chain
+  * `parameters` arguments to be passed to the function
+    * Notice `{DEPOSIT_ADDRESS}`, which is a placeholder for the deposit account generated during quoting
+  * `to` contact to interact with
+  * `value` native value - in case a native token needs to be used
+* `type` type of the action
+* `dry` is false, unless we want to get just the estimates
 
 </details>
 
@@ -281,35 +160,37 @@ const result = await quote.json();
 ```json
 {
     "result": {
-        "createdAt": "2026-04-23T18:50:36Z",
+        "createdAt": "2026-04-27T17:53:45Z",
         "details": {
             "estimatedTime": "32",
             "intermediaryAddress": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
-            "messageToSign": "...",
-            "networkFee": "7027",
+            "messageSigned": false,
+            "messageToSign": "<REDACTED>",
+            "networkFee": "6952",
             "payload": {
-                "payload_bytes_base64": "...",
-                "payload_json": "...",
+                "payload_bytes_base64": "<REDACTED>",
+                "payload_json": "<REDACTED>",
                 "standard": "raw_ed25519"
             },
             "serviceFee": "0",
             "signingStandard": "raw_ed25519"
         },
-        "id": "74e0cbfe-def3-47fb-8f1c-469778c6acbc",
+        "id": "eb4c80e8-e491-42da-87d9-f5879d91b7f6",
         "metadata": {
             "title": "Withdraw from Aave",
+            "url": "https://last-mile-fe-check.vercel.app/withdraw",
             "intent": "aave_withdraw"
         },
         "quote": {
-            "amount": "282174",
-            "amountIn": "275147",
-            "amountInUsd": "0.2751",
-            "amountOut": "3173051",
-            "amountOutUsd": "0.2714",
-            "deadline": "2026-04-23T19:00:32Z",
-            "depositAddress": "0xB930Ee99C731E85E7cC8f79cCA38448A3E5Bc5Ad",
+            "amount": "197373",
+            "amountIn": "190421",
+            "amountInUsd": "0.1904",
+            "amountOut": "2214445",
+            "amountOutUsd": "0.1871",
+            "deadline": "2026-04-27T18:03:38Z",
+            "depositAddress": "0x52dF3dE8e121332635ef319e4af9cCb98fd74a6f",
             "destinationAsset": "nep141:sol.omft.near",
-            "minAmountOut": "3141320",
+            "minAmountOut": "2192300",
             "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
             "recipient": "BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4"
         },
@@ -320,7 +201,7 @@ const result = await quote.json();
                 "functionSignature": "withdraw(address,uint256,address)",
                 "parameters": [
                     "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-                    "282174",
+                    "197373",
                     "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
                 ],
                 "value": "0"
@@ -328,8 +209,8 @@ const result = await quote.json();
             {
                 "functionSignature": "transfer(address,uint256)",
                 "parameters": [
-                    "0xB930Ee99C731E85E7cC8f79cCA38448A3E5Bc5Ad",
-                    "282174"
+                    "0x52dF3dE8e121332635ef319e4af9cCb98fd74a6f",
+                    "190421"
                 ],
                 "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
                 "value": "0"
@@ -339,7 +220,7 @@ const result = await quote.json();
                 "functionSignature": "transfer(address,uint256)",
                 "parameters": [
                     "0x546252c9a0E974f75892b4c54b7a67B69a0aFf45",
-                    "7027"
+                    "6952"
                 ],
                 "value": "0",
                 "metadata": {
@@ -365,7 +246,7 @@ Use [submit-digest.md](../intents-connect-api-reference/submit-digest.md "mentio
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -376,7 +257,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
     "signature": "ed25519:466cjq2diW62zHhHik8hQQGLjLTg2drnZCEjBxDnUDZCoN4HmcXv4F4WTe2LqDgJk8Ccaq1rjusA47DeUWKegNy1"
   })
 });
-const result = await quote.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
@@ -415,7 +296,7 @@ Use [fetch-executions.md](../intents-connect-api-reference/fetch-executions.md "
 {% tab title="JavaScript" %}
 ```javascript
 const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=74e0cbfe-def3-47fb-8f1c-469778c6acbc`);
-const tokens = await response.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
