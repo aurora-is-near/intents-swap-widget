@@ -3774,19 +3774,6 @@
     "@material-symbols/svg-600" "^0.40.2"
     "@material-symbols/svg-700" "^0.40.2"
 
-"@material-symbols-svg/react@^0.1.19":
-  version "0.1.19"
-  resolved "https://registry.yarnpkg.com/@material-symbols-svg/react/-/react-0.1.19.tgz#992d02037d7e8cca3e5f8f809ecfc929978e34f0"
-  integrity sha512-mAyBK51gRpd1vT7iB4KaVeT57sVvlVMsjUc4O5NXmUULJtSVdnlv18wAsvwfjpgFlfP+HiaQ5Bql0oI1UQRYzQ==
-  dependencies:
-    "@material-symbols/svg-100" "^0.40.2"
-    "@material-symbols/svg-200" "^0.40.2"
-    "@material-symbols/svg-300" "^0.40.2"
-    "@material-symbols/svg-400" "^0.40.2"
-    "@material-symbols/svg-500" "^0.40.2"
-    "@material-symbols/svg-600" "^0.40.2"
-    "@material-symbols/svg-700" "^0.40.2"
-
 "@material-symbols/svg-100@^0.40.2":
   version "0.40.2"
   resolved "https://registry.yarnpkg.com/@material-symbols/svg-100/-/svg-100-0.40.2.tgz#c966d573165b57286696f288f3c537c796ee7831"
@@ -5559,11 +5546,6 @@
     "@radix-ui/react-primitive" "2.1.3"
     "@radix-ui/react-use-callback-ref" "1.1.1"
     "@radix-ui/react-use-escape-keydown" "1.1.1"
-
-"@radix-ui/react-icons@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-icons/-/react-icons-1.3.2.tgz#09be63d178262181aeca5fb7f7bc944b10a7f441"
-  integrity sha512-fyQIhGDhzfc9pK2kH6Pl9c4BDJGfMkPqkyIgYDthyNYoNg3wVhoJMMh19WS4Up/1KMPFVpNsT2q3WmXn2N1m6g==
 
 "@radix-ui/react-id@1.1.1":
   version "1.1.1"
