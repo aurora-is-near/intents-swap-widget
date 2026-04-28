@@ -20,12 +20,10 @@ export const useAppKitWallet = (): AppKitWalletConfig => {
 
   const connect = useCallback(
     async (namespace?: AppKitNamespace) => {
-      setIsConnecting(true);
-
       if (!appKit) {
         throw new Error('AppKit is not initialized');
       }
-
+      setIsConnecting(true);
       try {
         await appKit.open(
           namespace
@@ -33,11 +31,10 @@ export const useAppKitWallet = (): AppKitWalletConfig => {
             : { view: 'Connect' },
         );
       } catch (error) {
-        setIsConnecting(false);
         throw error;
+      } finally {
+        setIsConnecting(false);
       }
-
-      setIsConnecting(false);
     },
     [appKit],
   );
