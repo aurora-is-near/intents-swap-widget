@@ -151,8 +151,12 @@ export const useMakeTronTransfer = ({
         },
       );
 
-      if (unsignedTransaction.Error ?? !unsignedTransaction.txID) {
+      if (unsignedTransaction.Error || !unsignedTransaction.txID) {
         throw new TransferError({
+          code: 'TRANSFER_INVALID_INITIAL',
+          meta: { message: 'Insufficient TRX balance to cover network fee.' },
+        });
+      }
           code: 'TRANSFER_INVALID_INITIAL',
           meta: { message: 'Insufficient TRX balance to cover network fee.' },
         });
