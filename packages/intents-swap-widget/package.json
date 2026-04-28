@@ -78,7 +78,6 @@
     "hsluv": "^1.0.1",
     "i18next": "^25.4.2",
     "imask": "^7.6.1",
-    "jest-react-hooks-shallow": "^1.5.1",
     "lodash.once": "^4.1.1",
     "near-api-js": "^6.2.5",
     "proxy-memoize": "^3.0.1",
