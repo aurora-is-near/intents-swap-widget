@@ -75,6 +75,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "puppeteer": "^24.31.0",
+    "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "semantic-release": "^24.0.0",
     "tailwindcss": "^4.1.12",
