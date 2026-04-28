@@ -54,7 +54,6 @@
     "react-dom": ">=18.2.0"
   },
   "dependencies": {
-    "@aurora-is-near/eslint-config": "^1.5.3",
     "@defuse-protocol/intents-sdk": "^0.43.3",
     "@defuse-protocol/internal-utils": "^0.13.0",
     "@defuse-protocol/one-click-sdk-typescript": "^0.1.5",
