@@ -78,6 +78,10 @@ export const useWalletSelector = () => {
       await stellarWallet.disconnect();
     }
 
+    if (appKitWallet.isConnected) {
+      await appKitWallet.disconnect();
+    }
+
     await appKitWallet.connect('tron');
   }, [appKitWallet, nearWallet, stellarWallet]);
 
