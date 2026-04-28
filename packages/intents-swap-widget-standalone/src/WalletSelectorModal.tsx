@@ -106,7 +106,7 @@ export const WalletSelectorModal = ({
             <WalletOptionCard
               onClick={onSelectEvmSolanaTron}
               title="EVM / Solana / Tron"
-              description="Connect via MetaMask, Trust, Phantom, etc..."
+              description="Connect via MetaMask, Trust, Phantom, TronLink, etc..."
               icons={[
                 { Icon: MetaMaskIcon },
                 { Icon: TrustIcon },
