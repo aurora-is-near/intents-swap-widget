@@ -73,7 +73,6 @@
     "framer-motion": "^12.23.0",
     "hsluv": "^1.0.1",
     "i18next": "^25.4.2",
-    "imask": "^7.6.1",
     "lodash.once": "^4.1.1",
     "near-api-js": "^6.2.5",
     "qr-code-styling": "1.9.2",
