@@ -85,7 +85,7 @@ const settings: Settings = {
     zcash: 'https://mainnet.lightwalletd.com',
     gnosis: 'https://rpc.gnosischain.com',
     berachain: 'https://rpc.berachain.com',
-    tron: '',
+    tron: 'https://api.trongrid.io',
   },
 };
 

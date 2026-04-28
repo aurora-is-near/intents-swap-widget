@@ -15,6 +15,10 @@ import { isStellarAddress } from './isStellarAddress';
 import { EVM_CHAINS } from '../../constants';
 
 const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
+  if (isTronAddress(address)) {
+    return ['tron'];
+  }
+
   if (isSolanaAddress(address)) {
     return ['sol'];
   }
@@ -25,10 +29,6 @@ const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
 
   if (isTonAddress(address)) {
     return ['ton'];
-  }
-
-  if (isTronAddress(address)) {
-    return ['tron'];
   }
 
   if (isXrpAddress(address)) {

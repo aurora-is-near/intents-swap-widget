@@ -5,6 +5,7 @@ import { isEvmBaseToken, isEvmChain } from '../utils';
 import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { useMakeNearTransfer } from './useMakeNearTransfer';
 import { useMakeStellarTransfer } from './useMakeStellarTransfer';
+import { useMakeTronTransfer } from './useMakeTronTransfer';
 import { Providers } from '../types/providers';
 import { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
 import { useConfig } from '../config';
@@ -48,6 +49,10 @@ export const useMakeQuoteTransfer = ({
 
   const { make: makeStellarTransfer } = useMakeStellarTransfer({
     provider: providers?.stellar,
+  });
+
+  const { make: makeTronTransfer } = useMakeTronTransfer({
+    provider: providers?.tron,
   });
 
   const getTransferFunction = (depositAddress: string) => {
@@ -97,6 +102,10 @@ export const useMakeQuoteTransfer = ({
           memo: ctx.quote.depositMemo ?? '',
         });
       };
+    }
+
+    if (providerType === 'tron') {
+      return makeTronTransfer;
     }
 
     throw new TransferError({

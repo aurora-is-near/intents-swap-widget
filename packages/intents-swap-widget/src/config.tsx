@@ -61,6 +61,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
         return ['near', 'sol', 'eth', 'btc'] as const;
       case 'stellar':
         return ['stellar', 'eth', 'sol', 'near'] as const;
+      case 'tron':
+        return ['tron', 'eth', 'sol', 'near'] as const;
       default:
         return ['eth', 'btc', 'sol', 'near'] as const;
     }

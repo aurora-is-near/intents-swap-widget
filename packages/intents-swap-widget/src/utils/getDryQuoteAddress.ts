@@ -25,6 +25,8 @@ export function getDryQuoteAddress(
       return DRY_QUOTE_ZERO_ADDRESSES.sol;
     case 'stellar':
       return DRY_QUOTE_ZERO_ADDRESSES.stellar;
+    case 'tron':
+      return DRY_QUOTE_ZERO_ADDRESSES.tron;
     default:
       return DRY_QUOTE_ZERO_ADDRESSES.evm;
   }

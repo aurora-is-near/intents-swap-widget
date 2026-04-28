@@ -2,6 +2,7 @@ import { isEvmAddress } from './isEvmAddress';
 import { isNearAddress } from './isNearAddress';
 import { isSolanaAddress } from './isSolanaAddress';
 import { isStellarAddress } from './isStellarAddress';
+import { isTronAddress } from './isTronAddress';
 
 import type { Providers } from '@/types';
 
@@ -14,6 +15,10 @@ export const getSupportedProviderType = (
 
   if (isNearAddress(depositAddress)) {
     return 'near';
+  }
+
+  if (isTronAddress(depositAddress)) {
+    return 'tron';
   }
 
   if (isSolanaAddress(depositAddress)) {

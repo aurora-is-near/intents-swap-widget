@@ -11,6 +11,7 @@ import { snakeCase } from 'change-case';
 
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
+import { IntentSignerTron } from '../utils/intents/signers/tron';
 import { Providers } from '../types/providers';
 
 import { useIntentsAccountType } from './useIntentsAccountType';
@@ -249,6 +250,22 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
         signer = new IntentSignerStellar(
           { walletAddress: ctx.walletAddress },
           providers.stellar,
+        );
+
+        break;
+      }
+
+      case 'tron': {
+        if (!providers?.tron) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No Tron provider configured' },
+          });
+        }
+
+        signer = new IntentSignerTron(
+          { walletAddress: ctx.walletAddress },
+          providers.tron,
         );
 
         break;

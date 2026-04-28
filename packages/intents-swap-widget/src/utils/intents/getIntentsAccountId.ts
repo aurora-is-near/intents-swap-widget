@@ -4,6 +4,7 @@ import { notReachable } from '../notReachable';
 import { IntentsAccountType } from '../../types';
 import { stellarAddressToBytes } from '../stellar/stellarAddressToBytes';
 import { isStellarAddress } from '@/utils/chains/isStellarAddress';
+import { isTronAddress } from '@/utils/chains/isTronAddress';
 import { logger } from '@/logger';
 
 type Args = {
@@ -32,6 +33,12 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
     return;
   }
 
+  if (!isTronAddress(walletAddress) && addressType === 'tron') {
+    logger.error('Tron address should start with T');
+
+    return;
+  }
+
   switch (addressType) {
     case 'evm':
     case 'near':
@@ -40,6 +47,8 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
       return hex.encode(stellarAddressToBytes(walletAddress));
     case 'sol':
       return hex.encode(base58.decode(walletAddress));
+    case 'tron':
+      return `0x${hex.encode(base58.decode(walletAddress).slice(0, 21)).substring(2)}`;
     default:
       logger.error('Unsupported connected wallet type');
 

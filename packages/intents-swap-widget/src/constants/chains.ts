@@ -88,6 +88,7 @@ export const DRY_QUOTE_ZERO_ADDRESSES = {
   sol: '11111111111111111111111111111111',
   near: 'system.near',
   stellar: 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF',
+  tron: 'T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb',
 } as const;
 
 export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
@@ -108,6 +109,7 @@ export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
   sol: 'SOL',
   near: 'NEAR',
   stellar: 'XLM',
+  tron: 'TRX',
 };
 
 export const CHAINS_LIST: Record<Chains, Chain> = {
@@ -246,6 +248,7 @@ export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
   sol: 'https://solscan.io/tx/',
   near: 'https://nearblocks.io/txns/',
   stellar: 'https://stellar.expert/explorer/public/tx/',
+  tron: 'https://tronscan.org/#/transaction/',
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
