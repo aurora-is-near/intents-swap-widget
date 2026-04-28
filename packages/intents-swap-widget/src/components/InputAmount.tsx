@@ -1,12 +1,13 @@
 import { forwardRef } from 'react';
 import { IMaskMixin } from 'react-imask';
-import type { InputElement } from 'imask';
 import type { IMaskMixinProps } from 'react-imask';
 
 import { Input as UIInput } from '@headlessui/react';
 
 import type { Props as InputProps } from './Input';
 import { cn } from '@/utils/cn';
+
+type InputElement = HTMLTextAreaElement | HTMLInputElement;
 
 const RawInputAmount = forwardRef<
   InputElement,
