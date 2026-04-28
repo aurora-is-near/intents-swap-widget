@@ -2,7 +2,7 @@ import type { ChainRpcUrls } from '@/types/chain';
 
 export const DEFAULT_RPCS: ChainRpcUrls = {
   xrp: ['https://rpc.xrplevm.org'],
-  tron: ['https://tron.drpc.org'],
+  tron: ['https://api.trongrid.io'],
   ton: ['https://ton.drpc.org'],
   eth: ['https://eth.drpc.org'],
   bsc: ['https://bsc-dataseed.binance.org/'],

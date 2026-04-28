@@ -12,6 +12,7 @@ import {
 import { type AppKit, createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
+import { TronAdapter } from '@reown/appkit-adapter-tron';
 import {
   arbitrum,
   avalanche,
@@ -24,12 +25,14 @@ import {
   optimism,
   polygon,
   solana,
+  tronMainnet,
 } from '@reown/appkit/networks';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import type { Theme } from '@aurora-is-near/intents-swap-widget';
+import { BinanceWalletAdapter, BitKeepAdapter, ImTokenAdapter, MetaMaskAdapter, OkxWalletAdapter, TokenPocketAdapter, TronLinkAdapter, TrustAdapter } from '@tronweb3/tronwallet-adapters';
 
 type AppKitProviderProps = {
   appName?: string;
@@ -100,10 +103,28 @@ export const initAppKit = ({
     wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
   });
 
+  const tronAdapter = new TronAdapter({
+    walletAdapters: [
+      new TronLinkAdapter({
+        openUrlWhenWalletNotFound: false,
+        checkTimeout: 3000,
+      }),
+      new MetaMaskAdapter(),
+      new TrustAdapter(),
+      new OkxWalletAdapter({
+        openUrlWhenWalletNotFound: false,
+      }),
+      new BitKeepAdapter(),
+      new BinanceWalletAdapter(),
+      new TokenPocketAdapter(),
+      new ImTokenAdapter(),
+    ],
+  });
+
   const websiteFavicon = findFavicon();
 
   return createAppKit({
-    adapters: [wagmiAdapter, solanaAdapter],
+    adapters: [wagmiAdapter, solanaAdapter, tronAdapter],
     // Networks must be inlined here (not spread from evmNetworks array)
     // because TypeScript requires a tuple type for AppKit networks
     networks: [
@@ -115,6 +136,7 @@ export const initAppKit = ({
       avalanche,
       base,
       solana,
+      tronMainnet,
       berachain,
       monadMainnet,
       gnosis,

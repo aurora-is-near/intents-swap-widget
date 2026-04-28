@@ -8,7 +8,7 @@ export type WalletAddresses = Partial<
   Record<Chains | 'default', string | null>
 >;
 
-export type IntentsAccountType = 'evm' | 'near' | 'sol' | 'stellar';
+export type IntentsAccountType = 'evm' | 'near' | 'sol' | 'stellar' | 'tron';
 
 export type DefaultToken = Pick<Token, 'symbol' | 'blockchain'>;
 

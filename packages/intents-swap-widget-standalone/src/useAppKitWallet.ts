@@ -2,10 +2,12 @@ import { useCallback, useContext, useState } from 'react';
 import { useAppKitAccount, useDisconnect } from '@reown/appkit/react';
 import { AppKitContext } from './appkit';
 
+type AppKitNamespace = 'eip155' | 'solana' | 'tron';
+
 type AppKitWalletConfig = {
   isConnecting: boolean;
   isConnected: boolean;
-  connect: () => Promise<void> | void;
+  connect: (namespace?: AppKitNamespace) => Promise<void> | void;
   disconnect: () => Promise<void> | void;
   address: string | undefined;
 };
@@ -16,26 +18,31 @@ export const useAppKitWallet = (): AppKitWalletConfig => {
   const { disconnect: appKitDisconnect } = useDisconnect();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const connect = useCallback(async () => {
-    setIsConnecting(true);
-
-    if (!appKit) {
-      throw new Error('AppKit is not initialized');
-    }
-
-    try {
-      await appKit.open();
-    } catch (error) {
-      setIsConnecting(false);
-      throw error;
-    }
-
-    setIsConnecting(false);
-  }, [appKit]);
+  const connect = useCallback(
+    async (namespace?: AppKitNamespace) => {
+      if (!appKit) {
+        throw new Error('AppKit is not initialized');
+      }
+      setIsConnecting(true);
+      try {
+        await appKit.open(
+          namespace
+            ? { view: 'Connect', namespace: namespace as never }
+            : { view: 'Connect' },
+        );
+      } catch (error) {
+        throw error;
+      } finally {
+        setIsConnecting(false);
+      }
+    },
+    [appKit],
+  );
 
   const disconnect = useCallback(async () => {
     await appKitDisconnect({ namespace: 'solana' });
     await appKitDisconnect({ namespace: 'eip155' });
+    await appKitDisconnect({ namespace: 'tron' });
   }, [appKitDisconnect]);
 
   return {

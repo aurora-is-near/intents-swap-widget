@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { getTronTokenBalance } from '../../utils/tron/getTronTokenBalance';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
 import { WalletAddresses } from '../../types';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
@@ -93,7 +94,15 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
         return getTonTokenBalance(token, walletAddress, tonCenterApiKey);
       }
 
-      // 7. Solana token balance
+      // 7. Tron token balance
+      if (
+        token.blockchain === 'tron' &&
+        supportedChains.includes(token.blockchain)
+      ) {
+        return getTronTokenBalance(token, walletAddress, rpcs.tron ?? []);
+      }
+
+      // 8. Solana token balance
       if (
         token.blockchain === 'sol' &&
         supportedChains.includes(token.blockchain)

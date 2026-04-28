@@ -23,7 +23,7 @@ type WalletSelectorModalProps = {
   open: boolean;
   onClose: () => void;
   onSelectNear: () => void;
-  onSelectEvmSolana: () => void;
+  onSelectEvmSolanaTron: () => void;
   onSelectStellar: () => void;
 };
 
@@ -31,7 +31,7 @@ export const WalletSelectorModal = ({
   open,
   onClose,
   onSelectNear,
-  onSelectEvmSolana,
+  onSelectEvmSolanaTron,
   onSelectStellar,
 }: WalletSelectorModalProps) => {
   return (
@@ -104,9 +104,9 @@ export const WalletSelectorModal = ({
               gap: 12,
             }}>
             <WalletOptionCard
-              onClick={onSelectEvmSolana}
-              title="EVM / Solana"
-              description="Connect via MetaMask, Trust, Phantom, etc..."
+              onClick={onSelectEvmSolanaTron}
+              title="EVM / Solana / Tron"
+              description="Connect via MetaMask, Trust, Phantom, TronLink, etc..."
               icons={[
                 { Icon: MetaMaskIcon },
                 { Icon: TrustIcon },

@@ -5,6 +5,7 @@ import { IntentsAccountType } from '../../types/config';
 import { isSolanaAddress } from '../../utils/chains/isSolanaAddress';
 import { isEvmAddress } from '../../utils/chains/isEvmAddress';
 import { isNearAddress } from '../../utils/chains/isNearAddress';
+import { isTronAddress } from '../../utils/chains/isTronAddress';
 import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
 import { useIntentsAccountType } from '../../hooks';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
@@ -32,6 +33,7 @@ const accountChainMap: Record<IntentsAccountType, Chains> = {
   evm: 'eth',
   near: 'near',
   stellar: 'stellar',
+  tron: 'tron',
 };
 
 export const useSelectedTokensEffect = ({
@@ -219,7 +221,10 @@ export const useSelectedTokensEffect = ({
           // 5. Select base token by detecting NEAR wallet address
         } else if (ctx.walletAddress && isNearAddress(ctx.walletAddress)) {
           setTokenForIntentsAccountType('near', fallbackToken);
-          // 6. Fallback if intents is not supported and wallet is not connected
+          // 6. Select base token by detecting Tron wallet address
+        } else if (ctx.walletAddress && isTronAddress(ctx.walletAddress)) {
+          setTokenForIntentsAccountType('tron', fallbackToken);
+          // 7. Fallback if intents is not supported and wallet is not connected
         } else {
           fireEvent('tokenSelect', {
             variant: 'source',

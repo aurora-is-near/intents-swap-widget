@@ -67,6 +67,24 @@ export const useWalletSelector = () => {
     await appKitWallet.connect();
   }, [appKitWallet, nearWallet, stellarWallet]);
 
+  const selectTron = useCallback(async () => {
+    setShowSelector(false);
+
+    if (nearWallet.isConnected) {
+      await nearWallet.disconnect();
+    }
+
+    if (stellarWallet.walletAddress) {
+      await stellarWallet.disconnect();
+    }
+
+    if (appKitWallet.isConnected) {
+      await appKitWallet.disconnect();
+    }
+
+    await appKitWallet.connect('tron');
+  }, [appKitWallet, nearWallet, stellarWallet]);
+
   const selectStellar = useCallback(async () => {
     setShowSelector(false);
 
@@ -135,6 +153,7 @@ export const useWalletSelector = () => {
     disconnect,
     selectNear,
     selectEvmSolana,
+    selectTron,
     selectStellar,
     closeSelector,
   };
