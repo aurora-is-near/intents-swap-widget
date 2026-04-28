@@ -70,7 +70,6 @@
     "chroma-js": "^3.1.2",
     "clsx": "^2.1.1",
     "copy-text-to-clipboard": "^3.2.0",
-    "debounce": "^2.2.0",
     "derive-valtio": "^0.2.0",
     "ethers": "^6.15.0",
     "framer-motion": "^12.23.0",
