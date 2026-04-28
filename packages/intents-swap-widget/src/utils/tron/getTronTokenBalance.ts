@@ -24,6 +24,8 @@ const buildRpcUrl = (rpcUrl: string, endpoint: string) => {
   return new URL(endpoint.replace(/^\//, ''), baseUrl).toString();
 };
 
+const TRON_RPC_TIMEOUT_MS = 10_000;
+
 const postTronRpc = async <T>(
   rpcUrls: string[],
   endpoint: string,
@@ -33,6 +35,8 @@ const postTronRpc = async <T>(
 
   // eslint-disable-next-line no-restricted-syntax
   for (const rpcUrl of getRpcUrls(rpcUrls)) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TRON_RPC_TIMEOUT_MS);
     try {
       // eslint-disable-next-line no-await-in-loop
       const response = await fetch(buildRpcUrl(rpcUrl, endpoint), {
@@ -41,6 +45,7 @@ const postTronRpc = async <T>(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -53,8 +58,15 @@ const postTronRpc = async <T>(
       return (await response.json()) as T;
     } catch (error) {
       lastError = error;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('All Tron RPC requests failed');
+};
 
   throw lastError instanceof Error
     ? lastError
