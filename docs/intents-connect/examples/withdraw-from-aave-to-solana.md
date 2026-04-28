@@ -72,7 +72,7 @@ The response includes tokens with their `assetId` in this format:
 {% step %}
 ### Request an execution
 
-Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") with `dry: false` to get actual execution details. Include steps this time.
+Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") endpoint.
 
 {% tabs %}
 {% tab title="JavaScript" %}
@@ -128,6 +128,7 @@ const execution = await response.json();
 
 <summary>Request data explanation</summary>
 
+* `dry` is false, unless we want to get just the estimates
 * `metadata` contains information displayed in the UI - it's optional
 * `outOperation` means that it's outbound operations and does not require a deposit
 * `quote`
@@ -142,7 +143,6 @@ const execution = await response.json();
   * `to` contact to interact with
   * `value` native value - in case a native token needs to be used
 * `type` type of the action
-* `dry` is false, unless we want to get just the estimates
 
 </details>
 

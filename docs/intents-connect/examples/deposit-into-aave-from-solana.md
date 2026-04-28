@@ -68,105 +68,14 @@ The response includes tokens with their `assetId` in this format:
 {% endstep %}
 
 {% step %}
-### Get the estimated output amount
+### Request an execution
 
-Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") with `dry: true` to get an estimated output amount
-
-{% tabs %}
-{% tab title="JavaScript" %}
-<pre class="language-javascript"><code class="lang-javascript">const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    "dry": true,
-    "metadata": {
-      "intent": "aave_supply",
-      "title": "Supply to Aave"
-    },
-    "quote": {
-      "amount": "3000000",
-      "destinationAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
-      "originAsset": "nep141:sol.omft.near",
-      "slippageTolerance": 100
-<strong>    },
-</strong>    "steps": [],
-    "type": "evm"
-  })
-});
-const result = await quote.json();
-</code></pre>
-{% endtab %}
-{% endtabs %}
-
-<details>
-
-<summary>Request data explanation</summary>
-
-* `dry` is used to get a quote estimate
-* `metadata` contains information displayed in the UI - it's optional
-* `quote`
-  * `amount` contains the input amount used for the action
-  * `destinationAsset` assetId used for the action on the destination chain
-  * `originChain` assetId deposited into the deposit account
-  * `slippageTolerance` value is basis points, so 100 is 1%
-* `steps` not used in the initial dry run
-* `type` type of the action
-
-</details>
-
-<details>
-
-<summary>Example response</summary>
-
-The response includes information useful to the frontend, as well as a quote to be used in the second request.
-
-```json
-{
-    "result": {
-        "createdAt": "2026-04-23T17:39:30Z",
-        "details": {
-            "estimatedTime": "22",
-            "intermediaryAddress": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
-            "networkFee": "1782",
-            "serviceFee": "0"
-        },
-        "metadata": {
-            "title": "Supply to Aave",
-            "intent": "aave_supply"
-        },
-        "quote": {
-            "amount": "3000000",
-            "amountIn": "3000000",
-            "amountInUsd": "0.2553",
-            "amountOut": "247838",
-            "amountOutUsd": "0.2496",
-            "deadline": "2026-04-23T17:49:27Z",
-            "destinationAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
-            "minAmountOut": "245341",
-            "originAsset": "nep141:sol.omft.near",
-            "recipient": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
-        },
-        "status": "CREATED",
-        "steps": [],
-        "type": "evm"
-    }
-}
-```
-
-</details>
-{% endstep %}
-
-{% step %}
-### Populate the steps with the output amount
-
-Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") with `dry: false` to get actual execution details. Include steps this time.
+Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") endpoint.
 
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -178,7 +87,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
       "title": "Supply to Aave"
     },
     "quote": {
-      "amount": "3000000",
+      "amount": "1270000",
       "destinationAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
       "originAsset": "nep141:sol.omft.near",
       "slippageTolerance": 100
@@ -188,7 +97,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
         "functionSignature": "approve(address,uint256)",
         "parameters": [
           "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-          "245341"
+          "{MIN_AMOUNT_OUT}"
         ],
         "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
         "value": "0"
@@ -197,7 +106,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
         "functionSignature": "supply(address,uint256,address,uint16)",
         "parameters": [
           "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-          "245341",
+          "{MIN_AMOUNT_OUT}",
           "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
           "0"
         ],
@@ -208,7 +117,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
     "type": "evm"
   })
 });
-const result = await quote.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
@@ -217,7 +126,15 @@ const result = await quote.json();
 
 <summary>Request data explanation</summary>
 
-* `dry` is not true anymore, because we're sending an actual request
+* `dry` is false, unless we want to get just the estimates
+* `metadata` contains information displayed in the UI - it's optional
+* `quote`
+  * `amount` contains the input amount used for the action
+  * `destinationAsset` assetId used for the action on the destination chain
+  * `originChain` assetId deposited into the deposit account
+  * `slippageTolerance` value is basis points, so 100 is 1%
+* `steps` not used in the initial dry run
+* `type` type of the action
 * `steps` are now used, and this is how we defined an action on the destination chain
   * `functionSignature` [function signature](https://docs.soliditylang.org/en/latest/contracts.html#function-signatures-and-selectors-in-libraries) to be called on the EVM chain
   * `parameters` arguments to be passed to the function
@@ -238,60 +155,63 @@ const result = await quote.json();
 | `status`                       | Status of the transaction, used for understanding the lifecycle of the execution                                                             |
 | `steps`                        | Updated steps were built based on the user's signed input steps. The additional transfer added to the array is used to reimburse the gas fee |
 
-<pre class="language-json"><code class="lang-json"><strong>{
-</strong>    "result": {
-        "createdAt": "2026-04-23T18:03:10Z",
+```json
+{
+    "result": {
+        "createdAt": "2026-04-28T15:21:41Z",
         "details": {
             "estimatedTime": "22",
             "intermediaryAddress": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
+            "messageSigned": false,
             "messageToSign": "...",
-            "networkFee": "6709",
+            "networkFee": "7150",
             "payload": {
-                "payload_bytes_base64": "...",
+                "payload_bytes_base64": "..",
                 "payload_json": "...",
                 "standard": "raw_ed25519"
             },
             "serviceFee": "0",
             "signingStandard": "raw_ed25519"
         },
-        "id": "4a4c4312-d887-4d35-962a-b70ee11dbfe9",
+        "id": "33ca3807-0e1b-455f-a6dd-1a482ec9b385",
         "metadata": {
-            "title": "Supply to Aave",
+            "title": "Supply to Aave (single-round)",
+            "url": "https://last-mile-fe-check.vercel.app/actions_min_amount",
             "intent": "aave_supply"
         },
         "quote": {
-            "amount": "3000000",
-            "amountIn": "3000000",
-            "amountInUsd": "0.2561",
-            "amountOut": "244626",
-            "amountOutUsd": "0.2513",
-            "deadline": "2026-04-23T18:13:07Z",
-            "depositAddress": "GihMearJBmF4J8WHBimyARHuUoGbfBiP1YMmCZXqAcVm",
+            "amount": "1270000",
+            "amountIn": "1270000",
+            "amountInUsd": "0.1059",
+            "amountOut": "95300",
+            "amountOutUsd": "0.1024",
+            "deadline": "2026-04-28T15:31:37Z",
+            "depositAddress": "81VBKaGXxy6chA9KjsiuLiAqiaNnsTvjRLe2DX1jYq9M",
             "destinationAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
-            "minAmountOut": "242112",
+            "minAmountOut": "94275",
             "originAsset": "nep141:sol.omft.near",
             "recipient": "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E"
         },
         "status": "CREATED",
         "steps": [
             {
-                "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
                 "functionSignature": "approve(address,uint256)",
                 "parameters": [
                     "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-                    "240613"
+                    "94275"
                 ],
+                "to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
                 "value": "0"
             },
             {
-                "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
                 "functionSignature": "supply(address,uint256,address,uint16)",
                 "parameters": [
                     "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                    "240613",
+                    "94275",
                     "0xFe6EF968D2F7B2e9CCCF92150d96c930C3CC4a4E",
                     "0"
                 ],
+                "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
                 "value": "0"
             },
             {
@@ -299,7 +219,7 @@ const result = await quote.json();
                 "functionSignature": "transfer(address,uint256)",
                 "parameters": [
                     "0x546252c9a0E974f75892b4c54b7a67B69a0aFf45",
-                    "6709"
+                    "7150"
                 ],
                 "value": "0",
                 "metadata": {
@@ -308,10 +228,11 @@ const result = await quote.json();
                 }
             }
         ],
-        "type": "evm"
+        "type": "evm",
+        "version": "1.0"
     }
 }
-</code></pre>
+```
 
 </details>
 {% endstep %}
@@ -330,7 +251,7 @@ Use [submit-digest.md](../intents-connect-api-reference/submit-digest.md "mentio
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -341,7 +262,7 @@ const quote = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executi
     "signature": "ed25519:5VUXRtVgS6bq3Wn64YdCt5NSPfA1Ni5zqiLFsSScyq6Dj53pbNEcwKcp7t1aRqw8zWCoN7coMLBUmatmwLAEvndP"
   })
 });
-const result = await quote.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
@@ -386,7 +307,7 @@ Use [fetch-executions.md](../intents-connect-api-reference/fetch-executions.md "
 {% tab title="JavaScript" %}
 ```javascript
 const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=92a10832-d36b-46c6-807d-7f28469c2a94`);
-const tokens = await response.json();
+const execution = await response.json();
 ```
 {% endtab %}
 {% endtabs %}
