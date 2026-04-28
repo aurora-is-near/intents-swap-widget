@@ -9380,11 +9380,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/browser-or-node@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@types/browser-or-node/-/browser-or-node-1.3.2.tgz#1d5569817b5622df0cd22cc3c07f276d3fc0f1ec"
-  integrity sha512-CkvJrvVMI4ZHbiL+Df22Owzq1IYnHnoSrM8s6Dmy4MRdqvdFi9bHsIvyFrSGJPOxvFI9Y3MqY2gFCqIafJBcfw==
-
 "@types/chai@^5.2.2":
   version "5.2.3"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-5.2.3.tgz#8e9cd9e1c3581fa6b341a5aed5588eb285be0b4a"
@@ -12492,11 +12487,6 @@ browser-headers@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/browser-headers/-/browser-headers-0.4.1.tgz#4308a7ad3b240f4203dbb45acedb38dc2d65dd02"
   integrity sha512-CA9hsySZVo9371qEHjHZtYxV2cFtVj5Wj/ZHi8ooEsrtm4vOnl9Y9HmyYWk9q+05d7K3rdoAE0j3MVEFVvtQtg==
-
-browser-or-node@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/browser-or-node/-/browser-or-node-3.0.0.tgz#2b11335570b28887e0bf5cd857f2e8062c6ae293"
-  integrity sha512-iczIdVJzGEYhP5DqQxYM9Hh7Ztpqqi+CXZpSmX8ALFs9ecXkQIeqRyM6TfxEfMVpwhl3dSuDvxdzzo9sUOIVBQ==
 
 browser-resolve@^2.0.0:
   version "2.0.0"
