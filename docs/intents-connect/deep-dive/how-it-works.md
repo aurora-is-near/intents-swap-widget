@@ -52,11 +52,13 @@ The user sees the result in the UI: transaction hashes, status updates, and a cl
 
 A signed, structured message from the user that authorises a specific cross-chain action. An intent defines exactly what will happen: the chains involved, the asset, the amount, the target protocol, the fees, and an expiry. One intent authorises one bounded outcome — never a general right to move funds.
 
-### **Intermediary account**&#x20;
+### **Deposit account**
+
+A deposit account on the source chain is used for operating the cross-chain swap on top of NEAR Intents by temporarily transferring assets to a trusted swapping agent.
+
+### **Intermediary account**
 
 An execution account on the destination chain, derived from the user's identity on the source chain. It holds the destination asset temporarily and executes the target protocol interaction on the user's behalf. Its authorisation is scoped to the specific signed intent — it cannot act outside of it.
-
-This intermediary account might be the same as the signing account for EVM-to-EVM transactions.
 
 ### **Transaction planner**&#x20;
 
@@ -66,9 +68,11 @@ The internal component that converts a high-level intent into the concrete seque
 
 Each intent moves through a defined set of states:&#x20;
 
-**`received → validated → planned → funded → broadcast → confirmed → completed`**&#x20;
+`CREATED → DEPOSIT_PENDING → DEPOSIT_PROCESSING → OPERATION_PENDING → OPERATION_PROCESSING → SUCCESS`
 
 If execution fails at any point, the system follows a defined failure policy — no funds are silently lost, and recovery paths are documented.
+
+Read more about [execution-lifecycle.md](execution-lifecycle.md "mention").
 
 ### **Gas and fees**&#x20;
 

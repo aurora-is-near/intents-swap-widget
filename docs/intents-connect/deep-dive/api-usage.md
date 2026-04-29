@@ -33,4 +33,4 @@ You provide the intent parameters — source chain and wallet, destination chain
 
 #### Get early access
 
-The API is moving toward public availability. To register interest or request early access, contact the team.
+The API is moving toward public availability. To register interest or request early access, contact the team. [Talk to the team](mailto:contact@aurora.dev)

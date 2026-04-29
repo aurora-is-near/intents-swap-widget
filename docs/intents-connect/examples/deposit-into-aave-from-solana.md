@@ -14,6 +14,8 @@ Below is an example flow depositing into Aave using a Solana wallet using the In
 
 You'll need to reference supported assets by their IDs, then run a dry execution to get the estimated output amount, and estimate costs for the destination chain action, signing the intent (deposit to Aave), and the transfer transaction to move SOL from the Solana wallet. As a result, you'll have deposited Aave into an intermediary account associated with your Solana wallet.
 
+Make sure to understand [execution-lifecycle.md](../deep-dive/execution-lifecycle.md "mention") before you proceed with the implementation.
+
 {% stepper %}
 {% step %}
 ### List supported tokens

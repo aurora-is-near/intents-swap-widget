@@ -47,7 +47,9 @@ First, create an account and set up [api-keys-and-fees.md](../swap-widget/api-ke
 ### Decide on the integration path
 
 <table data-card-size="large" data-view="cards"><thead><tr><th></th><th data-hidden data-card-cover data-type="image">Cover image</th></tr></thead><tbody><tr><td><a data-mention href="quickstart/widget-integration.md">widget-integration.md</a></td><td data-object-fit="contain"><a href="../.gitbook/assets/Screenshot 2026-04-16 at 11.37.41.png">Screenshot 2026-04-16 at 11.37.41.png</a></td></tr><tr><td><a data-mention href="quickstart/api-integration.md">api-integration.md</a></td><td><a href="https://images.unsplash.com/photo-1594904351111-a072f80b1a71?crop=entropy&#x26;cs=srgb&#x26;fm=jpg&#x26;ixid=M3wxOTcwMjR8MHwxfHNlYXJjaHwzfHxhcGl8ZW58MHx8fHwxNzc2OTI1NjMwfDA&#x26;ixlib=rb-4.1.0&#x26;q=85">https://images.unsplash.com/photo-1594904351111-a072f80b1a71?crop=entropy&#x26;cs=srgb&#x26;fm=jpg&#x26;ixid=M3wxOTcwMjR8MHwxfHNlYXJjaHwzfHxhcGl8ZW58MHx8fHwxNzc2OTI1NjMwfDA&#x26;ixlib=rb-4.1.0&#x26;q=85</a></td></tr></tbody></table>
+
+
 {% endstep %}
 {% endstepper %}
 
-> **Questions?** [Talk to the team →](mailto:contact@aurora.dev)
+**Questions?** [Talk to the team](mailto:contact@aurora.dev)

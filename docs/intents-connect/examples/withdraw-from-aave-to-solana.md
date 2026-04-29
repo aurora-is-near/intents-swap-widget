@@ -14,6 +14,8 @@ Below is an example flow withdrawing from Aave using a Solana wallet using the I
 
 You'll need to run an execution to get the estimated output amount, estimate costs for the destination chain action, and sign the intent (withdraw from Aave). As a result, you'll withdraw from Aave into your Solana wallet.
 
+Make sure to understand [execution-lifecycle.md](../deep-dive/execution-lifecycle.md "mention") before you proceed with the implementation.
+
 {% stepper %}
 {% step %}
 ### List supported tokens
@@ -61,8 +63,6 @@ The response includes tokens with their `assetId` in this format:
 ```
 
 </details>
-
-
 {% endstep %}
 
 {% step %}

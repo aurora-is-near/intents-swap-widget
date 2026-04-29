@@ -35,6 +35,8 @@ The intermediary account on the destination chain is fully controlled by the ori
 
 ### Failure handling
 
-If execution cannot be completed due to gas spikes, protocol pauses, or other unexpected conditions, the system follows a defined recovery policy.&#x20;
+If execution cannot be completed due to gas spikes, protocol pauses, or other unexpected conditions, the system doesn't control the intermediary account, so explicit user authorisation is required.
 
 Unspent or stranded funds are not silently abandoned. The failure reason is surfaced to the UI, and recovery paths are available for every failure state.
+
+Read more about failure handling under [execution-lifecycle.md](execution-lifecycle.md "mention").
