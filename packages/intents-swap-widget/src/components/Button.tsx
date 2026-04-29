@@ -3,7 +3,7 @@ import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/
 import type {
   IconProps,
   MaterialSymbolsComponent,
-} from '@material-symbols-svg/react';
+} from '@material-symbols-svg/react-rounded';
 
 import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import { cn as clsx } from '@/utils/cn';
