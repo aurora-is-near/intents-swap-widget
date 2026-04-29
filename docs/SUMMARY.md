@@ -19,6 +19,7 @@
   * [Deposit into Aave from Solana](intents-connect/examples/deposit-into-aave-from-solana.md)
   * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)
 * [Intents Connect API Reference](intents-connect/intents-connect-api-reference/README.md)
+  * [List supported tokens](intents-connect/intents-connect-api-reference/list-supported-tokens.md)
   * [Fetch executions](intents-connect/intents-connect-api-reference/fetch-executions.md)
   * [Request an execution](intents-connect/intents-connect-api-reference/request-an-execution.md)
   * [Request steps execution](intents-connect/intents-connect-api-reference/request-steps-execution.md)

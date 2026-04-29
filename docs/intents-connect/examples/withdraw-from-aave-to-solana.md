@@ -14,20 +14,16 @@ Below is an example flow withdrawing from Aave using a Solana wallet using the I
 
 You'll need to run an execution to get the estimated output amount, estimate costs for the destination chain action, and sign the intent (withdraw from Aave). As a result, you'll withdraw from Aave into your Solana wallet.
 
-{% hint style="info" %}
-You need to [create an API key](../../swap-widget/api-keys-and-fees.md) to interact with the API.
-{% endhint %}
-
 {% stepper %}
 {% step %}
-### Get supported tokens
+### List supported tokens
 
-Use [get-supported-tokens.md](../../intents-deposits/api-reference/get-supported-tokens.md "mention") to find the `assetId` values you will need. You'll need to use Intents API for that.
+Use [list-supported-tokens.md](../intents-connect-api-reference/list-supported-tokens.md "mention") to find the `assetId` values you will need. You'll need to use the Intents API for that.
 
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-api.aurora.dev/api/tokens/${appKey}`);
+const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/supported_tokens`);
 const tokens = await response.json();
 ```
 {% endtab %}
@@ -77,7 +73,7 @@ Use [request-an-execution.md](../intents-connect-api-reference/request-an-execut
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
+const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -246,7 +242,7 @@ Use [submit-digest.md](../intents-connect-api-reference/submit-digest.md "mentio
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
+const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -295,7 +291,7 @@ Use [fetch-executions.md](../intents-connect-api-reference/fetch-executions.md "
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=74e0cbfe-def3-47fb-8f1c-469778c6acbc`);
+const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=74e0cbfe-def3-47fb-8f1c-469778c6acbc`);
 const execution = await response.json();
 ```
 {% endtab %}
