@@ -82,6 +82,14 @@ export const CHAIN_ICONS: Record<
   cardano: <CardanoIcon />,
   stellar: <StellarIcon />,
   monad: <MonIcon />,
+  adi: <UnknownIcon />,
+  aleo: <UnknownIcon />,
+  bch: <UnknownIcon />,
+  dash: <UnknownIcon />,
+  plasma: <UnknownIcon />,
+  scroll: <UnknownIcon />,
+  starknet: <UnknownIcon />,
+  xlayer: <UnknownIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {

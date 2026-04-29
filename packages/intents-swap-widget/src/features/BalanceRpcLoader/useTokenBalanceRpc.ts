@@ -4,6 +4,10 @@ import { useMemo } from 'react';
 import { logger } from '../../logger';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
+import { getBchTokenBalance } from '../../utils/bch/getBchTokenBalance';
+import { getDashTokenBalance } from '../../utils/dash/getDashTokenBalance';
+import { getAleoTokenBalance } from '../../utils/aleo/getAleoTokenBalance';
+import { getStarknetTokenBalance } from '../../utils/starknet/getStarknetTokenBalance';
 import { WalletAddresses } from '../../types';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
@@ -99,6 +103,30 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
         supportedChains.includes(token.blockchain)
       ) {
         return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
+      }
+
+      // 8. Bitcoin Cash token balance
+      if (token.blockchain === 'bch') {
+        return getBchTokenBalance(token, walletAddress);
+      }
+
+      // 9. Dash token balance
+      if (token.blockchain === 'dash') {
+        return getDashTokenBalance(token, walletAddress);
+      }
+
+      // 10. Aleo token balance (public credits balance only)
+      if (token.blockchain === 'aleo') {
+        return getAleoTokenBalance(token, walletAddress);
+      }
+
+      // 11. Starknet token balance (requires rpcs.starknet entry)
+      if (token.blockchain === 'starknet') {
+        return getStarknetTokenBalance(
+          token,
+          walletAddress,
+          rpcs.starknet ?? [],
+        );
       }
 
       logger.warn(
