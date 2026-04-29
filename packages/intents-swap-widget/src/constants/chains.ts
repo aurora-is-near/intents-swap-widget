@@ -34,38 +34,6 @@ export const CHAIN_IDS_MAP: Partial<Record<Chains, number>> = {
   near: 397,
 };
 
-export const EVM_CHAIN_IDS_MAP_REVERSED: Record<string, EvmChains> =
-  Object.fromEntries(
-    Object.entries(EVM_CHAIN_IDS_MAP).map(([chain, id]) => [`${id}`, chain]),
-  ) as Record<string, EvmChains>;
-
-export const POA_EVM_CHAIN_ID = 'eth:1';
-
-// for other EVM chains use eth:1
-export const CHAIN_POA_MAP: Partial<Record<Chains, string>> = {
-  base: 'eth:8453',
-  arb: 'eth:42161',
-  btc: 'btc:mainnet',
-  sol: 'sol:mainnet',
-  doge: 'doge:mainnet',
-  xrp: 'xrp:mainnet',
-  zec: 'zec:mainnet',
-  gnosis: 'eth:100',
-  bera: 'eth:80094',
-  tron: 'tron:mainnet',
-  bsc: 'eth:56',
-  pol: 'eth:137',
-  op: 'eth:10',
-  avax: 'eth:43114',
-  sui: 'sui:mainnet',
-  ton: 'ton:mainnet',
-  cardano: 'cardano:mainnet',
-  ltc: 'ltc:mainnet',
-  monad: 'eth:143',
-  near: 'near:mainnet',
-  stellar: 'stellar:mainnet',
-};
-
 export const NOT_EVM_CHAINS = [
   'sui',
   'xrp',
