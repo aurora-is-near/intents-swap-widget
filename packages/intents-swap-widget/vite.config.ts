@@ -48,16 +48,17 @@ export default defineConfig({
     }),
     tailwindcss(),
     react(),
-    dts({
-      include: ['src'],
-      exclude: testFiles,
-      entryRoot: 'src',
-      outDir: 'dist',
-      tsconfigPath: 'tsconfig.build.json',
-      copyDtsFiles: false,
-      rollupTypes: false,
-      insertTypesEntry: true,
-    }),
+    !isWatch &&
+      dts({
+        include: ['src'],
+        exclude: testFiles,
+        entryRoot: 'src',
+        outDir: 'dist',
+        tsconfigPath: 'tsconfig.build.json',
+        copyDtsFiles: false,
+        rollupTypes: false,
+        insertTypesEntry: true,
+      }),
     nodePolyfills({
       include: ['crypto', 'buffer', 'process', 'util'],
       globals: {
