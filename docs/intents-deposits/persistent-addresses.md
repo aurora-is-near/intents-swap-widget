@@ -20,7 +20,7 @@ The UDA is unique per chain and supports multiple asset deposits.
 
 When your app calls the Persistent Addresses API, it receives a reusable deposit address tied to a specific source chain and destination. The user sends a regular token transfer to that address — no bridging UI, no extra steps. The system detects the deposit, routes it through NEAR Intents, executes any required swap, and funds the destination.
 
-<figure><img src="../.gitbook/assets/uda.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/uda.png" alt=""><figcaption><p>Example Persistent Addresses flow with recipient address on BASE chain</p></figcaption></figure>
 
 {% stepper %}
 {% step %}
