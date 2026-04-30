@@ -49,6 +49,13 @@ import XdaiIcon from './xdai.svg';
 import XrpIcon from './xrp.svg';
 import ZecIcon from './zec.svg';
 import StellarIcon from './stellar.svg';
+import AleoIcon from './aleo.svg';
+import BchIcon from './bch.svg';
+import DashIcon from './dash.svg';
+import PlasmaIcon from './plasma.svg';
+import ScrollIcon from './scroll.svg';
+import StarknetIcon from './starknet.svg';
+import XlayerIcon from './xlayer.svg';
 import NearIntentsIcon from './intents.svg';
 
 import type { Chains } from '@/types/chain';
@@ -82,6 +89,14 @@ export const CHAIN_ICONS: Record<
   cardano: <CardanoIcon />,
   stellar: <StellarIcon />,
   monad: <MonIcon />,
+  adi: <AdiIcon />,
+  aleo: <AleoIcon />,
+  bch: <BchIcon />,
+  dash: <DashIcon />,
+  plasma: <PlasmaIcon />,
+  scroll: <ScrollIcon />,
+  starknet: <StarknetIcon />,
+  xlayer: <XlayerIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
@@ -134,4 +149,9 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   xrp: <XrpIcon />,
   zec: <ZecIcon />,
   xlm: <StellarIcon />,
+  aleo: <AleoIcon />,
+  bch: <BchIcon />,
+  dash: <DashIcon />,
+  strk: <StarknetIcon />,
+  xpl: <PlasmaIcon />,
 };

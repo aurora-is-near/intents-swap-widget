@@ -12,7 +12,10 @@ import {
   gnosis,
   mainnet,
   optimism,
+  plasma,
   polygon,
+  scroll,
+  xLayer,
 } from 'viem/chains';
 import { getTransactionLink, isEvmChain } from '../utils';
 import { MakeTransferArgs } from '../types';
@@ -32,6 +35,10 @@ const VIEM_CHAIN_MAP: Record<(typeof EVM_CHAINS)[number], Chain | null> = {
   bera: null,
   avax: null,
   monad: null,
+  adi: null,
+  plasma,
+  scroll,
+  xlayer: xLayer,
 };
 
 export const useMakeEvmTransfer = ({

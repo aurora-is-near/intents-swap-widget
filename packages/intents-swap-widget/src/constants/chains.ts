@@ -14,6 +14,10 @@ export const EVM_CHAINS = [
   'op',
   'pol',
   'monad',
+  'adi',
+  'plasma',
+  'scroll',
+  'xlayer',
 ] as const;
 
 export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
@@ -27,6 +31,10 @@ export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
   op: 10,
   pol: 137,
   monad: 143,
+  adi: 36900,
+  plasma: 9745,
+  scroll: 534352,
+  xlayer: 196,
 };
 
 export const CHAIN_IDS_MAP: Partial<Record<Chains, number>> = {
@@ -47,6 +55,10 @@ export const NOT_EVM_CHAINS = [
   'ltc',
   'cardano',
   'stellar',
+  'aleo',
+  'bch',
+  'dash',
+  'starknet',
 ] as const;
 
 export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
@@ -69,6 +81,10 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   op: 'ETH',
   pol: 'MATIC',
   monad: 'MON',
+  adi: 'ADI',
+  plasma: 'XPL',
+  scroll: 'ETH',
+  xlayer: 'OKB',
 };
 
 export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
@@ -76,6 +92,10 @@ export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
   sol: 'SOL',
   near: 'NEAR',
   stellar: 'XLM',
+  aleo: 'ALEO',
+  bch: 'BCH',
+  dash: 'DASH',
+  starknet: 'STRK',
 };
 
 export const CHAINS_LIST: Record<Chains, Chain> = {
@@ -167,6 +187,38 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'monad',
     label: 'Monad',
   },
+  adi: {
+    id: 'adi',
+    label: 'ADI',
+  },
+  aleo: {
+    id: 'aleo',
+    label: 'Aleo',
+  },
+  bch: {
+    id: 'bch',
+    label: 'Bitcoin Cash',
+  },
+  dash: {
+    id: 'dash',
+    label: 'Dash',
+  },
+  plasma: {
+    id: 'plasma',
+    label: 'Plasma',
+  },
+  scroll: {
+    id: 'scroll',
+    label: 'Scroll',
+  },
+  starknet: {
+    id: 'starknet',
+    label: 'Starknet',
+  },
+  xlayer: {
+    id: 'xlayer',
+    label: 'X Layer',
+  },
 };
 
 export const CHAIN_EXPLORERS: Record<number, string> = {
@@ -207,6 +259,9 @@ export const CHAIN_EXPLORERS: Record<number, string> = {
   167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
   397: 'https://nearblocks.io/txns/', // Near
   143: 'https://monad.socialscan.io/tx/', // Monad
+  36900: 'https://explorer-bls.adifoundation.ai/tx/', // ADI
+  9745: 'https://plasmascan.to/tx/', // Plasma
+  196: 'https://www.oklink.com/xlayer/tx/', // X Layer
 };
 
 // some chains e.g. Solana have no chain ID
@@ -214,6 +269,10 @@ export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
   sol: 'https://solscan.io/tx/',
   near: 'https://nearblocks.io/txns/',
   stellar: 'https://stellar.expert/explorer/public/tx/',
+  aleo: 'https://aleoscan.io/transaction/',
+  bch: 'https://blockchair.com/bitcoin-cash/transaction/',
+  dash: 'https://blockchair.com/dash/transaction/',
+  starknet: 'https://starkscan.co/tx/',
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
@@ -237,4 +296,12 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'gnosis',
   'doge',
   'stellar',
+  'scroll',
+  'xlayer',
+  'plasma',
+  'starknet',
+  'aleo',
+  'bch',
+  'dash',
+  'adi',
 ];
