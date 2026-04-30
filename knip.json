@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "ignoreDependencies": [
+        "@commitlint/config-conventional",
+        "@semantic-release/*",
+        "tailwindcss"
+      ]
+    }
+  }
+}

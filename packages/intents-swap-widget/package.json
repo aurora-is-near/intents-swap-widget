@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget",
-  "version": "6.23.5",
+  "version": "6.23.6",
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "MIT",
@@ -60,6 +60,10 @@
     "@headlessui/react": "^2.2.4",
     "@material-symbols-svg/react-rounded": "^0.1.19",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@scure/base": "^2.2.0",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "@stellar/stellar-sdk": "^14.6.1",
     "@tanstack/react-query": "^5.85.5",
     "@ton/core": "^0.62.0",
     "axios": "^1.10.0",

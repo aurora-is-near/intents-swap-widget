@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget-standalone",
-  "version": "6.23.5",
+  "version": "6.23.6",
   "description": "Standalone wrapper for the Intents swap widget",
   "license": "MIT",
   "main": "dist/index.js",
@@ -37,6 +37,6 @@
     "@reown/appkit-adapter-solana": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
     "@solana/wallet-adapter-wallets": "^0.19.32",
-    "clsx": "^2.1.1"
+    "ethers": "^6.15.0"
   }
 }

@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { Input as UIInput } from '@headlessui/react';
 import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
-import type { MaterialSymbolsComponent } from '@material-symbols-svg/react';
+import type { MaterialSymbolsComponent } from '@material-symbols-svg/react-rounded';
 import type { InputProps } from '@headlessui/react';
 import type { PropsWithChildren } from 'react';
 
