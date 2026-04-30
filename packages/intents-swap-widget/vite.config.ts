@@ -18,7 +18,7 @@ const __dirname = dirname(__filename);
 
 const testFiles = ['**/*.test.tsx', '**/*.test.ts', 'src/tests/**'];
 
-// const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
 
 const externals = [
   ...Object.keys(pkg.dependencies ?? {}),
@@ -109,8 +109,7 @@ export default defineConfig({
       external: (id) => isExt(id) || id.includes('test.ts'),
       output: {
         entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        // isWatch ? '[name].js' : '[name]-[hash].js',
+        chunkFileNames: isWatch ? '[name].js' : '[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {
             return 'styles.css';
