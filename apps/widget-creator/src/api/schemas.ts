@@ -94,6 +94,14 @@ const chainsSchema = z.enum([
   'ltc',
   'cardano',
   'stellar',
+  'adi',
+  'aleo',
+  'bch',
+  'dash',
+  'plasma',
+  'scroll',
+  'starknet',
+  'xlayer',
 ]);
 
 const walletAddressKeySchema = z.enum([
