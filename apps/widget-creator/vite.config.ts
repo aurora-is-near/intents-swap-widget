@@ -7,6 +7,15 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [
+    {
+      name: 'full-reload-on-package-dist',
+      handleHotUpdate({ file, server }) {
+        if (file.includes('packages/intents-swap-widget/dist/index.js')) {
+          server.ws.send({ type: 'full-reload' });
+          return [];
+        }
+      },
+    },
     react(),
     svgr({}),
     nodePolyfills({
@@ -36,6 +45,23 @@ export default defineConfig({
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': '*',
+    },
+    watch: {
+      ignored: [
+        // ignore everything in the package dist EXCEPT the main entry file
+        (path: string) => {
+          if (
+            path.includes('node_modules/@aurora-is-near/intents-swap-widget')
+          ) {
+            return !path.endsWith('dist/index.js');
+          }
+          return false;
+        },
+      ],
+      awaitWriteFinish: {
+        stabilityThreshold: 500,
+        pollInterval: 100,
+      },
     },
   },
   build: {
