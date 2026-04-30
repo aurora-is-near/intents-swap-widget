@@ -10,4 +10,8 @@ export const DEFAULT_RPCS: ChainRpcUrls = {
   cardano: ['https://rpc-mainnet-cardano-evm.c1.milkomeda.com'],
   doge: ['https://go.getblock.io/5f7f5fba970e4f7a907fcd2c5f4c38a2'],
   near: ['https://free.rpc.fastnear.com', 'https://rpc.mainnet.near.org'],
+  adi: ['https://rpc.adifoundation.ai'],
+  plasma: ['https://rpc.plasma.to'],
+  scroll: ['https://rpc.scroll.io'],
+  xlayer: ['https://rpc.xlayer.tech'],
 };
