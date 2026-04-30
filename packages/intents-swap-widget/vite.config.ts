@@ -133,6 +133,6 @@ export default defineConfig({
     },
     sourcemap: true,
     target: 'esnext',
-    emptyOutDir: false,
+    emptyOutDir: !isWatch,
   },
 });
