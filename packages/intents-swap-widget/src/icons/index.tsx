@@ -28,6 +28,7 @@ import MpdaoIcon from './mpdao.svg';
 import NearIcon from './near.svg';
 import NoearIcon from './noear.svg';
 import NproIcon from './npro.svg';
+import OkbIcon from './okb.svg';
 import OpIcon from './op.svg';
 import PolIcon from './pol.svg';
 import PublicIcon from './public.svg';
@@ -39,6 +40,7 @@ import TonIcon from './ton.svg';
 import TronIcon from './tron.svg';
 import UnknownIcon from './unknown.svg';
 import Usd1Icon from './usd1.svg';
+import UsadIcon from './usad.svg';
 import UsdcIcon from './usdc.svg';
 import UsdfIcon from './usdf.svg';
 import UsdtIcon from './usdt.svg';
@@ -128,6 +130,7 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   near: <NearIcon />,
   noear: <NoearIcon />,
   npro: <NproIcon />,
+  okb: <OkbIcon />,
   op: <OpIcon />,
   pol: <PolIcon />,
   public: <PublicIcon />,
@@ -137,8 +140,10 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   sui: <SuiIcon />,
   ton: <TonIcon />,
   tron: <TronIcon />,
+  usad: <UsadIcon />,
   usd1: <Usd1Icon />,
   usdc: <UsdcIcon />,
+  usdcx: <UsdcIcon />,
   usdf: <UsdfIcon />,
   usdt: <UsdtIcon />,
   unknown: <UnknownIcon />,
