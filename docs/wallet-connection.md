@@ -120,7 +120,7 @@ export default function App() {
 ### Solana example
 
 ```tsx
-import { solana } from '@aurora-is-near/intents-swap-widget-solana';
+import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 
 const { publicKey, signMessage, signTransaction } = useYourSolanaWallet();
 
@@ -143,7 +143,6 @@ adapter. Here's a complete example:
 
 ```tsx
 import { type Providers } from '@aurora-is-near/intents-swap-widget';
-import { solana } from '@aurora-is-near/intents-swap-widget-solana';
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 function solanaProviderFromPrivy(

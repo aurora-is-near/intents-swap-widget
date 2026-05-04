@@ -4,7 +4,7 @@ import {
   Providers,
 } from '@aurora-is-near/intents-swap-widget';
 import { evm } from '@aurora-is-near/intents-swap-widget-evm';
-import { solana } from '@aurora-is-near/intents-swap-widget-solana';
+import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
 import type { NearWalletBase } from '@hot-labs/near-connect';
 
@@ -13,7 +13,7 @@ import { useStellarWallet } from './useStellarWallet';
 import { useAppKitProviders } from './useAppKitProviders';
 import { useNearWallet } from './useNearWallet';
 
-const NETWORKS: NetworkPlugins = { evm, sol: solana, stellar };
+const NETWORKS: NetworkPlugins = { evm, sol, stellar };
 
 const isNearWallet = (
   nearWallet?: NearWalletBase,
