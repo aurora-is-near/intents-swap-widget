@@ -4,10 +4,10 @@ import type { NearWalletBase } from './near';
 
 export type EvmProvider = Eip1193Provider | (() => Promise<Eip1193Provider>);
 
-export type SolanaProvider = {
+export type SolanaProvider<TTransaction = any> = {
   publicKey?: { toString(): string } | null;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-  signTransaction: <T>(transaction: T) => Promise<T>;
+  signTransaction: (transaction: TTransaction) => Promise<TTransaction>;
 };
 
 export type StellarProvider = {
