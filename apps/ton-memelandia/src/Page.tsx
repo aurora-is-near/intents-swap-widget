@@ -35,7 +35,7 @@ import {
   makeTransfer as makeEvmTransfer,
 } from '@aurora-is-near/intents-swap-widget-evm';
 import {
-  solana,
+  sol,
   makeTransfer as makeSolanaTransfer,
 } from '@aurora-is-near/intents-swap-widget-solana';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
