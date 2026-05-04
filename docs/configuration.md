@@ -60,7 +60,7 @@ messages.
 
 ### `networks`
 
-An array of network plugins, one per chain you want to support for native
+A set of network plugins, one per chain you want to support for native
 transfers.
 
 #### Example
