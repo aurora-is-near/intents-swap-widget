@@ -67,11 +67,11 @@ transfers.
 
 ```tsx
 import { evm } from '@aurora-is-near/intents-swap-widget-evm';
-import { solana } from '@aurora-is-near/intents-swap-widget-solana';
+import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
 
 const config = {
-  networks: { evm, solana, stellar },
+  networks: { evm, sol, stellar },
 };
 ```
 
