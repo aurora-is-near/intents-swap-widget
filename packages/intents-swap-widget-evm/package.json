@@ -25,7 +25,7 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@aurora-is-near/intents-swap-widget": "*"
+    "@aurora-is-near/intents-swap-widget": "^6.0.0"
   },
   "dependencies": {
     "ethers": "^6.15.0",
