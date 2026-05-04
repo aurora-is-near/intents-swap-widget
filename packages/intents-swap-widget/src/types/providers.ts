@@ -1,21 +1,13 @@
 import { Eip1193Provider } from 'ethers';
-import type { Networks } from '@stellar/stellar-sdk';
-import type {
-  PublicKey,
-  Transaction as SolanaWeb3Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js';
 
 import type { NearWalletBase } from './near';
 
 export type EvmProvider = Eip1193Provider | (() => Promise<Eip1193Provider>);
 
 export type SolanaProvider = {
-  publicKey?: PublicKey;
+  publicKey?: { toString(): string } | null;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-  signTransaction: <T extends SolanaWeb3Transaction | VersionedTransaction>(
-    transaction: T,
-  ) => Promise<T>;
+  signTransaction: <T>(transaction: T) => Promise<T>;
 };
 
 export type StellarProvider = {
@@ -25,7 +17,7 @@ export type StellarProvider = {
   ) => Promise<{ signedMessage: string; signerAddress: string | undefined }>;
   signTransaction: (
     tx: string,
-    options?: { networkPassphrase: Networks; address: string },
+    options?: { networkPassphrase: string; address: string },
   ) => Promise<
     { signedTxXdr: string; signerAddress: string | undefined } | string
   >;

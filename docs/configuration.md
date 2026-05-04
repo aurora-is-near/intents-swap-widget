@@ -58,6 +58,28 @@ accounts can send or receive tokens on each network.
 The provider(s) for interacting with the `connectedWallets`. Used for signing
 messages.
 
+### `networks`
+
+An array of network plugins, one per chain you want to support for native
+transfers.
+
+#### Example
+
+```tsx
+import { evm } from '@aurora-is-near/intents-swap-widget-evm';
+import { solana } from '@aurora-is-near/intents-swap-widget-solana';
+import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
+
+const config = {
+  networks: { evm, solana, stellar },
+};
+```
+
+Install only the sibling packages for chains you actually use. Note that NEAR
+support is built in and does not require a plugin.
+
+See [Wallet Connection](./wallet-connection.md) for full examples.
+
 ### `onWalletSignin`
 
 Used to trigger wallet connection for main action button. If this function is
