@@ -78,7 +78,7 @@ network plugins to the widget.
   `{ default: '0x...', ton: 'UQ...' }`). The widget looks up the address for
   the selected token's chain, falling back to the `default` key.
 - **`providers`** — The signing providers the widget uses to execute
-  transactions. Accepts `evm`, `sol`, and `near` keys.
+  transactions. Accepts `evm`, `sol`, `stellar` and `near` keys.
 - **`networks`** — A network plugin per chain you want to
   support for transfers.
 - **`onWalletSignin`** — Called when the user taps the action button while
