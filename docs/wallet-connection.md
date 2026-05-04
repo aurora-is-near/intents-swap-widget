@@ -79,7 +79,7 @@ network plugins to the widget.
   the selected token's chain, falling back to the `default` key.
 - **`providers`** — The signing providers the widget uses to execute
   transactions. Accepts `evm`, `sol`, and `near` keys.
-- **`networks`** — An array of network plugins, one per chain you want to
+- **`networks`** — A network plugin per chain you want to
   support for transfers.
 - **`onWalletSignin`** — Called when the user taps the action button while
   disconnected. Use this to trigger your own connect flow.
