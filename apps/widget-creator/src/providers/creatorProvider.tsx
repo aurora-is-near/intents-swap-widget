@@ -21,7 +21,7 @@ type CreatorState = {
   // Configure - Wallet connection
   userAuthMode: 'standalone' | 'dapp';
   // Configure - Widget mode
-  widgetMode: 'swap' | 'deposit';
+  widgetMode: 'swap' | 'deposit' | 'connect';
   depositModeReceiverAddress: string;
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
@@ -130,7 +130,7 @@ type Action =
   // Configure - Wallet connection
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
   // Configure - Widget mode
-  | { type: 'SET_WIDGET_MODE'; payload: 'swap' | 'deposit' }
+  | { type: 'SET_WIDGET_MODE'; payload: 'swap' | 'deposit' | 'connect' }
   | { type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS'; payload: string }
   // Configure - Account abstraction
   | { type: 'SET_ACCOUNT_ABSTRACTION_MODE'; payload: 'enabled' | 'disabled' }

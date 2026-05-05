@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Banner,
   Button,
+  IntentsConnect,
   SuccessScreen,
   Widget,
   WidgetContainer,
@@ -25,8 +26,10 @@ export function WidgetContent() {
       transactionLink: string;
     } | null>(null);
 
-  const { widgetConfig } = useWidgetConfig();
   const { themeConfig } = useThemeConfig();
+  const { widgetConfig } = useWidgetConfig({
+    hideTokenInputHeadings: state.widgetMode === 'connect',
+  });
 
   const exampleBanner = useMemo(():
     | {
@@ -78,7 +81,10 @@ export function WidgetContent() {
       : DappWalletBridge;
 
   useEffect(() => {
-    if (state.widgetMode === 'deposit' && !state.depositModeReceiverAddress) {
+    if (
+      (state.widgetMode === 'deposit' || state.widgetMode === 'connect') &&
+      !state.depositModeReceiverAddress
+    ) {
       dispatch({
         type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
         payload: '0x0000000000000000000000000000000000000000',
@@ -90,7 +96,10 @@ export function WidgetContent() {
   }, [state.widgetMode]);
 
   useEffect(() => {
-    if (state.widgetMode === 'deposit' && !state.defaultBuyToken) {
+    if (
+      (state.widgetMode === 'deposit' || state.widgetMode === 'connect') &&
+      !state.defaultBuyToken
+    ) {
       dispatch({
         type: 'SET_DEFAULT_BUY_TOKEN',
         payload: {
@@ -108,14 +117,18 @@ export function WidgetContent() {
         alchemyApiKey: ALCHEMY_API_KEY,
       }}
       theme={themeConfig}>
-      <Widget
-        defaultTab={state.widgetMode === 'deposit' ? 'topup' : 'swap'}
-        tabs={
-          state.widgetMode === 'deposit'
-            ? ['topup']
-            : ['swap', 'deposit', 'withdraw']
-        }
-      />
+      {state.widgetMode === 'connect' ? (
+        <IntentsConnect onMsg={noop} />
+      ) : (
+        <Widget
+          defaultTab={state.widgetMode === 'deposit' ? 'topup' : 'swap'}
+          tabs={
+            state.widgetMode === 'deposit'
+              ? ['topup']
+              : ['swap', 'deposit', 'withdraw']
+          }
+        />
+      )}
       {exampleBanner && (
         <div className="flex justify-center">
           <Banner

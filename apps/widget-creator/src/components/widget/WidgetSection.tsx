@@ -12,10 +12,14 @@ export const WidgetSection = ({
 }: PropsWithChildren<{ isEmbedded?: boolean }>) => {
   const { state } = useCreator();
   const [backgroundColor, setBackgroundColor] = useState<string>(
-    DEFAULT_BACKGROUND_COLOR,
+    state.widgetMode === 'connect' ? 'transparent' : DEFAULT_BACKGROUND_COLOR,
   );
 
   useEffect(() => {
+    if (state.widgetMode === 'connect') {
+      return;
+    }
+
     if (state.stylePreset === 'bold') {
       setBackgroundColor(
         state.showContainerWrapper

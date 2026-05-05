@@ -15,7 +15,7 @@ import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
 
 const configOverrides = getConfigOverridesFromUrl();
 
-export const useWidgetConfig = () => {
+export const useWidgetConfig = (config?: Partial<WidgetConfig>) => {
   const { state } = useCreator();
   const allTokens = useTokensGroupedBySymbol();
   const widgetConfig = useMemo((): SerializableWidgetConfig &
@@ -50,11 +50,14 @@ export const useWidgetConfig = () => {
         ? state.defaultSellToken
         : undefined,
       sendAddress:
-        state.widgetMode === 'deposit' && state.depositModeReceiverAddress
+        (state.widgetMode === 'deposit' || state.widgetMode === 'connect') &&
+        state.depositModeReceiverAddress
           ? state.depositModeReceiverAddress
           : undefined,
       defaultTargetToken:
-        state.enableBuyToken || state.widgetMode === 'deposit'
+        state.enableBuyToken ||
+        state.widgetMode === 'deposit' ||
+        state.widgetMode === 'connect'
           ? state.defaultBuyToken
           : undefined,
       showTransactionHistory: true,
@@ -63,6 +66,7 @@ export const useWidgetConfig = () => {
         ...state.extraQuoteParameters,
         ...configOverrides?.extraQuoteParameters,
       },
+      ...config,
     };
   }, [allTokens, state]);
 

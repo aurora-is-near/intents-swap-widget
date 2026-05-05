@@ -3,3 +3,4 @@ export { WidgetSwap } from './WidgetSwap';
 export { WidgetDeposit } from './WidgetDeposit';
 export { WidgetDepositMode } from './WidgetDepositMode';
 export { WidgetWithdraw } from './WidgetWithdraw';
+export { IntentsConnect } from './IntentsConnect';
