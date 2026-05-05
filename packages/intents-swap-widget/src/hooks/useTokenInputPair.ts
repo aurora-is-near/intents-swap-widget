@@ -64,7 +64,16 @@ export const useTokenInputPair = () => {
           token,
         });
 
-        if (!token || !ctx.targetToken) {
+        if (ctx.isDepositFromExternalWallet) {
+          // In external deposit mode sourceTokenAmount drives the FLEX_INPUT
+          // min-deposit path in useMakeQuote, so clear it on token change to
+          // let getMinDepositTokenAmount recompute the correct floor for the
+          // newly selected token.
+          fireEvent('tokenSetAmount', {
+            variant: 'source',
+            amount: '',
+          });
+        } else if (!token || !ctx.targetToken) {
           fireEvent('tokenSetAmount', {
             variant: 'source',
             amount: '',
