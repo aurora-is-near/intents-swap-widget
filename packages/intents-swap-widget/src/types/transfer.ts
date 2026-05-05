@@ -3,6 +3,7 @@ import { Chains } from './chain';
 export type TransferResult = {
   hash: string;
   transactionLink: string;
+  amountUsd?: string;
   amount?: string;
   intent?: string;
 };

@@ -82,7 +82,7 @@ export const DepositSummary = () => {
       return t('deposit.summary.title', 'Transaction details');
     }
 
-    return !ctx.quote ? (
+    return ctx.isDepositFromExternalWallet ? (
       <span style={{ borderBottomWidth: '2px', borderStyle: 'dotted' }}>
         {`1 ${ctx.sourceToken.symbol} ≈ `}
         {formatTinyNumber(price ?? 0)} {`${ctx.targetToken.symbol}`}
