@@ -14,6 +14,7 @@ export type StandaloneWidgetConfigProviderProps = Omit<
     WidgetConfigProviderProps['config'],
     | 'connectedWallets'
     | 'providers'
+    | 'networks'
     | 'onWalletSignin'
     | 'onWalletSignout'
     | 'showProfileButton'
@@ -34,6 +35,7 @@ function StandaloneWalletBridge({
           ...config,
           connectedWallets: wallet.connectedWallets,
           providers: wallet.providers,
+          networks: wallet.networks,
           onWalletSignin: wallet.connect,
           onWalletSignout: wallet.disconnect,
           showProfileButton: true,

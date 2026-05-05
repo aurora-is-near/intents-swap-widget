@@ -12,6 +12,7 @@ import { snakeCase } from 'change-case';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import { Providers } from '../types/providers';
+import { NetworkPlugins } from '../types/connectors';
 
 import { useIntentsAccountType } from './useIntentsAccountType';
 
@@ -37,6 +38,7 @@ import type { Context } from '@/machine/context';
 
 type IntentsTransferArgs = {
   providers?: Providers;
+  networks?: NetworkPlugins;
 };
 
 type MakeArgs = {
@@ -139,7 +141,10 @@ const validateNearPublicKey = async (
   }
 };
 
-export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
+export const useMakeIntentsTransfer = ({
+  providers,
+  networks,
+}: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { referral } = useConfig();
@@ -245,10 +250,20 @@ export const useMakeIntentsTransfer = ({ providers }: IntentsTransferArgs) => {
           });
         }
 
+        const stellarPlugin = networks?.stellar;
+
+        if (!stellarPlugin) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No Stellar network plugin configured' },
+          });
+        }
+
         logger.debug('[WIDGET] Use Stellar signer for transfer.');
         signer = new IntentSignerStellar(
           { walletAddress: ctx.walletAddress },
           providers.stellar,
+          stellarPlugin,
         );
 
         break;

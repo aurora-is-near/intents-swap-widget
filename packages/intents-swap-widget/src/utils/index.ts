@@ -8,6 +8,7 @@ export { isEvmToken } from './evm/isEvmToken';
 export { isEvmBaseToken } from './evm/isEvmBaseToken';
 export { getEvmTokenBalance } from './evm/getEvmTokenBalance';
 export { getEvmMainTokenBalance } from './evm/getEvmMainTokenBalance';
+export { switchEthereumChain } from './evm/switchEthereumChain';
 
 export { formatBigToHuman } from './formatters/formatBigToHuman';
 export { formatHumanToBig } from './formatters/formatHumanToBig';

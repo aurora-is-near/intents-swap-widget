@@ -282,7 +282,7 @@ const ConnectWalletButton = () => {
 };
 
 const SubmitButtonBase = (props: Props) => {
-  const { providers } = useConfig();
+  const { providers, networks } = useConfig();
 
   const { makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
@@ -293,7 +293,12 @@ const SubmitButtonBase = (props: Props) => {
     isDirectNearTokenWithdrawal,
   } = useComputedSnapshot();
 
-  const { make } = useMakeTransfer({ providers, makeTransfer });
+  const { make } = useMakeTransfer({
+    providers,
+    networks,
+    makeTransfer,
+  });
+
   const { isSwitchingChainRequired, switchChain, isSwitchingChain } =
     useSwitchChain({ providers });
 

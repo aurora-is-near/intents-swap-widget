@@ -36,6 +36,11 @@ export const useSwitchChain = ({ providers }: { providers?: Providers }) => {
       return false;
     }
 
+    // No need to switch chains when swapping from intents account
+    if (ctx.sourceToken.isIntent) {
+      return false;
+    }
+
     const currentWalletChainId = await getCurrentChainId(provider);
 
     // Only for EVM chains

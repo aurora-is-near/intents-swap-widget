@@ -5,6 +5,7 @@ export * from './quote';
 export * from './transfer';
 export * from './config';
 export * from './providers';
+export * from './connectors';
 export * from './theme';
 export * from './widget';
 export * from './transaction';
