@@ -2,6 +2,8 @@ import {
   WidgetConfigProvider,
   WidgetConfigProviderProps,
 } from '@aurora-is-near/intents-swap-widget';
+import { evm } from '@aurora-is-near/intents-swap-widget-evm';
+import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 import {
   AppKitProvider,
   useAppKitProviders,
@@ -46,6 +48,7 @@ function DappWalletBridgeInner({
           ...config,
           connectedWallets: { default: address },
           providers: { evm: evmProvider, sol: solanaProvider },
+          networks: { evm, sol },
         }}
         {...restProps}>
         {children}

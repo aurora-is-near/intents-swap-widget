@@ -2,13 +2,11 @@ import axios from 'axios';
 
 import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
 import { isEvmBaseToken, isEvmChain } from '../utils';
-import { useMakeEvmTransfer } from './useMakeEvmTransfer';
 import { useMakeNearTransfer } from './useMakeNearTransfer';
-import { useMakeStellarTransfer } from './useMakeStellarTransfer';
 import { Providers } from '../types/providers';
-import { useMakeSolanaTransfer } from './useMakeSolanaTransfer';
-import { useConfig } from '../config';
+import { NetworkPlugins } from '../types/connectors';
 import { getSupportedProviderType } from '../utils/chains/getSupportedProviderType';
+import { useConfig } from '../config';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -24,30 +22,32 @@ import type {
 type QuoteTransferArgs = {
   makeTransfer?: MakeTransfer;
   providers?: Providers;
+  networks?: NetworkPlugins;
 };
+
+function assertChainSupport(
+  property: unknown,
+  message: string,
+): asserts property {
+  if (!property) {
+    throw new TransferError({
+      code: 'TRANSFER_INVALID_INITIAL',
+      meta: { message },
+    });
+  }
+}
 
 export const useMakeQuoteTransfer = ({
   makeTransfer,
   providers,
+  networks,
 }: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { alchemyApiKey } = useConfig();
-  const { make: makeEvmTransfer } = useMakeEvmTransfer({
-    provider: providers?.evm,
-  });
-
-  const { make: makeSolanaTransfer } = useMakeSolanaTransfer({
-    provider: providers?.sol,
-    alchemyApiKey,
-  });
 
   const { make: makeNearTransfer } = useMakeNearTransfer({
     provider: providers?.near,
     accountId: ctx.walletAddress,
-  });
-
-  const { make: makeStellarTransfer } = useMakeStellarTransfer({
-    provider: providers?.stellar,
   });
 
   const getTransferFunction = (depositAddress: string) => {
@@ -58,11 +58,45 @@ export const useMakeQuoteTransfer = ({
     }
 
     if (providerType === 'evm') {
-      return makeEvmTransfer;
+      const evmPlugin = networks?.evm;
+
+      assertChainSupport(
+        evmPlugin,
+        'EVM transfers are not supported. Add the EVM plugin from @aurora-is-near/intents-swap-widget-evm via the `networks` configuration property.'
+      );
+
+      const provider = providers?.evm;
+
+      assertChainSupport(
+        provider,
+        'EVM transfers are not supported. Add an EVM provider via the `providers` configuration property.'
+      );
+
+      return (args: MakeTransferArgs) =>
+        evmPlugin.makeTransfer(args, { provider });
     }
 
     if (providerType === 'sol') {
-      return makeSolanaTransfer;
+      const solPlugin = networks?.sol;
+      const provider = providers?.sol;
+
+      assertChainSupport(
+        solPlugin,
+        'Solana transfers are not supported. Add the Solana plugin from @aurora-is-near/intents-swap-widget-solana via the `networks` configuration property.'
+      );
+
+      assertChainSupport(
+        provider,
+        'Solana transfers are not supported. Add a Solana provider via the `providers` configuration property.'
+      );
+
+      assertChainSupport(
+        alchemyApiKey,
+        'Solana transfers are not supported. Add an Alchemy API key via the `alchemyApiKey` configuration property.'
+      );
+
+      return (args: MakeTransferArgs) =>
+        solPlugin.makeTransfer(args, { provider, alchemyApiKey });
     }
 
     if (providerType === 'near') {
@@ -70,6 +104,19 @@ export const useMakeQuoteTransfer = ({
     }
 
     if (providerType === 'stellar') {
+      const stellarPlugin = networks?.stellar;
+      const provider = providers?.stellar;
+
+      assertChainSupport(
+        stellarPlugin,
+        'Stellar transfers are not supported. Add the Stellar plugin from @aurora-is-near/intents-swap-widget-stellar via the `networks` configuration property.'
+      );
+
+      assertChainSupport(
+        provider,
+        'Stellar transfers are not supported. Add a Stellar provider via the `providers` configuration property.'
+      );
+
       return (args: MakeTransferArgs) => {
         if (!ctx.quote) {
           throw new TransferError({
@@ -92,10 +139,10 @@ export const useMakeQuoteTransfer = ({
           });
         }
 
-        return makeStellarTransfer({
-          ...args,
-          memo: ctx.quote.depositMemo ?? '',
-        });
+        return stellarPlugin.makeTransfer(
+          { ...args, memo: ctx.quote.depositMemo },
+          { provider },
+        );
       };
     }
 

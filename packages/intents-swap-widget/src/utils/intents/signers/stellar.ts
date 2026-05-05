@@ -1,7 +1,8 @@
 import { utils } from '@defuse-protocol/internal-utils';
 import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
-import { StrKey } from '@stellar/stellar-sdk';
 import bs58 from 'bs58';
+
+import { StellarNetworkPlugin } from '../../../types/connectors';
 import { StellarProvider } from '../../../types/providers';
 
 type SignIntentResult = ReturnType<
@@ -21,6 +22,7 @@ export class IntentSignerStellar
   constructor(
     private account: { walletAddress: string },
     private stellarWallet: StellarProvider,
+    private plugin: StellarNetworkPlugin,
   ) {}
 
   async signIntent(intent: SignIntentPayload): SignIntentResult {
@@ -38,10 +40,11 @@ export class IntentSignerStellar
     });
 
     const { signedMessage } = await this.stellarWallet.signMessage(message);
+    const publicKeyBytes = this.plugin.decodePublicKey(this.stellarWallet);
 
     return {
       payload: message,
-      public_key: `ed25519:${bs58.encode(StrKey.decodeEd25519PublicKey(this.account.walletAddress))}`,
+      public_key: `ed25519:${bs58.encode(publicKeyBytes)}`,
       standard: 'sep53',
       signature: transformStellarSignature(signedMessage),
     };

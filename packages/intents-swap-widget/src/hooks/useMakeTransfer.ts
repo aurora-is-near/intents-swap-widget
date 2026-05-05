@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
-import { Providers } from '../types';
+import { NetworkPlugins, Providers } from '../types';
 import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
@@ -21,10 +21,12 @@ import { useMergedBalance } from '@/hooks/useMergedBalance';
 export const useMakeTransfer = ({
   message,
   providers,
+  networks,
   makeTransfer,
 }: {
   message?: string;
   providers?: Providers;
+  networks?: NetworkPlugins;
   makeTransfer?: MakeTransfer;
 }) => {
   const { ctx } = useUnsafeSnapshot();
@@ -34,10 +36,14 @@ export const useMakeTransfer = ({
     isNativeNearDeposit,
   } = useComputedSnapshot();
 
-  const { make: makeIntentsTransfer } = useMakeIntentsTransfer({ providers });
+  const { make: makeIntentsTransfer } = useMakeIntentsTransfer({
+    providers,
+    networks,
+  });
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({
     makeTransfer,
     providers,
+    networks,
   });
 
   const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(

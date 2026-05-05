@@ -99,11 +99,35 @@ Please refer to your package manager documentation for ways of doing this:
    // For Solana wallets
    providers={{ sol: solanaWallet }}
 
+   // For Stellar wallets
+   providers={{ stellar: stellarWallet }}
+
    // For NEAR wallets
    providers={{ near: () => nearWallet }}
    ```
 
-2. **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
+2. **Add the matching network plugin** - For EVM, Solana, and Stellar swaps,
+   you also need to install the relevant sibling package and register its
+   network plugin via the `networks` property.
+
+   ```tsx
+   import { evm } from '@aurora-is-near/intents-swap-widget-evm';
+   import { sol } from '@aurora-is-near/intents-swap-widget-solana';
+   import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
+
+   <WidgetConfigProvider
+     config={{
+       networks: { evm, sol, stellar },
+       // ...
+     }}
+   >
+   ```
+
+  Errors like `No EVM transfer configured` mean the plugin is missing:
+
+   Note that NEAR is built into widget core and does not need a plugin.
+
+1. **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
 
    ```tsx
    walletSupportedChains={['eth', 'base', 'arb']}
