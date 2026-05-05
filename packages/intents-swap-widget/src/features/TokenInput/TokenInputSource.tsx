@@ -8,6 +8,7 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 
 export type Props = {
   heading: string;
+  className?: string;
   isChanging?: boolean;
   showBalance?: boolean;
   onMsg: (msg: Msg) => void;
@@ -18,6 +19,7 @@ export const TokenInputSource = ({
   isChanging = true,
   showBalance = true,
   heading,
+  className,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const sourceTokenBalance = useTokenInputBalance(ctx.sourceToken);
@@ -53,6 +55,7 @@ export const TokenInputSource = ({
       showBalance={showBalance}
       showQuickBalanceActions
       value={formatBigToHuman(ctx.sourceTokenAmount, ctx.sourceToken?.decimals)}
+      className={className}
       onMsg={onMsg}
     />
   );

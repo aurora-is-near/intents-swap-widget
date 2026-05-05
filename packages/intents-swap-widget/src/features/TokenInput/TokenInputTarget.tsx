@@ -8,6 +8,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 
 export type Props = {
   isChanging?: boolean;
+  className?: string;
   onMsg: (msg: Msg) => void;
   heading: string;
 };
@@ -16,6 +17,7 @@ export const TokenInputTarget = ({
   isChanging = false,
   onMsg,
   heading,
+  className,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { usdTradeDelta } = useComputedSnapshot();
@@ -48,6 +50,7 @@ export const TokenInputTarget = ({
       state={sourceInputState}
       showQuickBalanceActions={false}
       showBalance={true}
+      className={className}
       onMsg={onMsg}
     />
   );

@@ -1,6 +1,8 @@
-import { useConfig } from '../../config';
 import { cn } from '../../utils';
+import { useConfig } from '../../config';
+
 import { TokenInputHeading } from './TokenInputHeading';
+
 import { Card } from '@/components/Card';
 
 type Msg = { type: 'on_click_select_token' };
@@ -8,16 +10,17 @@ type Msg = { type: 'on_click_select_token' };
 type Props = {
   onMsg: (msg: Msg) => void;
   heading: string;
+  className?: string;
 };
 
-export const TokenInputEmpty = ({ onMsg, heading }: Props) => {
+export const TokenInputEmpty = ({ onMsg, heading, className }: Props) => {
   const { hideTokenInputHeadings } = useConfig();
 
   return (
     <Card
       isClickable
       aria-label={heading}
-      className="flex flex-col"
+      className={cn('flex flex-col', className)}
       onClick={() => onMsg({ type: 'on_click_select_token' })}>
       {!hideTokenInputHeadings && (
         <TokenInputHeading>{heading}</TokenInputHeading>

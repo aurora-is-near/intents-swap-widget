@@ -17,7 +17,11 @@ export const TokenInputBase = ({ token, heading, ...props }: Props) => {
   return token ? (
     <TokenInputWithToken {...props} token={token} heading={heading} />
   ) : (
-    <TokenInputEmpty onMsg={props.onMsg} heading={heading} />
+    <TokenInputEmpty
+      className={props.className}
+      onMsg={props.onMsg}
+      heading={heading}
+    />
   );
 };
 

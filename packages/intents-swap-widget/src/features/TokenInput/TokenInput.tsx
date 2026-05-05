@@ -32,6 +32,7 @@ export type Props = {
   quoteUsdValue?: number;
   showBalance?: boolean;
   showQuickBalanceActions?: boolean;
+  className?: string;
   state?: 'default' | 'disabled' | 'error' | 'error-balance';
   onMsg: (msg: Msg) => void;
   heading: string;
@@ -47,6 +48,7 @@ export const TokenInputWithToken = ({
   showBalance = true,
   showQuickBalanceActions = true,
   heading,
+  className,
   onMsg,
 }: Props) => {
   const inputName = useId();
@@ -66,7 +68,7 @@ export const TokenInputWithToken = ({
   };
 
   return (
-    <Card className="flex flex-col" aria-label={heading}>
+    <Card className={cn('flex flex-col', className)} aria-label={heading}>
       {!hideTokenInputHeadings && (
         <TokenInputHeading>{heading}</TokenInputHeading>
       )}
