@@ -36,12 +36,17 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
-const getAmounts = (
-  amount: string,
-  amountUsd: string | undefined,
-  decimals: number,
-  price: number,
-) => {
+const getAmounts = ({
+  amount,
+  amountUsd,
+  decimals,
+  price,
+}: {
+  amount: string;
+  amountUsd: string | undefined;
+  decimals: number;
+  price: number;
+}) => {
   const sourceAmount = formatBigToHuman(amount, decimals);
   const sourceAmountUsd = amountUsd
     ? parseFloat(amountUsd)
@@ -66,12 +71,12 @@ const useAnyDepositAmounts = (
     return undefined;
   }
 
-  return getAmounts(
-    transferResult.amount,
-    transferResult.amountUsd,
-    ctx.sourceToken.decimals,
-    ctx.sourceToken.price,
-  );
+  return getAmounts({
+    amount: transferResult.amount,
+    amountUsd: transferResult.amountUsd,
+    decimals: ctx.sourceToken.decimals,
+    price: ctx.sourceToken.price,
+  });
 };
 
 const useQuoteAmounts = () => {
@@ -178,12 +183,12 @@ export const SuccessScreen = ({
         ) : (
           <TokenRow
             token={ctx.sourceToken}
-            {...getAmounts(
-              ctx.sourceTokenAmount,
-              undefined,
-              ctx.sourceToken.decimals,
-              ctx.sourceToken.price,
-            )}
+            {...getAmounts({
+              amountUsd: undefined,
+              amount: ctx.sourceTokenAmount,
+              decimals: ctx.sourceToken.decimals,
+              price: ctx.sourceToken.price,
+            })}
           />
         )}
 
