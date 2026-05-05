@@ -390,7 +390,11 @@ export const useMakeQuote = () => {
 
     return {
       dry: false,
-      type: 'QUOTE_REAL_WITH_AMOUNT',
+      type:
+        !ctx.isDepositFromExternalWallet ||
+        isNotEmptyAmount(ctx.sourceTokenAmount)
+          ? 'QUOTE_REAL_WITH_AMOUNT'
+          : 'QUOTE_DEPOSIT_ANY_AMOUNT',
       ...quoteResponse,
       deadline: quoteResponse.deadline,
       depositAddress: quoteResponse.depositAddress,

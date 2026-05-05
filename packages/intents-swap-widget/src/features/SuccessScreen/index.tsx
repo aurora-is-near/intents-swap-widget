@@ -36,9 +36,21 @@ type Props = TransferResult & {
   onMsg: (msg: Msg) => void;
 };
 
-const getAmounts = (amount: string, decimals: number, price: number) => {
+const getAmounts = ({
+  amount,
+  amountUsd,
+  decimals,
+  price,
+}: {
+  amount: string;
+  amountUsd: string | undefined;
+  decimals: number;
+  price: number;
+}) => {
   const sourceAmount = formatBigToHuman(amount, decimals);
-  const sourceAmountUsd = price * parseFloat(sourceAmount);
+  const sourceAmountUsd = amountUsd
+    ? parseFloat(amountUsd)
+    : price * parseFloat(sourceAmount);
 
   return {
     amount: sourceAmount,
@@ -46,14 +58,25 @@ const getAmounts = (amount: string, decimals: number, price: number) => {
   };
 };
 
-const useAnyDepositAmounts = (amount: string | undefined) => {
+const useAnyDepositAmounts = (
+  transferResult: Pick<TransferResult, 'amount' | 'amountUsd'> | undefined,
+) => {
   const { ctx } = useUnsafeSnapshot();
 
-  if (!amount || !ctx.quote || ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT') {
+  if (
+    !ctx.quote ||
+    !transferResult?.amount ||
+    ctx.quote.type !== 'QUOTE_DEPOSIT_ANY_AMOUNT'
+  ) {
     return undefined;
   }
 
-  return getAmounts(amount, ctx.sourceToken.decimals, ctx.sourceToken.price);
+  return getAmounts({
+    amount: transferResult.amount,
+    amountUsd: transferResult.amountUsd,
+    decimals: ctx.sourceToken.decimals,
+    price: ctx.sourceToken.price,
+  });
 };
 
 const useQuoteAmounts = () => {
@@ -113,7 +136,7 @@ export const SuccessScreen = ({
   const summaryItemsCount = useSummaryItemsCount(!!transferResult.intent);
 
   const quoteAmounts = useQuoteAmounts();
-  const anyDepositAmounts = useAnyDepositAmounts(transferResult.amount);
+  const anyDepositAmounts = useAnyDepositAmounts(transferResult);
 
   const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 
@@ -143,14 +166,35 @@ export const SuccessScreen = ({
         <p className="text-sw-body-md text-sw-gray-200">{message}</p>
       )}
 
-      {quoteAmounts && (
-        <div className="flex flex-col">
+      <div className="flex flex-col">
+        {/* eslint-disable-next-line no-nested-ternary */}
+        {anyDepositAmounts ? (
+          <TokenRow
+            token={ctx.sourceToken}
+            amount={anyDepositAmounts.amount}
+            amountUsd={anyDepositAmounts.amountUsd}
+          />
+        ) : quoteAmounts ? (
           <TokenRow
             token={ctx.sourceToken}
             amount={quoteAmounts.sourceAmount}
             amountUsd={quoteAmounts.sourceAmountUsd}
           />
-          {showTargetToken && (
+        ) : (
+          <TokenRow
+            token={ctx.sourceToken}
+            {...getAmounts({
+              amountUsd: undefined,
+              amount: ctx.sourceTokenAmount,
+              decimals: ctx.sourceToken.decimals,
+              price: ctx.sourceToken.price,
+            })}
+          />
+        )}
+
+        {quoteAmounts &&
+          showTargetToken &&
+          ctx.sourceToken.symbol !== ctx.targetToken.symbol && (
             <>
               <div className="flex items-center justify-center w-full h-[12px] z-1">
                 <div className="flex items-center justify-center p-sw-md bg-sw-gray-950 rounded-sw-md w-fit">
@@ -164,23 +208,7 @@ export const SuccessScreen = ({
               />
             </>
           )}
-        </div>
-      )}
-
-      {!quoteAmounts && !!anyDepositAmounts && (
-        <TokenRow token={ctx.sourceToken} {...anyDepositAmounts} />
-      )}
-
-      {!quoteAmounts && !anyDepositAmounts && (
-        <TokenRow
-          token={ctx.sourceToken}
-          {...getAmounts(
-            ctx.sourceTokenAmount,
-            ctx.sourceToken.decimals,
-            ctx.sourceToken.price,
-          )}
-        />
-      )}
+      </div>
 
       <Accordion
         expandedByDefault={false}

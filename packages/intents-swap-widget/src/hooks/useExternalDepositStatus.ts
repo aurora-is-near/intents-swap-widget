@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-
-import { useOneClickExternalDepositStatus } from './useOneClickExternalDepositStatus';
+import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { guardStates, useUnsafeSnapshot } from '@/machine';
 import { WidgetError } from '@/errors';
@@ -14,9 +13,6 @@ export const useExternalDepositStatus = (depositAddress: string) => {
     'quote_success_internal',
   ]);
 
-  const { pollDepositStatus: pollOneClickDepositStatus } =
-    useOneClickExternalDepositStatus({ depositAddress });
-
   const pollDepositStatus = async () => {
     if (!isValidState) {
       throw new WidgetError(
@@ -25,7 +21,16 @@ export const useExternalDepositStatus = (depositAddress: string) => {
     }
 
     try {
-      return await pollOneClickDepositStatus();
+      const result = await OneClickService.getExecutionStatus(depositAddress);
+
+      return {
+        ...result,
+        swapDetails: {
+          ...result.swapDetails,
+          amount: result.swapDetails.amountIn,
+          amountUsd: result.swapDetails.amountInUsd,
+        },
+      };
     } catch (e) {
       logger.error('Error polling external deposit status', e);
       throw e;

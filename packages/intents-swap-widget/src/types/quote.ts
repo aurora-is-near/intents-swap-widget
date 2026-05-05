@@ -28,7 +28,7 @@ export type QuoteReal = QuoteResponseShort & {
 export type QuoteDepositAnyAmount = {
   type: 'QUOTE_DEPOSIT_ANY_AMOUNT';
   depositAddress: string;
-  deadline: string;
+  deadline?: string;
   timeEstimate: number;
   depositMemo?: string;
   dry: boolean;
