@@ -27,6 +27,7 @@ import { SelectATokenText } from './SelectATokenText';
 import { TokenSelectionModal } from './TokenSelectionModal';
 import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 
+import { getUrlBooleanParam } from '@/utils/get-url-param';
 import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
 import { InfoBanner } from '@/components/InfoBanner';
 
@@ -34,6 +35,8 @@ export function Configure() {
   const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
   const { authenticated } = usePrivy();
+
+  const isIntentsConnect = getUrlBooleanParam('intentsConnect');
 
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -110,7 +113,7 @@ export function Configure() {
   };
 
   const isDepositModeRecipientValid =
-    state.widgetMode === 'deposit' &&
+    (state.widgetMode === 'deposit' || state.widgetMode === 'connect') &&
     state.depositModeReceiverAddress &&
     state.defaultBuyToken
       ? isValidChainAddress(
@@ -165,7 +168,18 @@ export function Configure() {
                 dispatch({ type: 'SET_WIDGET_MODE', payload: 'deposit' })
               }
             />
-            {state.widgetMode === 'deposit' && (
+            {isIntentsConnect && (
+              <RadioButton
+                label="Connect"
+                description="Connect your dapp logic with Intents & get access to balances across all chains."
+                isSelected={state.widgetMode === 'connect'}
+                onChange={() =>
+                  dispatch({ type: 'SET_WIDGET_MODE', payload: 'connect' })
+                }
+              />
+            )}
+            {(state.widgetMode === 'deposit' ||
+              state.widgetMode === 'connect') && (
               <>
                 <div className="my-csw-2xl border-t border-csw-gray-800" />
                 <div className="flex items-center justify-between">
