@@ -1,3 +1,4 @@
+import chroma from 'chroma-js';
 import type { CSSProperties } from 'react';
 
 import type {
@@ -7,6 +8,15 @@ import type {
   ThemeBorderRadius,
 } from '../types/theme';
 import { createColorPalette } from './createColorPalette';
+
+export const getSuccessDarkColor = (successColor: string): string => {
+  const luminance = chroma(successColor).luminance();
+
+  // If the color is light (luminance > 0.18), darken it; otherwise lighten it
+  return luminance > 0.32
+    ? chroma(successColor).darken(2.5).hex()
+    : chroma(successColor).brighten(2.5).hex();
+};
 
 type ThemeCssVariables = CSSProperties & Record<`--${string}`, string>;
 
@@ -95,6 +105,7 @@ export const getThemeCssVariables = (
 
   if (successColor) {
     variables['--c-sw-status-success'] = successColor;
+    variables['--c-sw-status-success-dark'] = getSuccessDarkColor(successColor);
   }
 
   if (warningColor) {

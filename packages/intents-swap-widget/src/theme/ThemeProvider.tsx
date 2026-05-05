@@ -14,6 +14,7 @@ import {
   ThemeBorderRadius,
 } from '../types/theme';
 import { ColorStop, createColorPalette } from './createColorPalette';
+import { getSuccessDarkColor } from './getThemeCssVariables';
 import { useConfig } from '@/config';
 
 const setVariable = (key: string, value: string, elements: HTMLElement[]) => {
@@ -101,6 +102,11 @@ const loadTheme = (theme: Theme, elements: HTMLElement[]) => {
 
   if (successColor) {
     setColorVariable('status-success', successColor, elements);
+    setColorVariable(
+      'status-success-dark',
+      getSuccessDarkColor(successColor),
+      elements,
+    );
   }
 
   if (warningColor) {

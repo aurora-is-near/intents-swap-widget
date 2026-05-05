@@ -46,6 +46,8 @@
 
     /* Status colors */
     --color-sw-status-success: var(--c-sw-status-success);
+    --color-sw-status-success-dark: var(--c-sw-status-success-dark);
+
     --color-sw-status-warning: var(--c-sw-status-warning);
     --color-sw-status-error: var(--c-sw-status-error);
 
@@ -163,4 +165,70 @@
 		line-height: 1rem;
 		letter-spacing: -0.025rem;
 	}
+}
+
+@property --ring-beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --ring-beam-color {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #41444F;
+}
+
+@keyframes ring-beam {
+  0% {
+    --ring-beam-angle: 0deg;
+    --ring-beam-color: #41444F;
+  }
+  6% {
+    --ring-beam-color: #9ca3af;
+  }
+  34% {
+    --ring-beam-color: #9ca3af;
+  }
+  40% {
+    --ring-beam-angle: 360deg;
+    --ring-beam-color: #41444F;
+  }
+  100% {
+    --ring-beam-angle: 360deg;
+    --ring-beam-color: #41444F;
+  }
+}
+
+@utility ring-glow-sweep {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--ring-beam-angle),
+      var(--color-sw-gray-800) 0%,
+      var(--color-sw-gray-800) 70%,
+      var(--ring-beam-color) 82%,
+      var(--color-sw-gray-800) 95%,
+      var(--color-sw-gray-800) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: ring-beam 5s linear infinite;
+    pointer-events: none;
+  }
+}
+
+@utility ring-glow-paused {
+  &::after {
+    animation-play-state: paused;
+    --ring-beam-color: #41444F;
+  }
 }
