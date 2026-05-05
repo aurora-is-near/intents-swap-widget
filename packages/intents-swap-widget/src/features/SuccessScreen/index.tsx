@@ -167,7 +167,7 @@ export const SuccessScreen = ({
       )}
 
       <div className="flex flex-col">
-        {/* eslint-disable-next-line */}
+        {/* eslint-disable-next-line no-nested-ternary */}
         {anyDepositAmounts ? (
           <TokenRow
             token={ctx.sourceToken}
