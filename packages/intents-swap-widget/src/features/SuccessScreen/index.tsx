@@ -143,6 +143,10 @@ export const SuccessScreen = ({
 
   const status = useTransferResultStatus(transferResult);
   const statusLabel = getTransactionStatusLabel(status, transactionType);
+  const isProcessing =
+    status === 'PENDING' ||
+    status === 'PROCESSING' ||
+    status === 'WAITING_FOR_FUNDS';
 
   const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 
@@ -267,7 +271,7 @@ export const SuccessScreen = ({
           variant="primary"
           iconPosition="tail"
           href={transactionLink}
-          state={transactionLink ? 'default' : 'disabled'}
+          state={transactionLink && !isProcessing ? 'default' : 'disabled'}
           icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>
