@@ -4,11 +4,8 @@ import { TransactionStatusBadge } from './TransactionStatusBadge';
 
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
-import { CopyButton } from '@/components/CopyButton';
 import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
-import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { TinyNumber } from '@/components/TinyNumber';
-import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
 import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
@@ -26,15 +23,11 @@ export const TransactionCard = ({
   className,
   onClick,
 }: Props) => {
-  const type = getTransactionType(tx);
   const status = getTransactionStatusLabel(tx.status);
   const time = formatRelativeTime(tx.createdAt);
 
   const originToken = findTransactionToken(tokens, tx.originAsset);
   const destToken = findTransactionToken(tokens, tx.destinationAsset);
-
-  const isSwap = type === 'SWAP';
-  const copyValue = tx.senders?.[0] ?? tx.recipient;
 
   return (
     <Card
@@ -47,11 +40,8 @@ export const TransactionCard = ({
         <div className="flex items-center justify-between mb-sw-lg">
           <div className="flex items-center gap-x-sw-sm">
             <span className="text-sw-label-md text-sw-gray-200">
-              {type === 'DEPOSIT'
-                ? `Deposit from ${formatAddressTruncate(tx.senders[0] ?? '', 10)}`
-                : 'Swap'}
+              Swap
             </span>
-            {!!copyValue && !isSwap && <CopyButton value={copyValue} />}
           </div>
           <span className="text-sw-label-sm text-sw-gray-400">{time}</span>
         </div>
@@ -72,7 +62,7 @@ export const TransactionCard = ({
               </div>
             )}
 
-            {!!isSwap && !!destToken && (
+            {!!destToken && (
               <>
                 <span className="text-sw-gray-200 text-sw-label-md">
                   &rarr;

@@ -11,7 +11,6 @@ import { CopyButton } from '@/components/CopyButton';
 import { Hr } from '@/components/Hr';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
-import { getTransactionType } from '@/utils/transactions/getTransactionType';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
 import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
@@ -58,7 +57,6 @@ export const TransactionDetails = ({
   tokens,
   onClose,
 }: Props) => {
-  const type = getTransactionType(tx);
   const status = getTransactionStatusLabel(tx.status);
   const formattedDate = new Date(tx.createdAt).toLocaleString('en-US', {
     month: 'short',
@@ -71,16 +69,13 @@ export const TransactionDetails = ({
 
   const originToken = findTransactionToken(tokens, tx.originAsset);
   const destToken = findTransactionToken(tokens, tx.destinationAsset);
-
-  const isSwap = type === 'SWAP';
-  const isDeposit = type === 'DEPOSIT';
   const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;
 
   const fee = calculateFee(tx);
 
   const amountIn = parseFloat(tx.amountInFormatted);
   const amountOut = parseFloat(tx.amountOutFormatted);
-  const rate = isSwap && amountIn > 0 ? amountOut / amountIn : null;
+  const rate = amountIn > 0 ? amountOut / amountIn : null;
 
   return (
     <Card className="w-full">
@@ -88,9 +83,7 @@ export const TransactionDetails = ({
       <div className="flex items-center justify-between pb-sw-2xl">
         <div className="flex flex-col">
           <span className="text-sw-label-lg text-sw-gray-50 mb-sw-md">
-            {type === 'DEPOSIT'
-              ? `Deposit from ${formatAddressTruncate(tx.senders[0] ?? '', 10)}`
-              : 'Swap'}
+            Swap
           </span>
           <span className="text-sw-label-sm text-sw-gray-200">
             {formattedDate}
@@ -115,7 +108,7 @@ export const TransactionDetails = ({
           />
         )}
 
-        {!!isSwap && !!destToken && (
+        {!!destToken && (
           <>
             <div className="w-[40px] h-[40px] flex items-center justify-center">
               <ArrowDownward className="h-sw-xl w-sw-xl text-sw-gray-200" />
@@ -137,21 +130,12 @@ export const TransactionDetails = ({
           <TransactionStatusBadge status={status} />
         </DetailRow>
 
-        {isSwap && rate !== null && !!destToken && !!originToken && (
+        {rate !== null && !!destToken && !!originToken && (
           <DetailRow label="Rate">
             <span className="text-sw-body-md text-sw-gray-50">
               1 {destToken.symbol} = <TinyNumber value={String(rate)} />{' '}
               {originToken.symbol}
             </span>
-          </DetailRow>
-        )}
-
-        {isDeposit && !!tx.senders[0] && (
-          <DetailRow label="From">
-            <span className="text-sw-body-md text-sw-gray-50">
-              {formatAddressTruncate(tx.senders[0], 14)}
-            </span>
-            <CopyButton value={tx.senders[0]} />
           </DetailRow>
         )}
 

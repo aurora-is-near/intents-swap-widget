@@ -56,7 +56,6 @@ export type FakeTransaction = Pick<
   | 'originChainTxHashes'
 > & {
   intentHashes?: string;
-  isPoaDeposit?: boolean;
 };
 
 export type TransactionsResponse = {
