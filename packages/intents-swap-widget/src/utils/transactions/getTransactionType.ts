@@ -1,9 +1,15 @@
-import type { FakeTransaction, Transaction } from '../../types/transaction';
+import type {
+  FakeTransaction,
+  Transaction,
+  TransactionType,
+} from '../../types/transaction';
 
-export const getTransactionType = (tx: Transaction | FakeTransaction) => {
+export const getTransactionType = (
+  tx: Transaction | FakeTransaction,
+): TransactionType => {
   if ('isPoaDeposit' in tx && tx.isPoaDeposit && tx.senders.length > 0) {
-    return 'DEPOSIT' as const;
+    return 'DEPOSIT';
   }
 
-  return 'SWAP' as const;
+  return 'SWAP';
 };

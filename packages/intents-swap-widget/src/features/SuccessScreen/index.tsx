@@ -1,27 +1,30 @@
 import {
   ArrowDownward,
-  Check,
   OpenInNew,
 } from '@material-symbols-svg/react-rounded/w700';
 
 import { TokenRow } from './TokenRow';
 import { CopyableValue } from './CopyableValue';
 import { useSummaryItemsCount } from './useSummaryItemsCount';
+import { useTransferResultStatus } from './useTransferResultStatus';
 
 import { Notes } from '@/components/Notes';
 import { Button } from '@/components/Button';
 import { CloseButton } from '@/components/CloseButton';
 import { Accordion } from '@/components/Accordion';
+import { TransactionStatusBadge } from '@/features/TransactionHistory/TransactionStatusBadge';
 
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
 import { useTypedTranslation } from '@/localisation';
 import { useHandleKeyDown } from '@/hooks';
 import { logger } from '@/logger';
 
+import type { TransactionType } from '@/types/transaction';
 import type { TransferResult } from '@/types/transfer';
 
 const NOTES_ITEM_HEIGHT = 41;
@@ -29,7 +32,7 @@ const NOTES_ITEM_HEIGHT = 41;
 type Msg = { type: 'on_dismiss_success' };
 
 type Props = TransferResult & {
-  title: string;
+  transactionType?: TransactionType;
   message?: string;
   showTargetToken?: boolean;
   backButtonLabel?: string;
@@ -121,7 +124,7 @@ const useQuoteAmounts = () => {
 };
 
 export const SuccessScreen = ({
-  title,
+  transactionType = 'SWAP',
   message,
   showTargetToken = true,
   transactionLink,
@@ -138,6 +141,9 @@ export const SuccessScreen = ({
   const quoteAmounts = useQuoteAmounts();
   const anyDepositAmounts = useAnyDepositAmounts(transferResult);
 
+  const status = useTransferResultStatus(transferResult);
+  const statusLabel = getTransactionStatusLabel(status, transactionType);
+
   const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 
   useHandleKeyDown('Escape', handleClose);
@@ -152,13 +158,8 @@ export const SuccessScreen = ({
 
   return (
     <div className="flex flex-col gap-sw-lg w-full">
-      <header className="flex items-center gap-sw-lg">
-        <div className="flex items-center justify-center p-sw-md bg-sw-status-success rounded-sw-md">
-          <Check size={20} className="text-sw-gray-900" />
-        </div>
-        <span className="text-sw-label-lg text-sw-status-success mr-auto">
-          {title}
-        </span>
+      <header className="flex items-center justify-between">
+        <TransactionStatusBadge variant="title" status={statusLabel} />
         <CloseButton onClick={handleClose} />
       </header>
 

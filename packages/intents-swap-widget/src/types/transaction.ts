@@ -1,5 +1,7 @@
 import { ComponentType } from 'react';
 
+export type TransactionType = 'SWAP' | 'DEPOSIT' | 'WITHDRAWAL';
+
 export type TransactionStatus =
   | 'SUCCESS'
   | 'PROCESSING'

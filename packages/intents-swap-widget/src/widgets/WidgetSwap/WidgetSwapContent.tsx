@@ -156,7 +156,7 @@ export const WidgetSwapContent = ({
     return (
       <SuccessScreen
         showTargetToken
-        title={t('transfer.success.swap.title', 'Swap successful')}
+        transactionType="SWAP"
         {...transferResult}
         onMsg={(msg) => {
           switch (msg.type) {

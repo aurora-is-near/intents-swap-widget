@@ -148,7 +148,7 @@ export const WidgetWithdrawContent = ({
     return (
       <SuccessScreen
         showTargetToken
-        title={t('transfer.success.withdrawal.title', 'Withdrawal successful')}
+        transactionType="WITHDRAWAL"
         {...transferResult}
         onMsg={(msg) => {
           switch (msg.type) {

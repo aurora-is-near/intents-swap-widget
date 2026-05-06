@@ -55,7 +55,7 @@ export function WidgetContent() {
     return (
       <WidgetContainer>
         <SuccessScreen
-          title="Swap successful"
+          transactionType="SWAP"
           hash={successfulTransactionDetails.hash}
           transactionLink={successfulTransactionDetails.transactionLink}
           message="Your swap has been successfully completed!"

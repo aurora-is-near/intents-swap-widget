@@ -215,7 +215,7 @@ export const WidgetDepositModeContent = ({
     return (
       <SuccessScreen
         {...transferResult}
-        title={t('transfer.success.deposit.title', 'Deposit successful')}
+        transactionType="DEPOSIT"
         backButtonLabel={t(
           'transfer.success.deposit.backToDeposit',
           'Back to deposit',

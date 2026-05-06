@@ -3,6 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useConfig } from '../config';
 import { feeServiceApi } from '../network';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
+import { getTransactionHashes } from '../utils/transactions/getTransactionHashes';
 import {
   getOptimisticTransactions,
   removeOptimisticTransaction,
@@ -81,20 +82,11 @@ export const useTransactions = () => {
   // Remove optimistic entries once the real transaction appears in the API.
   // We check all hash fields because intents withdrawals may track hashes
   // in destinationChainTxHashes or intentHashes rather than originChainTxHashes.
-  const apiHashes = new Set(
-    apiTransactions
-      .flatMap((tx) => [
-        ...(tx.originChainTxHashes ?? []),
-        ...(tx.destinationChainTxHashes ?? []),
-        ...(tx.nearTxHashes ?? []),
-        tx.intentHashes,
-      ])
-      .filter(Boolean),
-  );
+  const apiHashes = new Set(apiTransactions.flatMap(getTransactionHashes));
 
   optimistic.forEach((tx) => {
-    [tx.intentHashes, ...tx.originChainTxHashes]
-      .filter((hash): hash is string => !!hash && apiHashes.has(hash))
+    getTransactionHashes(tx)
+      .filter((hash) => apiHashes.has(hash))
       .forEach(removeOptimisticTransaction);
   });
 

@@ -35,8 +35,8 @@ import {
   makeTransfer as makeEvmTransfer,
 } from '@aurora-is-near/intents-swap-widget-evm';
 import {
-  sol,
   makeTransfer as makeSolanaTransfer,
+  sol,
 } from '@aurora-is-near/intents-swap-widget-solana';
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
 import clsx from 'clsx';
@@ -829,7 +829,7 @@ export const Page = () => {
           </Button>
         }>
         <SuccessScreen
-          title="Swap successful"
+          transactionType="SWAP"
           message="Your swap has been successfully completed, and the funds are now available in TON wallet."
           showTargetToken={false}
           hash={successfulTransactionDetails.hash}

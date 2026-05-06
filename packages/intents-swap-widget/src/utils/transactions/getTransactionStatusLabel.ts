@@ -2,18 +2,24 @@ import { ProgressActivityW700 as ProgressActivityIcon } from '@material-symbols-
 import { CheckCircleFillW700 as CheckCircleIcon } from '@material-symbols-svg/react-rounded/icons/check-circle';
 import { CancelFillW700 as CancelIcon } from '@material-symbols-svg/react-rounded/icons/cancel';
 import { ArrowCircleLeftFillW700 as ArrowCircleLeftIcon } from '@material-symbols-svg/react-rounded/icons/arrow-circle-left';
+import { sentenceCase } from 'change-case';
 import type {
   TransactionsStatusLabel,
   TransactionStatus,
+  TransactionType,
 } from '@/types/transaction';
+
+const composeLabel = (word: string, transactionType?: TransactionType) =>
+  sentenceCase([transactionType, word].filter(Boolean).join(' '));
 
 export const getTransactionStatusLabel = (
   status: TransactionStatus,
+  transactionType?: TransactionType,
 ): TransactionsStatusLabel => {
   switch (status) {
     case 'PENDING':
       return {
-        label: 'Waiting...',
+        label: composeLabel('Pending', transactionType),
         colorClassName: 'text-sw-accent-50',
         Icon: ProgressActivityIcon,
         iconIsSpinning: true,
@@ -27,26 +33,26 @@ export const getTransactionStatusLabel = (
       };
     case 'PROCESSING':
       return {
-        label: 'Processing',
+        label: composeLabel('Processing', transactionType),
         colorClassName: 'text-sw-accent-50',
         Icon: ProgressActivityIcon,
         iconIsSpinning: true,
       };
     case 'SUCCESS':
       return {
-        label: 'Completed',
+        label: composeLabel('Completed', transactionType),
         colorClassName: 'text-sw-status-success',
         Icon: CheckCircleIcon,
       };
     case 'FAILED':
       return {
-        label: 'Failed',
+        label: composeLabel('Failed', transactionType),
         colorClassName: 'text-sw-status-error',
         Icon: CancelIcon,
       };
     case 'REFUNDED':
       return {
-        label: 'Refunded',
+        label: composeLabel('Refunded', transactionType),
         colorClassName: 'text-sw-status-warning',
         Icon: ArrowCircleLeftIcon,
       };

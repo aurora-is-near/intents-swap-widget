@@ -150,7 +150,7 @@ export const WidgetDepositContent = ({
     return (
       <SuccessScreen
         {...transferResult}
-        title={t('transfer.success.deposit.title', 'Deposit successful')}
+        transactionType="DEPOSIT"
         onMsg={(msg) => {
           switch (msg.type) {
             case 'on_dismiss_success':
