@@ -2,7 +2,7 @@ import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 import { Chains, ChainsFilters } from './chain';
 import { SimpleToken, Token } from './token';
 import { FetchQuoteOptions } from './quote';
-import { NetworkPlugins } from './connectors';
+import { Plugins } from './connectors';
 import { Providers } from './providers';
 
 export type WalletAddresses = Partial<
@@ -28,8 +28,8 @@ export type WidgetConfig = {
   // Wallet providers (raw wallet objects per chain)
   providers?: Providers;
 
-  // Network plugins (handle chain-specific transfers)
-  networks?: NetworkPlugins;
+  // Plugins (e.g. to handle chain-specific transfers)
+  plugins?: Plugins;
 
   // Connected wallet
   walletSupportedChains?: ReadonlyArray<Chains>;

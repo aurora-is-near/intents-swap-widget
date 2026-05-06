@@ -9,7 +9,7 @@ manages it for you, or you handle it yourself and pass the details in.
 | | Built-in | External |
 |---|---|---|
 | **How it works** | Widget opens its own wallet modal (via AppKit) | You connect the wallet and pass addresses + providers to the widget |
-| **Enable with** | Install `@aurora-is-near/intents-swap-widget-standalone` | Pass `connectedWallets`, `providers`, and `networks` (default behavior) |
+| **Enable with** | Install `@aurora-is-near/intents-swap-widget-standalone` | Pass `connectedWallets`, `providers`, and `plugins` (default behavior) |
 | **Supported chains** | EVM (Ethereum, Arbitrum, Polygon, BSC, Optimism, Avalanche, Base) + Solana + Stellar | Any chain the widget supports, including NEAR and TON |
 | **Setup effort** | Minimal | More code, but more control |
 
@@ -79,8 +79,7 @@ network plugins to the widget.
   the selected token's chain, falling back to the `default` key.
 - **`providers`** — The signing providers the widget uses to execute
   transactions. Accepts `evm`, `sol`, `stellar` and `near` keys.
-- **`networks`** — A network plugin per chain you want to
-  support for transfers.
+- **`plugins`** — A network plugin per chain you want to support for transfers.
 - **`onWalletSignin`** — Called when the user taps the action button while
   disconnected. Use this to trigger your own connect flow.
 - **`onWalletSignout`** — Called when the widget needs to disconnect the wallet
@@ -106,7 +105,7 @@ export default function App() {
       config={{
         connectedWallets: { default: address },
         providers: { evm: window.ethereum },
-        networks: { evm },
+        plugins: { evm },
         onWalletSignin: connect,
         onWalletSignout: disconnect,
       }}
@@ -129,7 +128,7 @@ const config = {
   providers: {
     sol: { publicKey, signMessage, signTransaction },
   },
-  networks: { sol },
+  plugins: { sol },
   onWalletSignin: connect,
   onWalletSignout: disconnect,
 };
@@ -190,7 +189,7 @@ const config = {
   providers: {
     sol: solanaProviderFromPrivy(privyWallet),
   },
-  networks: { sol },
+  plugins: { sol },
 };
 ```
 
@@ -210,7 +209,7 @@ const config = {
       signTransaction: stellarWallet.signTransaction,
     },
   },
-  networks: { stellar },
+  plugins: { stellar },
   onWalletSignin: connect,
   onWalletSignout: disconnect,
 };

@@ -108,7 +108,7 @@ Please refer to your package manager documentation for ways of doing this:
 
 2. **Add the matching network plugin** - For EVM, Solana, and Stellar swaps,
    you also need to install the relevant sibling package and register its
-   network plugin via the `networks` property.
+   network plugin via the `plugins` property.
 
    ```tsx
    import { evm } from '@aurora-is-near/intents-swap-widget-evm';
@@ -117,7 +117,7 @@ Please refer to your package manager documentation for ways of doing this:
 
    <WidgetConfigProvider
      config={{
-       networks: { evm, sol, stellar },
+       plugins: { evm, sol, stellar },
        // ...
      }}
    >

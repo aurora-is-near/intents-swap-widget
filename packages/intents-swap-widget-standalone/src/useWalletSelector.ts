@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { NetworkPlugins, Providers } from '@aurora-is-near/intents-swap-widget';
+import { Plugins, Providers } from '@aurora-is-near/intents-swap-widget';
 import { evm } from '@aurora-is-near/intents-swap-widget-evm';
 import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
@@ -10,7 +10,7 @@ import { useStellarWallet } from './useStellarWallet';
 import { useAppKitProviders } from './useAppKitProviders';
 import { useNearWallet } from './useNearWallet';
 
-const NETWORKS: NetworkPlugins = { evm, sol, stellar };
+const NETWORK_PLUGINS: Plugins = { evm, sol, stellar };
 
 const isNearWallet = (
   nearWallet?: NearWalletBase,
@@ -136,7 +136,7 @@ export const useWalletSelector = () => {
     showSelector,
     connectedWallets,
     providers,
-    networks: NETWORKS,
+    plugins: NETWORK_PLUGINS,
     connect,
     disconnect,
     selectNear,

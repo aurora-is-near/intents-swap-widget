@@ -877,7 +877,7 @@ export const Page = () => {
         },
         lockSwapDirection: true,
         providers,
-        networks: { evm, sol },
+        plugins: { evm, sol },
       }}
       localisation={{
         'submit.active.swap': 'Swap now',

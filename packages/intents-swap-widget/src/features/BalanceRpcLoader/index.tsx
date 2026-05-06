@@ -68,7 +68,7 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
 };
 
 export const BalanceRpcLoader = ({ rpcs }: Props) => {
-  const { connectedWallets, providers, networks } = useConfig();
+  const { connectedWallets, providers, plugins } = useConfig();
   const { tokens } = useAllTokens();
   const { supportedChains } = useSupportedChains();
   const { ctx } = useUnsafeSnapshot();
@@ -77,7 +77,7 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
 
   useEffect(() => {
     const stellarProvider = providers?.stellar;
-    const stellarPlugin = networks?.stellar;
+    const stellarPlugin = plugins?.stellar;
 
     if (
       ctx.walletAddress &&
@@ -97,7 +97,7 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
     ctx.walletAddress,
     connectedWallets,
     providers,
-    networks,
+    plugins,
   ]);
 
   const onBalancesLoaded = useCallback(

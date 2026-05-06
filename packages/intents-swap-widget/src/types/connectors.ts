@@ -43,7 +43,7 @@ export type StellarNetworkPlugin = BaseNetworkPlugin<'stellar'> & {
   ) => Promise<{ xlmStroops: string; usdcStroops: string }>;
 };
 
-export type NetworkPlugins = {
+export type Plugins = {
   evm?: EvmNetworkPlugin;
   sol?: SolanaNetworkPlugin;
   stellar?: StellarNetworkPlugin;

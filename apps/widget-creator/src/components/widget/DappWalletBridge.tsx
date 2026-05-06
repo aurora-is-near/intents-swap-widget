@@ -48,7 +48,7 @@ function DappWalletBridgeInner({
           ...config,
           connectedWallets: { default: address },
           providers: { evm: evmProvider, sol: solanaProvider },
-          networks: { evm, sol },
+          plugins: { evm, sol },
         }}
         {...restProps}>
         {children}

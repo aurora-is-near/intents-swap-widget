@@ -35,7 +35,7 @@ function StandaloneWalletBridge({
           ...config,
           connectedWallets: wallet.connectedWallets,
           providers: wallet.providers,
-          networks: wallet.networks,
+          plugins: wallet.plugins,
           onWalletSignin: wallet.connect,
           onWalletSignout: wallet.disconnect,
           showProfileButton: true,

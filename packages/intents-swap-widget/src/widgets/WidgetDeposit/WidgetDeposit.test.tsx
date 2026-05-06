@@ -42,7 +42,7 @@ const WidgetDepositSetup = () => {
     connectedWallets: { default: mockConnectedWalletAddress('evm') },
     walletSupportedChains: EVM_CHAINS,
     providers: { evm: mockEvmWallet },
-    networks: {
+    plugins: {
       evm: {
         makeTransfer: jest.fn(async () => ({
           hash: '0xMockHash',

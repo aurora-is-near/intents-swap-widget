@@ -282,7 +282,7 @@ const ConnectWalletButton = () => {
 };
 
 const SubmitButtonBase = (props: Props) => {
-  const { providers, networks } = useConfig();
+  const { providers, plugins } = useConfig();
 
   const { makeTransfer, onSuccess } = props;
   const { ctx } = useUnsafeSnapshot();
@@ -295,7 +295,7 @@ const SubmitButtonBase = (props: Props) => {
 
   const { make } = useMakeTransfer({
     providers,
-    networks,
+    plugins,
     makeTransfer,
   });
 

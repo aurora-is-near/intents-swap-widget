@@ -15,18 +15,18 @@ import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
-import { NetworkPlugins, Providers } from '../types';
+import { Plugins, Providers } from '../types';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 
 export const useMakeTransfer = ({
   message,
   providers,
-  networks,
+  plugins,
   makeTransfer,
 }: {
   message?: string;
   providers?: Providers;
-  networks?: NetworkPlugins;
+  plugins?: Plugins;
   makeTransfer?: MakeTransfer;
 }) => {
   const { ctx } = useUnsafeSnapshot();
@@ -38,13 +38,13 @@ export const useMakeTransfer = ({
 
   const { make: makeIntentsTransfer } = useMakeIntentsTransfer({
     providers,
-    networks,
+    plugins,
   });
 
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({
     makeTransfer,
     providers,
-    networks,
+    plugins,
   });
 
   const { make: makeNEARFtTransferCall } = useMakeNEARFtTransferCall(

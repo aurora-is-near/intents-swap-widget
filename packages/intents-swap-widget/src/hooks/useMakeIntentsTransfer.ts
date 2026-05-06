@@ -29,14 +29,14 @@ import type { NearWalletBase as NearWallet } from '@/types/near';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 import { useIntentsAccountType } from './useIntentsAccountType';
-import { NetworkPlugins } from '../types/connectors';
+import { Plugins } from '../types/connectors';
 import { Providers } from '../types/providers';
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
 
 type IntentsTransferArgs = {
   providers?: Providers;
-  networks?: NetworkPlugins;
+  plugins?: Plugins;
 };
 
 type MakeArgs = {
@@ -141,7 +141,7 @@ const validateNearPublicKey = async (
 
 export const useMakeIntentsTransfer = ({
   providers,
-  networks,
+  plugins,
 }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
@@ -248,7 +248,7 @@ export const useMakeIntentsTransfer = ({
           });
         }
 
-        const stellarPlugin = networks?.stellar;
+        const stellarPlugin = plugins?.stellar;
 
         if (!stellarPlugin) {
           throw new TransferError({
