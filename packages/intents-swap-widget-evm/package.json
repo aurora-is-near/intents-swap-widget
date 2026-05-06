@@ -28,6 +28,9 @@
   "peerDependencies": {
     "@aurora-is-near/intents-swap-widget": "^6.0.0"
   },
+  "devDependencies": {
+    "@aurora-is-near/intents-swap-widget": "*"
+  },
   "dependencies": {
     "ethers": "^6.15.0",
     "viem": "^2.38.3"
