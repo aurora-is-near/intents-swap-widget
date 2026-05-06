@@ -3,8 +3,6 @@ import { useEffect, useMemo } from 'react';
 import { WandShineW700 as WandShine } from '@material-symbols-svg/react-rounded/icons/wand-shine';
 import type { ChangeEvent } from 'react';
 
-import { useNotification } from './useNotification';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
 import { Banner } from '@/components/Banner';
@@ -14,6 +12,8 @@ import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
 import { useUnsafeSnapshot } from '@/machine/snap';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { useNotification } from './useNotification';
 
 type Props = {
   error?: string;

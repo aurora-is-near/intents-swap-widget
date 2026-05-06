@@ -1,11 +1,10 @@
 import type { ComponentProps } from 'react';
 
-import { AllNetworksIcon } from './AllNetworksIcon';
-
 import { cn } from '@/utils/cn';
 import { UNKNOWN_ICON } from '@/icons';
 import { Icon } from '@/components/Icon';
 import { useTypedTranslation } from '@/localisation';
+import { AllNetworksIcon } from './AllNetworksIcon';
 
 type Props = {
   label: string;

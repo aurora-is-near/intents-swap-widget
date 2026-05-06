@@ -6,6 +6,7 @@ import {
   useRef,
 } from 'react';
 
+import { useConfig } from '@/config';
 import {
   ColorPalette,
   ColorScheme,
@@ -14,7 +15,6 @@ import {
   ThemeBorderRadius,
 } from '../types/theme';
 import { ColorStop, createColorPalette } from './createColorPalette';
-import { useConfig } from '@/config';
 
 const setVariable = (key: string, value: string, elements: HTMLElement[]) => {
   elements.forEach((el) => {

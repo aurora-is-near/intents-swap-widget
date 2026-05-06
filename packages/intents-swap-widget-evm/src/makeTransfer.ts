@@ -14,24 +14,17 @@ import type {
 
 import type { MakeTransferOptions } from './types';
 
-const isEvmAddress = (a: string): boolean =>
-  /^0x[a-fA-F0-9]{40}$/.test(a);
+const isEvmAddress = (a: string): boolean => /^0x[a-fA-F0-9]{40}$/.test(a);
 
-const findViemChain = (id: number): Chain | undefined => {
-  for (const c of Object.values(viemChains)) {
-    if (
-      c &&
+const findViemChain = (id: number): Chain | undefined =>
+  Object.values(viemChains).find(
+    (c): c is Chain =>
+      !!c &&
       typeof c === 'object' &&
       'id' in c &&
       typeof (c as { id: unknown }).id === 'number' &&
-      (c as Chain).id === id
-    ) {
-      return c as Chain;
-    }
-  }
-
-  return undefined;
-};
+      (c as Chain).id === id,
+  );
 
 const defaultTransactionLink = (chainId: number, hash: string): string => {
   const chain = findViemChain(chainId);
@@ -79,8 +72,7 @@ export const makeTransfer = async (
     getTransactionLink = defaultTransactionLink,
   }: MakeTransferOptions,
 ): Promise<TransferResult> => {
-  const resolved =
-    typeof provider === 'function' ? await provider() : provider;
+  const resolved = typeof provider === 'function' ? await provider() : provider;
 
   if (!isEvmAddress(args.address)) {
     throw new Error(`Invalid EVM address: ${args.address}`);

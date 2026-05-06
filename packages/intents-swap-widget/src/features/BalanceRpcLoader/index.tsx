@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { TokenBalanceLoader } from './TokenBalanceLoader';
-import { useAllTokens } from '../../hooks/useAllTokens';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-import { useConfig } from '../../config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { isStellarAddress } from '@/utils/chains/isStellarAddress';
@@ -11,6 +7,10 @@ import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { getStellarWalletBalances } from '@/utils/stellar/getStellarWalletBalances';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token, TokenBalances } from '@/types/token';
+import { useConfig } from '../../config';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { useAllTokens } from '../../hooks/useAllTokens';
+import { TokenBalanceLoader } from './TokenBalanceLoader';
 
 type Props = {
   rpcs: ChainRpcUrls;

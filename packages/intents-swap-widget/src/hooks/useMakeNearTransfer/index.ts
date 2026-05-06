@@ -1,14 +1,13 @@
 import z from 'zod';
 import { base64 } from '@scure/base';
 
-import { nearClient } from './nearClient';
-
 import type {
   MakeTransferArgs,
   NearAction,
   NearWalletBase,
   TransferResult,
 } from '@/types';
+import { nearClient } from './nearClient';
 
 /**
  * Use this function to decode a raw response from `nearClient.query()`

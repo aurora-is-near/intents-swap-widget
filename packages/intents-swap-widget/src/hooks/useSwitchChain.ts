@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Eip1193Provider } from 'ethers';
-import { Providers } from '../types';
 import { EVM_CHAIN_IDS_MAP } from '@/constants/chains';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils';
 import { logger } from '@/logger';
 import { switchEthereumChain } from '@/utils/evm/switchEthereumChain';
+import { Providers } from '../types';
 
 const getCurrentChainId = async (provider: Eip1193Provider) => {
   if (!provider) {

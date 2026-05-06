@@ -2,9 +2,6 @@ import { useMemo } from 'react';
 import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
-import { useCreator } from './useCreatorConfig';
-import { useTokensGroupedBySymbol } from './useTokens';
-
 import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
 import {
@@ -12,6 +9,8 @@ import {
   normalizeSelectedTokenSymbols,
 } from '@/utils/tokenSelection';
 import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
+import { useTokensGroupedBySymbol } from './useTokens';
+import { useCreator } from './useCreatorConfig';
 
 const configOverrides = getConfigOverridesFromUrl();
 

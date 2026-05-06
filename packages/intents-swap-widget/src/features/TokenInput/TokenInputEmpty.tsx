@@ -1,7 +1,7 @@
+import { Card } from '@/components/Card';
 import { useConfig } from '../../config';
 import { cn } from '../../utils';
 import { TokenInputHeading } from './TokenInputHeading';
-import { Card } from '@/components/Card';
 
 type Msg = { type: 'on_click_select_token' };
 

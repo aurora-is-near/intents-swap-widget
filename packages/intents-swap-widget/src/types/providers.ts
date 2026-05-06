@@ -4,6 +4,11 @@ import type { NearWalletBase } from './near';
 
 export type EvmProvider = Eip1193Provider | (() => Promise<Eip1193Provider>);
 
+// The any is used here as the Solana transaction type can vary based on the
+// libraries used (e.g., web3.js, @solana/solana-web3.js). Without it, we would
+// need to duplicate some very complex types for each library or, inline one of
+// those libraries as a dependency, which we want to avoid in this package.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SolanaProvider<TTransaction = any> = {
   publicKey?: { toString(): string } | null;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;

@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useConfig } from '../../config';
-import type { ListenerProps } from './types';
-
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 import { logger } from '@/logger';
+import type { ListenerProps } from './types';
+import { useConfig } from '../../config';
 
 const BALANCE_REFRESH_INTERVAL_PENDING_MS = 15_000;
 const BALANCE_REFRESH_INTERVAL_IDLE_MS = 60_000;

@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import { logger } from '../../logger';
-import { isDryQuote } from '../guards/checks/isDryQuote';
-import type { ListenerProps } from './types';
-
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
@@ -12,6 +8,9 @@ import { useMakeQuote } from '@/hooks/useMakeQuote';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import type { FetchQuoteOptions } from '@/types/quote';
+import type { ListenerProps } from './types';
+import { isDryQuote } from '../guards/checks/isDryQuote';
+import { logger } from '../../logger';
 
 export type Props = ListenerProps & {
   message?: string;

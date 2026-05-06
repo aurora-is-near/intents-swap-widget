@@ -1,5 +1,3 @@
-import { ChainsDropdown } from '../ChainsDropdown';
-
 import { CHAIN_ICONS, NEAR_INTENTS_ICON } from '@/icons';
 import { ChainShortcut } from '@/components/ChainShortcut';
 
@@ -9,6 +7,7 @@ import { useConfig } from '@/config';
 import { noop } from '@/utils/noop';
 import { notReachable } from '@/utils/notReachable';
 import type { Chains, ChainsFilter } from '@/types/chain';
+import { ChainsDropdown } from '../ChainsDropdown';
 
 type SelectedChain = 'all' | 'intents' | Chains;
 

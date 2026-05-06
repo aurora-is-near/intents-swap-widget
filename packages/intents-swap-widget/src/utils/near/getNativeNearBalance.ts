@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import once from 'lodash.once';
 
-import { nearFailoverRpcProvider } from './rpc';
 import { logger } from '@/logger';
+import { nearFailoverRpcProvider } from './rpc';
 
 const createNearClient = once((rpcUrls: string[]) => {
   return nearFailoverRpcProvider({

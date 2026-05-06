@@ -1,4 +1,11 @@
 import type {
+  Quote,
+  QuoteDepositAnyAmount,
+  QuoteDry,
+  QuoteReal,
+} from '@/types/quote';
+import type { Token, TokenBalance } from '@/types/token';
+import type {
   InitialDryStateError,
   InitialExternalStateError,
   InitialInternalStateError,
@@ -7,13 +14,6 @@ import type {
   QuoteSuccessError,
 } from './errors';
 import { DefaultToken } from '../types';
-import type {
-  Quote,
-  QuoteDepositAnyAmount,
-  QuoteDry,
-  QuoteReal,
-} from '@/types/quote';
-import type { Token, TokenBalance } from '@/types/token';
 
 export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   state: 'initial_dry',

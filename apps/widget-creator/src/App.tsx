@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { BlockingError } from '@aurora-is-near/intents-swap-widget';
 
+import { useGetWidgetConfig } from '@/api/hooks';
+import { patchWidgetConfigUsed } from '@/api/requests/patchWidgetConfigUsed';
 import { CreatorProvider, QueryProvider } from './providers';
 import { IntegrationModal } from './features/IntegrationModal';
 import { useApplyRemoteWidgetConfig } from './hooks/useApplyRemoteWidgetConfig';
@@ -14,9 +16,6 @@ import { CreatorPanel } from './components/creatorPanel/CreatorPanel';
 import { WidgetSection } from './components/widget/WidgetSection';
 import { WidgetContent } from './components/widget/WidgetContent';
 import { useCreator } from './hooks/useCreatorConfig';
-
-import { useGetWidgetConfig } from '@/api/hooks';
-import { patchWidgetConfigUsed } from '@/api/requests/patchWidgetConfigUsed';
 
 const AppContent = () => {
   const { dispatch } = useCreator();

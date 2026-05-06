@@ -1,8 +1,8 @@
+import type { IntentsAccountType } from '@/types/config';
 import { isEvmAddress } from './isEvmAddress';
 import { isNearAddress } from './isNearAddress';
 import { isSolanaAddress } from './isSolanaAddress';
 import { isStellarAddress } from './isStellarAddress';
-import type { IntentsAccountType } from '@/types/config';
 
 export const getIntentsAccountTypeFromAddress = (
   address: string,

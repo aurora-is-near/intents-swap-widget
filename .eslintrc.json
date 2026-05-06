@@ -1,11 +1,19 @@
 {
+  "root": true,
   "extends": "@aurora-is-near/eslint-config",
-  "parserOptions": {
-    "project": [
-      "./apps/*/tsconfig.json",
-      "./packages/*/tsconfig.json"
-    ]
-  },
+  "ignorePatterns": [
+    "**/dist/",
+    "**/coverage/",
+    "**/.turbo/",
+    "**/.vercel/",
+    "**/node_modules/",
+    "**/typings/",
+    "**/scripts/",
+    "**/vite.config.ts",
+    "**/vitest.config.ts",
+    "**/vite-env.d.ts",
+    "**/postcss.config.cjs"
+  ],
   "rules": {
     "@typescript-eslint/no-restricted-imports": ["error", {
         "paths": [

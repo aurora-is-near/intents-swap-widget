@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useTokenModal } from '../../hooks/useTokenModal';
-import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
-import { useTypedTranslation } from '../../localisation';
-import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
-import type { CommonWidgetProps, TokenInputType } from '../types';
-
 import {
   SendAddress,
   SubmitButton,
@@ -33,6 +27,11 @@ import { useConfig } from '@/config';
 import { isDebug, notReachable } from '@/utils';
 
 import type { ChainsFilters, Token, TransferResult } from '@/types';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
+import { useTokenModal } from '../../hooks/useTokenModal';
 
 export type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }

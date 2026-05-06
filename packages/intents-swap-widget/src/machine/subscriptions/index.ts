@@ -1,3 +1,8 @@
+import type { ContextChange } from '@/machine/context';
+import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
+import { machine, moveTo } from '@/machine';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { logger } from '@/logger';
 import { isQuoteIdle } from './checkers/isQuoteIdle';
 import { isInputChanged } from './checkers/isInputChanged';
 import { isErrorChanged } from './checkers/isErrorChanged';
@@ -7,11 +12,6 @@ import { isWalletDisconnected } from './checkers/isWalletDisconnected';
 import { isSendAddressForbidden } from './checkers/isSendAddressForbidden';
 import { isSendAddressAsConnected } from './checkers/isSendAddressAsConnected';
 import { isAmountChangedFromQuote } from './checkers/isAmountChangedFromQuote';
-import type { ContextChange } from '@/machine/context';
-import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
-import { machine, moveTo } from '@/machine';
-import { fireEvent } from '@/machine/events/utils/fireEvent';
-import { logger } from '@/logger';
 
 type Args = {
   debug: boolean;

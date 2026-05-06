@@ -1,10 +1,10 @@
 import { base58, hex } from '@scure/base';
 
+import { isStellarAddress } from '@/utils/chains/isStellarAddress';
+import { logger } from '@/logger';
 import { notReachable } from '../notReachable';
 import { IntentsAccountType } from '../../types';
 import { stellarAddressToBytes } from '../stellar/stellarAddressToBytes';
-import { isStellarAddress } from '@/utils/chains/isStellarAddress';
-import { logger } from '@/logger';
 
 type Args = {
   walletAddress?: string;

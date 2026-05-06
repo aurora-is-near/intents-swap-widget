@@ -1,8 +1,4 @@
-import type {
-  EvmProvider,
-  SolanaProvider,
-  StellarProvider,
-} from './providers';
+import type { EvmProvider, SolanaProvider, StellarProvider } from './providers';
 import type { MakeTransferArgs, TransferResult } from './transfer';
 
 type NetworkMap = {

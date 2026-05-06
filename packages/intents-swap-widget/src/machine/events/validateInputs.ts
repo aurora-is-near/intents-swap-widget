@@ -1,4 +1,3 @@
-import { fireEvent } from './utils/fireEvent';
 import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
@@ -18,6 +17,7 @@ import type {
   InitialExternalStateError,
   InitialInternalStateError,
 } from '@/machine/errors';
+import { fireEvent } from './utils/fireEvent';
 
 const setAsyncError = (err: InitialExternalStateError) => {
   fireEvent('errorSet', err);

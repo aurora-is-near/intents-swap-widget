@@ -1,7 +1,3 @@
-import { Token } from '../../types';
-import { TokenIcon } from '../../components';
-import { TransactionStatusBadge } from './TransactionStatusBadge';
-
 import { cn } from '@/utils/cn';
 import { Card } from '@/components/Card';
 import { formatRelativeTime } from '@/utils/formatters/formatRelativeTime';
@@ -9,6 +5,9 @@ import { TinyNumber } from '@/components/TinyNumber';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
 import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
+import { TransactionStatusBadge } from './TransactionStatusBadge';
+import { TokenIcon } from '../../components';
+import { Token } from '../../types';
 
 type Props = {
   tokens: Token[];
@@ -39,9 +38,7 @@ export const TransactionCard = ({
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
           <div className="flex items-center gap-x-sw-sm">
-            <span className="text-sw-label-md text-sw-gray-200">
-              Swap
-            </span>
+            <span className="text-sw-label-md text-sw-gray-200">Swap</span>
           </div>
           <span className="text-sw-label-sm text-sw-gray-400">{time}</span>
         </div>

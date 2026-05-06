@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { CommonWidgetProps, TokenInputType } from '../types';
-import { useTokenModal } from '../../hooks/useTokenModal';
-import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
-import { useTypedTranslation } from '../../localisation';
 import {
   SendAddress,
   SubmitButton,
@@ -31,6 +27,10 @@ import { useConfig } from '@/config';
 import { isDebug, notReachable } from '@/utils';
 
 import type { ChainsFilters, Token, TransferResult } from '@/types';
+import { useTypedTranslation } from '../../localisation';
+import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }

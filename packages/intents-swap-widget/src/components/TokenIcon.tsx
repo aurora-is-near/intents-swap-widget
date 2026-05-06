@@ -1,9 +1,8 @@
-import { Icon } from './Icon';
-
 import { cn } from '@/utils';
 import { TOKENS_DATA } from '@/constants/tokens';
 import { ASSET_ICONS, CHAIN_ICONS, UNKNOWN_ICON } from '@/icons';
 import type { Token } from '@/types/token';
+import { Icon } from './Icon';
 
 type TokenItemProps = {
   token: Token;

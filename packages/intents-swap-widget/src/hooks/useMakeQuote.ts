@@ -7,9 +7,6 @@ import {
 } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
-import { Quote } from '../types';
-import { useIntentsAccountType } from './useIntentsAccountType';
-import { useSupportedChains } from './useSupportedChains';
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { QuoteError } from '@/errors';
@@ -23,6 +20,9 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+import { useSupportedChains } from './useSupportedChains';
+import { useIntentsAccountType } from './useIntentsAccountType';
+import { Quote } from '../types';
 
 type MakeArgs = {
   message?: string;

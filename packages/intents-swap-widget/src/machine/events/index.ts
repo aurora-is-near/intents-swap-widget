@@ -1,3 +1,6 @@
+import { machine } from '@/machine/machine';
+import type { Context } from '@/machine/context';
+import type { Machine } from '@/machine/machine';
 import { quoteReset } from './quoteReset';
 import { reset, type ResetPayload } from './reset';
 import { tokenSelectRotate } from './tokenSelectRotate';
@@ -34,9 +37,6 @@ import {
   transferSetStatus,
   type TransferSetStatusPayload,
 } from './transferSetStatus';
-import { machine } from '@/machine/machine';
-import type { Context } from '@/machine/context';
-import type { Machine } from '@/machine/machine';
 
 export type TradeEvents = {
   reset: ResetPayload;

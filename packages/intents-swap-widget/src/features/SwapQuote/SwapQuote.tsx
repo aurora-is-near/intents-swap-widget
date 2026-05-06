@@ -1,4 +1,3 @@
-import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
@@ -7,6 +6,7 @@ import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { useTypedTranslation } from '@/localisation';
+import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
 type Props = {
   className?: string;

@@ -2,12 +2,11 @@ import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import type { FeeConfig } from 'intents-1click-rule-engine';
 
+import { DEFAULT_ZERO_FEE } from '@/constants';
 import { apiKeySchema } from '../schemas';
 import { feeServiceClient } from '../network';
 import { FeeServiceCreateApiKeyError } from '../errors';
 import type { ApiKey } from '../types';
-
-import { DEFAULT_ZERO_FEE } from '@/constants';
 
 export const createApiKey = async (authToken: string) => {
   let res: unknown;

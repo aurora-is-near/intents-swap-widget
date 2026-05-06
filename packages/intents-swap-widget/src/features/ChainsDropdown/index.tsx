@@ -3,8 +3,6 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { ChainItem } from './ChainItem';
-
 import { useConfig } from '@/config';
 import { Hr } from '@/components/Hr';
 import { AllNetworksIcon } from '@/components/AllNetworksIcon';
@@ -15,6 +13,7 @@ import { useTypedTranslation } from '@/localisation';
 import { CHAIN_ICONS, NEAR_INTENTS_ICON, UNKNOWN_ICON } from '@/icons';
 import { getThemeCssVariables } from '@/theme/getThemeCssVariables';
 import type { Chains, ChainsFilter } from '@/types/chain';
+import { ChainItem } from './ChainItem';
 
 type Msg = { type: 'on_click_chain'; chain: 'all' | 'intents' | Chains };
 

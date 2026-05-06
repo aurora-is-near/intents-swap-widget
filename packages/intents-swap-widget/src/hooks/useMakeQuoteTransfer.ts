@@ -1,12 +1,5 @@
 import axios from 'axios';
 
-import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEvmBaseToken, isEvmChain } from '../utils';
-import { useMakeNearTransfer } from './useMakeNearTransfer';
-import { Providers } from '../types/providers';
-import { NetworkPlugins } from '../types/connectors';
-import { getSupportedProviderType } from '../utils/chains/getSupportedProviderType';
-import { useConfig } from '../config';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -18,6 +11,13 @@ import type {
   MakeTransferArgs,
   TransferResult,
 } from '@/types/transfer';
+import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
+import { isEvmBaseToken, isEvmChain } from '../utils';
+import { useMakeNearTransfer } from './useMakeNearTransfer';
+import { Providers } from '../types/providers';
+import { NetworkPlugins } from '../types/connectors';
+import { getSupportedProviderType } from '../utils/chains/getSupportedProviderType';
+import { useConfig } from '../config';
 
 type QuoteTransferArgs = {
   makeTransfer?: MakeTransfer;
@@ -62,14 +62,14 @@ export const useMakeQuoteTransfer = ({
 
       assertChainSupport(
         evmPlugin,
-        'EVM transfers are not supported. Add the EVM plugin from @aurora-is-near/intents-swap-widget-evm via the `networks` configuration property.'
+        'EVM transfers are not supported. Add the EVM plugin from @aurora-is-near/intents-swap-widget-evm via the `networks` configuration property.',
       );
 
       const provider = providers?.evm;
 
       assertChainSupport(
         provider,
-        'EVM transfers are not supported. Add an EVM provider via the `providers` configuration property.'
+        'EVM transfers are not supported. Add an EVM provider via the `providers` configuration property.',
       );
 
       return (args: MakeTransferArgs) =>
@@ -82,17 +82,17 @@ export const useMakeQuoteTransfer = ({
 
       assertChainSupport(
         solPlugin,
-        'Solana transfers are not supported. Add the Solana plugin from @aurora-is-near/intents-swap-widget-solana via the `networks` configuration property.'
+        'Solana transfers are not supported. Add the Solana plugin from @aurora-is-near/intents-swap-widget-solana via the `networks` configuration property.',
       );
 
       assertChainSupport(
         provider,
-        'Solana transfers are not supported. Add a Solana provider via the `providers` configuration property.'
+        'Solana transfers are not supported. Add a Solana provider via the `providers` configuration property.',
       );
 
       assertChainSupport(
         alchemyApiKey,
-        'Solana transfers are not supported. Add an Alchemy API key via the `alchemyApiKey` configuration property.'
+        'Solana transfers are not supported. Add an Alchemy API key via the `alchemyApiKey` configuration property.',
       );
 
       return (args: MakeTransferArgs) =>
@@ -109,12 +109,12 @@ export const useMakeQuoteTransfer = ({
 
       assertChainSupport(
         stellarPlugin,
-        'Stellar transfers are not supported. Add the Stellar plugin from @aurora-is-near/intents-swap-widget-stellar via the `networks` configuration property.'
+        'Stellar transfers are not supported. Add the Stellar plugin from @aurora-is-near/intents-swap-widget-stellar via the `networks` configuration property.',
       );
 
       assertChainSupport(
         provider,
-        'Stellar transfers are not supported. Add a Stellar provider via the `providers` configuration property.'
+        'Stellar transfers are not supported. Add a Stellar provider via the `providers` configuration property.',
       );
 
       return (args: MakeTransferArgs) => {

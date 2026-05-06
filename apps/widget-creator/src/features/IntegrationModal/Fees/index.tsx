@@ -3,9 +3,13 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { FeeInput } from './FeeInput';
-import { FeesSummary } from './FeesSummary';
-
+import { Button } from '@/uikit/Button';
+import { TextInput } from '@/uikit/TextInput';
+import { TextAreaInput } from '@/uikit/TextAreaInput';
+import { ExpandableToggleCard } from '@/uikit/ToggleCard';
+import { useUpdateApiKey } from '@/api/hooks';
+import { DEFAULT_ZERO_FEE } from '@/constants';
+import type { ApiKey } from '@/api/types';
 import { NestedHeader } from '../components';
 import {
   getBasicFeeConfig,
@@ -17,14 +21,8 @@ import {
   isZeroValueBasedFee,
   validateFeeConfig,
 } from '../utils';
-
-import { Button } from '@/uikit/Button';
-import { TextInput } from '@/uikit/TextInput';
-import { TextAreaInput } from '@/uikit/TextAreaInput';
-import { ExpandableToggleCard } from '@/uikit/ToggleCard';
-import { useUpdateApiKey } from '@/api/hooks';
-import { DEFAULT_ZERO_FEE } from '@/constants';
-import type { ApiKey } from '@/api/types';
+import { FeesSummary } from './FeesSummary';
+import { FeeInput } from './FeeInput';
 
 const formSchema = z
   .object({

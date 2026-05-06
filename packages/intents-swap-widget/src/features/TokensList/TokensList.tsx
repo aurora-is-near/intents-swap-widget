@@ -1,27 +1,6 @@
 import { VList, VListHandle } from 'virtua';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { TokenItem } from './TokenItem';
-import { useFocusOnList } from './hooks';
-import { RefreshBalanceButton } from './RefreshBalanceButton';
-import { TokensListPlaceholder } from './TokensListPlaceholder';
-import {
-  LIST_CONTAINER_ID,
-  MAX_LIST_VIEW_AREA_HEIGHT,
-  TOKEN_ITEM_HEIGHT,
-} from './constants';
-import {
-  getFirstGroupItemTotalIndex,
-  getGroupHeadersTotalIndexes,
-  getListItemsTotalCount,
-  getListState,
-  getListTotalHeight,
-  getTokenByTotalIndex,
-} from './utils';
-import type { ListGroup } from './types';
-
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-
 import { cn } from '@/utils/cn';
 import { Hr } from '@/components/Hr';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -33,6 +12,25 @@ import { useConfig } from '@/config';
 
 import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import type { ListGroup } from './types';
+import {
+  getFirstGroupItemTotalIndex,
+  getGroupHeadersTotalIndexes,
+  getListItemsTotalCount,
+  getListState,
+  getListTotalHeight,
+  getTokenByTotalIndex,
+} from './utils';
+import {
+  LIST_CONTAINER_ID,
+  MAX_LIST_VIEW_AREA_HEIGHT,
+  TOKEN_ITEM_HEIGHT,
+} from './constants';
+import { TokensListPlaceholder } from './TokensListPlaceholder';
+import { RefreshBalanceButton } from './RefreshBalanceButton';
+import { useFocusOnList } from './hooks';
+import { TokenItem } from './TokenItem';
 
 type Msg =
   | { type: 'on_select_token'; token: Token }

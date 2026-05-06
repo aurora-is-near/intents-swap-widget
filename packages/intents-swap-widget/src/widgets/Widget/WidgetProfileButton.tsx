@@ -1,9 +1,9 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { PersonFillW700 as Person } from '@material-symbols-svg/react-rounded/icons/person';
 
-import { useWalletConnection } from '../../hooks/useWalletConnection';
 import { useTheme } from '@/hooks/useTheme';
 import { getThemeCssVariables } from '@/theme/getThemeCssVariables';
+import { useWalletConnection } from '../../hooks/useWalletConnection';
 
 export const WidgetProfileButton = () => {
   const { walletSignIn, walletSignOut, isConnected } = useWalletConnection();

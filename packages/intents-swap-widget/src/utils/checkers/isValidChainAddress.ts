@@ -1,3 +1,4 @@
+import { Chains } from '@/types';
 import { isBtcAddress } from '../chains/isBtcAddress';
 import { isEvmAddress } from '../chains/isEvmAddress';
 import { isCardanoAddress } from '../chains/isCardanoAddress';
@@ -11,8 +12,6 @@ import { isSuiAddress } from '../chains/isSuiAddress';
 import { isSolanaAddress } from '../chains/isSolanaAddress';
 import { isTonAddress } from '../chains/isTonAddress';
 import { isZecAddress } from '../chains/isZecAddress';
-
-import { Chains } from '@/types';
 
 export const isValidChainAddress = (
   chain: Chains,

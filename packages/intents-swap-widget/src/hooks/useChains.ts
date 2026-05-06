@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 
-import { useTokens } from './useTokens';
-import { isAllowedChain } from '../utils/chains/isAllowedChain';
 import { useConfig } from '@/config';
 import { CHAINS_LIST, DEFAULT_CHAINS_ORDER } from '@/constants/chains';
 import type { Chain, Chains } from '@/types/chain';
+import { isAllowedChain } from '../utils/chains/isAllowedChain';
+import { useTokens } from './useTokens';
 
 function sortChains(items: Chain[], chainsOrder: ReadonlyArray<Chains>) {
   // Sort by any custom `chainsOrder` first, falling back to the default order

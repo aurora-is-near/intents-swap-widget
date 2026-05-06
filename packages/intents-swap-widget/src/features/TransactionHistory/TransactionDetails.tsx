@@ -2,8 +2,6 @@ import { type PropsWithChildren } from 'react';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import { ArrowDownwardW700 as ArrowDownward } from '@material-symbols-svg/react-rounded/icons/arrow-downward';
 
-import { TransactionDetailsToken } from './TransactionDetailsToken';
-import { TransactionStatusBadge } from './TransactionStatusBadge';
 import { Card } from '@/components/Card';
 import { CloseButton } from '@/components/CloseButton';
 import { TinyNumber } from '@/components/TinyNumber';
@@ -15,6 +13,8 @@ import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionSt
 import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
 import type { Token } from '@/types';
+import { TransactionStatusBadge } from './TransactionStatusBadge';
+import { TransactionDetailsToken } from './TransactionDetailsToken';
 
 type Props = {
   transaction: Transaction | FakeTransaction;

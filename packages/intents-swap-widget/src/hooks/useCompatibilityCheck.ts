@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import type { walletMessage } from '@defuse-protocol/internal-utils';
 import { Buffer } from 'buffer';
+import { TransferError } from '@/errors';
+import { notReachable } from '@/utils/notReachable';
+import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
+import { localStorageTyped } from '@/utils/localstorage';
 import {
   verifyWalletSignature,
   walletVerificationMessageFactory,
@@ -8,10 +12,6 @@ import {
 import { Providers } from '../types';
 import { logger } from '../logger';
 import { useIntentsAccountType } from './useIntentsAccountType';
-import { TransferError } from '@/errors';
-import { notReachable } from '@/utils/notReachable';
-import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
-import { localStorageTyped } from '@/utils/localstorage';
 
 type Props = {
   providers?: Providers;

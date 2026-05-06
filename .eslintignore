@@ -1,9 +1,2 @@
-vite.config.ts
-vite-env.d.ts
-node_modules/**/*
-coverage/
-typings/
-dist/
-scripts/
-.turbo
-.vercel
+apps/
+packages/

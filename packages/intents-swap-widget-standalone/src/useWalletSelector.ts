@@ -1,8 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import {
-  NetworkPlugins,
-  Providers,
-} from '@aurora-is-near/intents-swap-widget';
+import { NetworkPlugins, Providers } from '@aurora-is-near/intents-swap-widget';
 import { evm } from '@aurora-is-near/intents-swap-widget-evm';
 import { sol } from '@aurora-is-near/intents-swap-widget-solana';
 import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';

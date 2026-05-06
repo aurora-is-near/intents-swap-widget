@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
 import type { ReactNode } from 'react';
 
+import { cn } from '@/utils/cn';
 import { Hr } from './Hr';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { cn } from '@/utils/cn';
 
 type Props = {
   title: ReactNode;

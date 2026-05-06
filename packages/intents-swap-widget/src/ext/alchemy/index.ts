@@ -1,18 +1,17 @@
 import { useEffect, useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import { fireEvent } from '@/machine';
+import { useTokens } from '@/hooks/useTokens';
+import { guardStates } from '@/machine/guards';
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { parse } from './parse';
 import { createLoader } from './load';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { isAlchemySupportedChain } from './types';
 import type { AlchemyResponse } from './types';
 import type { WalletAddresses } from '../../types';
-
-import { fireEvent } from '@/machine';
-import { useTokens } from '@/hooks/useTokens';
-import { guardStates } from '@/machine/guards';
-import { useUnsafeSnapshot } from '@/machine/snap';
-import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 type Args = {
   isEnabled: boolean;

@@ -1,8 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
-import { NetworkPlugins, Providers } from '../types';
-import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
-import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
@@ -17,6 +13,10 @@ import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
+import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
+import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
+import { NetworkPlugins, Providers } from '../types';
+import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 
 export const useMakeTransfer = ({
   message,
@@ -40,6 +40,7 @@ export const useMakeTransfer = ({
     providers,
     networks,
   });
+
   const { make: makeQuoteTransfer } = useMakeQuoteTransfer({
     makeTransfer,
     providers,

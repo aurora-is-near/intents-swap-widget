@@ -1,12 +1,11 @@
 import { useState } from 'react';
+import { useApiKeys } from '@/api/hooks';
 import ResetIcon from '../../assets/icons/reset.svg?react';
 import { OutlinedButton } from '../../uikit/Button';
 import { Design } from './Design';
 import { Configure } from './Configure';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { cn } from '../../utils/cn';
-
-import { useApiKeys } from '@/api/hooks';
 
 const DESIGN_TAB_ID = 'design-tab';
 const CONFIGURE_TAB_ID = 'configure-tab';

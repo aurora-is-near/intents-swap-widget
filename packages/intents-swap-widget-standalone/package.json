@@ -9,6 +9,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.tsx",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "build": "vite build"

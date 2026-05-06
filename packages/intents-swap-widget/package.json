@@ -12,6 +12,7 @@
   "scripts": {
     "test": "jest",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.tsx",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepublishOnly": "yarn run build",

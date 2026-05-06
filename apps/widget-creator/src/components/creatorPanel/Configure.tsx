@@ -8,6 +8,8 @@ import {
   Icon,
   isValidChainAddress,
 } from '@aurora-is-near/intents-swap-widget';
+import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
+import { InfoBanner } from '@/components/InfoBanner';
 import { Button, OutlinedButton } from '../../uikit/Button';
 import { TextInput } from '../../uikit/TextInput';
 import { ConfigSection } from '../../uikit/ConfigSection';
@@ -26,9 +28,6 @@ import type { TokenType } from '../../hooks/useTokens';
 import { SelectATokenText } from './SelectATokenText';
 import { TokenSelectionModal } from './TokenSelectionModal';
 import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
-
-import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
-import { InfoBanner } from '@/components/InfoBanner';
 
 export function Configure() {
   const wereInitialTokensSet = useRef(false);

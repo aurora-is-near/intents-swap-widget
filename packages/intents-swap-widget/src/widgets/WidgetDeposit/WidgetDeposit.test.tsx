@@ -49,7 +49,7 @@ const WidgetDepositSetup = () => {
           transactionLink: '',
         })),
       },
-    }
+    },
   };
 
   return (

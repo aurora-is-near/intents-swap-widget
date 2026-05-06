@@ -1,7 +1,7 @@
-import { useConfig } from '../config';
 import { DirectionSwitcher } from '@/components/DirectionSwitcher';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { fireEvent } from '@/machine';
+import { useConfig } from '../config';
 
 export const SwapDirectionSwitcher = () => {
   const { ctx } = useUnsafeSnapshot();

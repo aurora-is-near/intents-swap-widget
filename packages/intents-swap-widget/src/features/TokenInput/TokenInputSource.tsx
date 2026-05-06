@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 
+import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { Msg, TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { useTokenInputBalance } from './hooks';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
-import { useUnsafeSnapshot } from '@/machine/snap';
 
 export type Props = {
   heading: string;

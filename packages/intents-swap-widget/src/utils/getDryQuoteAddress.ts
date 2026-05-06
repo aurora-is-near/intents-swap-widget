@@ -1,5 +1,5 @@
-import { DRY_QUOTE_ZERO_ADDRESSES, EVM_CHAINS } from '../constants/chains';
 import type { Chains, EvmChains } from '@/types/chain';
+import { DRY_QUOTE_ZERO_ADDRESSES, EVM_CHAINS } from '../constants/chains';
 
 export function getDryQuoteAddress(
   tokenBlockchain: Chains | EvmChains,

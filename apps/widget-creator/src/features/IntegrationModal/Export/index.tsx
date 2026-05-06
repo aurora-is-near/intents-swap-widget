@@ -6,8 +6,6 @@ import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-roun
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import { Button as UIButton } from '@headlessui/react';
 
-import { ApiKeySelect, Header } from '../components';
-
 import {
   useApiKeys,
   useCreateWidgetConfig,
@@ -22,6 +20,7 @@ import { InfoBanner } from '@/components/InfoBanner';
 import { useShareableLink } from '@/hooks/useShareableLink';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
+import { ApiKeySelect, Header } from '../components';
 
 const applyIndent = (code: string, spaces: number): string => {
   const pad = ' '.repeat(spaces);

@@ -1,13 +1,5 @@
 import { useEffect, useMemo } from 'react';
 
-import type { ListenerProps } from './types';
-import { IntentsAccountType } from '../../types/config';
-import { isSolanaAddress } from '../../utils/chains/isSolanaAddress';
-import { isEvmAddress } from '../../utils/chains/isEvmAddress';
-import { isNearAddress } from '../../utils/chains/isNearAddress';
-import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
-import { useIntentsAccountType } from '../../hooks';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '@/config';
 import { useTokens } from '@/hooks/useTokens';
 import { useIntentsBalance } from '@/hooks/useIntentsBalance';
@@ -21,6 +13,14 @@ import { fireEvent } from '@/machine';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import type { Token } from '@/types/token';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { useIntentsAccountType } from '../../hooks';
+import { useExternalDefaultToken } from '../../hooks/useExternalDefaultToken';
+import { isNearAddress } from '../../utils/chains/isNearAddress';
+import { isEvmAddress } from '../../utils/chains/isEvmAddress';
+import { isSolanaAddress } from '../../utils/chains/isSolanaAddress';
+import { IntentsAccountType } from '../../types/config';
+import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
   skipIntents?: boolean;

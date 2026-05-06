@@ -1,5 +1,5 @@
-import type { Context } from '../context';
 import type { DeepReadonly } from '@/types/utils';
+import type { Context } from '../context';
 
 export const getIsDirectTokenOnNearDeposit = (
   ctx: DeepReadonly<Context>,

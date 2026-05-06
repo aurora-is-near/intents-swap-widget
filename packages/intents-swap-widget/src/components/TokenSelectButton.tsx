@@ -1,7 +1,7 @@
-import { TokenIcon } from './TokenIcon';
 import { cn } from '@/utils/cn';
 
 import type { Token } from '@/types/token';
+import { TokenIcon } from './TokenIcon';
 
 type Props = {
   token: Token | undefined;

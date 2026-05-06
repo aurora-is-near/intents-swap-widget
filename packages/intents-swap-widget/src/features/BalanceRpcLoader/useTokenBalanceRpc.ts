@@ -1,12 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useMemo } from 'react';
-import { logger } from '../../logger';
-import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
-import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
-import { WalletAddresses } from '../../types';
-import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useConfig } from '@/config';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
@@ -18,6 +12,12 @@ import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
 import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
+import { WalletAddresses } from '../../types';
+import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
+import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { logger } from '../../logger';
 
 type Args = {
   token: Token;

@@ -1,7 +1,5 @@
 import clsx from 'clsx';
 
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-
 import { Tooltip } from '@/components/Tooltip';
 import { Skeleton } from '@/components/Skeleton';
 import { TinyNumber } from '@/components/TinyNumber';
@@ -9,6 +7,7 @@ import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useTypedTranslation } from '@/localisation';
 import type { Token, TokenBalance } from '@/types/token';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 
 type Props = {
   token: Token;

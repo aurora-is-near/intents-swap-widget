@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { CommonWidgetProps, TokenInputType } from '../types';
-import { useTokenModal } from '../../hooks/useTokenModal';
-import { useTypedTranslation } from '../../localisation';
-import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import {
   DepositMethodSwitcher,
   DepositSummary,
@@ -30,6 +26,10 @@ import {
 import { useConfig } from '@/config';
 import { isDebug, noop, notReachable } from '@/utils';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
+import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
+import { useTypedTranslation } from '../../localisation';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }

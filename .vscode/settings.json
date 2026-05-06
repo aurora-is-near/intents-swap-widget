@@ -16,5 +16,9 @@
     "typescript",
     "typescriptreact"
   ],
+  "eslint.workingDirectories": [
+    { "pattern": "apps/*" },
+    { "pattern": "packages/*" }
+  ],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

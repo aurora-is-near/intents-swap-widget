@@ -1,13 +1,5 @@
 import { useId } from 'react';
 
-import { WalletBalance } from './WalletBalance';
-import { getBalancePortion } from './utils/getBalancePortion';
-import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
-
-import { TokenInputHeading } from './TokenInputHeading';
-import { useUnsafeSnapshot } from '../../machine';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-
 import { cn } from '@/utils/cn';
 import { noop } from '@/utils/noop';
 import { useConfig } from '@/config';
@@ -18,6 +10,12 @@ import { Badge } from '@/components/Badge';
 import { InputAmount } from '@/components/InputAmount';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import type { Token, TokenBalance } from '@/types/token';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
+import { TokenInputHeading } from './TokenInputHeading';
+import { useUnsafeSnapshot } from '../../machine';
+import { getUsdDisplayAmount } from './utils/getUsdDisplayAmount';
+import { getBalancePortion } from './utils/getBalancePortion';
+import { WalletBalance } from './WalletBalance';
 
 export type Msg =
   | { type: 'on_click_select_token' }

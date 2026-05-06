@@ -1,9 +1,9 @@
 import { snapshot } from 'valtio';
 
-import { getSupportedChains } from '../../../utils/chains/getSupportedChains';
 import { configStore } from '@/config';
 
 import type { Context, ContextChange } from '@/machine/context';
+import { getSupportedChains } from '../../../utils/chains/getSupportedChains';
 
 export const isSendAddressAsConnected = (
   ctx: Context,

@@ -1,6 +1,6 @@
-import type { Context } from '../context';
 import type { DeepReadonly } from '@/types/utils';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
+import type { Context } from '../context';
 
 export const getIsNativeNearDeposit = (ctx: DeepReadonly<Context>): boolean => {
   return !!(

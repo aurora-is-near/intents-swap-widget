@@ -4,15 +4,14 @@ import { DeleteW700 as Delete } from '@material-symbols-svg/react-rounded/icons/
 import { EditSquareW700 as Edit } from '@material-symbols-svg/react-rounded/icons/edit-square';
 import { ContentCopyW700 as Copy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 
+import { Button } from '@/uikit/Button';
+import { useDeleteApiKey } from '@/api/hooks';
+import type { ApiKey } from '@/api/types';
 import {
   getPercentFromBasisPoints,
   getSimpleValueBasedFee,
   maskApiKey,
 } from '../utils';
-
-import { Button } from '@/uikit/Button';
-import { useDeleteApiKey } from '@/api/hooks';
-import type { ApiKey } from '@/api/types';
 
 type Props = {
   apiKey: ApiKey;

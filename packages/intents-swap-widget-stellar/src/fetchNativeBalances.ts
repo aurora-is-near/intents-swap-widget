@@ -40,6 +40,7 @@ export const fetchNativeBalances = async (publicKey: string) => {
       const entries = response.data?.result?.entries;
 
       if (!entries || entries.length === 0) {
+        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -64,6 +65,7 @@ export const fetchNativeBalances = async (publicKey: string) => {
 
       return { xlmStroops, usdcStroops };
     } catch {
+      // eslint-disable-next-line no-continue
       continue;
     }
   }

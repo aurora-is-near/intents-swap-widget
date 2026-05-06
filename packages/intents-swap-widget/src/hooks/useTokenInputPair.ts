@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import { fireEvent } from '../machine';
-import { useUnsafeSnapshot } from '../machine/snap';
 import { notReachable } from '@/utils/notReachable';
 import { calculatePairAmount } from '@/utils/tokens/calculatePairAmount';
 import { formatHumanToBig } from '@/utils/formatters/formatHumanToBig';
 import type { Token } from '@/types/token';
+import { useUnsafeSnapshot } from '../machine/snap';
+import { fireEvent } from '../machine';
 
 export const useTokenInputPair = () => {
   const { ctx } = useUnsafeSnapshot();

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { CloseW700 as Close } from '@material-symbols-svg/react-rounded/icons/close';
 
+import type { ApiKey } from '@/api/types';
 import { Fees } from './Fees';
 import { Export } from './Export';
 import { Report } from './Report';
 import { ApiKeys } from './ApiKeys';
 import { Navigation } from './components';
 import type { NavigationTabs } from './components';
-import type { ApiKey } from '@/api/types';
 
 interface ModalProps {
   isOpen: boolean;

@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SearchW700 as Search } from '@material-symbols-svg/react-rounded/icons/search';
 
-import { useChains } from '../hooks';
-import { TokensList } from './TokensList';
-import { ChainsSelector } from './ChainsSelector';
-
-import { useSupportedChains } from '../hooks/useSupportedChains';
 import { Hr } from '@/components/Hr';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
@@ -13,12 +8,15 @@ import { Banner } from '@/components/Banner';
 import { CloseButton } from '@/components/CloseButton';
 
 import { cn } from '@/utils/cn';
-import { useHandleKeyDown } from '@/hooks';
+import { useChains, useHandleKeyDown } from '@/hooks';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { notReachable } from '@/utils/notReachable';
 import { useTypedTranslation } from '@/localisation';
 import type { Chains, ChainsFilter } from '@/types/chain';
 import type { Token } from '@/types/token';
+import { useSupportedChains } from '../hooks/useSupportedChains';
+import { ChainsSelector } from './ChainsSelector';
+import { TokensList } from './TokensList';
 
 type Msg =
   | { type: 'on_select_token'; token: Token }

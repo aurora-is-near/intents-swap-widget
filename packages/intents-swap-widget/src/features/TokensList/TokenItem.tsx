@@ -1,7 +1,3 @@
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-
-import { ImmediatePrice } from './ImmediatePrice';
-
 import { cn } from '@/utils/cn';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
@@ -11,6 +7,8 @@ import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { getUsdDisplayBalance } from '@/utils/formatters/getUsdDisplayBalance';
 import type { Token, TokenBalance } from '@/types/token';
+import { ImmediatePrice } from './ImmediatePrice';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 
 type Msg = { type: 'on_select_token'; token: Token };
 

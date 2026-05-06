@@ -1,9 +1,9 @@
 import { memo, useEffect, useRef } from 'react';
 
-import { useTokenBalanceRpc } from './useTokenBalanceRpc';
-import { WalletAddresses } from '../../types';
 import type { Token, TokenBalances } from '@/types/token';
 import type { ChainRpcUrls } from '@/types/chain';
+import { useTokenBalanceRpc } from './useTokenBalanceRpc';
+import { WalletAddresses } from '../../types';
 
 type Props = {
   token: Token;

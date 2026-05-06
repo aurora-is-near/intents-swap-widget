@@ -1,8 +1,8 @@
 import { noop } from '@tanstack/react-query';
 
-import { nearSingleRpcClient } from './rpc';
 import { localStorageTyped } from '@/utils/localstorage';
 import { logger } from '@/logger';
+import { nearSingleRpcClient } from './rpc';
 
 const DEBOUNCE_MS = 300;
 

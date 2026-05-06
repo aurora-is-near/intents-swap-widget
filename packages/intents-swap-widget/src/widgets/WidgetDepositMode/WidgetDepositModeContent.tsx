@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useTypedTranslation } from '../../localisation';
-import { useTokenModal } from '../../hooks/useTokenModal';
-import type { CommonWidgetProps, TokenInputType } from '../types';
-
-import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
-
 import {
   DepositMethodSwitcher,
   DepositSummary,
@@ -23,6 +17,10 @@ import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
+import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+import { useTokenModal } from '../../hooks/useTokenModal';
+import { useTypedTranslation } from '../../localisation';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }

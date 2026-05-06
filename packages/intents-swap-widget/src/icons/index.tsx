@@ -1,5 +1,6 @@
 /* eslint-disable import/extensions */
 import { ReactElement, SVGAttributes } from 'react';
+import type { Chains } from '@/types/chain';
 import AbgIcon from './abg.svg';
 import AdaIcon from './ada.svg';
 import AdiIcon from './adi.svg';
@@ -59,8 +60,6 @@ import ScrollIcon from './scroll.svg';
 import StarknetIcon from './starknet.svg';
 import XlayerIcon from './xlayer.svg';
 import NearIntentsIcon from './intents.svg';
-
-import type { Chains } from '@/types/chain';
 
 export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
 export const NEAR_INTENTS_ICON: React.ReactElement = <NearIntentsIcon />;

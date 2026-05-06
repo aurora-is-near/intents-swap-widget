@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
+import { useCreator } from '@/hooks/useCreatorConfig';
+import { useApiKeys, useCreateApiKey } from '@/api/hooks';
+import type { ApiKey } from '@/api/types';
 import { Header } from '../components';
 
 import { ApiKeyCard } from './ApiKeyCard';
@@ -8,10 +11,6 @@ import { ApiKeysEmpty } from './ApiKeysEmpty';
 import { ApiKeysNoAuth } from './ApiKeysNoAuth';
 import { ApiKeysSkeleton } from './ApiKeysSkeleton';
 import { CreateApiKey } from './CreateApiKey';
-
-import { useCreator } from '@/hooks/useCreatorConfig';
-import { useApiKeys, useCreateApiKey } from '@/api/hooks';
-import type { ApiKey } from '@/api/types';
 
 const ApiKeysHeader = () => (
   <div className="pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">

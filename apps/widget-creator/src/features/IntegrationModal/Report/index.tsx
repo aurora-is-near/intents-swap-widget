@@ -1,5 +1,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 
+import { useApiKeys } from '@/api/hooks';
+import { useCreator } from '@/hooks/useCreatorConfig';
 import { Header } from '../components';
 import { ApiKeysEmpty } from '../ApiKeys/ApiKeysEmpty';
 import { ApiKeysNoAuth } from '../ApiKeys/ApiKeysNoAuth';
@@ -7,9 +9,6 @@ import { ApiKeysSkeleton } from '../ApiKeys/ApiKeysSkeleton';
 
 import { GotoApiKeys } from './GotoApiKeys';
 import { ReportForm } from './ReportForm';
-
-import { useApiKeys } from '@/api/hooks';
-import { useCreator } from '@/hooks/useCreatorConfig';
 
 const ReportHeader = () => (
   <div className="pt-csw-2xl pb-csw-4xl flex items-start justify-between gap-csw-lg border-b border-csw-gray-900">

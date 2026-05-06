@@ -1,9 +1,6 @@
 import { useSnapshot } from 'valtio';
 import { derive } from 'derive-valtio';
 
-import { getIsNativeNearDeposit } from './computed/getIsNativeNearDeposit';
-import { getIsDirectTokenOnNearDeposit } from './computed/getIsDirectTokenOnNearDeposit';
-
 import { WidgetError } from '@/errors';
 import { machine } from '@/machine/machine';
 import { guardStates } from '@/machine/guards';
@@ -13,6 +10,8 @@ import { getIsDirectNearTokenWithdrawal } from '@/machine/computed/getIsDirectNe
 import { getMinDepositTokenAmount } from '@/machine/computed/getMinDepositTokenAmount';
 import type { MachineState } from '@/machine/machine';
 import type { Context } from '@/machine/context';
+import { getIsDirectTokenOnNearDeposit } from './computed/getIsDirectTokenOnNearDeposit';
+import { getIsNativeNearDeposit } from './computed/getIsNativeNearDeposit';
 
 const store = machine.getStore();
 

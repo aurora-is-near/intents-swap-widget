@@ -75,10 +75,7 @@ export const makeTransfer = async (
     fromPubkey,
   );
 
-  const toTokenAccount = await getAssociatedTokenAddress(
-    mintPubkey,
-    toPubkey,
-  );
+  const toTokenAccount = await getAssociatedTokenAddress(mintPubkey, toPubkey);
 
   const toAccountInfo = await connection.getAccountInfo(toTokenAccount);
   const transaction = new Transaction();

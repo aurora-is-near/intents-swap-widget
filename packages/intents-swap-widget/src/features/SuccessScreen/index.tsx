@@ -3,11 +3,6 @@ import {
   OpenInNew,
 } from '@material-symbols-svg/react-rounded/w700';
 
-import { TokenRow } from './TokenRow';
-import { CopyableValue } from './CopyableValue';
-import { useSummaryItemsCount } from './useSummaryItemsCount';
-import { useTransferResultStatus } from './useTransferResultStatus';
-
 import { Notes } from '@/components/Notes';
 import { Button } from '@/components/Button';
 import { CloseButton } from '@/components/CloseButton';
@@ -26,6 +21,10 @@ import { logger } from '@/logger';
 
 import type { TransactionType } from '@/types/transaction';
 import type { TransferResult } from '@/types/transfer';
+import { useTransferResultStatus } from './useTransferResultStatus';
+import { useSummaryItemsCount } from './useSummaryItemsCount';
+import { CopyableValue } from './CopyableValue';
+import { TokenRow } from './TokenRow';
 
 const NOTES_ITEM_HEIGHT = 41;
 

@@ -1,5 +1,5 @@
-import type { Context } from '../context';
 import type { DeepReadonly } from '@/types/utils';
+import type { Context } from '../context';
 
 // limit minimum deposit amount to 1 USD to avoid FLEX_INPUT quote failure
 const MIN_DEPOSIT_USD_AMOUNT = 1;

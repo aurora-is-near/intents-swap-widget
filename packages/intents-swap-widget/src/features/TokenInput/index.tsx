@@ -1,4 +1,5 @@
 // base components
+import type { Token } from '@/types/token';
 import { TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { TokenInputSkeleton } from './TokenInputSkeleton';
@@ -7,7 +8,6 @@ import type { Props as PropsBase } from './TokenInput';
 // pre-configured presets
 import { TokenInputSource } from './TokenInputSource';
 import { TokenInputTarget } from './TokenInputTarget';
-import type { Token } from '@/types/token';
 
 type Props = {
   token?: Token;

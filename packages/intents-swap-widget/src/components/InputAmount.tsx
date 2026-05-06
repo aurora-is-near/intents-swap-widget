@@ -4,8 +4,8 @@ import type { IMaskMixinProps } from 'react-imask';
 
 import { Input as UIInput } from '@headlessui/react';
 
-import type { Props as InputProps } from './Input';
 import { cn } from '@/utils/cn';
+import type { Props as InputProps } from './Input';
 
 type InputElement = HTMLTextAreaElement | HTMLInputElement;
 

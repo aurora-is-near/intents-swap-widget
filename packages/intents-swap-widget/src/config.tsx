@@ -7,6 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import type { PropsWithChildren } from 'react';
 
+import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
+import { ErrorBoundary } from '@/features/ErrorBoundary';
+import { DEFAULT_CHAINS_ORDER } from '@/constants/chains';
+import type { Token } from '@/types/token';
 import { LocalisationDict } from './types/localisation';
 import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
@@ -15,10 +19,6 @@ import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { useLocalisation } from './localisation';
-import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
-import { ErrorBoundary } from '@/features/ErrorBoundary';
-import { DEFAULT_CHAINS_ORDER } from '@/constants/chains';
-import type { Token } from '@/types/token';
 
 const queryClient = new QueryClient({
   defaultOptions: {

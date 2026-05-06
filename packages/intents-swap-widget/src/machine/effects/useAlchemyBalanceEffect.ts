@@ -1,6 +1,6 @@
+import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 import type { ListenerProps } from './types';
 import { useConfig } from '../../config';
-import { useAlchemyBalanceIntegration } from '@/ext/alchemy';
 
 export type Props = ListenerProps & {
   alchemyApiKey: string | undefined;

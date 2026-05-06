@@ -2,6 +2,8 @@ import { VList } from 'virtua';
 import { useEffect, useMemo } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
+import { Button } from '@/components/Button';
+import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 import { TransactionCard } from './TransactionCard';
 import { TransactionDetails } from './TransactionDetails';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
@@ -15,8 +17,6 @@ import {
   TX_ITEM_HEIGHT,
 } from './constants';
 import { useTransactionHistoryListHeight } from './useTransactionHistoryListHeight';
-import { Button } from '@/components/Button';
-import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
 
 type Props = {
   isVisible: boolean;

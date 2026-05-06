@@ -1,5 +1,5 @@
-import { isBalanceSufficient } from './checks/isBalanceSufficient';
 import type { Context, QuoteSuccessInternalContext } from '@/machine/context';
+import { isBalanceSufficient } from './checks/isBalanceSufficient';
 
 export const guardQuoteSuccessInternal = (
   ctx: Context,

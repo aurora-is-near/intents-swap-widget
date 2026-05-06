@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from 'react';
 import type { VListHandle } from 'virtua';
 
-import { LIST_CONTAINER_ID } from '../constants';
-
 import { useHandleKeyDown } from '@/hooks/useHandleKeyDown';
+import { LIST_CONTAINER_ID } from '../constants';
 
 type Args = {
   isEnabled: boolean;

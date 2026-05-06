@@ -1,12 +1,11 @@
 import { useState } from 'react';
 
-import { WalletCompatibilityModal } from './WalletCompatibilityModal';
-
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine';
 import { notReachable } from '@/utils/notReachable';
 import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
+import { WalletCompatibilityModal } from './WalletCompatibilityModal';
 
 type Msg = { type: 'on_sign_out' | 'on_close' };
 

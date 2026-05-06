@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { alchemyApi } from '@/network';
+import type { Chains } from '@/types/chain';
 import { isEvmAddress } from '../../utils/chains/isEvmAddress';
 import { isTonAddress } from '../../utils/chains/isTonAddress';
 import { CHAINS_MAP, isAlchemySupportedChain } from './types';
@@ -8,8 +10,6 @@ import type {
   AlchemyRequestParams,
   AlchemyResponse,
 } from './types';
-import { alchemyApi } from '@/network';
-import type { Chains } from '@/types/chain';
 
 const alchemyBalanceItemSchema = z.object({
   network: z.string(),

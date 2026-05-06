@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { ComponentProps } from 'react';
 
-import { useSupportedChains } from '../../hooks/useSupportedChains';
 import type { Input } from '@/components/Input';
 import type { Banner } from '@/components/Banner';
 
@@ -10,6 +9,7 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { useTypedTranslation } from '@/localisation';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { CHAINS_LIST, EVM_CHAINS } from '@/constants/chains';
+import { useSupportedChains } from '../../hooks/useSupportedChains';
 
 type Notification =
   | {

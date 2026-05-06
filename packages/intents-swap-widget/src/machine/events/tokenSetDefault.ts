@@ -1,7 +1,7 @@
-import { DefaultToken } from '../../types';
 import { notReachable } from '@/utils/notReachable';
 
 import type { Context } from '@/machine/context';
+import { DefaultToken } from '../../types';
 
 export type TokenSetDefaultPayload = {
   variant: 'source' | 'target';
