@@ -4,14 +4,28 @@ import svgr from 'vite-plugin-svgr';
 import { Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import path from 'path';
+import { globSync } from 'glob';
+
+const workspacePackages = globSync(
+  path.resolve(__dirname, '../../packages/*'),
+).map((pkgDir) => path.basename(pkgDir));
+
+let reloadTimer: NodeJS.Timeout | undefined;
 
 export default defineConfig({
   plugins: [
     {
       name: 'full-reload-on-package-dist',
       handleHotUpdate({ file, server }) {
-        if (file.includes('packages/intents-swap-widget/dist/index.js')) {
-          server.ws.send({ type: 'full-reload' });
+        // Trigger a full reload whenever a file in the dist folder of any
+        // workspace package changes. The function is debounced to avoid
+        // multiple reloads in quick succession when multiple files change.
+        if (workspacePackages.some((pkg) => file.includes(`${pkg}/dist/`))) {
+          clearTimeout(reloadTimer);
+          reloadTimer = setTimeout(
+            () => server.ws.send({ type: 'full-reload' }),
+            200,
+          );
           return [];
         }
       },
@@ -47,22 +61,14 @@ export default defineConfig({
       'Access-Control-Allow-Headers': '*',
     },
     watch: {
-      ignored: [
-        // ignore everything in the package dist EXCEPT the main entry file
-        (path: string) => {
-          if (
-            path.includes('node_modules/@aurora-is-near/intents-swap-widget')
-          ) {
-            return !path.endsWith('dist/index.js');
-          }
-          return false;
-        },
-      ],
       awaitWriteFinish: {
         stabilityThreshold: 500,
         pollInterval: 100,
       },
     },
+  },
+  optimizeDeps: {
+    exclude: workspacePackages,
   },
   build: {
     outDir: 'dist',

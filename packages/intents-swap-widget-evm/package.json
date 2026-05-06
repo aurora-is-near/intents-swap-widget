@@ -12,7 +12,8 @@
     "lint": "eslint . --ext .js,.ts,.tsx",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
-    "build": "vite build"
+    "build": "vite build",
+    "dev": "vite build --watch"
   },
   "publishConfig": {
     "access": "public",

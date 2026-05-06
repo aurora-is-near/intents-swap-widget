@@ -110,7 +110,7 @@ export default defineConfig({
       external: (id) => isExt(id) || id.includes('test.ts'),
       output: {
         entryFileNames: '[name].js',
-        chunkFileNames: isWatch ? '[name].js' : '[name]-[hash].js',
+        chunkFileNames: '[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {
             return 'styles.css';
