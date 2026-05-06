@@ -17,7 +17,7 @@ import type { MakeTransferOptions } from './types';
 const isEvmAddress = (a: string): boolean => /^0x[a-fA-F0-9]{40}$/.test(a);
 
 const findViemChain = (id: number): Chain | undefined =>
-  Object.values(viemChains).find(
+  (Object.values(viemChains) as unknown[]).find(
     (c): c is Chain =>
       !!c &&
       typeof c === 'object' &&
