@@ -1,4 +1,4 @@
-const SHARABLE_LINK_BASE_URL = 'https://intents.aurora.dev';
+const SHARABLE_LINK_BASE_URL = 'https://studio.aurora.dev';
 
 const getBaseDomain = (): string => {
   if (typeof window === 'undefined') {
@@ -8,10 +8,10 @@ const getBaseDomain = (): string => {
   const { origin } = window.location;
 
   // use parent url for our internal testing and for all the customers' apps
-  // it must be intents.aurora.dev
+  // it must be studio.aurora.dev
   return origin.includes('localhost') ||
     origin.includes('auroraisnear.vercel.app') ||
-    origin.includes('staging-intents.aurora.dev')
+    origin.includes('staging-studio.aurora.dev')
     ? origin
     : SHARABLE_LINK_BASE_URL;
 };

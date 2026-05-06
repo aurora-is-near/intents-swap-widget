@@ -239,10 +239,10 @@ const useGetErrorButton = (ctx: Context) => {
             <span className="inline-flex items-center gap-sw-xs px-sw-xs">
               <a
                 className="underline"
-                href="https://intents.aurora.dev"
+                href="https://studio.aurora.dev"
                 rel="noopener noreferrer"
                 target="_blank">
-                intents.aurora.dev
+                studio.aurora.dev
               </a>
               <OpenInNew size={12} />
             </span>{' '}

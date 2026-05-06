@@ -104,7 +104,7 @@ The following options are available for all widget packages
 
 ### `apiKey`
 
-Your widget integration API Key. Visit [Intents Widget Studio](https://intents.aurora.dev) to obtain.
+Your widget integration API Key. Visit [Intents Widget Studio](https://studio.aurora.dev) to obtain.
 
 ### `referral`
 
