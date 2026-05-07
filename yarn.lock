@@ -139,6 +139,49 @@
     eslint-plugin-storybook "^0.8.0"
     eslint-plugin-testing-library "^6.2.2"
 
+"@aurora-is-near/intents-swap-widget@^6.0.0":
+  version "6.24.2"
+  resolved "https://registry.yarnpkg.com/@aurora-is-near/intents-swap-widget/-/intents-swap-widget-6.24.2.tgz#acd23719cdd27683df702970d423500472bb6047"
+  integrity sha512-7CIb9ErqnLHk6C+301u4QelatkzFQPBTLCnGuAlrYTZlVxIDbSjxIjQSWkGeAIxXMTNq9oQ5eircr6LBVl44UA==
+  dependencies:
+    "@defuse-protocol/intents-sdk" "^0.43.3"
+    "@defuse-protocol/internal-utils" "^0.13.0"
+    "@defuse-protocol/one-click-sdk-typescript" "^0.1.5"
+    "@headlessui/react" "^2.2.4"
+    "@material-symbols-svg/react-rounded" "^0.1.19"
+    "@radix-ui/react-tooltip" "^1.2.8"
+    "@scure/base" "^2.2.0"
+    "@solana/spl-token" "^0.4.14"
+    "@solana/web3.js" "^1.98.4"
+    "@stellar/stellar-sdk" "^14.6.1"
+    "@tanstack/react-query" "^5.85.5"
+    "@ton/core" "^0.62.0"
+    axios "^1.10.0"
+    bs58 "^6.0.0"
+    change-case "^5.4.4"
+    chroma-js "^3.1.2"
+    clsx "^2.1.1"
+    copy-text-to-clipboard "^3.2.0"
+    derive-valtio "^0.2.0"
+    ethers "^6.15.0"
+    framer-motion "^12.23.0"
+    hsluv "^1.0.1"
+    i18next "^25.4.2"
+    lodash.once "^4.1.1"
+    near-api-js "^6.2.5"
+    qr-code-styling "1.9.2"
+    react-error-boundary "^6.0.0"
+    react-helmet-async "^2.0.5"
+    react-i18next "^15.7.3"
+    react-imask "^7.6.1"
+    tailwind-merge "^3.3.1"
+    use-timer "^2.0.1"
+    valtio "2.1.7"
+    valtio-fsm "1.0.0"
+    viem "^2.38.3"
+    virtua "^0.41.5"
+    zod "^3.25.51"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.26.2", "@babel/code-frame@^7.27.1":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.27.1.tgz#200f715e66d52a23b221a9435534a91cc13ad5be"
@@ -16550,9 +16593,9 @@ homedir-polyfill@^1.0.0:
     parse-passwd "^1.0.0"
 
 hono@^4.10.3, hono@^4.9.6:
-  version "4.10.3"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-4.10.3.tgz#4e4063eebaac2b735ca4c7455b4d7a6339afc251"
-  integrity sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==
+  version "4.12.18"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.12.18.tgz#f6d301938868c3a8bdb639495f4e326a19181505"
+  integrity sha512-RWzP96k/yv0PQfyXnWjs6zot20TqfpfsNXhOnev8d1InAxubW93L11/oNUc3tQqn2G0bSdAOBpX+2uDFHV7kdQ==
 
 hook-std@^3.0.0:
   version "3.0.0"
@@ -22501,7 +22544,14 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
+strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -24273,7 +24323,16 @@ wordwrap@^1.0.0:
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
   integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
