@@ -13,7 +13,7 @@ jobs:
       - name: Install
         run: yarn install --frozen-lockfile --non-interactive
       - name: Build
-        run: yarn build --filter=@aurora-is-near/intents-swap-widget --filter=@aurora-is-near/intents-swap-widget-standalone
+        run: yarn build --filter='./packages/*'
       - name: Lint
         run: yarn lint
       - name: Check types
