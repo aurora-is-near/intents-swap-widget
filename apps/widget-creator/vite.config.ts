@@ -76,6 +76,11 @@ export default defineConfig({
           standalone: ['@aurora-is-near/intents-swap-widget-standalone'],
           evm: ['@aurora-is-near/intents-swap-widget-evm'],
           solana: ['@aurora-is-near/intents-swap-widget-solana'],
+          appkit: [
+            '@reown/appkit',
+            '@reown/appkit-adapter-wagmi',
+            '@reown/appkit-adapter-solana',
+          ],
         },
       },
     },
