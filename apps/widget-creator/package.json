@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "dev": "vite",
-    "build": "vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=8192 vite build",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "preview": "vite preview",
     "test": "vitest",
