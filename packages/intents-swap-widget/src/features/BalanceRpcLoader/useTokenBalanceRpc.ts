@@ -17,7 +17,11 @@ import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { WalletAddresses } from '../../types';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
+import { getStarknetTokenBalance } from '../../utils/starknet/getStarknetTokenBalance';
+import { getDashTokenBalance } from '../../utils/dash/getDashTokenBalance';
+import { getBchTokenBalance } from '../../utils/bch/getBchTokenBalance';
 import { logger } from '../../logger';
+import { canFetchBalance } from './canFetchBalance';
 
 type Args = {
   token: Token;
@@ -40,7 +44,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
 
   return useQuery<string | null>({
     retry: 2,
-    enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
+    enabled: !!walletAddress && canFetchBalance(rpcs, token.blockchain),
     queryKey: ['tokenBalance', token.assetId, walletKey],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
@@ -99,6 +103,30 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
         supportedChains.includes(token.blockchain)
       ) {
         return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
+      }
+
+      // 8. Starknet token balance
+      if (
+        token.blockchain === 'starknet' &&
+        supportedChains.includes(token.blockchain)
+      ) {
+        return getStarknetTokenBalance(token, walletAddress, alchemyApiKey);
+      }
+
+      // 9. Dash native balance
+      if (
+        token.blockchain === 'dash' &&
+        supportedChains.includes(token.blockchain)
+      ) {
+        return getDashTokenBalance(token, walletAddress);
+      }
+
+      // 10. Bitcoin Cash native balance
+      if (
+        token.blockchain === 'bch' &&
+        supportedChains.includes(token.blockchain)
+      ) {
+        return getBchTokenBalance(token, walletAddress);
       }
 
       logger.warn(

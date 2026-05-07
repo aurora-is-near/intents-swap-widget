@@ -3,6 +3,7 @@ import { memo, useEffect, useRef } from 'react';
 import type { Token, TokenBalances } from '@/types/token';
 import type { ChainRpcUrls } from '@/types/chain';
 import { useTokenBalanceRpc } from './useTokenBalanceRpc';
+import { canFetchBalance } from './canFetchBalance';
 import { WalletAddresses } from '../../types';
 
 type Props = {
@@ -18,7 +19,7 @@ const TokenBalanceZeroLoader = ({
   onBalancesLoaded,
 }: Omit<Props, 'connectedWallets'>) => {
   useEffect(() => {
-    if (token.isIntent || !Object.keys(rpcs).includes(token.blockchain)) {
+    if (token.isIntent || !canFetchBalance(rpcs, token.blockchain)) {
       return;
     }
 
