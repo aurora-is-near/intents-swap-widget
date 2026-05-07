@@ -12,9 +12,33 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/github",
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "node build-tools/sync-workspace-deps.js ${nextRelease.version}"
+      }
+    ],
+    [
       "@semantic-release/npm",
       {
         "pkgRoot": "packages/intents-swap-widget"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/intents-swap-widget-evm"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/intents-swap-widget-solana"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/intents-swap-widget-stellar"
       }
     ],
     [
@@ -28,6 +52,9 @@
       {
         "assets": [
           "packages/intents-swap-widget/package.json",
+          "packages/intents-swap-widget-evm/package.json",
+          "packages/intents-swap-widget-solana/package.json",
+          "packages/intents-swap-widget-stellar/package.json",
           "packages/intents-swap-widget-standalone/package.json"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
