@@ -74,6 +74,8 @@ export default defineConfig({
           privy: ['@privy-io/react-auth'],
           prism: ['prism-react-renderer'],
           standalone: ['@aurora-is-near/intents-swap-widget-standalone'],
+          evm: ['@aurora-is-near/intents-swap-widget-evm'],
+          solana: ['@aurora-is-near/intents-swap-widget-solana'],
         },
       },
     },
