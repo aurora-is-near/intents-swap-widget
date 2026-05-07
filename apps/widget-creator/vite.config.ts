@@ -73,10 +73,13 @@ export default defineConfig({
         manualChunks: {
           privy: ['@privy-io/react-auth'],
           prism: ['prism-react-renderer'],
-          standalone: ['@aurora-is-near/intents-swap-widget-standalone'],
-          evm: ['@aurora-is-near/intents-swap-widget-evm'],
-          solana: ['@aurora-is-near/intents-swap-widget-solana'],
-          'solana-core': ['@solana/web3.js', '@solana/spl-token'],
+          widget: [
+            '@aurora-is-near/intents-swap-widget',
+            '@aurora-is-near/intents-swap-widget-standalone',
+            '@aurora-is-near/intents-swap-widget-evm',
+            '@aurora-is-near/intents-swap-widget-solana',
+            '@aurora-is-near/intents-swap-widget-stellar',
+          ],
           appkit: [
             '@reown/appkit',
             '@reown/appkit-adapter-wagmi',
