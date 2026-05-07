@@ -5,11 +5,15 @@ import {
   arbitrum,
   avalanche,
   base,
+  berachain,
   bsc,
+  gnosis,
   mainnet,
   optimism,
+  plasma,
   polygon,
-  solana,
+  scroll,
+  xLayer,
 } from '@reown/appkit/networks';
 import {
   PhantomWalletAdapter,
@@ -34,6 +38,11 @@ const evmNetworks = [
   optimism,
   avalanche,
   base,
+  berachain,
+  gnosis,
+  plasma,
+  scroll,
+  xLayer,
 ];
 
 const wagmiAdapter = new WagmiAdapter({
@@ -59,7 +68,11 @@ export const createAppKit = () => {
       optimism,
       avalanche,
       base,
-      solana,
+      berachain,
+      gnosis,
+      plasma,
+      scroll,
+      xLayer,
     ],
     projectId,
     metadata,

@@ -22,8 +22,11 @@ import {
   gnosis,
   mainnet,
   optimism,
+  plasma,
   polygon,
+  scroll,
   solana,
+  xLayer,
 } from '@reown/appkit/networks';
 import {
   PhantomWalletAdapter,
@@ -68,6 +71,29 @@ const monadMainnet = defineChain({
   },
 });
 
+const adi = defineChain({
+  id: 36900,
+  caipNetworkId: 'eip155:36900',
+  chainNamespace: 'eip155',
+  name: 'ADI',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'ADI',
+    symbol: 'ADI',
+  },
+  blockExplorers: {
+    default: {
+      name: 'ADI Explorer',
+      url: 'https://explorer-bls.adifoundation.ai',
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.adifoundation.ai'],
+    },
+  },
+});
+
 export const initAppKit = ({
   appName,
   theme,
@@ -88,6 +114,10 @@ export const initAppKit = ({
     berachain,
     monadMainnet,
     gnosis,
+    plasma,
+    scroll,
+    xLayer,
+    adi,
   ];
 
   const wagmiAdapter = new WagmiAdapter({
@@ -118,6 +148,10 @@ export const initAppKit = ({
       berachain,
       monadMainnet,
       gnosis,
+      plasma,
+      scroll,
+      xLayer,
+      adi,
     ],
     projectId,
     metadata: {
