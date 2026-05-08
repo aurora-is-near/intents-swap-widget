@@ -33,16 +33,19 @@ export const useTransferResultStatus = (
 ): TransactionStatus => {
   const { ctx } = useUnsafeSnapshot();
   const { isOneClickDeposit } = transferResult;
+  const isValidTransaction = isOneClickDeposit && ctx.quote && !ctx.quote.dry;
 
-  const depositAddress =
-    isOneClickDeposit && ctx.quote && !ctx.quote.dry
-      ? ctx.quote.depositAddress
-      : undefined;
+  const depositAddress = isValidTransaction
+    ? ctx.quote.depositAddress
+    : undefined;
 
-  const { data: oneClickExecution } = useOneClickExecutionStatus(
+  const depositMemo = isValidTransaction ? ctx.quote.depositMemo : undefined;
+
+  const { data: oneClickExecution } = useOneClickExecutionStatus({
     depositAddress,
-    { enabled: !options?.disabled },
-  );
+    depositMemo,
+    disabled: options?.disabled,
+  });
 
   // Handle flows that don't go through 1Click in the normal way
   // (such as NEAR FT transfer calls) by considering the transfer a success.

@@ -22,37 +22,48 @@ type ExecutionStatus = Omit<GetExecutionStatusResponse, 'swapDetails'> & {
 };
 
 type Options = {
-  enabled?: boolean;
+  depositAddress?: string;
+  depositMemo?: string;
+  disabled?: boolean;
 };
 
-export const useOneClickExecutionStatus = (
-  depositAddress: string | undefined,
-  options?: Options,
-): UseQueryResult<ExecutionStatus> => {
-  const enabled = (options?.enabled ?? true) && !!depositAddress;
-
+export const useOneClickExecutionStatus = ({
+  depositAddress,
+  depositMemo,
+  disabled,
+}: Options = {}): UseQueryResult<ExecutionStatus> => {
   return useQuery({
     queryKey: ['oneClickExecutionStatus', depositAddress],
     queryFn: async (): Promise<ExecutionStatus> => {
-      try {
-        const result = await OneClickService.getExecutionStatus(
-          depositAddress!,
+      if (!depositAddress) {
+        throw new Error(
+          'Deposit address is required to fetch execution status',
         );
-
-        return {
-          ...result,
-          swapDetails: {
-            ...result.swapDetails,
-            amount: result.swapDetails.amountIn,
-            amountUsd: result.swapDetails.amountInUsd,
-          },
-        };
-      } catch (e) {
-        logger.error('Error polling 1Click execution status', e);
-        throw e;
       }
+
+      let result: GetExecutionStatusResponse;
+
+      try {
+        result = await OneClickService.getExecutionStatus(
+          depositAddress,
+          depositMemo,
+        );
+      } catch (error) {
+        logger.error('Error polling 1Click execution status', error);
+
+        throw error;
+      }
+
+      return {
+        ...result,
+        swapDetails: {
+          ...result.swapDetails,
+          amount: result.swapDetails.amountIn,
+          amountUsd: result.swapDetails.amountInUsd,
+        },
+      };
     },
-    enabled: !!depositAddress && enabled,
+    enabled: !disabled && !!depositAddress,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
 
