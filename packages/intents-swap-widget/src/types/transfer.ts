@@ -6,6 +6,7 @@ export type TransferResult = {
   amountUsd?: string;
   amount?: string;
   intent?: string;
+  isOneClickDeposit?: boolean;
 };
 
 export type MakeTransferArgs = {

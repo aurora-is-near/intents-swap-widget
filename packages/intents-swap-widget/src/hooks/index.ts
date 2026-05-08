@@ -12,6 +12,7 @@ export { useTokensFiltered } from './useTokensFiltered';
 export { useTokens } from './useTokens';
 export { useWalletBalance } from './useWalletBalance';
 export { useExternalDepositStatus } from './useExternalDepositStatus';
+export { useOneClickExecutionStatus } from './useOneClickExecutionStatus';
 export { useIsCompatibilityCheckRequired } from './useIsCompatibilityCheckRequired';
 export { useHandleKeyDown } from './useHandleKeyDown';
 export { useWalletConnection } from './useWalletConnection';

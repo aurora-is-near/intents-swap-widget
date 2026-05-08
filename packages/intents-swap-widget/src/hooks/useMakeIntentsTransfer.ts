@@ -344,6 +344,7 @@ export const useMakeIntentsTransfer = ({
               completionResult.hash,
             )
           : '',
+        isOneClickDeposit: !isDirectNearTokenWithdrawal,
       };
     } catch (e: unknown) {
       logger.error('[TRANSFER ERROR]', e);

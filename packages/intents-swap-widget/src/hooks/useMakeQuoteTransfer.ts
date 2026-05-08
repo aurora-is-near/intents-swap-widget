@@ -238,7 +238,7 @@ export const useMakeQuoteTransfer = ({
         hash: depositResult.hash,
         transactionLink: depositResult.transactionLink,
         intent: undefined,
-        oneClickDepositAddress: ctx.quote.depositAddress,
+        isOneClickDeposit: true,
       };
     } catch (error: unknown) {
       logger.error('[TRANSFER ERROR]', error, { error });

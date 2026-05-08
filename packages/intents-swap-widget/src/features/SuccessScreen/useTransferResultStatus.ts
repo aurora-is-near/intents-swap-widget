@@ -1,25 +1,55 @@
-import { useTransactions } from '@/hooks';
-import { getTransactionHashes } from '@/utils/transactions/getTransactionHashes';
+import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
+
+import { useOneClickExecutionStatus } from '@/hooks';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import type { TransactionStatus } from '@/types/transaction';
 import type { TransferResult } from '@/types/transfer';
 
-/**
- * Resolves a live status for a transfer.
- */
-export const useTransferResultStatus = (
-  transferResult: Pick<TransferResult, 'hash' | 'intent'>,
+const mapOneClickStatus = (
+  status: GetExecutionStatusResponse.status,
 ): TransactionStatus => {
-  const { transactions } = useTransactions();
-  const { hash, intent } = transferResult;
+  switch (status) {
+    case GetExecutionStatusResponse.status.SUCCESS:
+      return 'SUCCESS';
+    case GetExecutionStatusResponse.status.FAILED:
+      return 'FAILED';
+    case GetExecutionStatusResponse.status.REFUNDED:
+      return 'REFUNDED';
+    case GetExecutionStatusResponse.status.PROCESSING:
+    case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
+      return 'PROCESSING';
+    case GetExecutionStatusResponse.status.PENDING_DEPOSIT:
+      return 'PENDING';
+    case GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT:
+      return 'WAITING_FOR_FUNDS';
+    default:
+      return 'PENDING';
+  }
+};
 
-  const match = transactions.find((tx) => {
-    const hashes = getTransactionHashes(tx);
+export const useTransferResultStatus = (
+  transferResult: Pick<TransferResult, 'isOneClickDeposit'>,
+): TransactionStatus => {
+  const { ctx } = useUnsafeSnapshot();
+  const { isOneClickDeposit } = transferResult;
 
-    return (
-      (!!intent && hashes.includes(intent)) || (!!hash && hashes.includes(hash))
-    );
-  });
+  const depositAddress =
+    isOneClickDeposit && ctx.quote && !ctx.quote.dry
+      ? ctx.quote.depositAddress
+      : undefined;
 
-  // Fall back to success if we cannot resolve a matching transaction
-  return match?.status ?? 'SUCCESS';
+  const { data: oneClickExecution } =
+    useOneClickExecutionStatus(depositAddress);
+
+  // Handle flows that don't go through 1Click in the normal way
+  // (such as NEAR FT transfer calls) by considering the transfer a success.
+  if (!isOneClickDeposit) {
+    return 'SUCCESS';
+  }
+
+  if (oneClickExecution) {
+    return mapOneClickStatus(oneClickExecution.status);
+  }
+
+  return 'PENDING';
 };
