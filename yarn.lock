@@ -2003,18 +2003,10 @@
     valibot "^1.0.0"
     viem "^2.0.0"
 
-"@defuse-protocol/one-click-sdk-typescript@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@defuse-protocol/one-click-sdk-typescript/-/one-click-sdk-typescript-0.1.14.tgz#d242aebd6524072a71b97e75f524fe993f921259"
-  integrity sha512-ZUzHDCx66D3+/pie34yf/yeCMhtjghAlw56/I19WIJtROC1yyoLdzuTKMkJXCxiyGnxD3aDrYIwWmlocgzQW2Q==
-  dependencies:
-    axios "^1.6.8"
-    form-data "^4.0.0"
-
-"@defuse-protocol/one-click-sdk-typescript@^0.1.5":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@defuse-protocol/one-click-sdk-typescript/-/one-click-sdk-typescript-0.1.10.tgz#96791fa3482e66d32d1dc68b8b886b0ec5cca99a"
-  integrity sha512-47BmNDC0THRViW0E8Tnb5jGRAXwZHe/e744IUYnnS4dGpKRKqSQKlkO0+XQThqV5J7aHTCLIUZ0SRxFs4R4Fdw==
+"@defuse-protocol/one-click-sdk-typescript@^0.1.17":
+  version "0.1.17"
+  resolved "https://registry.yarnpkg.com/@defuse-protocol/one-click-sdk-typescript/-/one-click-sdk-typescript-0.1.17.tgz#fb10c45bb8e467824c8b84fcf3c7a998031e4fec"
+  integrity sha512-yfZ2TYYhTZx62IbHRLTamPcr6qrwYJQZpUFpCTMXv35WXUPHcjNMOPOBKdYOySuCTFX0eSJGFPccwC9LTC8cSA==
   dependencies:
     axios "^1.6.8"
     form-data "^4.0.0"

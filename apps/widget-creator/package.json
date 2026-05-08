@@ -17,7 +17,7 @@
     "@aurora-is-near/intents-swap-widget-evm": "*",
     "@aurora-is-near/intents-swap-widget-solana": "*",
     "@aurora-is-near/intents-swap-widget-standalone": "*",
-    "@defuse-protocol/one-click-sdk-typescript": "^0.1.14",
+    "@defuse-protocol/one-click-sdk-typescript": "^0.1.17",
     "@headlessui/react": "^2.2.4",
     "@hookform/resolvers": "^5.2.2",
     "@material-symbols-svg/react-rounded": "^0.1.19",
