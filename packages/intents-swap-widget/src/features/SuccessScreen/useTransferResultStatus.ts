@@ -29,6 +29,7 @@ const mapOneClickStatus = (
 
 export const useTransferResultStatus = (
   transferResult: Pick<TransferResult, 'isOneClickDeposit'>,
+  options?: { disabled?: boolean },
 ): TransactionStatus => {
   const { ctx } = useUnsafeSnapshot();
   const { isOneClickDeposit } = transferResult;
@@ -38,8 +39,10 @@ export const useTransferResultStatus = (
       ? ctx.quote.depositAddress
       : undefined;
 
-  const { data: oneClickExecution } =
-    useOneClickExecutionStatus(depositAddress);
+  const { data: oneClickExecution } = useOneClickExecutionStatus(
+    depositAddress,
+    { enabled: !options?.disabled },
+  );
 
   // Handle flows that don't go through 1Click in the normal way
   // (such as NEAR FT transfer calls) by considering the transfer a success.

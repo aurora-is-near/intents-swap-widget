@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowDownward,
   OpenInNew,
@@ -141,22 +141,47 @@ export const SuccessScreen = ({
   const quoteAmounts = useQuoteAmounts();
   const anyDepositAmounts = useAnyDepositAmounts(transferResult);
 
-  const status = useTransferResultStatus(transferResult);
+  const stuckResolutionTimer = useRef<NodeJS.Timeout | null>(null);
+  const [isResolutionStuck, setIsResolutionStuck] = useState(false);
+
+  const status = useTransferResultStatus(transferResult, {
+    disabled: isResolutionStuck,
+  });
+
   const isProcessing =
     status === 'PENDING' ||
     status === 'PROCESSING' ||
     status === 'WAITING_FOR_FUNDS';
 
-  const [isResolutionStuck, setIsResolutionStuck] = useState(false);
-
+  // If the transfer is still pending or processing after 30 seconds, we
+  // consider it "stuck" and show a warning message to the user. If it is
+  // pending for 29 seconds, then processing for 29 seconds that's fine, as
+  // the timer will reset when the status changes.
   useEffect(() => {
-    const timer = setTimeout(() => setIsResolutionStuck(true), 30_000);
+    if (
+      isResolutionStuck ||
+      !(status === 'PENDING' || status === 'PROCESSING')
+    ) {
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    if (stuckResolutionTimer.current) {
+      clearTimeout(stuckResolutionTimer.current);
+    }
 
-  const showStuckMessage = isResolutionStuck && isProcessing;
-  const effectiveStatus: TransactionStatus = showStuckMessage
+    stuckResolutionTimer.current = setTimeout(
+      () => setIsResolutionStuck(true),
+      30_000,
+    );
+
+    return () => {
+      if (stuckResolutionTimer.current) {
+        clearTimeout(stuckResolutionTimer.current);
+      }
+    };
+  }, [status]);
+
+  const effectiveStatus: TransactionStatus = isResolutionStuck
     ? 'UNRESOLVED'
     : status;
 
@@ -188,7 +213,7 @@ export const SuccessScreen = ({
         <p className="text-sw-body-md text-sw-gray-200">{message}</p>
       )}
 
-      {showStuckMessage && (
+      {isResolutionStuck && (
         <p className="text-sw-body-md text-sw-status-warning">
           {t(
             'transfer.success.statusUnresolved',
