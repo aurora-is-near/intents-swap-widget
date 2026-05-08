@@ -318,7 +318,9 @@ export const SuccessScreen = ({
           iconPosition="tail"
           href={transactionLink}
           state={
-            transactionLink && status !== 'PENDING' ? 'default' : 'disabled'
+            transactionLink && effectiveStatus !== 'PENDING'
+              ? 'default'
+              : 'disabled'
           }
           icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
