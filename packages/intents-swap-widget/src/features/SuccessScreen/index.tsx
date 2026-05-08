@@ -148,11 +148,6 @@ export const SuccessScreen = ({
     disabled: isResolutionStuck,
   });
 
-  const isProcessing =
-    status === 'PENDING' ||
-    status === 'PROCESSING' ||
-    status === 'WAITING_FOR_FUNDS';
-
   // If the transfer is still pending or processing after 30 seconds, we
   // consider it "stuck" and show a warning message to the user. If it is
   // pending for 29 seconds, then processing for 29 seconds that's fine, as
@@ -323,9 +318,7 @@ export const SuccessScreen = ({
           iconPosition="tail"
           href={transactionLink}
           state={
-            transactionLink && (!isProcessing || isResolutionStuck)
-              ? 'default'
-              : 'disabled'
+            transactionLink && status !== 'PENDING' ? 'default' : 'disabled'
           }
           icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
