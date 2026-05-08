@@ -43,6 +43,7 @@ export const mockOneClickQuote = ({
   const amountInUsd = amountIn * sourceToken.price;
 
   return {
+    correlationId: 'test-correlation-id',
     quote: {
       amountIn: amount,
       minAmountIn: amount,
