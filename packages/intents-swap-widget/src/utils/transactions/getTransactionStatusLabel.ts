@@ -2,6 +2,7 @@ import { ProgressActivityW700 as ProgressActivityIcon } from '@material-symbols-
 import { CheckCircleFillW700 as CheckCircleIcon } from '@material-symbols-svg/react-rounded/icons/check-circle';
 import { CancelFillW700 as CancelIcon } from '@material-symbols-svg/react-rounded/icons/cancel';
 import { ArrowCircleLeftFillW700 as ArrowCircleLeftIcon } from '@material-symbols-svg/react-rounded/icons/arrow-circle-left';
+import { InfoFillW700 as InfoIcon } from '@material-symbols-svg/react-rounded/icons/info';
 import { sentenceCase } from 'change-case';
 import type {
   TransactionsStatusLabel,
@@ -55,6 +56,12 @@ export const getTransactionStatusLabel = (
         label: composeLabel('Refunded', transactionType),
         colorClassName: 'text-sw-status-warning',
         Icon: ArrowCircleLeftIcon,
+      };
+    case 'UNRESOLVED':
+      return {
+        label: composeLabel('Unresolved', transactionType),
+        colorClassName: 'text-sw-status-warning',
+        Icon: InfoIcon,
       };
     default:
       return {

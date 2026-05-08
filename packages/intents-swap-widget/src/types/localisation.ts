@@ -23,6 +23,7 @@ export type LocalisationKeys =
   | 'transfer.success.details.recipient'
   | 'transfer.success.action.viewOnExplorer'
   | 'transfer.success.action.backToSwap'
+  | 'transfer.success.statusUnresolved'
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'

@@ -8,7 +8,8 @@ export type TransactionStatus =
   | 'WAITING_FOR_FUNDS'
   | 'PENDING'
   | 'FAILED'
-  | 'REFUNDED';
+  | 'REFUNDED'
+  | 'UNRESOLVED';
 
 export type AppFee = {
   fee: number;

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ArrowDownward,
   OpenInNew,
@@ -19,7 +20,7 @@ import { useTypedTranslation } from '@/localisation';
 import { useHandleKeyDown } from '@/hooks';
 import { logger } from '@/logger';
 
-import type { TransactionType } from '@/types/transaction';
+import type { TransactionStatus, TransactionType } from '@/types/transaction';
 import type { TransferResult } from '@/types/transfer';
 import { useTransferResultStatus } from './useTransferResultStatus';
 import { useSummaryItemsCount } from './useSummaryItemsCount';
@@ -141,11 +142,28 @@ export const SuccessScreen = ({
   const anyDepositAmounts = useAnyDepositAmounts(transferResult);
 
   const status = useTransferResultStatus(transferResult);
-  const statusLabel = getTransactionStatusLabel(status, transactionType);
   const isProcessing =
     status === 'PENDING' ||
     status === 'PROCESSING' ||
     status === 'WAITING_FOR_FUNDS';
+
+  const [isResolutionStuck, setIsResolutionStuck] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsResolutionStuck(true), 30_000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showStuckMessage = isResolutionStuck && isProcessing;
+  const effectiveStatus: TransactionStatus = showStuckMessage
+    ? 'UNRESOLVED'
+    : status;
+
+  const statusLabel = getTransactionStatusLabel(
+    effectiveStatus,
+    transactionType,
+  );
 
   const handleClose = () => onMsg({ type: 'on_dismiss_success' });
 
@@ -168,6 +186,15 @@ export const SuccessScreen = ({
 
       {!!message && (
         <p className="text-sw-body-md text-sw-gray-200">{message}</p>
+      )}
+
+      {showStuckMessage && (
+        <p className="text-sw-body-md text-sw-status-warning">
+          {t(
+            'transfer.success.statusUnresolved',
+            'Resolving the status of your swap is taking longer than usual. Please check the explorer or your wallet for the latest state.',
+          )}
+        </p>
       )}
 
       <div className="flex flex-col">
@@ -270,7 +297,11 @@ export const SuccessScreen = ({
           variant="primary"
           iconPosition="tail"
           href={transactionLink}
-          state={transactionLink && !isProcessing ? 'default' : 'disabled'}
+          state={
+            transactionLink && (!isProcessing || isResolutionStuck)
+              ? 'default'
+              : 'disabled'
+          }
           icon={OpenInNew}>
           {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
         </Button>
