@@ -12,6 +12,10 @@ import { isSuiAddress } from '../chains/isSuiAddress';
 import { isSolanaAddress } from '../chains/isSolanaAddress';
 import { isTonAddress } from '../chains/isTonAddress';
 import { isZecAddress } from '../chains/isZecAddress';
+import { isDashAddress } from '../chains/isDashAddress';
+import { isStarknetAddress } from '../chains/isStarknetAddress';
+import { isBchAddress } from '../chains/isBchAddress';
+import { isAleoAddress } from '../chains/isAleoAddress';
 
 export const isValidChainAddress = (
   chain: Chains,
@@ -53,6 +57,14 @@ export const isValidChainAddress = (
       return !!isTonAddress(address);
     case 'tron':
       return !!isTronAddress(address);
+    case 'dash':
+      return !!isDashAddress(address);
+    case 'starknet':
+      return !!isStarknetAddress(address);
+    case 'bch':
+      return !!isBchAddress(address);
+    case 'aleo':
+      return !!isAleoAddress(address);
     default:
       return null;
   }
