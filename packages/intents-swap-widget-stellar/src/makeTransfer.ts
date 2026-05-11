@@ -167,9 +167,12 @@ export const makeTransfer = async (
   // 6. Submit Transaction to RPC
   const submitResult = await rpcServer.sendTransaction(signedTx);
 
-  if (submitResult.status === 'ERROR') {
+  if (
+    submitResult.status === 'ERROR' ||
+    submitResult.status === 'TRY_AGAIN_LATER'
+  ) {
     throw new Error(
-      `Stellar transaction failed to submit. Hash: ${submitResult.hash}`,
+      `Stellar transaction failed to submit with status ${submitResult.status}. Hash: ${submitResult.hash}`,
     );
   }
 
