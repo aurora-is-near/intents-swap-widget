@@ -194,12 +194,25 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         userAuthMode: action.payload,
         isConfigurationSyncedToRemote: false,
       };
-    case 'SET_WIDGET_MODE':
+
+    case 'SET_WIDGET_MODE': {
+      const isDeposit = action.payload === 'deposit';
+
       return {
         ...state,
         widgetMode: action.payload,
+        depositModeReceiverAddress:
+          isDeposit && !state.depositModeReceiverAddress
+            ? '0x0000000000000000000000000000000000000000'
+            : state.depositModeReceiverAddress,
+        defaultBuyToken:
+          isDeposit && !state.defaultBuyToken
+            ? { symbol: 'USDC', blockchain: 'base' }
+            : state.defaultBuyToken,
         isConfigurationSyncedToRemote: false,
       };
+    }
+
     case 'SET_ACCOUNT_ABSTRACTION_MODE':
       return {
         ...state,

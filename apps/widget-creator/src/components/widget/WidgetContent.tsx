@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Banner,
   Button,
@@ -17,7 +17,7 @@ import { DappWalletBridge } from './DappWalletBridge';
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
 export function WidgetContent() {
-  const { state, dispatch } = useCreator();
+  const { state } = useCreator();
 
   const [successfulTransactionDetails, setSuccessfulTransactionDetails] =
     useState<{
@@ -76,30 +76,6 @@ export function WidgetContent() {
     state.userAuthMode === 'standalone'
       ? StandaloneWidgetConfigProvider
       : DappWalletBridge;
-
-  useEffect(() => {
-    if (state.widgetMode === 'deposit' && !state.depositModeReceiverAddress) {
-      dispatch({
-        type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS',
-        payload: '0x0000000000000000000000000000000000000000',
-      });
-    }
-
-    // do not add state.depositModeReceiverAddress here since it should be called
-    // only once on widget mode change, otherwise it will override user input
-  }, [state.widgetMode]);
-
-  useEffect(() => {
-    if (state.widgetMode === 'deposit' && !state.defaultBuyToken) {
-      dispatch({
-        type: 'SET_DEFAULT_BUY_TOKEN',
-        payload: {
-          symbol: 'USDC',
-          blockchain: 'base',
-        },
-      });
-    }
-  }, [state.widgetMode]);
 
   return (
     <Provider
