@@ -71,8 +71,8 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
       });
     }
 
-    // reset quote on any input change
-    if (!isQuoteIdle(ctx)) {
+    // Reset quote on any input change, unless in the `transfer_success` state
+    if (!isQuoteIdle(ctx) && machine.current !== 'transfer_success') {
       ctx.quote = undefined;
       ctx.quoteStatus = 'idle';
       ctx.transferStatus = { status: 'idle' };
