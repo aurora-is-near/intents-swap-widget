@@ -148,10 +148,11 @@ export const SuccessScreen = ({
     disabled: isResolutionStuck,
   });
 
-  // If the transfer is still pending or processing after 30 seconds, we
-  // consider it "stuck" and show a warning message to the user. If it is
-  // pending for 29 seconds, then processing for 29 seconds that's fine, as
-  // the timer will reset when the status changes.
+  // If the transfer is still pending after 30 seconds, or processing after a
+  // cumulative 30 seconds, consider it "stuck" and show a warning message to
+  // the user. This is to cover the case where an optimistic status update
+  // cannot be matched with a real transaction, as well as very long-running
+  // transactions, or slow API responses.
   useEffect(() => {
     if (
       isResolutionStuck ||
