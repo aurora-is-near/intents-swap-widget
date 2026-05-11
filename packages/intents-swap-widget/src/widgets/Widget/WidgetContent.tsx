@@ -82,7 +82,7 @@ export const WidgetContent = ({
   ...restProps
 }: Props) => {
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
-  const [activeTab, setActiveTab] = useState<WidgetTab>(defaultTab);
+  const [selectedTab, setSelectedTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedHistoricalTransaction, setSelectedHistoricalTransaction] =
     useState<Transaction | FakeTransaction | null>(null);
@@ -97,8 +97,10 @@ export const WidgetContent = ({
 
   const { ctx } = useUnsafeSnapshot();
 
+  const activeTab = tabs.includes(selectedTab) ? selectedTab : defaultTab;
+
   const switchTab = (tab: WidgetTab) => {
-    setActiveTab(tab);
+    setSelectedTab(tab);
     setShowHistory(false);
   };
 
@@ -115,12 +117,14 @@ export const WidgetContent = ({
   };
 
   useEffect(() => {
-    setActiveTab(defaultTab);
-  }, [defaultTab]);
+    if (!tabs.includes(selectedTab)) {
+      setSelectedTab(defaultTab);
+    }
+  }, [tabs, defaultTab]);
 
   useEffect(() => {
     if (!enableAccountAbstraction) {
-      setActiveTab('swap');
+      setSelectedTab('swap');
     }
   }, [enableAccountAbstraction]);
 
