@@ -10,7 +10,7 @@ You can embed ready-to-be used **Swap Widget** directly into your app using an *
 {% step %}
 ### Create Intents Studio account
 
-Navigate to [Widget Studio](https://intents.aurora.dev/) and log in with your email using the button in the top-right corner of the interface.
+Navigate to [Widget Studio](https://studio.aurora.dev/) and log in with your email using the button in the top-right corner of the interface.
 {% endstep %}
 
 {% step %}

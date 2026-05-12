@@ -5,7 +5,7 @@ icon: key
 # API Keys & Fees
 
 {% hint style="info" %}
-You can generate as many API keys as you need and use them across different distribution channels in [Intents Studio](https://intents.aurora.dev/).
+You can generate as many API keys as you need and use them across different distribution channels in [Intents Studio](https://studio.aurora.dev/).
 {% endhint %}
 
 Once you have created your API key, you can do [widget-integration.md](../intents-deposits/quickstart/widget-integration.md "mention") or [api-integration.md](../intents-deposits/quickstart/api-integration.md "mention"). The API key is not confidential, allowing its use in public-facing services such as websites.
