@@ -8,16 +8,16 @@ This guide covers common issues when integrating the Intents Swap Widget.
 
 If you can't find an answer here, please [open an issue](https://github.com/aurora-is-near/intents-swap-widget/issues) or reach out to the team.
 
-## Table of Contents
+### Table of Contents
 
-* [Balance Loading Issues](troubleshooting.md#balance-loading-issues)
-* [Dependency Conflicts](troubleshooting.md#dependency-conflicts)
-* [Wallet Connection Problems](troubleshooting.md#wallet-connection-problems)
-* [Configuration Errors](troubleshooting.md#configuration-errors)
+* Balance Loading Issues
+* Dependency Conflicts
+* Wallet Connection Problems
+* Configuration Errors
 
-## Balance Loading Issues
+### Balance Loading Issues
 
-### Balances load infinitely
+#### Balances load infinitely
 
 **Causes & Solutions:**
 
@@ -40,9 +40,9 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
     ```
 4. **RPC endpoint issues** - The widget retries failed RPC calls twice before giving up. If balances still fail, check network connectivity and RPC availability.
 
-## Dependency Conflicts
+### Dependency Conflicts
 
-### Conflicting package versions
+#### Conflicting package versions
 
 **Cause:** The widget uses several libraries that your project may also use. When versions differ, bundlers may include multiple versions causing conflicts.
 
@@ -85,9 +85,9 @@ Please refer to your package manager documentation for ways of doing this:
 * [yarn](https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/)
 * [pnpm](https://pnpm.io/9.x/package_json#resolutions)
 
-## Wallet Connection Problems
+### Wallet Connection Problems
 
-### Wallet not connecting
+#### Wallet not connecting
 
 **Solutions:**
 
@@ -100,18 +100,40 @@ Please refer to your package manager documentation for ways of doing this:
     // For Solana wallets
     providers={{ sol: solanaWallet }}
 
+    // For Stellar wallets
+    providers={{ stellar: stellarWallet }}
+
     // For NEAR wallets
     providers={{ near: () => nearWallet }}
     ```
-2.  **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
+2.  **Add the matching network plugin** - For EVM, Solana, and Stellar swaps, you also need to install the relevant sibling package and register its network plugin via the `plugins` property.
+
+    ```tsx
+    import { evm } from '@aurora-is-near/intents-swap-widget-evm';
+    import { sol } from '@aurora-is-near/intents-swap-widget-solana';
+    import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
+
+    <WidgetConfigProvider
+      config={{
+        plugins: { evm, sol, stellar },
+        // ...
+      }}
+    >
+    ```
+
+Errors like `No EVM transfer configured` mean the plugin is missing:
+
+Note that NEAR is built into widget core and does not need a plugin.
+
+1.  **Verify `walletSupportedChains`** - We will attempt to establish the supported chains based on the format of the wallet address, however, you may want to include chains your wallet supports:
 
     ```tsx
     walletSupportedChains={['eth', 'base', 'arb']}
     ```
 
-## Configuration Errors
+### Configuration Errors
 
-### No styles/broken design
+#### No styles/broken design
 
 **Cause:** Missing CSS imports.
 
@@ -121,7 +143,7 @@ Please refer to your package manager documentation for ways of doing this:
 import '@aurora-is-near/intents-swap-widget/styles.css';
 ```
 
-Check our detailed [theming](theming.md) documentation.
+Check our detailed theming documentation.
 
 #### Tailwind & CSS reset
 
@@ -143,7 +165,7 @@ It will break widget's styles due to Tailwind layering system. If you face that 
 }
 ```
 
-## Still Having Issues?
+### Still Having Issues?
 
 If this guide didn't solve your problem:
 

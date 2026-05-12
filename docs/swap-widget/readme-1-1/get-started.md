@@ -30,11 +30,11 @@ npm install @aurora-is-near/intents-swap-widget-standalone
 yarn add @aurora-is-near/intents-swap-widget-standalone
 ```
 
-## Setup
+### Setup
 
 To configure the widget, pass a `config` object to the `WidgetConfigProvider`. This object defines core parameters such as the app identifier, default tokens, theme, and optional partner fee settings.
 
-### Example
+#### Example
 
 ```tsx
 import {
@@ -44,7 +44,6 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 
 const config: WidgetConfig = {
-  appName: 'Intents Demo',
   connectedWallets: {
     default: '0x...',
     ton: 'ABC123',
@@ -66,107 +65,125 @@ export default function App() {
 }
 ```
 
-## Core options
+### Core options
 
 The following options are available if you are not using standalone mode (i.e. you installed `@aurora-is-near/intents-swap-widget`).
 
-### `connectedWallets`
+#### `connectedWallets`
 
 A map of connected wallet addresses keyed by chain. Used to determine which accounts can send or receive tokens on each network.
 
-### `providers`
+#### `providers`
 
 The provider(s) for interacting with the `connectedWallets`. Used for signing messages.
 
-### `onWalletSignin`
+#### `plugins`
+
+At the time of writing, this property is used to provide network plugins, one per chain you want to support for native transfers.
+
+**Example**
+
+```tsx
+import { evm } from '@aurora-is-near/intents-swap-widget-evm';
+import { sol } from '@aurora-is-near/intents-swap-widget-solana';
+import { stellar } from '@aurora-is-near/intents-swap-widget-stellar';
+
+const config = {
+  plugins: { evm, sol, stellar },
+};
+```
+
+Install only the sibling packages for chains you actually use.
+
+Note that NEAR support is built in and does not require a plugin.
+
+See Wallet Connection for full examples.
+
+#### `onWalletSignin`
 
 Used to trigger wallet connection for main action button. If this function is not provided the button will have the label "Connect wallet" and not be clickable.
 
-### `onWalletSignout`
+#### `onWalletSignout`
 
 Used to sign out user's wallet. Currently used for compatibility check modal if a wallet is incompatible. NB: some wallets don't support programmatic logout make sure you guide user accordingly if required on your side.
 
-### `showProfileButton`
+#### `showProfileButton`
 
 Show a profile button at the top of the widget via which you can connect (by calling `onWalletSignin`) or disconnect (by calling `onWalletSignout`).
 
-## Common Options
+### Common Options
 
 The following options are available for all widget packages (i.e. you installed `@aurora-is-near/intents-swap-widget` or `@aurora-is-near/intents-swap-widget-standalone`):
 
-### `appName`
+#### `apiKey`
 
-The name used to refer to your app when making NEAR Intents transfers.
+Your widget integration API Key. Visit [Intents Widget Studio](https://studio.aurora.dev) to obtain.
 
-### `apiKey`
+#### `referral`
 
-Your widget integration API Key. Visit [Intents Widget Studio](https://intents.aurora.dev) to obtain.
+Your application name that is used as an alias for quotes. Optional.
 
-### `appIcon`
-
-URL to your app's icon. Shown in the chain selection dropdown.
-
-### `enableAccountAbstraction`
+#### `enableAccountAbstraction`
 
 Used to allow uses to deposit to and withdraw from your app's internal Intents account.
 
-### `walletSupportedChains`
+#### `walletSupportedChains`
 
 A list of blockchain networks supported by the connected wallet(s).
 
 If this is not provided we will attempt to establish the supported chains based on the format of the wallet address.
 
-### `sendAddress`
+#### `sendAddress`
 
 Optional fixed destination wallet. If not specified the widget will use the source wallet address as the receiver, by default.
 
-### `slippageTolerance`
+#### `slippageTolerance`
 
 The slippage tolerance for a transfer.
 
 This value is defined in basis points (1/100th of a percent). For example, 100 for 1% slippage, or 50 for 0.5% slippage.
 
-### `enableAutoTokensSwitching`
+#### `enableAutoTokensSwitching`
 
 When enabled, the widget automatically rotates the source and target tokens if the user selects the same token on both sides.
 
-### `refetchQuoteInterval`
+#### `refetchQuoteInterval`
 
 The interval in milliseconds at which new quotes are fetched automatically. Useful for keeping market prices updated in volatile conditions.
 
-### `allowedTokensList`
+#### `allowedTokensList`
 
 Specifies the available tokens by their NEAR intents asset IDs or token symbols. It will only be possible to select tokens from this list in both the source and the target inputs.
 
-### `allowedSourceTokensList`
+#### `allowedSourceTokensList`
 
 Specifies the available **source** tokens by their NEAR intents asset IDs or token symbols. It will only be possible to select tokens from this list in the source input.
 
-### `allowedTargetTokensList`
+#### `allowedTargetTokensList`
 
 Specifies the available **target** tokens by their NEAR intents asset IDs or token symbols. It will only be possible to select tokens from this list in the target input.
 
-### `filterTokens`
+#### `filterTokens`
 
 A filter function applied to tokens in both the source and target lists. Return `true` to include the token, or `false` to exclude it.
 
 This can be useful when we want to exclude, rather than include particular tokens. If you want to include particular tokens the `allowedTokensList` option might be more suitable.
 
-### `defaultSourceToken`
+#### `defaultSourceToken`
 
 Predefine the default source token. Can be set to `null` to keep it not selected.
 
-### `defaultTargetToken`
+#### `defaultTargetToken`
 
 Predefine the default target token. Can be set to `null` to keep it not selected.
 
-### `chainsOrder`
+#### `chainsOrder`
 
 Defines the order in which supported chains are displayed.
 
 Can be used to bring particular chains to the top of the list. Any chains not specified here will be sorted according to a default order.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -174,13 +191,13 @@ const config = {
 }
 ```
 
-### `topChainShortcuts`
+#### `topChainShortcuts`
 
 Defines top chain shortcuts that are visible to a user for quick access in tokens modal.
 
 You can specify different lists of chains based on user's account type (wallet connected). Four chains must be specified to keep layout clean. If the following configuration attributes are set: `allowedChainsList`, `allowedSourceChainsList` or `allowedTargetChainsList` and a chain is not in those lists it's shortcut won't be displayed, be careful specifying multiple chain filters.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -200,11 +217,11 @@ const config = {
 }
 ```
 
-### `allowedChainsList`
+#### `allowedChainsList`
 
 Restricts which chains that can be used when selecting source or target tokens.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -212,11 +229,11 @@ const config = {
 }
 ```
 
-### `allowedSourceChainsList`
+#### `allowedSourceChainsList`
 
 Restricts which chains can be used when selecting **source** tokens.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -224,11 +241,11 @@ const config = {
 }
 ```
 
-### `allowedTargetChainsList`
+#### `allowedTargetChainsList`
 
 Restricts which chains can be used when selecting **target** tokens.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -236,13 +253,13 @@ const config = {
 }
 ```
 
-### `chainsFilter`
+#### `chainsFilter`
 
 Specify high-level categories of chains that should be displayed when selecting the source or target token.
 
 You will probably find the internal defaults sufficient in most cases, which are driven by the `enableAccountAbstraction` option and whether or not there are any `connectedWallets`. However, this option exists for the case where you want more fine-grained control, for example, when building your own custom widget using our components.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -253,7 +270,7 @@ const config = {
 };
 ```
 
-### `priorityAssets`
+#### `priorityAssets`
 
 Defines the order in which tokens with no balance are displayed on top of the list.
 
@@ -261,7 +278,7 @@ If you want to promote certain tokens or just show most used on top of the list 
 
 The option accepts an array of arrays, where each child array defines either the chain ID and token symbol, or the asset ID.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -294,13 +311,13 @@ const config = {
 };
 ```
 
-### `fetchQuote`
+#### `fetchQuote`
 
 A function used to implement custom quote fetching behaviour, overriding the default of calling the [1Click API quote endpoint](https://docs.near-intents.org/near-intents/integration/distribution-channels/1click-api#post-v0-quote).
 
 For example, you might want to use this proxy quotes via your own API endpoint and insert some additional data based on your backend logic.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -316,13 +333,13 @@ const config = {
 }
 ```
 
-### `fetchSourceTokens`
+#### `fetchSourceTokens`
 
 A function used to fetch a list of custom **source** tokens.
 
 For example, you might want to make a call to some API endpoint.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -334,13 +351,13 @@ const config = {
 }
 ```
 
-### `fetchTargetTokens`
+#### `fetchTargetTokens`
 
 A function used to fetch a list of custom **target** tokens.
 
 For example, you might want to make a call to some API endpoint.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -352,16 +369,16 @@ const config = {
 }
 ```
 
-### `appFees`
+#### `appFees`
 
 A list of recipients and their associated fees that will be applied to each swap or transfer.
 
-#### Properties
+**Properties**
 
 * **`recipient` \[string]** Account ID within Intents to which this fee will be transferred.
 * **`fee` \[number]** Fee for this recipient as part of amountIn in basis points (1/100th of a percent), for example, 100 for a 1% fee.
 
-#### Example
+**Example**
 
 ```ts
 const config = {
@@ -374,30 +391,46 @@ const config = {
 }
 ```
 
-### `alchemyApiKey`
+#### `alchemyApiKey`
 
-An API key for integrating with [Alchemy](../../alchemy.com).
+An API key for integrating with Alchemy.
 
 This is useful for enabling more reliable balance fetching for EVM chains.
 
-### `tonCenterApiKey`
+#### `tonCenterApiKey`
 
 An API key for integrating with [TON Center](https://toncenter.com/).
 
 This is useful for fetching balances for the TON chain.
 
-### `hideSendAddress`
+#### `hideSendAddress`
 
 Used to hide the send address when swapping or withdrawing.
 
-### `hideTokenInputHeadings`
+#### `hideTokenInputHeadings`
 
 Used to hide the headings on the token input boxes.
 
-### `themeParentElementSelector`
+#### `themeParentElementSelector`
 
 HTML element that defines CSS theming variables. If not set, the `body` element is used.
 
-### `lockSwapDirection`
+#### `lockSwapDirection`
 
 By default, when using the swap widget, we can click the arrow in the middle to switch the swap direction. This option disables that feature.
+
+#### `showTransactionHistory`
+
+Enables swaps transaction history for a user's wallet. Disabled by default.
+
+#### `disabledInternalBalanceTokens`
+
+Filters out some tokens from internal balance list.
+
+#### `showConversionPreview`
+
+Enables live swap conversion preview in the tokens list on hover.
+
+#### `extraQuoteParameters`
+
+Allows you to pass extra attributes for each of the 1Click quote request. Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`. More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
