@@ -39,6 +39,6 @@ Click the **Embed in your app** button on the top right of the interface, either
 {% step %}
 ### (Optional) Use advanced settings of the widget
 
-If you decide to embed a React component, you can use advanced settings, such as your own wallet connection or use widget hooks. Check the detailed docs on the [readme-1-1](readme-1-1/ "mention").
+If you decide to embed a React component, you can use advanced settings, such as your own wallet connection or use widget hooks. Check the detailed docs on the [widget-configuration](widget-configuration/ "mention").
 {% endstep %}
 {% endstepper %}

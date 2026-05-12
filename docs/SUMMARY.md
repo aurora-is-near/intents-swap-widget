@@ -51,13 +51,13 @@
 * [What is Swap Widget?](swap-widget/what-is-swap-widget.md)
 * [API Keys & Fees](swap-widget/api-keys-and-fees.md)
 * [Widget integration](swap-widget/widget-integration.md)
-* [Widget Configuration](swap-widget/readme-1-1/README.md)
-  * [Get started](swap-widget/readme-1-1/get-started.md)
-  * [Theming](swap-widget/readme-1-1/theming.md)
-  * [Wallet Connection](swap-widget/readme-1-1/wallet-connection.md)
-  * [Troubleshooting](swap-widget/readme-1-1/troubleshooting.md)
-  * [Localisation](swap-widget/readme-1-1/localisation.md)
-  * [Widgets](swap-widget/readme-1-1/widgets.md)
+* [Widget Configuration](swap-widget/widget-configuration/README.md)
+  * [Get started](swap-widget/widget-configuration/get-started.md)
+  * [Theming](swap-widget/widget-configuration/theming.md)
+  * [Wallet Connection](swap-widget/widget-configuration/wallet-connection.md)
+  * [Troubleshooting](swap-widget/widget-configuration/troubleshooting.md)
+  * [Localisation](swap-widget/widget-configuration/localisation.md)
+  * [Widgets](swap-widget/widget-configuration/widgets.md)
 
 ## About
 
