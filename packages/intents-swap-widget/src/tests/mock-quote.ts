@@ -7,6 +7,7 @@ export const getMockPendingDepositStatus = (
   status: GetExecutionStatusResponse.status.PENDING_DEPOSIT,
   updatedAt: '2026-02-27T11:58:46.024Z',
   quoteResponse: quoteMock,
+  correlationId: 'test-correlation-id',
   swapDetails: {
     intentHashes: [],
     nearTxHashes: [],
