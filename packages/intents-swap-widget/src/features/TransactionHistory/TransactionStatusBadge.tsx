@@ -19,7 +19,7 @@ const VARIANT_CLASSES: Record<
   },
   title: {
     container: 'gap-x-sw-lg',
-    icon: 'h-[36px] w-[36px]',
+    icon: 'h-sw-[28px] w-sw-[28px]',
     label: 'text-sw-label-lg',
   },
 };
