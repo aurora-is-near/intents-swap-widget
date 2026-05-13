@@ -328,7 +328,11 @@ export function Configure() {
                       ? 'border-2 border-csw-accent-600'
                       : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
                   }`}>
-                  {<div className="w-[28px] h-[28px]">{chain.icon}</div>}
+                  {
+                    <div className="rounded-csw-sm overflow-hidden w-[28px] h-[28px]">
+                      {chain.icon}
+                    </div>
+                  }
                 </button>
               ))}
             </div>
