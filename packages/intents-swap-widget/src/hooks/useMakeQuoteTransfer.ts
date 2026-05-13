@@ -13,7 +13,7 @@ import type {
   TransferResult,
 } from '@/types/transfer';
 import { EVM_CHAIN_IDS_MAP } from '../constants/chains';
-import { isEvmBaseToken, isEvmChain } from '../utils';
+import { getTransactionLink, isEvmBaseToken, isEvmChain } from '../utils';
 import { useMakeNearTransfer } from './useMakeNearTransfer';
 import { Providers } from '../types/providers';
 import { Plugins } from '../types/connectors';
@@ -236,7 +236,7 @@ export const useMakeQuoteTransfer = ({
 
       return {
         hash: depositResult.hash,
-        transactionLink: depositResult.transactionLink,
+        transactionLink: getTransactionLink(ctx.quote.depositAddress),
         intent: undefined,
         isOneClickDeposit: true,
       };

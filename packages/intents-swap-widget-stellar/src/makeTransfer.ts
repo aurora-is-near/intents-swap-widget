@@ -17,8 +17,6 @@ import type {
 import { RPC_ENDPOINTS, USDC_ASSET } from './constants';
 import type { MakeTransferOptions } from './types';
 
-const DEFAULT_EXPLORER_BASE_URL = 'https://stellar.expert/explorer/public/tx/';
-
 const createMemo = (memoString: string): Memo => {
   if (!memoString) {
     return Memo.none();
@@ -54,11 +52,8 @@ const createMemo = (memoString: string): Memo => {
 
 export const makeTransfer = async (
   args: MakeTransferArgs & { memo?: string },
-  {
-    provider,
-    explorerBaseUrl = DEFAULT_EXPLORER_BASE_URL,
-  }: MakeTransferOptions,
-): Promise<TransferResult> => {
+  { provider }: MakeTransferOptions,
+): Promise<Omit<TransferResult, 'transactionLink'>> => {
   if (!provider.publicKey) {
     throw new Error('No public key found in Stellar provider.');
   }
@@ -178,6 +173,5 @@ export const makeTransfer = async (
 
   return {
     hash: submitResult.hash,
-    transactionLink: `${explorerBaseUrl}${submitResult.hash}`,
   };
 };
