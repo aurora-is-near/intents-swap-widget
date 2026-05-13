@@ -12,12 +12,6 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/github",
     [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "node build-tools/sync-workspace-deps.js ${nextRelease.version}"
-      }
-    ],
-    [
       "@semantic-release/npm",
       {
         "pkgRoot": "packages/intents-swap-widget"
@@ -45,6 +39,12 @@
       "@semantic-release/npm",
       {
         "pkgRoot": "packages/intents-swap-widget-standalone"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "node build-tools/sync-workspace-deps.js ${nextRelease.version}"
       }
     ],
     [

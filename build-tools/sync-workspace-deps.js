@@ -3,7 +3,8 @@
  * Rewrites inter-package dependency ranges to `^<nextVersion>` across all
  * workspace packages, so that every published package depends on the matching
  * version of its siblings. Invoked from `@semantic-release/exec` during the
- * `prepare` step before `@semantic-release/npm` packs each package.
+ * `prepare` step, *after* every `@semantic-release/npm` plugin has bumped its
+ * package's own version.
  *
  * Skips ranges of `*` — those are intentionally kept loose, generally for
  * local development.
