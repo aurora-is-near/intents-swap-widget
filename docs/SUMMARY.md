@@ -33,7 +33,7 @@
 * [Quickstart](intents-deposits/quickstart/README.md)
   * [Widget integration](intents-deposits/quickstart/widget-integration.md)
   * [API integration](intents-deposits/quickstart/api-integration.md)
-* [Supported Chains and Assets](intents-deposits/supported-chains-and-assets.md)
+* [Supported Chains](intents-deposits/supported-chains.md)
 * [Persistent Addresses](intents-deposits/persistent-addresses.md)
 * [Custom Actions](intents-deposits/custom-actions/README.md)
   * [Custom actions - Widget](intents-deposits/custom-actions/custom-actions-widget.md)
@@ -50,6 +50,7 @@
 
 * [What is Swap Widget?](swap-widget/what-is-swap-widget.md)
 * [API Keys & Fees](swap-widget/api-keys-and-fees.md)
+* [Supported Chains](swap-widget/supported-chains.md)
 * [Widget integration](swap-widget/widget-integration.md)
 * [Widget Configuration](swap-widget/widget-configuration/README.md)
   * [Get started](swap-widget/widget-configuration/get-started.md)

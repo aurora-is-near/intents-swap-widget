@@ -50,7 +50,7 @@ Users can deposit from any chain and asset, while your app receives funds on the
 
 * [What are Intents Deposits?](intents-deposits/what-are-intents-deposits.md)
 * [Quickstart](intents-deposits/quickstart/)
-* [Supported chains and assets](intents-deposits/supported-chains-and-assets.md)
+* [Supported chains and assets](intents-deposits/supported-chains.md)
 
 ***
 

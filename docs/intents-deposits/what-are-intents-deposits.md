@@ -20,7 +20,7 @@ Deposits from any supported source chain are automatically detected and routed. 
 
 ### Non-EVM Support
 
-Source chains include EVM networks and non-EVM chains: Tron, Bitcoin, Zcash, Solana, TON, and NEAR. See [supported-chains-and-assets.md](supported-chains-and-assets.md "mention") for the full list.
+Source chains include EVM networks and non-EVM chains: Tron, Bitcoin, Zcash, Solana, TON, and NEAR. See [supported-chains.md](supported-chains.md "mention") for the full list.
 
 ### Permissionless
 
