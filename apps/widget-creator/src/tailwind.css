@@ -87,7 +87,7 @@
     }
 
     /* disable mynearwallet & okx-wallet from hot-wallet-connector */
-    [data-type='mynearwallet'], [data-type='okx-wallet'], [data-type='near-mobile'] {
+    [data-type='mynearwallet'], [data-type='okx-wallet'] {
       display:none !important;
     }
 }
