@@ -6,12 +6,4 @@ icon: link-horizontal
 
 Our API is powered by NEAR Intents, enabling cross-chain asset discovery, routing, and execution through a unified interface.
 
-### **Supported Chains**
-
-See a full list of supported chains by NEAR Intents here [Supported Chains](https://docs.near-intents.org/resources/chain-support)
-
-### **Supported Assets**
-
-Supported assets are tokens that can be used as inputs or outputs.
-
-See a full list of supported assets by NEAR Intents here [Supported Assets](https://docs.near-intents.org/resources/asset-support)
+<table data-header-hidden="false" data-header-sticky><thead><tr><th>CHAIN</th><th>SOURCE</th><th>DESTINATION</th></tr></thead><tbody><tr><td>ADI</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Aleo</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Arbitrum</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Avalanche</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Base</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Bera</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Binance Smart Chain</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Bitcoin</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Bitcoin Cash</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Cardano</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Dash</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Dogecoin</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Ethereum</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Gnosis</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Litecoin</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Monad</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>NEAR</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Optimism</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Plasma</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Polygon</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Scroll</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Solana</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Starknet</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Stellar</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Sui</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>TON</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Tron</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>XLayer</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>XRP</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Zcash</td><td>✅ Supported</td><td>✅ Supported</td></tr><tr><td>Aurora</td><td>🗓️ June 2026</td><td>🗓️ June 2026</td></tr></tbody></table>
