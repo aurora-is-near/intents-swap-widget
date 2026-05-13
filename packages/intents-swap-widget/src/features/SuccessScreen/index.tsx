@@ -6,6 +6,7 @@ import {
 
 import { Notes } from '@/components/Notes';
 import { Button } from '@/components/Button';
+import { Banner } from '@/components/Banner';
 import { CloseButton } from '@/components/CloseButton';
 import { Accordion } from '@/components/Accordion';
 import { TransactionStatusBadge } from '@/features/TransactionHistory/TransactionStatusBadge';
@@ -205,17 +206,17 @@ export const SuccessScreen = ({
         <CloseButton onClick={handleClose} />
       </header>
 
-      {!!message && (
-        <p className="text-sw-body-md text-sw-gray-200">{message}</p>
-      )}
+      {!!message && <Banner multiline variant="info" message={message} />}
 
       {isResolutionStuck && (
-        <p className="text-sw-body-md text-sw-status-warning">
-          {t(
+        <Banner
+          multiline
+          variant="warn"
+          message={t(
             'transfer.success.statusUnresolved',
             'Resolving the status of your swap is taking longer than usual. Please check the explorer or your wallet for the latest state.',
           )}
-        </p>
+        />
       )}
 
       <div className="flex flex-col">

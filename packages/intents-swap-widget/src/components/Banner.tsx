@@ -9,7 +9,7 @@ import { cn } from '@/utils/cn';
 type Props = {
   message: string;
   multiline?: boolean;
-  variant: 'error' | 'warn' | 'success';
+  variant: 'error' | 'warn' | 'success' | 'info';
   className?: string;
   onDismiss?: () => void;
 };
@@ -27,6 +27,8 @@ export const Banner = ({
         return <VerifiedFill size={16} />;
       case 'error':
         return <ErrorFill size={16} />;
+      case 'info':
+        return null;
       case 'warn':
       default:
         return <Emergency size={16} />;
@@ -41,6 +43,7 @@ export const Banner = ({
           'text-sw-status-error': variant === 'error',
           'text-sw-status-warning': variant === 'warn',
           'text-sw-status-success': variant === 'success',
+          'text-sw-gray-200': variant === 'info',
         },
         className,
       )}>
