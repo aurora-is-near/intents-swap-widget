@@ -66,13 +66,10 @@ export const Report = ({ onClickApiKeys }: Props) => {
     );
   }
 
-  const selectedKey = apiKeys.find(
-    (apiKey) => apiKey.widgetApiKey === state.apiKey,
-  );
+  const selectedKey = apiKeys.find((apiKey) => apiKey.apiKey === state.apiKey);
+  const apiKey = selectedKey?.apiKey ?? apiKeys[0]?.apiKey;
 
-  const widgetAppKey = selectedKey?.widgetApiKey ?? apiKeys[0]?.widgetApiKey;
-
-  if (!widgetAppKey) {
+  if (!apiKey) {
     return (
       <>
         <ReportHeader />
@@ -85,10 +82,7 @@ export const Report = ({ onClickApiKeys }: Props) => {
   return (
     <>
       <ReportHeader />
-      <ReportForm
-        widgetAppKey={widgetAppKey}
-        isAdmin={apiKeys[0]?.role === 'admin'}
-      />
+      <ReportForm apiKey={apiKey} isAdmin={apiKeys[0]?.role === 'admin'} />
     </>
   );
 };

@@ -8,11 +8,11 @@ import { addMonths, getMonthKey, MonthSelect } from './MonthSelect';
 import { useDownloadCsvReport } from './hooks';
 
 type Props = {
-  widgetAppKey: string;
+  apiKey: string;
   isAdmin: boolean;
 };
 
-export const ReportForm = ({ widgetAppKey, isAdmin }: Props) => {
+export const ReportForm = ({ apiKey, isAdmin }: Props) => {
   const { user } = usePrivy();
 
   const now = new Date();
@@ -29,7 +29,7 @@ export const ReportForm = ({ widgetAppKey, isAdmin }: Props) => {
   const [activeShortcut, setActiveShortcut] = useState<string>('All time');
   const { downloadState, downloadCsvReport, resetDownloadState } =
     useDownloadCsvReport({
-      widgetAppKey,
+      apiKey,
     });
 
   const clamp = (d: string) => (d > currentMonthKey ? currentMonthKey : d);

@@ -14,7 +14,7 @@ type DownloadCsvParams =
   | { isAdminReport: true; fromMonth?: never; toMonth?: never };
 
 type UseDownloadCsvReportParams = {
-  widgetAppKey: string;
+  apiKey: string;
   resetDelayMs?: number;
 };
 
@@ -66,7 +66,7 @@ const triggerCsvDownload = (payload: BlobPart, fileName: string): void => {
 };
 
 export const useDownloadCsvReport = ({
-  widgetAppKey,
+  apiKey,
   resetDelayMs = 2000,
 }: UseDownloadCsvReportParams) => {
   const { getAccessToken } = usePrivy();
@@ -137,7 +137,7 @@ export const useDownloadCsvReport = ({
         setDownloadState('idle');
       }
     },
-    [getAccessToken, resetDelayMs, widgetAppKey],
+    [getAccessToken, resetDelayMs, apiKey],
   );
 
   return {

@@ -62,13 +62,13 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
   .object({
     isEnabled: z.boolean(),
     createdAt: z.string(),
-    widgetAppKey: z.string(),
+    apiKey: z.string(),
     feeRules: FeeConfigSchema,
     role: z.enum(['admin']).optional(),
   })
   .transform((data) => ({
     ...data,
-    widgetApiKey: data.widgetAppKey,
+    widgetApiKey: data.apiKey,
   }));
 
 const chainsSchema = z.enum([

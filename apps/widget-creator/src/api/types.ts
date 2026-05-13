@@ -4,7 +4,7 @@ import type { FeeConfig } from 'intents-1click-rule-engine';
 export type ApiKey = {
   isEnabled: boolean;
   createdAt: string;
-  widgetApiKey: string;
+  apiKey: string;
   feeRules: FeeConfig;
   role?: 'admin';
 };
