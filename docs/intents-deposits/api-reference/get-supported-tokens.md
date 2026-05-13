@@ -20,6 +20,6 @@ layout:
 
 # Get supported tokens
 
-{% openapi-operation spec="intents-api" path="/api/tokens/{widgetAppKey}" method="get" %}
+{% openapi-operation spec="intents-api" path="/api/tokens/{apiKey}" method="get" %}
 [OpenAPI intents-api](https://intents-api.aurora.dev/docs/json)
 {% endopenapi-operation %}
