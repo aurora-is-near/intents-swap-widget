@@ -195,6 +195,10 @@ export const useMakeTransfer = ({
           : (ctx.sendAddress ?? ''),
         originChainTxHashes: [transferResult.hash],
         intentHashes: transferResult.intent,
+        depositType: ctx.sourceToken.isIntent ? 'INTENTS' : 'ORIGIN_CHAIN',
+        recipientType: ctx.targetToken.isIntent
+          ? 'INTENTS'
+          : 'DESTINATION_CHAIN',
       });
     }
 
