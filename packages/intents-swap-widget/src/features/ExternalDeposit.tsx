@@ -214,6 +214,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
             hash: txHash ?? '',
             amount: depositStatusQuery.data.swapDetails.amount,
             amountUsd: depositStatusQuery.data.swapDetails.amountUsd,
+            amountOut: depositStatusQuery.data.swapDetails.amountOut,
+            amountOutUsd: depositStatusQuery.data.swapDetails.amountOutUsd,
             intent: depositStatusQuery.data.swapDetails.intentHashes[0],
             transactionLink:
               (ctx.sourceToken &&

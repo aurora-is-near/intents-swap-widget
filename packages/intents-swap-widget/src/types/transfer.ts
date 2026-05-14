@@ -5,6 +5,8 @@ export type TransferResult = {
   transactionLink: string;
   amountUsd?: string;
   amount?: string;
+  amountOut?: string;
+  amountOutUsd?: string;
   intent?: string;
   isOneClickDeposit?: boolean;
 };

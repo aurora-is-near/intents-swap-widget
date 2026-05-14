@@ -63,7 +63,12 @@ const getAmounts = ({
 };
 
 const useAnyDepositAmounts = (
-  transferResult: Pick<TransferResult, 'amount' | 'amountUsd'> | undefined,
+  transferResult:
+    | Pick<
+        TransferResult,
+        'amount' | 'amountUsd' | 'amountOut' | 'amountOutUsd'
+      >
+    | undefined,
 ) => {
   const { ctx } = useUnsafeSnapshot();
 
@@ -199,6 +204,9 @@ export const SuccessScreen = ({
     return null;
   }
 
+  const showTargetTokenRow =
+    showTargetToken && ctx.sourceToken.symbol !== ctx.targetToken.symbol;
+
   return (
     <div className="flex flex-col gap-sw-lg w-full">
       <header className="flex items-center justify-between">
@@ -245,22 +253,34 @@ export const SuccessScreen = ({
           />
         )}
 
-        {quoteAmounts &&
-          showTargetToken &&
-          ctx.sourceToken.symbol !== ctx.targetToken.symbol && (
-            <>
-              <div className="flex items-center justify-center w-full h-[12px] z-1">
-                <div className="flex items-center justify-center p-sw-md bg-sw-gray-950 rounded-sw-md w-fit">
-                  <ArrowDownward size={18} className="text-sw-gray-200" />
-                </div>
-              </div>
-              <TokenRow
-                token={ctx.targetToken}
-                amount={quoteAmounts.targetAmount}
-                amountUsd={quoteAmounts.targetAmountUsd}
-              />
-            </>
-          )}
+        {showTargetTokenRow && (!!quoteAmounts || anyDepositAmounts) && (
+          <div className="flex items-center justify-center w-full h-[12px] z-1">
+            <div className="flex items-center justify-center p-sw-md bg-sw-gray-950 rounded-sw-md w-fit">
+              <ArrowDownward size={18} className="text-sw-gray-200" />
+            </div>
+          </div>
+        )}
+
+        {showTargetTokenRow && anyDepositAmounts ? (
+          <TokenRow
+            token={ctx.targetToken}
+            {...getAmounts({
+              amountUsd: transferResult.amountOutUsd,
+              amount: transferResult.amountOut ?? '0',
+              decimals: ctx.targetToken.decimals,
+              price: ctx.targetToken.price,
+            })}
+          />
+        ) : (
+          showTargetTokenRow &&
+          quoteAmounts && (
+            <TokenRow
+              token={ctx.targetToken}
+              amount={quoteAmounts.targetAmount}
+              amountUsd={quoteAmounts.targetAmountUsd}
+            />
+          )
+        )}
       </div>
 
       <Accordion
