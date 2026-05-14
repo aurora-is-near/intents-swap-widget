@@ -28,7 +28,7 @@ import { useSummaryItemsCount } from './useSummaryItemsCount';
 import { CopyableValue } from './CopyableValue';
 import { TokenRow } from './TokenRow';
 
-const NOTES_ITEM_HEIGHT = 41;
+const NOTES_ITEM_HEIGHT = 44;
 
 type Msg = { type: 'on_dismiss_success' };
 
