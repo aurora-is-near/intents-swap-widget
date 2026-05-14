@@ -3,6 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
+import {
+  AURORA_BRIDGEABLE_ASSETS,
+  isAuroraBridgeable,
+} from '@/constants/aurora-assets';
 import { CHAINS_LIST } from '@/constants/chains';
 import { NATIVE_NEAR_DUMB_ASSET_ID, TOKENS_DATA } from '@/constants/tokens';
 import { isValidChain } from '@/utils/checkers/isValidChain';
@@ -85,6 +89,10 @@ export const useTokens = (variant?: 'source' | 'target') => {
           return null;
         }
 
+        if (blockchain === 'aurora' && !isAuroraBridgeable(token.assetId)) {
+          return null;
+        }
+
         if (
           allowedTokensList &&
           !allowedTokensList.includes(token.assetId) &&
@@ -156,6 +164,35 @@ export const useTokens = (variant?: 'source' | 'target') => {
         decimals: 24,
       });
     }
+
+    // 1Click does not return Aurora tokens, so we synthesise them from a
+    // hardcoded map. Each entry borrows price/icon/name from the matching
+    // nep141 token already in the upstream list (since the underlying asset is
+    // the same on Intents).
+    const auroraTokens: Token[] = AURORA_BRIDGEABLE_ASSETS.map(
+      (asset): Token | undefined => {
+        const upstream = queryData.find((t) => t.assetId === asset.assetId);
+
+        if (!upstream) {
+          return;
+        }
+
+        return {
+          assetId: asset.assetId,
+          symbol: asset.symbol,
+          decimals: asset.decimals,
+          price: upstream.price,
+          blockchain: 'aurora' as const,
+          isIntent: false,
+          icon: upstream.icon ?? getTokenIcon(asset.symbol),
+          name: getTokenName(asset.symbol.toLowerCase()),
+          chainName: CHAINS_LIST.aurora.label,
+          contractAddress: asset.evmAddress,
+        };
+      },
+    ).filter((t): t is Token => !!t);
+
+    tokensWithoutWNEAR = [...tokensWithoutWNEAR, ...auroraTokens];
 
     // rename USDT0 tokens to USDT
     tokensWithoutWNEAR = tokensWithoutWNEAR.map((t) => {

@@ -6,6 +6,7 @@ import AdaIcon from './ada.svg';
 import { AdiIcon } from './AdiIcon';
 import ArbIcon from './arb.svg';
 import { AsterIcon } from './AsterIcon';
+import AuroraIcon from './aurora.svg';
 import AvaxIcon from './avax.svg';
 import BaseIcon from './base.svg';
 import BeraIcon from './bera.svg';
@@ -98,6 +99,7 @@ export const CHAIN_ICONS: Record<
   scroll: <ScrollIcon />,
   starknet: <StarknetIcon />,
   xlayer: <XlayerIcon />,
+  aurora: <AuroraIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {

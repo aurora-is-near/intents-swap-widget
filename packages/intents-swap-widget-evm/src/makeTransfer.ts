@@ -13,8 +13,8 @@ import type {
 } from '@aurora-is-near/intents-swap-widget';
 
 import type { MakeTransferOptions } from './types';
-
-const isEvmAddress = (a: string): boolean => /^0x[a-fA-F0-9]{40}$/.test(a);
+import { makeVirtualChainTransfer } from './makeVirtualChainTransfer';
+import { isEvmAddress, isVirtualChain } from './utils';
 
 const findViemChain = (id: number): Chain | undefined =>
   (Object.values(viemChains) as unknown[]).find(
@@ -73,8 +73,12 @@ export const makeTransfer = async (
   }: MakeTransferOptions,
 ): Promise<TransferResult> => {
   const resolved = typeof provider === 'function' ? await provider() : provider;
+  const isVirtualChainSource = isVirtualChain(args.chain);
 
-  if (!isEvmAddress(args.address)) {
+  // When the source is a NEAR virtual chain (e.g. Aurora), the 1Click deposit
+  // address is a NEAR account (intents.near sub-account) rather than an EVM
+  // address.
+  if (!isVirtualChainSource && !isEvmAddress(args.address)) {
     throw new Error(`Invalid EVM address: ${args.address}`);
   }
 
@@ -103,6 +107,16 @@ export const makeTransfer = async (
   }
 
   const chain = findViemChain(args.evmChainId) ?? null;
+
+  if (isVirtualChainSource) {
+    return makeVirtualChainTransfer(args, {
+      walletClient,
+      from,
+      chain,
+      evmChainId: args.evmChainId,
+      getTransactionLink,
+    });
+  }
 
   if (args.isNativeEvmTokenTransfer) {
     const hash = await walletClient.sendTransaction({

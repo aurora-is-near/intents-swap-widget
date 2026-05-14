@@ -52,7 +52,14 @@ export const useMakeQuoteTransfer = ({
   });
 
   const getTransferFunction = (depositAddress: string) => {
-    const providerType = getSupportedProviderType(depositAddress);
+    // For Aurora sources, the 1Click deposit address is a NEAR account
+    // (intents.near sub-account) but the actual transfer happens on the Aurora
+    // EVM side via the exitToNear precompile — so the EVM plugin must handle
+    // it regardless of the deposit address shape.
+    const providerType =
+      ctx.sourceToken?.blockchain === 'aurora'
+        ? 'evm'
+        : getSupportedProviderType(depositAddress);
 
     if (makeTransfer) {
       return makeTransfer;

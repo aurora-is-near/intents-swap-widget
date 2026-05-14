@@ -136,9 +136,16 @@ export const useMakeQuote = () => {
       walletAddress: recipientWalletAddress,
     });
 
+    // Withdrawals from Aurora reach Intents via the exitToNear precompile,
+    // so the source funds always land on Intents — treat like an Intent source
+    // for deposit/refund purposes. Refunds go back to the user's EVM-keyed
+    // Intents account (refundTo = EVM address, refundType = INTENTS).
+    const isAuroraSource = ctx.sourceToken.blockchain === 'aurora';
+
     const isRefundToIntentAccount =
       recipientIntentsAccountId &&
       (ctx.sourceToken.isIntent ||
+        isAuroraSource ||
         !supportedChains.includes(ctx.sourceToken.blockchain));
 
     const getRefundToAccountId = () => {
@@ -259,7 +266,30 @@ export const useMakeQuote = () => {
     const { sessionId, virtualChainRecipient, virtualChainRefundRecipient } =
       extraQuoteParameters ?? {};
 
+    // Aurora is a NEAR virtual chain. 1Click forwards the asset by calling
+    // ft_transfer_call on the `aurora` bridge account. So `recipient` is the
+    // literal "aurora" account, and the user's EVM landing address goes in
+    // virtualChainRecipient. virtualChainRefundRecipient is only accepted by
+    // 1Click when the source is NEAR/Intents (otherwise refunds must return
+    // to the origin chain via refundType=ORIGIN_CHAIN).
+    const isAuroraDestination = ctx.targetToken.blockchain === 'aurora';
+
+    const auroraDestinationRecipient = isAuroraDestination
+      ? !ctx.targetToken.isIntent && ctx.sendAddress
+        ? ctx.sendAddress
+        : recipientWalletAddress
+      : undefined;
+
+    const supportsAuroraVcRefund =
+      isAuroraDestination && (ctx.sourceToken.isIntent || isAuroraSource);
+
     const filteredExtraQuoteParameters = {
+      ...(auroraDestinationRecipient
+        ? { virtualChainRecipient: auroraDestinationRecipient }
+        : {}),
+      ...(supportsAuroraVcRefund && auroraDestinationRecipient
+        ? { virtualChainRefundRecipient: auroraDestinationRecipient }
+        : {}),
       ...(sessionId ? { sessionId } : {}),
       ...(virtualChainRecipient ? { virtualChainRecipient } : {}),
       ...(virtualChainRefundRecipient ? { virtualChainRefundRecipient } : {}),
@@ -284,26 +314,40 @@ export const useMakeQuote = () => {
 
         quoteResponse = await request.current;
       } else {
+        const useAuroraRecipient =
+          isAuroraDestination && !ctx.targetToken.isIntent;
+
         request.current = requestQuote(
           {
             ...commonQuoteParams,
             ...filteredExtraQuoteParameters,
-            recipient:
-              !ctx.targetToken.isIntent && ctx.sendAddress
+            recipient: useAuroraRecipient
+              ? 'aurora'
+              : !ctx.targetToken.isIntent && ctx.sendAddress
                 ? ctx.sendAddress
                 : recipientIntentsAccountId,
             recipientType: ctx.targetToken.isIntent
               ? QuoteRequest.recipientType.INTENTS
               : QuoteRequest.recipientType.DESTINATION_CHAIN,
-            depositType: ctx.sourceToken.isIntent
-              ? QuoteRequest.depositType.INTENTS
-              : QuoteRequest.depositType.ORIGIN_CHAIN,
+            depositType:
+              ctx.sourceToken.isIntent || isAuroraSource
+                ? QuoteRequest.depositType.INTENTS
+                : QuoteRequest.depositType.ORIGIN_CHAIN,
 
-            // Refund
-            refundTo: getRefundToAccountId(),
-            refundType: isRefundToIntentAccount
-              ? QuoteRequest.refundType.INTENTS
-              : QuoteRequest.refundType.ORIGIN_CHAIN,
+            // Refund. For Aurora-VC deposits, 1Click requires refundType
+            // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
+            // is the literal 'aurora' account, otherwise it's the user's
+            // address on the origin chain.
+            refundTo: useAuroraRecipient
+              ? supportsAuroraVcRefund
+                ? 'aurora'
+                : (ctx.walletAddress ?? '')
+              : getRefundToAccountId(),
+            refundType: useAuroraRecipient
+              ? QuoteRequest.refundType.ORIGIN_CHAIN
+              : isRefundToIntentAccount
+                ? QuoteRequest.refundType.INTENTS
+                : QuoteRequest.refundType.ORIGIN_CHAIN,
 
             depositMode:
               ctx.sourceToken.blockchain === 'stellar'
