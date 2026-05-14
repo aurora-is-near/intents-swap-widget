@@ -18,7 +18,7 @@ import { MakeTransferOptions } from './types';
 export const makeTransfer = async (
   args: MakeTransferArgs,
   { provider, alchemyApiKey }: MakeTransferOptions,
-): Promise<Omit<TransferResult, 'transactionLink'>> => {
+): Promise<Pick<TransferResult, 'hash'>> => {
   const connection = new Connection(
     `https://solana-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
   );

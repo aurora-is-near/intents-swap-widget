@@ -27,7 +27,7 @@ type BaseNetworkPlugin<K extends keyof NetworkMap> = {
   makeTransfer: (
     args: NetworkMap[K]['args'],
     options: NetworkMap[K]['options'],
-  ) => Promise<TransferResult>;
+  ) => Promise<Pick<TransferResult, 'hash'>>;
 };
 
 export type EvmNetworkPlugin = BaseNetworkPlugin<'evm'>;

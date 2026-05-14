@@ -32,14 +32,12 @@ type Context = {
   walletClient: WalletClient;
   from: `0x${string}`;
   chain: Chain | null;
-  evmChainId: number;
-  getTransactionLink: (chainId: number, hash: string) => string;
 };
 
 export const makeVirtualChainTransfer = async (
   args: MakeTransferArgs,
-  { walletClient, from, chain, evmChainId, getTransactionLink }: Context,
-): Promise<TransferResult> => {
+  { walletClient, from, chain }: Context,
+): Promise<Pick<TransferResult, 'hash'>> => {
   if (args.isNativeEvmTokenTransfer) {
     throw new Error(
       'Native ETH withdrawals from virtual chains are not supported.',
@@ -71,8 +69,5 @@ export const makeVirtualChainTransfer = async (
     chain,
   });
 
-  return {
-    hash,
-    transactionLink: getTransactionLink(evmChainId, hash),
-  };
+  return { hash };
 };

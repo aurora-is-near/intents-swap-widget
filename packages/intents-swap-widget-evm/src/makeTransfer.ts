@@ -61,7 +61,7 @@ const switchEthereumChain = async (
 export const makeTransfer = async (
   args: MakeTransferArgs,
   { provider }: MakeTransferOptions,
-): Promise<Omit<TransferResult, 'transactionLink'>> => {
+): Promise<Pick<TransferResult, 'hash'>> => {
   const resolved = typeof provider === 'function' ? await provider() : provider;
   const isVirtualChainSource = isVirtualChain(args.chain);
 
@@ -103,8 +103,6 @@ export const makeTransfer = async (
       walletClient,
       from,
       chain,
-      evmChainId: args.evmChainId,
-      getTransactionLink,
     });
   }
 
