@@ -5,7 +5,6 @@ import {
 
 const reserveNearRpcUrls = [
   'https://relmn.aurora.dev',
-  'https://free.rpc.fastnear.com',
   'https://rpc.mainnet.near.org',
 ];
 
