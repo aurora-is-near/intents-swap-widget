@@ -67,8 +67,18 @@ export const TransactionDetails = ({
     hour12: true,
   });
 
-  const originToken = findTransactionToken(tokens, tx.originAsset);
-  const destToken = findTransactionToken(tokens, tx.destinationAsset);
+  const originToken = findTransactionToken(
+    tokens,
+    tx.originAsset,
+    tx.depositType === 'INTENTS',
+  );
+
+  const destToken = findTransactionToken(
+    tokens,
+    tx.destinationAsset,
+    tx.recipientType === 'INTENTS',
+  );
+
   const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;
 
   const fee = calculateFee(tx);

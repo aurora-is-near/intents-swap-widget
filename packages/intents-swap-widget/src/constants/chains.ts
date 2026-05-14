@@ -221,60 +221,6 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   },
 };
 
-export const CHAIN_EXPLORERS: Record<number, string> = {
-  1: 'https://etherscan.io/tx/', // Ethereum Mainnet
-  5: 'https://goerli.etherscan.io/tx/', // Goerli Testnet
-  11155111: 'https://sepolia.etherscan.io/tx/', // Sepolia Testnet
-  137: 'https://polygonscan.com/tx/', // Polygon Mainnet
-  80001: 'https://mumbai.polygonscan.com/tx/', // Polygon Mumbai Testnet
-  56: 'https://bscscan.com/tx/', // BSC Mainnet
-  97: 'https://testnet.bscscan.com/tx/', // BSC Testnet
-  42161: 'https://arbiscan.io/tx/', // Arbitrum One
-  421613: 'https://goerli.arbiscan.io/tx/', // Arbitrum Goerli
-  421614: 'https://sepolia.arbiscan.io/tx/', // Arbitrum Sepolia
-  10: 'https://optimistic.etherscan.io/tx/', // Optimism
-  420: 'https://goerli-optimism.etherscan.io/tx/', // Optimism Goerli
-  11155420: 'https://sepolia-optimism.etherscan.io/tx/', // Optimism Sepolia
-  43114: 'https://snowtrace.io/tx/', // Avalanche C-Chain
-  43113: 'https://testnet.snowtrace.io/tx/', // Avalanche Fuji Testnet
-  250: 'https://ftmscan.com/tx/', // Fantom Opera
-  4002: 'https://testnet.ftmscan.com/tx/', // Fantom Testnet
-  8453: 'https://basescan.org/tx/', // Base Mainnet
-  84531: 'https://goerli.basescan.org/tx/', // Base Goerli
-  84532: 'https://sepolia.basescan.org/tx/', // Base Sepolia
-  1313161554: 'https://aurorascan.dev/tx/', // Aurora Mainnet
-  1313161555: 'https://testnet.aurorascan.dev/tx/', // Aurora Testnet
-  100: 'https://gnosisscan.io/tx/', // Gnosis Chain
-  534352: 'https://scrollscan.com/tx/', // Scroll
-  534351: 'https://sepolia.scrollscan.com/tx/', // Scroll Sepolia
-  59144: 'https://lineascan.build/tx/', // Linea
-  59140: 'https://goerli.lineascan.build/tx/', // Linea Goerli
-  324: 'https://explorer.zksync.io/tx/', // zkSync Era
-  280: 'https://goerli.explorer.zksync.io/tx/', // zkSync Era Goerli
-  1101: 'https://zkevm.polygonscan.com/tx/', // Polygon zkEVM
-  1442: 'https://testnet-zkevm.polygonscan.com/tx/', // Polygon zkEVM Testnet
-  5000: 'https://mantlescan.xyz/tx/', // Mantle
-  5001: 'https://explorer.testnet.mantle.xyz/tx/', // Mantle Testnet
-  167000: 'https://taikoscan.io/tx/', // Taiko
-  167005: 'https://hekla.taikoscan.io/tx/', // Taiko Hekla Testnet
-  397: 'https://nearblocks.io/txns/', // Near
-  143: 'https://monad.socialscan.io/tx/', // Monad
-  36900: 'https://explorer-bls.adifoundation.ai/tx/', // ADI
-  9745: 'https://plasmascan.to/tx/', // Plasma
-  196: 'https://www.oklink.com/xlayer/tx/', // X Layer
-};
-
-// some chains e.g. Solana have no chain ID
-export const CHAIN_EXPLORERS_BY_CHAIN_NAME: Partial<Record<Chains, string>> = {
-  sol: 'https://solscan.io/tx/',
-  near: 'https://nearblocks.io/txns/',
-  stellar: 'https://stellar.expert/explorer/public/tx/',
-  aleo: 'https://aleoscan.io/transaction/',
-  bch: 'https://blockchair.com/bitcoin-cash/transaction/',
-  dash: 'https://blockchair.com/dash/transaction/',
-  starknet: 'https://starkscan.co/tx/',
-};
-
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'eth',
   'btc',

@@ -25,8 +25,17 @@ export const TransactionCard = ({
   const status = getTransactionStatusLabel(tx.status);
   const time = formatRelativeTime(tx.createdAt);
 
-  const originToken = findTransactionToken(tokens, tx.originAsset);
-  const destToken = findTransactionToken(tokens, tx.destinationAsset);
+  const originToken = findTransactionToken(
+    tokens,
+    tx.originAsset,
+    tx.depositType === 'INTENTS',
+  );
+
+  const destToken = findTransactionToken(
+    tokens,
+    tx.destinationAsset,
+    tx.recipientType === 'INTENTS',
+  );
 
   return (
     <Card

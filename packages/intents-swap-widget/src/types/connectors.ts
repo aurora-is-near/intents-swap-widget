@@ -6,7 +6,6 @@ type NetworkMap = {
     args: MakeTransferArgs;
     options: {
       provider: EvmProvider;
-      getTransactionLink?: (chainId: number, hash: string) => string;
     };
   };
   sol: {
@@ -20,7 +19,6 @@ type NetworkMap = {
     args: MakeTransferArgs & { memo?: string };
     options: {
       provider: StellarProvider;
-      explorerBaseUrl?: string;
     };
   };
 };

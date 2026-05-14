@@ -26,13 +26,6 @@ const findViemChain = (id: number): Chain | undefined =>
       (c as Chain).id === id,
   );
 
-const defaultTransactionLink = (chainId: number, hash: string): string => {
-  const chain = findViemChain(chainId);
-  const explorerUrl = chain?.blockExplorers?.default?.url;
-
-  return explorerUrl ? `${explorerUrl}/tx/${hash}` : '';
-};
-
 const switchEthereumChain = async (
   targetChainId: number,
   provider: Eip1193Provider,
@@ -67,11 +60,8 @@ const switchEthereumChain = async (
 
 export const makeTransfer = async (
   args: MakeTransferArgs,
-  {
-    provider,
-    getTransactionLink = defaultTransactionLink,
-  }: MakeTransferOptions,
-): Promise<TransferResult> => {
+  { provider }: MakeTransferOptions,
+): Promise<Omit<TransferResult, 'transactionLink'>> => {
   const resolved = typeof provider === 'function' ? await provider() : provider;
 
   if (!isEvmAddress(args.address)) {
@@ -112,10 +102,7 @@ export const makeTransfer = async (
       chain,
     });
 
-    return {
-      hash,
-      transactionLink: getTransactionLink(args.evmChainId, hash),
-    };
+    return { hash };
   }
 
   if (!args.tokenAddress || !isEvmAddress(args.tokenAddress)) {
@@ -135,8 +122,5 @@ export const makeTransfer = async (
     chain,
   });
 
-  return {
-    hash,
-    transactionLink: getTransactionLink(args.evmChainId, hash),
-  };
+  return { hash };
 };

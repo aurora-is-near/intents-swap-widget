@@ -40,6 +40,9 @@ export type Transaction = {
   refundTo: string;
   senders: string[];
   refundReason: string | null;
+  recipientType: 'DESTINATION_CHAIN' | 'INTENTS';
+  depositType: 'ORIGIN_CHAIN' | 'INTENTS';
+  refundType: 'ORIGIN_CHAIN' | 'INTENTS' | null;
 };
 
 export type FakeTransaction = Pick<
@@ -55,6 +58,8 @@ export type FakeTransaction = Pick<
   | 'senders'
   | 'recipient'
   | 'originChainTxHashes'
+  | 'recipientType'
+  | 'depositType'
 > & {
   intentHashes?: string;
 };

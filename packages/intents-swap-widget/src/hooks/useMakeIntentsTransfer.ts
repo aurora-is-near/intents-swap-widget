@@ -289,10 +289,11 @@ export const useMakeIntentsTransfer = ({
       routeConfig = createInternalTransferRoute();
     }
 
+    const destinationAddress = getDestinationAddress(ctx);
     const withdrawalParams = {
       assetId: ctx.sourceToken.assetId,
       amount: BigInt(ctx.sourceTokenAmount),
-      destinationAddress: getDestinationAddress(ctx),
+      destinationAddress,
       destinationMemo: undefined,
       feeInclusive: true,
       routeConfig,
@@ -338,12 +339,9 @@ export const useMakeIntentsTransfer = ({
         intent: intentTx.hash,
         // no hash means completion not trackable for this bridge
         hash: completionResult.hash ?? '',
-        transactionLink: completionResult.hash
-          ? getTransactionLink(
-              ctx.targetToken.blockchain,
-              completionResult.hash,
-            )
-          : '',
+        transactionLink: getTransactionLink(destinationAddress, {
+          isDirectNearTransfer: isDirectNearTokenWithdrawal,
+        }),
         isOneClickDeposit: !isDirectNearTokenWithdrawal,
       };
     } catch (e: unknown) {

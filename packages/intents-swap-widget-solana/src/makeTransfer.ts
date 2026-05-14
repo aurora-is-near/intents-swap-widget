@@ -18,7 +18,7 @@ import { MakeTransferOptions } from './types';
 export const makeTransfer = async (
   args: MakeTransferArgs,
   { provider, alchemyApiKey }: MakeTransferOptions,
-): Promise<TransferResult> => {
+): Promise<Omit<TransferResult, 'transactionLink'>> => {
   const connection = new Connection(
     `https://solana-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
   );
@@ -57,10 +57,7 @@ export const makeTransfer = async (
       maxRetries: 3,
     });
 
-    return {
-      hash,
-      transactionLink: `https://solscan.io/tx/${hash}`,
-    };
+    return { hash };
   }
 
   const tokenAmount = BigInt(args.amount);
@@ -111,8 +108,5 @@ export const makeTransfer = async (
     maxRetries: 3,
   });
 
-  return {
-    hash,
-    transactionLink: `https://solscan.io/tx/${hash}`,
-  };
+  return { hash };
 };

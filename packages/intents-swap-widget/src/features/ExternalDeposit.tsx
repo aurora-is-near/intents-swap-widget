@@ -188,6 +188,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
         const txHash =
           depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
 
+        const intentHash = depositStatusQuery.data.swapDetails.intentHashes[0];
+
         fireEvent('transferSetStatus', { status: 'success' });
 
         if (ctx.sourceToken && ctx.targetToken) {
@@ -219,8 +221,8 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
             intent: depositStatusQuery.data.swapDetails.intentHashes[0],
             transactionLink:
               (ctx.sourceToken &&
-                txHash &&
-                getTransactionLink(ctx.sourceToken.blockchain, txHash)) ??
+                intentHash &&
+                getTransactionLink(intentHash)) ??
               '',
           },
         });

@@ -1,29 +1,10 @@
-import {
-  CHAIN_EXPLORERS,
-  CHAIN_EXPLORERS_BY_CHAIN_NAME,
-  CHAIN_IDS_MAP,
-} from '@/constants/chains';
-import type { Chains } from '@/types/chain';
-
 export const getTransactionLink = (
-  chain: Chains | number | undefined,
   hash: string,
+  { isDirectNearTransfer }: { isDirectNearTransfer?: boolean } = {},
 ): string => {
-  if (!chain) {
-    return '';
+  if (isDirectNearTransfer) {
+    return `https://nearblocks.io/txns/${hash}`;
   }
 
-  const chainId = typeof chain === 'number' ? chain : CHAIN_IDS_MAP[chain];
-
-  if (!chainId || !CHAIN_EXPLORERS[chainId]) {
-    if (typeof chain === 'number') {
-      return '';
-    }
-
-    return CHAIN_EXPLORERS_BY_CHAIN_NAME[chain]
-      ? `${CHAIN_EXPLORERS_BY_CHAIN_NAME[chain]}${hash}`
-      : '';
-  }
-
-  return `${CHAIN_EXPLORERS[chainId]}${hash}`;
+  return `https://explorer.near-intents.org/transactions/${hash}`;
 };
