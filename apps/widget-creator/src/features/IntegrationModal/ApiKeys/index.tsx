@@ -37,7 +37,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     if (mutation.status === 'success') {
       dispatch({
         type: 'SET_API_KEY',
-        payload: mutation.data.widgetApiKey,
+        payload: mutation.data.apiKey,
       });
     }
   }, [mutation.status]);
@@ -93,7 +93,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
         {apiKeys.map((apiKey) => (
           <ApiKeyCard
             apiKey={apiKey}
-            key={apiKey.widgetApiKey}
+            key={apiKey.apiKey}
             onClickFees={onClickFees}
           />
         ))}

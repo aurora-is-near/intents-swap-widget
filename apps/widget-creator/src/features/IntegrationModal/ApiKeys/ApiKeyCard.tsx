@@ -33,11 +33,11 @@ export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const { mutate: deleteApiKey, status: deleteApiKeyStatus } = useDeleteApiKey(
-    apiKey.widgetApiKey,
+    apiKey.apiKey,
   );
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(apiKey.widgetApiKey);
+    await navigator.clipboard.writeText(apiKey.apiKey);
     setTimeout(() => setIsCopied(false), 2000);
     setIsCopied(true);
   };
@@ -46,7 +46,7 @@ export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
 
   useEffect(() => {
     if (deleteApiKeyStatus === 'success') {
-      onKeyRemoved?.(apiKey.widgetApiKey);
+      onKeyRemoved?.(apiKey.apiKey);
     }
   }, [deleteApiKeyStatus]);
 
@@ -73,7 +73,7 @@ export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
 
       <div className="flex items-center justify-between w-full p-csw-2md rounded-csw-md bg-csw-gray-800">
         <span className="text-csw-label-md text-csw-gray-50">
-          {maskApiKey(apiKey.widgetApiKey)}
+          {maskApiKey(apiKey.apiKey)}
         </span>
         <button className="cursor-pointer" onClick={handleCopy}>
           {isCopied ? (

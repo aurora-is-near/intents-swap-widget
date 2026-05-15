@@ -103,9 +103,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
   const walletAddress = watch('walletAddress');
   const feeJson = watch('feeJson');
 
-  const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(
-    apiKey.widgetApiKey,
-  );
+  const { mutate: updateApiKey, ...mutation } = useUpdateApiKey(apiKey.apiKey);
 
   const handleFeeJsonChange = (fee: string) => {
     const { data: config, error } = validateFeeConfig(fee);
