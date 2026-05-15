@@ -283,16 +283,27 @@ export const useMakeQuote = () => {
     const supportsAuroraVcRefund =
       isAuroraDestination && (ctx.sourceToken.isIntent || isAuroraSource);
 
+    const auroraSourceRefundRecipient =
+      isAuroraSource && !isAuroraDestination
+        ? (ctx.walletAddress ?? undefined)
+        : undefined;
+
+    const resolvedVirtualChainRecipient =
+      virtualChainRecipient ?? auroraDestinationRecipient;
+
+    const resolvedVirtualChainRefundRecipient =
+      virtualChainRefundRecipient ??
+      (supportsAuroraVcRefund ? auroraDestinationRecipient : undefined) ??
+      auroraSourceRefundRecipient;
+
     const filteredExtraQuoteParameters = {
-      ...(auroraDestinationRecipient
-        ? { virtualChainRecipient: auroraDestinationRecipient }
+      ...(resolvedVirtualChainRecipient
+        ? { virtualChainRecipient: resolvedVirtualChainRecipient }
         : {}),
-      ...(supportsAuroraVcRefund && auroraDestinationRecipient
-        ? { virtualChainRefundRecipient: auroraDestinationRecipient }
+      ...(resolvedVirtualChainRefundRecipient
+        ? { virtualChainRefundRecipient: resolvedVirtualChainRefundRecipient }
         : {}),
       ...(sessionId ? { sessionId } : {}),
-      ...(virtualChainRecipient ? { virtualChainRecipient } : {}),
-      ...(virtualChainRefundRecipient ? { virtualChainRefundRecipient } : {}),
     };
 
     try {
@@ -342,12 +353,15 @@ export const useMakeQuote = () => {
               ? supportsAuroraVcRefund
                 ? 'aurora'
                 : (ctx.walletAddress ?? '')
-              : getRefundToAccountId(),
-            refundType: useAuroraRecipient
-              ? QuoteRequest.refundType.ORIGIN_CHAIN
-              : isRefundToIntentAccount
-                ? QuoteRequest.refundType.INTENTS
-                : QuoteRequest.refundType.ORIGIN_CHAIN,
+              : auroraSourceRefundRecipient
+                ? 'aurora'
+                : getRefundToAccountId(),
+            refundType:
+              useAuroraRecipient || auroraSourceRefundRecipient
+                ? QuoteRequest.refundType.ORIGIN_CHAIN
+                : isRefundToIntentAccount
+                  ? QuoteRequest.refundType.INTENTS
+                  : QuoteRequest.refundType.ORIGIN_CHAIN,
 
             depositMode:
               ctx.sourceToken.blockchain === 'stellar'
