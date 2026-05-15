@@ -81,7 +81,7 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   avax: 'AVAX',
   bsc: 'BNB',
   op: 'ETH',
-  pol: 'MATIC',
+  pol: 'POL',
   monad: 'MON',
   adi: 'ADI',
   plasma: 'XPL',

@@ -133,11 +133,11 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
       const response = await alchemyApi.post(
         `/${alchemyApiKey}/assets/tokens/balances/by-address`,
         {
+          includeErc20Tokens: true,
+          includeNativeTokens: true,
           addresses: walletAddresses.map((address) => ({
             address,
             networks: portfolioNetworks,
-            includeErc20Tokens: true,
-            includeNativeTokens: true,
           })),
           pageKey: portfolioPageKey,
         },
