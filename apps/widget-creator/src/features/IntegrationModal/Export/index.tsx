@@ -180,7 +180,7 @@ export function App() {
 
   useEffect(() => {
     if (apiKeysState.state === 'has-api-keys') {
-      handleApiKeySelect(apiKeysState.apiKeys[0].widgetApiKey);
+      handleApiKeySelect(apiKeysState.apiKeys[0].apiKey);
     }
   }, [apiKeysState.state]);
 
@@ -247,7 +247,7 @@ export function App() {
 
             case 'has-api-keys': {
               const apiKeySelected =
-                state.apiKey ?? apiKeysState.apiKeys[0].widgetApiKey;
+                state.apiKey ?? apiKeysState.apiKeys[0].apiKey;
 
               return (
                 <div className="flex flex-col gap-csw-md">
@@ -270,9 +270,7 @@ export function App() {
 
                   {apiKeySelected ? (
                     <ApiKeySelect
-                      keys={apiKeysState.apiKeys.map(
-                        (apiKey) => apiKey.widgetApiKey,
-                      )}
+                      keys={apiKeysState.apiKeys.map(({ apiKey }) => apiKey)}
                       selected={apiKeySelected}
                       onChange={handleApiKeySelect}
                     />
