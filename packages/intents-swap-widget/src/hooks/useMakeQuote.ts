@@ -273,12 +273,21 @@ export const useMakeQuote = () => {
     // 1Click when the source is NEAR/Intents (otherwise refunds must return
     // to the origin chain via refundType=ORIGIN_CHAIN).
     const isAuroraDestination = ctx.targetToken.blockchain === 'aurora';
+    const useAuroraRecipient = isAuroraDestination && !ctx.targetToken.isIntent;
 
-    const auroraDestinationRecipient = isAuroraDestination
-      ? !ctx.targetToken.isIntent && ctx.sendAddress
-        ? ctx.sendAddress
-        : recipientWalletAddress
-      : undefined;
+    const getAuroraDestinationRecipient = () => {
+      if (!isAuroraDestination) {
+        return undefined;
+      }
+
+      if (!ctx.targetToken.isIntent && ctx.sendAddress) {
+        return ctx.sendAddress;
+      }
+
+      return recipientWalletAddress;
+    };
+
+    const auroraDestinationRecipient = getAuroraDestinationRecipient();
 
     const supportsAuroraVcRefund =
       isAuroraDestination && (ctx.sourceToken.isIntent || isAuroraSource);
@@ -287,6 +296,40 @@ export const useMakeQuote = () => {
       isAuroraSource && !isAuroraDestination
         ? (ctx.walletAddress ?? undefined)
         : undefined;
+
+    const getRecipient = () => {
+      if (useAuroraRecipient) {
+        return 'aurora';
+      }
+
+      if (!ctx.targetToken.isIntent && ctx.sendAddress) {
+        return ctx.sendAddress;
+      }
+
+      return recipientIntentsAccountId;
+    };
+
+    const getRefundTo = () => {
+      if (useAuroraRecipient) {
+        return supportsAuroraVcRefund ? 'aurora' : (ctx.walletAddress ?? '');
+      }
+
+      if (auroraSourceRefundRecipient) {
+        return 'aurora';
+      }
+
+      return getRefundToAccountId();
+    };
+
+    const getRefundType = () => {
+      if (useAuroraRecipient || auroraSourceRefundRecipient) {
+        return QuoteRequest.refundType.ORIGIN_CHAIN;
+      }
+
+      return isRefundToIntentAccount
+        ? QuoteRequest.refundType.INTENTS
+        : QuoteRequest.refundType.ORIGIN_CHAIN;
+    };
 
     const resolvedVirtualChainRecipient =
       virtualChainRecipient ?? auroraDestinationRecipient;
@@ -325,18 +368,11 @@ export const useMakeQuote = () => {
 
         quoteResponse = await request.current;
       } else {
-        const useAuroraRecipient =
-          isAuroraDestination && !ctx.targetToken.isIntent;
-
         request.current = requestQuote(
           {
             ...commonQuoteParams,
             ...filteredExtraQuoteParameters,
-            recipient: useAuroraRecipient
-              ? 'aurora'
-              : !ctx.targetToken.isIntent && ctx.sendAddress
-                ? ctx.sendAddress
-                : recipientIntentsAccountId,
+            recipient: getRecipient(),
             recipientType: ctx.targetToken.isIntent
               ? QuoteRequest.recipientType.INTENTS
               : QuoteRequest.recipientType.DESTINATION_CHAIN,
@@ -349,19 +385,8 @@ export const useMakeQuote = () => {
             // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
             // is the literal 'aurora' account, otherwise it's the user's
             // address on the origin chain.
-            refundTo: useAuroraRecipient
-              ? supportsAuroraVcRefund
-                ? 'aurora'
-                : (ctx.walletAddress ?? '')
-              : auroraSourceRefundRecipient
-                ? 'aurora'
-                : getRefundToAccountId(),
-            refundType:
-              useAuroraRecipient || auroraSourceRefundRecipient
-                ? QuoteRequest.refundType.ORIGIN_CHAIN
-                : isRefundToIntentAccount
-                  ? QuoteRequest.refundType.INTENTS
-                  : QuoteRequest.refundType.ORIGIN_CHAIN,
+            refundTo: getRefundTo(),
+            refundType: getRefundType(),
 
             depositMode:
               ctx.sourceToken.blockchain === 'stellar'
