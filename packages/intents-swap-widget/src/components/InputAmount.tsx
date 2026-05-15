@@ -30,7 +30,10 @@ const RawInputAmount = forwardRef<
         fontSize: rawValue && rawValue.length > 15 ? '24px' : '32px',
       }}
       // hack to not show password manager icons in some cases
-      readOnly
+      // disabled on touch devices — readOnly at tap time prevents iOS keyboard from appearing
+      readOnly={
+        typeof navigator !== 'undefined' && navigator.maxTouchPoints === 0
+      }
       onFocus={(e) => {
         e.target.removeAttribute('readOnly');
         onFocus?.(e);
