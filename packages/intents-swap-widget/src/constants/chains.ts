@@ -18,6 +18,7 @@ export const EVM_CHAINS = [
   'plasma',
   'scroll',
   'xlayer',
+  'aurora',
 ] as const;
 
 export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
@@ -35,6 +36,7 @@ export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
   plasma: 9745,
   scroll: 534352,
   xlayer: 196,
+  aurora: 1313161554,
 };
 
 export const CHAIN_IDS_MAP: Partial<Record<Chains, number>> = {
@@ -85,6 +87,7 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   plasma: 'XPL',
   scroll: 'ETH',
   xlayer: 'OKB',
+  aurora: 'ETH',
 };
 
 export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
@@ -219,6 +222,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'xlayer',
     label: 'X Layer',
   },
+  aurora: {
+    id: 'aurora',
+    label: 'Aurora',
+  },
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
@@ -250,4 +257,5 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'bch',
   'dash',
   'adi',
+  'aurora',
 ];

@@ -14,4 +14,5 @@ export const DEFAULT_RPCS: ChainRpcUrls = {
   plasma: ['https://rpc.plasma.to'],
   scroll: ['https://rpc.scroll.io'],
   xlayer: ['https://rpc.xlayer.tech'],
+  aurora: ['https://mainnet.aurora.dev'],
 };

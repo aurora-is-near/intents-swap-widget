@@ -53,7 +53,7 @@ const createMemo = (memoString: string): Memo => {
 export const makeTransfer = async (
   args: MakeTransferArgs & { memo?: string },
   { provider }: MakeTransferOptions,
-): Promise<Omit<TransferResult, 'transactionLink'>> => {
+): Promise<Pick<TransferResult, 'hash'>> => {
   if (!provider.publicKey) {
     throw new Error('No public key found in Stellar provider.');
   }

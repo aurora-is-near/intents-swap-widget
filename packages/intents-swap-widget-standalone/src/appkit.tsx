@@ -94,6 +94,29 @@ const adi = defineChain({
   },
 });
 
+const aurora = defineChain({
+  id: 1313161554,
+  caipNetworkId: 'eip155:1313161554',
+  chainNamespace: 'eip155',
+  name: 'Aurora',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  blockExplorers: {
+    default: {
+      name: 'Aurora Explorer',
+      url: 'https://explorer.mainnet.aurora.dev',
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+  },
+});
+
 export const initAppKit = ({
   appName,
   theme,
@@ -118,6 +141,7 @@ export const initAppKit = ({
     scroll,
     xLayer,
     adi,
+    aurora,
   ];
 
   const wagmiAdapter = new WagmiAdapter({
@@ -152,6 +176,7 @@ export const initAppKit = ({
       scroll,
       xLayer,
       adi,
+      aurora,
     ],
     projectId,
     metadata: {
