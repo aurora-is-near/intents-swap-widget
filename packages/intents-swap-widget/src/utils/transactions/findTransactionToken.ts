@@ -10,12 +10,15 @@ export const findTransactionToken = (
   isIntent: boolean,
   {
     recipient,
+    refundTo,
   }: {
     recipient?: string;
+    refundTo?: string;
   } = {},
 ): Token | undefined => {
-  // We can identify synthetic Aurora tokens via the recipient `aurora`.
-  if (!isIntent && recipient === 'aurora') {
+  // We can identify synthetic Aurora tokens if the recipient or refundTo is
+  // `aurora`.
+  if (recipient === 'aurora' || refundTo === 'aurora') {
     const auroraToken = tokens.find(
       (t) => t.assetId === assetId && !t.isIntent && t.blockchain === 'aurora',
     );

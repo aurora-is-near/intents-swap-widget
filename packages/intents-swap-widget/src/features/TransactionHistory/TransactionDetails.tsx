@@ -71,6 +71,7 @@ export const TransactionDetails = ({
     tokens,
     tx.originAsset,
     tx.depositType === 'INTENTS',
+    { refundTo: 'refundTo' in tx ? tx.refundTo : undefined },
   );
 
   const destToken = findTransactionToken(
