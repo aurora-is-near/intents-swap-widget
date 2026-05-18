@@ -174,32 +174,39 @@ export const useMakeTransfer = ({
 
       const optimisticKey = transferResult.intent ?? transferResult.hash;
 
-      addOptimisticTransaction(optimisticKey, {
-        status: 'PENDING',
-        originAsset: ctx.sourceToken.assetId,
-        destinationAsset: ctx.targetToken.assetId,
-        amountInFormatted: formatBigToHuman(
-          ctx.sourceTokenAmount,
-          ctx.sourceToken.decimals,
-        ),
-        amountOutFormatted: formatBigToHuman(
-          ctx.targetTokenAmount,
-          ctx.targetToken.decimals,
-        ),
-        amountInUsd: ctx.quote.amountInUsd,
-        amountOutUsd: ctx.quote.amountOutUsd,
-        createdAt: new Date().toISOString(),
-        senders: isIntentsWithdrawal ? [] : [ctx.walletAddress],
-        recipient: isIntentsWithdrawal
-          ? ctx.walletAddress
-          : (ctx.sendAddress ?? ''),
-        originChainTxHashes: [transferResult.hash],
-        intentHashes: transferResult.intent,
-        depositType: ctx.sourceToken.isIntent ? 'INTENTS' : 'ORIGIN_CHAIN',
-        recipientType: ctx.targetToken.isIntent
-          ? 'INTENTS'
-          : 'DESTINATION_CHAIN',
-      });
+      // If the transfer is a 1Click deposit we insert an optimistic
+      // transaction here for faster feedback. That transaction will be replaced
+      // by the real one once the polling of the Explorer API picks it up. For
+      // non-1Click transfers (e.g. direct NEAR transfers) that transaction will
+      // never be resolved, so we do not optimistically add it to the history.
+      if (transferResult.isOneClickDeposit) {
+        addOptimisticTransaction(optimisticKey, {
+          status: 'PENDING',
+          originAsset: ctx.sourceToken.assetId,
+          destinationAsset: ctx.targetToken.assetId,
+          amountInFormatted: formatBigToHuman(
+            ctx.sourceTokenAmount,
+            ctx.sourceToken.decimals,
+          ),
+          amountOutFormatted: formatBigToHuman(
+            ctx.targetTokenAmount,
+            ctx.targetToken.decimals,
+          ),
+          amountInUsd: ctx.quote.amountInUsd,
+          amountOutUsd: ctx.quote.amountOutUsd,
+          createdAt: new Date().toISOString(),
+          senders: isIntentsWithdrawal ? [] : [ctx.walletAddress],
+          recipient: isIntentsWithdrawal
+            ? ctx.walletAddress
+            : (ctx.sendAddress ?? ''),
+          originChainTxHashes: [transferResult.hash],
+          intentHashes: transferResult.intent,
+          depositType: ctx.sourceToken.isIntent ? 'INTENTS' : 'ORIGIN_CHAIN',
+          recipientType: ctx.targetToken.isIntent
+            ? 'INTENTS'
+            : 'DESTINATION_CHAIN',
+        });
+      }
     }
 
     void queryClient.invalidateQueries({
