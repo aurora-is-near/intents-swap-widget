@@ -35,6 +35,7 @@ export const TransactionCard = ({
     tokens,
     tx.destinationAsset,
     tx.recipientType === 'INTENTS',
+    { recipient: tx.recipient },
   );
 
   return (

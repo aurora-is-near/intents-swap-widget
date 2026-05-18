@@ -77,6 +77,7 @@ export const TransactionDetails = ({
     tokens,
     tx.destinationAsset,
     tx.recipientType === 'INTENTS',
+    { recipient: tx.recipient },
   );
 
   const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;

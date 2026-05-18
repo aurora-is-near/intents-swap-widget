@@ -8,7 +8,23 @@ export const findTransactionToken = (
   tokens: Token[],
   assetId: string,
   isIntent: boolean,
+  {
+    recipient,
+  }: {
+    recipient?: string;
+  } = {},
 ): Token | undefined => {
+  // We can identify synthetic Aurora tokens via the recipient `aurora`.
+  if (!isIntent && recipient === 'aurora') {
+    const auroraToken = tokens.find(
+      (t) => t.assetId === assetId && !t.isIntent && t.blockchain === 'aurora',
+    );
+
+    if (auroraToken) {
+      return auroraToken;
+    }
+  }
+
   // wNEAR is stripped from the non-intents token list in favour of native NEAR,
   // so the only remaining non-intent match for wrap.near is the synthetic
   // Aurora variant, which would render the wrong chain badge. Map it back to
