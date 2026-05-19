@@ -6,6 +6,9 @@ import { nearSingleRpcClient } from './rpc';
 
 const DEBOUNCE_MS = 300;
 
+/** Thrown when a newer address check replaces an in-flight one. */
+export const ACCOUNT_CHECK_SUPERSEDED = 'ACCOUNT_CHECK_SUPERSEDED';
+
 const sessionCache = new Map<string, boolean>();
 
 type PendingCheck = {
@@ -82,7 +85,7 @@ export const checkNearAccountExists = async (
 
   if (pendingCheck) {
     clearTimeout(pendingCheck.timer);
-    pendingCheck.reject(new Error('ACCOUNT_CHECK_SUPERSEDED'));
+    pendingCheck.reject(new Error(ACCOUNT_CHECK_SUPERSEDED));
     pendingCheck = null;
   }
 

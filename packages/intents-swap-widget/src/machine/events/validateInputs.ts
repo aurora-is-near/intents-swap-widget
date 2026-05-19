@@ -1,4 +1,7 @@
-import { checkNearAccountExists } from '@/utils/near/checkNearAccountExists';
+import {
+  ACCOUNT_CHECK_SUPERSEDED,
+  checkNearAccountExists,
+} from '@/utils/near/checkNearAccountExists';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
 import { isNearAddress } from '@/utils/chains/isNearAddress';
@@ -27,7 +30,9 @@ const setAsyncError = (err: InitialExternalStateError) => {
 };
 
 const asyncValidateSendAddress = async (ctx: Context) => {
-  if (!ctx.sendAddress) {
+  const address = ctx.sendAddress;
+
+  if (!address) {
     return;
   }
 
@@ -35,11 +40,17 @@ const asyncValidateSendAddress = async (ctx: Context) => {
 
   try {
     fireEvent('setInputsValidating', true);
-    exists = await checkNearAccountExists(ctx.sendAddress);
+    exists = await checkNearAccountExists(address);
   } catch (e) {
+    // A newer address replaced this in-flight check: its outcome no longer
+    // applies, and the newer check owns the validating state.
+    if (e instanceof Error && e.message === ACCOUNT_CHECK_SUPERSEDED) {
+      return;
+    }
+
     setAsyncError({
       code: 'SEND_ADDRESS_IS_NOT_VERIFIED',
-      meta: { address: ctx.sendAddress, chain: 'near' },
+      meta: { address, chain: 'near' },
     });
 
     fireEvent('setInputsValidating', false);
@@ -48,12 +59,18 @@ const asyncValidateSendAddress = async (ctx: Context) => {
     return;
   }
 
+  // The send address changed while this check was in flight, so its result
+  // is stale and must not overwrite the current input's validation state.
+  if (ctx.sendAddress !== address) {
+    return;
+  }
+
   fireEvent('setInputsValidating', false);
 
   if (!exists) {
     setAsyncError({
       code: 'SEND_ADDRESS_IS_NOT_FOUND',
-      meta: { address: ctx.sendAddress, chain: 'near' },
+      meta: { address, chain: 'near' },
     });
 
     moveTo('initial_wallet');
@@ -61,10 +78,16 @@ const asyncValidateSendAddress = async (ctx: Context) => {
     return;
   }
 
-  if (!ctx.error) {
-    moveTo('input_valid_external');
-  } else if (isAsyncSendAddressValidationError(ctx.error)) {
-    fireEvent('errorSet', null);
+  const isClearableError =
+    !ctx.error ||
+    ctx.error.code === 'SEND_ADDRESS_IS_INVALID' ||
+    isAsyncSendAddressValidationError(ctx.error);
+
+  if (isClearableError) {
+    if (ctx.error) {
+      fireEvent('errorSet', null);
+    }
+
     moveTo('input_valid_external');
   }
 };
