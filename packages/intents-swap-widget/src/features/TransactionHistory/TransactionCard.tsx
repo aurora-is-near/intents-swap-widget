@@ -29,12 +29,14 @@ export const TransactionCard = ({
     tokens,
     tx.originAsset,
     tx.depositType === 'INTENTS',
+    { refundTo: 'refundTo' in tx ? tx.refundTo : undefined },
   );
 
   const destToken = findTransactionToken(
     tokens,
     tx.destinationAsset,
     tx.recipientType === 'INTENTS',
+    { recipient: tx.recipient },
   );
 
   return (
