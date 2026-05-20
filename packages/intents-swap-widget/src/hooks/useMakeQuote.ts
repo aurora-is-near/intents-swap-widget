@@ -16,6 +16,14 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getIntentsAccountTypeFromAddress } from '@/utils/chains/getIntentsAccountTypeFromAddress';
+import { getDepositType } from '@/utils/intents/getDepositType';
+import { getQuoteRecipient } from '@/utils/intents/getQuoteRecipient';
+import { getQuoteRefundTo } from '@/utils/intents/getQuoteRefundTo';
+import { getQuoteRefundType } from '@/utils/intents/getQuoteRefundType';
+import { isAuroraRecipient } from '@/utils/intents/isAuroraRecipient';
+import { isAuroraSourceRefund } from '@/utils/intents/isAuroraSourceRefund';
+import { isAuroraToken } from '@/utils/intents/isAuroraToken';
+import { supportsAuroraVcRefund } from '@/utils/intents/supportsAuroraVcRefund';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
@@ -140,28 +148,13 @@ export const useMakeQuote = () => {
     // so the source funds always land on Intents — treat like an Intent source
     // for deposit/refund purposes. Refunds go back to the user's EVM-keyed
     // Intents account (refundTo = EVM address, refundType = INTENTS).
-    const isAuroraSource = ctx.sourceToken.blockchain === 'aurora';
+    const isAuroraSource = isAuroraToken(ctx.sourceToken);
 
     const isRefundToIntentAccount =
       recipientIntentsAccountId &&
       (ctx.sourceToken.isIntent ||
         isAuroraSource ||
         !supportedChains.includes(ctx.sourceToken.blockchain));
-
-    const getRefundToAccountId = () => {
-      if (isDry) {
-        return getDryQuoteAddress(
-          ctx.sourceToken.blockchain,
-          ctx.sourceToken.isIntent,
-        );
-      }
-
-      if (isRefundToIntentAccount) {
-        return recipientIntentsAccountId;
-      }
-
-      return ctx.walletAddress ?? '';
-    };
 
     if (!recipientIntentsAccountId) {
       const msg = 'No corresponding intents account to run a quote';
@@ -272,8 +265,12 @@ export const useMakeQuote = () => {
     // virtualChainRecipient. virtualChainRefundRecipient is only accepted by
     // 1Click when the source is NEAR/Intents (otherwise refunds must return
     // to the origin chain via refundType=ORIGIN_CHAIN).
-    const isAuroraDestination = ctx.targetToken.blockchain === 'aurora';
-    const useAuroraRecipient = isAuroraDestination && !ctx.targetToken.isIntent;
+    const isAuroraDestination = isAuroraToken(ctx.targetToken);
+    const useAuroraRecipient = isAuroraRecipient(ctx.targetToken);
+    const vcRefundSupported = supportsAuroraVcRefund({
+      sourceToken: ctx.sourceToken,
+      targetToken: ctx.targetToken,
+    });
 
     const getAuroraDestinationRecipient = () => {
       if (!isAuroraDestination) {
@@ -289,46 +286,64 @@ export const useMakeQuote = () => {
 
     const auroraDestinationRecipient = getAuroraDestinationRecipient();
 
-    const supportsAuroraVcRefund =
-      isAuroraDestination && (ctx.sourceToken.isIntent || isAuroraSource);
-
-    const auroraSourceRefundRecipient =
-      isAuroraSource && !isAuroraDestination
-        ? (ctx.walletAddress ?? undefined)
-        : undefined;
-
-    const getRecipient = () => {
-      if (useAuroraRecipient) {
-        return 'aurora';
-      }
-
-      if (!ctx.targetToken.isIntent && ctx.sendAddress) {
-        return ctx.sendAddress;
-      }
-
-      return recipientIntentsAccountId;
-    };
+    const auroraSourceRefundRecipient = isAuroraSourceRefund({
+      sourceToken: ctx.sourceToken,
+      targetToken: ctx.targetToken,
+    })
+      ? (ctx.walletAddress ?? undefined)
+      : undefined;
 
     const getRefundTo = () => {
-      if (useAuroraRecipient) {
-        return supportsAuroraVcRefund ? 'aurora' : (ctx.walletAddress ?? '');
+      // Dry quotes use placeholder addresses (no real wallet connected) so the
+      // refundTo is just a placeholder. Keep the original dry behaviour rather
+      // than routing through the shared util, which expects real addresses.
+      if (isDry) {
+        if (useAuroraRecipient) {
+          return vcRefundSupported ? 'aurora' : (ctx.walletAddress ?? '');
+        }
+
+        if (auroraSourceRefundRecipient) {
+          return 'aurora';
+        }
+
+        return getDryQuoteAddress(
+          ctx.sourceToken.blockchain,
+          ctx.sourceToken.isIntent,
+        );
       }
 
-      if (auroraSourceRefundRecipient) {
-        return 'aurora';
-      }
-
-      return getRefundToAccountId();
+      return getQuoteRefundTo({
+        walletAddress: ctx.walletAddress ?? '',
+        sourceToken: ctx.sourceToken,
+        targetToken: ctx.targetToken,
+        intentsAccountType,
+        supportedChains,
+        defaultRefundTo: ctx.walletAddress ?? '',
+      });
     };
 
     const getRefundType = () => {
-      if (useAuroraRecipient || auroraSourceRefundRecipient) {
-        return QuoteRequest.refundType.ORIGIN_CHAIN;
+      // Dry quotes hit the inline logic for the same reason as getRefundTo:
+      // `auroraSourceRefundRecipient` collapses to undefined when there's no
+      // wallet, which changes the branch chosen relative to the real-quote
+      // util that uses the predicate alone.
+      if (isDry) {
+        if (useAuroraRecipient || auroraSourceRefundRecipient) {
+          return QuoteRequest.refundType.ORIGIN_CHAIN;
+        }
+
+        return isRefundToIntentAccount
+          ? QuoteRequest.refundType.INTENTS
+          : QuoteRequest.refundType.ORIGIN_CHAIN;
       }
 
-      return isRefundToIntentAccount
-        ? QuoteRequest.refundType.INTENTS
-        : QuoteRequest.refundType.ORIGIN_CHAIN;
+      return getQuoteRefundType({
+        walletAddress: ctx.walletAddress ?? '',
+        sourceToken: ctx.sourceToken,
+        targetToken: ctx.targetToken,
+        intentsAccountType,
+        supportedChains,
+      }) as QuoteRequest.refundType;
     };
 
     const resolvedVirtualChainRecipient =
@@ -336,7 +351,7 @@ export const useMakeQuote = () => {
 
     const resolvedVirtualChainRefundRecipient =
       virtualChainRefundRecipient ??
-      (supportsAuroraVcRefund ? auroraDestinationRecipient : undefined) ??
+      (vcRefundSupported ? auroraDestinationRecipient : undefined) ??
       auroraSourceRefundRecipient;
 
     const filteredExtraQuoteParameters = {
@@ -372,14 +387,19 @@ export const useMakeQuote = () => {
           {
             ...commonQuoteParams,
             ...filteredExtraQuoteParameters,
-            recipient: getRecipient(),
+            recipient: getQuoteRecipient({
+              walletAddress: recipientWalletAddress,
+              sendAddress: ctx.sendAddress,
+              targetToken: ctx.targetToken,
+              intentsAccountType,
+              defaultRecipient: recipientIntentsAccountId,
+            }),
             recipientType: ctx.targetToken.isIntent
               ? QuoteRequest.recipientType.INTENTS
               : QuoteRequest.recipientType.DESTINATION_CHAIN,
-            depositType:
-              ctx.sourceToken.isIntent || isAuroraSource
-                ? QuoteRequest.depositType.INTENTS
-                : QuoteRequest.depositType.ORIGIN_CHAIN,
+            depositType: getDepositType(
+              ctx.sourceToken,
+            ) as QuoteRequest.depositType,
 
             // Refund. For Aurora-VC deposits, 1Click requires refundType
             // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target

@@ -60,8 +60,11 @@ export type FakeTransaction = Pick<
   | 'originChainTxHashes'
   | 'recipientType'
   | 'depositType'
+  | 'refundTo'
+  | 'refundType'
 > & {
   intentHashes?: string;
+  depositAddress?: string;
 };
 
 export type TransactionsResponse = {

@@ -82,12 +82,30 @@ export const useTransactions = () => {
   // Remove optimistic entries once the real transaction appears in the API.
   // We check all hash fields because intents withdrawals may track hashes
   // in destinationChainTxHashes or intentHashes rather than originChainTxHashes.
+  // We also match on depositAddress because Aurora-source 1Click flows record
+  // no overlapping hashes between the optimistic (Aurora EVM tx hash) and the
+  // API record (intent hash + NEAR-side tx hashes) — the 1Click depositAddress
+  // is the only stable identifier shared by both.
   const apiHashes = new Set(apiTransactions.flatMap(getTransactionHashes));
+  const apiDepositAddresses = new Set(
+    apiTransactions.map((tx) => tx.depositAddress).filter(Boolean),
+  );
 
   optimistic.forEach((tx) => {
-    getTransactionHashes(tx)
-      .filter((hash) => apiHashes.has(hash))
-      .forEach(removeOptimisticTransaction);
+    const hashMatch = getTransactionHashes(tx).some((hash) =>
+      apiHashes.has(hash),
+    );
+
+    const depositAddressMatch =
+      !!tx.depositAddress && apiDepositAddresses.has(tx.depositAddress);
+
+    if (hashMatch || depositAddressMatch) {
+      const key = tx.intentHashes ?? tx.originChainTxHashes[0];
+
+      if (key) {
+        removeOptimisticTransaction(key);
+      }
+    }
   });
 
   const transactions: (Transaction | FakeTransaction)[] = [

@@ -13,10 +13,16 @@ import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
+import { getDepositType } from '@/utils/intents/getDepositType';
+import { getQuoteRecipient } from '@/utils/intents/getQuoteRecipient';
+import { getQuoteRefundTo } from '@/utils/intents/getQuoteRefundTo';
+import { getQuoteRefundType } from '@/utils/intents/getQuoteRefundType';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
 import { Plugins, Providers } from '../types';
+import { useIntentsAccountType } from './useIntentsAccountType';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
+import { useSupportedChains } from './useSupportedChains';
 
 export const useMakeTransfer = ({
   message,
@@ -54,6 +60,8 @@ export const useMakeTransfer = ({
   const queryClient = useQueryClient();
   const { mergedBalance } = useMergedBalance();
   const { addPendingTokens } = useBalancesUpdate();
+  const { intentsAccountType } = useIntentsAccountType();
+  const { supportedChains } = useSupportedChains();
 
   const make = async () => {
     if (!ctx.targetToken) {
@@ -169,9 +177,6 @@ export const useMakeTransfer = ({
       'amountInUsd' in ctx.quote &&
       ctx.quote.amountInUsd
     ) {
-      const isIntentsWithdrawal =
-        ctx.sourceToken.isIntent && !ctx.targetToken.isIntent;
-
       const optimisticKey = transferResult.intent ?? transferResult.hash;
 
       // If the transfer is a 1Click deposit we insert an optimistic
@@ -180,6 +185,36 @@ export const useMakeTransfer = ({
       // non-1Click transfers (e.g. direct NEAR transfers) that transaction will
       // never be resolved, so we do not optimistically add it to the history.
       if (transferResult.isOneClickDeposit) {
+        // Mirror the recipient/refundTo the quote sent to 1Click so the
+        // optimistic record matches what the Explorer API will eventually
+        // echo back. The wallet always appears in `senders` so the
+        // optimistic survives the wallet filter regardless of where it ends
+        // up in recipient/refundTo (e.g. 'aurora' for Aurora destinations).
+        const recipient = getQuoteRecipient({
+          walletAddress: ctx.walletAddress,
+          sendAddress: ctx.sendAddress,
+          targetToken: ctx.targetToken,
+          intentsAccountType,
+          defaultRecipient: ctx.walletAddress,
+        });
+
+        const refundTo = getQuoteRefundTo({
+          walletAddress: ctx.walletAddress,
+          sourceToken: ctx.sourceToken,
+          targetToken: ctx.targetToken,
+          intentsAccountType,
+          supportedChains,
+          defaultRefundTo: ctx.walletAddress,
+        });
+
+        const refundType = getQuoteRefundType({
+          walletAddress: ctx.walletAddress,
+          sourceToken: ctx.sourceToken,
+          targetToken: ctx.targetToken,
+          intentsAccountType,
+          supportedChains,
+        });
+
         addOptimisticTransaction(optimisticKey, {
           status: 'PENDING',
           originAsset: ctx.sourceToken.assetId,
@@ -195,13 +230,14 @@ export const useMakeTransfer = ({
           amountInUsd: ctx.quote.amountInUsd,
           amountOutUsd: ctx.quote.amountOutUsd,
           createdAt: new Date().toISOString(),
-          senders: isIntentsWithdrawal ? [] : [ctx.walletAddress],
-          recipient: isIntentsWithdrawal
-            ? ctx.walletAddress
-            : (ctx.sendAddress ?? ''),
+          senders: [ctx.walletAddress],
+          recipient,
+          refundTo,
+          refundType,
           originChainTxHashes: [transferResult.hash],
           intentHashes: transferResult.intent,
-          depositType: ctx.sourceToken.isIntent ? 'INTENTS' : 'ORIGIN_CHAIN',
+          depositAddress: ctx.quote.depositAddress,
+          depositType: getDepositType(ctx.sourceToken),
           recipientType: ctx.targetToken.isIntent
             ? 'INTENTS'
             : 'DESTINATION_CHAIN',
