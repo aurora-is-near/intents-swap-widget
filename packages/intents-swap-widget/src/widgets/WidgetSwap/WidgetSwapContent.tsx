@@ -9,13 +9,6 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
-import { BlockingError } from '@/components';
-
-import { useUnsafeSnapshot } from '@/machine/snap';
-import { useStoreSideEffects } from '@/machine/effects';
-import { fireEvent } from '@/machine/events/utils/fireEvent';
-
 import {
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
@@ -23,20 +16,25 @@ import {
   useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
-
+import { BlockingError } from '@/components';
 import { isDebug, notReachable } from '@/utils';
-
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { useStoreSideEffects } from '@/machine/effects';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
-import type { CommonWidgetProps, TokenInputType } from '../types';
-import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
+
 import { useTypedTranslation } from '../../localisation';
-import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 import { useTokenModal } from '../../hooks/useTokenModal';
+import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+
+import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 export type Msg =
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_success' };
+  | ({ type: 'on_transfer_success' } & TransferResult);
 
 export type Props = CommonWidgetProps<Msg>;
 
@@ -276,7 +274,7 @@ export const WidgetSwapContent = ({
             }
             onSuccess={(transfer) => {
               setTransferResult(transfer);
-              onMsg?.({ type: 'on_transfer_success' });
+              onMsg?.({ type: 'on_transfer_success', ...transfer });
             }}
           />
         </div>

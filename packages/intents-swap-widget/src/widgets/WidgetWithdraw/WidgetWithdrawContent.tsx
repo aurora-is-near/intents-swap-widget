@@ -8,13 +8,6 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
-import { BlockingError, Card, DirectionSwitcher } from '@/components';
-
-import { useUnsafeSnapshot } from '@/machine/snap';
-import { useStoreSideEffects } from '@/machine/effects';
-import { fireEvent } from '@/machine/events/utils/fireEvent';
-
 import {
   useIntentsAccountType,
   useIsCompatibilityCheckRequired,
@@ -23,18 +16,23 @@ import {
   useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
-
 import { isDebug, notReachable } from '@/utils';
-
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { useStoreSideEffects } from '@/machine/effects';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { BlockingError, Card, DirectionSwitcher } from '@/components';
+import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
+
 import { useTypedTranslation } from '../../localisation';
-import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
 import { useTokenModal } from '../../hooks/useTokenModal';
+import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
+
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
-  | { type: 'on_transfer_success' }
+  | ({ type: 'on_transfer_success' } & TransferResult)
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type Props = CommonWidgetProps<Msg>;
@@ -275,7 +273,7 @@ export const WidgetWithdrawContent = ({
             label={t('submit.active.withdraw', 'Swap & withdraw')}
             onSuccess={(transfer) => {
               setTransferResult(transfer);
-              onMsg?.({ type: 'on_transfer_success' });
+              onMsg?.({ type: 'on_transfer_success', ...transfer });
             }}
           />
         </div>

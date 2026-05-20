@@ -69,3 +69,28 @@ The `makeTransfer` function is called with a second argument that defines the
 widget type. This can be useful if you have enabled account abstraction and need
 to modify the transfer behaviour in some way, or log analytics events, based on
 the widget type (i.e. swap, deposit or withdraw).
+
+## Listen to events
+
+Each `Widget` component exposes `onMsg` prop that allows you to listen to some
+events in the transfer pipeline. E.g. widget deposit mode component has the
+following events exposed that can be used like:
+
+```tsx
+<Widget onMsg={msg => {
+    switch (msg.type) {
+        case 'on_select_token':
+        case 'on_change_deposit_type':
+        case 'on_tokens_modal_toggled':
+            break
+        case 'on_transfer_success':
+            // you can access event's data here e.g. transaction hash
+            console.log(msg.hash)
+            break;
+        default:
+            break;
+    }
+}} />
+```
+
+For events of other widget types please refer to their `Props` type.

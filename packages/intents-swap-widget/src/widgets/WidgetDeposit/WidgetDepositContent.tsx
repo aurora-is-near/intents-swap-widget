@@ -8,13 +8,6 @@ import {
   TokenInput,
   TokensModal,
 } from '@/features';
-import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
-import { BlockingError } from '@/components';
-
-import { useUnsafeSnapshot } from '@/machine/snap';
-import { useStoreSideEffects } from '@/machine/effects';
-import { fireEvent } from '@/machine/events/utils/fireEvent';
-
 import {
   useIntentsAccountType,
   useIsCompatibilityCheckRequired,
@@ -22,19 +15,24 @@ import {
   useTokens,
   useWalletConnection,
 } from '@/hooks';
-
 import { useConfig } from '@/config';
+import { BlockingError } from '@/components';
+import { useUnsafeSnapshot } from '@/machine/snap';
+import { useStoreSideEffects } from '@/machine/effects';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { isDebug, noop, notReachable } from '@/utils';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
-import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
+
 import { useTypedTranslation } from '../../localisation';
 import { useTokenModal } from '../../hooks/useTokenModal';
+import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
-  | { type: 'on_transfer_success' }
+  | ({ type: 'on_transfer_success' } & TransferResult)
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type Props = CommonWidgetProps<Msg>;
@@ -293,7 +291,7 @@ export const WidgetDepositContent = ({
             label={t('submit.active.deposit', 'Confirm deposit in your wallet')}
             onSuccess={(transfer) => {
               setTransferResult(transfer);
-              onMsg?.({ type: 'on_transfer_success' });
+              onMsg?.({ type: 'on_transfer_success', ...transfer });
             }}
           />
         </div>

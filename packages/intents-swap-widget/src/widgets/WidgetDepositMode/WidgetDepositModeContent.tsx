@@ -17,15 +17,17 @@ import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
-import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
-import type { CommonWidgetProps, TokenInputType } from '../types';
+
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
+import type { CommonWidgetProps, TokenInputType } from '../types';
+
+import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
 
 export type Msg =
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
-  | { type: 'on_transfer_success' }
+  | ({ type: 'on_transfer_success' } & TransferResult)
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
 
 export type Props = CommonWidgetProps<Msg>;
@@ -360,7 +362,7 @@ export const WidgetDepositModeContent = ({
             label={t('submit.active.deposit', 'Confirm deposit in your wallet')}
             onSuccess={(transfer) => {
               setTransferResult(transfer);
-              onMsg?.({ type: 'on_transfer_success' });
+              onMsg?.({ type: 'on_transfer_success', ...transfer });
             }}
           />
         </div>
