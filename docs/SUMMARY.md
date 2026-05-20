@@ -41,6 +41,8 @@
 * [API Reference](intents-deposits/api-reference/README.md)
   * [Get supported tokens](intents-deposits/api-reference/get-supported-tokens.md)
   * [Request a quote](intents-deposits/api-reference/request-a-quote.md)
+  * [Submit a deposit](intents-deposits/api-reference/submit-a-deposit.md)
+  * [Get swap status](intents-deposits/api-reference/get-swap-status.md)
   * [Get transactions history](intents-deposits/api-reference/get-transactions-history.md)
   * [Light Deposit API](intents-deposits/api-reference/light-deposit-api/README.md)
     * [Get a deposit address](intents-deposits/api-reference/light-deposit-api/get-a-deposit-address.md)
