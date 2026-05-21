@@ -20,7 +20,7 @@ export const findTransactionToken = (
       : tx.recipientType === 'INTENTS';
 
   // We can identify synthetic Aurora source tokens if the refundTo is `aurora`.
-  if (refundTo === 'aurora') {
+  if (variant === 'source' && refundTo === 'aurora') {
     const auroraToken = tokens.find(
       (t) =>
         t.assetId === assetId &&
@@ -34,11 +34,11 @@ export const findTransactionToken = (
   }
 
   // We can identify synthetic Aurora destination tokens if the recipient is `aurora`.
-  if (recipient === 'aurora') {
+  if (variant === 'destination' && recipient === 'aurora') {
     const auroraToken = tokens.find(
       (t) =>
         t.assetId === assetId &&
-        t.isIntent === isIntent &&
+        t.isIntent === (tx.recipientType === 'INTENTS') &&
         t.blockchain === 'aurora',
     );
 
