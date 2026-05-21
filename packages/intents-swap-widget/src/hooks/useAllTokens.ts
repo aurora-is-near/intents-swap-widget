@@ -14,8 +14,10 @@ export const useAllTokens = () => {
       ...(sourceTokens || []),
       ...(targetTokens || []),
     ].forEach((token) => {
-      // Consider a token the same if it has the same assetId and isIntent flag
-      const mapKey = `${token.assetId}-${token.isIntent}`;
+      // Consider a token the same if it has the same assetId and isIntent flag,
+      // the latter to distinguish between Aurora on Aurora vs Aurora on Near,
+      // for example.
+      const mapKey = `${token.assetId}-${token.isIntent}-${token.blockchain}`;
 
       tokenMap[mapKey] = token;
     });

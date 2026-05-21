@@ -24,6 +24,7 @@ export const tokenSelect = (
         token &&
         token.assetId === ctx.targetToken?.assetId &&
         token.isIntent === ctx.targetToken.isIntent &&
+        token.blockchain === ctx.targetToken.blockchain &&
         config.enableAutoTokensSwitching
       ) {
         if (!ctx.sourceToken) {
@@ -40,6 +41,7 @@ export const tokenSelect = (
         !ctx.sourceToken &&
         token.assetId === ctx.targetToken?.assetId &&
         token.isIntent === ctx.targetToken.isIntent &&
+        token.blockchain === ctx.targetToken.blockchain &&
         config.enableAutoTokensSwitching
       ) {
         return;
@@ -52,6 +54,7 @@ export const tokenSelect = (
         token &&
         token.assetId === ctx.sourceToken?.assetId &&
         token.isIntent === ctx.sourceToken.isIntent &&
+        token.blockchain === ctx.sourceToken.blockchain &&
         config.enableAutoTokensSwitching
       ) {
         if (!ctx.targetToken) {
