@@ -1,26 +1,45 @@
 import { NATIVE_NEAR_DUMB_ASSET_ID, WNEAR_ASSET_ID } from '@/constants/tokens';
 import type { Token } from '@/types/token';
+import { FakeTransaction, Transaction } from '@/types/transaction';
 
 /**
  * Finds the best display token for a transaction asset.
  */
 export const findTransactionToken = (
   tokens: Token[],
-  assetId: string,
-  isIntent: boolean,
-  {
-    recipient,
-    refundTo,
-  }: {
-    recipient?: string;
-    refundTo?: string;
-  } = {},
+  tx: Transaction | FakeTransaction,
+  variant: 'source' | 'destination',
 ): Token | undefined => {
-  // We can identify synthetic Aurora tokens if the recipient or refundTo is
-  // `aurora`.
-  if (recipient === 'aurora' || refundTo === 'aurora') {
+  const refundTo = 'refundTo' in tx ? tx.refundTo : undefined;
+  const refundType = 'refundType' in tx ? tx.refundType : undefined;
+  const { recipient } = tx;
+  const assetId = variant === 'source' ? tx.originAsset : tx.destinationAsset;
+  const isIntent =
+    variant === 'source'
+      ? tx.depositType === 'INTENTS'
+      : tx.recipientType === 'INTENTS';
+
+  // We can identify synthetic Aurora source tokens if the refundTo is `aurora`.
+  if (refundTo === 'aurora') {
     const auroraToken = tokens.find(
-      (t) => t.assetId === assetId && !t.isIntent && t.blockchain === 'aurora',
+      (t) =>
+        t.assetId === assetId &&
+        t.isIntent === (refundType !== 'ORIGIN_CHAIN') &&
+        t.blockchain === 'aurora',
+    );
+
+    if (auroraToken) {
+      return auroraToken;
+    }
+  }
+
+  // We can identify synthetic Aurora destination tokens if the recipient is `aurora`.
+  if (recipient === 'aurora') {
+    const auroraToken = tokens.find(
+      (t) =>
+        t.assetId === assetId &&
+        t.isIntent === isIntent &&
+        t.blockchain === 'aurora',
     );
 
     if (auroraToken) {
