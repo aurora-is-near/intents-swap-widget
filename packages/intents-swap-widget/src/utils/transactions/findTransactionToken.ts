@@ -19,13 +19,14 @@ export const findTransactionToken = (
       ? tx.depositType === 'INTENTS'
       : tx.recipientType === 'INTENTS';
 
+  const auroraTokens = tokens.filter((t) => t.blockchain === 'aurora');
+  const nonAuroraTokens = tokens.filter((t) => t.blockchain !== 'aurora');
+
   // We can identify synthetic Aurora source tokens if the refundTo is `aurora`.
   if (variant === 'source' && refundTo === 'aurora') {
-    const auroraToken = tokens.find(
+    const auroraToken = auroraTokens.find(
       (t) =>
-        t.assetId === assetId &&
-        t.isIntent === (refundType !== 'ORIGIN_CHAIN') &&
-        t.blockchain === 'aurora',
+        t.assetId === assetId && t.isIntent === (refundType !== 'ORIGIN_CHAIN'),
     );
 
     if (auroraToken) {
@@ -35,11 +36,10 @@ export const findTransactionToken = (
 
   // We can identify synthetic Aurora destination tokens if the recipient is `aurora`.
   if (variant === 'destination' && recipient === 'aurora') {
-    const auroraToken = tokens.find(
+    const auroraToken = auroraTokens.find(
       (t) =>
         t.assetId === assetId &&
-        t.isIntent === (tx.recipientType === 'INTENTS') &&
-        t.blockchain === 'aurora',
+        t.isIntent === (tx.recipientType === 'INTENTS'),
     );
 
     if (auroraToken) {
@@ -52,7 +52,7 @@ export const findTransactionToken = (
   // Aurora variant, which would render the wrong chain badge. Map it back to
   // native NEAR, matching how wNEAR is presented elsewhere.
   if (!isIntent && assetId === WNEAR_ASSET_ID) {
-    const nativeNear = tokens.find(
+    const nativeNear = nonAuroraTokens.find(
       (t) => t.assetId === NATIVE_NEAR_DUMB_ASSET_ID && !t.isIntent,
     );
 
@@ -61,7 +61,7 @@ export const findTransactionToken = (
     }
   }
 
-  const match = tokens.find(
+  const match = nonAuroraTokens.find(
     (t) => t.assetId === assetId && t.isIntent === isIntent,
   );
 
@@ -74,7 +74,7 @@ export const findTransactionToken = (
   if (assetId.startsWith('nep141:')) {
     const nep245AssetId = assetId.replace('nep141:', 'nep245:');
 
-    return tokens.find((t) => t.assetId === nep245AssetId);
+    return nonAuroraTokens.find((t) => t.assetId === nep245AssetId);
   }
 
   return undefined;
