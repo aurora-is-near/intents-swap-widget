@@ -39,6 +39,7 @@ import { TransactionHistory } from '../../features/TransactionHistory';
 import { BalancesUpdateProvider } from '../../context/BalancesUpdateContext';
 import { useUnsafeSnapshot } from '../../machine';
 import { cn } from '../../utils/cn';
+import { useUnsupportedChain } from '../../hooks';
 
 export type Props = Omit<
   | WidgetSwapProps
@@ -87,6 +88,7 @@ export const WidgetContent = ({
   const [selectedHistoricalTransaction, setSelectedHistoricalTransaction] =
     useState<Transaction | FakeTransaction | null>(null);
 
+  const { clearUnsupportedChain } = useUnsupportedChain();
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const {
     enableAccountAbstraction,
@@ -102,6 +104,7 @@ export const WidgetContent = ({
   const switchTab = (tab: WidgetTab) => {
     setSelectedTab(tab);
     setShowHistory(false);
+    clearUnsupportedChain();
   };
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {

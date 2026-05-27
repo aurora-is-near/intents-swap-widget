@@ -4,7 +4,11 @@ import { EVM_CHAIN_IDS_MAP } from '@/constants/chains';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isEvmChain } from '@/utils';
 import { logger } from '@/logger';
-import { switchEthereumChain } from '@/utils/evm/switchEthereumChain';
+import {
+  SwitchChainError,
+  switchEthereumChain,
+} from '@/utils/evm/switchEthereumChain';
+import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { Providers } from '../types';
 
 const getCurrentChainId = async (provider: Eip1193Provider) => {
@@ -83,9 +87,20 @@ export const useSwitchChain = ({ providers }: { providers?: Providers }) => {
       // Use shared utility function for chain switching
       await switchEthereumChain(targetChainId, provider);
 
+      fireEvent('unsupportedChainSet', null);
+
       return true;
     } catch (error: unknown) {
       logger.error('Failed to switch chain:', error);
+
+      // The wallet doesn't have this chain configured — surface it so the
+      // widget can prompt the user instead of failing silently.
+      if (
+        error instanceof SwitchChainError &&
+        error.code === 'CHAIN_NOT_AVAILABLE'
+      ) {
+        fireEvent('unsupportedChainSet', ctx.sourceToken.blockchain);
+      }
 
       return false;
     } finally {

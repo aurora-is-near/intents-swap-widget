@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  ChainNotSupportedModal,
   DepositMethodSwitcher,
   DepositSummary,
   SubmitButton,
@@ -13,6 +14,7 @@ import {
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
+  useUnsupportedChain,
   useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
@@ -61,6 +63,7 @@ export const WidgetDepositContent = ({
 
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { walletSignOut } = useWalletConnection();
+  const { unsupportedChain } = useUnsupportedChain();
 
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(false);
@@ -161,6 +164,10 @@ export const WidgetDepositContent = ({
         }}
       />
     );
+  }
+
+  if (unsupportedChain) {
+    return <ChainNotSupportedModal />;
   }
 
   switch (tokensStatus) {

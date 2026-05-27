@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  ChainNotSupportedModal,
   DepositMethodSwitcher,
   DepositSummary,
   SubmitButton,
@@ -12,7 +13,7 @@ import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { isDebug, noop, notReachable } from '@/utils';
-import { useTokenInputPair, useTokens } from '@/hooks';
+import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
@@ -72,6 +73,7 @@ export const WidgetDepositModeContent = ({
   } = useTokens();
 
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
+  const { unsupportedChain } = useUnsupportedChain();
 
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
@@ -232,6 +234,10 @@ export const WidgetDepositModeContent = ({
         }}
       />
     );
+  }
+
+  if (unsupportedChain) {
+    return <ChainNotSupportedModal />;
   }
 
   switch (tokensStatus) {

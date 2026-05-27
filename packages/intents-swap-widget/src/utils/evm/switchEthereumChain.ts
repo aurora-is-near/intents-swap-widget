@@ -1,10 +1,22 @@
 import { Eip1193Provider } from 'ethers';
 import { logger } from '@/logger';
 
-class SwitchChainError extends Error {
-  constructor(message: string) {
+export type SwitchChainErrorCode = 'CHAIN_NOT_AVAILABLE' | 'SWITCH_FAILED';
+
+export class SwitchChainError extends Error {
+  code: SwitchChainErrorCode;
+
+  targetChainId: number;
+
+  constructor(
+    message: string,
+    code: SwitchChainErrorCode,
+    targetChainId: number,
+  ) {
     super(message);
     this.name = 'SwitchChainError';
+    this.code = code;
+    this.targetChainId = targetChainId;
   }
 }
 
@@ -49,12 +61,18 @@ export const switchEthereumChain = async (
       'code' in error &&
       error.code === 4902
     ) {
-      throw new SwitchChainError(`Chain ${targetChainId} is not available.`);
+      throw new SwitchChainError(
+        `Chain ${targetChainId} is not available.`,
+        'CHAIN_NOT_AVAILABLE',
+        targetChainId,
+      );
     }
 
     logger.error(error);
     throw new SwitchChainError(
       `Please switch to the correct network (Chain ID: ${targetChainId}) in your wallet`,
+      'SWITCH_FAILED',
+      targetChainId,
     );
   }
 };

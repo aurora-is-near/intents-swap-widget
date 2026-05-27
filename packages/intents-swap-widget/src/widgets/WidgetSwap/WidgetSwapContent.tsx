@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  ChainNotSupportedModal,
   SendAddress,
   SubmitButton,
   SuccessScreen,
@@ -13,6 +14,7 @@ import {
   useIsCompatibilityCheckRequired,
   useTokenInputPair,
   useTokens,
+  useUnsupportedChain,
   useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
@@ -64,6 +66,7 @@ export const WidgetSwapContent = ({
     useTokenInputPair();
 
   const { walletSignOut } = useWalletConnection();
+  const { unsupportedChain } = useUnsupportedChain();
   const isCompatibilityCheckRequired = useIsCompatibilityCheckRequired();
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(
     isCompatibilityCheckRequired,
@@ -167,6 +170,10 @@ export const WidgetSwapContent = ({
         }}
       />
     );
+  }
+
+  if (unsupportedChain) {
+    return <ChainNotSupportedModal />;
   }
 
   switch (tokensStatus) {

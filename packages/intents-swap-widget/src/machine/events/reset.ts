@@ -15,6 +15,7 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
   ctx.isDepositFromExternalWallet = false;
   ctx.externalDepositTxReceived = undefined;
   ctx.error = null;
+  ctx.unsupportedChain = null;
 
   ctx.quote = undefined;
   ctx.quoteStatus = 'idle';

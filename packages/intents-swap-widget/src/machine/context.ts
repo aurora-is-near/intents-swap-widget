@@ -5,6 +5,7 @@ import type {
   QuoteReal,
 } from '@/types/quote';
 import type { Token, TokenBalance } from '@/types/token';
+import type { Chains } from '@/types/chain';
 import type {
   InitialDryStateError,
   InitialExternalStateError,
@@ -33,6 +34,7 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   walletAddress: undefined,
   sendAddress: undefined,
   error: null,
+  unsupportedChain: null,
 
   quote: undefined,
   quoteStatus: 'idle' as const,
@@ -76,6 +78,7 @@ export type InitialDryContext = {
   walletAddress?: string;
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: InitialDryStateError | null;
 
@@ -100,6 +103,7 @@ export type InitialWalletContext = {
   sendAddress: string | undefined;
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: InitialInternalStateError | InitialExternalStateError | null;
 
@@ -124,6 +128,7 @@ export type InputValidDryContext = {
   walletAddress?: string;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived?: never;
   error: InputValidDryError | null;
 
@@ -148,6 +153,7 @@ export type InputValidInternalContext = {
   walletAddress: string;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived?: never;
   error: InputValidWalletError | null;
 
@@ -172,6 +178,7 @@ export type InputValidExternalContext = {
   walletAddress: string;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: InputValidWalletError | null;
 
@@ -196,6 +203,7 @@ export type QuoteSuccessDryContext = {
   walletAddress?: never;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
@@ -220,6 +228,7 @@ export type QuoteSuccessInternalContext = {
   walletAddress: string;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
@@ -246,6 +255,7 @@ export type QuoteSuccessExternalContext = {
   walletAddress: string;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: QuoteSuccessError | null;
 
@@ -272,6 +282,7 @@ export type TransferSuccessContext = {
   areInputsValidating?: never;
   sendAddress: string | undefined;
   isDepositFromExternalWallet: boolean;
+  unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error?: never;
 
