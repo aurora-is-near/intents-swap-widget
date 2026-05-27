@@ -77,6 +77,8 @@ const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
+    // Generate your API key at https://studio.aurora.dev
+    'x-api-key': API_KEY,
   },
   body: JSON.stringify({
     "dry": false,
@@ -113,7 +115,7 @@ const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v
       }
     ],
     "type": "evm"
-  });
+  })
 });
 const execution = await response.json();
 ```
