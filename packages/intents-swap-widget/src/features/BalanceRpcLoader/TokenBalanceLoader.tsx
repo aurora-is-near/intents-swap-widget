@@ -2,6 +2,7 @@ import { memo, useEffect, useRef } from 'react';
 
 import type { Token, TokenBalances } from '@/types/token';
 import type { ChainRpcUrls } from '@/types/chain';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useTokenBalanceRpc } from './useTokenBalanceRpc';
 import { WalletAddresses } from '../../types';
 
@@ -22,7 +23,7 @@ const TokenBalanceZeroLoader = ({
       return;
     }
 
-    onBalancesLoaded({ [token.assetId]: '0' });
+    onBalancesLoaded({ [getTokenBalanceKey(token)]: '0' });
     // eslint-disable-next-line
   }, [token.assetId]);
 
@@ -45,20 +46,20 @@ const TokenBalanceBaseLoader = memo(
       }
 
       // A unique key to avoid firing onBalancesLoaded with duplicate balances
-      const key = `${token.assetId}:${balance}`;
+      const key = `${getTokenBalanceKey(token)}:${balance}`;
 
       if (lastSent.current === key) {
         return;
       }
 
       lastSent.current = key;
-      onBalancesLoaded({ [token.assetId]: balance });
+      onBalancesLoaded({ [getTokenBalanceKey(token)]: balance });
     }, [token, balance, onBalancesLoaded]);
 
     return null;
   },
   (prev, next) =>
-    prev.token.assetId === next.token.assetId &&
+    getTokenBalanceKey(prev.token) === getTokenBalanceKey(next.token) &&
     prev.connectedWallets === next.connectedWallets &&
     prev.onBalancesLoaded === next.onBalancesLoaded,
 );

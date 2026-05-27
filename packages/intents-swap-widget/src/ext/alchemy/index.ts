@@ -6,6 +6,7 @@ import { useTokens } from '@/hooks/useTokens';
 import { guardStates } from '@/machine/guards';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { parse } from './parse';
 import { createLoader } from './load';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
@@ -88,8 +89,10 @@ export const useAlchemyBalanceIntegration = ({
     tokens.forEach((token) => {
       const inAllowed = isAlchemySupportedChain(token.blockchain);
 
-      if (inAllowed && !(token.assetId in balances)) {
-        balances[token.assetId] = '0';
+      const balanceKey = getTokenBalanceKey(token);
+
+      if (inAllowed && !(balanceKey in balances)) {
+        balances[balanceKey] = '0';
       }
     });
 
@@ -102,11 +105,12 @@ export const useAlchemyBalanceIntegration = ({
     if (validState) {
       setWalletBalance(connectedWallets, balancesMap);
 
-      if (
-        ctx.sourceToken &&
-        Object.keys(balancesMap).includes(ctx.sourceToken.assetId)
-      ) {
-        fireEvent('tokenSetBalance', balancesMap[ctx.sourceToken.assetId]);
+      const sourceKey = ctx.sourceToken
+        ? getTokenBalanceKey(ctx.sourceToken)
+        : undefined;
+
+      if (sourceKey && Object.keys(balancesMap).includes(sourceKey)) {
+        fireEvent('tokenSetBalance', balancesMap[sourceKey]);
       }
     }
   }, [balancesMap]);

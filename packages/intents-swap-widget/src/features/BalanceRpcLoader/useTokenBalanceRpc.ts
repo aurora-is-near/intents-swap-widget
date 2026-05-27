@@ -41,7 +41,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
   return useQuery<string | null>({
     retry: 2,
     enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
-    queryKey: ['tokenBalance', token.assetId, walletKey],
+    queryKey: ['tokenBalance', token.assetId, token.blockchain, walletKey],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
       if (!walletAddress) {
