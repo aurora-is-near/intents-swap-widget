@@ -1,5 +1,6 @@
 ---
 description: This API is currently work in progress.
+icon: rectangle-api
 layout:
   width: wide
   title:
