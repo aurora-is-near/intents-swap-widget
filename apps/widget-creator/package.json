@@ -24,7 +24,7 @@
     "@floating-ui/react": "^0.26.16",
     "@privy-io/react-auth": "^1.96.5",
     "@tanstack/react-query": "^5.90.11",
-    "axios": "^1.10.0",
+    "axios": "^1.16.0",
     "clsx": "^2.1.1",
     "intents-1click-rule-engine": "1.2.1",
     "lucide-react": "^0.554.0",
