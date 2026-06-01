@@ -90,7 +90,8 @@ export const useTransactions = () => {
   }
 
   const fetchedTransactions = data?.data ?? lastFetchedTransactions.current;
-  const apiTransactions = showAll
+  const showingAll = showAll && !isPlaceholderData && !isError;
+  const apiTransactions = showingAll
     ? fetchedTransactions
     : fetchedTransactions.slice(0, INITIAL_VISIBLE_TRANSACTIONS);
 
