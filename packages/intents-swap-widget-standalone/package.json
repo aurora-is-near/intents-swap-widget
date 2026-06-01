@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget-standalone",
-  "version": "7.5.0",
+  "version": "7.6.0",
   "description": "Standalone wrapper for the Intents swap widget",
   "license": "MIT",
   "main": "dist/index.js",
@@ -30,10 +30,10 @@
     "react-dom": ">=18.2.0"
   },
   "dependencies": {
-    "@aurora-is-near/intents-swap-widget": "^7.5.0",
-    "@aurora-is-near/intents-swap-widget-evm": "^7.5.0",
-    "@aurora-is-near/intents-swap-widget-solana": "^7.5.0",
-    "@aurora-is-near/intents-swap-widget-stellar": "^7.5.0",
+    "@aurora-is-near/intents-swap-widget": "^7.6.0",
+    "@aurora-is-near/intents-swap-widget-evm": "^7.6.0",
+    "@aurora-is-near/intents-swap-widget-solana": "^7.6.0",
+    "@aurora-is-near/intents-swap-widget-stellar": "^7.6.0",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
     "@headlessui/react": "^2.2.4",
     "@hot-labs/near-connect": "^0.6.8",
