@@ -67,15 +67,7 @@ export type FakeTransaction = Pick<
   depositAddress?: string;
 };
 
-export type TransactionsResponse = {
-  data: Transaction[];
-  totalPages: number;
-  page: number;
-  perPage: number;
-  total: number;
-  nextPage: number | null;
-  prevPage: number | null;
-};
+export type TransactionsResponse = Transaction[];
 
 export type TransactionsStatusLabel = {
   label: string;

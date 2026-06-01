@@ -62,9 +62,14 @@ export const TransactionHistory = ({
     return 'Show more';
   }, [isFetchNextPageError, isFetchingNextPage]);
 
+  // Keep the button mounted through the "Show more" fetch and its error state
+  // so it can show the loading and retry affordances.
+  const showLoadMore =
+    hasNextPage || isFetchingNextPage || isFetchNextPageError;
+
   const listHeight = useTransactionHistoryListHeight({
     transactionsCount: transactions.length,
-    hasNextPage,
+    hasNextPage: showLoadMore,
     isVisible,
   });
 
@@ -131,7 +136,7 @@ export const TransactionHistory = ({
           />
         ))}
 
-        {hasNextPage && (
+        {showLoadMore && (
           <>
             {isFetchNextPageError && (
               <p className="text-sw-label-sm text-sw-status-error text-center mt-sw-2xl">
