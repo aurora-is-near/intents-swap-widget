@@ -1,5 +1,4 @@
-import { useRef, useState } from 'react';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { useConfig } from '../config';
 import { feeServiceApi } from '../network';
@@ -16,11 +15,7 @@ import type {
   TransactionStatus,
 } from '../types/transaction';
 
-// Fetch one more than we show to signal "has more".
-const INITIAL_VISIBLE_TRANSACTIONS = 9;
-const INITIAL_NUMBER_OF_TRANSACTIONS = INITIAL_VISIBLE_TRANSACTIONS + 1;
-
-const MAX_NUMBER_OF_TRANSACTIONS = 1000;
+const PAGE_SIZE = 10;
 const POLLING_INTERVAL_MS = 5_000;
 const PENDING_STATUSES: TransactionStatus[] = [
   'PENDING',
@@ -28,72 +23,75 @@ const PENDING_STATUSES: TransactionStatus[] = [
   'WAITING_FOR_FUNDS',
 ];
 
+// Cursor onto the next page, built from the last transaction we have.
+type Cursor = {
+  lastDepositAddress: string;
+  lastDepositMemo?: string;
+};
+
 export const useTransactions = () => {
   const {
     apiKey,
     connectedWallets: { default: walletAddress },
   } = useConfig();
 
-  // The explorer endpoint is not paginated: it returns the N most recent
-  // transactions. "Show more" re-requests the full set (up to the API max)
-  // rather than fetching an additional page.
-  const [showAll, setShowAll] = useState(false);
-  const numberOfTransactions = showAll
-    ? MAX_NUMBER_OF_TRANSACTIONS
-    : INITIAL_NUMBER_OF_TRANSACTIONS;
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
+    queryKey: getTransactionHistoryQueryKey(walletAddress),
+    queryFn: ({ pageParam }) => {
+      if (!apiKey) {
+        throw new Error('An API key is required to fetch transactions');
+      }
 
-  const queryKey = [
-    ...getTransactionHistoryQueryKey(walletAddress),
-    numberOfTransactions,
-  ];
-
-  const { data, isLoading, isError, isFetching, isPlaceholderData, refetch } =
-    useQuery({
-      queryKey,
-      queryFn: () => {
-        if (!apiKey) {
-          throw new Error('An API key is required to fetch transactions');
-        }
-
-        return feeServiceApi.get<TransactionsResponse>(
-          `/api/transactions/${apiKey}`,
-          {
-            params: {
-              numberOfTransactions,
-              walletAddress,
-            },
+      return feeServiceApi.get<TransactionsResponse>(
+        `/api/transactions/${apiKey}`,
+        {
+          params: {
+            numberOfTransactions: PAGE_SIZE,
+            walletAddress,
+            lastDepositAddress: pageParam?.lastDepositAddress,
+            lastDepositMemo: pageParam?.lastDepositMemo,
           },
-        );
-      },
-      enabled: !!apiKey && !!walletAddress,
-      // Keep the current list visible while the larger "Show more" request is
-      // in flight instead of flashing the loading skeleton.
-      placeholderData: keepPreviousData,
-      refetchInterval: (query) => {
-        const apiTxs = query.state.data?.data ?? [];
+        },
+      );
+    },
+    initialPageParam: undefined as Cursor | undefined,
+    // A full page means there may be older transactions; page from the last one.
+    getNextPageParam: (lastPage) => {
+      const txs = lastPage.data;
+      const last = txs[txs.length - 1];
 
-        const hasPending =
-          apiTxs.some((tx) => PENDING_STATUSES.includes(tx.status)) ||
-          (!!walletAddress &&
-            getOptimisticTransactions(walletAddress).length > 0);
+      if (txs.length < PAGE_SIZE || !last) {
+        return undefined;
+      }
 
-        return hasPending ? POLLING_INTERVAL_MS : false;
-      },
-    });
+      return {
+        lastDepositAddress: last.depositAddress,
+        lastDepositMemo: last.depositMemo ?? undefined,
+      };
+    },
+    enabled: !!apiKey && !!walletAddress,
+    refetchInterval: (query) => {
+      const apiTxs = query.state.data?.pages.flatMap((page) => page.data) ?? [];
 
-  // Retain the last successful page so the list survives a failed "Show more"
-  // (on error react-query drops the placeholder data).
-  const lastFetchedTransactions = useRef<Transaction[]>([]);
+      const hasPending =
+        apiTxs.some((tx) => PENDING_STATUSES.includes(tx.status)) ||
+        (!!walletAddress &&
+          getOptimisticTransactions(walletAddress).length > 0);
 
-  if (data?.data) {
-    lastFetchedTransactions.current = data.data;
-  }
+      return hasPending ? POLLING_INTERVAL_MS : false;
+    },
+  });
 
-  const fetchedTransactions = data?.data ?? lastFetchedTransactions.current;
-  const showingAll = showAll && !isPlaceholderData && !isError;
-  const apiTransactions = showingAll
-    ? fetchedTransactions
-    : fetchedTransactions.slice(0, INITIAL_VISIBLE_TRANSACTIONS);
+  const apiTransactions = data?.pages.flatMap((page) => page.data) ?? [];
 
   const optimistic = walletAddress
     ? getOptimisticTransactions(walletAddress)
@@ -138,22 +136,6 @@ export const useTransactions = () => {
   const pendingTransactionsCount = transactions.filter((tx) =>
     PENDING_STATUSES.includes(tx.status),
   ).length;
-
-  // "Show more" loads the maximum number of transactions allowed by the API.
-  const isFetchingNextPage = isFetching && isPlaceholderData;
-  const isFetchNextPageError = showAll && isError;
-  const hasNextPage =
-    !showAll && fetchedTransactions.length > INITIAL_VISIBLE_TRANSACTIONS;
-
-  const fetchNextPage = () => {
-    if (isFetchNextPageError) {
-      void refetch();
-
-      return;
-    }
-
-    setShowAll(true);
-  };
 
   return {
     transactions,

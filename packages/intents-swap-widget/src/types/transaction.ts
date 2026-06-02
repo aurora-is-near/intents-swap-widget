@@ -20,6 +20,7 @@ export type Transaction = {
   originAsset: string;
   destinationAsset: string;
   depositAddress: string;
+  depositMemo: string | null;
   depositAddressAndMemo: string;
   recipient: string;
   status: TransactionStatus;
