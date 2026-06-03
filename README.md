@@ -84,6 +84,6 @@ yarn dev
 
 ### Contribution
 
-We use semantic release with commitlint. While creating a PR make sure it's
+We use semantic release with commitlint. While creating a PR make sure its
 title meets the [requirements](https://github.com/semantic-release/semantic-release?tab=readme-ov-file#how-does-it-work)
 as well as commit [messages](https://github.com/conventional-changelog/commitlint).
