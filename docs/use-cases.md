@@ -45,7 +45,7 @@ This removes friction in onboarding and funding flows.
 👉 **Try the demo:**\
 [https://intents-connect-landing.vercel.app/demo/deposits.html](https://intents-connect-landing.vercel.app/demo/deposits.html)
 
-👉 **Best fit:** [Intents Deposits](/broken/pages/ltTn81ZbsMSwwhqPZybz)
+👉 **Best fit:** [Intents Deposits](https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-deposits)
 
 ***
 
@@ -66,7 +66,7 @@ Users can deposit from any chain and immediately interact with your protocol.
 👉 **Try the demo:**\
 [https://intents-connect-landing.vercel.app/demo-tonstakers.html](https://intents-connect-landing.vercel.app/demo-tonstakers.html)
 
-👉 **Best fit:** [Intents Deposits](/broken/pages/ltTn81ZbsMSwwhqPZybz) + [Intents Connect](/broken/pages/ETiitsNKbnDcUtk53eBi)
+👉 **Best fit:** [Intents Deposits](https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-deposits) + [Intents Connect](https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect)
 
 ***
 
@@ -86,7 +86,7 @@ Let users access yield opportunities across chains without moving assets manuall
 * switch networks
 * understand where yield lives
 
-👉 **Best fit:** [Intents Connect](/broken/pages/ETiitsNKbnDcUtk53eBi)
+👉 **Best fit:** [Intents Connect](https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect)
 
 ***
 
@@ -102,11 +102,11 @@ Multiple actions can be bundled and executed in sequence.
 * Bridge → then deposit into a vault&#x20;
 * Convert → then mint an asset
 
-👉 **Best fit:** [Intents Connect (API)](/broken/pages/ETiitsNKbnDcUtk53eBi)
+👉 **Best fit:** [Intents Connect (API)](https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect)
 
 ***
 
 ### 🧭 Choosing the right approach
 
-<table><thead><tr><th width="478.625">Use case</th><th>Recommended product</th></tr></thead><tbody><tr><td>Add cross-chain swaps frontend widget to your app</td><td><a href="/broken/pages/qc0T1RdEvA8HxEcaOX4y">Swap Widget</a></td></tr><tr><td>Accept cross-chain deposits via a frontend widget</td><td><a href="/broken/pages/ltTn81ZbsMSwwhqPZybz">Intents Deposits</a></td></tr><tr><td>Execute contract actions via a frontend widget in your dApp</td><td><a href="/broken/pages/ETiitsNKbnDcUtk53eBi">Intents Connect</a></td></tr><tr><td>Build tailored cross-chain flows using any interface</td><td><a href="/broken/pages/ETiitsNKbnDcUtk53eBi">Intents Connect API</a></td></tr></tbody></table>
+<table><thead><tr><th width="478.625">Use case</th><th>Recommended product</th></tr></thead><tbody><tr><td>Add cross-chain swaps frontend widget to your app</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/swap-widget">Swap Widget</a></td></tr><tr><td>Accept cross-chain deposits via a frontend widget</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-deposits">Intents Deposits</a></td></tr><tr><td>Execute contract actions via a frontend widget in your dApp</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect</a></td></tr><tr><td>Build tailored cross-chain flows using any interface</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect API</a></td></tr></tbody></table>
 
