@@ -1,6 +1,10 @@
 import { providers } from 'near-api-js';
 import { FailoverRpcProvider } from 'near-api-js/lib/providers';
 import type { JsonRpcProvider } from 'near-api-js/lib/providers';
+import { snapshot } from 'valtio';
+
+import { configStore } from '@/config';
+import { buildNearRpcUrls } from '@/utils/near/rpc';
 
 export type SupportedIntentsChainName =
   | 'eth'
@@ -68,7 +72,6 @@ const settings: Settings = {
    * Ensure these URLs are valid and accessible.
    */
   rpcUrls: {
-    near: 'https://relmn.aurora.dev',
     eth: 'https://eth.llamarpc.com',
     base: 'https://mainnet.base.org',
     arbitrum: 'https://arb1.arbitrum.io/rpc',
@@ -86,15 +89,38 @@ const settings: Settings = {
     gnosis: 'https://rpc.gnosischain.com',
     berachain: 'https://rpc.berachain.com',
     tron: '',
+
+    // NEAR balances/queries go through the fee-service RPC proxy (prepended at
+    // runtime in getNearClient); this is the public failover endpoint.
+    near: 'https://free.rpc.fastnear.com',
   },
 };
 
+// Public NEAR RPC failover list (the fee-service proxy is prepended at runtime
+// in getNearClient based on the configured API key).
 const reserveRpcUrls = [
   settings.rpcUrls.near,
   'https://free.rpc.fastnear.com',
   'https://rpc.mainnet.near.org',
 ];
 
-export const nearClient = nearFailoverRpcProvider({
-  urls: reserveRpcUrls,
-});
+// The proxy URL depends on the runtime API key, so the client is built lazily
+// and rebuilt whenever the configured key changes.
+let cache:
+  | { apiKey: string | undefined; client: FailoverRpcProvider }
+  | undefined;
+
+export const getNearClient = (): FailoverRpcProvider => {
+  const { apiKey } = snapshot(configStore).config;
+
+  if (!cache || cache.apiKey !== apiKey) {
+    cache = {
+      apiKey,
+      client: nearFailoverRpcProvider({
+        urls: buildNearRpcUrls(apiKey, reserveRpcUrls),
+      }),
+    };
+  }
+
+  return cache.client;
+};

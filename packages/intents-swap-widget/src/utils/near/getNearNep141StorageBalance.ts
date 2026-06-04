@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { WidgetError } from '@/errors';
 import { decodeQueryResult } from './decodeQueryResult';
-import { nearRpcClient } from './rpc';
+import { getNearRpcClient } from './rpc';
 
 export const getNearNep141StorageBalance = async ({
   contractId,
@@ -15,7 +15,7 @@ export const getNearNep141StorageBalance = async ({
     const args = { account_id: accountId };
     const argsBase64 = Buffer.from(JSON.stringify(args)).toString('base64');
 
-    const response = await nearRpcClient.query({
+    const response = await getNearRpcClient().query({
       request_type: 'call_function',
       method_name: 'storage_balance_of',
       account_id: contractId,

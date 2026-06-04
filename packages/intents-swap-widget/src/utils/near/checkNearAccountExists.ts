@@ -2,7 +2,7 @@ import { noop } from '@tanstack/react-query';
 
 import { localStorageTyped } from '@/utils/localstorage';
 import { logger } from '@/logger';
-import { nearSingleRpcClient } from './rpc';
+import { getNearSingleRpcClient } from './rpc';
 
 const DEBOUNCE_MS = 300;
 
@@ -30,7 +30,7 @@ const addVerifiedAccount = (accountId: string): void => {
 
 const queryAccountExists = async (accountId: string): Promise<boolean> => {
   try {
-    await nearSingleRpcClient.query({
+    await getNearSingleRpcClient().query({
       request_type: 'view_account',
       account_id: accountId,
       finality: 'final',

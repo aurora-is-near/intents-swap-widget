@@ -9,6 +9,7 @@ import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { getEvmMainTokenBalance } from '@/utils/evm/getEvmMainTokenBalance';
 import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
 import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
+import { buildNearRpcUrls } from '@/utils/near/rpc';
 import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
@@ -26,7 +27,7 @@ type Args = {
 };
 
 export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
-  const { tonCenterApiKey, alchemyApiKey } = useConfig();
+  const { tonCenterApiKey, alchemyApiKey, apiKey } = useConfig();
   const { supportedChains } = useSupportedChains();
   const { walletAddress } = useWalletAddressForToken(connectedWallets, token);
 
@@ -53,15 +54,19 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
         token.blockchain === 'near' &&
         supportedChains.includes(token.blockchain)
       ) {
-        if (!rpcs.near || rpcs.near.length === 0) {
+        // Prepend the fee-service RPC proxy (keyed by the widget API key) as
+        // primary, keeping the configured public NEAR RPCs as failover.
+        const nearRpcUrls = buildNearRpcUrls(apiKey, rpcs.near ?? []);
+
+        if (nearRpcUrls.length === 0) {
           return null;
         }
 
         if (token.assetId === NATIVE_NEAR_DUMB_ASSET_ID) {
-          return getNativeNearBalance(walletAddress, rpcs.near);
+          return getNativeNearBalance(walletAddress, nearRpcUrls);
         }
 
-        return getNearTokenBalance(token, walletAddress, rpcs.near);
+        return getNearTokenBalance(token, walletAddress, nearRpcUrls);
       }
 
       // 3. Do not fetch EVM balances if evms are not supported

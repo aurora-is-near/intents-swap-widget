@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { nearRpcClient } from './rpc';
+import { getNearRpcClient } from './rpc';
 import { getBlockReference } from './getBlockReference';
 import { decodeQueryResult } from './decodeQueryResult';
 import type { QueryArgs } from './types';
@@ -12,7 +12,7 @@ export const queryContract = async ({
   blockId,
   finality,
 }: QueryArgs): Promise<unknown> => {
-  const response = await nearRpcClient.query({
+  const response = await getNearRpcClient().query({
     request_type: 'call_function',
     account_id: contractId,
     method_name: methodName,

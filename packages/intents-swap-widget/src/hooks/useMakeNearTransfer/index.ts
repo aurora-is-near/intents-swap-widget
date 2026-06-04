@@ -7,10 +7,10 @@ import type {
   NearWalletBase,
   TransferResult,
 } from '@/types';
-import { nearClient } from './nearClient';
+import { getNearClient } from './nearClient';
 
 /**
- * Use this function to decode a raw response from `nearClient.query()`
+ * Use this function to decode a raw response from `getNearClient().query()`
  */
 function decodeQueryResult<T extends z.ZodTypeAny>(
   response: unknown,
@@ -36,7 +36,7 @@ const getNearNep141StorageBalance = async ({
     const args = { account_id: accountId };
     const argsBase64 = Buffer.from(JSON.stringify(args)).toString('base64');
 
-    const response = await nearClient.query({
+    const response = await getNearClient().query({
       request_type: 'call_function',
       method_name: 'storage_balance_of',
       account_id: contractId,
@@ -60,7 +60,7 @@ const getNearNep141MinStorageBalance = async ({
 }: {
   contractId: string;
 }): Promise<bigint> => {
-  const response = await nearClient.query({
+  const response = await getNearClient().query({
     request_type: 'call_function',
     method_name: 'storage_balance_bounds',
     account_id: contractId,

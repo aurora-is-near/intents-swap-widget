@@ -6,7 +6,7 @@ import {
   prepareBroadcastRequest,
   type walletMessage,
 } from '@defuse-protocol/internal-utils';
-import { nearRpcClient } from '../near/rpc';
+import { getNearRpcClient } from '../near/rpc';
 
 /**
  * Serializes a signed intent into the protocol's wire format
@@ -102,7 +102,7 @@ export async function verifyWalletSignature(
 
   try {
     // Warning: `CodeResult` is not correct type for `call_function`, but it's closest we have.
-    await nearRpcClient.query<CodeResult>({
+    await getNearRpcClient().query<CodeResult>({
       request_type: 'call_function',
       account_id: 'intents.near',
       method_name: 'simulate_intents',

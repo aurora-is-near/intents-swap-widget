@@ -1,14 +1,14 @@
 import { base64 } from '@scure/base';
 import { z } from 'zod';
 import { decodeQueryResult } from './decodeQueryResult';
-import { nearRpcClient } from './rpc';
+import { getNearRpcClient } from './rpc';
 
 export const getNearNep141MinStorageBalance = async ({
   contractId,
 }: {
   contractId: string;
 }): Promise<bigint> => {
-  const response = await nearRpcClient.query({
+  const response = await getNearRpcClient().query({
     request_type: 'call_function',
     method_name: 'storage_balance_bounds',
     account_id: contractId,
