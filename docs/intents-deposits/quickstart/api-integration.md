@@ -16,7 +16,7 @@ You need to [create an API key](../../swap-widget/api-keys-and-fees.md) to inter
 {% step %}
 ### Get supported tokens
 
-Use [get-supported-tokens.md](../api-reference/get-supported-tokens.md "mention") to find the `assetId` values you will need.
+Use [get-supported-tokens.md](../persistent-deposit-status/get-supported-tokens.md "mention") to find the `assetId` values you will need.
 
 {% tabs %}
 {% tab title="cURL" %}
@@ -80,7 +80,7 @@ The response includes tokens with their `assetId` in this format:
 {% step %}
 ### Request a quote
 
-Use [request-a-quote.md](../api-reference/request-a-quote.md "mention") with your desired parameters
+Use [request-a-quote.md](../persistent-deposit-status/request-a-quote.md "mention") with your desired parameters
 
 {% tabs %}
 {% tab title="cURL" %}
@@ -164,7 +164,7 @@ Save the deposit address and your transaction hash for tracking.
 {% step %}
 ### Monitor the swap
 
-Use [get-transactions-history.md](../api-reference/get-transactions-history.md "mention") for your account to monitor the status of the swap.
+Use [get-transactions-history.md](../persistent-deposit-status/get-transactions-history.md "mention") for your account to monitor the status of the swap.
 
 {% tabs %}
 {% tab title="cURL" %}
