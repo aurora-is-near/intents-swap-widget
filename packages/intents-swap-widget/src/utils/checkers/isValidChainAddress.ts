@@ -36,6 +36,7 @@ export const isValidChainAddress = (
     case 'scroll':
     case 'xlayer':
     case 'aurora':
+    case 'hypercore':
       return !!isEvmAddress(address);
     case 'btc':
       return !!isBtcAddress(address);

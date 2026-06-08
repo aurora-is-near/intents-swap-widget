@@ -61,6 +61,7 @@ export const NOT_EVM_CHAINS = [
   'bch',
   'dash',
   'starknet',
+  'hypercore',
 ] as const;
 
 export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
@@ -226,6 +227,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'aurora',
     label: 'Aurora',
   },
+  hypercore: {
+    id: 'hypercore',
+    label: 'Hyperliquid',
+  },
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
@@ -258,4 +263,5 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'dash',
   'adi',
   'aurora',
+  'hypercore',
 ];

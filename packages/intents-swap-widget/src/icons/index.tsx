@@ -60,6 +60,7 @@ import PlasmaIcon from './plasma.svg';
 import ScrollIcon from './scroll.svg';
 import { StarknetIcon } from './StarknetIcon';
 import XlayerIcon from './xlayer.svg';
+import HypercoreIcon from './hypercore.svg';
 import NearIntentsIcon from './intents.svg';
 
 export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
@@ -100,6 +101,7 @@ export const CHAIN_ICONS: Record<
   starknet: <StarknetIcon />,
   xlayer: <XlayerIcon />,
   aurora: <AuroraIcon />,
+  hypercore: <HypercoreIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
