@@ -7,6 +7,7 @@ import { Button } from '@/uikit/Button';
 import { TextInput } from '@/uikit/TextInput';
 import { TextAreaInput } from '@/uikit/TextAreaInput';
 import { ExpandableToggleCard } from '@/uikit/ToggleCard';
+import { InfoBanner } from '@/components/InfoBanner';
 import { useUpdateApiKey } from '@/api/hooks';
 import { DEFAULT_ZERO_FEE } from '@/constants';
 import type { ApiKey } from '@/api/types';
@@ -337,6 +338,11 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                     }}
                   />
                 )}
+              />
+
+              <InfoBanner
+                title="Check fees recipient address"
+                description="Make sure it's a valid Near Intents account ID."
               />
             </div>
           </div>
