@@ -22,7 +22,7 @@ export function Header({ onOpenDrawer, onOpenExportModal }: HeaderProps) {
         </div>
         <HeaderButton
           TrailingIcon={ExternalLink}
-          href="https://docs.intents.aurora.dev/getting-started"
+          href="https://docs.intents.aurora.dev/swap-widget/widget-integration"
           target="_blank"
           className="hidden sm:flex flex-row items-center bg-csw-gray-900 rounded-csw-md px-csw-lg py-csw-2md hover:bg-csw-gray-800 transition-colors duration-100 font-semibold text-xs tracking-[-0.4px] text-csw-gray-200 whitespace-nowrap">
           Get started guide
