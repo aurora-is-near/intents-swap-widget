@@ -16,6 +16,8 @@
   * [Introduction](intents-connect/intents-connect-widget/introduction.md)
   * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
 * [Examples](intents-connect/examples/README.md)
+  * [Submit signing Guide](intents-connect/examples/submit-signing-guide.md)
+  * [Delete execution Guide](intents-connect/examples/delete-execution-guide.md)
   * [Deposit into Aave from Solana](intents-connect/examples/deposit-into-aave-from-solana.md)
   * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)
 * [Intents Connect API Reference](intents-connect/intents-connect-api-reference/README.md)
