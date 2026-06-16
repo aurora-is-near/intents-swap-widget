@@ -26,6 +26,7 @@
   * [Request an execution](intents-connect/intents-connect-api-reference/request-an-execution.md)
   * [Request steps execution](intents-connect/intents-connect-api-reference/request-steps-execution.md)
   * [Fetch intermediary accounts](intents-connect/intents-connect-api-reference/fetch-intermediary-accounts.md)
+  * [Delete an execution](intents-connect/intents-connect-api-reference/delete-an-execution.md)
   * [Submit digest](intents-connect/intents-connect-api-reference/submit-digest.md)
   * [Submit deposit hash](intents-connect/intents-connect-api-reference/submit-deposit-hash.md)
 
