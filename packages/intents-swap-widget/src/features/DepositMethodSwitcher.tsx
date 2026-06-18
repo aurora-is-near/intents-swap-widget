@@ -174,7 +174,7 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
       </header>
 
       {isVirtualChainSource && (
-        <div className="pt-sw-md gap-sw-xxs text-sw-label-sm flex flex-col">
+        <div className="pt-sw-md gap-sw-xxs text-sw-label-sm text-sw-gray-200 flex flex-col">
           <p>
             {t('deposit.method.switcher.virtualChainDisabled', {
               defaultValue:
