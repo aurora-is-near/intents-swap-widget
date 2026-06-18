@@ -12,6 +12,7 @@ import { ExternalDeposit } from '@/features/ExternalDeposit';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { useTypedTranslation } from '@/localisation';
 import { guardStates } from '@/machine/guards';
 import { fireEvent } from '@/machine';
@@ -117,8 +118,9 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
 
   const canBeToggled =
-    ((!!ctx.sourceToken && !ctx.sourceToken.isIntent) || !ctx.sourceToken) &&
-    !!ctx.walletAddress;
+    !!ctx.walletAddress &&
+    (!ctx.sourceToken ||
+      (!ctx.sourceToken.isIntent && !isAuroraToken(ctx.sourceToken)));
 
   const onToggle = (isExternal: boolean) => {
     if (!canBeToggled) {
