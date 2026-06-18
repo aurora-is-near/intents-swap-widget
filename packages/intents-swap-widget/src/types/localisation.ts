@@ -45,6 +45,8 @@ export type LocalisationKeys =
   | 'deposit.external.loading.waiting'
   | 'deposit.external.loading.fetching'
   | 'deposit.method.switcher.label'
+  | 'deposit.method.switcher.virtualChainDisabled'
+  | 'deposit.method.switcher.disabledHint'
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
   | 'deposit.external.stepSelectToken.title'
