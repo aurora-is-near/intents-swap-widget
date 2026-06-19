@@ -56,7 +56,6 @@
   * [Persistent deposit address](intents-deposits/api-reference/persistent-deposit-address.md)
   * [Persistent deposit status](intents-deposits/api-reference/persistent-deposit-status.md)
   * [Persistent address data](intents-deposits/api-reference/persistent-address-data.md)
-  * [Intents account balance](intents-deposits/api-reference/intents-account-balance.md)
 
 ## Swap Widget
 
