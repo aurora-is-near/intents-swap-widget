@@ -6,6 +6,8 @@ export type ApiKey = {
   createdAt: string;
   apiKey: string;
   feeRules: FeeConfig;
+  auroraFeeBps?: number | null;
+  auroraFeePercent?: number | null;
   role?: 'admin';
 };
 

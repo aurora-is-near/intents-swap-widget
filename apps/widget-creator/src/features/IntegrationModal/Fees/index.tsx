@@ -13,6 +13,7 @@ import { DEFAULT_ZERO_FEE } from '@/constants';
 import type { ApiKey } from '@/api/types';
 import { NestedHeader } from '../components';
 import {
+  getAuroraFeeConfig,
   getBasicFeeConfig,
   getBasisPointsFromPercent,
   getFeeShare,
@@ -65,6 +66,11 @@ type Props = {
 export const Fees = ({ apiKey, onClickBack }: Props) => {
   // value based fee
   const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
+  const { floorBps: auroraFloorBps, cutPercent: auroraCutPercent } =
+    getAuroraFeeConfig(apiKey.auroraFeeBps, apiKey.auroraFeePercent);
+
+  const clientCutPercent = 100 - auroraCutPercent;
+  const auroraMinPercent = getPercentFromBasisPoints(auroraFloorBps);
   const [hasConfigAssetRules, setHasConfigAssetRules] = useState(
     apiKey.feeRules.rules.length > 0,
   );
@@ -249,7 +255,8 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
             <>
               Set up optional custom fees added on top of the protocol fee.{' '}
               <br className="hidden sm:block" />
-              You earn 60% of your custom fee; Aurora retain 40% (min 0.02%).
+              You earn {clientCutPercent}% of your custom fee; Aurora retains{' '}
+              {auroraCutPercent}% (min {auroraMinPercent}%).
             </>
           }>
           <div className="flex flex-col gap-csw-2xl">
@@ -279,6 +286,8 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                 {(() => {
                   const { auroraBps, clientBps, feeBps } = getFeeShare(
                     customFee || '0',
+                    apiKey.auroraFeeBps,
+                    apiKey.auroraFeePercent,
                   );
 
                   const auroraPortion = feeBps
@@ -293,7 +302,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                     <>
                       <li className="flex items-center justify-between text-csw-label-sm">
                         <span className="text-csw-gray-300">
-                          Aurora fee (min 0.02%)
+                          Aurora fee (min {auroraMinPercent}%)
                         </span>
                         <span className="text-csw-gray-50">
                           {getPercentFromBasisPoints(auroraBps)}% (
