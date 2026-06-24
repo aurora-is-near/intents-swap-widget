@@ -116,15 +116,17 @@ export const useMakeTransfer = ({
         });
       }
     } catch (error: unknown) {
-      if (error instanceof TransferError) {
-        logger.error(error.data);
-        fireEvent('transferSetStatus', { status: 'error' });
-        fireEvent('errorSet', error.data);
+      logger.error(error instanceof TransferError ? error.data : error);
 
-        return;
-      }
+      fireEvent('transferSetStatus', { status: 'error' });
+      fireEvent(
+        'errorSet',
+        error instanceof TransferError
+          ? error.data
+          : { code: 'DIRECT_TRANSFER_ERROR' },
+      );
 
-      throw error;
+      return;
     }
 
     if (!transferResult) {

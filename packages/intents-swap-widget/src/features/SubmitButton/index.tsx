@@ -2,6 +2,7 @@ import { Trans } from 'react-i18next';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 
 import { useConfig } from '@/config';
+import { logger } from '@/logger';
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -314,7 +315,13 @@ const SubmitButtonBase = (props: Props) => {
       }
     }
 
-    const transferResult = await make();
+    let transferResult: TransferResult | undefined;
+
+    try {
+      transferResult = await make();
+    } catch (error) {
+      logger.error('Unexpected error during submit', error);
+    }
 
     if (transferResult) {
       onSuccess(transferResult);
