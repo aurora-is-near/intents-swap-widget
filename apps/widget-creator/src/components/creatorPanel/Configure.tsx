@@ -7,6 +7,7 @@ import {
   Chains,
   Icon,
   isValidChainAddress,
+  NEAR_INTENTS_ICON,
 } from '@aurora-is-near/intents-swap-widget';
 import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
 import { InfoBanner } from '@/components/InfoBanner';
@@ -117,6 +118,15 @@ export function Configure() {
           state.depositModeReceiverAddress,
         )
       : true;
+
+  // The Intents tile shows in the Networks grid (swap mode only), so it counts
+  // toward the "networks selected" total even though it is tracked separately
+  // from `selectedNetworks` (it toggles account abstraction, not a real chain).
+  const isIntentsNetworkSelected =
+    state.widgetMode === 'swap' && state.accountAbstractionMode === 'enabled';
+
+  const selectedNetworkCount =
+    state.selectedNetworks.length + (isIntentsNetworkSelected ? 1 : 0);
 
   return (
     <>
@@ -284,8 +294,8 @@ export function Configure() {
             <div className="flex gap-csw-md items-center">
               <div className="p-csw-2md rounded-[10px] flex-1 flex-grow w-full bg-csw-gray-800 text-csw-gray-50">
                 <p className="font-semibold text-sm leading-4 tracking-[-0.4px]">
-                  {state.selectedNetworks.length} network
-                  {state.selectedNetworks.length !== 1 ? 's' : ''} selected
+                  {selectedNetworkCount} network
+                  {selectedNetworkCount !== 1 ? 's' : ''} selected
                 </p>
               </div>
               <OutlinedButton
@@ -335,6 +345,32 @@ export function Configure() {
                   }
                 </button>
               ))}
+              {state.widgetMode !== 'deposit' && (
+                // Intents is a special tile: selecting it enables account
+                // abstraction. It is intentionally excluded from the
+                // "networks selected" count and the Select/Deselect all action.
+                <button
+                  key="intents"
+                  title="Intents — enables account abstraction"
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                      payload:
+                        state.accountAbstractionMode === 'enabled'
+                          ? 'disabled'
+                          : 'enabled',
+                    })
+                  }
+                  className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
+                    state.accountAbstractionMode === 'enabled'
+                      ? 'border-2 border-csw-accent-600'
+                      : 'border-2 border-csw-gray-700 hover:border-csw-gray-600'
+                  }`}>
+                  <div className="rounded-csw-sm overflow-hidden w-[28px] h-[28px] [&>svg]:w-full [&>svg]:h-full">
+                    {NEAR_INTENTS_ICON}
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </ConfigSection>
@@ -551,48 +587,6 @@ export function Configure() {
             />
           </div>
         </ConfigSection>
-
-        {state.widgetMode !== 'deposit' && (
-          <ConfigSection title="Account abstraction">
-            <div className="space-y-csw-2md">
-              <RadioButton
-                label="Enabled"
-                description={
-                  <span className="space-y-1.5">
-                    Users can deposit to or withdraw from their chain abstracted
-                    intents balance in addition to using their connected wallet
-                    balances.
-                    <a
-                      href="https://docs.near-intents.org/near-intents/market-makers/verifier/account-abstraction"
-                      target="_blank"
-                      className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] text-gray-300 underline hover:text-gray-300">
-                      <span>Learn more</span>
-                      <ExternalLink className="w-csw-xl h-csw-xl" />
-                    </a>
-                  </span>
-                }
-                isSelected={state.accountAbstractionMode === 'enabled'}
-                onChange={() =>
-                  dispatch({
-                    type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                    payload: 'enabled',
-                  })
-                }
-              />
-              <RadioButton
-                label="Disabled"
-                description="Users can only use assets in their connected wallet."
-                isSelected={state.accountAbstractionMode === 'disabled'}
-                onChange={() =>
-                  dispatch({
-                    type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                    payload: 'disabled',
-                  })
-                }
-              />
-            </div>
-          </ConfigSection>
-        )}
 
         <ConfigSection title="Fee collection">
           <div className="space-y-csw-xl text-csw-gray-200">

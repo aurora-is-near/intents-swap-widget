@@ -77,7 +77,7 @@ const wrapMakeTransfer = (
 
 export const WidgetContent = ({
   defaultTab = 'swap',
-  tabs = ['swap', 'deposit', 'withdraw'],
+  tabs = ['swap'],
   makeTransfer,
   onMsg,
   ...restProps
