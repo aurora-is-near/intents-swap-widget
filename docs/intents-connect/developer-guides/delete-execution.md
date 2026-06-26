@@ -2,7 +2,7 @@
 icon: book-open
 ---
 
-# Delete execution Guide
+# Delete execution
 
 ## `DELETE /executions/{wallet}/{executionId}`
 
@@ -11,7 +11,7 @@ Delete a non-final execution by signing the literal string `delete_execution:{ex
 ### TL;DR
 
 1. **Message to sign**: the ASCII string `delete_execution:` + the execution ID. No JSON, no envelope, no hashing.
-2. **Signing op**: `signMessage` (Solana / NEAR), `personal_sign` (EVM), or TonConnect `signData({type:'text'})` (TON).
+2. **Signing op**: `signMessage` (Solana / NEAR), `personal_sign` (EVM), `signMessageV2` (Tron), or TonConnect `signData({type:'text'})` (TON).
 3. **HTTP**: `DELETE /api/v1/executions/{walletAddress}/{executionId}`, JSON body. Per-chain shape:
 
 | Chain  | Signing standard | Body fields                                                      |
@@ -19,9 +19,10 @@ Delete a non-final execution by signing the literal string `delete_execution:{ex
 | Solana | `raw_ed25519`    | `signature`, `publicKey`                                         |
 | NEAR   | `nep413`         | `signature`, `publicKey`, `nep413{recipient,nonce}`              |
 | EVM    | `erc191`         | `signature`                                                      |
+| Tron   | `tip191`         | `signature`                                                      |
 | TON    | `ton_connect`    | `signature`, `publicKey`, `tonConnect{domain,timestamp,address}` |
 
-EVM omits `publicKey` because the backend recovers the address via `ecrecover`. Solana, NEAR, and TON must send it — Ed25519 doesn't let the verifier recover the key from the signature. TON additionally sends a `tonConnect` envelope (the wallet folds its `domain`/`timestamp`/ `address` into the signed digest).
+EVM and Tron omit `publicKey` because both are secp256k1 — the backend recovers the address from the signature via `ecrecover`. Solana, NEAR, and TON must send it — Ed25519 doesn't let the verifier recover the key from the signature. TON additionally sends a `tonConnect` envelope (the wallet folds its `domain`/`timestamp`/`address` into the signed digest).
 
 ### The message
 
@@ -220,6 +221,42 @@ Example submit body:
 
 **No `publicKey`.** The backend runs `ecrecover` on `"delete_execution:" + executionId` and the signature, then compares the recovered address to `{walletAddress}` in the URL (case-tolerant).
 
+### Tron / `tip191`
+
+Sign the literal message with TronLink `signMessageV2` (TIP-191) — the Tron analog of `personal_sign`. Tron is the secp256k1 twin of EVM: same wire shape as `erc191`, only the standard label and wallet prefix differ.
+
+```js
+const message = `delete_execution:${executionId}`
+
+// signMessageV2 applies "\x19TRON Signed Message:\n" + len + msg keccak
+// internally — do not pre-hash, do not wrap.
+const sigHex = await window.tronWeb.trx.signMessageV2(message)
+
+// sigHex is 0x<r 32B><s 32B><v 1B>; v comes out as 0x1b (27) or 0x1c (28)
+const sigBytes = Buffer.from(sigHex.replace(/^0x/, ''), 'hex')
+if (sigBytes[64] >= 27) sigBytes[64] -= 27   // normalize v to 0 / 1
+
+const body = {
+  signature: 'secp256k1:' + bs58.encode(sigBytes),
+}
+```
+
+Three encoding details that matter:
+
+1. **Use `signMessageV2`, not the legacy `sign`/`signMessage`.** Only V2 implements TIP-191 (the `\x19TRON Signed Message:\n` prefix the backend verifies against); the older calls use a different, incompatible scheme.
+2. **`v` normalization**: only byte 64 of the 65-byte signature is touched (`27 → 0`, `28 → 1`). Do not edit `r` or `s`. Do not re-add `27` later. Identical to the ERC-191 path.
+3. **bs58, not base64**: the backend expects base58 with the `secp256k1:` prefix.
+
+Example submit body:
+
+```json
+{
+  "signature": "secp256k1:8oQEEa4JNNpuhHrRiTZjgdWsdSEey3s2aaUn6aaHi57QQRAFXGsjuCep2gZaVVNLQ7W94FqekZ8n5Ux3dMK9KhWmN"
+}
+```
+
+**No `publicKey`.** Like EVM, the backend recovers the secp256k1 signer from `"delete_execution:" + executionId` and the signature, then parses the wallet's base58 `T…` address to its embedded 20-byte account and compares — that account is the same 20 bytes an EVM address carries.
+
 ### HTTP shape
 
 ```http
@@ -241,6 +278,7 @@ await axios.delete(
 * Solana: base58 (e.g. `7XSfQk…`)
 * NEAR: named account (`alice.near`) or 64-char hex implicit
 * EVM: `0x…` (40 hex chars, case-tolerant)
+* Tron: base58 `T…` (e.g. `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`)
 * TON: URL-safe non-bounceable user-friendly address (`UQ…`); `EQ…` and raw `<workchain>:<hex>` also accepted
 
 ### Preconditions and responses
