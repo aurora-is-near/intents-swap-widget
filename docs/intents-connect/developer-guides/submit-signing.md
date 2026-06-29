@@ -2,11 +2,9 @@
 icon: book-open
 ---
 
-# Submit signing Guide
+# Submit signing
 
-## `/submit`
-
-How to sign the message returned by `GET /api/v1/executions/{walletAddress}` and post it back to `POST /api/v1/executions/{walletAddress}/submit`, for all five signing standards: `erc191` (EVM / MetaMask), `nep413` (NEAR), `raw_ed25519` (Solana / Phantom), `sep53` (Stellar / Freighter), and `ton_connect` (TON / Tonkeeper).
+How to sign the message returned by `GET /api/v1/executions/{walletAddress}` and post it back to `POST /api/v1/executions/{walletAddress}/submit`, for all six signing standards: `erc191` (EVM / MetaMask), `nep413` (NEAR), `raw_ed25519` (Solana / Phantom), `sep53` (Stellar / Freighter), `ton_connect` (TON / Tonkeeper), and `tip191` (Tron / TronLink).
 
 ### TL;DR
 
@@ -17,8 +15,9 @@ How to sign the message returned by `GET /api/v1/executions/{walletAddress}` and
 | Solana  | `raw_ed25519`     | decoded bytes of `payload.payload_bytes_base64`               | `signMessage(bytes)`                 | `signature`, `publicKey`, `executionId`               | `ed25519:` + bs58(64 raw bytes) |
 | Stellar | `sep53`           | `payload.payload_json` (string, verbatim)                     | Freighter `signMessage` (SEP-53)     | `signature`, `publicKey`, `executionId`               | `ed25519:` + bs58(64 raw bytes) |
 | TON     | `ton_connect`     | `payload.payload_json` (string, verbatim, as TonConnect text) | TonConnect `signData({type:'text'})` | `signature`, `publicKey`, `tonConnect`, `executionId` | `ed25519:` + bs58(64 raw bytes) |
+| Tron    | `tip191`          | `payload.payload_json` (string, verbatim)                     | `signMessageV2` (TIP-191)            | `signature`, `executionId`                            | `secp256k1:` + bs58(`r‖s‖v0/1`) |
 
-`publicKey` is **required** for NEAR/Solana/Stellar/TON and **omitted** for EVM — see below. TON additionally requires a `tonConnect` envelope — see the TON section.
+`publicKey` is **required** for NEAR/Solana/Stellar/TON and **omitted** for EVM and Tron (both secp256k1, signer recovered from the signature) — see below. TON additionally requires a `tonConnect` envelope — see the TON section.
 
 ### The exact field to sign
 
@@ -55,6 +54,7 @@ Per chain:
 * **`raw_ed25519`** → base64-decode `payload.payload_bytes_base64` to a `Uint8Array` and sign those bytes. Do **not** sign `payload_json` directly here: Phantom's `signMessage` accepts a `Uint8Array`, and some wallet versions UTF-8 re-encode strings in a way that does not byte-match what the backend hashes. Do not wrap in any envelope (no SIWS, no `"\x19Solana Signed Message:"`), do not pre-hash.
 * **`sep53`** → sign `payload.payload_json` verbatim as a string (same field as `erc191`), passing it to Freighter's `signMessage`. Do not pre-hash and do not wrap it yourself — Freighter applies the SEP-53 framing (`"Stellar Signed Message:\n"` domain prefix + SHA-256) internally, and the backend's `sep53` verifier expects exactly that.
 * **`ton_connect`** → sign `payload.payload_json` verbatim as the TonConnect **text** payload via `signData({ type: 'text', text })`. Do not pre-hash and do not wrap it — TonConnect builds the `0xffff || "ton-connect/sign-data/" … "txt" …` + SHA-256 digest internally. Unlike the others, you must also return the wallet-chosen `tonConnect` envelope (`{domain, timestamp, address}`) so the backend can rebuild that digest — see the TON section.
+* **`tip191`** → sign `payload.payload_json` verbatim as a string (same field as `erc191`), passing it to TronLink's `signMessageV2`. Do not pre-hash and do not wrap it yourself — the wallet applies the TIP-191 framing (`"\x19TRON Signed Message:\n"` prefix + keccak256) internally, the Tron analog of `personal_sign`.
 
 ### EVM / `erc191`
 
@@ -333,11 +333,50 @@ Content-Type: application/json
 
 `publicKey` and `tonConnect` are both **required**. Omitting the envelope returns `400 {"error": "tonConnect {domain, timestamp, address} is required for TON"}`. `{walletAddress}` is the URL-safe non-bounceable account (`UQ…`). Full per-chain TON guide: `ton-signing.md`. Backend rationale: `../ton/ton-public-key.md` and `../ton/ton-signature-verification.md`.
 
-### Why `publicKey` is required for NEAR/Solana/Stellar/TON but not EVM
+### Tron / `tip191`
+
+```js
+// `payload` here is `result.details.payload` from the execution response.
+const payloadJSON =
+  typeof payload.payload_json === 'string'
+    ? payload.payload_json
+    : JSON.stringify(payload.payload_json)
+
+// signMessageV2 applies "\x19TRON Signed Message:\n" + len + msg + keccak256
+const sigHex = await window.tronWeb.trx.signMessageV2(payloadJSON)
+
+// sigHex is 0x<r 32B><s 32B><v 1B>; v comes out as 0x1b (27) or 0x1c (28)
+const sigBytes = Buffer.from(sigHex.replace(/^0x/, ''), 'hex')
+if (sigBytes[64] >= 27) sigBytes[64] -= 27   // normalize v to 0 / 1
+
+const signature = 'secp256k1:' + bs58.encode(sigBytes)
+```
+
+Three encoding details that matter:
+
+1. **Use `signMessageV2`, not the legacy `sign`/`signMessage`.** Only V2 implements TIP-191 (the `\x19TRON Signed Message:\n` prefix the backend verifies); the older calls use a different, incompatible scheme.
+2. **`v` normalization**: only byte 64 of the 65-byte signature is touched (`27 → 0`, `28 → 1`). Do not edit `r` or `s`. Identical to `erc191`.
+3. **bs58, not base64**: base58 with the `secp256k1:` prefix.
+
+Submit body:
+
+```http
+POST /api/v1/executions/{walletAddress}/submit
+Content-Type: application/json
+
+{
+  "signature": "secp256k1:ASzCLKN2HFa…",
+  "executionId": "e5abf7ce-1187-4562-b2a7-c52d6560f327"
+}
+```
+
+**Do not include `publicKey`.** The backend recovers the secp256k1 signer, converts the wallet's base58 `T…` address to its embedded 20-byte account, and compares. Full per-chain guide: `tron-signing.md`.
+
+### Why `publicKey` is required for NEAR/Solana/Stellar/TON but not EVM/Tron
 
 Ed25519 (NEP-413, `raw_ed25519`, `sep53`, and `ton_connect`) does not let the verifier recover the public key from the signature alone — the backend needs `publicKey` to verify and to derive the `signer_id`.
 
-secp256k1 (`erc191`) does: `ecrecover` reconstructs the EVM address from the signature + message, so the field is omitted on the wire.
+secp256k1 (`erc191` and `tip191`) does: `ecrecover` reconstructs the address from the signature + message, so the field is omitted on the wire. Tron addresses embed the same 20-byte account as the recovered EVM address, so the recovered signer maps straight onto the base58 `T…` wallet.
 
 **TON is a further special case.** Its address is `hash(StateInit(code, pubkey))`, so the key isn't even contained in the address (unlike a Solana base58 address or a Stellar `G…` StrKey, where the key can be read off the address). The frontend supplies the connect-time key, and the backend additionally proves that key **owns** the claimed wallet by re-deriving the address from it across every known wallet version — see `../ton/ton-public-key.md`.
 
@@ -355,3 +394,4 @@ Content-Type: application/json
 * **EVM** — `0x…` (40 hex chars, case-tolerant).
 * **Stellar** — `G…` StrKey ed25519 address, the same string Freighter `requestAccess()` returns.
 * **TON** — URL-safe non-bounceable user-friendly address (`UQ…`), the string `Address.parse(account.address).toString({ urlSafe: true, bounceable: false })` returns. The bounceable (`EQ…`) and raw (`<workchain>:<hex>`) forms are also accepted — the backend matches on `(workchain, accountHash)`, not the raw string.
+* **Tron** — base58 `T…` address (e.g. `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`), the string `window.tronWeb.defaultAddress.base58` returns.
