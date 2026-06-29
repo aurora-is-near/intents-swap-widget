@@ -160,7 +160,7 @@ export function Configure() {
           <div className="space-y-csw-2md">
             <RadioButton
               label="Swap"
-              description="Full featured swap widget with swap, deposit and withdraw capabilities."
+              description="Full featured swap widget."
               isSelected={state.widgetMode === 'swap'}
               onChange={() =>
                 dispatch({ type: 'SET_WIDGET_MODE', payload: 'swap' })
