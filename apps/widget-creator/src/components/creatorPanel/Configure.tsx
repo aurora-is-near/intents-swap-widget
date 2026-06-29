@@ -122,11 +122,17 @@ export function Configure() {
   // The Intents tile shows in the Networks grid (swap mode only), so it counts
   // toward the "networks selected" total even though it is tracked separately
   // from `selectedNetworks` (it toggles account abstraction, not a real chain).
+  const isIntentsNetworkShown = state.widgetMode === 'swap';
+
   const isIntentsNetworkSelected =
-    state.widgetMode === 'swap' && state.accountAbstractionMode === 'enabled';
+    isIntentsNetworkShown && state.accountAbstractionMode === 'enabled';
 
   const selectedNetworkCount =
     state.selectedNetworks.length + (isIntentsNetworkSelected ? 1 : 0);
+
+  const totalNetworkCount = CHAINS.length + (isIntentsNetworkShown ? 1 : 0);
+
+  const allNetworksSelected = selectedNetworkCount === totalNetworkCount;
 
   return (
     <>
@@ -302,18 +308,21 @@ export function Configure() {
                 size="sm"
                 fluid
                 onClick={() => {
-                  const allSelected =
-                    state.selectedNetworks.length === CHAINS.length;
-
-                  const newNetworks = allSelected
+                  const newNetworks = allNetworksSelected
                     ? []
-                    : CHAINS.map((chain) => chain.id) || [];
+                    : CHAINS.map((chain) => chain.id);
 
                   handleNetworksChange(newNetworks);
+
+                  // Keep the Intents tile in sync with Select/Deselect all
+                  if (isIntentsNetworkShown) {
+                    dispatch({
+                      type: 'SET_ACCOUNT_ABSTRACTION_MODE',
+                      payload: allNetworksSelected ? 'disabled' : 'enabled',
+                    });
+                  }
                 }}>
-                {state.selectedNetworks.length === CHAINS.length
-                  ? 'Deselect all'
-                  : 'Select all'}
+                {allNetworksSelected ? 'Deselect all' : 'Select all'}
               </OutlinedButton>
             </div>
             <div className="flex flex-wrap gap-csw-md">
@@ -347,8 +356,9 @@ export function Configure() {
               ))}
               {state.widgetMode !== 'deposit' && (
                 // Intents is a special tile: selecting it enables account
-                // abstraction. It is intentionally excluded from the
-                // "networks selected" count and the Select/Deselect all action.
+                // abstraction. It is tracked separately from `selectedNetworks`,
+                // but still participates in the "networks selected" count and
+                // the Select/Deselect all action.
                 <button
                   key="intents"
                   title="Intents — enables account abstraction"
