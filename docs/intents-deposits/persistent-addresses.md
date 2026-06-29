@@ -1,7 +1,5 @@
 ---
 icon: cloud-word
-tags:
-  - coming-soon
 ---
 
 # Persistent Addresses
