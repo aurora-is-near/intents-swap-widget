@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget-evm",
-  "version": "7.10.2",
+  "version": "7.11.0",
   "description": "EVM connector for the Intents swap widget",
   "license": "MIT",
   "main": "dist/index.js",
@@ -26,10 +26,10 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@aurora-is-near/intents-swap-widget": "^7.10.2"
+    "@aurora-is-near/intents-swap-widget": "^7.11.0"
   },
   "devDependencies": {
-    "@aurora-is-near/intents-swap-widget": "^7.10.2"
+    "@aurora-is-near/intents-swap-widget": "^7.11.0"
   },
   "dependencies": {
     "ethers": "^6.15.0",
