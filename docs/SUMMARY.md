@@ -53,9 +53,9 @@
   * [Light Deposit API](intents-deposits/api-reference/light-deposit-api/README.md)
     * [Get a deposit address](intents-deposits/api-reference/light-deposit-api/get-a-deposit-address.md)
     * [Get an estimate](intents-deposits/api-reference/light-deposit-api/get-an-estimate.md)
-  * [Persistent deposit address](intents-deposits/api-reference/persistent-deposit-address.md)
-  * [Persistent deposit status](intents-deposits/api-reference/persistent-deposit-status.md)
-  * [Persistent address data](intents-deposits/api-reference/persistent-address-data.md)
+  * [Create persistent deposit address](intents-deposits/api-reference/create-persistent-deposit-address.md)
+  * [Get persistent deposit status](intents-deposits/api-reference/get-persistent-deposit-status.md)
+  * [Get persistent address data](intents-deposits/api-reference/get-persistent-address-data.md)
 
 ## Swap Widget
 

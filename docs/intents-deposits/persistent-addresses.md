@@ -6,33 +6,29 @@ tags:
 
 # Persistent Addresses
 
-{% hint style="warning" %}
-**Pre-release** — Details are subject to change as the architecture is finalised.
-{% endhint %}
-
 Persistent Addresses are deterministic, chain-specific addresses derived from a fixed set of inputs: the user identifier, the source chain, the recipient address, and the output asset. Given the same inputs, the API always returns the same address. There is no expiry, no regeneration, and no per-transaction state to manage.
 
 {% hint style="info" %}
-The UDA is unique per chain and supports multiple asset deposits.
+The PDA is unique per chain and supports multiple asset deposits.
 {% endhint %}
 
 ## Business Flow
 
 When your app calls the Persistent Addresses API, it receives a reusable deposit address tied to a specific source chain and destination. The user sends a regular token transfer to that address — no bridging UI, no extra steps. The system detects the deposit, routes it through NEAR Intents, executes any required swap, and funds the destination.
 
-<figure><img src="../.gitbook/assets/uda.png" alt=""><figcaption><p>Example Persistent Addresses flow with recipient address on BASE chain</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/Screenshot 2026-06-29 at 10.47.51.png" alt=""><figcaption><p>Example Persistent Addresses flow with recipient address on BASE chain</p></figcaption></figure>
 
 {% stepper %}
 {% step %}
 ### App requests a deposit address
 
-Apps call the UDA API with the minimal parameters: deposit chain, recipient and output asset.
+Apps call the PDA API with the minimal parameters: deposit chain, recipient and output asset.
 {% endstep %}
 
 {% step %}
 ### Receive a reusable address
 
-The UDA API returns a reusable Deposit Address along with the current exchange rates.
+The PDA API returns a reusable Deposit Address along with the current exchange rates.
 {% endstep %}
 
 {% step %}

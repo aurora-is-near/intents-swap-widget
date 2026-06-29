@@ -1,5 +1,4 @@
 ---
-description: This API is currently work in progress.
 icon: rectangle-api
 layout:
   width: wide
@@ -21,7 +20,7 @@ layout:
     visible: true
 ---
 
-# Persistent deposit address
+# Create persistent deposit address
 
 {% openapi-operation spec="intents-api" path="/api/persistent-deposit-address/{apiKey}" method="post" %}
 [OpenAPI intents-api](https://intents-api.aurora.dev/docs/json)

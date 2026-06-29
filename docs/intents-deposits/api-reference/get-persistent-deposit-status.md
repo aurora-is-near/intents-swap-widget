@@ -20,11 +20,7 @@ layout:
     visible: true
 ---
 
-# Persistent deposit status
-
-{% hint style="info" %}
-This API is currently work in progress.
-{% endhint %}
+# Get persistent deposit status
 
 {% openapi-operation spec="intents-api" path="/api/persistent-deposit-status/{apiKey}" method="get" %}
 [OpenAPI intents-api](https://intents-api.aurora.dev/docs/json)
