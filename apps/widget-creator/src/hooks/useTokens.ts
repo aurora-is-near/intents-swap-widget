@@ -5,6 +5,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {
+  AURORA_BRIDGEABLE_ASSETS,
   CHAINS,
   Chains,
   SimpleToken,
@@ -75,7 +76,29 @@ export const useTokens = (): SimpleToken[] => {
     })
     .filter((token): token is SimpleToken => token !== null);
 
-  return tokens;
+  // 1Click does not return Aurora tokens, so we synthesise them from a
+  // hardcoded map (mirrors the widget's own useTokens).
+  const auroraTokens = AURORA_BRIDGEABLE_ASSETS.map(
+    (asset): SimpleToken | null => {
+      const upstream = data.find((token) => token.assetId === asset.assetId);
+
+      if (!upstream) {
+        return null;
+      }
+
+      return {
+        assetId: asset.assetId,
+        symbol: asset.symbol,
+        decimals: asset.decimals,
+        price: upstream.price,
+        blockchain: 'aurora',
+        icon: getTokenIcon(asset.symbol),
+        contractAddress: asset.evmAddress,
+      };
+    },
+  ).filter((token): token is SimpleToken => token !== null);
+
+  return [...tokens, ...auroraTokens];
 };
 
 export const useTokensGroupedBySymbol = (): TokenType[] => {

@@ -1,6 +1,10 @@
 import './tailwind.css'; // import so CSS is emitted in dist
 
 export { TOKENS_DATA } from './constants/tokens';
+export {
+  AURORA_BRIDGEABLE_ASSETS,
+  isAuroraBridgeable,
+} from './constants/aurora-assets';
 export { WidgetConfigProvider, type WidgetConfigProviderProps } from './config';
 export { DEFAULT_RPCS } from './rpcs';
 export { CHAINS } from './chains';
