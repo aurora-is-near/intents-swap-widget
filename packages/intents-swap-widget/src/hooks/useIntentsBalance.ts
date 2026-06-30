@@ -17,9 +17,13 @@ export const useIntentsBalance = () => {
   } = useUnsafeSnapshot();
 
   const { tokens } = useTokens();
+
+  // The token IDs are sorted so the array is a stable React Query cache key,
+  // regardless of the order tokens arrive in.
   const tokenIds = tokens
     .filter((token) => token.isIntent)
-    .map((token) => token.assetId);
+    .map((token) => token.assetId)
+    .sort();
 
   const intentsAccountId = getIntentsAccountId({
     walletAddress,
@@ -27,8 +31,8 @@ export const useIntentsBalance = () => {
   });
 
   const query = useQuery<TokenBalances>({
-    enabled: !!walletAddress && !!intentsAccountId && tokens.length > 0,
-    queryKey: ['intentsBalances', intentsAccountId],
+    enabled: !!walletAddress && !!intentsAccountId && tokenIds.length > 0,
+    queryKey: ['intentsBalances', intentsAccountId, tokenIds],
     queryFn: async () => {
       if (!intentsAccountId) {
         return {};
