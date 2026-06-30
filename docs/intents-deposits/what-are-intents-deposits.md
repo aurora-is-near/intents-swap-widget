@@ -40,7 +40,7 @@ Each address is permanent and reusable. There is no TTL, no session, and no requ
 {% step %}
 ### Create API key
 
-First, create an account and set up [api-keys-and-fees.md](../swap-widget/api-keys-and-fees.md "mention") for your integration.
+First, create an account and set up [api-keys-and-fees.md](../intents-swap/api-keys-and-fees.md "mention") for your integration.
 {% endstep %}
 
 {% step %}

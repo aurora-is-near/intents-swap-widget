@@ -18,7 +18,7 @@ Depending on the usage scenario, these phases may occur in reverse order.
 * **Operation**: Action performed using those funds (e.g., deposit, withdraw).
 * **Intermediary account**: Account on the destination chain derived from the source account, controlled by the source private key.
 
-Each execution progresses through a deterministic set of states. Execution state can be [requested](../intents-connect-api-reference/request-an-execution.md) and [monitored](../intents-connect-api-reference/fetch-executions.md) through an API:
+Each execution progresses through a deterministic set of states. Execution state can be [requested](../../api-reference/intents-connect-api-reference/request-an-execution.md) and [monitored](../../api-reference/intents-connect-api-reference/fetch-executions.md) through an API:
 
 * status is polled
 * state is authoritative
@@ -69,7 +69,7 @@ It is recommended to let the user decide on the exact outcome, which may require
 
 ## Execution Scenarios
 
-There are different scenarios in which you can use the [API](../intents-connect-api-reference/), each covering a different user flow. Below is a list of the most common scenarios.
+There are different scenarios in which you can use the [API](../../api-reference/intents-connect-api-reference/), each covering a different user flow. Below is a list of the most common scenarios.
 
 State transitions are strictly sequential within each phase; no states are skipped.
 

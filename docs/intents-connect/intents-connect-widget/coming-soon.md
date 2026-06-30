@@ -13,6 +13,6 @@ Full integration documentation — including installation, configuration, themin
 In the meantime, you can:
 
 * Read about [How Intents Connect Works](../deep-dive/how-it-works.md) to understand the execution model
-* Explore the [Intents Connect AP](../intents-connect-api-reference/)I if you prefer a programmatic integration
+* Explore the [Intents Connect AP](../../api-reference/intents-connect-api-reference/)I if you prefer a programmatic integration
 * Get in touch to register interest or request early access
 

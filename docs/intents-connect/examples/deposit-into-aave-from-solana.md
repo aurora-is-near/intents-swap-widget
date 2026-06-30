@@ -20,7 +20,7 @@ Make sure to understand [execution-lifecycle.md](../deep-dive/execution-lifecycl
 {% step %}
 ### List supported tokens
 
-Use [list-supported-tokens.md](../intents-connect-api-reference/list-supported-tokens.md "mention") to find the `assetId` values you will need. You'll need to use the Intents API for that.
+Use [list-supported-tokens.md](../../api-reference/intents-connect-api-reference/list-supported-tokens.md "mention") to find the `assetId` values you will need. You'll need to use the Intents API for that.
 
 {% tabs %}
 {% tab title="JavaScript" %}
@@ -68,7 +68,7 @@ The response includes tokens with their `assetId` in this format:
 {% step %}
 ### Request an execution
 
-Use [request-an-execution.md](../intents-connect-api-reference/request-an-execution.md "mention") endpoint.
+Use [request-an-execution.md](../../api-reference/intents-connect-api-reference/request-an-execution.md "mention") endpoint.
 
 {% tabs %}
 {% tab title="JavaScript" %}
@@ -246,7 +246,7 @@ const execution = await response.json();
 {% step %}
 ### Submit the digest
 
-Use [submit-digest.md](../intents-connect-api-reference/submit-digest.md "mention") to submit the signed message. This will allow executing batched transactions on the destination chain.
+Use [submit-digest.md](../../api-reference/intents-connect-api-reference/submit-digest.md "mention") to submit the signed message. This will allow executing batched transactions on the destination chain.
 
 {% tabs %}
 {% tab title="JavaScript" %}
@@ -301,7 +301,7 @@ Now, deposit exactly `quote.amount` into `quote.depositAddress` so the swap can 
 {% step %}
 ### Monitor the status of the execution
 
-Use [fetch-executions.md](../intents-connect-api-reference/fetch-executions.md "mention") using `id` of the execution
+Use [fetch-executions.md](../../api-reference/intents-connect-api-reference/fetch-executions.md "mention") using `id` of the execution
 
 {% tabs %}
 {% tab title="JavaScript" %}

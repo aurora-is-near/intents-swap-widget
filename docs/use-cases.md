@@ -26,7 +26,7 @@ No bridging, no network switching — just a seamless experience.
 
 [**https://swap.nearmobile.app/**](https://swap.nearmobile.app/)<br>
 
-👉 **Best fit:** [Swap Widget](swap-widget/what-is-swap-widget.md)
+👉 **Best fit:** [Swap Widget](intents-swap/what-is-swap-widget.md)
 
 ***
 
@@ -108,5 +108,5 @@ Multiple actions can be bundled and executed in sequence.
 
 ### 🧭 Choosing the right approach
 
-<table><thead><tr><th width="478.625">Use case</th><th>Recommended product</th></tr></thead><tbody><tr><td>Add cross-chain swaps frontend widget to your app</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/swap-widget">Swap Widget</a></td></tr><tr><td>Accept cross-chain deposits via a frontend widget</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-deposits">Intents Deposits</a></td></tr><tr><td>Execute contract actions via a frontend widget in your dApp</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect</a></td></tr><tr><td>Build tailored cross-chain flows using any interface</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect API</a></td></tr></tbody></table>
+<table><thead><tr><th width="478.625">Use case</th><th>Recommended product</th></tr></thead><tbody><tr><td>Add cross-chain swaps frontend widget to your app</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-swap">Swap Widget</a></td></tr><tr><td>Accept cross-chain deposits via a frontend widget</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-deposits">Intents Deposits</a></td></tr><tr><td>Execute contract actions via a frontend widget in your dApp</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect</a></td></tr><tr><td>Build tailored cross-chain flows using any interface</td><td><a href="https://app.gitbook.com/s/Lp9IVb8Xkubcbzzk80Br/intents-connect">Intents Connect API</a></td></tr></tbody></table>
 
