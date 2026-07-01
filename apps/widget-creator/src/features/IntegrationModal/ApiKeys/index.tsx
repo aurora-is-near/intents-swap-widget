@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
 import { useCreator } from '@/hooks/useCreatorConfig';
-import { useApiKeys, useCreateApiKey } from '@/api/hooks';
+import { useApiKeys, useCreateApiKey, useTosAcceptance } from '@/api/hooks';
 import type { ApiKey } from '@/api/types';
 import { Header } from '../components';
 
@@ -32,6 +32,9 @@ export const ApiKeys = ({ onClickFees }: Props) => {
 
   const { status, data: apiKeys = [] } = useApiKeys();
   const { mutate: createApiKey, ...mutation } = useCreateApiKey();
+  const { data: tos, isLoading: isTosLoading } = useTosAcceptance();
+
+  const alreadyAccepted = tos?.accepted ?? false;
 
   useEffect(() => {
     if (mutation.status === 'success') {
@@ -51,7 +54,10 @@ export const ApiKeys = ({ onClickFees }: Props) => {
     );
   }
 
-  if (status === 'pending') {
+  // Wait for the acceptance status too, so CreateApiKey renders its final state
+  // (checkbox vs. footer) directly instead of briefly flashing the checkbox
+  // before the ToS read resolves on a fresh load.
+  if (status === 'pending' || isTosLoading) {
     return (
       <>
         <ApiKeysHeader />
@@ -67,6 +73,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
         <ApiKeysEmpty message="Unable to load API keys" />
         <CreateApiKey
           isLoading={mutation.status === 'pending'}
+          alreadyAccepted={alreadyAccepted}
           onClick={createApiKey}
         />
       </>
@@ -80,6 +87,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
         <ApiKeysEmpty />
         <CreateApiKey
           isLoading={mutation.status === 'pending'}
+          alreadyAccepted={alreadyAccepted}
           onClick={createApiKey}
         />
       </>
@@ -101,6 +109,7 @@ export const ApiKeys = ({ onClickFees }: Props) => {
 
       <CreateApiKey
         isLoading={mutation.status === 'pending'}
+        alreadyAccepted={alreadyAccepted}
         onClick={createApiKey}
       />
     </>

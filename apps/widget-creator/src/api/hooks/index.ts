@@ -1,4 +1,5 @@
 export * from './useApiKeys';
+export * from './useTosAcceptance';
 export * from './useCurrentWidgetConfig';
 export * from './useCreateApiKey';
 export * from './useCreateWidgetConfig';

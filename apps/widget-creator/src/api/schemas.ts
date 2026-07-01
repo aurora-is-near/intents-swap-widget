@@ -6,6 +6,7 @@ import type {
   ApiKey,
   SerializableTheme,
   SerializableWidgetConfig,
+  TosAcceptance,
   WidgetConfigRecord,
 } from './types';
 
@@ -72,6 +73,10 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
     ...data,
     widgetApiKey: data.apiKey,
   }));
+
+export const tosAcceptanceSchema: z.ZodType<TosAcceptance> = z.object({
+  accepted: z.boolean(),
+});
 
 const chainsSchema = z.enum([
   'eth',
