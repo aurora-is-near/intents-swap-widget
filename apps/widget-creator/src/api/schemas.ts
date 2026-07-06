@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { RuleEngine } from 'intents-1click-rule-engine';
 import type { FeeConfig } from 'intents-1click-rule-engine';
+import { CHAINS } from '@aurora-is-near/intents-swap-widget';
 
 import type {
   ApiKey,
@@ -78,20 +79,27 @@ export const tosAcceptanceSchema: z.ZodType<TosAcceptance> = z.object({
   accepted: z.boolean(),
 });
 
-// Chain slug used when parsing widget-config responses. This is purely defensive
-// validation of a config the fee service echoes back to us, so we accept any slug
-// rather than a hand-copied enum that silently drifts from the widget's canonical
-// `Chains` list every time a chain is added.
-const chainsSchema = z.string().regex(/^[a-z0-9-]+$/) as unknown as z.ZodType<
-  SerializableWidgetConfig['chainsOrder'][number]
->;
+type ChainId = SerializableWidgetConfig['chainsOrder'][number];
 
-// Keys of `connectedWallets`: any chain slug plus the `default` fallback.
-const walletAddressKeySchema = z.string();
+const supportedChains = new Set<string>(CHAINS.map((chain) => chain.id));
+
+const isSupportedChain = (chain: string): chain is ChainId =>
+  supportedChains.has(chain);
+
+const chainSchema = z
+  .string()
+  .refine(isSupportedChain)
+  .transform((chain): ChainId => chain);
+
+const chainsSchema = z
+  .array(z.string())
+  .transform((chains): ChainId[] => chains.filter(isSupportedChain));
+
+const walletAddressKeySchema = z.union([chainSchema, z.literal('default')]);
 
 const defaultTokenSchema = z.object({
   symbol: z.string(),
-  blockchain: chainsSchema,
+  blockchain: chainSchema,
 });
 
 const appFeeSchema = z.object({
@@ -136,7 +144,7 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
     apiKey: z.string().optional(),
     referral: z.string().optional(),
     enableAccountAbstraction: z.boolean().optional(),
-    walletSupportedChains: z.array(chainsSchema).readonly().optional(),
+    walletSupportedChains: chainsSchema.readonly().optional(),
     connectedWallets: z.partialRecord(
       walletAddressKeySchema,
       z.string().nullable(),
@@ -154,14 +162,14 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
     priorityAssets: z
       .union([
         z.array(z.string()).readonly(),
-        z.array(z.tuple([chainsSchema, z.string()])).readonly(),
+        z.array(z.tuple([chainSchema, z.string()])).readonly(),
       ])
       .optional(),
     disabledInternalBalanceTokens: z.array(z.string()).optional(),
-    chainsOrder: z.array(chainsSchema),
-    allowedChainsList: z.array(chainsSchema).optional(),
-    allowedSourceChainsList: z.array(chainsSchema).optional(),
-    allowedTargetChainsList: z.array(chainsSchema).optional(),
+    chainsOrder: chainsSchema,
+    allowedChainsList: chainsSchema.optional(),
+    allowedSourceChainsList: chainsSchema.optional(),
+    allowedTargetChainsList: chainsSchema.optional(),
     chainsFilter: chainsFiltersSchema.optional(),
     alchemyApiKey: z.string().optional(),
     tonCenterApiKey: z.string().optional(),
