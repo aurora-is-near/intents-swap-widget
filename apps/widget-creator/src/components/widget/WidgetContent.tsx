@@ -12,6 +12,7 @@ import { useCreator } from '../../hooks/useCreatorConfig';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 import { useWidgetConfig } from '../../hooks/useWidgetConfig';
 import { useThemeConfig } from '../../hooks/useThemeConfig';
+import { APP_ENV } from '../../utils/environment';
 import { DappWalletBridge } from './DappWalletBridge';
 
 const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
@@ -82,6 +83,7 @@ export function WidgetContent() {
       config={{
         ...widgetConfig,
         alchemyApiKey: ALCHEMY_API_KEY,
+        environment: APP_ENV,
       }}
       theme={themeConfig}>
       <Widget

@@ -41,4 +41,5 @@ jest.mock('../network', () => ({
   alchemyApi: mockAlchemyApi,
   oneClickApi: mockOneClickApi,
   feeServiceApi: mockFeeServiceApi,
+  getIntentsApiBaseUrl: () => 'https://intents-api.aurora.dev',
 }));
