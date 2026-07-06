@@ -78,64 +78,16 @@ export const tosAcceptanceSchema: z.ZodType<TosAcceptance> = z.object({
   accepted: z.boolean(),
 });
 
-const chainsSchema = z.enum([
-  'eth',
-  'bera',
-  'base',
-  'gnosis',
-  'arb',
-  'bsc',
-  'avax',
-  'op',
-  'pol',
-  'monad',
-  'sui',
-  'xrp',
-  'btc',
-  'doge',
-  'tron',
-  'ton',
-  'near',
-  'sol',
-  'zec',
-  'ltc',
-  'cardano',
-  'stellar',
-  'adi',
-  'aleo',
-  'bch',
-  'dash',
-  'plasma',
-  'scroll',
-  'starknet',
-  'xlayer',
-]);
+// Chain slug used when parsing widget-config responses. This is purely defensive
+// validation of a config the fee service echoes back to us, so we accept any slug
+// rather than a hand-copied enum that silently drifts from the widget's canonical
+// `Chains` list every time a chain is added.
+const chainsSchema = z.string().regex(/^[a-z0-9-]+$/) as unknown as z.ZodType<
+  SerializableWidgetConfig['chainsOrder'][number]
+>;
 
-const walletAddressKeySchema = z.enum([
-  'eth',
-  'bera',
-  'base',
-  'gnosis',
-  'arb',
-  'bsc',
-  'avax',
-  'op',
-  'pol',
-  'monad',
-  'sui',
-  'xrp',
-  'btc',
-  'doge',
-  'tron',
-  'ton',
-  'near',
-  'sol',
-  'zec',
-  'ltc',
-  'cardano',
-  'stellar',
-  'default',
-]);
+// Keys of `connectedWallets`: any chain slug plus the `default` fallback.
+const walletAddressKeySchema = z.string();
 
 const defaultTokenSchema = z.object({
   symbol: z.string(),
