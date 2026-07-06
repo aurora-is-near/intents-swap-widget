@@ -1,7 +1,9 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-svgr/client" />
 
-interface ImportMetaEnv {}
+interface ImportMetaEnv {
+  readonly VITE_INTENTS_API_URL?: string;
+}
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
