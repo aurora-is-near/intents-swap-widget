@@ -11,6 +11,8 @@ export type WalletAddresses = Partial<
 
 export type IntentsAccountType = 'evm' | 'near' | 'sol' | 'stellar';
 
+export type WidgetEnvironment = 'production' | 'staging';
+
 export type DefaultToken = Pick<Token, 'symbol' | 'blockchain'>;
 
 export type PriorityAssets =
@@ -21,6 +23,9 @@ export type WidgetConfig = {
   // Application metadata
   apiKey?: string;
   referral?: string;
+
+  // Backend environment for the widget
+  environment?: WidgetEnvironment;
 
   // Account abstraction
   enableAccountAbstraction?: boolean;

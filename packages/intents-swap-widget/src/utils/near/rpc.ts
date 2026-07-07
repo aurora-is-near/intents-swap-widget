@@ -5,16 +5,20 @@ import {
 import { snapshot } from 'valtio';
 
 import { configStore } from '@/config';
-
-const FEE_SERVICE_RPC_BASE = 'https://intents-api.aurora.dev/rpc';
+import { getIntentsApiBaseUrl } from '@/network';
 
 // Public NEAR RPCs used as failover behind the rate-limited fee-service proxy.
 const PUBLIC_NEAR_RPC_URLS = ['https://rpc.mainnet.near.org'];
 
 export const nearProxyRpcUrl = (
   apiKey: string | undefined,
-): string | undefined =>
-  apiKey ? `${FEE_SERVICE_RPC_BASE}/${apiKey}` : undefined;
+): string | undefined => {
+  if (!apiKey) {
+    return undefined;
+  }
+
+  return `${getIntentsApiBaseUrl()}/rpc/${apiKey}`;
+};
 
 export const buildNearRpcUrls = (
   apiKey: string | undefined,

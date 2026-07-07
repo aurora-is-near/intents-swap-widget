@@ -14,6 +14,7 @@ import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { getDepositType } from '@/utils/intents/getDepositType';
+import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { getQuoteRecipient } from '@/utils/intents/getQuoteRecipient';
 import { getQuoteRefundTo } from '@/utils/intents/getQuoteRefundTo';
 import { getQuoteRefundType } from '@/utils/intents/getQuoteRefundType';
@@ -116,15 +117,17 @@ export const useMakeTransfer = ({
         });
       }
     } catch (error: unknown) {
-      if (error instanceof TransferError) {
-        logger.error(error.data);
-        fireEvent('transferSetStatus', { status: 'error' });
-        fireEvent('errorSet', error.data);
+      logger.error(error instanceof TransferError ? error.data : error);
 
-        return;
-      }
+      fireEvent('transferSetStatus', { status: 'error' });
+      fireEvent(
+        'errorSet',
+        error instanceof TransferError
+          ? error.data
+          : { code: 'DIRECT_TRANSFER_ERROR' },
+      );
 
-      throw error;
+      return;
     }
 
     if (!transferResult) {
@@ -179,12 +182,25 @@ export const useMakeTransfer = ({
     ) {
       const optimisticKey = transferResult.intent ?? transferResult.hash;
 
+      const isNearOnNear =
+        ctx.targetToken.blockchain === 'near' &&
+        ctx.targetToken.symbol === 'NEAR';
+
+      // For some unknown reason, the Explorer API does not resolve 1Click
+      // deposits for Aurora tokens or intents to near on near, so if we insert
+      // the optimistic transaction for those cases it will never be replaced by
+      // the real one and that confuses people.
+      const isResolvable = !(
+        (isAuroraToken(ctx.sourceToken) || ctx.sourceToken.isIntent) &&
+        isNearOnNear
+      );
+
       // If the transfer is a 1Click deposit we insert an optimistic
       // transaction here for faster feedback. That transaction will be replaced
       // by the real one once the polling of the Explorer API picks it up. For
       // non-1Click transfers (e.g. direct NEAR transfers) that transaction will
       // never be resolved, so we do not optimistically add it to the history.
-      if (transferResult.isOneClickDeposit) {
+      if (transferResult.isOneClickDeposit && isResolvable) {
         // Mirror the recipient/refundTo the quote sent to 1Click so the
         // optimistic record matches what the Explorer API will eventually
         // echo back. The wallet always appears in `senders` so the

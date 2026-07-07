@@ -71,6 +71,20 @@ export class FeeServiceUpdateApiKeyError extends FeeServiceApiError {
 
 // ------------------------------------------------------------
 
+type FeeServiceGetTosErrorCodes =
+  | 'FAILED_TO_GET_TOS'
+  | 'INVALID_TOS_RESPONSE'
+  | FeeServiceCommonErrorCodes;
+
+export class FeeServiceGetTosError extends FeeServiceApiError {
+  constructor(code: FeeServiceGetTosErrorCodes, message?: string) {
+    super(code, message);
+    this.name = 'FeeServiceGetTosError';
+  }
+}
+
+// ------------------------------------------------------------
+
 type FeeServiceGetWidgetConfigErrorCodes =
   | 'FAILED_TO_GET_WIDGET_CONFIG'
   | 'WIDGET_CONFIG_NOT_FOUND'

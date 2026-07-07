@@ -6,7 +6,16 @@ export type ApiKey = {
   createdAt: string;
   apiKey: string;
   feeRules: FeeConfig;
+  auroraFeeBps?: number | null;
+  auroraFeePercent?: number | null;
   role?: 'admin';
+};
+
+// Whether the authenticated user has accepted the Terms & Conditions. Acceptance
+// is recorded server-side when a key is created; the terms version/timestamp are
+// internal audit fields and never sent to the client, so this is a bare boolean.
+export type TosAcceptance = {
+  accepted: boolean;
 };
 
 type SerializableWidgetConfigKeys =

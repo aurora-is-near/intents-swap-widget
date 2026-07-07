@@ -45,7 +45,19 @@ export const FeeInput = ({
             normalizeZeros: true, // normalize leading zeros
           },
         }}
-        onAccept={(val) => onChange(val)}
+        onAccept={(val, maskRef) => {
+          // Eager mode keeps the "%" literal even when the typed number is
+          // rejected (e.g. a first digit above the 1.00 max), leaving a lone
+          // "%" in the field. Clear it so no stray separator is shown.
+          if (val && !/\d/.test(val)) {
+            maskRef.value = '';
+            onChange('');
+
+            return;
+          }
+
+          onChange(val);
+        }}
         className={clsx(
           'bg-transparent outline-none flex-1 font-medium text-sm leading-4',
           {

@@ -28,5 +28,9 @@ export const useCreateWidgetConfig = () => {
       queryClient.setQueryData(['widgetConfig', data.uuid], data);
       queryClient.setQueryData(['widgetConfig', 'current', user?.id], data);
     },
+    onError: (error) => {
+      // eslint-disable-next-line no-console
+      console.error('Error creating widget config:', error);
+    },
   });
 };

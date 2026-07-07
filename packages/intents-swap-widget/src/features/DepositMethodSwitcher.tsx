@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { QrCodeW700 as QrCodeIcon } from '@material-symbols-svg/react-rounded/icons/qr-code';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 import { RefreshW700 as RefreshIcon } from '@material-symbols-svg/react-rounded/icons/refresh';
@@ -12,6 +13,7 @@ import { ExternalDeposit } from '@/features/ExternalDeposit';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { useTypedTranslation } from '@/localisation';
 import { guardStates } from '@/machine/guards';
 import { fireEvent } from '@/machine';
@@ -116,9 +118,25 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
 
+  // Aurora is a NEAR virtual chain and as such 1Click will return a Near
+  // deposit address, which will not work if we attempt to deposit from an
+  // external wallet.
+  const isVirtualChainSource =
+    !!ctx.sourceToken && isAuroraToken(ctx.sourceToken);
+
   const canBeToggled =
-    ((!!ctx.sourceToken && !ctx.sourceToken.isIntent) || !ctx.sourceToken) &&
-    !!ctx.walletAddress;
+    !!ctx.walletAddress &&
+    (!ctx.sourceToken || (!ctx.sourceToken.isIntent && !isVirtualChainSource));
+
+  // The token can also be picked from inside the external flow (i.e. the toggle
+  // was already on, then Aurora selected), which the toggle guard can't catch.
+  // collapse back to the connected-wallet deposit if that happens.
+  useEffect(() => {
+    if (isVirtualChainSource && ctx.isDepositFromExternalWallet) {
+      fireEvent('externalDepositTxSet', undefined);
+      fireEvent('depositTypeSet', { isExternal: false });
+    }
+  }, [isVirtualChainSource, ctx.isDepositFromExternalWallet]);
 
   const onToggle = (isExternal: boolean) => {
     if (!canBeToggled) {
@@ -133,7 +151,7 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
     <Card
       className={cn(
         'flex flex-col',
-        { 'pb-sw-lg': ctx.isDepositFromExternalWallet },
+        { 'pb-sw-lg': ctx.isDepositFromExternalWallet || isVirtualChainSource },
         className,
       )}>
       <header className="gap-sw-md flex items-center justify-between">
@@ -155,7 +173,27 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
         />
       </header>
 
-      {ctx.isDepositFromExternalWallet && <ExtendedContent onMsg={onMsg} />}
+      {isVirtualChainSource && (
+        <div className="pt-sw-md gap-sw-xxs text-sw-label-sm text-sw-gray-200 flex flex-col">
+          <p>
+            {t('deposit.method.switcher.virtualChainDisabled', {
+              defaultValue:
+                'External wallet deposits aren’t available on the {{chain}} network.',
+              chain: ctx.sourceToken?.chainName ?? 'Aurora',
+            })}
+          </p>
+          <p>
+            {t(
+              'deposit.method.switcher.disabledHint',
+              'Deposit directly from your connected wallet.',
+            )}
+          </p>
+        </div>
+      )}
+
+      {ctx.isDepositFromExternalWallet && !isVirtualChainSource && (
+        <ExtendedContent onMsg={onMsg} />
+      )}
     </Card>
   );
 };

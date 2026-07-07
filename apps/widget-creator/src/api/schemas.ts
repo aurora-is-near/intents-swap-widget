@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { RuleEngine } from 'intents-1click-rule-engine';
 import type { FeeConfig } from 'intents-1click-rule-engine';
+import { CHAINS } from '@aurora-is-near/intents-swap-widget';
 
 import type {
   ApiKey,
   SerializableTheme,
   SerializableWidgetConfig,
+  TosAcceptance,
   WidgetConfigRecord,
 } from './types';
 
@@ -64,6 +66,8 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
     createdAt: z.string(),
     apiKey: z.string(),
     feeRules: FeeConfigSchema,
+    auroraFeeBps: z.number().int().nullish(),
+    auroraFeePercent: z.number().int().nullish(),
     role: z.enum(['admin']).optional(),
   })
   .transform((data) => ({
@@ -71,68 +75,31 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
     widgetApiKey: data.apiKey,
   }));
 
-const chainsSchema = z.enum([
-  'eth',
-  'bera',
-  'base',
-  'gnosis',
-  'arb',
-  'bsc',
-  'avax',
-  'op',
-  'pol',
-  'monad',
-  'sui',
-  'xrp',
-  'btc',
-  'doge',
-  'tron',
-  'ton',
-  'near',
-  'sol',
-  'zec',
-  'ltc',
-  'cardano',
-  'stellar',
-  'adi',
-  'aleo',
-  'bch',
-  'dash',
-  'plasma',
-  'scroll',
-  'starknet',
-  'xlayer',
-]);
+export const tosAcceptanceSchema: z.ZodType<TosAcceptance> = z.object({
+  accepted: z.boolean(),
+});
 
-const walletAddressKeySchema = z.enum([
-  'eth',
-  'bera',
-  'base',
-  'gnosis',
-  'arb',
-  'bsc',
-  'avax',
-  'op',
-  'pol',
-  'monad',
-  'sui',
-  'xrp',
-  'btc',
-  'doge',
-  'tron',
-  'ton',
-  'near',
-  'sol',
-  'zec',
-  'ltc',
-  'cardano',
-  'stellar',
-  'default',
-]);
+type ChainId = SerializableWidgetConfig['chainsOrder'][number];
+
+const supportedChains = new Set<string>(CHAINS.map((chain) => chain.id));
+
+const isSupportedChain = (chain: string): chain is ChainId =>
+  supportedChains.has(chain);
+
+const chainSchema = z
+  .string()
+  .refine(isSupportedChain)
+  .transform((chain): ChainId => chain);
+
+const chainsSchema = z
+  .array(z.string())
+  .transform((chains): ChainId[] => chains.filter(isSupportedChain));
+
+const walletAddressKeySchema = z.union([chainSchema, z.literal('default')]);
 
 const defaultTokenSchema = z.object({
   symbol: z.string(),
-  blockchain: chainsSchema,
+  blockchain: chainSchema,
 });
 
 const appFeeSchema = z.object({
@@ -177,7 +144,7 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
     apiKey: z.string().optional(),
     referral: z.string().optional(),
     enableAccountAbstraction: z.boolean().optional(),
-    walletSupportedChains: z.array(chainsSchema).readonly().optional(),
+    walletSupportedChains: chainsSchema.readonly().optional(),
     connectedWallets: z.partialRecord(
       walletAddressKeySchema,
       z.string().nullable(),
@@ -195,14 +162,14 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
     priorityAssets: z
       .union([
         z.array(z.string()).readonly(),
-        z.array(z.tuple([chainsSchema, z.string()])).readonly(),
+        z.array(z.tuple([chainSchema, z.string()])).readonly(),
       ])
       .optional(),
     disabledInternalBalanceTokens: z.array(z.string()).optional(),
-    chainsOrder: z.array(chainsSchema),
-    allowedChainsList: z.array(chainsSchema).optional(),
-    allowedSourceChainsList: z.array(chainsSchema).optional(),
-    allowedTargetChainsList: z.array(chainsSchema).optional(),
+    chainsOrder: chainsSchema,
+    allowedChainsList: chainsSchema.optional(),
+    allowedSourceChainsList: chainsSchema.optional(),
+    allowedTargetChainsList: chainsSchema.optional(),
     chainsFilter: chainsFiltersSchema.optional(),
     alchemyApiKey: z.string().optional(),
     tonCenterApiKey: z.string().optional(),

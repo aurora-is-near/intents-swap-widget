@@ -100,7 +100,7 @@ const getCreatorStateFromRemoteWidgetConfig = (
 const initialState: CreatorState = {
   widgetMode: 'swap',
   userAuthMode: 'standalone',
-  accountAbstractionMode: 'enabled',
+  accountAbstractionMode: 'disabled',
   selectedNetworks: CHAINS.map((chain) => chain.id),
   selectedTokenSymbols: [],
   enableSellToken: true,

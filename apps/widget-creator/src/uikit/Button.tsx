@@ -7,7 +7,7 @@ import type { FC } from 'react';
 import { cn as clsx } from '../utils/cn';
 
 type Size = 'xs' | 'sm' | 'md' | 'lg';
-type Variant = 'primary' | 'tertiary' | 'outlined';
+type Variant = 'primary' | 'tertiary' | 'outlined' | 'disabled';
 type State = 'default' | 'loading' | 'disabled' | 'active' | 'error';
 type Detail = 'default' | 'dimmed' | 'accent';
 
@@ -193,12 +193,36 @@ export const OutlinedButton = ({
   );
 };
 
+const ButtonDisabled = ({
+  size,
+  children,
+  className,
+  fluid,
+  ...props
+}: Omit<Props, 'variant'>) => {
+  return (
+    <UIButton
+      disabled
+      className={clsx(
+        styles.common,
+        styles.width(fluid),
+        styles.size(size),
+        'cursor-not-allowed bg-csw-gray-800 text-csw-gray-500',
+        className,
+      )}>
+      <ButtonChildren {...props}>{children}</ButtonChildren>
+    </UIButton>
+  );
+};
+
 export const Button = ({ variant, ...restProps }: Props) => {
   switch (variant) {
     case 'tertiary':
       return <ButtonTertiary {...restProps} />;
     case 'outlined':
       return <OutlinedButton {...restProps} />;
+    case 'disabled':
+      return <ButtonDisabled {...restProps} />;
     case 'primary':
     default:
       return <ButtonPrimary {...restProps} />;

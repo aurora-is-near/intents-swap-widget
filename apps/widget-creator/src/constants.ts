@@ -14,6 +14,9 @@ export const PRIVY_APP_ID = 'cmkzn6yvs0324kz0cp0pf50v1';
 export const DEFAULT_APP_KEY = 'ade8b6fa-a564-46ff-a892-6b80fb601678';
 export const PLACEHOLDER_APP_KEY = 'your-generated-app-key';
 
+export const TERMS_URL = 'https://intents.aurora.dev/terms-of-service';
+export const PRIVACY_URL = 'https://intents.aurora.dev/privacy-policy';
+
 export const DEFAULT_ZERO_FEE: Omit<FeeConfig, 'default_fee'> & {
   default_fee: Fee;
 } = {

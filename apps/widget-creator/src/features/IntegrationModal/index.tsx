@@ -70,7 +70,7 @@ export const IntegrationModal = ({
             <Navigation selected={selected} onSelect={setSelected} />
           )}
 
-          <div className="px-csw-2xl max-w-[600px] w-full overflow-auto">
+          <div className="px-csw-2xl max-w-[600px] w-full overflow-auto custom-scrollbar custom-scrollbar-offset-2xl">
             {(() => {
               if (selected === 'embed-code') {
                 return (

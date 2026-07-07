@@ -361,7 +361,7 @@ export function App() {
             {copyCodeFeedback ? 'Copied!' : 'Copy code'}
           </Button>
           <div className="overflow-y-auto flex-shrink-1 min-h-[380px] pb-csw-2xl w-full">
-            <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh]">
+            <div className="bg-csw-gray-900 px-csw-2xl py-csw-md rounded-csw-md h-full overflow-auto max-h-[50dvh] custom-scrollbar custom-scrollbar-offset-2xl">
               <span className="text-csw-label-md text-csw-gray-50">React</span>
               <hr className="border-csw-gray-800 my-csw-md pb-csw-lg" />
               <Highlight
