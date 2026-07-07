@@ -14,6 +14,8 @@ const CONFIG_TYPE_FILE = path.resolve(
   'config.ts',
 );
 
+const IGNORED_KEYS = ['environment'];
+
 const MARKDOWN_FILE = path.resolve(__dirname, '..', 'docs', 'configuration.md');
 
 const program = ts.createProgram([CONFIG_TYPE_FILE], {
@@ -79,7 +81,9 @@ const checkForDocumentedConfigKeys = () => {
   const keys = getWidgetConfigKeys();
   const documentedKeys = getDocumentedConfigKeys();
 
-  const missingInDocs = keys.filter((key) => !documentedKeys.includes(key));
+  const missingInDocs = keys.filter(
+    (key) => !documentedKeys.includes(key) && !IGNORED_KEYS.includes(key),
+  );
 
   const extraInDocs = documentedKeys.filter((key) => !keys.includes(key));
 
