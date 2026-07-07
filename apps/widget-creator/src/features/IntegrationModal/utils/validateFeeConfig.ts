@@ -27,10 +27,10 @@ export const validateFeeConfig = (
       return { data: undefined, error: 'Default fee is required' };
     }
 
-    if (defaultFee.bps > 100) {
+    if (defaultFee.bps > 500) {
       return {
         data: undefined,
-        error: 'Default fee cannot be greater than 1%',
+        error: 'Default fee cannot be greater than 5%',
       };
     }
 

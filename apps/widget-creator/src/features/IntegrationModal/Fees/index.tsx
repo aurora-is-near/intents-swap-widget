@@ -271,7 +271,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                 control={control}
                 render={({ field }) => (
                   <FeeInput
-                    suffix="1.00% max"
+                    suffix="5.00% max"
                     placeholder="0.00%"
                     state={errors.customFee ? 'error' : 'normal'}
                     value={field.value || ''}
