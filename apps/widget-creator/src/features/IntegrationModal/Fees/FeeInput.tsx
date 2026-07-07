@@ -38,7 +38,7 @@ export const FeeInput = ({
             mask: Number,
             scale: 2, // max 2 decimal places
             min: 0, // minimum value
-            max: 5, // maximum value (1.00)
+            max: 5, // maximum value (5.00)
             radix: '.', // decimal separator
             mapToRadix: ['.'], // map dot key to radix
             padFractionalZeros: false, // don't force trailing zeros
