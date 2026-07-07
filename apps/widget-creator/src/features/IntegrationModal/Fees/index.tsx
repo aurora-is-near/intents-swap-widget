@@ -63,6 +63,19 @@ type Props = {
   onClickBack: () => void;
 };
 
+export const convertFeeShare = (feeBps: number, totalPercent: string) => {
+  if (!totalPercent || !feeBps) {
+    return '0';
+  }
+
+  const feePercent = getPercentFromBasisPoints(feeBps);
+
+  return (
+    parseFloat(feePercent) *
+    (totalPercent.startsWith('0.') ? 1 : parseFloat(totalPercent))
+  ).toFixed(2);
+};
+
 export const Fees = ({ apiKey, onClickBack }: Props) => {
   // value based fee
   const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
@@ -305,14 +318,14 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                           Aurora fee (min {auroraMinPercent}%)
                         </span>
                         <span className="text-csw-gray-50">
-                          {getPercentFromBasisPoints(auroraBps)}% (
+                          {convertFeeShare(auroraBps, customFee)}% (
                           {auroraPortion}%)
                         </span>
                       </li>
                       <li className="flex items-center justify-between text-csw-label-sm">
                         <span className="text-csw-gray-300">Your share</span>
                         <span className="text-csw-accent-500">
-                          {getPercentFromBasisPoints(clientBps)}% (
+                          {convertFeeShare(clientBps, customFee)}% (
                           {clientPortion}%)
                         </span>
                       </li>
