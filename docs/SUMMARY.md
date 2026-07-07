@@ -2,6 +2,7 @@
 
 * [Welcome to Aurora Intents](README.md)
 * [Use cases](use-cases.md)
+* [Confidential Intents](confidential-intents.md)
 
 ## Intents Connect
 
@@ -57,6 +58,11 @@
   * [Delete an execution](api-reference/intents-connect-api-reference/delete-an-execution.md)
   * [Submit digest](api-reference/intents-connect-api-reference/submit-digest.md)
   * [Submit deposit hash](api-reference/intents-connect-api-reference/submit-deposit-hash.md)
+* [Confidential Swaps API Reference](api-reference/confidential-swaps-api-reference/README.md)
+  * [Authenticate user with signed data](api-reference/confidential-swaps-api-reference/authenticate-user-with-signed-data.md)
+  * [Refresh access token](api-reference/confidential-swaps-api-reference/refresh-access-token.md)
+  * [Get user token balances](api-reference/confidential-swaps-api-reference/get-user-token-balances.md)
+  * [Get transaction history](api-reference/confidential-swaps-api-reference/get-transaction-history.md)
 
 ## Intents Swap
 
@@ -71,6 +77,7 @@
   * [Troubleshooting](intents-swap/widget-configuration/troubleshooting.md)
   * [Localisation](intents-swap/widget-configuration/localisation.md)
   * [Widgets](intents-swap/widget-configuration/widgets.md)
+* [Confidential Swaps](intents-swap/confidential-swaps.md)
 
 ## About
 
