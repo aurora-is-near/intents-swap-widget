@@ -97,4 +97,14 @@ await fetch(`https://intents-api.aurora.dev/api/status/${API_KEY}?depositAddress
 
 The only difference from a standard swap is the `confidentiality` mode. Deposit addresses, status polling, refunds, and your configured fees all behave exactly as they do today.
 {% endstep %}
+
+{% step %}
+### (Optional) Read Confidential Intents balance
+
+Use [authenticate-user-with-signed-data.md](../api-reference/confidential-swaps-api-reference/authenticate-user-with-signed-data.md "mention") to authenticate your account and read your balance using [get-user-token-balances.md](../api-reference/confidential-swaps-api-reference/get-user-token-balances.md "mention").
+
+{% hint style="info" %}
+This is related only to your Confidential Intents balances, a private layer of NEAR Intents.
+{% endhint %}
+{% endstep %}
 {% endstepper %}
