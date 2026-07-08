@@ -45,6 +45,11 @@
   * [Submit a deposit](api-reference/swap-api-reference/submit-a-deposit.md)
   * [Get swap status](api-reference/swap-api-reference/get-swap-status.md)
   * [Get transactions history](api-reference/swap-api-reference/get-transactions-history.md)
+* [Confidential Swaps API Reference](api-reference/confidential-swaps-api-reference/README.md)
+  * [Authenticate user with signed data](api-reference/confidential-swaps-api-reference/authenticate-user-with-signed-data.md)
+  * [Refresh access token](api-reference/confidential-swaps-api-reference/refresh-access-token.md)
+  * [Get user token balances](api-reference/confidential-swaps-api-reference/get-user-token-balances.md)
+  * [Get transaction history](api-reference/confidential-swaps-api-reference/get-transaction-history.md)
 * [Persistent Addresses API Reference](api-reference/persistent-addresses-api-reference/README.md)
   * [Create persistent deposit address](api-reference/persistent-addresses-api-reference/create-persistent-deposit-address.md)
   * [Get persistent deposit status](api-reference/persistent-addresses-api-reference/get-persistent-deposit-status.md)
@@ -58,11 +63,6 @@
   * [Delete an execution](api-reference/intents-connect-api-reference/delete-an-execution.md)
   * [Submit digest](api-reference/intents-connect-api-reference/submit-digest.md)
   * [Submit deposit hash](api-reference/intents-connect-api-reference/submit-deposit-hash.md)
-* [Confidential Swaps API Reference](api-reference/confidential-swaps-api-reference/README.md)
-  * [Authenticate user with signed data](api-reference/confidential-swaps-api-reference/authenticate-user-with-signed-data.md)
-  * [Refresh access token](api-reference/confidential-swaps-api-reference/refresh-access-token.md)
-  * [Get user token balances](api-reference/confidential-swaps-api-reference/get-user-token-balances.md)
-  * [Get transaction history](api-reference/confidential-swaps-api-reference/get-transaction-history.md)
 
 ## Intents Swap
 
