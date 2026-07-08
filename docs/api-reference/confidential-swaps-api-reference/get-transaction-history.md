@@ -1,4 +1,5 @@
 ---
+hidden: true
 icon: rectangle-api
 layout:
   width: wide
