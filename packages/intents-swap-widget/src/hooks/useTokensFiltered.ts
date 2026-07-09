@@ -63,14 +63,22 @@ export const useTokensFiltered = ({
         uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
       }),
     )
-    .filter((token) =>
-      isAllowedChain({
-        chainId: token.blockchain,
-        variant,
-        allowedChainsList,
-        allowedSourceChainsList,
-        allowedTargetChainsList,
-      }),
+    // Intents tokens are the virtual NEAR Intents account layer, not an external
+    // settlement network, so they must not be gated on their underlying
+    // `blockchain` being in `allowedChainsList` — otherwise deselecting e.g. the
+    // Near network in the configurator hides held Intents balances. Intents-specific
+    // gating lives in `createFilterBySelectedChain` (chainsFilter.intents /
+    // selectedChain).
+    .filter(
+      (token) =>
+        token.isIntent ||
+        isAllowedChain({
+          chainId: token.blockchain,
+          variant,
+          allowedChainsList,
+          allowedSourceChainsList,
+          allowedTargetChainsList,
+        }),
     );
 
   return {
