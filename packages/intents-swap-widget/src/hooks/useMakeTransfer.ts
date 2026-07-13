@@ -192,6 +192,7 @@ export const useMakeTransfer = ({
       // the real one and that confuses people.
       const isResolvable = !(
         (isAuroraToken(ctx.sourceToken) || ctx.sourceToken.isIntent) &&
+        ctx.confidentialMode === 'confidential' &&
         isNearOnNear
       );
 

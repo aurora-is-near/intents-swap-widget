@@ -14,6 +14,7 @@ export type LocalisationKeys =
   | 'wallet.recipient.message.networkVerified'
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
+  | 'wallet.history.banner.noConfidentialTxs'
   // transfer
   | 'transfer.success.deposit.backToDeposit'
   | 'transfer.success.details.label'
@@ -24,6 +25,7 @@ export type LocalisationKeys =
   | 'transfer.success.action.viewOnExplorer'
   | 'transfer.success.action.backToSwap'
   | 'transfer.success.statusUnresolved'
+  | 'transfer.success.statusUnresolvedConfidential'
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'

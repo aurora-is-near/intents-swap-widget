@@ -36,6 +36,8 @@ export type QuoteDepositAnyAmount = {
 
 export type Quote = QuoteDry | QuoteReal | QuoteDepositAnyAmount;
 
+export type SwapConfidentialMode = 'public' | 'confidential';
+
 export type FetchQuoteOptions = {
   isRefetch?: boolean;
   signal?: AbortSignal;

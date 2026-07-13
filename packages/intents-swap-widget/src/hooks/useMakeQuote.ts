@@ -176,11 +176,15 @@ export const useMakeQuote = () => {
     let commonQuoteParams: Omit<
       QuoteRequest,
       'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
-    > = {
+    > & { confidentiality: 'public' | 'basic' } = {
       // Settings
       dry: isDry,
       slippageTolerance,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
+
+      // Confidentiality
+      confidentiality:
+        ctx.confidentialMode === 'confidential' ? 'basic' : 'public',
 
       // Target
       destinationAsset:

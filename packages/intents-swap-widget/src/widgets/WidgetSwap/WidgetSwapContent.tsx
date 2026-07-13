@@ -93,6 +93,7 @@ export const WidgetSwapContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'syncConfig',
       'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',

@@ -14,7 +14,7 @@ import type {
   InputValidWalletError,
   QuoteSuccessError,
 } from './errors';
-import { DefaultToken } from '../types';
+import { DefaultToken, SwapConfidentialMode } from '../types';
 
 export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   state: 'initial_dry',
@@ -39,6 +39,8 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   quote: undefined,
   quoteStatus: 'idle' as const,
   transferStatus: { status: 'idle' as const },
+
+  confidentialMode: 'public',
 });
 
 export type Context =
@@ -85,6 +87,7 @@ export type InitialDryContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type InitialWalletContext = {
@@ -110,6 +113,7 @@ export type InitialWalletContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type InputValidDryContext = {
@@ -135,6 +139,7 @@ export type InputValidDryContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type InputValidInternalContext = {
@@ -160,6 +165,7 @@ export type InputValidInternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type InputValidExternalContext = {
@@ -185,6 +191,7 @@ export type InputValidExternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type QuoteSuccessDryContext = {
@@ -210,6 +217,7 @@ export type QuoteSuccessDryContext = {
   quote: QuoteDry;
   quoteStatus: 'success';
   transferStatus: { status: 'idle' };
+  confidentialMode: SwapConfidentialMode;
 };
 
 export type QuoteSuccessInternalContext = {
@@ -232,6 +240,7 @@ export type QuoteSuccessInternalContext = {
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
+  confidentialMode: SwapConfidentialMode;
   quote: QuoteReal | QuoteDepositAnyAmount;
   quoteStatus: 'success';
   transferStatus:
@@ -261,6 +270,7 @@ export type QuoteSuccessExternalContext = {
 
   quote: QuoteReal;
   quoteStatus: 'success';
+  confidentialMode: SwapConfidentialMode;
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }
     | { status: 'pending'; reason: string };
@@ -289,4 +299,5 @@ export type TransferSuccessContext = {
   quote: Quote | undefined;
   quoteStatus: 'idle' | 'error' | 'pending' | 'success';
   transferStatus: { status: 'success'; reason: never };
+  confidentialMode: SwapConfidentialMode;
 };

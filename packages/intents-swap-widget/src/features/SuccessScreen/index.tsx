@@ -220,10 +220,17 @@ export const SuccessScreen = ({
         <Banner
           multiline
           variant="warn"
-          message={t(
-            'transfer.success.statusUnresolved',
-            'Resolving the status of your swap is taking longer than usual. Please check the explorer or your wallet for the latest state.',
-          )}
+          message={
+            ctx.confidentialMode === 'confidential'
+              ? t(
+                  'transfer.success.statusUnresolvedConfidential',
+                  'Resolving the status of your swap is taking longer than usual. Please check your wallet for the latest state.',
+                )
+              : t(
+                  'transfer.success.statusUnresolved',
+                  'Resolving the status of your swap is taking longer than usual. Please check the explorer or your wallet for the latest state.',
+                )
+          }
         />
       )}
 
@@ -331,22 +338,24 @@ export const SuccessScreen = ({
       </Accordion>
 
       <div className="flex flex-col gap-sw-lg">
-        <Button
-          fluid
-          as="a"
-          size="lg"
-          target="_blank"
-          variant="primary"
-          iconPosition="tail"
-          href={transactionLink}
-          state={
-            transactionLink && effectiveStatus !== 'PENDING'
-              ? 'default'
-              : 'disabled'
-          }
-          icon={OpenInNew}>
-          {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
-        </Button>
+        {ctx.confidentialMode !== 'confidential' && (
+          <Button
+            fluid
+            as="a"
+            size="lg"
+            target="_blank"
+            variant="primary"
+            iconPosition="tail"
+            href={transactionLink}
+            state={
+              transactionLink && effectiveStatus !== 'PENDING'
+                ? 'default'
+                : 'disabled'
+            }
+            icon={OpenInNew}>
+            {t('transfer.success.action.viewOnExplorer', 'View in explorer')}
+          </Button>
+        )}
         <Button fluid size="lg" variant="outlined" onClick={handleClose}>
           {backButtonLabel ??
             t('transfer.success.action.backToSwap', 'Back to swap')}

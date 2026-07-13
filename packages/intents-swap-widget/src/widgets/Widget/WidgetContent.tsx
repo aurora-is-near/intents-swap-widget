@@ -1,24 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import clsx from 'clsx';
+import { BorderBeam } from 'border-beam';
+import { Fragment, useCallback, useState } from 'react';
+import { Eyeglasses2W700 as Eyeglasses } from '@material-symbols-svg/react-rounded/icons/eyeglasses-2';
 
 import { CloseButton } from '../../components/CloseButton';
-import { WidgetTab, WidgetTabs } from '../../components/WidgetTabs';
 import {
   Msg as SwapMsg,
   WidgetSwapContent,
   Props as WidgetSwapProps,
 } from '../WidgetSwap/WidgetSwapContent';
-import {
-  Msg as DepositMsg,
-  WidgetDepositContent,
-  Props as WidgetDepositProps,
-} from '../WidgetDeposit/WidgetDepositContent';
-import {
-  WidgetWithdrawContent,
-  Props as WidgetWithdrawProps,
-  Msg as WithdrawMsg,
-} from '../WidgetWithdraw/WidgetWithdrawContent';
 import {
   Msg as DepositModeMsg,
   WidgetDepositModeContent,
@@ -37,27 +29,22 @@ import { WidgetProfileButton } from './WidgetProfileButton';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
 import { TransactionHistory } from '../../features/TransactionHistory';
 import { BalancesUpdateProvider } from '../../context/BalancesUpdateContext';
-import { useUnsafeSnapshot } from '../../machine';
+import { fireEvent, useUnsafeSnapshot } from '../../machine';
 import { cn } from '../../utils/cn';
-import { useUnsupportedChain } from '../../hooks';
+
+type Msg = SwapMsg | DepositModeMsg;
 
 export type Props = Omit<
-  | WidgetSwapProps
-  | WidgetDepositProps
-  | WidgetWithdrawProps
-  | WidgetDepositModeProps,
+  WidgetSwapProps | WidgetDepositModeProps,
   'onMsg' | 'makeTransfer'
 > & {
-  defaultTab?: WidgetTab;
-  tabs?: WidgetTab[];
+  defaultMode: 'swap' | 'topup';
   onMsg?: (msg: Msg, widgetType: WidgetType) => void;
   makeTransfer?: (
     args: MakeTransferArgs,
     widgetType: WidgetType,
   ) => TransferResult | null | Promise<TransferResult | null>;
 };
-
-type Msg = SwapMsg | DepositMsg | WithdrawMsg | DepositModeMsg;
 
 const wrapMakeTransfer = (
   makeTransfer: Props['makeTransfer'],
@@ -76,36 +63,25 @@ const wrapMakeTransfer = (
 };
 
 export const WidgetContent = ({
-  defaultTab = 'swap',
-  tabs = ['swap'],
+  defaultMode = 'swap',
   makeTransfer,
   onMsg,
   ...restProps
 }: Props) => {
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<WidgetTab>(defaultTab);
   const [showHistory, setShowHistory] = useState(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [selectedHistoricalTransaction, setSelectedHistoricalTransaction] =
     useState<Transaction | FakeTransaction | null>(null);
 
-  const { clearUnsupportedChain } = useUnsupportedChain();
   const [pendingTransactionsCount, setPendingTransactionsCount] = useState(0);
   const {
-    enableAccountAbstraction,
+    apiKey,
     showProfileButton,
     showTransactionHistory,
-    apiKey,
+    confidentialMode: confidentialModeConfig,
   } = useConfig();
 
   const { ctx } = useUnsafeSnapshot();
-
-  const activeTab = tabs.includes(selectedTab) ? selectedTab : defaultTab;
-
-  const switchTab = (tab: WidgetTab) => {
-    setSelectedTab(tab);
-    setShowHistory(false);
-    clearUnsupportedChain();
-  };
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {
     if (msg.type === 'on_tokens_modal_toggled') {
@@ -119,17 +95,12 @@ export const WidgetContent = ({
     onMsg?.(msg, widgetType);
   };
 
-  useEffect(() => {
-    if (!tabs.includes(selectedTab)) {
-      setSelectedTab(defaultTab);
-    }
-  }, [tabs, defaultTab]);
-
-  useEffect(() => {
-    if (!enableAccountAbstraction) {
-      setSelectedTab('swap');
-    }
-  }, [enableAccountAbstraction]);
+  const handleConfidentialModeToggle = () => {
+    fireEvent(
+      'confidentialModeSet',
+      ctx.confidentialMode === 'public' ? 'confidential' : 'public',
+    );
+  };
 
   const onPendingTransactionsCountChange = useCallback((count: number) => {
     setPendingTransactionsCount(count);
@@ -143,20 +114,72 @@ export const WidgetContent = ({
       <>
         {showHeader && (
           <div className="mb-sw-xl h-[34px] w-full flex items-center">
-            {!!enableAccountAbstraction || tabs.includes('topup') ? (
-              <WidgetTabs
-                tabs={tabs}
-                isEnabled={ctx.quoteStatus !== 'pending'}
-                activeTab={showHistory ? null : activeTab}
-                onSelect={switchTab}
-              />
-            ) : (
-              <div className="w-full flex items-center">
-                {showHistory && (
-                  <CloseButton onClick={() => setShowHistory(false)} />
-                )}
-              </div>
-            )}
+            <div className="w-full flex items-center">
+              {(() => {
+                if (showHistory) {
+                  return <CloseButton onClick={() => setShowHistory(false)} />;
+                }
+
+                const Wrapper =
+                  ctx.confidentialMode === 'confidential'
+                    ? BorderBeam
+                    : Fragment;
+
+                if (confidentialModeConfig === 'user-choice') {
+                  return (
+                    <Wrapper>
+                      <div
+                        onClick={handleConfidentialModeToggle}
+                        className={clsx(
+                          'flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-lg pr-sw-xl py-sw-md border-1 cursor-pointer',
+                          {
+                            'border-sw-gray-700':
+                              ctx.confidentialMode === 'confidential',
+                            'border-sw-gray-800':
+                              ctx.confidentialMode !== 'confidential',
+                          },
+                        )}>
+                        <Eyeglasses
+                          size={17}
+                          className={clsx({
+                            'text-sw-gray-50':
+                              ctx.confidentialMode === 'confidential',
+                            'text-sw-gray-400':
+                              ctx.confidentialMode !== 'confidential',
+                          })}
+                        />
+                        <span
+                          className={clsx('text-sw-body-md select-none', {
+                            'text-sw-gray-50':
+                              ctx.confidentialMode === 'confidential',
+                            'text-sw-gray-400':
+                              ctx.confidentialMode !== 'confidential',
+                          })}>
+                          {ctx.confidentialMode === 'confidential'
+                            ? 'Confidential'
+                            : 'Not confidential'}
+                        </span>
+                      </div>
+                    </Wrapper>
+                  );
+                }
+
+                if (confidentialModeConfig === 'confidential') {
+                  return (
+                    <BorderBeam>
+                      <div className="flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-lg pr-sw-xl py-sw-md border-1 border-sw-gray-700">
+                        <Eyeglasses size={17} className="text-sw-gray-50" />
+                        <span className="text-sw-label-md text-sw-gray-50 select-none">
+                          Confidential
+                        </span>
+                      </div>
+                    </BorderBeam>
+                  );
+                }
+
+                return null;
+              })()}
+            </div>
             {!!showTransactionHistory && !!apiKey && (
               <WidgetHistoryButton
                 isActive={showHistory}
@@ -183,7 +206,7 @@ export const WidgetContent = ({
 
         {!showHistory &&
           (() => {
-            switch (activeTab) {
+            switch (defaultMode) {
               case 'swap': {
                 return (
                   <WidgetSwapContent
@@ -196,18 +219,6 @@ export const WidgetContent = ({
                 );
               }
 
-              case 'deposit': {
-                return (
-                  <WidgetDepositContent
-                    {...restProps}
-                    makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
-                    onMsg={(msg) => {
-                      handleMsg(msg, 'deposit');
-                    }}
-                  />
-                );
-              }
-
               case 'topup': {
                 return (
                   <WidgetDepositModeContent
@@ -215,18 +226,6 @@ export const WidgetContent = ({
                     makeTransfer={wrapMakeTransfer(makeTransfer, 'deposit')}
                     onMsg={(msg) => {
                       handleMsg(msg, 'deposit');
-                    }}
-                  />
-                );
-              }
-
-              case 'withdraw': {
-                return (
-                  <WidgetWithdrawContent
-                    {...restProps}
-                    makeTransfer={wrapMakeTransfer(makeTransfer, 'withdraw')}
-                    onMsg={(msg) => {
-                      handleMsg(msg, 'withdraw');
                     }}
                   />
                 );
