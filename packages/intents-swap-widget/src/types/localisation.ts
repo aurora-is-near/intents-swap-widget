@@ -15,6 +15,8 @@ export type LocalisationKeys =
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'
   | 'wallet.history.banner.noConfidentialTxs'
+  | 'wallet.confidentialMode.confidentialLabel'
+  | 'wallet.confidentialMode.publicLabel'
   // transfer
   | 'transfer.success.deposit.backToDeposit'
   | 'transfer.success.details.label'

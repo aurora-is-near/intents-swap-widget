@@ -5,6 +5,8 @@ import { BorderBeam } from 'border-beam';
 import { Fragment, useCallback, useState } from 'react';
 import { Eyeglasses2W700 as Eyeglasses } from '@material-symbols-svg/react-rounded/icons/eyeglasses-2';
 
+import { useTypedTranslation } from '@/localisation';
+
 import { CloseButton } from '../../components/CloseButton';
 import {
   Msg as SwapMsg,
@@ -82,6 +84,7 @@ export const WidgetContent = ({
   } = useConfig();
 
   const { ctx } = useUnsafeSnapshot();
+  const { t } = useTypedTranslation();
 
   const handleMsg = <T extends Msg>(msg: T, widgetType: WidgetType) => {
     if (msg.type === 'on_tokens_modal_toggled') {
@@ -156,8 +159,14 @@ export const WidgetContent = ({
                               ctx.confidentialMode !== 'confidential',
                           })}>
                           {ctx.confidentialMode === 'confidential'
-                            ? 'Confidential'
-                            : 'Not confidential'}
+                            ? t(
+                                'wallet.confidentialMode.confidentialLabel',
+                                'Confidential',
+                              )
+                            : t(
+                                'wallet.confidentialMode.publicLabel',
+                                'Not confidential',
+                              )}
                         </span>
                       </div>
                     </Wrapper>
@@ -170,7 +179,10 @@ export const WidgetContent = ({
                       <div className="flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-lg pr-sw-xl py-sw-md border-1 border-sw-gray-700">
                         <Eyeglasses size={17} className="text-sw-gray-50" />
                         <span className="text-sw-label-md text-sw-gray-50 select-none">
-                          Confidential
+                          {t(
+                            'wallet.confidentialMode.confidentialLabel',
+                            'Confidential',
+                          )}
                         </span>
                       </div>
                     </BorderBeam>

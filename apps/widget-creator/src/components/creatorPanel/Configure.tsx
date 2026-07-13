@@ -577,7 +577,7 @@ export function Configure() {
           </div>
         </ConfigSection>
 
-        <ConfigSection title="Wallet connection">
+        <ConfigSection title="Confidentiality">
           <div className="space-y-csw-2md">
             <a
               href="https://docs.intents.aurora.dev/confidential-intents"
