@@ -15,10 +15,16 @@ export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
       return;
     }
 
-    if (confidentialMode === 'confidential') {
-      fireEvent('confidentialModeSet', confidentialMode);
-    } else {
-      fireEvent('confidentialModeSet', 'public');
+    // In 'user-choice' mode the user controls confidentiality via the header
+    // toggle, so config must not force/override the machine context (otherwise
+    // remounting this effect — e.g. after opening/closing history — resets it).
+    if (confidentialMode === 'user-choice') {
+      return;
     }
+
+    fireEvent(
+      'confidentialModeSet',
+      confidentialMode === 'confidential' ? 'confidential' : 'public',
+    );
   }, [isEnabled, confidentialMode]);
 };

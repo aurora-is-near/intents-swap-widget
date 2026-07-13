@@ -192,16 +192,19 @@ export const useMakeTransfer = ({
       // the real one and that confuses people.
       const isResolvable = !(
         (isAuroraToken(ctx.sourceToken) || ctx.sourceToken.isIntent) &&
-        ctx.confidentialMode === 'confidential' &&
         isNearOnNear
       );
+
+      // Confidential swaps are never shown in the transaction history, so we
+      // skip the optimistic insert for them entirely.
+      const isConfidential = ctx.confidentialMode === 'confidential';
 
       // If the transfer is a 1Click deposit we insert an optimistic
       // transaction here for faster feedback. That transaction will be replaced
       // by the real one once the polling of the Explorer API picks it up. For
       // non-1Click transfers (e.g. direct NEAR transfers) that transaction will
       // never be resolved, so we do not optimistically add it to the history.
-      if (transferResult.isOneClickDeposit && isResolvable) {
+      if (transferResult.isOneClickDeposit && isResolvable && !isConfidential) {
         // Mirror the recipient/refundTo the quote sent to 1Click so the
         // optimistic record matches what the Explorer API will eventually
         // echo back. The wallet always appears in `senders` so the
