@@ -234,12 +234,15 @@ export const useMakeQuoteTransfer = ({
 
       // Proactively notify 1Click of the deposit so its indexer doesn't have
       // to discover the tx on its own. This speeds up status resolution.
-      void OneClickService.submitDepositTx({
-        txHash: depositResult.hash,
-        depositAddress: ctx.quote.depositAddress,
-      }).catch((e) => {
-        logger.warn('Failed to submit deposit tx to 1Click', e);
-      });
+      // Fails with 500 for confidential intents.
+      if (ctx.confidentialMode !== 'confidential') {
+        void OneClickService.submitDepositTx({
+          txHash: depositResult.hash,
+          depositAddress: ctx.quote.depositAddress,
+        }).catch((e) => {
+          logger.warn('Failed to submit deposit tx to 1Click', e);
+        });
+      }
 
       return {
         hash: depositResult.hash,
