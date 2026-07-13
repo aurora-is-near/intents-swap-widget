@@ -1,10 +1,10 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import {
-  GetExecutionStatusResponse,
-  OneClickService,
-} from '@defuse-protocol/one-click-sdk-typescript';
+import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
+import { AxiosResponse } from 'axios';
 
 import { logger } from '@/logger';
+import { useConfig } from '@/config';
+import { feeServiceApi } from '@/network';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -32,6 +32,8 @@ export const useOneClickExecutionStatus = ({
   depositMemo,
   disabled,
 }: Options = {}): UseQueryResult<ExecutionStatus> => {
+  const { apiKey } = useConfig();
+
   return useQuery({
     queryKey: ['oneClickExecutionStatus', depositAddress],
     queryFn: async (): Promise<ExecutionStatus> => {
@@ -41,12 +43,11 @@ export const useOneClickExecutionStatus = ({
         );
       }
 
-      let result: GetExecutionStatusResponse;
+      let result: AxiosResponse<GetExecutionStatusResponse>;
 
       try {
-        result = await OneClickService.getExecutionStatus(
-          depositAddress,
-          depositMemo,
+        result = await feeServiceApi.get<GetExecutionStatusResponse>(
+          `/api/status/${apiKey ?? ''}?depositAddress=${depositAddress}${depositMemo ? `&depositMemo=${depositMemo}` : ''}`,
         );
       } catch (error) {
         logger.error('Error polling 1Click execution status', error);
@@ -55,11 +56,11 @@ export const useOneClickExecutionStatus = ({
       }
 
       return {
-        ...result,
+        ...result.data,
         swapDetails: {
-          ...result.swapDetails,
-          amount: result.swapDetails.amountIn,
-          amountUsd: result.swapDetails.amountInUsd,
+          ...result.data.swapDetails,
+          amount: result.data.swapDetails.amountIn,
+          amountUsd: result.data.swapDetails.amountInUsd,
         },
       };
     },

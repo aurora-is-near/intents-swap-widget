@@ -134,6 +134,7 @@ export const WidgetDepositModeContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'syncConfig',
       'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',

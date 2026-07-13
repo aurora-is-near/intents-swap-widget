@@ -82,6 +82,7 @@ export const WidgetWithdrawContent = ({
   useStoreSideEffects({
     debug: isDebug(),
     listenTo: [
+      'syncConfig',
       'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',

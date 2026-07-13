@@ -48,6 +48,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   showTransactionHistory: true,
   enableAutoTokensSwitching: true,
   chainsOrder: DEFAULT_CHAINS_ORDER,
+  confidentialMode: 'public',
 
   filterTokens: (tkn: Token) =>
     !DISABLED_TOKENS.includes(tkn.symbol.toLocaleLowerCase()),

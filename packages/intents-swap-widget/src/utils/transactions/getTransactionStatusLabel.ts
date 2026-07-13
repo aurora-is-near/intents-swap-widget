@@ -59,7 +59,7 @@ export const getTransactionStatusLabel = (
       };
     case 'UNRESOLVED':
       return {
-        label: composeLabel('Unresolved', transactionType),
+        label: composeLabel('In progress', transactionType),
         colorClassName: 'text-sw-status-warning',
         Icon: InfoIcon,
       };

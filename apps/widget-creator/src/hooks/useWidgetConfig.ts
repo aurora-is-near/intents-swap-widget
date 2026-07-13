@@ -37,6 +37,7 @@ export const useWidgetConfig = () => {
           : DEFAULT_APP_KEY,
       connectedWallets: {},
       slippageTolerance: 100,
+      confidentialMode: state.confidentialMode,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableAutoTokensSwitching: state.widgetMode !== 'deposit',
       chainsOrder: state.selectedNetworks,

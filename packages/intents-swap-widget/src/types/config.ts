@@ -1,7 +1,8 @@
 import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
+
+import { FetchQuoteOptions, SwapConfidentialMode } from './quote';
 import { Chains, ChainsFilters } from './chain';
 import { SimpleToken, Token } from './token';
-import { FetchQuoteOptions } from './quote';
 import { Plugins } from './connectors';
 import { Providers } from './providers';
 
@@ -49,6 +50,7 @@ export type WidgetConfig = {
   slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
   refetchQuoteInterval?: number;
+  confidentialMode?: SwapConfidentialMode | 'user-choice';
 
   appFees?: {
     recipient: string;

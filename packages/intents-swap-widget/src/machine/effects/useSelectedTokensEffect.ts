@@ -42,10 +42,14 @@ export const useSelectedTokensEffect = ({
   const { tokens } = useTokens();
   const { ctx, state } = useUnsafeSnapshot();
   const { intentBalances } = useIntentsBalance();
-  const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { intentsAccountType } = useIntentsAccountType();
-  const { enableAccountAbstraction, chainsFilter } = useConfig();
   const { supportedChains } = useSupportedChains();
+  const {
+    chainsFilter,
+    defaultSourceToken,
+    defaultTargetToken,
+    enableAccountAbstraction,
+  } = useConfig();
 
   // Load default source and target tokens if they are not already set and we
   // are not specifying a default via the config.

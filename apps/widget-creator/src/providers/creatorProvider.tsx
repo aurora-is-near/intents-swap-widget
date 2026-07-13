@@ -20,6 +20,8 @@ import {
 type CreatorState = {
   // Configure - Wallet connection
   userAuthMode: 'standalone' | 'dapp';
+  // Configure - Confidentiality
+  confidentialMode: 'public' | 'confidential' | 'user-choice';
   // Configure - Widget mode
   widgetMode: 'swap' | 'deposit';
   depositModeReceiverAddress: string;
@@ -103,6 +105,7 @@ const initialState: CreatorState = {
   accountAbstractionMode: 'disabled',
   selectedNetworks: CHAINS.map((chain) => chain.id),
   selectedTokenSymbols: [],
+  confidentialMode: 'public',
   enableSellToken: true,
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
   enableBuyToken: false,
@@ -129,6 +132,11 @@ const initialState: CreatorState = {
 type Action =
   // Configure - Wallet connection
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
+  // Configure - Confidentiality
+  | {
+      type: 'SET_CONFIDENTIAL_MODE';
+      payload: 'public' | 'confidential' | 'user-choice';
+    }
   // Configure - Widget mode
   | { type: 'SET_WIDGET_MODE'; payload: 'swap' | 'deposit' }
   | { type: 'SET_DEPOSIT_MODE_RECEIVER_ADDRESS'; payload: string }
@@ -192,6 +200,13 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return {
         ...state,
         userAuthMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
+
+    case 'SET_CONFIDENTIAL_MODE':
+      return {
+        ...state,
+        confidentialMode: action.payload,
         isConfigurationSyncedToRemote: false,
       };
 

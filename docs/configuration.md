@@ -464,3 +464,8 @@ Enables live swap conversion preview in the tokens list on hover.
 Allows you to pass extra attributes for each of the 1Click quote request.
 Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`.
 More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
+
+### `confidentialMode`
+
+Allows you to configure how the widget supports [confidential intents](https://docs.intents.aurora.dev/confidential-intents).
+Allowed values: `public` - no confidential swaps, `confidential` - all swaps are confidential, `user-choice` - user may toggle confidential mode by themselves.

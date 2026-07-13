@@ -2,14 +2,17 @@ import { VList } from 'virtua';
 import { useEffect, useMemo } from 'react';
 import { ErrorFillW700 as ErrorIcon } from '@material-symbols-svg/react-rounded/icons/error';
 
+import { Hr } from '@/components/Hr';
+import { Banner } from '@/components/Banner';
 import { Button } from '@/components/Button';
+import { useUnsafeSnapshot } from '@/machine';
+import { useTypedTranslation } from '@/localisation';
 import { useTokens, useTransactions, useWalletConnection } from '@/hooks';
+
 import { TransactionCard } from './TransactionCard';
 import { TransactionDetails } from './TransactionDetails';
 import { TransactionHistorySkeleton } from './TransactionHistorySkeleton';
 import { TransactionHistoryEmpty } from './TransactionHistoryEmpty';
-import { FakeTransaction, Transaction } from '../../types';
-
 import {
   LIST_CONTAINER_ID,
   MAX_LIST_VIEW_AREA_HEIGHT,
@@ -17,6 +20,8 @@ import {
   TX_ITEM_HEIGHT,
 } from './constants';
 import { useTransactionHistoryListHeight } from './useTransactionHistoryListHeight';
+
+import type { FakeTransaction, Transaction } from '../../types';
 
 type Props = {
   isVisible: boolean;
@@ -31,7 +36,9 @@ export const TransactionHistory = ({
   selectedTransaction,
   onSelectTransaction,
 }: Props) => {
+  const { ctx } = useUnsafeSnapshot();
   const { isConnected } = useWalletConnection();
+  const { t } = useTypedTranslation();
 
   const { tokens, isLoading: isLoadingTokens } = useTokens();
   const {
@@ -113,6 +120,18 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col gap-sw-md w-full">
+      {ctx.confidentialMode === 'confidential' && (
+        <div className="flex flex-col gap-sw-xl pb-sw-xl">
+          <Banner
+            variant="warn"
+            message={t(
+              'wallet.history.banner.noConfidentialTxs',
+              'Confidential swaps are not displayed in transactions history',
+            )}
+          />
+          <Hr />
+        </div>
+      )}
       <VList
         id={LIST_CONTAINER_ID}
         itemSize={TX_ITEM_HEIGHT}

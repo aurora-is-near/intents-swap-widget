@@ -41,6 +41,10 @@ import {
   unsupportedChainSet,
   type UnsupportedChainSetPayload,
 } from './unsupportedChainSet';
+import {
+  confidentialModeSet,
+  type ConfidentialModeSetPayload,
+} from './confidentialModeSet';
 
 export type TradeEvents = {
   reset: ResetPayload;
@@ -63,6 +67,7 @@ export type TradeEvents = {
   walletAddressSet: WalletAddressSetPayload;
   setInputsValidating: InputsValidatingPayload;
   unsupportedChainSet: UnsupportedChainSetPayload;
+  confidentialModeSet: ConfidentialModeSetPayload;
 };
 
 const onEvent = <E extends keyof TradeEvents>(
@@ -92,6 +97,7 @@ export const registerEvents = () => {
   onEvent('quoteReset', quoteReset);
   onEvent('reset', reset);
   onEvent('unsupportedChainSet', unsupportedChainSet);
+  onEvent('confidentialModeSet', confidentialModeSet);
 
   // use with caution since these just return a boolean flag and set
   // a specific error to the context

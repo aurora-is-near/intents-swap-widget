@@ -10,6 +10,7 @@ import { logger } from '@/logger';
 import { useBalancesUpdateEffect } from './useBalancesUpdateEffect';
 import { useSetTokenBalanceEffect } from './useSetTokenBalanceEffect';
 import { useSetTokenIntentsTargetEffect } from './useSetTokenIntentsTargetEffect';
+import { useSyncFromConfigEffect } from './useSyncFromConfigEffect';
 import { useWalletConnEffect } from './useWalletConnEffect';
 import {
   type Props as PropsMakeQuote,
@@ -37,6 +38,7 @@ type EffectDefaultTokens = [
 ];
 
 type Effect =
+  | 'syncConfig'
   | 'updateBalances'
   | 'checkWalletConnection'
   | 'setSourceTokenBalance'
@@ -80,6 +82,8 @@ export const useStoreSideEffects = ({ listenTo, debug = false }: Args) => {
     (item): item is EffectMakeQuote =>
       Array.isArray(item) && item[0] === 'makeQuote',
   );
+
+  useSyncFromConfigEffect({ isEnabled: listenTo.includes('syncConfig') });
 
   useAlchemyBalanceEffect({
     isEnabled: !!alchemyBalancesListener,
