@@ -86,10 +86,7 @@ export function WidgetContent() {
         environment: APP_ENV,
       }}
       theme={themeConfig}>
-      <Widget
-        defaultTab={state.widgetMode === 'deposit' ? 'topup' : 'swap'}
-        tabs={state.widgetMode === 'deposit' ? ['topup'] : ['swap']}
-      />
+      <Widget defaultMode={state.widgetMode === 'deposit' ? 'topup' : 'swap'} />
       {exampleBanner && (
         <div className="flex justify-center">
           <Banner

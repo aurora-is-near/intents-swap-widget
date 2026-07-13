@@ -1,7 +1,10 @@
+import { Fragment } from 'react';
+import { BorderBeam } from 'border-beam';
 import type { ReactNode } from 'react';
 
 interface RadioButtonProps {
   label: string;
+  isBeamed?: boolean;
   description?: ReactNode;
   isSelected: boolean;
   onChange: () => void;
@@ -12,40 +15,45 @@ export function RadioButton({
   label,
   description,
   isSelected,
+  isBeamed,
   onChange,
   disabled = false,
 }: RadioButtonProps) {
-  return (
-    <button
-      onClick={onChange}
-      disabled={disabled}
-      className={`w-full flex gap-csw-lg items-base p-csw-lg rounded-csw-md border transition-colors group hover:border-csw-gray-600 ${
-        isSelected
-          ? 'bg-csw-gray-800 border-csw-gray-600'
-          : 'border-csw-gray-700 bg-transparent'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-      {/* Radio circle */}
-      <div
-        className={`w-[18px] h-[18px] bg-transparent border-[2px] rounded-full flex items-center justify-center group-hover:border-csw-gray-50 ${
-          isSelected ? 'border-csw-gray-50' : 'border-csw-gray-300'
-        }`}>
-        {isSelected && (
-          <div className="w-[10px] h-[10px] bg-csw-gray-50 rounded-full" />
-        )}
-      </div>
+  const Wrapper = isBeamed ? BorderBeam : Fragment;
 
-      {/* Content */}
-      <div className="flex flex-col gap-csw-xs text-left flex-1 min-w-0">
-        <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-50 whitespace-nowrap">
-          {label}
-        </p>
-        {description ? (
-          <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
-            {description}
+  return (
+    <Wrapper>
+      <button
+        onClick={onChange}
+        disabled={disabled}
+        className={`w-full flex gap-csw-lg items-base p-csw-lg rounded-csw-md border transition-colors group hover:border-csw-gray-600 ${
+          isSelected
+            ? 'bg-csw-gray-800 border-csw-gray-600'
+            : 'border-csw-gray-700 bg-transparent'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+        {/* Radio circle */}
+        <div
+          className={`w-[18px] h-[18px] bg-transparent border-[2px] rounded-full flex items-center justify-center group-hover:border-csw-gray-50 ${
+            isSelected ? 'border-csw-gray-50' : 'border-csw-gray-300'
+          }`}>
+          {isSelected && (
+            <div className="w-[10px] h-[10px] bg-csw-gray-50 rounded-full" />
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col gap-csw-xs text-left flex-1 min-w-0">
+          <p className="font-semibold text-sm leading-4 tracking-[-0.4px] text-csw-gray-50 whitespace-nowrap">
+            {label}
           </p>
-        ) : null}
-      </div>
-    </button>
+          {description ? (
+            <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </button>
+    </Wrapper>
   );
 }
 

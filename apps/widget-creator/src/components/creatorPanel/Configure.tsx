@@ -579,6 +579,52 @@ export function Configure() {
 
         <ConfigSection title="Wallet connection">
           <div className="space-y-csw-2md">
+            <a
+              href="https://docs.intents.aurora.dev/confidential-intents"
+              target="_blank"
+              className="flex items-center gap-csw-xs text-sm leading-4 tracking-[-0.4px] font-semibold underline text-csw-gray-300 hover:text-csw-gray-300">
+              <span>Check docs for how it works</span>
+              <ExternalLink className="w-csw-xl h-csw-xl text-csw-gray-300 font-semibold" />
+            </a>
+            <RadioButton
+              label="Public"
+              description="Traditional swaps. History is transparent and available with explorers."
+              isSelected={state.confidentialMode === 'public'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_CONFIDENTIAL_MODE',
+                  payload: 'public',
+                })
+              }
+            />
+            <RadioButton
+              label="Confidential"
+              isBeamed
+              description="Every cross-chain swap normally leaves a trail. Confidential Intents hides it."
+              isSelected={state.confidentialMode === 'confidential'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_CONFIDENTIAL_MODE',
+                  payload: 'confidential',
+                })
+              }
+            />
+            <RadioButton
+              label="User choice"
+              description="Adds a toggle to the widget that allows a user to choose between confidential and public swaps."
+              isSelected={state.confidentialMode === 'user-choice'}
+              onChange={() =>
+                dispatch({
+                  type: 'SET_CONFIDENTIAL_MODE',
+                  payload: 'user-choice',
+                })
+              }
+            />
+          </div>
+        </ConfigSection>
+
+        <ConfigSection title="Wallet connection">
+          <div className="space-y-csw-2md">
             <RadioButton
               label="Standalone"
               description="Use the built-in wallet connector."
