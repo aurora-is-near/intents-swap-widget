@@ -158,6 +158,41 @@ export const useMakeQuoteEffect = ({
     void run({ isRefetch: false });
   }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
 
+  // refetch a quote on confidential mode toggle
+  useEffect(() => {
+    if (!shouldRun) {
+      return;
+    }
+
+    const isValidState = guardStates(ctx, [
+      'quote_success_dry',
+      'quote_success_internal',
+      'quote_success_external',
+    ]);
+
+    if (!isValidState) {
+      return;
+    }
+
+    const isDryRun = guardStates(ctx, ['quote_success_dry']);
+    const isInternalQuote = guardStates(ctx, ['quote_success_internal']);
+    const isExternalQuote = guardStates(ctx, ['quote_success_external']);
+
+    fireEvent('quoteReset', null);
+    fireEvent('transferSetStatus', { status: 'idle' });
+    fireEvent('setInputsValidating', false);
+
+    if (isDryRun) {
+      moveTo('input_valid_dry');
+    } else if (isInternalQuote) {
+      moveTo('input_valid_internal');
+    } else if (isExternalQuote) {
+      moveTo('input_valid_external');
+    }
+
+    void run({ isRefetch: true });
+  }, [ctx.confidentialMode]);
+
   // Refetch if an interval is set and a quote was successful
   useEffect(() => {
     const cleanup = () => {

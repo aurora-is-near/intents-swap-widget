@@ -1,5 +1,6 @@
 import { Trans } from 'react-i18next';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
+import type { FC } from 'react';
 
 import { useConfig } from '@/config';
 import { logger } from '@/logger';
@@ -255,7 +256,7 @@ const useGetErrorButton = (ctx: Context) => {
   }
 };
 
-const SubmitButtonError = () => {
+const SubmitButtonError: FC = () => {
   const { ctx } = useUnsafeSnapshot();
 
   return useGetErrorButton(ctx) ?? null;
