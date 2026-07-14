@@ -332,7 +332,7 @@ const SubmitButtonBase = (props: Props) => {
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
-        {t('submit.disabled.selectTokenToReceive', 'Select token to deposit')}
+        {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
       </Button>
     );
   }
@@ -466,6 +466,14 @@ const SubmitButtonWithWallet = (props: Props) => {
       return (
         <Button {...commonBtnProps} state="disabled">
           {t('submit.disabled.selectTokenToDeposit', 'Select token to deposit')}
+        </Button>
+      );
+    }
+
+    if (!ctx.targetToken) {
+      return (
+        <Button {...commonBtnProps} state="disabled">
+          {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
         </Button>
       );
     }

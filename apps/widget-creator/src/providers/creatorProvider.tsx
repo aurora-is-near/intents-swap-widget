@@ -25,6 +25,7 @@ type CreatorState = {
   // Configure - Widget mode
   widgetMode: 'swap' | 'deposit';
   depositModeReceiverAddress: string;
+  allowSwapWithExternalWallet: boolean;
   // Configure - Account abstraction
   accountAbstractionMode: 'enabled' | 'disabled';
   // Configure - Networks
@@ -75,6 +76,8 @@ const getCreatorStateFromRemoteWidgetConfig = (
     apiKey: apiKey ?? state.apiKey,
     widgetMode: isDepositMode ? 'deposit' : 'swap',
     depositModeReceiverAddress: config.sendAddress ?? '',
+    allowSwapWithExternalWallet: config.allowSwapWithExternalWallet ?? true,
+    confidentialMode: config.confidentialMode ?? 'public',
     accountAbstractionMode:
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
     selectedNetworks:
@@ -103,6 +106,7 @@ const initialState: CreatorState = {
   widgetMode: 'swap',
   userAuthMode: 'standalone',
   accountAbstractionMode: 'disabled',
+  allowSwapWithExternalWallet: true,
   selectedNetworks: CHAINS.map((chain) => chain.id),
   selectedTokenSymbols: [],
   confidentialMode: 'public',
@@ -132,6 +136,7 @@ const initialState: CreatorState = {
 type Action =
   // Configure - Wallet connection
   | { type: 'SET_USER_AUTH_MODE'; payload: 'standalone' | 'dapp' }
+  | { type: 'SET_ALLOW_SWAP_WITH_QR'; payload: boolean }
   // Configure - Confidentiality
   | {
       type: 'SET_CONFIDENTIAL_MODE';
@@ -207,6 +212,13 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
       return {
         ...state,
         confidentialMode: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
+
+    case 'SET_ALLOW_SWAP_WITH_QR':
+      return {
+        ...state,
+        allowSwapWithExternalWallet: action.payload,
         isConfigurationSyncedToRemote: false,
       };
 

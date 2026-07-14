@@ -50,7 +50,9 @@ type SerializableWidgetConfigKeys =
   | 'lockSwapDirection'
   | 'showTransactionHistory'
   | 'showConversionPreview'
-  | 'extraQuoteParameters';
+  | 'extraQuoteParameters'
+  | 'confidentialMode'
+  | 'allowSwapWithExternalWallet';
 
 export type SerializableWidgetConfig = Pick<
   WidgetConfig,

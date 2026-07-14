@@ -8,7 +8,7 @@ import type { ListenerProps } from './types';
 export type Props = ListenerProps;
 
 export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
-  const { confidentialMode } = useConfig();
+  const { confidentialMode, allowSwapWithExternalWallet } = useConfig();
 
   useEffect(() => {
     if (!isEnabled) {
@@ -27,4 +27,13 @@ export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
       confidentialMode === 'confidential' ? 'confidential' : 'public',
     );
   }, [isEnabled, confidentialMode]);
+
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
+    // always fallback to non QR code flow when config is updated
+    fireEvent('depositTypeSet', { isExternal: false });
+  }, [isEnabled, allowSwapWithExternalWallet]);
 };

@@ -42,7 +42,9 @@ const DISABLED_TOKENS = [
 const DEFAULT_CONFIG: WidgetConfig = {
   environment: 'production',
   slippageTolerance: 100, // 1%
+
   connectedWallets: {},
+  allowSwapWithExternalWallet: true,
 
   showConversionPreview: true,
   showTransactionHistory: true,

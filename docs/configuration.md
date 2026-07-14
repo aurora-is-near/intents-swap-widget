@@ -469,3 +469,7 @@ More information: [1Click API Documentation](https://docs.near-intents.org/api-r
 
 Allows you to configure how the widget supports [confidential intents](https://docs.intents.aurora.dev/confidential-intents).
 Allowed values: `public` - no confidential swaps, `confidential` - all swaps are confidential, `user-choice` - user may toggle confidential mode by themselves.
+
+### `allowSwapWithExternalWallet`
+
+Adds a block to the widget that allows to toggle between swaps from a connected wallet and swaps with external wallet using QR code.

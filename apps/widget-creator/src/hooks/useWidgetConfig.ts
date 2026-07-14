@@ -38,6 +38,7 @@ export const useWidgetConfig = () => {
       connectedWallets: {},
       slippageTolerance: 100,
       confidentialMode: state.confidentialMode,
+      allowSwapWithExternalWallet: state.allowSwapWithExternalWallet,
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableAutoTokensSwitching: state.widgetMode !== 'deposit',
       chainsOrder: state.selectedNetworks,

@@ -180,7 +180,7 @@ export function Configure() {
                 dispatch({ type: 'SET_WIDGET_MODE', payload: 'deposit' })
               }
             />
-            {state.widgetMode === 'deposit' && (
+            {state.widgetMode === 'deposit' ? (
               <>
                 <div className="my-csw-2xl border-t border-csw-gray-800" />
                 <div className="flex items-center justify-between">
@@ -290,6 +290,20 @@ export function Configure() {
                       description={`Make sure that address exists on ${state.defaultBuyToken?.blockchain.toUpperCase()} chain and is correct to avoid losing users funds.`}
                     />
                   )}
+              </>
+            ) : (
+              <>
+                <div className="my-csw-2xl border-t border-csw-gray-800" />
+                <Toggle
+                  label="Allow swap with QR code"
+                  isEnabled={state.allowSwapWithExternalWallet}
+                  onChange={(enabled) =>
+                    dispatch({
+                      type: 'SET_ALLOW_SWAP_WITH_QR',
+                      payload: enabled,
+                    })
+                  }
+                />
               </>
             )}
           </div>

@@ -7,11 +7,11 @@ import { Hr } from '@/components/Hr';
 type StepProps = PropsWithChildren<{
   stepNumber?: number;
   title: ReactNode;
-  description: ReactNode;
+  description?: ReactNode;
   asideElement?: ReactNode;
 }>;
 
-type StepElement = ReactElement<StepProps, typeof Step>;
+type StepElement = ReactElement<StepProps, typeof Step> | null;
 
 const StepWrapper = ({ children }: PropsWithChildren) => {
   return <div className="flex flex-col gap-y-sw-xl">{children}</div>;
@@ -34,9 +34,11 @@ const Step = ({
         </span>
         <div className="flex flex-col gap-sw-xs mr-auto ml-sw-lg">
           <span className="text-sw-label-md text-sw-gray-50">{title}</span>
-          <span className="text-sw-label-sm text-sw-gray-200">
-            {description}
-          </span>
+          {!!description && (
+            <span className="text-sw-label-sm text-sw-gray-200">
+              {description}
+            </span>
+          )}
         </div>
 
         {asideElement}

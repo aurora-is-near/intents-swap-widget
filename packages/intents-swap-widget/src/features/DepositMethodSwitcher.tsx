@@ -22,15 +22,20 @@ import type { TransferResult } from '@/types/transfer';
 
 type Msg =
   | { type: 'on_transaction_received' }
-  | { type: 'on_toggle_tokens_modal'; isOpen: boolean }
-  | { type: 'on_successful_transfer'; transferResult: TransferResult };
+  | { type: 'on_successful_transfer'; transferResult: TransferResult }
+  | {
+      type: 'on_toggle_tokens_modal';
+      token: 'source' | 'target';
+      isOpen: boolean;
+    };
 
 type Props = {
+  mode: 'deposit' | 'swap';
   className?: string;
   onMsg: (msg: Msg) => void;
 };
 
-const ExtendedContent = ({ onMsg }: Props) => {
+const ExtendedContent = ({ mode, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { minDepositTokenAmount } = useComputedSnapshot();
@@ -68,11 +73,35 @@ const ExtendedContent = ({ onMsg }: Props) => {
           <TokenSelectButton
             token={ctx.sourceToken}
             onClick={() =>
-              onMsg({ type: 'on_toggle_tokens_modal', isOpen: true })
+              onMsg({
+                type: 'on_toggle_tokens_modal',
+                isOpen: true,
+                token: 'source',
+              })
             }
           />
         }
       />
+      {mode === 'swap' ? (
+        <Steps.Step
+          title={t(
+            'deposit.external.stepSelectReceiveToken.title',
+            'Select token to receive',
+          )}
+          asideElement={
+            <TokenSelectButton
+              token={ctx.targetToken}
+              onClick={() =>
+                onMsg({
+                  type: 'on_toggle_tokens_modal',
+                  isOpen: true,
+                  token: 'target',
+                })
+              }
+            />
+          }
+        />
+      ) : null}
       <Steps.Step
         title={`Send ${ctx.sourceToken ? `${ctx.sourceToken?.symbol} ` : ''}to address`}
         description={
@@ -114,7 +143,7 @@ const ExtendedContent = ({ onMsg }: Props) => {
   );
 };
 
-export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
+export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
 
@@ -157,7 +186,12 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
       <header className="gap-sw-md flex items-center justify-between">
         <QrCodeIcon size={16} className="text-sw-gray-200" />
         <span className="text-sw-label-md text-sw-gray-200">
-          {t('deposit.method.switcher.label', 'Deposit from external wallet')}
+          {mode === 'deposit'
+            ? t('deposit.method.switcher.label', 'Deposit from external wallet')
+            : t(
+                'deposit.method.switcher.labelSwap',
+                'Swap from external wallet',
+              )}
         </span>
         <Tooltip
           className="mr-auto"
@@ -192,7 +226,7 @@ export const DepositMethodSwitcher = ({ className, onMsg }: Props) => {
       )}
 
       {ctx.isDepositFromExternalWallet && !isVirtualChainSource && (
-        <ExtendedContent onMsg={onMsg} />
+        <ExtendedContent mode={mode} onMsg={onMsg} />
       )}
     </Card>
   );

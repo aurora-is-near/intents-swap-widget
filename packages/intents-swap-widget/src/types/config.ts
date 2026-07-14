@@ -38,6 +38,7 @@ export type WidgetConfig = {
   plugins?: Plugins;
 
   // Connected wallet
+  allowSwapWithExternalWallet?: boolean;
   walletSupportedChains?: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
   onWalletSignout?: (walletType?: IntentsAccountType) => void;

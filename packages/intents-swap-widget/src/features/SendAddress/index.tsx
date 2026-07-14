@@ -61,7 +61,7 @@ export const SendAddress = ({ error, className }: Props) => {
   return (
     <Card className={cn('flex flex-col', className)}>
       <h5 className="text-sw-label-md text-sw-gray-50 pb-sw-md">
-        {t('sendAddress.label', 'Send to')}
+        {t('sendAddress.label', 'Receive in')}
       </h5>
       <Input
         fontSize="sm"

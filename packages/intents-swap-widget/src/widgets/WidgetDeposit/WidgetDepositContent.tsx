@@ -275,6 +275,7 @@ export const WidgetDepositContent = ({
           )}
 
           <DepositMethodSwitcher
+            mode="deposit"
             onMsg={(msg) => {
               switch (msg.type) {
                 case 'on_toggle_tokens_modal':

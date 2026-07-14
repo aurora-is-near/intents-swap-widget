@@ -24,6 +24,7 @@ import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
+import { DepositMethodSwitcher } from '@/features/DepositMethodSwitcher';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
 
 import { useTypedTranslation } from '../../localisation';
@@ -48,6 +49,7 @@ export const WidgetSwapContent = ({
   const { ctx } = useUnsafeSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const {
+    allowSwapWithExternalWallet,
     chainsFilter: customChainsFilter,
     enableAccountAbstraction,
     alchemyApiKey,
@@ -120,14 +122,22 @@ export const WidgetSwapContent = ({
     return {
       source: {
         intents: enableAccountAbstraction ? enabledIntentsFilter : 'none',
-        external: ctx.walletAddress ? 'wallet-supported' : 'all',
+        external:
+          ctx.walletAddress && !ctx.isDepositFromExternalWallet
+            ? 'wallet-supported'
+            : 'all',
       },
       target: {
         intents: enableAccountAbstraction ? 'all' : 'none',
         external: 'all',
       },
     };
-  }, [customChainsFilter, enableAccountAbstraction, ctx.walletAddress]);
+  }, [
+    customChainsFilter,
+    enableAccountAbstraction,
+    ctx.walletAddress,
+    ctx.isDepositFromExternalWallet,
+  ]);
 
   if (!!isLoading || isLoadingTokens) {
     return <WidgetSwapSkeleton />;
@@ -223,49 +233,74 @@ export const WidgetSwapContent = ({
 
       return (
         <div className="gap-sw-lg flex flex-col w-full">
-          <div className="gap-[10px] relative flex flex-col">
-            <TokenInput.Source
-              heading={t('tokenInput.heading.source.swap', 'Sell')}
-              isChanging={lastChangedInput === 'source'}
+          {allowSwapWithExternalWallet && (
+            <DepositMethodSwitcher
+              mode="swap"
+              className="py-sw-lg"
               onMsg={(msg) => {
                 switch (msg.type) {
-                  case 'on_select_token':
-                    onChangeToken('source', msg.token);
+                  case 'on_toggle_tokens_modal':
+                    updateTokenModalState(msg.isOpen ? msg.token : 'none');
                     break;
-                  case 'on_change_amount':
-                    onChangeAmount('source', msg.amount);
+                  case 'on_successful_transfer':
+                    setTransferResult(msg.transferResult);
                     break;
-                  case 'on_click_select_token':
-                    updateTokenModalState('source');
+                  case 'on_transaction_received':
+                    // Transaction received, no action needed
                     break;
                   default:
                     notReachable(msg);
                 }
               }}
             />
+          )}
 
-            <SwapDirectionSwitcher />
+          {(!allowSwapWithExternalWallet ||
+            !ctx.isDepositFromExternalWallet) && (
+            <div className="gap-[10px] relative flex flex-col">
+              <TokenInput.Source
+                heading={t('tokenInput.heading.source.swap', 'Sell')}
+                isChanging={lastChangedInput === 'source'}
+                onMsg={(msg) => {
+                  switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('source', msg.token);
+                      break;
+                    case 'on_change_amount':
+                      onChangeAmount('source', msg.amount);
+                      break;
+                    case 'on_click_select_token':
+                      updateTokenModalState('source');
+                      break;
+                    default:
+                      notReachable(msg);
+                  }
+                }}
+              />
 
-            <TokenInput.Target
-              heading={t('tokenInput.heading.target.swap', 'Buy')}
-              isChanging={lastChangedInput === 'target'}
-              onMsg={(msg) => {
-                switch (msg.type) {
-                  case 'on_select_token':
-                    onChangeToken('target', msg.token);
-                    break;
-                  case 'on_change_amount':
-                    onChangeAmount('target', msg.amount);
-                    break;
-                  case 'on_click_select_token':
-                    updateTokenModalState('target');
-                    break;
-                  default:
-                    notReachable(msg);
-                }
-              }}
-            />
-          </div>
+              <SwapDirectionSwitcher />
+
+              <TokenInput.Target
+                heading={t('tokenInput.heading.target.swap', 'Buy')}
+                isChanging={lastChangedInput === 'target'}
+                onMsg={(msg) => {
+                  switch (msg.type) {
+                    case 'on_select_token':
+                      onChangeToken('target', msg.token);
+                      break;
+                    case 'on_change_amount':
+                      onChangeAmount('target', msg.amount);
+                      break;
+                    case 'on_click_select_token':
+                      updateTokenModalState('target');
+                      break;
+                    default:
+                      notReachable(msg);
+                  }
+                }}
+              />
+            </div>
+          )}
 
           {!!ctx.walletAddress &&
             ctx.targetToken &&
