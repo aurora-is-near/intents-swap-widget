@@ -8,28 +8,6 @@ The **Intents Swap Widget** is highly configurable, allowing developers to tailo
 
 Configuration is handled via the `<WidgetConfigProvider>` component, which wraps your widget(s) and provides global settings.
 
-## Installation
-
-Install the widget package using your preferred package manager:
-
-```bash
-npm install @aurora-is-near/intents-swap-widget
-
-# or
-
-yarn add @aurora-is-near/intents-swap-widget
-```
-
-Alternatively, if you want to use the widget in standalone mode with embedded wallet connection mechanisms:
-
-```bash
-npm install @aurora-is-near/intents-swap-widget-standalone
-
-# or
-
-yarn add @aurora-is-near/intents-swap-widget-standalone
-```
-
 ### Setup
 
 To configure the widget, pass a `config` object to the `WidgetConfigProvider`. This object defines core parameters such as the app identifier, default tokens, theme, and optional partner fee settings.
@@ -434,3 +412,7 @@ Enables live swap conversion preview in the tokens list on hover.
 #### `extraQuoteParameters`
 
 Allows you to pass extra attributes for each of the 1Click quote request. Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`. More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
+
+#### `confidentialMode`
+
+Allows you to configure how the widget supports [confidential intents](https://docs.intents.aurora.dev/confidential-intents). Allowed values: `public` - no confidential swaps, `confidential` - all swaps are confidential, `user-choice` - user may toggle confidential mode by themselves.
