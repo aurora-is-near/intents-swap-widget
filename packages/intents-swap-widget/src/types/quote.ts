@@ -1,5 +1,7 @@
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript';
 
+import type { AppFee } from './transaction';
+
 type QuoteResponseShort = Pick<
   QuoteResponse['quote'],
   | 'amountIn'
@@ -10,22 +12,32 @@ type QuoteResponseShort = Pick<
   | 'timeEstimate'
 >;
 
-export type QuoteDry = QuoteResponseShort & {
-  type: 'QUOTE_DRY_WITH_AMOUNT';
-  dry: true;
-  deadline?: never;
-  depositAddress?: never;
+// The applied app fees, resolved server-side and echoed back on
+// `QuoteResponse.quoteRequest.appFees`. They may be split across several
+// recipients and can differ from the configured `appFees`, so we carry the
+// response value on the quote rather than reading config.
+type WithAppFees = {
+  appFees?: readonly AppFee[];
 };
 
-export type QuoteReal = QuoteResponseShort & {
-  type: 'QUOTE_REAL_WITH_AMOUNT';
-  dry: false;
-  deadline?: string;
-  depositAddress: string;
-  depositMemo?: string;
-};
+export type QuoteDry = QuoteResponseShort &
+  WithAppFees & {
+    type: 'QUOTE_DRY_WITH_AMOUNT';
+    dry: true;
+    deadline?: never;
+    depositAddress?: never;
+  };
 
-export type QuoteDepositAnyAmount = {
+export type QuoteReal = QuoteResponseShort &
+  WithAppFees & {
+    type: 'QUOTE_REAL_WITH_AMOUNT';
+    dry: false;
+    deadline?: string;
+    depositAddress: string;
+    depositMemo?: string;
+  };
+
+export type QuoteDepositAnyAmount = WithAppFees & {
   type: 'QUOTE_DEPOSIT_ANY_AMOUNT';
   depositAddress: string;
   deadline?: string;

@@ -28,9 +28,16 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
+
+import type { AppFee, Quote } from '../types';
+
 import { useSupportedChains } from './useSupportedChains';
 import { useIntentsAccountType } from './useIntentsAccountType';
-import { Quote } from '../types';
+
+type QuoteRequestResult = {
+  quote: OneClickQuote;
+  appFees?: readonly AppFee[];
+};
 
 type MakeArgs = {
   message?: string;
@@ -72,31 +79,36 @@ export const useMakeQuote = () => {
 
   const isDry = isDryQuote(ctx);
 
-  const request = useRef<Promise<OneClickQuote>>(null);
+  const request = useRef<Promise<QuoteRequestResult>>(null);
   const abortController = useRef<AbortController>(new AbortController());
 
   const requestQuote = useCallback(
     async (
       data: QuoteRequest,
       metadata: { isRefetch?: boolean },
-    ): Promise<OneClickQuote> => {
+    ): Promise<QuoteRequestResult> => {
       const { signal } = abortController.current;
 
       if (fetchQuote) {
-        return fetchQuote(data, {
-          ...metadata,
-          signal,
-        });
+        return {
+          quote: await fetchQuote(data, {
+            ...metadata,
+            signal,
+          }),
+        };
       }
 
-      return (
-        await feeServiceApi.post<QuoteResponse, AxiosResponse<QuoteResponse>>(
-          // no need for extra check API will return missing API key error
-          `/api/quote/${apiKey ?? ''}`,
-          data,
-          { signal },
-        )
-      ).data.quote;
+      const { data: response } = await feeServiceApi.post<
+        QuoteResponse,
+        AxiosResponse<QuoteResponse>
+      >(
+        // no need for extra check API will return missing API key error
+        `/api/quote/${apiKey ?? ''}`,
+        data,
+        { signal },
+      );
+
+      return { quote: response.quote, appFees: response.quoteRequest?.appFees };
     },
     [apiKey, fetchQuote],
   );
@@ -171,7 +183,7 @@ export const useMakeQuote = () => {
       abortController.current = new AbortController();
     }
 
-    let quoteResponse: OneClickQuote;
+    let quoteResult: QuoteRequestResult;
 
     let commonQuoteParams: Omit<
       QuoteRequest,
@@ -385,7 +397,7 @@ export const useMakeQuote = () => {
           options,
         );
 
-        quoteResponse = await request.current;
+        quoteResult = await request.current;
       } else {
         request.current = requestQuote(
           {
@@ -420,7 +432,7 @@ export const useMakeQuote = () => {
           options,
         );
 
-        quoteResponse = await request.current;
+        quoteResult = await request.current;
       }
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
@@ -481,13 +493,14 @@ export const useMakeQuote = () => {
       return {
         dry: true,
         type: 'QUOTE_DRY_WITH_AMOUNT',
-        ...quoteResponse,
+        ...quoteResult.quote,
+        appFees: quoteResult.appFees,
         deadline: undefined,
         depositAddress: undefined,
       };
     }
 
-    if (!validateQuoteProperties(quoteResponse)) {
+    if (!validateQuoteProperties(quoteResult.quote)) {
       throw new QuoteError({
         code: 'QUOTE_INVALID',
         meta: { isDry: false },
@@ -501,10 +514,11 @@ export const useMakeQuote = () => {
         isNotEmptyAmount(ctx.sourceTokenAmount)
           ? 'QUOTE_REAL_WITH_AMOUNT'
           : 'QUOTE_DEPOSIT_ANY_AMOUNT',
-      ...quoteResponse,
-      deadline: quoteResponse.deadline,
-      depositAddress: quoteResponse.depositAddress,
-      depositMemo: quoteResponse.depositMemo,
+      ...quoteResult.quote,
+      appFees: quoteResult.appFees,
+      deadline: quoteResult.quote.deadline,
+      depositAddress: quoteResult.quote.depositAddress,
+      depositMemo: quoteResult.quote.depositMemo,
     };
   };
 

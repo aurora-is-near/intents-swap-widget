@@ -31,6 +31,7 @@ export type LocalisationKeys =
   // quote
   | 'quote.result.maxSlippage.label'
   | 'quote.result.processingTime.label'
+  | 'quote.result.fees.label'
   // tokens
   | 'tokens.input.max.label'
   | 'tokens.input.half.label'
