@@ -4,6 +4,7 @@ import {
   ChainNotSupportedModal,
   DepositMethodSwitcher,
   DepositSummary,
+  ExternalDepositWaitingHint,
   SubmitButton,
   SuccessScreen,
   TokenInput,
@@ -12,7 +13,7 @@ import {
 import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
 import { useUnsafeSnapshot } from '@/machine/snap';
-import { isDebug, noop, notReachable } from '@/utils';
+import { isDebug, notReachable } from '@/utils';
 import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
@@ -285,65 +286,8 @@ export const WidgetDepositModeContent = ({
         );
       }
 
-      if (!ctx.walletAddress) {
-        return (
-          <div className="gap-sw-lg flex flex-col w-full">
-            <TokenInput.Source
-              showBalance
-              heading={t('tokenInput.heading.source.deposit', 'Deposit')}
-              onMsg={(msg) => {
-                switch (msg.type) {
-                  case 'on_select_token':
-                    onChangeToken('source', msg.token);
-                    break;
-                  case 'on_change_amount':
-                    onChangeAmount('source', msg.amount);
-                    break;
-                  case 'on_click_select_token':
-                    updateTokenModalState('source');
-                    break;
-                  default:
-                    notReachable(msg);
-                }
-              }}
-            />
-
-            <SubmitButton
-              makeTransfer={makeTransfer}
-              label={t(
-                'submit.active.deposit',
-                'Confirm deposit in your wallet',
-              )}
-              onSuccess={noop}
-            />
-          </div>
-        );
-      }
-
       return (
         <div className="gap-sw-lg flex flex-col w-full">
-          {ctx.isDepositFromExternalWallet ? null : (
-            <TokenInput.Source
-              showBalance={!ctx.isDepositFromExternalWallet}
-              heading={t('tokenInput.heading.source.deposit', 'Deposit')}
-              onMsg={(msg) => {
-                switch (msg.type) {
-                  case 'on_select_token':
-                    onChangeToken('source', msg.token);
-                    break;
-                  case 'on_change_amount':
-                    onChangeAmount('source', msg.amount);
-                    break;
-                  case 'on_click_select_token':
-                    updateTokenModalState('source');
-                    break;
-                  default:
-                    notReachable(msg);
-                }
-              }}
-            />
-          )}
-
           <DepositMethodSwitcher
             mode="deposit"
             onMsg={(msg) => {
@@ -363,7 +307,35 @@ export const WidgetDepositModeContent = ({
             }}
           />
 
-          {!!ctx.walletAddress && <DepositSummary />}
+          {ctx.isDepositFromExternalWallet ? null : (
+            <TokenInput.Source
+              showBalance={
+                !!ctx.walletAddress && !ctx.isDepositFromExternalWallet
+              }
+              heading={t('tokenInput.heading.source.deposit', 'Deposit')}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_select_token':
+                    onChangeToken('source', msg.token);
+                    break;
+                  case 'on_change_amount':
+                    onChangeAmount('source', msg.amount);
+                    break;
+                  case 'on_click_select_token':
+                    updateTokenModalState('source');
+                    break;
+                  default:
+                    notReachable(msg);
+                }
+              }}
+            />
+          )}
+
+          {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) && (
+            <DepositSummary />
+          )}
+
+          {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

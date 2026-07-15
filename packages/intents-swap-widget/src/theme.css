@@ -34,8 +34,13 @@
         --c-sw-accent-950: #280045;
 
         --c-sw-status-success: #98FFB5;
+        --c-sw-status-success-bg: #05490c;
+
         --c-sw-status-warning: #FADFAD;
+        --c-sw-status-warning-bg: #403900;
+
         --c-sw-status-error: #FFB8BE;
+        --c-sw-status-error-bg: #582929;
     }
 }
 

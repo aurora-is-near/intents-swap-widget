@@ -177,12 +177,7 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
   };
 
   return (
-    <Card
-      className={cn(
-        'flex flex-col',
-        { 'pb-sw-lg': ctx.isDepositFromExternalWallet || isVirtualChainSource },
-        className,
-      )}>
+    <Card className={cn('flex flex-col py-sw-lg', className)}>
       <header className="gap-sw-md flex items-center justify-between">
         <QrCodeIcon size={16} className="text-sw-gray-200" />
         <span className="text-sw-label-md text-sw-gray-200">
