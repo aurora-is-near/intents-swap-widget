@@ -197,7 +197,7 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
           className="mr-auto"
           text={t(
             'deposit.external.tooltip.text',
-            'Generate a deposit address and QR code to fund your account. Send any amount of the selected asset and it will be credited to your Intents balance.',
+            'Generate a deposit address and QR code to send funds to. Send any amount of the selected asset and it will be credited to the specified address.',
           )}
         />
         <Toggle
