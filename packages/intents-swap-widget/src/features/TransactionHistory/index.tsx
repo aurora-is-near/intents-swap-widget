@@ -40,7 +40,12 @@ export const TransactionHistory = ({
   const { isConnected } = useWalletConnection();
   const { t } = useTypedTranslation();
 
-  const { tokens, isLoading: isLoadingTokens } = useTokens();
+  // History is a record of what was already swapped, so it resolves the
+  // unrestricted token list.
+  const { tokens, isLoading: isLoadingTokens } = useTokens({
+    unrestricted: true,
+  });
+
   const {
     transactions,
     pendingTransactionsCount,

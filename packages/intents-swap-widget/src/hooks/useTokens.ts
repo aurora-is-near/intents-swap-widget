@@ -29,7 +29,15 @@ const getTokenName = (tokenSymbol: string): string => {
   return TOKENS_DATA[tokenSymbol]?.name ?? tokenSymbol;
 };
 
-export const useTokens = (variant?: 'source' | 'target') => {
+type UseTokensOptions = {
+  variant?: 'source' | 'target';
+  unrestricted?: boolean;
+};
+
+export const useTokens = ({
+  variant,
+  unrestricted = false,
+}: UseTokensOptions = {}) => {
   const {
     allowedTokensList,
     allowedSourceTokensList,
@@ -94,6 +102,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
         }
 
         if (
+          !unrestricted &&
           allowedTokensList &&
           !allowedTokensList.includes(token.assetId) &&
           !allowedTokensList.includes(token.symbol)
@@ -102,6 +111,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
         }
 
         if (
+          !unrestricted &&
           variant === 'source' &&
           allowedSourceTokensList &&
           !(
@@ -113,6 +123,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
         }
 
         if (
+          !unrestricted &&
           variant === 'target' &&
           allowedTargetTokensList &&
           !(
@@ -139,7 +150,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
         };
       })
       .filter((t) => !!t)
-      .filter(filterTokens ?? (() => true));
+      .filter(unrestricted ? () => true : (filterTokens ?? (() => true)));
 
     // remove wNEAR token
     let tokensWithoutWNEAR = tokens.filter(
@@ -213,8 +224,8 @@ export const useTokens = (variant?: 'source' | 'target') => {
       .filter(
         (t) =>
           ![
-            ...(disabledInternalBalanceTokens ?? []).map((tkn) =>
-              tkn.toLowerCase(),
+            ...(unrestricted ? [] : (disabledInternalBalanceTokens ?? [])).map(
+              (tkn) => tkn.toLowerCase(),
             ),
             // USDT0 exists on different chains as a synthetic version of native multi-chain USDT
             'usdt0',
@@ -226,7 +237,7 @@ export const useTokens = (variant?: 'source' | 'target') => {
           : { ...t, isIntent: true },
       );
 
-    return enableAccountAbstraction
+    return unrestricted || enableAccountAbstraction === true
       ? [
           ...tokensWithoutWNEAR,
           // add intents tokens to the full list
@@ -236,10 +247,12 @@ export const useTokens = (variant?: 'source' | 'target') => {
   }, [
     queryData,
     enableAccountAbstraction,
+    disabledInternalBalanceTokens,
     filterTokens,
     allowedTokensList,
     allowedSourceTokensList,
     allowedTargetTokensList,
+    unrestricted,
     variant,
   ]);
 

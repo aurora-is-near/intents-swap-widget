@@ -3,8 +3,8 @@ import { useTokens } from './useTokens';
 
 export const useAllTokens = () => {
   const { tokens: defaultTokens } = useTokens();
-  const { tokens: sourceTokens } = useTokens('source');
-  const { tokens: targetTokens } = useTokens('target');
+  const { tokens: sourceTokens } = useTokens({ variant: 'source' });
+  const { tokens: targetTokens } = useTokens({ variant: 'target' });
 
   const mergedTokens = useMemo(() => {
     const tokenMap: Record<string, (typeof defaultTokens)[0]> = {};

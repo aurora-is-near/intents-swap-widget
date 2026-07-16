@@ -23,7 +23,7 @@ export const useExternalDefaultToken = (
   variant: 'source' | 'target',
   { enabled = true }: { enabled?: boolean } = {},
 ) => {
-  const { tokens } = useTokens(variant);
+  const { tokens } = useTokens({ variant });
   const { defaultSourceToken, defaultTargetToken } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 

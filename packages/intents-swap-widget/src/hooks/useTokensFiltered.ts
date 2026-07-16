@@ -32,7 +32,7 @@ export const useTokensFiltered = ({
   priorityAssets,
 }: TokensFilterOptions) => {
   const chains = useChains(variant);
-  const { tokens } = useTokens(variant);
+  const { tokens } = useTokens({ variant });
   const { mergedBalance } = useMergedBalance();
   const { intentBalances } = useIntentsBalance();
   const { uniqueIntentsTokens } = useTokensIntentsUnique();
