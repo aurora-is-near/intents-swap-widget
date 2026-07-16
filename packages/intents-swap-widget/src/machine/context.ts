@@ -78,6 +78,7 @@ export type InitialDryContext = {
 
   sendAddress?: string;
   walletAddress?: string;
+  refundToAddress?: string;
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -104,6 +105,7 @@ export type InitialWalletContext = {
 
   walletAddress: string;
   sendAddress: string | undefined;
+  refundToAddress?: never;
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -130,6 +132,7 @@ export type InputValidDryContext = {
 
   sendAddress?: string;
   walletAddress?: string;
+  refundToAddress?: never;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -156,6 +159,7 @@ export type InputValidInternalContext = {
 
   sendAddress?: never;
   walletAddress: string;
+  refundToAddress?: never;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -168,12 +172,25 @@ export type InputValidInternalContext = {
   confidentialMode: SwapConfidentialMode;
 };
 
+type ExternalFlowWalletFields =
+  | {
+      isDepositFromExternalWallet: false;
+      sourceTokenBalance: TokenBalance;
+      refundToAddress?: never;
+      walletAddress: string;
+    }
+  | {
+      isDepositFromExternalWallet: true;
+      sourceTokenBalance?: TokenBalance;
+      refundToAddress?: string;
+      walletAddress?: string;
+    };
+
 export type InputValidExternalContext = {
   state: 'input_valid_external';
 
   sourceToken: Token;
   sourceTokenAmount: string;
-  sourceTokenBalance: TokenBalance;
   sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
@@ -181,9 +198,7 @@ export type InputValidExternalContext = {
   targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress: string;
-  walletAddress: string;
   areInputsValidating?: never;
-  isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: InputValidWalletError | null;
@@ -192,7 +207,7 @@ export type InputValidExternalContext = {
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
   confidentialMode: SwapConfidentialMode;
-};
+} & ExternalFlowWalletFields;
 
 export type QuoteSuccessDryContext = {
   state: 'quote_success_dry';
@@ -208,6 +223,7 @@ export type QuoteSuccessDryContext = {
 
   sendAddress?: never;
   walletAddress?: never;
+  refundToAddress?: never;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -234,6 +250,7 @@ export type QuoteSuccessInternalContext = {
 
   sendAddress?: never;
   walletAddress: string;
+  refundToAddress?: never;
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
@@ -253,7 +270,6 @@ export type QuoteSuccessExternalContext = {
 
   sourceToken: Token;
   sourceTokenAmount: string;
-  sourceTokenBalance: TokenBalance;
   sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
@@ -261,9 +277,7 @@ export type QuoteSuccessExternalContext = {
   targetTokenDefault: DefaultToken | undefined | null;
 
   sendAddress: string;
-  walletAddress: string;
   areInputsValidating?: never;
-  isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error: QuoteSuccessError | null;
@@ -274,24 +288,21 @@ export type QuoteSuccessExternalContext = {
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }
     | { status: 'pending'; reason: string };
-};
+} & ExternalFlowWalletFields;
 
 export type TransferSuccessContext = {
   state: 'transfer_success';
 
   sourceToken: Token;
   sourceTokenAmount: string;
-  sourceTokenBalance: TokenBalance;
   sourceTokenDefault: DefaultToken | undefined | null;
 
   targetToken: Token;
   targetTokenAmount: string;
   targetTokenDefault: DefaultToken | undefined | null;
 
-  walletAddress: string;
   areInputsValidating?: never;
   sendAddress: string | undefined;
-  isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
   externalDepositTxReceived: boolean | undefined;
   error?: never;
@@ -300,4 +311,4 @@ export type TransferSuccessContext = {
   quoteStatus: 'idle' | 'error' | 'pending' | 'success';
   transferStatus: { status: 'success'; reason: never };
   confidentialMode: SwapConfidentialMode;
-};
+} & ExternalFlowWalletFields;

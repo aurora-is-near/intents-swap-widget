@@ -2,6 +2,7 @@ import {
   ACCOUNT_CHECK_SUPERSEDED,
   checkNearAccountExists,
 } from '@/utils/near/checkNearAccountExists';
+import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
 import { isNearAddress } from '@/utils/chains/isNearAddress';
@@ -54,7 +55,7 @@ const asyncValidateSendAddress = async (ctx: Context) => {
     });
 
     fireEvent('setInputsValidating', false);
-    moveTo('initial_wallet');
+    moveTo(ctx.walletAddress ? 'initial_wallet' : 'initial_dry');
 
     return;
   }
@@ -73,7 +74,7 @@ const asyncValidateSendAddress = async (ctx: Context) => {
       meta: { address, chain: 'near' },
     });
 
-    moveTo('initial_wallet');
+    moveTo(ctx.walletAddress ? 'initial_wallet' : 'initial_dry');
 
     return;
   }
@@ -133,7 +134,13 @@ export const validateDryInputs = (ctx: Context): boolean | undefined => {
 };
 
 export const validateExternalInputs = (ctx: Context): boolean | undefined => {
-  const isValidInitialState = guardStates(ctx, ['initial_wallet']);
+  const isValidInitialState = guardStates(
+    ctx,
+    ctx.isDepositFromExternalWallet
+      ? ['initial_wallet', 'initial_dry']
+      : ['initial_wallet'],
+  );
+
   const isValidInputsState = guardStates(ctx, ['input_valid_external']);
 
   if (!isValidInitialState && !isValidInputsState) {
@@ -168,6 +175,27 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
         err = { code: 'INVALID_SOURCE_BALANCE' };
       } else if (!isBalanceSufficient(ctx)) {
         err = { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+      }
+    }
+
+    if (
+      !err &&
+      !ctx.walletAddress &&
+      ctx.isDepositFromExternalWallet &&
+      ctx.sourceToken
+    ) {
+      if (!ctx.refundToAddress) {
+        err = { code: 'REFUND_ADDRESS_IS_EMPTY' };
+      } else if (
+        !isValidChainAddress(ctx.sourceToken.blockchain, ctx.refundToAddress)
+      ) {
+        err = {
+          code: 'REFUND_ADDRESS_IS_INVALID',
+          meta: {
+            address: ctx.refundToAddress,
+            chain: ctx.sourceToken.blockchain,
+          },
+        };
       }
     }
   }

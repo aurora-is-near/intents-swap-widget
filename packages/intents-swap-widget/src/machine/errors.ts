@@ -1,10 +1,18 @@
 import type { Chains } from '@/types/chain';
 
+type UserDefinedRefundAddressError =
+  | { code: 'REFUND_ADDRESS_IS_EMPTY' }
+  | {
+      code: 'REFUND_ADDRESS_IS_INVALID';
+      meta: { address: string; chain: Chains };
+    };
+
 export type InitialDryStateError =
   | { code: 'SOURCE_TOKEN_IS_EMPTY' }
   | { code: 'TARGET_TOKEN_IS_EMPTY' }
   | { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' }
-  | { code: 'SOURCE_BALANCE_INSUFFICIENT' };
+  | { code: 'SOURCE_BALANCE_INSUFFICIENT' }
+  | UserDefinedRefundAddressError;
 
 export type InitialInternalStateError =
   | InitialDryStateError
@@ -24,6 +32,7 @@ type SendAddressValidationError =
 export type InitialExternalStateError =
   | InitialDryStateError
   | SendAddressValidationError
+  | UserDefinedRefundAddressError
   | { code: 'SOURCE_TOKEN_IS_INTENT' }
   | { code: 'INVALID_SOURCE_BALANCE' }
   | { code: 'SEND_ADDRESS_IS_EMPTY' }

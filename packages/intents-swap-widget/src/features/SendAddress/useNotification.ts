@@ -67,7 +67,7 @@ export const useNotification = (
     }
 
     if (
-      ctx.state === 'initial_wallet' &&
+      (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
       ctx.error?.code === 'SEND_ADDRESS_IS_NOT_FOUND'
     ) {
       return {
@@ -81,7 +81,7 @@ export const useNotification = (
     }
 
     if (
-      ctx.state === 'initial_wallet' &&
+      (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
       ctx.error?.code === 'SEND_ADDRESS_IS_INVALID'
     ) {
       return {
@@ -128,6 +128,7 @@ export const useNotification = (
     }
 
     if (
+      ctx.walletAddress &&
       ctx.walletAddress === ctx.sendAddress &&
       supportedChains.includes(ctx.targetToken.blockchain)
     ) {

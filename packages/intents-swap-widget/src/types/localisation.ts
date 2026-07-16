@@ -97,6 +97,14 @@ export type LocalisationKeys =
   // send address
   | 'sendAddress.label'
   | 'sendAddress.button.magic.label'
+  // refund address (walletless QR flow)
+  | 'refundAddress.label'
+  | 'refundAddress.placeholder'
+  | 'refundAddress.info.selectToken'
+  | 'refundAddress.error.invalidAddress'
+  | 'refundAddress.message.prompt'
+  | 'submit.error.refundAddressEmpty'
+  | 'submit.error.refundAddressInvalid'
   // submit - active (swap)
   | 'submit.active.swap'
   | 'submit.active.intentsSwap'

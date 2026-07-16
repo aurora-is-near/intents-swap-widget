@@ -12,6 +12,7 @@ export const isInputChanged = (ctx: Context, changes: ContextChange[]) => {
         change &&
         [
           'sendAddress',
+          'refundToAddress',
           'sourceToken',
           'targetToken',
           'targetTokenAmount',

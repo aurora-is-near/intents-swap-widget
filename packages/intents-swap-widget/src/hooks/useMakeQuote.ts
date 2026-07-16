@@ -168,7 +168,13 @@ export const useMakeQuote = () => {
         isAuroraSource ||
         !supportedChains.includes(ctx.sourceToken.blockchain));
 
-    if (!recipientIntentsAccountId) {
+    const isUserDefinedRefundAddress =
+      ctx.isDepositFromExternalWallet &&
+      !ctx.walletAddress &&
+      !!ctx.sendAddress &&
+      !ctx.targetToken.isIntent;
+
+    if (!recipientIntentsAccountId && !isUserDefinedRefundAddress) {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
@@ -382,6 +388,17 @@ export const useMakeQuote = () => {
 
     try {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
+        if (!recipientIntentsAccountId) {
+          throw new QuoteError({
+            code: 'QUOTE_INVALID_INITIAL',
+            meta: {
+              isDry,
+              message:
+                'recipientIntentsAccountId is not set for internal quote',
+            },
+          });
+        }
+
         request.current = requestQuote(
           {
             ...commonQuoteParams,
@@ -399,17 +416,29 @@ export const useMakeQuote = () => {
 
         quoteResult = await request.current;
       } else {
+        const recipient = getQuoteRecipient({
+          intentsAccountType,
+          sendAddress: ctx.sendAddress,
+          targetToken: ctx.targetToken,
+          walletAddress: recipientWalletAddress,
+          defaultRecipient: recipientIntentsAccountId,
+        });
+
+        if (!recipient) {
+          throw new QuoteError({
+            code: 'QUOTE_INVALID_INITIAL',
+            meta: {
+              isDry,
+              message: 'Recipient is not set for a quote',
+            },
+          });
+        }
+
         request.current = requestQuote(
           {
             ...commonQuoteParams,
             ...filteredExtraQuoteParameters,
-            recipient: getQuoteRecipient({
-              walletAddress: recipientWalletAddress,
-              sendAddress: ctx.sendAddress,
-              targetToken: ctx.targetToken,
-              intentsAccountType,
-              defaultRecipient: recipientIntentsAccountId,
-            }),
+            recipient,
             recipientType: ctx.targetToken.isIntent
               ? QuoteRequest.recipientType.INTENTS
               : QuoteRequest.recipientType.DESTINATION_CHAIN,
@@ -421,8 +450,12 @@ export const useMakeQuote = () => {
             // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
             // is the literal 'aurora' account, otherwise it's the user's
             // address on the origin chain.
-            refundTo: getRefundTo(),
-            refundType: getRefundType(),
+            refundTo: isUserDefinedRefundAddress
+              ? (ctx.refundToAddress ?? '')
+              : getRefundTo(),
+            refundType: isUserDefinedRefundAddress
+              ? QuoteRequest.refundType.ORIGIN_CHAIN
+              : getRefundType(),
 
             depositMode:
               ctx.sourceToken.blockchain === 'stellar'

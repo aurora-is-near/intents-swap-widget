@@ -55,7 +55,7 @@ const useGetErrorButton = (ctx: Context) => {
   }
 
   if (
-    ctx.state === 'initial_wallet' &&
+    (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
     ctx.error?.code === 'SEND_ADDRESS_IS_EMPTY'
   ) {
     return (
@@ -66,7 +66,7 @@ const useGetErrorButton = (ctx: Context) => {
   }
 
   if (
-    ctx.state === 'initial_wallet' &&
+    (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
     ctx.error?.code === 'SEND_ADDRESS_IS_NOT_FOUND'
   ) {
     return (
@@ -80,7 +80,7 @@ const useGetErrorButton = (ctx: Context) => {
   }
 
   if (
-    ctx.state === 'initial_wallet' &&
+    (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
     ctx.error?.code === 'SEND_ADDRESS_IS_INVALID'
   ) {
     return (
@@ -89,6 +89,28 @@ const useGetErrorButton = (ctx: Context) => {
           defaultValue: 'Invalid {{chain}} address',
           chain: ctx.error.meta.chain.toUpperCase(),
         })}
+      </Button>
+    );
+  }
+
+  if (
+    (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
+    ctx.error?.code === 'REFUND_ADDRESS_IS_EMPTY'
+  ) {
+    return (
+      <Button state="disabled" {...commonBtnProps}>
+        {t('submit.error.refundAddressEmpty', 'Enter refund address')}
+      </Button>
+    );
+  }
+
+  if (
+    (ctx.state === 'initial_wallet' || ctx.state === 'initial_dry') &&
+    ctx.error?.code === 'REFUND_ADDRESS_IS_INVALID'
+  ) {
+    return (
+      <Button state="error" {...commonBtnProps}>
+        {t('submit.error.refundAddressInvalid', 'Invalid refund address')}
       </Button>
     );
   }
@@ -278,7 +300,7 @@ const ConnectWalletButton = () => {
       state={walletSignIn ? 'default' : 'disabled'}
       {...commonBtnProps}
       onClick={walletSignIn}>
-      {t('submit.error.connectWallet', 'Connect wallet')}
+      {t('submit.error.connectWallet', 'Connect wallet or use QR code')}
     </Button>
   );
 };
@@ -510,7 +532,7 @@ const SubmitButton = (props: Props) => {
   const { ctx } = useUnsafeSnapshot();
 
   // 1. No wallet? Return lightweight button immediately (best performance)
-  if (!ctx.walletAddress) {
+  if (!ctx.walletAddress && !ctx.isDepositFromExternalWallet) {
     return <ConnectWalletButton />;
   }
 

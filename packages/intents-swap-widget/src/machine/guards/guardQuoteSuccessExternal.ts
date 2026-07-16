@@ -1,5 +1,6 @@
 import type { Context, QuoteSuccessExternalContext } from '@/machine/context';
 import { isBalanceSufficient } from './checks/isBalanceSufficient';
+import { isRefundAddressValid } from './checks/isRefundAddressValid';
 
 export const guardQuoteSuccessExternal = (
   ctx: Context,
@@ -8,7 +9,8 @@ export const guardQuoteSuccessExternal = (
     !!ctx.quote &&
     ctx.quoteStatus === 'success' &&
     !!ctx.sendAddress &&
-    !!ctx.walletAddress &&
+    (!!ctx.walletAddress || ctx.isDepositFromExternalWallet) &&
+    isRefundAddressValid(ctx) &&
     !!ctx.sourceToken &&
     !!ctx.targetToken &&
     (ctx.transferStatus.status === 'pending' ||

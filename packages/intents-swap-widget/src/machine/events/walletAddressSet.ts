@@ -7,4 +7,8 @@ export const walletAddressSet = (
   payload: WalletAddressSetPayload,
 ): void => {
   ctx.walletAddress = payload;
+
+  if (payload && ctx.refundToAddress !== undefined) {
+    delete ctx.refundToAddress;
+  }
 };

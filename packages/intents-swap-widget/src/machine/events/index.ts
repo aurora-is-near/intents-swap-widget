@@ -7,6 +7,10 @@ import { tokenSelectRotate } from './tokenSelectRotate';
 import { errorSet, type ErrorSetPayload } from './errorSet';
 import { quoteSet, type QuoteSetPayload } from './quoteSet';
 import { addressSet, type AddressSetPayload } from './addressSet';
+import {
+  refundToAddressSet,
+  type RefundToAddressSetPayload,
+} from './refundToAddressSet';
 import { tokenSelect, type TokenSelectPayload } from './tokenSelect';
 import { tokenSetAmount, type TokenSetAmountPayload } from './tokenSetAmount';
 import {
@@ -57,6 +61,7 @@ export type TradeEvents = {
   tokenSetDefault: TokenSetDefaultPayload;
   tokenSetBalance: TokenSetBalancePayload;
   addressSet: AddressSetPayload;
+  refundToAddressSet: RefundToAddressSetPayload;
   errorSet: ErrorSetPayload;
   quoteSet: QuoteSetPayload;
   quoteReset: null;
@@ -92,6 +97,7 @@ export const registerEvents = () => {
   onEvent('externalDepositTxSet', externalDepositTxSet);
   onEvent('tokenSelect', tokenSelect);
   onEvent('addressSet', addressSet);
+  onEvent('refundToAddressSet', refundToAddressSet);
   onEvent('errorSet', errorSet);
   onEvent('quoteSet', quoteSet);
   onEvent('quoteReset', quoteReset);
