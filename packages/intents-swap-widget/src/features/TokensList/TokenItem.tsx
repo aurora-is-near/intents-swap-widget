@@ -68,9 +68,9 @@ export const TokenItem = ({
           })}
         />
 
-        <div className="gap-sw-xs mr-auto flex flex-col">
-          <div className="flex items-center gap-sw-sm">
-            <span className="text-sw-label-md text-sw-gray-50">
+        <div className="gap-sw-xs mr-auto flex min-w-0 flex-col">
+          <div className="flex min-w-0 items-center gap-sw-sm">
+            <span className="text-sw-label-md text-sw-gray-50 truncate">
               {token.name}
             </span>
             {showConversionPreview && (
@@ -82,18 +82,18 @@ export const TokenItem = ({
             )}
           </div>
           {token.isIntent ? (
-            <div className="flex items-center gap-sw-xs">
-              <span className="text-sw-label-md text-sw-gray-300">
+            <div className="flex min-w-0 items-center gap-sw-xs">
+              <span className="text-sw-label-md text-sw-gray-300 shrink-0">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-sm text-sw-gray-300">{`on Near Intents ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
+              <span className="text-sw-label-sm text-sw-gray-300 min-w-0 truncate">{`on Near Intents ${token.chainName.toLowerCase() !== 'near' && hasBalance ? `(${token.chainName})` : ''}`}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-sw-xs">
-              <span className="text-sw-label-md text-sw-gray-300">
+            <div className="flex min-w-0 items-center gap-sw-xs">
+              <span className="text-sw-label-md text-sw-gray-300 shrink-0">
                 {token.symbol}
               </span>{' '}
-              <span className="text-sw-label-sm text-sw-gray-300">{`on ${token.chainName}`}</span>
+              <span className="text-sw-label-sm text-sw-gray-300 min-w-0 truncate">{`on ${token.chainName}`}</span>
             </div>
           )}
         </div>
