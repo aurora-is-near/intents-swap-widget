@@ -10,11 +10,13 @@ type Props = {
   message: string;
   multiline?: boolean;
   variant: 'error' | 'warn' | 'success' | 'info';
+  hasBg?: boolean;
   className?: string;
   onDismiss?: () => void;
 };
 
 export const Banner = ({
+  hasBg,
   variant,
   multiline,
   message,
@@ -44,6 +46,13 @@ export const Banner = ({
           'text-sw-status-warning': variant === 'warn',
           'text-sw-status-success': variant === 'success',
           'text-sw-gray-200': variant === 'info',
+
+          'bg-sw-status-error-bg': variant === 'error' && hasBg,
+          'bg-sw-status-warning-bg': variant === 'warn' && hasBg,
+          'bg-sw-status-success-bg': variant === 'success' && hasBg,
+          'bg-sw-gray-900': variant === 'info' && hasBg,
+
+          'p-sw-lg rounded-sw-lg': hasBg,
         },
         className,
       )}>

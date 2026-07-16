@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
   ChainNotSupportedModal,
+  ExternalDepositWaitingHint,
   SendAddress,
   SubmitButton,
   SuccessScreen,
@@ -236,7 +237,6 @@ export const WidgetSwapContent = ({
           {allowSwapWithExternalWallet && (
             <DepositMethodSwitcher
               mode="swap"
-              className="py-sw-lg"
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_toggle_tokens_modal':
@@ -307,6 +307,7 @@ export const WidgetSwapContent = ({
             !ctx.targetToken.isIntent && <SendAddress />}
 
           {ctx.sourceToken && <SwapQuote />}
+          {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

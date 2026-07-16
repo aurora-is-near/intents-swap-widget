@@ -7,6 +7,7 @@ import { isQuoteIdle } from './checkers/isQuoteIdle';
 import { isInputChanged } from './checkers/isInputChanged';
 import { isErrorChanged } from './checkers/isErrorChanged';
 import { isOnlyErrorChanged } from './checkers/isOnlyErrorChanged';
+import { isOnlyBalanceChanged } from './checkers/isOnlyBalanceChanged';
 import { isValidInitialState } from './checkers/isValidInitialState';
 import { isWalletDisconnected } from './checkers/isWalletDisconnected';
 import { isSendAddressForbidden } from './checkers/isSendAddressForbidden';
@@ -72,7 +73,11 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
     }
 
     // Reset quote on any input change, unless in the `transfer_success` state
-    if (!isQuoteIdle(ctx) && machine.current !== 'transfer_success') {
+    if (
+      !isQuoteIdle(ctx) &&
+      !isOnlyBalanceChanged(changes) &&
+      machine.current !== 'transfer_success'
+    ) {
       ctx.quote = undefined;
       ctx.quoteStatus = 'idle';
       ctx.transferStatus = { status: 'idle' };

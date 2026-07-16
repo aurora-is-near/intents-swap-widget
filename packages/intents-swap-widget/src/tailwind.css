@@ -46,8 +46,13 @@
 
     /* Status colors */
     --color-sw-status-success: var(--c-sw-status-success);
+    --color-sw-status-success-bg: var(--c-sw-status-success-bg);
+
     --color-sw-status-warning: var(--c-sw-status-warning);
+    --color-sw-status-warning-bg: var(--c-sw-status-warning-bg);
+
     --color-sw-status-error: var(--c-sw-status-error);
+    --color-sw-status-error-bg: var(--c-sw-status-error-bg);
 
     /* Container color */
     --color-sw-container: var(--c-sw-container);

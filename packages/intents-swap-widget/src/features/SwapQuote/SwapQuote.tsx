@@ -5,6 +5,7 @@ import { Notes } from '@/components/Notes';
 import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
+import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
 import { useTypedTranslation } from '@/localisation';
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
@@ -16,6 +17,8 @@ export const SwapQuote = ({ className }: Props) => {
   const { t } = useTypedTranslation();
   const { slippageTolerance } = useConfig();
   const { ctx } = useUnsafeSnapshot();
+
+  const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
 
   const price =
     ctx.sourceToken &&
@@ -52,6 +55,12 @@ export const SwapQuote = ({ className }: Props) => {
           label={t('quote.result.maxSlippage.label', 'Max slippage')}
           value={`${(slippageTolerance / 100).toFixed(2)}%`}
         />
+        {!!feesPercent && (
+          <Notes.Item
+            label={t('quote.result.fees.label', 'Fees')}
+            value={`${feesPercent}%`}
+          />
+        )}
         {!!ctx.walletAddress && (
           <Notes.Item
             isLoading={ctx.quoteStatus === 'pending'}

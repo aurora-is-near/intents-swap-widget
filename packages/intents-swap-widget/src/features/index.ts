@@ -9,6 +9,7 @@ export * from './TokensList';
 export * from './TokensModal';
 export * from './SwapDirectionSwitcher';
 export * from './ExternalDeposit';
+export * from './ExternalDepositWaitingHint';
 export * from './DepositMethodSwitcher';
 export * from './WalletCompatibilityCheck';
 export * from './ChainNotSupportedModal';

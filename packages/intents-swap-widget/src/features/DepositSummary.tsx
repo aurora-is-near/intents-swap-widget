@@ -7,11 +7,13 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
+import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
 
 export const DepositSummary = () => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { slippageTolerance } = useConfig();
+  const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
   const {
     isDirectNearTokenWithdrawal,
     isDirectTokenOnNearTransfer,
@@ -117,6 +119,12 @@ export const DepositSummary = () => {
           label={t('quote.result.maxSlippage.label', 'Max slippage')}
           value={`${(slippageTolerance / 100).toFixed(2)}%`}
         />
+        {!!feesPercent && (
+          <Notes.Item
+            label={t('quote.result.fees.label', 'Fees')}
+            value={`${feesPercent}%`}
+          />
+        )}
         <Notes.Item
           isLoading={ctx.quoteStatus === 'pending'}
           label={t('quote.result.processingTime.label', 'Processing time')}
