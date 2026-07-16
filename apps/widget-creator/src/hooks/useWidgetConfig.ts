@@ -20,15 +20,30 @@ export const useWidgetConfig = () => {
   const widgetConfig = useMemo((): SerializableWidgetConfig &
     Partial<WidgetConfig> => {
     const allTokenSymbols = allTokens.map((token) => token.symbol);
-    const normalizedSelectedTokenSymbols = normalizeSelectedTokenSymbols(
-      state.selectedTokenSymbols,
-    );
 
-    const hasExplicitAllowedTokens = normalizedSelectedTokenSymbols.length > 0;
-    const hasAllTokensSelected = hasAllSelectableTokensSelected(
-      normalizedSelectedTokenSymbols,
+    const defaultSourceToken = state.enableSellToken
+      ? state.defaultSellToken
+      : undefined;
+
+    const defaultTargetToken =
+      state.enableBuyToken || state.widgetMode === 'deposit'
+        ? state.defaultBuyToken
+        : undefined;
+
+    // Only "all selected" allows all tokens; disabling all yields an empty list
+    // (show nothing), not "allow all". Defaults are kept so they stay selectable.
+    const allowedTokensList = hasAllSelectableTokensSelected(
+      state.selectedTokenSymbols,
       allTokenSymbols,
-    );
+    )
+      ? undefined
+      : normalizeSelectedTokenSymbols(
+          [
+            ...state.selectedTokenSymbols,
+            defaultSourceToken?.symbol,
+            defaultTargetToken?.symbol,
+          ].filter((symbol): symbol is string => !!symbol),
+        );
 
     return {
       apiKey:
@@ -43,21 +58,13 @@ export const useWidgetConfig = () => {
       enableAutoTokensSwitching: state.widgetMode !== 'deposit',
       chainsOrder: state.selectedNetworks,
       allowedChainsList: state.selectedNetworks,
-      allowedTokensList:
-        hasExplicitAllowedTokens && !hasAllTokensSelected
-          ? normalizedSelectedTokenSymbols
-          : undefined,
-      defaultSourceToken: state.enableSellToken
-        ? state.defaultSellToken
-        : undefined,
+      allowedTokensList,
+      defaultSourceToken,
       sendAddress:
         state.widgetMode === 'deposit' && state.depositModeReceiverAddress
           ? state.depositModeReceiverAddress
           : undefined,
-      defaultTargetToken:
-        state.enableBuyToken || state.widgetMode === 'deposit'
-          ? state.defaultBuyToken
-          : undefined,
+      defaultTargetToken,
       showTransactionHistory: true,
       showConversionPreview: true,
       extraQuoteParameters: {

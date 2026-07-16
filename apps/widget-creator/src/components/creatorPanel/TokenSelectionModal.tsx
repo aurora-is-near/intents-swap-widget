@@ -37,10 +37,7 @@ export function TokenSelectionModal({
   const allTokens = useTokensGroupedBySymbol();
   const { state, dispatch } = useCreator();
 
-  const selectedTokens =
-    state.selectedTokenSymbols.length > 0
-      ? state.selectedTokenSymbols
-      : allTokens.map((token) => token.symbol);
+  const selectedTokens = state.selectedTokenSymbols;
 
   const selectedTokenCount = getSelectableTokenSymbols(selectedTokens).length;
 
@@ -105,9 +102,7 @@ export function TokenSelectionModal({
   );
 
   const otherAvailable = availableFilteredTokens.filter(
-    (token: TokenType) =>
-      !POPULAR_TOKENS.includes(token.symbol) &&
-      token.symbol.toLocaleLowerCase() !== 'near',
+    (token: TokenType) => !POPULAR_TOKENS.includes(token.symbol),
   );
 
   const handleToggleToken = (tokenId: string) => {
@@ -183,7 +178,8 @@ export function TokenSelectionModal({
           <div className="flex items-start justify-between gap-csw-lg flex-shrink-0">
             <div className="flex flex-col gap-csw-md flex-1">
               <h2 className="font-semibold text-base leading-4 tracking-[-0.4px] text-csw-gray-50">
-                {selectedTokenCount} tokens selected
+                {selectedTokenCount} token{selectedTokenCount === 1 ? '' : 's'}{' '}
+                selected
               </h2>
               <p className="font-medium text-sm leading-5 tracking-[-0.4px] text-csw-gray-200">
                 Selected tokens apply to all chosen networks.

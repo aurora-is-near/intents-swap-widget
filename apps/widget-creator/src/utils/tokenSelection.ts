@@ -6,6 +6,12 @@ const DISABLED_TOKENS = [
   'testnebula',
   'susdc',
   'weth',
+
+  // Bridged NEAR. The canonical NEAR is wNEAR, shown as "NEAR", so this
+  // duplicate is hidden from the token list — and must be excluded here
+  // too, otherwise it stays selected-but-invisible and can never be deselected,
+  // inflating the "N tokens selected" count.
+  'near',
 ];
 
 const USDT_SYMBOL = 'USDT';

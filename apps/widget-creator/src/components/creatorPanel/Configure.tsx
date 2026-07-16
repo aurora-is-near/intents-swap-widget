@@ -44,10 +44,7 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
   const allTokenSymbols = allTokens.map((token) => token.symbol);
-  const selectedTokens =
-    state.selectedTokenSymbols.length > 0
-      ? getSelectableTokenSymbols(state.selectedTokenSymbols)
-      : getSelectableTokenSymbols(allTokenSymbols);
+  const selectedTokens = getSelectableTokenSymbols(state.selectedTokenSymbols);
 
   const { data: apiKeys } = useApiKeys();
   const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
@@ -403,10 +400,7 @@ export function Configure() {
           <div className="space-y-csw-2xl">
             <div className="space-y-csw-sm font-medium text-csw-gray-200">
               <p className="text-sm leading-5 tracking-[-0.4px]">
-                Selected tokens apply to all chosen networks
-                {state.accountAbstractionMode === 'enabled' &&
-                  ' and to the swap tab only'}
-                .
+                Selected tokens apply to all chosen networks.
               </p>
               <a
                 href="https://docs.intents.aurora.dev/configuration"
