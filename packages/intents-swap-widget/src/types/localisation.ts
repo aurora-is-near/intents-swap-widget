@@ -39,6 +39,8 @@ export type LocalisationKeys =
   | 'tokens.input.externalBalanceOnly.label'
   | 'tokens.list.noBalanceOnApp.label'
   | 'tokens.list.noBalanceOnApp.subLabel'
+  | 'tokens.list.noTokens.label'
+  | 'tokens.list.noTokens.subLabel'
   | 'tokens.list.searchEmpty.label'
   | 'tokens.list.searchEmpty.subLabel'
   | 'tokens.list.searchReset.label'

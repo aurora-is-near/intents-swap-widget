@@ -274,7 +274,9 @@ export const TokensList = ({
 
     case 'NO_TOKENS':
     default:
-      return (
+      // The "no balances on Near Intents" copy only makes sense for the Intents
+      // view; any other chain filter gets a neutral empty state.
+      return selectedChain === 'intents' ? (
         <TokensListPlaceholder
           className="pt-sw-5xl pb-sw-5xl"
           subHeading={t(
@@ -284,6 +286,15 @@ export const TokensList = ({
           heading={t(
             'tokens.list.noBalanceOnApp.label',
             'You have no balances on Near Intents',
+          )}
+        />
+      ) : (
+        <TokensListPlaceholder
+          className="pt-sw-5xl pb-sw-5xl"
+          heading={t('tokens.list.noTokens.label', 'No tokens available')}
+          subHeading={t(
+            'tokens.list.noTokens.subLabel',
+            'Try selecting a different network.',
           )}
         />
       );
