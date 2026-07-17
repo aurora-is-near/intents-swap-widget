@@ -140,16 +140,3 @@ export const useTokensGroupedBySymbol = (): TokenType[] => {
 
   return Object.values(tokensWithIcons);
 };
-
-export const isTokenAvailable = (
-  token: TokenType,
-  selectedNetworks: string[],
-): boolean => {
-  if (!selectedNetworks || selectedNetworks.length === 0) {
-    return false;
-  }
-
-  return token.blockchains.some((blockchain) =>
-    selectedNetworks.includes(blockchain),
-  );
-};

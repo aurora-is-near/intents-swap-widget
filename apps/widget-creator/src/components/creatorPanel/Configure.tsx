@@ -18,11 +18,11 @@ import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
+import { useTokensGroupedBySymbol } from '../../hooks/useTokens';
 import {
+  getSelectableTokenSymbols,
   isTokenAvailable,
-  useTokensGroupedBySymbol,
-} from '../../hooks/useTokens';
-import { getSelectableTokenSymbols } from '../../utils/tokenSelection';
+} from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
 import type { TokenType } from '../../hooks/useTokens';
 
@@ -88,12 +88,27 @@ export function Configure() {
     state.selectedTokenSymbols.length,
   ]);
 
-  const handleNetworksChange = (newNetworks: Chains[]) => {
-    dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
+  // Whether the widget will include the Intents layer. This is exactly what
+  // `enableAccountAbstraction` sends, so it holds in deposit mode too.
+  const isIntentsEnabled = state.accountAbstractionMode === 'enabled';
 
-    // Auto-select tokens that are available for the chosen networks
+  // The Intents tile only renders in the Networks grid in swap mode, so only
+  // then does it count toward the "networks selected" total — it is tracked
+  // separately from `selectedNetworks` (it toggles account abstraction, not a
+  // real chain).
+  const isIntentsNetworkShown = state.widgetMode === 'swap';
+
+  const isIntentsNetworkSelected = isIntentsNetworkShown && isIntentsEnabled;
+
+  // Auto-select the tokens available for the chosen networks. Intents is passed
+  // in rather than read off state because the callers that change both at once
+  // would otherwise compute availability from the pre-toggle value.
+  const syncSelectedTokens = (
+    newNetworks: Chains[],
+    isIntentsSelected: boolean,
+  ) => {
     const availableTokens = allTokens.filter((token) =>
-      isTokenAvailable(token, newNetworks),
+      isTokenAvailable(token, newNetworks, isIntentsSelected),
     );
 
     const availableTokenSymbols = availableTokens.map(
@@ -106,6 +121,14 @@ export function Configure() {
     });
   };
 
+  const handleNetworksChange = (
+    newNetworks: Chains[],
+    isIntentsSelected: boolean,
+  ) => {
+    dispatch({ type: 'SET_SELECTED_NETWORKS', payload: newNetworks });
+    syncSelectedTokens(newNetworks, isIntentsSelected);
+  };
+
   const isDepositModeRecipientValid =
     state.widgetMode === 'deposit' &&
     state.depositModeReceiverAddress &&
@@ -115,14 +138,6 @@ export function Configure() {
           state.depositModeReceiverAddress,
         )
       : true;
-
-  // The Intents tile shows in the Networks grid (swap mode only), so it counts
-  // toward the "networks selected" total even though it is tracked separately
-  // from `selectedNetworks` (it toggles account abstraction, not a real chain).
-  const isIntentsNetworkShown = state.widgetMode === 'swap';
-
-  const isIntentsNetworkSelected =
-    isIntentsNetworkShown && state.accountAbstractionMode === 'enabled';
 
   const selectedNetworkCount =
     state.selectedNetworks.length + (isIntentsNetworkSelected ? 1 : 0);
@@ -323,9 +338,14 @@ export function Configure() {
                     ? []
                     : CHAINS.map((chain) => chain.id);
 
-                  handleNetworksChange(newNetworks);
+                  // Keep the Intents tile in sync with Select/Deselect all, but
+                  // leave account abstraction untouched where it has no tile.
+                  const nextIntentsEnabled = isIntentsNetworkShown
+                    ? !allNetworksSelected
+                    : isIntentsEnabled;
 
-                  // Keep the Intents tile in sync with Select/Deselect all
+                  handleNetworksChange(newNetworks, nextIntentsEnabled);
+
                   if (isIntentsNetworkShown) {
                     dispatch({
                       type: 'SET_ACCOUNT_ABSTRACTION_MODE',
@@ -351,7 +371,7 @@ export function Configure() {
                         )
                       : [...(state.selectedNetworks || []), chain.id];
 
-                    handleNetworksChange(newNetworks);
+                    handleNetworksChange(newNetworks, isIntentsEnabled);
                   }}
                   className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
                     state.selectedNetworks?.includes(chain.id)
@@ -373,15 +393,19 @@ export function Configure() {
                 <button
                   key="intents"
                   title="Intents — enables account abstraction"
-                  onClick={() =>
+                  onClick={() => {
+                    const nextIntentsEnabled = !isIntentsEnabled;
+
                     dispatch({
                       type: 'SET_ACCOUNT_ABSTRACTION_MODE',
-                      payload:
-                        state.accountAbstractionMode === 'enabled'
-                          ? 'disabled'
-                          : 'enabled',
-                    })
-                  }
+                      payload: nextIntentsEnabled ? 'enabled' : 'disabled',
+                    });
+
+                    syncSelectedTokens(
+                      state.selectedNetworks,
+                      nextIntentsEnabled,
+                    );
+                  }}
                   className={`flex items-center justify-center w-csw-5xl h-csw-5xl rounded-csw-md transition-all bg-csw-gray-800 ${
                     state.accountAbstractionMode === 'enabled'
                       ? 'border-2 border-csw-accent-600'

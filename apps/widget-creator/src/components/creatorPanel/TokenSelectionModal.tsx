@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { OutlinedButton } from '../../uikit/Button';
-import {
-  isTokenAvailable,
-  TokenType,
-  useTokensGroupedBySymbol,
-} from '../../hooks/useTokens';
+import { TokenType, useTokensGroupedBySymbol } from '../../hooks/useTokens';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import {
   getSelectableTokenSymbols,
   isDisabledTokenSymbol,
+  isTokenAvailable,
 } from '../../utils/tokenSelection';
 import { TokenRow } from './TokenRow';
 
@@ -87,13 +84,18 @@ export function TokenSelectionModal({
     );
   }, [searchQuery, allTokens]);
 
+  // The Intents layer holds every asset, so enabling it makes every token
+  // available regardless of which networks are selected.
+  const isIntentsEnabled = state.accountAbstractionMode === 'enabled';
+
   // Separate available and unavailable tokens
   const availableFilteredTokens = filteredTokens.filter((token: TokenType) =>
-    isTokenAvailable(token, state.selectedNetworks),
+    isTokenAvailable(token, state.selectedNetworks, isIntentsEnabled),
   );
 
   const unavailableFilteredTokens = filteredTokens.filter(
-    (token: TokenType) => !isTokenAvailable(token, state.selectedNetworks),
+    (token: TokenType) =>
+      !isTokenAvailable(token, state.selectedNetworks, isIntentsEnabled),
   );
 
   // Separate popular and other tokens

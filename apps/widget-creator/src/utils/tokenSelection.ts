@@ -1,3 +1,5 @@
+import type { TokenType } from '../hooks/useTokens';
+
 const DISABLED_TOKENS = [
   'fms',
   'abg',
@@ -19,6 +21,27 @@ const USDT_ALIAS_SYMBOL = 'USDT0';
 
 export const isDisabledTokenSymbol = (symbol: string): boolean => {
   return DISABLED_TOKENS.includes(symbol.toLowerCase());
+};
+
+export const isTokenAvailable = (
+  token: TokenType,
+  selectedNetworks: string[],
+  isIntentsSelected = false,
+): boolean => {
+  // The Intents layer holds every asset regardless of which chain settles it,
+  // so selecting Intents makes all tokens available on its own — availability
+  // must not narrow to the symbols that happen to exist on `selectedNetworks`.
+  if (isIntentsSelected) {
+    return true;
+  }
+
+  if (!selectedNetworks || selectedNetworks.length === 0) {
+    return false;
+  }
+
+  return token.blockchains.some((blockchain) =>
+    selectedNetworks.includes(blockchain),
+  );
 };
 
 export const getSelectableTokenSymbols = (symbols: string[]): string[] => {
