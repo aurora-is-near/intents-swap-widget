@@ -204,7 +204,7 @@ export function TokenWithChainSelector({
 
                     return (
                       <div
-                        key={token.assetId}
+                        key={`${token.assetId}-${token.blockchain}`}
                         onClick={() => {
                           onSelectToken(normalizedToken, token.blockchain);
                           onClose();
