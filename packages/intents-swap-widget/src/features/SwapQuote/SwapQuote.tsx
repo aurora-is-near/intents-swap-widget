@@ -2,10 +2,12 @@ import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 import { Notes } from '@/components/Notes';
+import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
+import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 import { useTypedTranslation } from '@/localisation';
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
@@ -19,6 +21,14 @@ export const SwapQuote = ({ className }: Props) => {
   const { ctx } = useUnsafeSnapshot();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
+  const feesUsd = getAppFeesUsd({
+    appFees: ctx.quote?.appFees,
+    swapType: ctx.quote?.swapType,
+    amountInUsd:
+      ctx.quote && 'amountInUsd' in ctx.quote
+        ? ctx.quote.amountInUsd
+        : undefined,
+  });
 
   const price =
     ctx.sourceToken &&
@@ -58,7 +68,7 @@ export const SwapQuote = ({ className }: Props) => {
         {!!feesPercent && (
           <Notes.Item
             label={t('quote.result.fees.label', 'Fees')}
-            value={`${feesPercent}%`}
+            value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
           />
         )}
         {!!ctx.walletAddress && (

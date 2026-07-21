@@ -495,6 +495,7 @@ export const useMakeQuote = () => {
         type: 'QUOTE_DRY_WITH_AMOUNT',
         ...quoteResult.quote,
         appFees: quoteResult.appFees,
+        swapType: commonQuoteParams.swapType,
         deadline: undefined,
         depositAddress: undefined,
       };
@@ -516,6 +517,7 @@ export const useMakeQuote = () => {
           : 'QUOTE_DEPOSIT_ANY_AMOUNT',
       ...quoteResult.quote,
       appFees: quoteResult.appFees,
+      swapType: commonQuoteParams.swapType,
       deadline: quoteResult.quote.deadline,
       depositAddress: quoteResult.quote.depositAddress,
       depositMemo: quoteResult.quote.depositMemo,

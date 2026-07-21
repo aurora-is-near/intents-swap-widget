@@ -7,8 +7,9 @@ import { CloseButton } from '@/components/CloseButton';
 import { TinyNumber } from '@/components/TinyNumber';
 import { CopyButton } from '@/components/CopyButton';
 import { Hr } from '@/components/Hr';
-import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
+import { getAppFeesAmount } from '@/utils/getAppFeesAmount';
+import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 import { getTransactionStatusLabel } from '@/utils/transactions/getTransactionStatusLabel';
 import { findTransactionToken } from '@/utils/transactions/findTransactionToken';
 import type { FakeTransaction, Transaction } from '@/types/transaction';
@@ -38,20 +39,6 @@ const isRealTransaction = (
   return 'intentHashes' in tx;
 };
 
-const calculateFee = (tx: Transaction | FakeTransaction): number => {
-  if (!isRealTransaction(tx)) {
-    return 0;
-  }
-
-  if (!tx.appFees || tx.appFees.length === 0) {
-    return 0;
-  }
-
-  const amountIn = parseFloat(tx.amountInFormatted);
-
-  return tx.appFees.reduce((sum, { fee }) => sum + (amountIn * fee) / 10000, 0);
-};
-
 export const TransactionDetails = ({
   transaction: tx,
   tokens,
@@ -72,7 +59,21 @@ export const TransactionDetails = ({
 
   const explorerHash = isRealTransaction(tx) ? tx.depositAddress : null;
 
-  const fee = calculateFee(tx);
+  const fee = isRealTransaction(tx)
+    ? getAppFeesAmount({
+        appFees: tx.appFees,
+        amount: parseFloat(tx.amountInFormatted),
+        swapType: tx.swapType,
+      })
+    : null;
+
+  const feeUsd = isRealTransaction(tx)
+    ? getAppFeesUsd({
+        appFees: tx.appFees,
+        amountInUsd: tx.amountInUsd,
+        swapType: tx.swapType,
+      })
+    : null;
 
   const amountIn = parseFloat(tx.amountInFormatted);
   const amountOut = parseFloat(tx.amountOutFormatted);
@@ -140,25 +141,13 @@ export const TransactionDetails = ({
           </DetailRow>
         )}
 
-        {fee > 0 && originToken && (
+        {fee !== null && !!originToken && (
           <DetailRow label="Fee">
             <span className="text-sw-body-md text-sw-gray-50">
               <TinyNumber value={String(fee)} /> {originToken.symbol}
-              {(() => {
-                const feeUsd =
-                  tx.amountInUsd && parseFloat(tx.amountInFormatted) > 0
-                    ? fee *
-                      (parseFloat(tx.amountInUsd) /
-                        parseFloat(tx.amountInFormatted))
-                    : 0;
-
-                return feeUsd >= 0.005 ? (
-                  <span className="text-sw-gray-400">
-                    {' '}
-                    ({formatUsdAmount(feeUsd)})
-                  </span>
-                ) : null;
-              })()}
+              {!!feeUsd && (
+                <span className="text-sw-gray-400">{` (${feeUsd})`}</span>
+              )}
             </span>
           </DetailRow>
         )}

@@ -1,4 +1,7 @@
-import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript';
+import type {
+  QuoteRequest,
+  QuoteResponse,
+} from '@defuse-protocol/one-click-sdk-typescript';
 
 import type { AppFee } from './transaction';
 
@@ -18,6 +21,7 @@ type QuoteResponseShort = Pick<
 // response value on the quote rather than reading config.
 type WithAppFees = {
   appFees?: readonly AppFee[];
+  swapType?: QuoteRequest.swapType;
 };
 
 export type QuoteDry = QuoteResponseShort &
