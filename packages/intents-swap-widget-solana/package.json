@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-swap-widget-solana",
-  "version": "7.15.1",
+  "version": "7.15.2",
   "description": "Solana adapter for the Intents swap widget",
   "license": "MIT",
   "main": "dist/index.js",
@@ -26,10 +26,10 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@aurora-is-near/intents-swap-widget": "^7.15.1"
+    "@aurora-is-near/intents-swap-widget": "^7.15.2"
   },
   "devDependencies": {
-    "@aurora-is-near/intents-swap-widget": "^7.15.1"
+    "@aurora-is-near/intents-swap-widget": "^7.15.2"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.14",
