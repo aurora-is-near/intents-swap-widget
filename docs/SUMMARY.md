@@ -20,10 +20,18 @@
   * [Deposit into Aave from Solana](intents-connect/examples/deposit-into-aave-from-solana.md)
   * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)
 * [Developer Guides](intents-connect/developer-guides/README.md)
+  * [EVM](intents-connect/developer-guides/evm/README.md)
+    * [Asynchronous operations](intents-connect/developer-guides/evm/asynchronous-operations.md)
+    * [Steps destination token requirement](intents-connect/developer-guides/evm/steps-destination-token-requirement.md)
+  * [Solana](intents-connect/developer-guides/solana/README.md)
+    * [Getting your Solana intermediary address](intents-connect/developer-guides/solana/getting-your-solana-intermediary-address.md)
+    * [Kamino stake scenario](intents-connect/developer-guides/solana/kamino-stake-scenario.md)
+    * [Kamino withdraw scenario](intents-connect/developer-guides/solana/kamino-withdraw-scenario.md)
+    * [Native SOL scenario](intents-connect/developer-guides/solana/native-sol-scenario.md)
+    * [Transfer USDC scenario](intents-connect/developer-guides/solana/transfer-usdc-scenario.md)
+    * [Using Solana as destination](intents-connect/developer-guides/solana/using-solana-as-destination.md)
   * [Submit signing](intents-connect/developer-guides/submit-signing.md)
   * [Delete execution](intents-connect/developer-guides/delete-execution.md)
-  * [Asynchronous operations](intents-connect/developer-guides/asynchronous-operations.md)
-  * [Steps destination token requirement](intents-connect/developer-guides/steps-destination-token-requirement.md)
 
 ## Intents Deposits
 
