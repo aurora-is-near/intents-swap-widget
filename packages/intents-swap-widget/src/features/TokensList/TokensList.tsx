@@ -19,12 +19,11 @@ import {
   getGroupHeadersTotalIndexes,
   getListItemsTotalCount,
   getListState,
-  getListTotalHeight,
   getTokenByTotalIndex,
 } from './utils';
 import {
   LIST_CONTAINER_ID,
-  MAX_LIST_VIEW_AREA_HEIGHT,
+  LIST_VIEW_AREA_HEIGHT,
   TOKEN_ITEM_HEIGHT,
 } from './constants';
 import { TokensListPlaceholder } from './TokensListPlaceholder';
@@ -112,7 +111,6 @@ export const TokensList = ({
 
   const tokensList = areTokensGrouped ? tokensBySection : tokensUngrouped;
 
-  const listHeight = getListTotalHeight(tokensList);
   const totalItems = getListItemsTotalCount(tokensList);
   const headerIndexes = getGroupHeadersTotalIndexes(tokensList);
 
@@ -155,9 +153,7 @@ export const TokensList = ({
             itemSize={TOKEN_ITEM_HEIGHT}
             className="hide-scrollbar"
             style={{
-              minHeight: 200,
-              height: listHeight,
-              maxHeight: MAX_LIST_VIEW_AREA_HEIGHT,
+              height: LIST_VIEW_AREA_HEIGHT,
               overflowAnchor: 'none',
               outline: 'none',
             }}

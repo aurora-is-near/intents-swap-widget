@@ -65,7 +65,7 @@ export function TokenWithChainSelector({
         }}
         onClick={onClose}>
         <div
-          className="relative z-50 mx-4 w-full max-w-[456px] min-h-[300px] max-h-[670px] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col max-h-[90vh] mx-[10px]"
+          className="relative z-50 mx-[10px] w-full max-w-[456px] max-h-[90vh] rounded-csw-lg bg-csw-gray-900 shadow-lg overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}>
           <div className="px-csw-2xl pt-csw-2xl">
             <header className="py-csw-md flex items-center justify-between mb-[14px]">
@@ -173,7 +173,7 @@ export function TokenWithChainSelector({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto hide-scrollbar px-csw-2xl max-h-[450px] min-h-[200px] mt-[20px]">
+          <div className="overflow-y-auto hide-scrollbar px-csw-2xl h-[450px] mt-[20px]">
             <div className="flex flex-col">
               {allTokens.length > 0 ? (
                 allTokens
