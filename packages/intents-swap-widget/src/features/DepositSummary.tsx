@@ -1,5 +1,6 @@
 import { useConfig } from '@/config';
 import { Notes } from '@/components/Notes';
+import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
 import { TinyNumber } from '@/components/TinyNumber';
 import { useTypedTranslation } from '@/localisation';
@@ -8,12 +9,23 @@ import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
+import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 
 export const DepositSummary = () => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { slippageTolerance } = useConfig();
+
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
+  const feesUsd = getAppFeesUsd({
+    appFees: ctx.quote?.appFees,
+    swapType: ctx.quote?.swapType,
+    amountInUsd:
+      ctx.quote && 'amountInUsd' in ctx.quote
+        ? ctx.quote.amountInUsd
+        : undefined,
+  });
+
   const {
     isDirectNearTokenWithdrawal,
     isDirectTokenOnNearTransfer,
@@ -122,7 +134,7 @@ export const DepositSummary = () => {
         {!!feesPercent && (
           <Notes.Item
             label={t('quote.result.fees.label', 'Fees')}
-            value={`${feesPercent}%`}
+            value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
           />
         )}
         <Notes.Item

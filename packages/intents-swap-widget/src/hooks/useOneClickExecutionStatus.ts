@@ -21,6 +21,10 @@ type ExecutionStatus = Omit<GetExecutionStatusResponse, 'swapDetails'> & {
   };
 };
 
+type ExecutionStatusConfidential = {
+  status: GetExecutionStatusResponse['status'];
+};
+
 type Options = {
   depositAddress?: string;
   depositMemo?: string;
@@ -31,12 +35,16 @@ export const useOneClickExecutionStatus = ({
   depositAddress,
   depositMemo,
   disabled,
-}: Options = {}): UseQueryResult<ExecutionStatus> => {
+}: Options = {}): UseQueryResult<
+  ExecutionStatus | ExecutionStatusConfidential
+> => {
   const { apiKey } = useConfig();
 
   return useQuery({
     queryKey: ['oneClickExecutionStatus', depositAddress],
-    queryFn: async (): Promise<ExecutionStatus> => {
+    queryFn: async (): Promise<
+      ExecutionStatus | ExecutionStatusConfidential
+    > => {
       if (!depositAddress) {
         throw new Error(
           'Deposit address is required to fetch execution status',

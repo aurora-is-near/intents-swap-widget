@@ -19,6 +19,7 @@ import { guardStates } from '@/machine/guards';
 import { fireEvent } from '@/machine';
 
 import type { TransferResult } from '@/types/transfer';
+import { notReachable } from '../utils';
 
 type Msg =
   | { type: 'on_transaction_received' }
@@ -137,7 +138,29 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
               );
           }
         })()}>
-        {ctx.quoteStatus === 'success' && <ExternalDeposit onMsg={onMsg} />}
+        {ctx.quoteStatus === 'success' && (
+          <ExternalDeposit
+            onMsg={(msg) => {
+              switch (msg.type) {
+                case 'on_successful_transfer':
+                  // can be null for confidential swap
+                  if (msg.transferResult !== null) {
+                    onMsg({
+                      type: 'on_successful_transfer',
+                      transferResult: msg.transferResult,
+                    });
+                  }
+
+                  break;
+                case 'on_transaction_received':
+                  onMsg(msg);
+                  break;
+                default:
+                  notReachable(msg, { throwError: false });
+              }
+            }}
+          />
+        )}
       </Steps.Step>
     </Steps>
   );

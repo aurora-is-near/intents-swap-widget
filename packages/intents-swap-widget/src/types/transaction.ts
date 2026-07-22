@@ -1,4 +1,5 @@
 import { ComponentType } from 'react';
+import type { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 
 export type TransactionType = 'SWAP' | 'DEPOSIT' | 'WITHDRAWAL';
 
@@ -31,6 +32,7 @@ export type Transaction = {
   amountInFormatted: string;
   amountOutFormatted: string;
   appFees: AppFee[];
+  swapType?: QuoteRequest.swapType;
   nearTxHashes: string[];
   originChainTxHashes: string[];
   destinationChainTxHashes: string[];

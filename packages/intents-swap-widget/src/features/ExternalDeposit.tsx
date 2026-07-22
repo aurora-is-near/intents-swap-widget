@@ -19,7 +19,7 @@ import type { TransferResult } from '@/types';
 
 type Msg =
   | { type: 'on_transaction_received' }
-  | { type: 'on_successful_transfer'; transferResult: TransferResult };
+  | { type: 'on_successful_transfer'; transferResult: TransferResult | null };
 
 type Props = {
   onMsg: (msg: Msg) => void;
@@ -185,11 +185,6 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
 
     switch (status) {
       case GetExecutionStatusResponse.status.SUCCESS: {
-        const txHash =
-          depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]?.hash;
-
-        const intentHash = depositStatusQuery.data.swapDetails.intentHashes[0];
-
         fireEvent('transferSetStatus', { status: 'success' });
 
         if (ctx.sourceToken && ctx.targetToken) {
@@ -210,22 +205,34 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
 
         moveTo('transfer_success');
 
-        onMsg({
-          type: 'on_successful_transfer',
-          transferResult: {
-            hash: txHash ?? '',
-            amount: depositStatusQuery.data.swapDetails.amount,
-            amountUsd: depositStatusQuery.data.swapDetails.amountUsd,
-            amountOut: depositStatusQuery.data.swapDetails.amountOut,
-            amountOutUsd: depositStatusQuery.data.swapDetails.amountOutUsd,
-            intent: depositStatusQuery.data.swapDetails.intentHashes[0],
-            transactionLink:
-              (ctx.sourceToken &&
-                intentHash &&
-                getTransactionLink(intentHash)) ??
-              '',
-          },
-        });
+        if ('swapDetails' in depositStatusQuery.data) {
+          const txHash =
+            depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]
+              ?.hash;
+
+          const intentHash =
+            depositStatusQuery.data.swapDetails.intentHashes[0];
+
+          onMsg({
+            type: 'on_successful_transfer',
+            transferResult: {
+              hash: txHash ?? '',
+              amount: depositStatusQuery.data.swapDetails.amount,
+              amountUsd: depositStatusQuery.data.swapDetails.amountUsd,
+              amountOut: depositStatusQuery.data.swapDetails.amountOut,
+              amountOutUsd: depositStatusQuery.data.swapDetails.amountOutUsd,
+              intent: depositStatusQuery.data.swapDetails.intentHashes[0],
+              transactionLink:
+                (ctx.sourceToken &&
+                  intentHash &&
+                  getTransactionLink(intentHash)) ??
+                '',
+            },
+          });
+        } else {
+          onMsg({ type: 'on_successful_transfer', transferResult: null });
+        }
+
         break;
       }
 
