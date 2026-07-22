@@ -336,7 +336,10 @@ export const useMakeIntentsTransfer = ({
       logger.debug('[WIDGET] Withdrawal completed.', completionResult);
 
       return {
-        intent: intentTx.hash,
+        // The Explorer API indexes intents by their intent hash, and the
+        // optimistic history entry is de-duplicated against it — so this must be
+        // the intent hash, NOT `intentTx.hash` (the NEAR settlement tx hash).
+        intent: intentHash,
         // no hash means completion not trackable for this bridge
         hash: completionResult.hash ?? '',
         transactionLink: getTransactionLink(destinationAddress, {
