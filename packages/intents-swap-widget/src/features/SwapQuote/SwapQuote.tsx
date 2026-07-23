@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
@@ -39,10 +40,22 @@ export const SwapQuote = ({ className }: Props) => {
     return <SwapQuoteSkeleton />;
   }
 
+  const accordionHeight = useMemo(() => {
+    if (!ctx.walletAddress && !ctx.quote) {
+      return 61;
+    }
+
+    if (!ctx.walletAddress && ctx.quote) {
+      return 91;
+    }
+
+    return 121;
+  }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
+
   return (
     <Accordion
       expandedByDefault={false}
-      expandedHeightPx={ctx.walletAddress ? 90 : 60}
+      expandedHeightPx={accordionHeight}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate} sec` : undefined}
       className={className}

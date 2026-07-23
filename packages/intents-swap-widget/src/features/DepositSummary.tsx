@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { useConfig } from '@/config';
 import { Notes } from '@/components/Notes';
 import { FeeValue } from '@/components/FeeValue';
@@ -115,10 +117,18 @@ export const DepositSummary = () => {
     );
   })();
 
+  const accordionHeight = useMemo(() => {
+    if (!ctx.walletAddress && !ctx.quote) {
+      return 61;
+    }
+
+    return 121;
+  }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
+
   return (
     <Accordion
-      expandedHeightPx={121}
       expandedByDefault={false}
+      expandedHeightPx={accordionHeight}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}
       title={detailsTitle}>

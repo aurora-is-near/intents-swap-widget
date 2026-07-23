@@ -121,7 +121,11 @@ export const WidgetDepositContent = ({
   }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+    fireEvent('reset', {
+      clearWalletAddress: false,
+      keepSelectedTokens: true,
+      keepDepositType: true,
+    });
   };
 
   if (!!isLoading || isLoadingTokens) {
