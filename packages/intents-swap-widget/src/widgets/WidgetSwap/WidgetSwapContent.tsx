@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ChainNotSupportedModal,
   ExternalDepositWaitingHint,
+  RefundAddress,
   SendAddress,
   SubmitButton,
   SuccessScreen,
@@ -90,7 +91,11 @@ export const WidgetSwapContent = ({
   }, []);
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+    fireEvent('reset', {
+      clearWalletAddress: false,
+      keepSelectedTokens: true,
+      keepDepositType: true,
+    });
   };
 
   useStoreSideEffects({
@@ -129,7 +134,12 @@ export const WidgetSwapContent = ({
             : 'all',
       },
       target: {
-        intents: enableAccountAbstraction ? 'all' : 'none',
+        // walletless QR flow is external-only — intent targets need a wallet
+        intents:
+          enableAccountAbstraction &&
+          !(ctx.isDepositFromExternalWallet && !ctx.walletAddress)
+            ? 'all'
+            : 'none',
         external: 'all',
       },
     };
@@ -302,9 +312,13 @@ export const WidgetSwapContent = ({
             </div>
           )}
 
-          {!!ctx.walletAddress &&
+          {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) &&
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
+
+          {ctx.isDepositFromExternalWallet && !ctx.walletAddress && (
+            <RefundAddress />
+          )}
 
           {ctx.sourceToken && <SwapQuote />}
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}

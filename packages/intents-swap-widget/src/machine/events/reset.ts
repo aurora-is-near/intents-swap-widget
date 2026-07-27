@@ -2,6 +2,7 @@ import type { Machine } from '@/machine';
 import type { Context } from '@/machine/context';
 
 export type ResetPayload = {
+  keepDepositType?: boolean;
   keepSelectedTokens?: boolean;
   clearWalletAddress: boolean;
 };
@@ -11,9 +12,23 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
   ctx.sourceTokenAmount = '';
   ctx.targetTokenAmount = '';
 
-  ctx.sendAddress = undefined;
-  ctx.isDepositFromExternalWallet = false;
   ctx.externalDepositTxReceived = undefined;
+
+  if (!payload.keepDepositType) {
+    ctx.isDepositFromExternalWallet = false;
+  }
+
+  if (
+    payload.keepDepositType &&
+    ctx.isDepositFromExternalWallet &&
+    !ctx.walletAddress
+  ) {
+    // persist refund to and receive in addresses
+  } else {
+    ctx.refundToAddress = undefined;
+    ctx.sendAddress = undefined;
+  }
+
   ctx.error = null;
   ctx.unsupportedChain = null;
 

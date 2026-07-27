@@ -5,6 +5,7 @@ import {
   DepositMethodSwitcher,
   DepositSummary,
   ExternalDepositWaitingHint,
+  RefundAddress,
   SubmitButton,
   SuccessScreen,
   TokenInput,
@@ -172,7 +173,11 @@ export const WidgetDepositModeContent = ({
   }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+    fireEvent('reset', {
+      clearWalletAddress: false,
+      keepSelectedTokens: true,
+      keepDepositType: true,
+    });
   };
 
   const isTargetTokenAddressValid =
@@ -306,6 +311,10 @@ export const WidgetDepositModeContent = ({
               }
             }}
           />
+
+          {ctx.isDepositFromExternalWallet && !ctx.walletAddress && (
+            <RefundAddress />
+          )}
 
           {ctx.isDepositFromExternalWallet ? null : (
             <TokenInput.Source

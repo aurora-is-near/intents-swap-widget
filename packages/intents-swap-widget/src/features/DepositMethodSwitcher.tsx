@@ -16,7 +16,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { useTypedTranslation } from '@/localisation';
 import { guardStates } from '@/machine/guards';
-import { fireEvent } from '@/machine';
+import { fireEvent, moveTo } from '@/machine';
 
 import type { TransferResult } from '@/types/transfer';
 import { notReachable } from '../utils';
@@ -36,12 +36,28 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
+const RetryButton = ({ onClick }: { onClick: () => void }) => {
+  const { t } = useTypedTranslation();
+
+  return (
+    <Button
+      size="md"
+      variant="primary"
+      className="w-fit py-sw-sm px-sw-lg"
+      onClick={onClick}>
+      <RefreshIcon size={16} />
+      {t('deposit.external.stepSelectToken.retry', 'Try again')}
+    </Button>
+  );
+};
+
 const ExtendedContent = ({ mode, onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
   const { minDepositTokenAmount } = useComputedSnapshot();
 
   const isValidState = guardStates(ctx, [
+    'initial_dry',
     'initial_wallet',
     'input_valid_internal',
     'input_valid_external',
@@ -58,6 +74,17 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
     ? formatBigToHuman(minDepositTokenAmount, ctx.sourceToken.decimals)
     : 0;
 
+  const isInternalQuote = guardStates(ctx, ['quote_success_internal']);
+
+  const onRetryFailedTransfer = () => {
+    fireEvent('externalDepositTxSet', undefined);
+    fireEvent('transferSetStatus', { status: 'idle' });
+    fireEvent('quoteReset', null);
+    fireEvent('errorSet', null);
+
+    moveTo(isInternalQuote ? 'input_valid_internal' : 'input_valid_external');
+  };
+
   return (
     <Steps className="pt-sw-2xl">
       <Steps.Step
@@ -73,6 +100,7 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
         asideElement={
           <TokenSelectButton
             token={ctx.sourceToken}
+            state={ctx.externalDepositTxReceived ? 'disabled' : 'default'}
             onClick={() =>
               onMsg({
                 type: 'on_toggle_tokens_modal',
@@ -92,6 +120,7 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
           asideElement={
             <TokenSelectButton
               token={ctx.targetToken}
+              state={ctx.externalDepositTxReceived ? 'disabled' : 'default'}
               onClick={() =>
                 onMsg({
                   type: 'on_toggle_tokens_modal',
@@ -111,6 +140,10 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
             : "Use selected token's network"
         }
         asideElement={(() => {
+          if (ctx.transferStatus.status === 'error') {
+            return <RetryButton onClick={onRetryFailedTransfer} />;
+          }
+
           switch (ctx.quoteStatus) {
             case 'idle':
             case 'success':
@@ -118,14 +151,7 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
               return <span className="h-[36px]" />;
             case 'error':
               return (
-                <Button
-                  size="md"
-                  variant="primary"
-                  className="w-fit py-sw-sm px-sw-lg"
-                  onClick={() => fireEvent('quoteReset', null)}>
-                  <RefreshIcon size={16} />
-                  {t('deposit.external.stepSelectToken.retry', 'Try again')}
-                </Button>
+                <RetryButton onClick={() => fireEvent('quoteReset', null)} />
               );
             case 'pending':
             default:
@@ -177,8 +203,10 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
     !!ctx.sourceToken && isAuroraToken(ctx.sourceToken);
 
   const canBeToggled =
-    !!ctx.walletAddress &&
-    (!ctx.sourceToken || (!ctx.sourceToken.isIntent && !isVirtualChainSource));
+    (!!ctx.walletAddress &&
+      (!ctx.sourceToken ||
+        (!ctx.sourceToken.isIntent && !isVirtualChainSource))) ||
+    !ctx.walletAddress;
 
   // The token can also be picked from inside the external flow (i.e. the toggle
   // was already on, then Aurora selected), which the toggle guard can't catch.

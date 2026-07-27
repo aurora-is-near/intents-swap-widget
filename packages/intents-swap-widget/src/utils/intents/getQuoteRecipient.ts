@@ -9,7 +9,7 @@ type Args = {
   sendAddress?: string | null;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
-  defaultRecipient: string;
+  defaultRecipient: string | undefined;
 };
 
 export const getQuoteRecipient = ({
@@ -18,7 +18,7 @@ export const getQuoteRecipient = ({
   targetToken,
   intentsAccountType,
   defaultRecipient,
-}: Args): string => {
+}: Args): string | undefined => {
   if (isAuroraRecipient(targetToken)) {
     return 'aurora';
   }

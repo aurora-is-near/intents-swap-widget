@@ -31,6 +31,7 @@ export const SendAddress = ({ error, className }: Props) => {
   const showMagicButton =
     ctx.targetToken &&
     !ctx.sendAddress &&
+    !!ctx.walletAddress &&
     supportedChains.includes(ctx.targetToken.blockchain);
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +52,12 @@ export const SendAddress = ({ error, className }: Props) => {
       return 'fixed' as const;
     }
 
+    if (ctx.externalDepositTxReceived) {
+      return 'disabled' as const;
+    }
+
     return notification?.state ?? 'default';
-  }, [notification, sendAddress]);
+  }, [notification, sendAddress, ctx.externalDepositTxReceived]);
 
   if (hideSendAddress) {
     return null;

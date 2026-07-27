@@ -11,5 +11,7 @@ export const depositTypeSet = (
   if (payload.isExternal) {
     ctx.sourceTokenAmount = '';
     ctx.targetTokenAmount = '';
+  } else {
+    delete ctx.refundToAddress;
   }
 };
