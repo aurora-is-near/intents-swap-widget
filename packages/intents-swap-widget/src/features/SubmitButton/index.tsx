@@ -300,7 +300,7 @@ const ConnectWalletButton = () => {
       state={walletSignIn ? 'default' : 'disabled'}
       {...commonBtnProps}
       onClick={walletSignIn}>
-      {t('submit.error.connectWallet', 'Connect wallet or use QR code')}
+      {t('submit.error.connectWallet', 'Connect wallet')}
     </Button>
   );
 };
