@@ -42,6 +42,8 @@ type CreatorState = {
   enableCustomFees: boolean;
   feePercentage: string;
   collectorAddress: string;
+  // UI
+  hideTokenInputHeadings: boolean;
   // Design - Mode
   defaultMode: 'dark' | 'light';
   // Design - Style
@@ -77,6 +79,7 @@ const getCreatorStateFromRemoteWidgetConfig = (
     widgetMode: isDepositMode ? 'deposit' : 'swap',
     depositModeReceiverAddress: config.sendAddress ?? '',
     allowSwapWithExternalWallet: config.allowSwapWithExternalWallet ?? true,
+    hideTokenInputHeadings: config.hideTokenInputHeadings ?? false,
     confidentialMode: config.confidentialMode ?? 'public',
     accountAbstractionMode:
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
@@ -106,10 +109,11 @@ const initialState: CreatorState = {
   widgetMode: 'swap',
   userAuthMode: 'standalone',
   accountAbstractionMode: 'disabled',
-  allowSwapWithExternalWallet: true,
+  allowSwapWithExternalWallet: false,
   selectedNetworks: CHAINS.map((chain) => chain.id),
   selectedTokenSymbols: [],
   confidentialMode: 'public',
+  hideTokenInputHeadings: false,
   enableSellToken: true,
   defaultSellToken: { symbol: 'USDT', blockchain: 'near' },
   enableBuyToken: false,
@@ -167,6 +171,8 @@ type Action =
   | { type: 'SET_ENABLE_CUSTOM_FEES'; payload: boolean }
   | { type: 'SET_FEE_PERCENTAGE'; payload: string }
   | { type: 'SET_COLLECTOR_ADDRESS'; payload: string }
+  // UI
+  | { type: 'SET_HIDE_TOKEN_INPUT_HEADINGS'; payload: boolean }
   // Design - Mode
   | { type: 'SET_DEFAULT_MODE'; payload: 'dark' | 'light' }
   // Design - Style
@@ -239,6 +245,13 @@ function creatorReducer(state: CreatorState, action: Action): CreatorState {
         isConfigurationSyncedToRemote: false,
       };
     }
+
+    case 'SET_HIDE_TOKEN_INPUT_HEADINGS':
+      return {
+        ...state,
+        hideTokenInputHeadings: action.payload,
+        isConfigurationSyncedToRemote: false,
+      };
 
     case 'SET_ACCOUNT_ABSTRACTION_MODE':
       return {

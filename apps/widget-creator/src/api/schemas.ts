@@ -187,7 +187,7 @@ export const widgetConfigSchema: z.ZodType<SerializableWidgetConfig> = z
         virtualChainRefundRecipient: z.string().optional(),
       })
       .optional(),
-    confidentialMode: z.string().optional(),
+    confidentialMode: z.enum(['public', 'confidential', 'user-choice']).optional(),
     allowSwapWithExternalWallet: z.boolean().optional(),
   })
   .strict();

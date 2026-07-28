@@ -42,14 +42,14 @@ export const SwapQuote = ({ className }: Props) => {
 
   const accordionHeight = useMemo(() => {
     if (!ctx.walletAddress && !ctx.quote) {
-      return 61;
+      return 26;
     }
 
     if (!ctx.walletAddress && ctx.quote) {
-      return 91;
+      return 56;
     }
 
-    return 121;
+    return 86;
   }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
 
   return (
@@ -73,25 +73,33 @@ export const SwapQuote = ({ className }: Props) => {
           </span>
         )
       }>
-      <Notes>
-        <Notes.Item
-          label={t('quote.result.maxSlippage.label', 'Max slippage')}
-          value={`${(slippageTolerance / 100).toFixed(2)}%`}
-        />
-        {!!feesPercent && (
+      <div>
+        <div className="w-full h-sw-xl" />
+        <Notes>
+          <Notes.Item
+            label={t('quote.result.maxSlippage.label', 'Max slippage')}
+            value={`${(slippageTolerance / 100).toFixed(2)}%`}
+          />
           <Notes.Item
             label={t('quote.result.fees.label', 'Fees')}
-            value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
+            value={
+              feesPercent ? (
+                <FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />
+              ) : (
+                '—'
+              )
+            }
           />
-        )}
-        {!!ctx.walletAddress && (
-          <Notes.Item
-            isLoading={ctx.quoteStatus === 'pending'}
-            label={t('quote.result.processingTime.label', 'Processing time')}
-            value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
-          />
-        )}
-      </Notes>
+
+          {!!ctx.walletAddress && (
+            <Notes.Item
+              isLoading={ctx.quoteStatus === 'pending'}
+              label={t('quote.result.processingTime.label', 'Processing time')}
+              value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
+            />
+          )}
+        </Notes>
+      </div>
     </Accordion>
   );
 };

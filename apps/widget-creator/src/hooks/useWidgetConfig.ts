@@ -65,6 +65,7 @@ export const useWidgetConfig = () => {
           ? state.depositModeReceiverAddress
           : undefined,
       defaultTargetToken,
+      hideTokenInputHeadings: state.hideTokenInputHeadings,
       showTransactionHistory: true,
       showConversionPreview: true,
       extraQuoteParameters: {

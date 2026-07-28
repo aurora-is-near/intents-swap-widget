@@ -1,11 +1,11 @@
-import { ReceiptFillW700 as ReceiptIcon } from '@material-symbols-svg/react-rounded/icons/receipt';
-import { AccountBalanceWalletFillW700 as WalletIcon } from '@material-symbols-svg/react-rounded/icons/account-balance-wallet';
+import ReceiptIcon from 'reicon-react/icons/Receipt';
+import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 
 import { Card } from '@/components/Card';
 
 const CONTENT = {
   connect: {
-    Icon: WalletIcon,
+    Icon: WalletPlusIcon,
     description: 'Connect your wallet to see your transaction history',
   },
   empty: {
@@ -24,9 +24,8 @@ export const TransactionHistoryEmpty = ({ type }: Props) => {
 
   return (
     <Card>
-      <div className="flex flex-col items-center justify-center py-sw-3xl">
-        <Icon className="w-[32px] h-[32px] text-sw-gray-200 mb-sw-lg" />
-
+      <div className="flex flex-col items-center justify-center py-sw-3xl text-sw-gray-200 gap-sw-lg">
+        <Icon weight="Filled" className="w-sw-4xl h-sw-4xl" />
         <p className="text-sw-body-md text-sw-gray-300 text-center max-w-[265px]">
           {description}
         </p>

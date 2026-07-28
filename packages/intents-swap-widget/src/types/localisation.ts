@@ -35,6 +35,8 @@ export type LocalisationKeys =
   // tokens
   | 'tokens.input.max.label'
   | 'tokens.input.half.label'
+  | 'tokens.input.quarter.label'
+  | 'tokenInput.balanceMax.tooltip'
   | 'tokens.input.externalBalance.label'
   | 'tokens.input.externalBalanceOnly.label'
   | 'tokens.list.noBalanceOnApp.label'
@@ -45,6 +47,7 @@ export type LocalisationKeys =
   | 'tokens.list.searchEmpty.subLabel'
   | 'tokens.list.searchReset.label'
   | 'tokens.list.refreshBalances.label'
+  | 'tokens.input.selectToken.label'
   // deposit
   | 'deposit.external.error.noStatus'
   | 'deposit.external.error.incomplete'

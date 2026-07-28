@@ -292,7 +292,7 @@ export const WidgetDepositModeContent = ({
       }
 
       return (
-        <div className="gap-sw-lg flex flex-col w-full">
+        <div className="gap-[10px] flex flex-col w-full">
           <DepositMethodSwitcher
             mode="deposit"
             onMsg={(msg) => {

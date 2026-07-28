@@ -243,7 +243,7 @@ export const WidgetSwapContent = ({
       }
 
       return (
-        <div className="gap-sw-lg flex flex-col w-full">
+        <div className="gap-[10px] flex flex-col w-full">
           {allowSwapWithExternalWallet && (
             <DepositMethodSwitcher
               mode="swap"
@@ -267,7 +267,7 @@ export const WidgetSwapContent = ({
 
           {(!allowSwapWithExternalWallet ||
             !ctx.isDepositFromExternalWallet) && (
-            <div className="gap-[10px] relative flex flex-col">
+            <div className="gap-sw-sm relative flex flex-col">
               <TokenInput.Source
                 heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}

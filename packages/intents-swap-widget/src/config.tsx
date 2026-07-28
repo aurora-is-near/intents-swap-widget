@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from 'react-helmet-async';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -44,7 +44,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
   slippageTolerance: 100, // 1%
 
   connectedWallets: {},
-  allowSwapWithExternalWallet: true,
+  allowSwapWithExternalWallet: false,
+  hideTokenInputHeadings: false,
 
   showConversionPreview: true,
   showTransactionHistory: true,
@@ -146,10 +147,6 @@ export const WidgetConfigProvider = ({
         <WidgetConfigContext.Provider value={storeRef.current}>
           <ThemeProvider theme={theme}>
             <HelmetProvider>
-              <Helmet>
-                <link rel="preconnect" href="https://rsms.me/" />
-                <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-              </Helmet>
               {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
               {process.env.NODE_ENV === 'test' ? (
                 children

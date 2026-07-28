@@ -24,6 +24,7 @@ import {
   isTokenAvailable,
 } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
+import { getUrlParam } from '../../utils/get-url-param';
 import type { TokenType } from '../../hooks/useTokens';
 
 import { SelectATokenText } from './SelectATokenText';
@@ -49,6 +50,8 @@ export function Configure() {
   const { data: apiKeys } = useApiKeys();
   const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
     useCurrentWidgetConfig();
+
+  const isDebugMode = getUrlParam('widget') === 'debug';
 
   // Once the tokens have loaded, select them all initially
   useEffect(() => {
@@ -304,19 +307,21 @@ export function Configure() {
                   )}
               </>
             ) : (
-              <>
-                <div className="my-csw-2xl border-t border-csw-gray-800" />
-                <Toggle
-                  label="Allow swap with QR code"
-                  isEnabled={state.allowSwapWithExternalWallet}
-                  onChange={(enabled) =>
-                    dispatch({
-                      type: 'SET_ALLOW_SWAP_WITH_QR',
-                      payload: enabled,
-                    })
-                  }
-                />
-              </>
+              isDebugMode && (
+                <>
+                  <div className="my-csw-2xl border-t border-csw-gray-800" />
+                  <Toggle
+                    label="Allow swap with QR code"
+                    isEnabled={state.allowSwapWithExternalWallet}
+                    onChange={(enabled) =>
+                      dispatch({
+                        type: 'SET_ALLOW_SWAP_WITH_QR',
+                        payload: enabled,
+                      })
+                    }
+                  />
+                </>
+              )
             )}
           </div>
         </ConfigSection>

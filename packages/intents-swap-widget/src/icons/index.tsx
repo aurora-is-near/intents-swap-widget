@@ -63,6 +63,9 @@ import XlayerIcon from './xlayer.svg';
 import HypercoreIcon from './hypercore.svg';
 import NearIntentsIcon from './intents.svg';
 
+export { MaskPrivacy } from './MaskPrivacy';
+export type { MaskPrivacyProps } from './MaskPrivacy';
+
 export const UNKNOWN_ICON: React.ReactElement = <UnknownIcon />;
 export const NEAR_INTENTS_ICON: React.ReactElement = <NearIntentsIcon />;
 
