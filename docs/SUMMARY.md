@@ -86,8 +86,3 @@
   * [Localisation](intents-swap/widget-configuration/localisation.md)
   * [Widgets](intents-swap/widget-configuration/widgets.md)
 * [Confidential Swaps](intents-swap/confidential-swaps.md)
-
-## About
-
-* [Privacy Policy](about/privacy-policy.md)
-* [Terms and Conditions](about/terms-and-conditions.md)
