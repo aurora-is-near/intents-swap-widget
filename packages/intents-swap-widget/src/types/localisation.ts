@@ -89,6 +89,7 @@ export type LocalisationKeys =
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
   | 'submit.error.transfer.rejectedUnknown'
+  | 'submit.error.transfer.rejectedFullGasBalance'
   | 'submit.error.sendToAddressOverridden'
   | 'submit.error.externalTransferFailed.label'
   | 'submit.error.externalTransferFailed.incompleteMessage'
