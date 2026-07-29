@@ -88,6 +88,7 @@ export type LocalisationKeys =
   | 'submit.error.chainNotSupported.dismiss'
   | 'submit.error.transfer.noFees'
   | 'submit.error.transfer.failed'
+  | 'submit.error.transfer.rejectedUnknown'
   | 'submit.error.sendToAddressOverridden'
   | 'submit.error.externalTransferFailed.label'
   | 'submit.error.externalTransferFailed.incompleteMessage'

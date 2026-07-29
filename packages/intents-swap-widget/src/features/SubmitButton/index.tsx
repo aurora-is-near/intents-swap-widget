@@ -399,6 +399,13 @@ const SubmitButtonBase = (props: Props) => {
                   'submit.error.transfer.noFees',
                   'Transfer fees could not be estimated.',
                 );
+              case 'QUOTE_ERROR':
+                return ctx.error.meta.message;
+              case 'TRANSFER_REJECTED_UNKNOWN':
+                return t(
+                  'submit.error.transfer.rejectedUnknown',
+                  'Your wallet rejected the transfer. If you are sending your full balance, leave some to cover network fees.',
+                );
               default:
                 return t(
                   'submit.error.transfer.failed',
