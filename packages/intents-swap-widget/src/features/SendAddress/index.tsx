@@ -137,7 +137,9 @@ export const SendAddress = ({ error, className }: Props) => {
           className={cn('text-sw-label-md text-sw-gray-600 mr-auto!', {
             'ml-sw-md!': possibleToMyWallet,
           })}>
-          {possibleToMyWallet ? 'Receive in my wallet' : 'Receive in'}
+          {possibleToMyWallet
+            ? t('sendAddress.myWalletLabel', 'Receive in my wallet')
+            : t('sendAddress.label', 'Receive in')}
         </h5>
         {notification && (
           <Banner

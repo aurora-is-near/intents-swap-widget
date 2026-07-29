@@ -1,4 +1,5 @@
 import { Trans } from 'react-i18next';
+import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import type { FC } from 'react';
 
@@ -299,7 +300,8 @@ const ConnectWalletButton = () => {
     <Button
       state={walletSignIn ? 'default' : 'disabled'}
       {...commonBtnProps}
-      onClick={walletSignIn}>
+      onClick={walletSignIn}
+      icon={WalletPlusIcon}>
       {t('submit.error.connectWallet', 'Connect wallet')}
     </Button>
   );

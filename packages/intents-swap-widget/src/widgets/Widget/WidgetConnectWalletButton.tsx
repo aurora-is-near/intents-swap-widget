@@ -8,6 +8,7 @@ import { useWalletConnection } from '../../hooks/useWalletConnection';
 const DisconnectButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="h-[56px] rounded-sw-lg bg-sw-status-error text-sw-gray-950/85 w-full text-sw-label-md flex items-center justify-center gap-sw-md hover:bg-sw-status-error/90 transition-colors cursor-pointer">
       <DisconnectIcon

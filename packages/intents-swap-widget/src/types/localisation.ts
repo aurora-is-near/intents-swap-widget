@@ -101,6 +101,7 @@ export type LocalisationKeys =
   | 'submit.error.apiKeyRequired.message'
   // send address
   | 'sendAddress.label'
+  | 'sendAddress.myWalletLabel'
   | 'sendAddress.button.magic.label'
   // refund address (walletless QR flow)
   | 'refundAddress.label'

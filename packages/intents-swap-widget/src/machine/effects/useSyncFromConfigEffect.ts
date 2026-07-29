@@ -34,7 +34,7 @@ export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
       return;
     }
 
-    if (slippageTolerance) {
+    if (slippageTolerance !== undefined) {
       fireEvent('maxSlippageSet', slippageTolerance);
     }
   }, [isEnabled, slippageTolerance]);

@@ -16,6 +16,18 @@ export const Badge = forwardRef<HTMLDivElement, Props>(
     <div
       ref={ref}
       {...rest}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
       onClick={isClickable ? onClick : undefined}
       className={cn(
         'ml-auto flex items-center justify-center rounded-full transition-colors py-sw-xs px-sw-md',
