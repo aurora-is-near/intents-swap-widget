@@ -210,9 +210,6 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
             depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]
               ?.hash;
 
-          const intentHash =
-            depositStatusQuery.data.swapDetails.intentHashes[0];
-
           onMsg({
             type: 'on_successful_transfer',
             transferResult: {
@@ -221,11 +218,13 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
               amountUsd: depositStatusQuery.data.swapDetails.amountUsd,
               amountOut: depositStatusQuery.data.swapDetails.amountOut,
               amountOutUsd: depositStatusQuery.data.swapDetails.amountOutUsd,
-              intent: depositStatusQuery.data.swapDetails.intentHashes[0],
+              // for FLEX_INPUT Intents Explorer expects a deposit address
+              // in the URL as a transaction ID...
               transactionLink:
-                (ctx.sourceToken &&
-                  intentHash &&
-                  getTransactionLink(intentHash)) ??
+                (depositStatusQuery.data.quoteResponse.quote.depositAddress &&
+                  getTransactionLink(
+                    depositStatusQuery.data.quoteResponse.quote.depositAddress,
+                  )) ??
                 '',
             },
           });
