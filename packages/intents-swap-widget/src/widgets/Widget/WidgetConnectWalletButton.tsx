@@ -1,25 +1,36 @@
 import DisconnectIcon from 'reicon-react/icons/LinkBroken2';
 import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 
-import { Button } from '@/components/Button';
 import { useTypedTranslation } from '@/localisation';
 
 import { useWalletConnection } from '../../hooks/useWalletConnection';
 
-const DisconnectButton = ({ onClick }: { onClick: () => void }) => {
+const ConnectButton = ({
+  isConnected,
+  onClick,
+}: {
+  isConnected: boolean;
+  onClick: () => void;
+}) => {
   const { t } = useTypedTranslation();
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="h-[56px] rounded-sw-lg bg-sw-status-error text-sw-gray-950/85 w-full text-sw-label-md flex items-center justify-center gap-sw-md hover:bg-sw-status-error/90 transition-colors cursor-pointer">
-      <DisconnectIcon
-        weight="Filled"
-        strokeWidth={2.5}
-        className="w-sw-xl h-sw-xl"
-      />
-      {t('submit.error.disconnectWallet', 'Disconnect wallet')}
+      className="h-[36px] px-sw-xl rounded-sw-md bg-sw-gray-950 text-sw-gray-100 text-sw-label-md flex items-center justify-center gap-sw-md hover:text-sw-gray-50 hover:bg-sw-gray-800 transition-colors cursor-pointer">
+      {isConnected ? (
+        <DisconnectIcon
+          weight="Filled"
+          strokeWidth={2.5}
+          className="w-sw-xl h-sw-xl"
+        />
+      ) : (
+        <WalletPlusIcon weight="Filled" className="w-sw-xl h-sw-xl" />
+      )}
+      {isConnected
+        ? t('submit.error.disconnectWallet', 'Disconnect wallet')
+        : t('submit.error.connectWallet', 'Connect wallet')}
     </button>
   );
 };
@@ -55,16 +66,9 @@ export const WidgetConnectWalletButton = ({ onClose }: Props) => {
     onClose();
   };
 
-  return isConnected ? (
-    <DisconnectButton onClick={onClick} />
-  ) : (
-    <Button
-      size="lg"
-      variant="primary"
-      iconPosition="head"
-      onClick={onClick}
-      icon={WalletPlusIcon}>
-      Connect wallet
-    </Button>
+  return (
+    <div className="w-full flex justify-end">
+      <ConnectButton isConnected={isConnected} onClick={onClick} />
+    </div>
   );
 };

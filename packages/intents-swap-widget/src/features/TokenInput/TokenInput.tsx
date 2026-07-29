@@ -77,17 +77,6 @@ export const TokenInputWithToken = ({
       {!hideTokenInputHeadings && (
         <div className="gap-sw-md -mb-sw-lg flex items-center justify-between">
           <TokenInputHeading>{heading}</TokenInputHeading>
-          {isNotEmptyAmount(balance) &&
-            showBalance &&
-            showQuickBalanceActions && (
-              <BalanceBadges
-                token={token}
-                balance={balance}
-                isClickable={state !== 'disabled'}
-                areQuickActionsVisible={areQuickActionsVisible}
-                onMsg={onMsg}
-              />
-            )}
         </div>
       )}
       <div
@@ -130,8 +119,7 @@ export const TokenInputWithToken = ({
           ) : null}
         </div>
 
-        {hideTokenInputHeadings &&
-          isNotEmptyAmount(balance) &&
+        {isNotEmptyAmount(balance) &&
           showBalance &&
           showQuickBalanceActions && (
             <BalanceBadges
