@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { IMaskMixin } from 'react-imask';
 import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
@@ -26,6 +26,11 @@ const toBasisPoints = (percent: number) =>
 
 // Trailing zeros are noise in a field this narrow: 1, 5.5, 0.25 — never 1.00.
 const formatPercent = (percent: number) => String(Number(percent.toFixed(2)));
+
+// Auto is represented by an empty field so the placeholder can carry the
+// configured default; anything else is shown explicitly.
+const fieldValueFor = (bps: number, autoBps: number) =>
+  bps === autoBps ? '' : formatPercent(toPercent(bps));
 
 const MaskedPercentInput = IMaskMixin<
   HTMLInputElement,
@@ -61,15 +66,35 @@ const SlippageSetting = () => {
   );
 
   const [value, setValue] = useState(() =>
-    ctx.maxSlippage === slippageTolerance
-      ? ''
-      : formatPercent(toPercent(ctx.maxSlippage)),
+    fieldValueFor(ctx.maxSlippage, slippageTolerance),
   );
+
+  // The machine value also moves on its own — `useSyncFromConfigEffect` pushes
+  // `slippageTolerance` in whenever the integrator's config changes. Remember
+  // what this component last committed so a write from elsewhere resynchronises
+  // the field, while mid-edit states like '0.' (which commit nothing) are left
+  // alone rather than being overwritten mid-keystroke.
+  const committedRef = useRef(ctx.maxSlippage);
+
+  const commit = (bps: number) => {
+    committedRef.current = bps;
+    fireEvent('maxSlippageSet', bps);
+  };
+
+  useEffect(() => {
+    if (ctx.maxSlippage === committedRef.current) {
+      return;
+    }
+
+    committedRef.current = ctx.maxSlippage;
+    setIsAuto(ctx.maxSlippage === slippageTolerance);
+    setValue(fieldValueFor(ctx.maxSlippage, slippageTolerance));
+  }, [ctx.maxSlippage, slippageTolerance]);
 
   const enableAuto = () => {
     setIsAuto(true);
     setValue('');
-    fireEvent('maxSlippageSet', slippageTolerance);
+    commit(slippageTolerance);
   };
 
   const onAccept = (next: string) => {
@@ -85,7 +110,7 @@ const SlippageSetting = () => {
     }
 
     setIsAuto(false);
-    fireEvent('maxSlippageSet', toBasisPoints(percent));
+    commit(toBasisPoints(percent));
   };
 
   const onBlur = () => {

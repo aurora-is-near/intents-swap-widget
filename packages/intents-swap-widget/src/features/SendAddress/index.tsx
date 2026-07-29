@@ -88,16 +88,12 @@ export const SendAddress = ({ error, className }: Props) => {
   ]);
 
   const inputState = useMemo(() => {
-    if (!sendAddress) {
-      return 'default' as const;
-    }
-
-    if (sendAddress) {
-      return 'fixed' as const;
-    }
-
     if (ctx.externalDepositTxReceived) {
       return 'disabled' as const;
+    }
+
+    if (!sendAddress) {
+      return 'default' as const;
     }
 
     return notification?.state ?? 'default';

@@ -2,10 +2,13 @@ import DisconnectIcon from 'reicon-react/icons/LinkBroken2';
 import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 
 import { Button } from '@/components/Button';
+import { useTypedTranslation } from '@/localisation';
 
 import { useWalletConnection } from '../../hooks/useWalletConnection';
 
 const DisconnectButton = ({ onClick }: { onClick: () => void }) => {
+  const { t } = useTypedTranslation();
+
   return (
     <button
       type="button"
@@ -16,7 +19,7 @@ const DisconnectButton = ({ onClick }: { onClick: () => void }) => {
         strokeWidth={2.5}
         className="w-sw-xl h-sw-xl"
       />
-      Disconnect wallet
+      {t('submit.error.disconnectWallet', 'Disconnect wallet')}
     </button>
   );
 };

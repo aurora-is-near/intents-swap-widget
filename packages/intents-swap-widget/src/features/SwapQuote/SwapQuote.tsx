@@ -38,10 +38,8 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
     ctx.targetToken &&
     ctx.sourceToken.price / ctx.targetToken.price;
 
-  if (!ctx.sourceToken) {
-    return <SwapQuoteSkeleton />;
-  }
-
+  // Must stay above the early return below: skipping it on the skeleton render
+  // changes the hook count between renders, which React rejects outright.
   const accordionHeight = useMemo(() => {
     if (!ctx.walletAddress && !ctx.quote) {
       return 36;
@@ -53,6 +51,10 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
 
     return 86;
   }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
+
+  if (!ctx.sourceToken) {
+    return <SwapQuoteSkeleton />;
+  }
 
   return (
     <Accordion

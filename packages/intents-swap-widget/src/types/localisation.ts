@@ -75,6 +75,7 @@ export type LocalisationKeys =
   | 'deposit.external.tooltip.text'
   // submit - errors
   | 'submit.error.connectWallet'
+  | 'submit.error.disconnectWallet'
   | 'submit.error.invalidTransferData.label'
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'

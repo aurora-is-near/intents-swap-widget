@@ -202,11 +202,12 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
   const isVirtualChainSource =
     !!ctx.sourceToken && isAuroraToken(ctx.sourceToken);
 
+  // These restrictions come from the source token, not from the wallet: an
+  // Intents token has no external deposit address, and a virtual chain resolves
+  // to a Near one that would not work. Waiving them while walletless let the QR
+  // flow toggle into a state the effect below immediately undoes.
   const canBeToggled =
-    (!!ctx.walletAddress &&
-      (!ctx.sourceToken ||
-        (!ctx.sourceToken.isIntent && !isVirtualChainSource))) ||
-    !ctx.walletAddress;
+    !ctx.sourceToken || (!ctx.sourceToken.isIntent && !isVirtualChainSource);
 
   // The token can also be picked from inside the external flow (i.e. the toggle
   // was already on, then Aurora selected), which the toggle guard can't catch.
