@@ -4,11 +4,23 @@ import clsx from 'clsx';
 import { BorderBeam } from 'border-beam';
 import { Fragment, useCallback, useState } from 'react';
 
-import { useTypedTranslation } from '@/localisation';
+import { cn } from '@/utils/cn';
+import { useConfig } from '@/config';
 import { MaskPrivacy } from '@/icons';
+import { useTypedTranslation } from '@/localisation';
+import { CloseButton } from '@/components/CloseButton';
+import { fireEvent, useUnsafeSnapshot } from '@/machine';
+import { TransactionHistory } from '@/features/TransactionHistory';
+import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
+import type {
+  FakeTransaction,
+  MakeTransfer,
+  MakeTransferArgs,
+  Transaction,
+  TransferResult,
+  WidgetType,
+} from '@/types';
 
-import { Card } from '../../components/Card';
-import { CloseButton } from '../../components/CloseButton';
 import {
   Msg as SwapMsg,
   WidgetSwapContent,
@@ -19,21 +31,10 @@ import {
   WidgetDepositModeContent,
   Props as WidgetDepositModeProps,
 } from '../WidgetDepositMode/WidgetDepositModeContent';
-import { useConfig } from '../../config';
-import {
-  FakeTransaction,
-  MakeTransfer,
-  MakeTransferArgs,
-  Transaction,
-  TransferResult,
-} from '../../types';
-import { WidgetType } from '../../types/widget';
-import { WidgetProfileButton } from './WidgetProfileButton';
+
+import { SettingsContent } from './SettingsContent';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
-import { TransactionHistory } from '../../features/TransactionHistory';
-import { BalancesUpdateProvider } from '../../context/BalancesUpdateContext';
-import { fireEvent, useUnsafeSnapshot } from '../../machine';
-import { cn } from '../../utils/cn';
+import { WidgetSettingsButton } from './WidgetSettingsButton';
 
 type Msg = SwapMsg | DepositModeMsg;
 
@@ -95,6 +96,12 @@ export const WidgetContent = ({
 
     if (msg.type === 'on_select_token') {
       setIsHeaderHidden(false);
+    }
+
+    if (msg.type === 'on_click_edit_slippage') {
+      setShowHistory(false);
+      setIsHeaderHidden(false);
+      setShowProfile((p) => !p);
     }
 
     onMsg?.(msg, widgetType);
@@ -217,7 +224,7 @@ export const WidgetContent = ({
                 />
               )}
               {showProfileButton && (
-                <WidgetProfileButton
+                <WidgetSettingsButton
                   isActive={showProfile}
                   onClick={() => {
                     setShowHistory(false);
@@ -240,7 +247,12 @@ export const WidgetContent = ({
         </div>
 
         <div className={cn('w-full', { hidden: !showProfile })}>
-          <Card className="w-full h-[120px]" />
+          <SettingsContent
+            onClose={() => {
+              setShowProfile(false);
+              setIsHeaderHidden(false);
+            }}
+          />
         </div>
 
         {/* Hidden rather than unmounted while History or Profile is open. Both

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 import { Notes } from '@/components/Notes';
+import { Badge } from '@/components/Badge';
 import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
@@ -12,13 +12,15 @@ import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 import { useTypedTranslation } from '@/localisation';
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
+type Msg = { type: 'on_click_edit_slippage' };
+
 type Props = {
   className?: string;
+  onMsg: (msg: Msg) => void;
 };
 
-export const SwapQuote = ({ className }: Props) => {
+export const SwapQuote = ({ className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
-  const { slippageTolerance } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
@@ -42,7 +44,7 @@ export const SwapQuote = ({ className }: Props) => {
 
   const accordionHeight = useMemo(() => {
     if (!ctx.walletAddress && !ctx.quote) {
-      return 26;
+      return 36;
     }
 
     if (!ctx.walletAddress && ctx.quote) {
@@ -78,7 +80,13 @@ export const SwapQuote = ({ className }: Props) => {
         <Notes>
           <Notes.Item
             label={t('quote.result.maxSlippage.label', 'Max slippage')}
-            value={`${(slippageTolerance / 100).toFixed(2)}%`}
+            value={
+              <Badge
+                isClickable
+                onClick={() =>
+                  onMsg({ type: 'on_click_edit_slippage' })
+                }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+            }
           />
           <Notes.Item
             label={t('quote.result.fees.label', 'Fees')}

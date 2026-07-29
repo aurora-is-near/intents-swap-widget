@@ -47,9 +47,15 @@ export const Accordion = ({
             {title}
           </span>
           {isBadgeLoading ? (
-            <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-800" />
+            <div className="flex items-center justify-center h-sw-xl ml-auto">
+              <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-800" />
+            </div>
           ) : (
-            badge && <Badge>{badge}</Badge>
+            badge && (
+              <div className="flex items-center justify-center h-sw-xl ml-auto">
+                <Badge>{badge}</Badge>
+              </div>
+            )
           )}
           <button
             type="button"
@@ -73,7 +79,7 @@ export const Accordion = ({
 
       <div
         style={{ height: isExpanded ? expandedHeightPx : 0 }} // has to be inline for animation to work
-        className="px-sw-md gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
+        className="px-sw-lg gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
         {children}
       </div>
     </Card>

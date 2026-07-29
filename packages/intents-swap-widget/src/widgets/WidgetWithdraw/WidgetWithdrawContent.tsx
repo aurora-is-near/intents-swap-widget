@@ -16,7 +16,7 @@ import {
   useWalletConnection,
 } from '@/hooks';
 import { useConfig } from '@/config';
-import { isDebug, notReachable } from '@/utils';
+import { isDebug, noop, notReachable } from '@/utils';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
@@ -31,6 +31,7 @@ import { WidgetWithdrawSkeleton } from './WidgetWithdrawSkeleton';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | ({ type: 'on_transfer_success' } & TransferResult)
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean };
@@ -267,7 +268,7 @@ export const WidgetWithdrawContent = ({
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
 
-          {ctx.sourceToken && <SwapQuote />}
+          {ctx.sourceToken && <SwapQuote onMsg={onMsg ?? noop} />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

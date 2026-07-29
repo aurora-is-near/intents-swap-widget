@@ -21,7 +21,7 @@ import {
 } from '@/hooks';
 import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
-import { isDebug, notReachable } from '@/utils';
+import { isDebug, noop, notReachable } from '@/utils';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
@@ -37,6 +37,7 @@ import type { CommonWidgetProps, TokenInputType } from '../types';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | ({ type: 'on_transfer_success' } & TransferResult);
@@ -320,7 +321,7 @@ export const WidgetSwapContent = ({
             <RefundAddress />
           )}
 
-          {ctx.sourceToken && <SwapQuote />}
+          {ctx.sourceToken && <SwapQuote onMsg={onMsg ?? noop} />}
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}
 
           <SubmitButton

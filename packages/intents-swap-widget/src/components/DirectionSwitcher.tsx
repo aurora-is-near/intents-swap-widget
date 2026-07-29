@@ -21,7 +21,7 @@ export const DirectionSwitcher = ({
         className={cn(
           'bg-sw-gray-900 group flex h-[40px] w-[40px] items-center justify-center rounded-sw-md text-sw-gray-100 transition-all duration-150',
           {
-            'cursor-pointer hover:scale-110 hover:text-sw-gray-50 hover:bg-sw-gray-700':
+            'cursor-pointer hover:scale-105 hover:text-sw-gray-50 hover:bg-sw-gray-700':
               isEnabled && !isLoading,
           },
         )}>

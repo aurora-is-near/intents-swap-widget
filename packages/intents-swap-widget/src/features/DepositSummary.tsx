@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useConfig } from '@/config';
+import { Badge } from '@/components/Badge';
 import { Notes } from '@/components/Notes';
 import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
@@ -13,10 +13,15 @@ import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
 import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 
-export const DepositSummary = () => {
+type Msg = { type: 'on_click_edit_slippage' };
+
+type Props = {
+  onMsg: (msg: Msg) => void;
+};
+
+export const DepositSummary = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { slippageTolerance } = useConfig();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
   const feesUsd = getAppFeesUsd({
@@ -119,7 +124,7 @@ export const DepositSummary = () => {
 
   const accordionHeight = useMemo(() => {
     if (!ctx.walletAddress && !ctx.quote) {
-      return 26;
+      return 36;
     }
 
     return 86;
@@ -146,7 +151,13 @@ export const DepositSummary = () => {
           />
           <Notes.Item
             label={t('quote.result.maxSlippage.label', 'Max slippage')}
-            value={`${(slippageTolerance / 100).toFixed(2)}%`}
+            value={
+              <Badge
+                isClickable
+                onClick={() =>
+                  onMsg({ type: 'on_click_edit_slippage' })
+                }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+            }
           />
           {!!feesPercent && (
             <Notes.Item

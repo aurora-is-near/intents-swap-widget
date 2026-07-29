@@ -7,7 +7,7 @@ type Props = {
   onClick: () => void;
 };
 
-export const WidgetProfileButton = ({ isActive, onClick }: Props) => (
+export const WidgetSettingsButton = ({ isActive, onClick }: Props) => (
   <button
     type="button"
     onClick={onClick}

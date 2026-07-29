@@ -60,7 +60,7 @@ export const useNotification = (
         variant: 'error',
         state: 'error',
         message: t('wallet.recipient.error.invalidAddress', {
-          defaultValue: 'Invalid address. Use one on {{network}} network.',
+          defaultValue: 'Use address on {{network}} network',
           network: CHAINS_LIST[ctx.targetToken.blockchain]?.label ?? 'selected',
         }),
       };
@@ -74,7 +74,7 @@ export const useNotification = (
         variant: 'error',
         state: 'error',
         message: t('wallet.recipient.error.sendAddressNotFound', {
-          defaultValue: 'This {{chain}} account does not exist',
+          defaultValue: 'Account does not exist on {{chain}}',
           chain: ctx.error.meta.chain.toUpperCase(),
         }),
       };
@@ -108,8 +108,7 @@ export const useNotification = (
         variant: 'warn',
         state: 'default',
         message: t('wallet.recipient.warn.compatibleNetwork', {
-          defaultValue:
-            'Make sure the address is on the {{chainLabel}} compatible network',
+          defaultValue: 'Verify address on {{chainLabel}} network',
           chainLabel,
         }),
       };
@@ -120,8 +119,7 @@ export const useNotification = (
         variant: 'warn',
         state: 'default',
         message: t('wallet.recipient.warn.compatibleNetwork', {
-          defaultValue:
-            'Make sure the address is on the {{chainLabel}} compatible network',
+          defaultValue: 'Verify address on {{chainLabel}} network',
           chainLabel,
         }),
       };
@@ -136,8 +134,7 @@ export const useNotification = (
         variant: 'success',
         state: 'default',
         message: t('wallet.recipient.message.networkVerified', {
-          defaultValue:
-            'Address verified for {{chainLabel}} compatible network',
+          defaultValue: 'Address verified for {{chainLabel}} network',
           chainLabel,
         }),
       };
@@ -149,7 +146,7 @@ export const useNotification = (
         state: 'error',
         message: t(
           'wallet.recipient.message.receiveFunds',
-          'Please enter wallet address to receive funds',
+          'Enter wallet address to receive funds',
         ),
       };
     }
@@ -167,7 +164,7 @@ export const useNotification = (
         variant: 'success',
         state: 'default',
         message: t('wallet.recipient.message.receiveFunds', {
-          defaultValue: 'You will receive funds on your Intents account',
+          defaultValue: 'Funds land on your Intents account',
         }),
       };
     }

@@ -7,6 +7,7 @@ import { tokenSelectRotate } from './tokenSelectRotate';
 import { errorSet, type ErrorSetPayload } from './errorSet';
 import { quoteSet, type QuoteSetPayload } from './quoteSet';
 import { addressSet, type AddressSetPayload } from './addressSet';
+import { maxSlippageSet, type MaxSlippageSetPayload } from './maxSlippageSet';
 import {
   refundToAddressSet,
   type RefundToAddressSetPayload,
@@ -62,6 +63,7 @@ export type TradeEvents = {
   tokenSetBalance: TokenSetBalancePayload;
   addressSet: AddressSetPayload;
   refundToAddressSet: RefundToAddressSetPayload;
+  maxSlippageSet: MaxSlippageSetPayload;
   errorSet: ErrorSetPayload;
   quoteSet: QuoteSetPayload;
   quoteReset: null;
@@ -97,6 +99,7 @@ export const registerEvents = () => {
   onEvent('externalDepositTxSet', externalDepositTxSet);
   onEvent('tokenSelect', tokenSelect);
   onEvent('addressSet', addressSet);
+  onEvent('maxSlippageSet', maxSlippageSet);
   onEvent('refundToAddressSet', refundToAddressSet);
   onEvent('errorSet', errorSet);
   onEvent('quoteSet', quoteSet);

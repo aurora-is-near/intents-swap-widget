@@ -155,6 +155,12 @@ export type LocalisationKeys =
   | 'tokenInput.heading.source.deposit'
   | 'tokenInput.heading.source.swap'
   | 'tokenInput.heading.target.swap'
-  | 'tokenInput.balanceUpdating.tooltip';
+  | 'tokenInput.balanceUpdating.tooltip'
+  // settings
+  | 'settings.maxSlippage.label'
+  | 'settings.maxSlippage.tooltip'
+  | 'settings.maxSlippage.auto.label'
+  | 'settings.confidential.label'
+  | 'settings.confidential.tooltip';
 
 export type LocalisationDict = Partial<Record<LocalisationKeys, string>>;

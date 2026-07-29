@@ -68,14 +68,8 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const {
-    apiKey,
-    appFees,
-    fetchQuote,
-    referral,
-    slippageTolerance,
-    extraQuoteParameters,
-  } = useConfig();
+  const { apiKey, appFees, fetchQuote, referral, extraQuoteParameters } =
+    useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -197,7 +191,7 @@ export const useMakeQuote = () => {
     > & { confidentiality: 'public' | 'basic' } = {
       // Settings
       dry: isDry,
-      slippageTolerance,
+      slippageTolerance: ctx.maxSlippage,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
 
       // Confidentiality

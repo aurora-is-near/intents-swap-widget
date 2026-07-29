@@ -1,14 +1,31 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import SettingsIcon from 'reicon-react/icons/Settings2';
+import DisconnectIcon from 'reicon-react/icons/LinkBroken2';
+import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 
-import { useTheme } from '@/hooks/useTheme';
-import { getThemeCssVariables } from '@/theme/getThemeCssVariables';
+import { Button } from '@/components/Button';
+
 import { useWalletConnection } from '../../hooks/useWalletConnection';
 
-export const WidgetProfileButton = () => {
+const DisconnectButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="h-[56px] rounded-sw-lg bg-sw-status-error text-sw-gray-950/85 w-full text-sw-label-md flex items-center justify-center gap-sw-md hover:bg-sw-status-error/90 transition-colors cursor-pointer">
+      <DisconnectIcon
+        weight="Filled"
+        strokeWidth={2.5}
+        className="w-sw-xl h-sw-xl"
+      />
+      Disconnect wallet
+    </button>
+  );
+};
+
+type Props = {
+  onClose: () => void;
+};
+
+export const WidgetConnectWalletButton = ({ onClose }: Props) => {
   const { walletSignIn, walletSignOut, isConnected } = useWalletConnection();
-  const theme = useTheme();
-  const themeCssVariables = getThemeCssVariables(theme);
 
   const onClick = () => {
     if (isConnected) {
@@ -19,6 +36,7 @@ export const WidgetProfileButton = () => {
       }
 
       walletSignOut?.();
+      onClose();
 
       return;
     }
@@ -30,28 +48,19 @@ export const WidgetProfileButton = () => {
     }
 
     walletSignIn?.();
+    onClose();
   };
 
-  return (
-    <Menu>
-      <MenuButton className="outline-none">
-        <div className="p-sw-sm cursor-pointer transition-colors rounded-sw-md hover:bg-sw-gray-800 text-sw-gray-300 hover:text-sw-gray-50">
-          <SettingsIcon weight="Filled" className="h-sw-2xl w-sw-2xl" />
-        </div>
-      </MenuButton>
-      <MenuItems
-        anchor="bottom"
-        style={themeCssVariables}
-        className="sw mt-sw-lg outline-none">
-        <MenuItem>
-          <button
-            type="button"
-            onClick={onClick}
-            className="w-full flex items-center gap-sw-md outline-none px-sw-lg py-sw-sm rounded-sw-sm text-sm text-sw-gray-200 bg-sw-gray-900 border border-sw-gray-800 select-none cursor-pointer data-focus:outline-none">
-            {isConnected ? 'Disconnect' : 'Connect Wallet'}
-          </button>
-        </MenuItem>
-      </MenuItems>
-    </Menu>
+  return isConnected ? (
+    <DisconnectButton onClick={onClick} />
+  ) : (
+    <Button
+      size="lg"
+      variant="primary"
+      iconPosition="head"
+      onClick={onClick}
+      icon={WalletPlusIcon}>
+      Connect wallet
+    </Button>
   );
 };

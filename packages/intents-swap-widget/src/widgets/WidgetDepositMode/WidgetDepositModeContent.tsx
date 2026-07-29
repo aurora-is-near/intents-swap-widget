@@ -14,7 +14,7 @@ import {
 import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
 import { useUnsafeSnapshot } from '@/machine/snap';
-import { isDebug, notReachable } from '@/utils';
+import { isDebug, noop, notReachable } from '@/utils';
 import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
@@ -28,6 +28,7 @@ import type { CommonWidgetProps, TokenInputType } from '../types';
 import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
   | ({ type: 'on_transfer_success' } & TransferResult)
@@ -341,7 +342,7 @@ export const WidgetDepositModeContent = ({
           )}
 
           {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) && (
-            <DepositSummary />
+            <DepositSummary onMsg={onMsg ?? noop} />
           )}
 
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}

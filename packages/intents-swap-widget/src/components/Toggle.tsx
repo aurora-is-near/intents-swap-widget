@@ -16,7 +16,7 @@ export const Toggle = ({ isOn, isDisabled, className, onToggle }: Props) => {
       disabled={isDisabled}
       onChange={onToggle}
       className={cn(
-        'group inline-flex h-sw-xl w-[28px] items-center rounded-full transition bg-sw-gray-300 data-checked:bg-sw-accent-300 cursor-pointer',
+        'group inline-flex h-sw-xl w-[28px] items-center rounded-full transition bg-sw-gray-600 data-checked:bg-sw-accent-300 cursor-pointer',
         { 'opacity-50': isDisabled },
         className,
       )}>
