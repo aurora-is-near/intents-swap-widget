@@ -80,7 +80,10 @@ export const Accordion = ({
       <div
         style={{ height: isExpanded ? expandedHeightPx : 0 }} // has to be inline for animation to work
         className="px-sw-lg gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
-        {children}
+        <div>
+          <div className="w-full h-sw-xl" />
+          {children}
+        </div>
       </div>
     </Card>
   );

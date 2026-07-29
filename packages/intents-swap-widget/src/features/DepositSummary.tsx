@@ -138,40 +138,33 @@ export const DepositSummary = ({ onMsg }: Props) => {
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}
       className="rounded-sw-md py-sw-lg px-sw-2xl"
       title={detailsTitle}>
-      <div>
-        <div className="w-full h-sw-xl" />
-
-        <Notes>
+      <Notes>
+        <Notes.Item
+          label={t('deposit.summary.youWillDeposit.label', 'You will deposit')}
+          value={getDepositAmount()}
+        />
+        <Notes.Item
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
+          value={
+            <Badge
+              isClickable
+              onClick={() =>
+                onMsg({ type: 'on_click_edit_slippage' })
+              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+          }
+        />
+        {!!feesPercent && (
           <Notes.Item
-            label={t(
-              'deposit.summary.youWillDeposit.label',
-              'You will deposit',
-            )}
-            value={getDepositAmount()}
+            label={t('quote.result.fees.label', 'Fees')}
+            value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
           />
-          <Notes.Item
-            label={t('quote.result.maxSlippage.label', 'Max slippage')}
-            value={
-              <Badge
-                isClickable
-                onClick={() =>
-                  onMsg({ type: 'on_click_edit_slippage' })
-                }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
-            }
-          />
-          {!!feesPercent && (
-            <Notes.Item
-              label={t('quote.result.fees.label', 'Fees')}
-              value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
-            />
-          )}
-          <Notes.Item
-            isLoading={ctx.quoteStatus === 'pending'}
-            label={t('quote.result.processingTime.label', 'Processing time')}
-            value={getProcessingTime()}
-          />
-        </Notes>
-      </div>
+        )}
+        <Notes.Item
+          isLoading={ctx.quoteStatus === 'pending'}
+          label={t('quote.result.processingTime.label', 'Processing time')}
+          value={getProcessingTime()}
+        />
+      </Notes>
     </Accordion>
   );
 };

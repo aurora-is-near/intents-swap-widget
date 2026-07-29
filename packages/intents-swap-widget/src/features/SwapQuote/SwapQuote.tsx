@@ -77,39 +77,36 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
           </span>
         )
       }>
-      <div>
-        <div className="w-full h-sw-xl" />
-        <Notes>
-          <Notes.Item
-            label={t('quote.result.maxSlippage.label', 'Max slippage')}
-            value={
-              <Badge
-                isClickable
-                onClick={() =>
-                  onMsg({ type: 'on_click_edit_slippage' })
-                }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
-            }
-          />
-          <Notes.Item
-            label={t('quote.result.fees.label', 'Fees')}
-            value={
-              feesPercent ? (
-                <FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />
-              ) : (
-                '—'
-              )
-            }
-          />
+      <Notes>
+        <Notes.Item
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
+          value={
+            <Badge
+              isClickable
+              onClick={() =>
+                onMsg({ type: 'on_click_edit_slippage' })
+              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+          }
+        />
+        <Notes.Item
+          label={t('quote.result.fees.label', 'Fees')}
+          value={
+            feesPercent ? (
+              <FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />
+            ) : (
+              '—'
+            )
+          }
+        />
 
-          {!!ctx.walletAddress && (
-            <Notes.Item
-              isLoading={ctx.quoteStatus === 'pending'}
-              label={t('quote.result.processingTime.label', 'Processing time')}
-              value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
-            />
-          )}
-        </Notes>
-      </div>
+        {!!ctx.walletAddress && (
+          <Notes.Item
+            isLoading={ctx.quoteStatus === 'pending'}
+            label={t('quote.result.processingTime.label', 'Processing time')}
+            value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
+          />
+        )}
+      </Notes>
     </Accordion>
   );
 };
