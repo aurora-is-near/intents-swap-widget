@@ -1,6 +1,5 @@
 import { Edit, ExternalLink } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useState } from 'react';
 import {
   ASSET_ICONS,
   CHAINS,
@@ -9,7 +8,7 @@ import {
   isValidChainAddress,
   NEAR_INTENTS_ICON,
 } from '@aurora-is-near/intents-swap-widget';
-import { useApiKeys, useCurrentWidgetConfig } from '@/api/hooks';
+import { useApiKeys } from '@/api/hooks';
 import { InfoBanner } from '@/components/InfoBanner';
 import { Button, OutlinedButton } from '../../uikit/Button';
 import { TextInput } from '../../uikit/TextInput';
@@ -32,9 +31,7 @@ import { TokenSelectionModal } from './TokenSelectionModal';
 import { TokenWithChainSelector } from './TokenWithChainSelectorModal';
 
 export function Configure() {
-  const wereInitialTokensSet = useRef(false);
   const { state, dispatch } = useCreator();
-  const { authenticated } = usePrivy();
 
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -45,51 +42,13 @@ export function Configure() {
 
   const allTokens = useTokensGroupedBySymbol();
   const allTokenSymbols = allTokens.map((token) => token.symbol);
-  const selectedTokens = getSelectableTokenSymbols(state.selectedTokenSymbols);
+  const selectedTokens = getSelectableTokenSymbols(
+    state.selectedTokenSymbols ?? allTokenSymbols,
+  );
 
   const { data: apiKeys } = useApiKeys();
-  const { data: currentWidgetConfig, status: currentWidgetConfigStatus } =
-    useCurrentWidgetConfig();
 
   const isDebugMode = getUrlParam('widget') === 'debug';
-
-  // Once the tokens have loaded, select them all initially
-  useEffect(() => {
-    if (wereInitialTokensSet.current || !allTokenSymbols.length) {
-      return;
-    }
-
-    if (state.selectedTokenSymbols.length > 0) {
-      wereInitialTokensSet.current = true;
-
-      return;
-    }
-
-    if (authenticated && currentWidgetConfigStatus === 'pending') {
-      return;
-    }
-
-    if (authenticated && currentWidgetConfigStatus === 'success') {
-      wereInitialTokensSet.current = true;
-
-      if (currentWidgetConfig?.config.allowedTokensList?.length) {
-        return;
-      }
-    }
-
-    wereInitialTokensSet.current = true;
-    dispatch({
-      type: 'SET_SELECTED_TOKEN_SYMBOLS',
-      payload: allTokenSymbols,
-    });
-  }, [
-    allTokenSymbols,
-    authenticated,
-    currentWidgetConfig,
-    currentWidgetConfigStatus,
-    dispatch,
-    state.selectedTokenSymbols.length,
-  ]);
 
   // Whether the widget will include the Intents layer. This is exactly what
   // `enableAccountAbstraction` sends, so it holds in deposit mode too.
@@ -110,6 +69,13 @@ export function Configure() {
     newNetworks: Chains[],
     isIntentsSelected: boolean,
   ) => {
+    // There is nothing to narrow against until the token list loads, and an
+    // empty payload would read back as a deliberate "no tokens selected",
+    // stripping the widget down to the default tokens.
+    if (!allTokens.length) {
+      return;
+    }
+
     const availableTokens = allTokens.filter((token) =>
       isTokenAvailable(token, newNetworks, isIntentsSelected),
     );

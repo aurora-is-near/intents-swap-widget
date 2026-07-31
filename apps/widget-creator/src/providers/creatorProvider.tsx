@@ -33,7 +33,7 @@ type CreatorState = {
   // Configure - App Key
   apiKey: string;
   // Configure - Tokens
-  selectedTokenSymbols: string[];
+  selectedTokenSymbols: string[] | null;
   enableSellToken: boolean;
   defaultSellToken: { symbol: string; blockchain: Chains } | null;
   enableBuyToken: boolean;
@@ -85,9 +85,9 @@ const getCreatorStateFromRemoteWidgetConfig = (
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
     selectedNetworks:
       config.allowedChainsList ?? config.chainsOrder ?? state.selectedNetworks,
-    selectedTokenSymbols: normalizeSelectedTokenSymbols(
-      config.allowedTokensList ?? [],
-    ),
+    selectedTokenSymbols: config.allowedTokensList
+      ? normalizeSelectedTokenSymbols(config.allowedTokensList)
+      : null,
     enableSellToken: Boolean(config.defaultSourceToken),
     defaultSellToken: config.defaultSourceToken ?? null,
     enableBuyToken: isDepositMode ? false : Boolean(config.defaultTargetToken),
@@ -111,7 +111,7 @@ const initialState: CreatorState = {
   accountAbstractionMode: 'disabled',
   allowSwapWithExternalWallet: false,
   selectedNetworks: CHAINS.map((chain) => chain.id),
-  selectedTokenSymbols: [],
+  selectedTokenSymbols: null,
   confidentialMode: 'public',
   hideTokenInputHeadings: false,
   enableSellToken: true,

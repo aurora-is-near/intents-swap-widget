@@ -75,3 +75,22 @@ export const hasAllSelectableTokensSelected = (
     selectableSymbols.every((symbol) => selectedDisplaySymbols.has(symbol))
   );
 };
+
+export const getAllowedTokensList = (
+  selectedSymbols: string[] | null,
+  allSymbols: string[],
+  defaultSymbols: Array<string | undefined> = [],
+): string[] | undefined => {
+  if (
+    selectedSymbols === null ||
+    hasAllSelectableTokensSelected(selectedSymbols, allSymbols)
+  ) {
+    return undefined;
+  }
+
+  return normalizeSelectedTokenSymbols(
+    [...selectedSymbols, ...defaultSymbols].filter(
+      (symbol): symbol is string => !!symbol,
+    ),
+  );
+};

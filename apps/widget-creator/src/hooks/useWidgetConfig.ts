@@ -4,10 +4,7 @@ import '@aurora-is-near/intents-swap-widget/styles.css';
 
 import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
-import {
-  hasAllSelectableTokensSelected,
-  normalizeSelectedTokenSymbols,
-} from '@/utils/tokenSelection';
+import { getAllowedTokensList } from '@/utils/tokenSelection';
 import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
 import { useTokensGroupedBySymbol } from './useTokens';
 import { useCreator } from './useCreatorConfig';
@@ -30,20 +27,11 @@ export const useWidgetConfig = () => {
         ? state.defaultBuyToken
         : undefined;
 
-    // Only "all selected" allows all tokens; disabling all yields an empty list
-    // (show nothing), not "allow all". Defaults are kept so they stay selectable.
-    const allowedTokensList = hasAllSelectableTokensSelected(
+    const allowedTokensList = getAllowedTokensList(
       state.selectedTokenSymbols,
       allTokenSymbols,
-    )
-      ? undefined
-      : normalizeSelectedTokenSymbols(
-          [
-            ...state.selectedTokenSymbols,
-            defaultSourceToken?.symbol,
-            defaultTargetToken?.symbol,
-          ].filter((symbol): symbol is string => !!symbol),
-        );
+      [defaultSourceToken?.symbol, defaultTargetToken?.symbol],
+    );
 
     return {
       apiKey:
