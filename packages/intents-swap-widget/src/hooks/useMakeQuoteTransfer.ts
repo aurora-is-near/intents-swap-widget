@@ -275,18 +275,15 @@ export const useMakeQuoteTransfer = ({
         throw new TransferError({
           code: 'NO_QUOTE_FOUND',
         });
-      } else if (error instanceof Error) {
-        if (!userCancelledTx) {
-          throw new TransferError({
-            code: 'QUOTE_ERROR',
-            meta: { message: error.message },
-          });
-        }
+      } else if (isErrorLikeObject(error)) {
+        throw new TransferError({
+          code: 'QUOTE_ERROR',
+          meta: { message: error.message },
+        });
       }
 
       throw new TransferError({
-        code: 'QUOTE_ERROR',
-        meta: { message: 'Unknown quote transfer error' },
+        code: 'TRANSFER_REJECTED_UNKNOWN',
       });
     }
   };

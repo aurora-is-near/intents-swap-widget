@@ -67,6 +67,7 @@ export type QuoteSuccessTransferError =
   | { code: 'NO_QUOTE_FOUND' }
   | { code: 'NO_DEPOSIT_RESULT' }
   | { code: 'QUOTE_ERROR'; meta: { message: string } }
+  | { code: 'TRANSFER_REJECTED_UNKNOWN' }
   | { code: 'TRANSFER_INVALID_INITIAL'; meta: { message: string } }
   | { code: 'EXTERNAL_TRANSFER_FAILED' }
   | { code: 'EXTERNAL_TRANSFER_REFUNDED' }
@@ -106,6 +107,7 @@ export const TRANSFER_ERRORS: Array<
   'NO_QUOTE_FOUND',
   'NO_DEPOSIT_RESULT',
   'QUOTE_ERROR',
+  'TRANSFER_REJECTED_UNKNOWN',
   'TRANSFER_INVALID_INITIAL',
   'EXTERNAL_TRANSFER_FAILED',
   'EXTERNAL_TRANSFER_REFUNDED',
