@@ -18,6 +18,7 @@ import { useWidgetConfig } from '@/hooks/useWidgetConfig';
 import { useThemeConfig } from '@/hooks/useThemeConfig';
 import { InfoBanner } from '@/components/InfoBanner';
 import { useShareableLink } from '@/hooks/useShareableLink';
+import { copyToClipboard } from '@/utils/copyToClipboard';
 import { PLACEHOLDER_APP_KEY } from '@/constants';
 import type { ApiKey } from '@/api/types';
 import { ApiKeySelect, Header } from '../components';
@@ -145,7 +146,8 @@ export const Export = ({ onClickApiKeys }: Props) => {
       return;
     }
 
-    await navigator.clipboard.writeText(shareableLink);
+    await copyToClipboard(shareableLink);
+
     setCopyLinkFeedback(true);
     setTimeout(() => setCopyLinkFeedback(false), 2000);
   };
@@ -173,7 +175,7 @@ export function App() {
   };
 
   const handleCopyCode = async () => {
-    await navigator.clipboard.writeText(sampleCode);
+    await copyToClipboard(sampleCode);
     setCopyCodeFeedback(true);
     setTimeout(() => setCopyCodeFeedback(false), 2000);
   };
