@@ -21,6 +21,8 @@
   * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)
 * [Developer Guides](intents-connect/developer-guides/README.md)
   * [EVM](intents-connect/developer-guides/evm/README.md)
+    * [EVM steps - Aave supply](intents-connect/developer-guides/evm/evm-steps-aave-supply.md)
+    * [EVM steps - Aave withdraw](intents-connect/developer-guides/evm/evm-steps-aave-withdraw.md)
     * [Asynchronous operations](intents-connect/developer-guides/evm/asynchronous-operations.md)
     * [Steps destination token requirement](intents-connect/developer-guides/evm/steps-destination-token-requirement.md)
   * [Solana](intents-connect/developer-guides/solana/README.md)
