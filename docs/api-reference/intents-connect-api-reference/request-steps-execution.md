@@ -1,7 +1,5 @@
 ---
 icon: rectangle-api
-tags:
-  - coming-soon
 ---
 
 # Request steps execution
