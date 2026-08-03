@@ -14,6 +14,7 @@ import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { isFullGasTokenAmount } from '@/utils/checkers/isFullGasTokenAmount';
 import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
 
@@ -423,6 +424,19 @@ const SubmitButtonBase = (props: Props) => {
                   'submit.error.transfer.noFees',
                   'Transfer fees could not be estimated.',
                 );
+              case 'QUOTE_ERROR':
+                return ctx.error.meta.message;
+              case 'TRANSFER_REJECTED_UNKNOWN':
+                return isFullGasTokenAmount(ctx)
+                  ? t('submit.error.transfer.rejectedFullGasBalance', {
+                      defaultValue:
+                        'Your wallet rejected the transfer. Leave some {{symbol}} to cover the network fee.',
+                      symbol: ctx.sourceToken?.symbol,
+                    })
+                  : t(
+                      'submit.error.transfer.rejectedUnknown',
+                      'Your wallet rejected the transfer.',
+                    );
               default:
                 return t(
                   'submit.error.transfer.failed',
