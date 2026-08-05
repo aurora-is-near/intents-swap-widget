@@ -28,7 +28,7 @@ import { useSummaryItemsCount } from './useSummaryItemsCount';
 import { CopyableValue } from './CopyableValue';
 import { TokenRow } from './TokenRow';
 
-const NOTES_ITEM_HEIGHT = 44;
+const NOTES_ITEM_HEIGHT = 33;
 
 type Msg = { type: 'on_dismiss_success' };
 
@@ -294,7 +294,7 @@ export const SuccessScreen = ({
         expandedByDefault={false}
         expandedHeightPx={
           // edge case if only Rate is present
-          summaryItemsCount === 1 ? 58 : summaryItemsCount * NOTES_ITEM_HEIGHT
+          summaryItemsCount === 1 ? 38 : summaryItemsCount * NOTES_ITEM_HEIGHT
         }
         title={t('transfer.success.details.label', 'Transaction details')}>
         <Notes>

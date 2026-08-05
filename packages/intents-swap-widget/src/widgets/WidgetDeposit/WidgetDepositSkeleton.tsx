@@ -10,7 +10,7 @@ export const WidgetDepositSkeleton = () => {
 
   if (!ctx.walletAddress) {
     return (
-      <div className="w-full gap-sw-2xl relative flex flex-col">
+      <div className="w-full gap-[10px] relative flex flex-col">
         <SkeletonBox
           className={clsx({
             'h-[108px]': hideTokenInputHeadings,
@@ -24,11 +24,11 @@ export const WidgetDepositSkeleton = () => {
   }
 
   return (
-    <div className="w-full gap-sw-2xl relative flex flex-col">
+    <div className="w-full gap-[10px] relative flex flex-col">
       <SkeletonBox
         className={clsx({
-          'h-[108px]': hideTokenInputHeadings,
-          'h-[165px]': !hideTokenInputHeadings,
+          'h-[98px]': hideTokenInputHeadings,
+          'h-[120px]': !hideTokenInputHeadings,
         })}
       />
 

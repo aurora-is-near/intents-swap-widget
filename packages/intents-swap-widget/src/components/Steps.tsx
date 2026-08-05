@@ -29,18 +29,19 @@ const Step = ({
   return (
     <Wrapper>
       <div className="flex items-center justify-between py-sw-md">
-        <span className="flex items-center justify-center gap-y-sw-lg h-[28px] w-[28px] rounded-full bg-sw-gray-50 text-sw-gray-950 text-sw-label-sm">
+        <span className="flex items-center shrink-0 justify-center gap-y-sw-lg h-[28px] w-[28px] rounded-full bg-sw-gray-50 text-sw-gray-950 text-sw-label-sm">
           {stepNumber}
         </span>
         <div className="flex flex-col gap-sw-xs mr-auto ml-sw-lg">
           <span className="text-sw-label-md text-sw-gray-50">{title}</span>
-          {!!description && (
+          {!!description && typeof description === 'string' ? (
             <span className="text-sw-label-sm text-sw-gray-200">
               {description}
             </span>
+          ) : (
+            description
           )}
         </div>
-
         {asideElement}
       </div>
       {children}

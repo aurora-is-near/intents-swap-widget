@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ChainNotSupportedModal,
   ExternalDepositWaitingHint,
-  RefundAddress,
   SendAddress,
   SubmitButton,
   SuccessScreen,
@@ -21,7 +20,7 @@ import {
 } from '@/hooks';
 import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
-import { isDebug, notReachable } from '@/utils';
+import { isDebug, noop, notReachable } from '@/utils';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
@@ -37,6 +36,7 @@ import type { CommonWidgetProps, TokenInputType } from '../types';
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_tokens_modal_toggled'; isOpen: boolean }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | ({ type: 'on_transfer_success' } & TransferResult);
@@ -75,6 +75,8 @@ export const WidgetSwapContent = ({
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(
     isCompatibilityCheckRequired,
   );
+
+  const [isExternalTxReceived, setIsExternalTxReceived] = useState(false);
 
   useEffect(() => {
     if (isCompatibilityCheckRequired) {
@@ -243,10 +245,11 @@ export const WidgetSwapContent = ({
       }
 
       return (
-        <div className="gap-sw-lg flex flex-col w-full">
+        <div className="gap-[10px] flex flex-col w-full">
           {allowSwapWithExternalWallet && (
             <DepositMethodSwitcher
               mode="swap"
+              isExternalTxReceived={isExternalTxReceived}
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_toggle_tokens_modal':
@@ -254,9 +257,10 @@ export const WidgetSwapContent = ({
                     break;
                   case 'on_successful_transfer':
                     setTransferResult(msg.transferResult);
+                    setIsExternalTxReceived(false);
                     break;
                   case 'on_transaction_received':
-                    // Transaction received, no action needed
+                    setIsExternalTxReceived(true);
                     break;
                   default:
                     notReachable(msg);
@@ -267,8 +271,9 @@ export const WidgetSwapContent = ({
 
           {(!allowSwapWithExternalWallet ||
             !ctx.isDepositFromExternalWallet) && (
-            <div className="gap-[10px] relative flex flex-col">
+            <div className="gap-sw-sm relative flex flex-col">
               <TokenInput.Source
+                state={isExternalTxReceived ? 'disabled' : 'default'}
                 heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
@@ -288,9 +293,10 @@ export const WidgetSwapContent = ({
                 }}
               />
 
-              <SwapDirectionSwitcher />
+              <SwapDirectionSwitcher isDisabled={isExternalTxReceived} />
 
               <TokenInput.Target
+                state={isExternalTxReceived ? 'disabled' : 'default'}
                 heading={t('tokenInput.heading.target.swap', 'Buy')}
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
@@ -316,11 +322,7 @@ export const WidgetSwapContent = ({
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
 
-          {ctx.isDepositFromExternalWallet && !ctx.walletAddress && (
-            <RefundAddress />
-          )}
-
-          {ctx.sourceToken && <SwapQuote />}
+          {ctx.sourceToken && <SwapQuote onMsg={onMsg ?? noop} />}
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}
 
           <SubmitButton

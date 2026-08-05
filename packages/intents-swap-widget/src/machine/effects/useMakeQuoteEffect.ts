@@ -158,8 +158,7 @@ export const useMakeQuoteEffect = ({
     void run({ isRefetch: false });
   }, [shouldRun, run, cancel, ctx.sourceToken, ctx.targetToken]);
 
-  // refetch a quote on confidential mode toggle
-  useEffect(() => {
+  const resetAndRefetch = () => {
     if (!shouldRun) {
       return;
     }
@@ -191,7 +190,26 @@ export const useMakeQuoteEffect = ({
     }
 
     void run({ isRefetch: true });
+  };
+
+  // Held in a ref so the debounced refetch below runs against the context of the
+  // render it fires in, rather than the one that started the timer.
+  const resetAndRefetchRef = useRef(resetAndRefetch);
+
+  resetAndRefetchRef.current = resetAndRefetch;
+
+  useEffect(() => {
+    resetAndRefetch();
   }, [ctx.confidentialMode]);
+
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => resetAndRefetchRef.current(),
+      1000, // debounce to avoid spamming quote requests while the user is typing
+    );
+
+    return () => clearTimeout(timeout);
+  }, [ctx.maxSlippage]);
 
   // Refetch if an interval is set and a quote was successful
   useEffect(() => {

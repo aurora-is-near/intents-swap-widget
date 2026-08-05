@@ -68,14 +68,8 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const {
-    apiKey,
-    appFees,
-    fetchQuote,
-    referral,
-    slippageTolerance,
-    extraQuoteParameters,
-  } = useConfig();
+  const { apiKey, appFees, fetchQuote, referral, extraQuoteParameters } =
+    useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -197,7 +191,7 @@ export const useMakeQuote = () => {
     > & { confidentiality: 'public' | 'basic' } = {
       // Settings
       dry: isDry,
-      slippageTolerance,
+      slippageTolerance: ctx.maxSlippage,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
 
       // Confidentiality
@@ -252,12 +246,6 @@ export const useMakeQuote = () => {
           meta: { isDry, message: 'No source token amount' },
         });
       }
-    } else if (isNotEmptyAmount(ctx.sourceTokenAmount)) {
-      commonQuoteParams = {
-        ...commonQuoteParams,
-        swapType: QuoteRequest.swapType.EXACT_INPUT,
-        amount: ctx.sourceTokenAmount,
-      };
     } else {
       commonQuoteParams = {
         ...commonQuoteParams,
@@ -544,10 +532,9 @@ export const useMakeQuote = () => {
     return {
       dry: false,
       type:
-        !ctx.isDepositFromExternalWallet ||
-        isNotEmptyAmount(ctx.sourceTokenAmount)
-          ? 'QUOTE_REAL_WITH_AMOUNT'
-          : 'QUOTE_DEPOSIT_ANY_AMOUNT',
+        commonQuoteParams.swapType === QuoteRequest.swapType.FLEX_INPUT
+          ? 'QUOTE_DEPOSIT_ANY_AMOUNT'
+          : 'QUOTE_REAL_WITH_AMOUNT',
       ...quoteResult.quote,
       appFees: quoteResult.appFees,
       swapType: commonQuoteParams.swapType,

@@ -3033,6 +3033,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.11.tgz#a269e055e40e2f45873bae9d1a2fdccbd314ea3f"
   integrity sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==
 
+"@fontsource/figtree@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/figtree/-/figtree-5.3.0.tgz#15a87d903fbfd75dfcfa31d368bd10201c4b6295"
+  integrity sha512-/iTcTXL1eRBGhvD7NN9dnKzXzWqDLVZVEUFI9xIxAC1G/hXU8tCyYeXCAuPOuvSYPInFUP7H6KLGgygmDfy1SA==
+
 "@fractalwagmi/popup-connection@^1.0.18":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@fractalwagmi/popup-connection/-/popup-connection-1.1.1.tgz#2dfff4f3bb89d17947adae597f355faf46c194a9"
@@ -21465,6 +21470,11 @@ rehackt@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/rehackt/-/rehackt-0.1.0.tgz#a7c5e289c87345f70da8728a7eb878e5d03c696b"
   integrity sha512-7kRDOuLHB87D/JESKxQoRwv4DzbIdwkAGQ7p6QKGdVlY1IZheUnVhlk/4UZlNUVxdAXpyxikE3URsG067ybVzw==
+
+reicon-react@^1.1.302:
+  version "1.1.302"
+  resolved "https://registry.yarnpkg.com/reicon-react/-/reicon-react-1.1.302.tgz#c046401955e7cbf25a26b18c23f7985d6d9a713b"
+  integrity sha512-QbBVVe8GDajRbHuWprW2w5n6nDQq9qIM3778ohzbb5SPU+FQJ02mN86RojHfW9KGU1DQGSJei3aEKHwbalcMkw==
 
 require-addon@^1.1.0:
   version "1.1.0"

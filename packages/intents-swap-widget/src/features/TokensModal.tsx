@@ -149,7 +149,9 @@ export const TokensModal = ({
           className,
         )}>
         <header className="flex items-center justify-between">
-          <h2 className="text-sw-label-lg text-sw-gray-50">Select token</h2>
+          <h2 className="text-sw-label-lg text-sw-gray-50">
+            {t('tokens.input.selectToken.label', 'Select token')}
+          </h2>
           <CloseButton onClick={handleClose} />
         </header>
 

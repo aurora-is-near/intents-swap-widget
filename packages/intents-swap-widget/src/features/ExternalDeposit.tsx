@@ -6,7 +6,7 @@ import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/
 import { notReachable } from '@/utils';
 import { useExternalDepositStatus } from '@/hooks';
 import { useTypedTranslation } from '@/localisation';
-import { CopyButton, StatusWidget } from '@/components';
+import { Banner, CopyButton, StatusWidget } from '@/components';
 import { AURORA_BASE64_LOGO } from '@/constants/chains';
 import { fireEvent, guardStates, moveTo, useUnsafeSnapshot } from '@/machine';
 import { useMergedBalance } from '@/hooks/useMergedBalance';
@@ -104,7 +104,7 @@ const QrCode = ({ address }: { address: string }) => {
   }
 
   return (
-    <div className="flex flex-col gap-y-sw-xl">
+    <div className="flex flex-col gap-y-sw-sm">
       <div className="mx-auto w-fit p-sw-lg mb-sw-xl rounded-[32px] bg-[#fff]">
         <div ref={containerRef} />
       </div>
@@ -128,11 +128,19 @@ const QrCode = ({ address }: { address: string }) => {
           />
         )}
       </div>
+      <Banner
+        hasBg={false}
+        variant="success"
+        message={t(
+          'deposit.external.anyAmount.message',
+          'You can deposit any amount with this address',
+        )}
+      />
     </div>
   );
 };
 
-const Skeleton = () => {
+export const QRCodeSkeleton = () => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
 
@@ -210,9 +218,6 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
             depositStatusQuery.data.swapDetails.destinationChainTxHashes[0]
               ?.hash;
 
-          const intentHash =
-            depositStatusQuery.data.swapDetails.intentHashes[0];
-
           onMsg({
             type: 'on_successful_transfer',
             transferResult: {
@@ -221,11 +226,13 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
               amountUsd: depositStatusQuery.data.swapDetails.amountUsd,
               amountOut: depositStatusQuery.data.swapDetails.amountOut,
               amountOutUsd: depositStatusQuery.data.swapDetails.amountOutUsd,
-              intent: depositStatusQuery.data.swapDetails.intentHashes[0],
+              // for FLEX_INPUT Intents Explorer expects a deposit address
+              // in the URL as a transaction ID...
               transactionLink:
-                (ctx.sourceToken &&
-                  intentHash &&
-                  getTransactionLink(intentHash)) ??
+                (depositStatusQuery.data.quoteResponse.quote.depositAddress &&
+                  getTransactionLink(
+                    depositStatusQuery.data.quoteResponse.quote.depositAddress,
+                  )) ??
                 '',
             },
           });
@@ -265,14 +272,14 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
   }, [depositStatusQuery.data, ctx.sourceToken]);
 
   if (!isValidState) {
-    return <Skeleton />;
+    return <QRCodeSkeleton />;
   }
 
   if (!depositStatusQuery.data) {
     return isValidState ? (
       <QrCode address={ctx.quote.depositAddress} />
     ) : (
-      <Skeleton />
+      <QRCodeSkeleton />
     );
   }
 
@@ -323,7 +330,7 @@ export const ExternalDeposit = ({ onMsg }: Props) => {
           return isValidState ? (
             <QrCode address={ctx.quote.depositAddress} />
           ) : (
-            <Skeleton />
+            <QRCodeSkeleton />
           );
         case GetExecutionStatusResponse.status.SUCCESS:
           return <StatusWidget.Success />;

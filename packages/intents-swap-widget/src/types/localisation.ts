@@ -35,6 +35,8 @@ export type LocalisationKeys =
   // tokens
   | 'tokens.input.max.label'
   | 'tokens.input.half.label'
+  | 'tokens.input.quarter.label'
+  | 'tokenInput.balanceMax.tooltip'
   | 'tokens.input.externalBalance.label'
   | 'tokens.input.externalBalanceOnly.label'
   | 'tokens.list.noBalanceOnApp.label'
@@ -45,6 +47,7 @@ export type LocalisationKeys =
   | 'tokens.list.searchEmpty.subLabel'
   | 'tokens.list.searchReset.label'
   | 'tokens.list.refreshBalances.label'
+  | 'tokens.input.selectToken.label'
   // deposit
   | 'deposit.external.error.noStatus'
   | 'deposit.external.error.incomplete'
@@ -55,6 +58,9 @@ export type LocalisationKeys =
   | 'deposit.method.switcher.labelSwap'
   | 'deposit.method.switcher.virtualChainDisabled'
   | 'deposit.method.switcher.disabledHint'
+  | 'deposit.method.switcher.tooltip.noToken'
+  | 'deposit.method.switcher.tooltip.virtualChain'
+  | 'deposit.external.anyAmount.message'
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
   | 'deposit.external.stepSelectToken.title'
@@ -72,6 +78,7 @@ export type LocalisationKeys =
   | 'deposit.external.tooltip.text'
   // submit - errors
   | 'submit.error.connectWallet'
+  | 'submit.error.disconnectWallet'
   | 'submit.error.invalidTransferData.label'
   | 'submit.error.transferFailed.label'
   | 'submit.error.insufficientBalance'
@@ -93,6 +100,7 @@ export type LocalisationKeys =
   | 'submit.error.sendToAddressOverridden'
   | 'submit.error.externalTransferFailed.label'
   | 'submit.error.externalTransferFailed.incompleteMessage'
+  | 'submit.error.externalTransferFailed.retry'
   | 'submit.error.externalTransferFailed.refundedMessage'
   | 'submit.error.apiKeyInvalid'
   | 'submit.error.apiKeyInvalid.message'
@@ -100,6 +108,7 @@ export type LocalisationKeys =
   | 'submit.error.apiKeyRequired.message'
   // send address
   | 'sendAddress.label'
+  | 'sendAddress.myWalletLabel'
   | 'sendAddress.button.magic.label'
   // refund address (walletless QR flow)
   | 'refundAddress.label'
@@ -107,6 +116,8 @@ export type LocalisationKeys =
   | 'refundAddress.info.selectToken'
   | 'refundAddress.error.invalidAddress'
   | 'refundAddress.message.prompt'
+  | 'refundAddress.message.promptWithChain'
+  | 'refundAddress.message.promptChain'
   | 'submit.error.refundAddressEmpty'
   | 'submit.error.refundAddressInvalid'
   // submit - active (swap)
@@ -154,6 +165,12 @@ export type LocalisationKeys =
   | 'tokenInput.heading.source.deposit'
   | 'tokenInput.heading.source.swap'
   | 'tokenInput.heading.target.swap'
-  | 'tokenInput.balanceUpdating.tooltip';
+  | 'tokenInput.balanceUpdating.tooltip'
+  // settings
+  | 'settings.maxSlippage.label'
+  | 'settings.maxSlippage.tooltip'
+  | 'settings.maxSlippage.auto.label'
+  | 'settings.confidential.label'
+  | 'settings.confidential.tooltip';
 
 export type LocalisationDict = Partial<Record<LocalisationKeys, string>>;

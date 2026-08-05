@@ -41,6 +41,7 @@ export const initialContext: Readonly<InitialDryContext> = Object.freeze({
   transferStatus: { status: 'idle' as const },
 
   confidentialMode: 'public',
+  maxSlippage: 100,
 });
 
 export type Context =
@@ -88,7 +89,9 @@ export type InitialDryContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 };
 
 export type InitialWalletContext = {
@@ -115,7 +118,9 @@ export type InitialWalletContext = {
   quote?: never;
   quoteStatus: 'idle';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 };
 
 export type InputValidDryContext = {
@@ -142,7 +147,9 @@ export type InputValidDryContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 };
 
 export type InputValidInternalContext = {
@@ -169,7 +176,9 @@ export type InputValidInternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 };
 
 type ExternalFlowWalletFields =
@@ -206,7 +215,9 @@ export type InputValidExternalContext = {
   quote?: never;
   quoteStatus: 'idle' | 'pending' | 'error';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 } & ExternalFlowWalletFields;
 
 export type QuoteSuccessDryContext = {
@@ -233,7 +244,9 @@ export type QuoteSuccessDryContext = {
   quote: QuoteDry;
   quoteStatus: 'success';
   transferStatus: { status: 'idle' };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 };
 
 export type QuoteSuccessInternalContext = {
@@ -258,6 +271,8 @@ export type QuoteSuccessInternalContext = {
   error: QuoteSuccessError | null;
 
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
+
   quote: QuoteReal | QuoteDepositAnyAmount;
   quoteStatus: 'success';
   transferStatus:
@@ -284,7 +299,10 @@ export type QuoteSuccessExternalContext = {
 
   quote: QuoteReal;
   quoteStatus: 'success';
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
+
   transferStatus:
     | { status: 'idle' | 'error'; reason: never }
     | { status: 'pending'; reason: string };
@@ -310,5 +328,7 @@ export type TransferSuccessContext = {
   quote: Quote | undefined;
   quoteStatus: 'idle' | 'error' | 'pending' | 'success';
   transferStatus: { status: 'success'; reason: never };
+
   confidentialMode: SwapConfidentialMode;
+  maxSlippage: number;
 } & ExternalFlowWalletFields;

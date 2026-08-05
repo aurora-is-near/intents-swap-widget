@@ -8,7 +8,8 @@ import type { ListenerProps } from './types';
 export type Props = ListenerProps;
 
 export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
-  const { confidentialMode, allowSwapWithExternalWallet } = useConfig();
+  const { confidentialMode, allowSwapWithExternalWallet, slippageTolerance } =
+    useConfig();
 
   useEffect(() => {
     if (!isEnabled) {
@@ -27,6 +28,16 @@ export const useSyncFromConfigEffect = ({ isEnabled }: Props) => {
       confidentialMode === 'confidential' ? 'confidential' : 'public',
     );
   }, [isEnabled, confidentialMode]);
+
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
+    if (slippageTolerance !== undefined) {
+      fireEvent('maxSlippageSet', slippageTolerance);
+    }
+  }, [isEnabled, slippageTolerance]);
 
   useEffect(() => {
     if (!isEnabled) {

@@ -1,5 +1,5 @@
-// base components
 import type { Token } from '@/types/token';
+
 import { TokenInputWithToken } from './TokenInput';
 import { TokenInputEmpty } from './TokenInputEmpty';
 import { TokenInputSkeleton } from './TokenInputSkeleton';

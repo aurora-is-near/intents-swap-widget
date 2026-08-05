@@ -36,7 +36,7 @@ export const TokenIcon = ({
       {showChainIcon && (
         <div
           className={cn(
-            'absolute right-[-4px] h-[16px] w-[16px] flex items-center justify-center overflow-hidden border-2',
+            'absolute right-[-4px] h-[16px] w-[16px] flex items-center justify-center overflow-hidden border-2 border-sw-gray-800',
             size === 'md' ? 'top-[19px]' : 'top-[27px]',
             className,
           )}

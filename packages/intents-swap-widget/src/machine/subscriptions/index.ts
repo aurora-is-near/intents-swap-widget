@@ -1,6 +1,6 @@
 import type { ContextChange } from '@/machine/context';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
-import { machine, moveTo } from '@/machine';
+import { guardStates, machine, moveTo } from '@/machine';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { logger } from '@/logger';
 import { isQuoteIdle } from './checkers/isQuoteIdle';
@@ -13,6 +13,7 @@ import { isWalletDisconnected } from './checkers/isWalletDisconnected';
 import { isSendAddressForbidden } from './checkers/isSendAddressForbidden';
 import { isSendAddressAsConnected } from './checkers/isSendAddressAsConnected';
 import { isAmountChangedFromQuote } from './checkers/isAmountChangedFromQuote';
+import { isExternalDepositAmountChange } from './checkers/isExternalDepositAmountChange';
 
 type Args = {
   debug: boolean;
@@ -40,6 +41,11 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
       return;
     }
 
+    // amount is not part of an external deposit quote - keep it and its address
+    if (isExternalDepositAmountChange(ctx, changes)) {
+      return;
+    }
+
     // if wallet was disconnected - clean the state
     if (isWalletDisconnected(ctx, changes)) {
       fireEvent('reset', {
@@ -54,7 +60,17 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
     // revalidate inputs on any of the input changed
     const { isChanged, isDry } = isInputChanged(ctx, changes);
 
-    if (!isChanged) {
+    // A reset after a successful transfer only touches quote and transfer keys,
+    // none of which count as an input change - so on its own it would leave the
+    // machine claiming `transfer_success` over a context that no longer
+    // describes one, with nothing left to trigger a revalidation. Falling
+    // through here winds it back through an initial state, which is the only
+    // place `transfer_success` can transition to.
+    const hasLeftTransferSuccess =
+      machine.current === 'transfer_success' &&
+      !guardStates(ctx, ['transfer_success']);
+
+    if (!isChanged && !hasLeftTransferSuccess) {
       return;
     }
 

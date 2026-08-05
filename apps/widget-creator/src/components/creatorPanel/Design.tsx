@@ -179,13 +179,26 @@ export function Design() {
 
         <div className="border-t border-csw-gray-800 pt-csw-2xl mt-csw-2xl" />
 
-        <Toggle
-          label="Show container wrapper"
-          isEnabled={state.showContainerWrapper}
-          onChange={(enabled) =>
-            dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: enabled })
-          }
-        />
+        <div className="flex flex-col gap-y-csw-2xl">
+          <Toggle
+            label="Show container wrapper"
+            isEnabled={state.showContainerWrapper}
+            onChange={(enabled) =>
+              dispatch({ type: 'SET_SHOW_CONTAINER_WRAPPER', payload: enabled })
+            }
+          />
+
+          <Toggle
+            label="Show input headers"
+            isEnabled={!state.hideTokenInputHeadings}
+            onChange={(enabled) =>
+              dispatch({
+                type: 'SET_HIDE_TOKEN_INPUT_HEADINGS',
+                payload: !enabled,
+              })
+            }
+          />
+        </div>
       </ConfigSection>
     </div>
   );

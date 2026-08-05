@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ChevronLeftW700 as ChevronLeft } from '@material-symbols-svg/react-rounded/icons/chevron-left';
+import ChevronUpIcon from 'reicon-react/icons/ChevronUp';
+import ChevronDownIcon from 'reicon-react/icons/ChevronDown';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/utils/cn';
-import { Hr } from './Hr';
+
 import { Card } from './Card';
 import { Badge } from './Badge';
 
@@ -29,32 +30,60 @@ export const Accordion = ({
   const [isExpanded, setIsExpanded] = useState(expandedByDefault);
 
   return (
-    <Card className={cn('py-sw-xl', className)}>
-      <header
-        onClick={() => setIsExpanded((p) => !p)}
-        className="items-center flex w-full justify-between cursor-pointer">
-        <span className="gap-sw-xs text-sw-label-md flex text-center text-sw-gray-200">
-          {title}
-        </span>
-        {isBadgeLoading ? (
-          <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-800" />
-        ) : (
-          badge && <Badge>{badge}</Badge>
-        )}
-        <button type="button" className="ml-sw-lg cursor-pointer">
-          {isExpanded ? (
-            <ChevronLeft className="h-sw-2xl w-sw-2xl text-sw-gray-200 rotate-90" />
+    <Card
+      padding="none"
+      className={cn('rounded-sw-md px-sw-xs py-sw-lg', className)}>
+      <div className="flex w-full items-center justify-between h-sw-xl">
+        <header
+          onClick={() => setIsExpanded((p) => !p)}
+          className={cn(
+            'items-center flex w-full justify-between p-sw-md rounded-sw-sm cursor-pointer',
+            {
+              'bg-sw-gray-800': isExpanded,
+              'bg-transparent': !isExpanded,
+            },
+          )}>
+          <span className="gap-sw-xs text-sw-label-sm flex text-center text-sw-gray-200">
+            {title}
+          </span>
+          {isBadgeLoading ? (
+            <div className="flex items-center justify-center h-sw-xl ml-auto">
+              <div className="ml-auto h-[20px] w-[100px] animate-pulse rounded-full bg-sw-gray-800" />
+            </div>
           ) : (
-            <ChevronLeft className="h-sw-2xl w-sw-2xl text-sw-gray-200 -rotate-90" />
+            badge && (
+              <div className="flex items-center justify-center h-sw-xl ml-auto">
+                <Badge>{badge}</Badge>
+              </div>
+            )
           )}
-        </button>
-      </header>
+          <button
+            type="button"
+            className="ml-sw-lg cursor-pointer text-sw-gray-200">
+            {isExpanded ? (
+              <ChevronUpIcon
+                weight="Outline"
+                strokeWidth={3}
+                className="h-sw-lg w-sw-lg"
+              />
+            ) : (
+              <ChevronDownIcon
+                weight="Outline"
+                strokeWidth={3}
+                className="h-sw-lg w-sw-lg"
+              />
+            )}
+          </button>
+        </header>
+      </div>
 
       <div
         style={{ height: isExpanded ? expandedHeightPx : 0 }} // has to be inline for animation to work
-        className="gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
-        <Hr className="mt-sw-xl mb-sw-md" />
-        {children}
+        className="px-sw-lg gap-sw-md flex flex-col overflow-hidden transition-all delay-0 duration-300 ease-in-out">
+        <div>
+          <div className="w-full h-sw-xl" />
+          {children}
+        </div>
       </div>
     </Card>
   );

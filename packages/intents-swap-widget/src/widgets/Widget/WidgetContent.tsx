@@ -3,11 +3,24 @@
 import clsx from 'clsx';
 import { BorderBeam } from 'border-beam';
 import { Fragment, useCallback, useState } from 'react';
-import { Eyeglasses2W700 as Eyeglasses } from '@material-symbols-svg/react-rounded/icons/eyeglasses-2';
 
+import { cn } from '@/utils/cn';
+import { useConfig } from '@/config';
+import { MaskPrivacy } from '@/icons';
 import { useTypedTranslation } from '@/localisation';
+import { CloseButton } from '@/components/CloseButton';
+import { fireEvent, useUnsafeSnapshot } from '@/machine';
+import { TransactionHistory } from '@/features/TransactionHistory';
+import { BalancesUpdateProvider } from '@/context/BalancesUpdateContext';
+import type {
+  FakeTransaction,
+  MakeTransfer,
+  MakeTransferArgs,
+  Transaction,
+  TransferResult,
+  WidgetType,
+} from '@/types';
 
-import { CloseButton } from '../../components/CloseButton';
 import {
   Msg as SwapMsg,
   WidgetSwapContent,
@@ -18,21 +31,10 @@ import {
   WidgetDepositModeContent,
   Props as WidgetDepositModeProps,
 } from '../WidgetDepositMode/WidgetDepositModeContent';
-import { useConfig } from '../../config';
-import {
-  FakeTransaction,
-  MakeTransfer,
-  MakeTransferArgs,
-  Transaction,
-  TransferResult,
-} from '../../types';
-import { WidgetType } from '../../types/widget';
-import { WidgetProfileButton } from './WidgetProfileButton';
+
+import { SettingsContent } from './SettingsContent';
 import { WidgetHistoryButton } from './WidgetHistoryButton';
-import { TransactionHistory } from '../../features/TransactionHistory';
-import { BalancesUpdateProvider } from '../../context/BalancesUpdateContext';
-import { fireEvent, useUnsafeSnapshot } from '../../machine';
-import { cn } from '../../utils/cn';
+import { WidgetSettingsButton } from './WidgetSettingsButton';
 
 type Msg = SwapMsg | DepositModeMsg;
 
@@ -71,6 +73,7 @@ export const WidgetContent = ({
   ...restProps
 }: Props) => {
   const [showHistory, setShowHistory] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [selectedHistoricalTransaction, setSelectedHistoricalTransaction] =
     useState<Transaction | FakeTransaction | null>(null);
@@ -95,6 +98,12 @@ export const WidgetContent = ({
       setIsHeaderHidden(false);
     }
 
+    if (msg.type === 'on_click_edit_slippage') {
+      setShowHistory(false);
+      setIsHeaderHidden(false);
+      setShowProfile((p) => !p);
+    }
+
     onMsg?.(msg, widgetType);
   };
 
@@ -109,18 +118,27 @@ export const WidgetContent = ({
     setPendingTransactionsCount(count);
   }, []);
 
+  const showWidget = !showHistory && !showProfile;
+
   const showHeader =
-    (!isHeaderHidden || showHistory) && ctx.state !== 'transfer_success';
+    (!isHeaderHidden || !showWidget) && ctx.state !== 'transfer_success';
 
   return (
     <BalancesUpdateProvider>
       <>
         {showHeader && (
-          <div className="mb-sw-xl h-[34px] w-full flex items-center">
+          <div className="mb-sw-sm h-[36px] w-full flex items-center">
             <div className="w-full flex items-center">
               {(() => {
-                if (showHistory) {
-                  return <CloseButton onClick={() => setShowHistory(false)} />;
+                if (!showWidget) {
+                  return (
+                    <CloseButton
+                      onClick={() => {
+                        setShowHistory(false);
+                        setShowProfile(false);
+                      }}
+                    />
+                  );
                 }
 
                 const Wrapper =
@@ -134,7 +152,7 @@ export const WidgetContent = ({
                       <div
                         onClick={handleConfidentialModeToggle}
                         className={clsx(
-                          'flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-lg pr-sw-xl py-sw-md border-1 cursor-pointer',
+                          'flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-md pr-sw-lg h-sw-4xl border-1 cursor-pointer',
                           {
                             'border-sw-gray-700':
                               ctx.confidentialMode === 'confidential',
@@ -142,8 +160,8 @@ export const WidgetContent = ({
                               ctx.confidentialMode !== 'confidential',
                           },
                         )}>
-                        <Eyeglasses
-                          size={17}
+                        <MaskPrivacy
+                          size={12}
                           className={clsx({
                             'text-sw-gray-50':
                               ctx.confidentialMode === 'confidential',
@@ -176,8 +194,8 @@ export const WidgetContent = ({
                 if (confidentialModeConfig === 'confidential') {
                   return (
                     <BorderBeam>
-                      <div className="flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-lg pr-sw-xl py-sw-md border-1 border-sw-gray-700">
-                        <Eyeglasses size={17} className="text-sw-gray-50" />
+                      <div className="flex items-center gap-sw-md bg-sw-gray-900 rounded-full pl-sw-md pr-sw-lg h-sw-4xl border-1 border-sw-gray-700">
+                        <MaskPrivacy size={12} className="text-sw-gray-50" />
                         <span className="text-sw-label-md text-sw-gray-50 select-none">
                           {t(
                             'wallet.confidentialMode.confidentialLabel',
@@ -192,18 +210,30 @@ export const WidgetContent = ({
                 return null;
               })()}
             </div>
-            {!!showTransactionHistory && !!apiKey && (
-              <WidgetHistoryButton
-                isActive={showHistory}
-                pendingTransactionsCount={pendingTransactionsCount}
-                onClick={() => {
-                  setIsHeaderHidden(false);
-                  setShowHistory((p) => !p);
-                  setSelectedHistoricalTransaction(null);
-                }}
-              />
-            )}
-            {showProfileButton && <WidgetProfileButton />}
+            <div className="flex items-center gap-sw-xs">
+              {!!showTransactionHistory && !!apiKey && (
+                <WidgetHistoryButton
+                  isActive={showHistory}
+                  pendingTransactionsCount={pendingTransactionsCount}
+                  onClick={() => {
+                    setShowProfile(false);
+                    setIsHeaderHidden(false);
+                    setShowHistory((p) => !p);
+                    setSelectedHistoricalTransaction(null);
+                  }}
+                />
+              )}
+              {showProfileButton && (
+                <WidgetSettingsButton
+                  isActive={showProfile}
+                  onClick={() => {
+                    setShowHistory(false);
+                    setIsHeaderHidden(false);
+                    setShowProfile((p) => !p);
+                  }}
+                />
+              )}
+            </div>
           </div>
         )}
 
@@ -216,8 +246,21 @@ export const WidgetContent = ({
           />
         </div>
 
-        {!showHistory &&
-          (() => {
+        <div className={cn('w-full', { hidden: !showProfile })}>
+          <SettingsContent
+            onClose={() => {
+              setShowProfile(false);
+              setIsHeaderHidden(false);
+            }}
+          />
+        </div>
+
+        {/* Hidden rather than unmounted while History or Profile is open. Both
+            widget bodies fire a machine `reset` from a mount effect, so
+            unmounting here means closing those views remounts them and wipes the
+            selected tokens, amounts and wallet address. */}
+        <div className={cn('w-full', { hidden: !showWidget })}>
+          {(() => {
             switch (defaultMode) {
               case 'swap': {
                 return (
@@ -247,6 +290,7 @@ export const WidgetContent = ({
                 return null;
             }
           })()}
+        </div>
       </>
     </BalancesUpdateProvider>
   );
