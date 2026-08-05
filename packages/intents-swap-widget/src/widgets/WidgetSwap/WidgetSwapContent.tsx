@@ -24,6 +24,7 @@ import { isDebug, noop, notReachable } from '@/utils';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
+import { RefundAddressField } from '@/features/RefundAddressStep/Field';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { DepositMethodSwitcher } from '@/features/DepositMethodSwitcher';
 import type { ChainsFilters, Token, TransferResult } from '@/types';
@@ -246,6 +247,63 @@ export const WidgetSwapContent = ({
 
       return (
         <div className="gap-[10px] flex flex-col w-full">
+          <div className="gap-sw-sm relative flex flex-col">
+            <TokenInput.Source
+              state={isExternalTxReceived ? 'disabled' : 'default'}
+              heading={t('tokenInput.heading.source.swap', 'Sell')}
+              isChanging={lastChangedInput === 'source'}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_select_token':
+                    onChangeToken('source', msg.token);
+                    break;
+                  case 'on_change_amount':
+                    onChangeAmount('source', msg.amount);
+                    break;
+                  case 'on_click_select_token':
+                    updateTokenModalState('source');
+                    break;
+                  default:
+                    notReachable(msg);
+                }
+              }}
+            />
+
+            <SwapDirectionSwitcher
+              isExternalTxReceived={isExternalTxReceived}
+            />
+
+            <TokenInput.Target
+              state={isExternalTxReceived ? 'disabled' : 'default'}
+              heading={t('tokenInput.heading.target.swap', 'Buy')}
+              isChanging={lastChangedInput === 'target'}
+              onMsg={(msg) => {
+                switch (msg.type) {
+                  case 'on_select_token':
+                    onChangeToken('target', msg.token);
+                    break;
+                  case 'on_change_amount':
+                    onChangeAmount('target', msg.amount);
+                    break;
+                  case 'on_click_select_token':
+                    updateTokenModalState('target');
+                    break;
+                  default:
+                    notReachable(msg);
+                }
+              }}
+            />
+          </div>
+
+          {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) &&
+            ctx.targetToken &&
+            !ctx.targetToken.isIntent && <SendAddress />}
+
+          {!ctx.walletAddress &&
+            ctx.isDepositFromExternalWallet &&
+            ctx.sourceToken &&
+            ctx.targetToken && <RefundAddressField />}
+
           {allowSwapWithExternalWallet && (
             <DepositMethodSwitcher
               mode="swap"
@@ -268,59 +326,6 @@ export const WidgetSwapContent = ({
               }}
             />
           )}
-
-          {(!allowSwapWithExternalWallet ||
-            !ctx.isDepositFromExternalWallet) && (
-            <div className="gap-sw-sm relative flex flex-col">
-              <TokenInput.Source
-                state={isExternalTxReceived ? 'disabled' : 'default'}
-                heading={t('tokenInput.heading.source.swap', 'Sell')}
-                isChanging={lastChangedInput === 'source'}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_select_token':
-                      onChangeToken('source', msg.token);
-                      break;
-                    case 'on_change_amount':
-                      onChangeAmount('source', msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      updateTokenModalState('source');
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
-
-              <SwapDirectionSwitcher isDisabled={isExternalTxReceived} />
-
-              <TokenInput.Target
-                state={isExternalTxReceived ? 'disabled' : 'default'}
-                heading={t('tokenInput.heading.target.swap', 'Buy')}
-                isChanging={lastChangedInput === 'target'}
-                onMsg={(msg) => {
-                  switch (msg.type) {
-                    case 'on_select_token':
-                      onChangeToken('target', msg.token);
-                      break;
-                    case 'on_change_amount':
-                      onChangeAmount('target', msg.amount);
-                      break;
-                    case 'on_click_select_token':
-                      updateTokenModalState('target');
-                      break;
-                    default:
-                      notReachable(msg);
-                  }
-                }}
-              />
-            </div>
-          )}
-
-          {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) &&
-            ctx.targetToken &&
-            !ctx.targetToken.isIntent && <SendAddress />}
 
           {ctx.sourceToken && <SwapQuote onMsg={onMsg ?? noop} />}
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}

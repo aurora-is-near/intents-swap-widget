@@ -4,10 +4,10 @@ import { fireEvent } from '@/machine';
 import { useConfig } from '../config';
 
 type Props = {
-  isDisabled?: boolean;
+  isExternalTxReceived?: boolean;
 };
 
-export const SwapDirectionSwitcher = ({ isDisabled }: Props) => {
+export const SwapDirectionSwitcher = ({ isExternalTxReceived }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { lockSwapDirection } = useConfig();
 
@@ -15,8 +15,12 @@ export const SwapDirectionSwitcher = ({ isDisabled }: Props) => {
     <DirectionSwitcher
       isLoading={ctx.quoteStatus === 'pending'}
       isEnabled={
-        !isDisabled ||
-        (!lockSwapDirection && !!(ctx.sourceToken && ctx.targetToken))
+        !isExternalTxReceived &&
+        !lockSwapDirection &&
+        !!ctx.sourceToken &&
+        !!ctx.targetToken &&
+        (!ctx.isDepositFromExternalWallet ||
+          (ctx.isDepositFromExternalWallet && !ctx.targetToken.isIntent))
       }
       onClick={() => fireEvent('tokenSelectRotate', null)}
     />

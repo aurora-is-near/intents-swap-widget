@@ -14,7 +14,6 @@ import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { TransferResult } from '@/types';
 
 type Msg =
@@ -111,7 +110,15 @@ const QrCode = ({ address }: { address: string }) => {
       <div className="flex flex-col gap-y-sw-lg">
         <InputReadonlyCopy
           copyValue={address}
-          label={t('deposit.external.address.label', 'Send to this address')}
+          label={
+            ctx.sourceToken
+              ? t('deposit.external.address.labelWithAsset', {
+                  defaultValue: 'Send {{symbol}} on {{chain}} to this address',
+                  symbol: ctx.sourceToken.symbol.toUpperCase(),
+                  chain: ctx.sourceToken.blockchain.toUpperCase(),
+                })
+              : t('deposit.external.address.label', 'Send to this address')
+          }
           displayValue={formatAddressTruncate(address, {
             mode: 'manual',
             leftVisible: 8,
@@ -142,7 +149,6 @@ const QrCode = ({ address }: { address: string }) => {
 
 export const QRCodeSkeleton = () => {
   const { t } = useTypedTranslation();
-  const { ctx } = useUnsafeSnapshot();
 
   return (
     <div className="flex flex-col gap-sw-2xl items-center">
@@ -150,9 +156,7 @@ export const QRCodeSkeleton = () => {
       <div className="bg-sw-gray-800 h-[44px] w-full animate-pulse rounded-sw-md flex items-center justify-center gap-sw-sm">
         <ProgressActivity className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
         <span className="text-sw-gray-100 text-sw-label-sm">
-          {!isNotEmptyAmount(ctx.sourceTokenAmount)
-            ? t('deposit.external.loading.waiting', 'Waiting for token amount')
-            : t('deposit.external.loading.fetching', 'Fetching new address')}
+          {t('deposit.external.loading.fetching', 'Fetching new address')}
         </span>
       </div>
     </div>

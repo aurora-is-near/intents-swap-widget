@@ -11,10 +11,11 @@ import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import { CHAINS_LIST } from '@/constants/chains';
 
 type Props = {
+  stepNumber: number;
   className?: string;
 };
 
-export const RefundAddressStep = ({ className }: Props) => {
+export const RefundAddressStep = ({ stepNumber, className }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
 
@@ -57,7 +58,7 @@ export const RefundAddressStep = ({ className }: Props) => {
     <div className={cn('flex flex-col gap-y-sw-xl', className)}>
       <div className="flex items-center justify-between py-sw-md">
         <span className="flex items-center shrink-0 justify-center gap-y-sw-lg h-[28px] w-[28px] rounded-full bg-sw-gray-50 text-sw-gray-950 text-sw-label-sm">
-          2
+          {stepNumber}
         </span>
         <div className="flex flex-col gap-sw-xs mr-auto ml-sw-lg w-full">
           <span className="flex items-center justify-between text-sw-label-md text-sw-gray-50">

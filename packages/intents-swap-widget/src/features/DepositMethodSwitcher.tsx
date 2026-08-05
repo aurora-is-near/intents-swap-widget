@@ -123,6 +123,66 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
     );
   }
 
+  if (
+    ctx.isDepositFromExternalWallet &&
+    ctx.sourceToken &&
+    ctx.targetToken &&
+    mode === 'swap'
+  ) {
+    if (ctx.quoteStatus === 'success') {
+      return (
+        <>
+          <div className="w-full h-sw-2xl" />
+          <ExternalDeposit
+            onMsg={(msg) => {
+              switch (msg.type) {
+                case 'on_successful_transfer':
+                  // can be null for confidential swap
+                  if (msg.transferResult !== null) {
+                    onMsg({
+                      type: 'on_successful_transfer',
+                      transferResult: msg.transferResult,
+                    });
+                  }
+
+                  break;
+                case 'on_transaction_received':
+                  onMsg(msg);
+                  break;
+                default:
+                  notReachable(msg, { throwError: false });
+              }
+            }}
+          />
+        </>
+      );
+    }
+
+    if (!ctx.walletAddress && (!ctx.sendAddress || !ctx.refundToAddress)) {
+      return (
+        <>
+          <div className="w-full h-sw-2xl" />
+          <div className="bg-sw-gray-800 h-[44px] w-full animate-pulse rounded-sw-md flex items-center justify-center gap-sw-sm">
+            <ProgressActivity className="animate-spin text-sw-gray-100 h-sw-lg w-sw-lg" />
+            <span className="text-sw-gray-100 text-sw-label-sm">
+              {t(
+                'deposit.external.loading.addresses',
+                'Waiting for refund and recipient addresses',
+              )}
+            </span>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="w-full h-sw-2xl" />
+        <QRCodeSkeleton />
+      </>
+    );
+  }
+
   return (
     <Steps className="pt-sw-2xl">
       <Steps.Step
@@ -151,30 +211,9 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
       />
 
       {ctx.isDepositFromExternalWallet && !ctx.walletAddress ? (
-        <RefundAddressStep />
+        <RefundAddressStep stepNumber={2} />
       ) : null}
 
-      {mode === 'swap' ? (
-        <Steps.Step
-          title={t(
-            'deposit.external.stepSelectReceiveToken.title',
-            'Select token to receive',
-          )}
-          asideElement={
-            <TokenSelectButton
-              token={ctx.targetToken}
-              state={ctx.externalDepositTxReceived ? 'disabled' : 'default'}
-              onClick={() =>
-                onMsg({
-                  type: 'on_toggle_tokens_modal',
-                  isOpen: true,
-                  token: 'target',
-                })
-              }
-            />
-          }
-        />
-      ) : null}
       <Steps.Step
         title={`Send ${ctx.sourceToken ? `${ctx.sourceToken?.symbol} ` : ''}to address`}
         description={
@@ -276,6 +315,7 @@ export const DepositMethodSwitcher = ({
   const canBeToggled =
     !isExternalTxReceived &&
     !!ctx.sourceToken &&
+    ((!!ctx.targetToken && mode === 'swap') || mode === 'deposit') &&
     !ctx.sourceToken.isIntent &&
     !isVirtualChainSource;
 
@@ -366,7 +406,9 @@ export const DepositMethodSwitcher = ({
   };
 
   return (
-    <Card className={cn('flex flex-col py-sw-lg', className)}>
+    <Card
+      padding="none"
+      className={cn('flex flex-col py-sw-lg px-sw-xl', className)}>
       <header className="gap-sw-md flex items-center justify-between">
         <QrCodeIcon size={16} className="text-sw-gray-200" />
         <span className="text-sw-label-md text-sw-gray-200">
@@ -396,6 +438,13 @@ export const DepositMethodSwitcher = ({
               return t(
                 'deposit.method.switcher.tooltip.noToken',
                 'Select a token to deposit first.',
+              );
+            }
+
+            if (!ctx.targetToken && mode === 'swap') {
+              return t(
+                'deposit.method.switcher.tooltip.noTargetToken',
+                'Select a token to receive first.',
               );
             }
 
