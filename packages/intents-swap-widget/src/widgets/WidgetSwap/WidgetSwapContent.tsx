@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ChainNotSupportedModal,
   ExternalDepositWaitingHint,
-  RefundAddress,
   SendAddress,
   SubmitButton,
   SuccessScreen,
@@ -76,6 +75,8 @@ export const WidgetSwapContent = ({
   const [isCompatibilityOpen, setIsCompatibilityOpen] = useState(
     isCompatibilityCheckRequired,
   );
+
+  const [isExternalTxReceived, setIsExternalTxReceived] = useState(false);
 
   useEffect(() => {
     if (isCompatibilityCheckRequired) {
@@ -248,6 +249,7 @@ export const WidgetSwapContent = ({
           {allowSwapWithExternalWallet && (
             <DepositMethodSwitcher
               mode="swap"
+              isExternalTxReceived={isExternalTxReceived}
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_toggle_tokens_modal':
@@ -255,9 +257,10 @@ export const WidgetSwapContent = ({
                     break;
                   case 'on_successful_transfer':
                     setTransferResult(msg.transferResult);
+                    setIsExternalTxReceived(false);
                     break;
                   case 'on_transaction_received':
-                    // Transaction received, no action needed
+                    setIsExternalTxReceived(true);
                     break;
                   default:
                     notReachable(msg);
@@ -270,6 +273,7 @@ export const WidgetSwapContent = ({
             !ctx.isDepositFromExternalWallet) && (
             <div className="gap-sw-sm relative flex flex-col">
               <TokenInput.Source
+                state={isExternalTxReceived ? 'disabled' : 'default'}
                 heading={t('tokenInput.heading.source.swap', 'Sell')}
                 isChanging={lastChangedInput === 'source'}
                 onMsg={(msg) => {
@@ -289,9 +293,10 @@ export const WidgetSwapContent = ({
                 }}
               />
 
-              <SwapDirectionSwitcher />
+              <SwapDirectionSwitcher isDisabled={isExternalTxReceived} />
 
               <TokenInput.Target
+                state={isExternalTxReceived ? 'disabled' : 'default'}
                 heading={t('tokenInput.heading.target.swap', 'Buy')}
                 isChanging={lastChangedInput === 'target'}
                 onMsg={(msg) => {
@@ -316,10 +321,6 @@ export const WidgetSwapContent = ({
           {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) &&
             ctx.targetToken &&
             !ctx.targetToken.isIntent && <SendAddress />}
-
-          {ctx.isDepositFromExternalWallet && !ctx.walletAddress && (
-            <RefundAddress />
-          )}
 
           {ctx.sourceToken && <SwapQuote onMsg={onMsg ?? noop} />}
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}

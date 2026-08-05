@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 import { Notes } from '@/components/Notes';
@@ -24,33 +23,24 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
   const { ctx } = useUnsafeSnapshot();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
-  const feesUsd = getAppFeesUsd({
-    appFees: ctx.quote?.appFees,
-    swapType: ctx.quote?.swapType,
-    amountInUsd:
-      ctx.quote && 'amountInUsd' in ctx.quote
-        ? ctx.quote.amountInUsd
-        : undefined,
-  });
+
+  // for QR code deposit/swap user may send any amount that we don't know in advance
+  // so we can't calculate fees in USD, but we still show fees in percent
+  const feesUsd = ctx.isDepositFromExternalWallet
+    ? null
+    : getAppFeesUsd({
+        appFees: ctx.quote?.appFees,
+        swapType: ctx.quote?.swapType,
+        amountInUsd:
+          ctx.quote && 'amountInUsd' in ctx.quote
+            ? ctx.quote.amountInUsd
+            : undefined,
+      });
 
   const price =
     ctx.sourceToken &&
     ctx.targetToken &&
     ctx.sourceToken.price / ctx.targetToken.price;
-
-  // Must stay above the early return below: skipping it on the skeleton render
-  // changes the hook count between renders, which React rejects outright.
-  const accordionHeight = useMemo(() => {
-    if (!ctx.walletAddress && !ctx.quote) {
-      return 36;
-    }
-
-    if (!ctx.walletAddress && ctx.quote) {
-      return 56;
-    }
-
-    return 86;
-  }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
 
   if (!ctx.sourceToken) {
     return <SwapQuoteSkeleton />;
@@ -59,7 +49,7 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
   return (
     <Accordion
       expandedByDefault={false}
-      expandedHeightPx={accordionHeight}
+      expandedHeightPx={62}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate} sec` : undefined}
       className={className}
@@ -79,16 +69,6 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
       }>
       <Notes>
         <Notes.Item
-          label={t('quote.result.maxSlippage.label', 'Max slippage')}
-          value={
-            <Badge
-              isClickable
-              onClick={() =>
-                onMsg({ type: 'on_click_edit_slippage' })
-              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
-          }
-        />
-        <Notes.Item
           label={t('quote.result.fees.label', 'Fees')}
           value={
             feesPercent ? (
@@ -99,13 +79,16 @@ export const SwapQuote = ({ className, onMsg }: Props) => {
           }
         />
 
-        {!!ctx.walletAddress && (
-          <Notes.Item
-            isLoading={ctx.quoteStatus === 'pending'}
-            label={t('quote.result.processingTime.label', 'Processing time')}
-            value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
-          />
-        )}
+        <Notes.Item
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
+          value={
+            <Badge
+              isClickable
+              onClick={() =>
+                onMsg({ type: 'on_click_edit_slippage' })
+              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+          }
+        />
       </Notes>
     </Accordion>
   );

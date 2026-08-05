@@ -12,6 +12,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { useTypedTranslation } from '@/localisation';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useMakeTransfer } from '@/hooks/useMakeTransfer';
+import { fireEvent } from '@/machine';
 import { useSwitchChain } from '@/hooks/useSwitchChain';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isFullGasTokenAmount } from '@/utils/checkers/isFullGasTokenAmount';
@@ -194,11 +195,15 @@ const useGetErrorButton = (ctx: Context) => {
     );
   }
 
+  // An incomplete deposit is refunded and leaves nothing to recover, so the way
+  // out is a new deposit address rather than a dead error button.
   if (ctx.error?.code === 'EXTERNAL_TRANSFER_INCOMPLETE') {
     return (
       <div className="gap-sw-md flex flex-col">
-        <Button state="error" {...commonBtnProps}>
-          {t('submit.error.externalTransferFailed.label', 'Transfer failed')}
+        <Button
+          {...commonBtnProps}
+          onClick={() => fireEvent('retryExternalDeposit', null)}>
+          {t('submit.error.externalTransferFailed.retry', 'Get another quote')}
         </Button>
         <ErrorMessage>
           {t(
@@ -512,6 +517,14 @@ const SubmitButtonWithWallet = (props: Props) => {
       return (
         <Button {...commonBtnProps} state="disabled">
           {t('submit.disabled.selectTokenToReceive', 'Select token to receive')}
+        </Button>
+      );
+    }
+
+    if (!ctx.walletAddress && !ctx.refundToAddress) {
+      return (
+        <Button {...commonBtnProps} state="disabled">
+          {t('submit.error.refundAddressEmpty', 'Enter refund address')}
         </Button>
       );
     }

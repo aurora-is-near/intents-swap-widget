@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { QrCodeW700 as QrCodeIcon } from '@material-symbols-svg/react-rounded/icons/qr-code';
 import { ProgressActivityW700 as ProgressActivity } from '@material-symbols-svg/react-rounded/icons/progress-activity';
 import { RefreshW700 as RefreshIcon } from '@material-symbols-svg/react-rounded/icons/refresh';
@@ -9,14 +9,19 @@ import { Steps } from '@/components/Steps';
 import { Toggle } from '@/components/Toggle';
 import { Button } from '@/components/Button';
 import { Tooltip } from '@/components/Tooltip';
-import { ExternalDeposit } from '@/features/ExternalDeposit';
+import { ExternalDeposit, QRCodeSkeleton } from '@/features/ExternalDeposit';
+import { RefundAddressStep } from '@/features/RefundAddressStep';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
+import { useWalletAddressForToken } from '@/hooks/useWalletAddressForToken';
+import { useConfig } from '@/config';
+
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { useTypedTranslation } from '@/localisation';
 import { guardStates } from '@/machine/guards';
-import { fireEvent, moveTo } from '@/machine';
+import { fireEvent } from '@/machine';
 
 import type { TransferResult } from '@/types/transfer';
 import { notReachable } from '../utils';
@@ -32,6 +37,7 @@ type Msg =
 
 type Props = {
   mode: 'deposit' | 'swap';
+  isExternalTxReceived?: boolean;
   className?: string;
   onMsg: (msg: Msg) => void;
 };
@@ -74,16 +80,48 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
     ? formatBigToHuman(minDepositTokenAmount, ctx.sourceToken.decimals)
     : 0;
 
-  const isInternalQuote = guardStates(ctx, ['quote_success_internal']);
+  if (
+    ctx.walletAddress &&
+    ctx.isDepositFromExternalWallet &&
+    ctx.sourceToken &&
+    mode === 'deposit'
+  ) {
+    if (ctx.quoteStatus === 'success') {
+      return (
+        <>
+          <div className="w-full h-sw-2xl" />
+          <ExternalDeposit
+            onMsg={(msg) => {
+              switch (msg.type) {
+                case 'on_successful_transfer':
+                  // can be null for confidential swap
+                  if (msg.transferResult !== null) {
+                    onMsg({
+                      type: 'on_successful_transfer',
+                      transferResult: msg.transferResult,
+                    });
+                  }
 
-  const onRetryFailedTransfer = () => {
-    fireEvent('externalDepositTxSet', undefined);
-    fireEvent('transferSetStatus', { status: 'idle' });
-    fireEvent('quoteReset', null);
-    fireEvent('errorSet', null);
+                  break;
+                case 'on_transaction_received':
+                  onMsg(msg);
+                  break;
+                default:
+                  notReachable(msg, { throwError: false });
+              }
+            }}
+          />
+        </>
+      );
+    }
 
-    moveTo(isInternalQuote ? 'input_valid_internal' : 'input_valid_external');
-  };
+    return (
+      <>
+        <div className="w-full h-sw-2xl" />
+        <QRCodeSkeleton />
+      </>
+    );
+  }
 
   return (
     <Steps className="pt-sw-2xl">
@@ -111,6 +149,11 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
           />
         }
       />
+
+      {ctx.isDepositFromExternalWallet && !ctx.walletAddress ? (
+        <RefundAddressStep />
+      ) : null}
+
       {mode === 'swap' ? (
         <Steps.Step
           title={t(
@@ -141,7 +184,11 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
         }
         asideElement={(() => {
           if (ctx.transferStatus.status === 'error') {
-            return <RetryButton onClick={onRetryFailedTransfer} />;
+            return (
+              <RetryButton
+                onClick={() => fireEvent('retryExternalDeposit', null)}
+              />
+            );
           }
 
           switch (ctx.quoteStatus) {
@@ -192,9 +239,29 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
   );
 };
 
-export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
+export const DepositMethodSwitcher = ({
+  mode,
+  isExternalTxReceived,
+  className,
+  onMsg,
+}: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { t } = useTypedTranslation();
+
+  const { walletSignIn } = useWalletConnection();
+  const { connectedWallets } = useConfig();
+
+  const [pendingIsExternal, setPendingIsExternal] = useState<boolean | null>(
+    null,
+  );
+
+  // Taken from the config rather than from ctx.walletAddress, which the widget
+  // clears on mount and restores a render later - that gap reads exactly like a
+  // disconnect and would toggle a connected user into the QR flow on open.
+  const { walletAddress } = useWalletAddressForToken(
+    connectedWallets,
+    ctx.sourceToken,
+  );
 
   // Aurora is a NEAR virtual chain and as such 1Click will return a Near
   // deposit address, which will not work if we attempt to deposit from an
@@ -207,25 +274,95 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
   // to a Near one that would not work. Waiving them while walletless let the QR
   // flow toggle into a state the effect below immediately undoes.
   const canBeToggled =
-    !ctx.sourceToken || (!ctx.sourceToken.isIntent && !isVirtualChainSource);
+    !isExternalTxReceived &&
+    !!ctx.sourceToken &&
+    !ctx.sourceToken.isIntent &&
+    !isVirtualChainSource;
+
+  const canConnectWallet =
+    !ctx.walletAddress && ctx.isDepositFromExternalWallet && !!walletSignIn;
+
+  const applyDepositType = (isExternal: boolean) => {
+    fireEvent('externalDepositTxSet', undefined);
+    fireEvent('depositTypeSet', { isExternal });
+  };
 
   // The token can also be picked from inside the external flow (i.e. the toggle
   // was already on, then Aurora selected), which the toggle guard can't catch.
   // collapse back to the connected-wallet deposit if that happens.
   useEffect(() => {
     if (isVirtualChainSource && ctx.isDepositFromExternalWallet) {
-      fireEvent('externalDepositTxSet', undefined);
-      fireEvent('depositTypeSet', { isExternal: false });
+      applyDepositType(false);
     }
   }, [isVirtualChainSource, ctx.isDepositFromExternalWallet]);
 
-  const onToggle = (isExternal: boolean) => {
-    if (!canBeToggled) {
+  useEffect(() => {
+    if (pendingIsExternal === null) {
       return;
     }
 
-    fireEvent('externalDepositTxSet', undefined);
-    fireEvent('depositTypeSet', { isExternal });
+    // the mode was already switched another way (i.e. by the effect above), so
+    // there is nothing left to apply
+    if (ctx.isDepositFromExternalWallet === pendingIsExternal) {
+      setPendingIsExternal(null);
+
+      return;
+    }
+
+    if (!ctx.walletAddress) {
+      // drop the intent if no wallet shows up, otherwise a much later connect
+      // from another part of the widget would silently flip the toggle
+      const timeout = setTimeout(() => setPendingIsExternal(null), 60_000);
+
+      return () => clearTimeout(timeout);
+    }
+
+    setPendingIsExternal(null);
+    applyDepositType(pendingIsExternal);
+  }, [pendingIsExternal, ctx.walletAddress, ctx.isDepositFromExternalWallet]);
+
+  // Without a wallet there is nothing to deposit from, so the QR flow is the
+  // only usable one. Kept as an invariant rather than as a reaction to the
+  // disconnect: disconnecting resets the deposit type (see the
+  // `isWalletDisconnected` subscription) and can remount this component, both of
+  // which undo or miss a one-off switch.
+  useEffect(() => {
+    // An Intents target routes validation through the internal path, whose
+    // guards require a connected wallet - switching there would strand the
+    // widget on "Waiting for a quote" with no error to explain it.
+    const isQuotableWithoutWallet = ctx.targetToken?.isIntent === false;
+
+    if (
+      !!walletAddress ||
+      !canBeToggled ||
+      !isQuotableWithoutWallet ||
+      ctx.isDepositFromExternalWallet
+    ) {
+      return;
+    }
+
+    applyDepositType(true);
+  }, [
+    walletAddress,
+    canBeToggled,
+    ctx.targetToken?.isIntent,
+    ctx.isDepositFromExternalWallet,
+  ]);
+
+  const onToggle = (isExternal: boolean) => {
+    if (!canBeToggled && !canConnectWallet) {
+      return;
+    }
+
+    if (canConnectWallet) {
+      setPendingIsExternal(isExternal);
+      walletSignIn();
+
+      return;
+    }
+
+    setPendingIsExternal(null);
+    applyDepositType(isExternal);
   };
 
   return (
@@ -247,11 +384,34 @@ export const DepositMethodSwitcher = ({ mode, className, onMsg }: Props) => {
             'Generate a deposit address and QR code to send funds to. Send any amount of the selected asset and it will be credited to the specified address.',
           )}
         />
-        <Toggle
-          isOn={ctx.isDepositFromExternalWallet}
-          isDisabled={!canBeToggled}
-          onToggle={onToggle}
-        />
+
+        <Tooltip
+          isDisabled={canBeToggled}
+          text={(() => {
+            if (canBeToggled || canConnectWallet) {
+              return '';
+            }
+
+            if (!ctx.sourceToken) {
+              return t(
+                'deposit.method.switcher.tooltip.noToken',
+                'Select a token to deposit first.',
+              );
+            }
+
+            return t(
+              'deposit.method.switcher.tooltip.virtualChain',
+              'External wallet deposits aren’t available for this asset.',
+            );
+          })()}>
+          <span tabIndex={canBeToggled ? undefined : 0} className="flex">
+            <Toggle
+              isOn={ctx.isDepositFromExternalWallet}
+              isDisabled={!canBeToggled && !canConnectWallet}
+              onToggle={onToggle}
+            />
+          </span>
+        </Tooltip>
       </header>
 
       {isVirtualChainSource && (

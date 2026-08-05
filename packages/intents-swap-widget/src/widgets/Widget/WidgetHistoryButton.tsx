@@ -24,7 +24,7 @@ export const WidgetHistoryButton = ({
     )}>
     <HistoryIcon weight="Filled" className="h-sw-2xl w-sw-2xl" />
     {pendingTransactionsCount > 0 && (
-      <span className="absolute -top-[8px] right-[0px] flex items-center justify-center min-w-[16px] h-[16px] rounded-full bg-sw-accent-500 text-sw-gray-950 text-sw-label-sm border-2 border-sw-gray-950">
+      <span className="absolute -top-[2px] -right-[2px] w-sw-2xl h-sw-2xl flex items-center justify-center rounded-full bg-sw-accent-500 text-sw-gray-950 text-sw-label-sm border-2 border-sw-gray-950 text-[10px]">
         {pendingTransactionsCount}
       </span>
     )}

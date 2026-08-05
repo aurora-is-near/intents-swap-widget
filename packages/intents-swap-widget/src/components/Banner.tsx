@@ -54,7 +54,7 @@ export const Banner = ({
           'bg-sw-status-success-bg': variant === 'success' && hasBg,
           'bg-sw-gray-900': variant === 'info' && hasBg,
 
-          'p-sw-lg rounded-sw-lg leading-normal': hasBg,
+          'p-sw-lg rounded-sw-md leading-normal': hasBg,
         },
         className,
       )}>

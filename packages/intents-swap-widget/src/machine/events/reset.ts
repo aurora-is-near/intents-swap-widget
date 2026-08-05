@@ -14,15 +14,18 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
 
   ctx.externalDepositTxReceived = undefined;
 
-  if (!payload.keepDepositType) {
+  // Only worth keeping while there is no wallet to deposit from: there the QR
+  // flow is the only usable one, so a reset has nothing to return to and would
+  // just throw away the addresses the user typed by hand. With a wallet
+  // connected the default deposit is available again, so returning here (from
+  // the success screen, say) should leave the QR toggle off.
+  const keepDepositType = payload.keepDepositType && !ctx.walletAddress;
+
+  if (!keepDepositType) {
     ctx.isDepositFromExternalWallet = false;
   }
 
-  if (
-    payload.keepDepositType &&
-    ctx.isDepositFromExternalWallet &&
-    !ctx.walletAddress
-  ) {
+  if (keepDepositType && ctx.isDepositFromExternalWallet) {
     // persist refund to and receive in addresses
   } else {
     ctx.refundToAddress = undefined;

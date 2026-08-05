@@ -15,7 +15,7 @@ export const DirectionSwitcher = ({
   onClick,
 }: Props) => {
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[48px] h-[48px] bg-sw-gray-950 rounded-[14px]">
+    <div className="absolute z-1 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[48px] h-[48px] bg-sw-gray-950 rounded-[14px]">
       <div
         onClick={isEnabled && !isLoading ? onClick : undefined}
         className={cn(

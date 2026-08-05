@@ -21,6 +21,7 @@ import {
 import { quoteSetStatus, type QuoteSetStatusPayload } from './quoteSetStatus';
 import { depositTypeSet, type DepositTypeSetPayload } from './depositTypeSet';
 import { externalDepositTxSet } from './externalDepositTxSet';
+import { retryExternalDeposit } from './retryExternalDeposit';
 import {
   type InputsValidatingPayload,
   setInputsValidating,
@@ -69,6 +70,7 @@ export type TradeEvents = {
   quoteReset: null;
   depositTypeSet: DepositTypeSetPayload;
   externalDepositTxSet: boolean | undefined;
+  retryExternalDeposit: null;
   quoteSetStatus: QuoteSetStatusPayload;
   transferSetStatus: TransferSetStatusPayload;
   walletAddressSet: WalletAddressSetPayload;
@@ -97,6 +99,7 @@ export const registerEvents = () => {
   onEvent('depositTypeSet', depositTypeSet);
   onEvent('setInputsValidating', setInputsValidating);
   onEvent('externalDepositTxSet', externalDepositTxSet);
+  onEvent('retryExternalDeposit', retryExternalDeposit);
   onEvent('tokenSelect', tokenSelect);
   onEvent('addressSet', addressSet);
   onEvent('maxSlippageSet', maxSlippageSet);

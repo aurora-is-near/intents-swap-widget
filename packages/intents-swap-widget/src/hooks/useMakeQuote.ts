@@ -246,12 +246,6 @@ export const useMakeQuote = () => {
           meta: { isDry, message: 'No source token amount' },
         });
       }
-    } else if (isNotEmptyAmount(ctx.sourceTokenAmount)) {
-      commonQuoteParams = {
-        ...commonQuoteParams,
-        swapType: QuoteRequest.swapType.EXACT_INPUT,
-        amount: ctx.sourceTokenAmount,
-      };
     } else {
       commonQuoteParams = {
         ...commonQuoteParams,
@@ -538,10 +532,9 @@ export const useMakeQuote = () => {
     return {
       dry: false,
       type:
-        !ctx.isDepositFromExternalWallet ||
-        isNotEmptyAmount(ctx.sourceTokenAmount)
-          ? 'QUOTE_REAL_WITH_AMOUNT'
-          : 'QUOTE_DEPOSIT_ANY_AMOUNT',
+        commonQuoteParams.swapType === QuoteRequest.swapType.FLEX_INPUT
+          ? 'QUOTE_DEPOSIT_ANY_AMOUNT'
+          : 'QUOTE_REAL_WITH_AMOUNT',
       ...quoteResult.quote,
       appFees: quoteResult.appFees,
       swapType: commonQuoteParams.swapType,
