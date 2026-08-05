@@ -34,7 +34,7 @@ export const TransactionCard = ({
       padding="none"
       onClick={onClick}
       className={cn('hover:bg-sw-gray-800 group', className)}>
-      <div className="p-sw-xl flex flex-col gap-x-sw-md">
+      <div className="px-sw-xl pt-sw-lg pb-sw-xl flex flex-col gap-x-sw-md">
         {/* Header row */}
         <div className="flex items-center justify-between mb-sw-lg">
           <div className="flex items-center gap-x-sw-sm">
@@ -52,9 +52,11 @@ export const TransactionCard = ({
                   token={originToken}
                   className="border-sw-gray-900 group-hover:border-sw-gray-800 transition-colors"
                 />
-                <span className="text-sw-label-md text-sw-gray-50">
+                <span className="flex flex-col gap-sw-xxs text-sw-label-md text-sw-gray-50">
                   <TinyNumber value={tx.amountInFormatted} />{' '}
-                  {originToken.symbol}
+                  <span className="text-sw-label-sm text-sw-gray-300">
+                    {originToken.symbol}
+                  </span>
                 </span>
               </div>
             )}
@@ -66,9 +68,11 @@ export const TransactionCard = ({
                 </span>
                 <div className="flex items-center gap-x-sw-md">
                   <TokenIcon token={destToken} />
-                  <span className="text-sw-label-md text-sw-gray-50">
+                  <span className="flex flex-col gap-sw-xxs text-sw-label-md text-sw-gray-50">
                     <TinyNumber value={tx.amountOutFormatted} />{' '}
-                    {destToken.symbol}
+                    <span className="text-sw-label-sm text-sw-gray-300">
+                      {destToken.symbol}
+                    </span>
                   </span>
                 </div>
               </>
