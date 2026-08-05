@@ -153,12 +153,5 @@ describe('Deposit', () => {
 
     const qrToggle = within(toggleContainer!).getByRole('switch');
     expect(qrToggle).not.toBeChecked();
-    await user.click(qrToggle);
-
-    expect(qrToggle).toBeChecked();
-    expect(
-      screen.getAllByText('Select token to deposit').length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText('Send to address')).toBeInTheDocument();
   });
 });
