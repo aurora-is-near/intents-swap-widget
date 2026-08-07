@@ -60,6 +60,7 @@ export type LocalisationKeys =
   | 'deposit.method.switcher.disabledHint'
   | 'deposit.method.switcher.tooltip.noToken'
   | 'deposit.method.switcher.tooltip.noTargetToken'
+  | 'deposit.method.switcher.tooltip.intents'
   | 'deposit.method.switcher.tooltip.virtualChain'
   | 'deposit.external.anyAmount.message'
   | 'deposit.summary.youWillDeposit.label'

@@ -30,8 +30,14 @@ export const useMakeQuoteEffect = ({
 
   const isDry = isDryQuote(ctx);
 
+  // technically valid cases for 1Click but the ones
+  // we want to block here from the product perspective
+  const isBlocked =
+    ctx.isDepositFromExternalWallet && !!ctx.sourceToken?.isIntent;
+
   const shouldRun =
     isEnabled &&
+    !isBlocked &&
     !isNativeNearDeposit &&
     !ctx.areInputsValidating &&
     (!!fetchQuote || (!!apiKey && !fetchQuote));
@@ -50,7 +56,9 @@ export const useMakeQuoteEffect = ({
     const isValidExternalInput = guardStates(ctx, ['input_valid_external']);
     const isValidInternalInput = guardStates(ctx, ['input_valid_internal']);
 
-    if (isDry && !isValidDryInput) {
+    if (isBlocked) {
+      cancel();
+    } else if (isDry && !isValidDryInput) {
       cancel();
     } else if (!isDry && ctx.targetToken?.isIntent && !isValidInternalInput) {
       cancel();
@@ -59,7 +67,7 @@ export const useMakeQuoteEffect = ({
     } else if (ctx.areInputsValidating) {
       cancel();
     }
-  }, [cancel, isDry, ctx]);
+  }, [cancel, isBlocked, isDry, ctx]);
 
   const run = useCallback(
     async (options: FetchQuoteOptions) => {
@@ -221,6 +229,7 @@ export const useMakeQuoteEffect = ({
     };
 
     if (
+      !shouldRun ||
       (ctx.state !== 'quote_success_internal' &&
         ctx.state !== 'quote_success_external') ||
       !refetchQuoteInterval

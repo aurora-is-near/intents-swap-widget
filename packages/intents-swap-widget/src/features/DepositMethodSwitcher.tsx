@@ -308,6 +308,10 @@ export const DepositMethodSwitcher = ({
   const isVirtualChainSource =
     !!ctx.sourceToken && isAuroraToken(ctx.sourceToken);
 
+  const isIntentSelectionUnsupported =
+    !!ctx.sourceToken?.isIntent ||
+    (mode === 'swap' && !!ctx.targetToken?.isIntent);
+
   // These restrictions come from the source token, not from the wallet: an
   // Intents token has no external deposit address, and a virtual chain resolves
   // to a Near one that would not work. Waiving them while walletless let the QR
@@ -316,7 +320,7 @@ export const DepositMethodSwitcher = ({
     !isExternalTxReceived &&
     !!ctx.sourceToken &&
     ((!!ctx.targetToken && mode === 'swap') || mode === 'deposit') &&
-    !ctx.sourceToken.isIntent &&
+    !isIntentSelectionUnsupported &&
     !isVirtualChainSource;
 
   const canConnectWallet =
@@ -327,14 +331,22 @@ export const DepositMethodSwitcher = ({
     fireEvent('depositTypeSet', { isExternal });
   };
 
-  // The token can also be picked from inside the external flow (i.e. the toggle
-  // was already on, then Aurora selected), which the toggle guard can't catch.
-  // collapse back to the connected-wallet deposit if that happens.
+  // A token can also enter through a stale/default selection after the external
+  // flow is active. Collapse back to the connected-wallet flow rather than let
+  // an unsupported QR quote proceed. Intent targets remain valid for deposits,
+  // but not for QR swaps.
   useEffect(() => {
-    if (isVirtualChainSource && ctx.isDepositFromExternalWallet) {
+    if (
+      (isVirtualChainSource || isIntentSelectionUnsupported) &&
+      ctx.isDepositFromExternalWallet
+    ) {
       applyDepositType(false);
     }
-  }, [isVirtualChainSource, ctx.isDepositFromExternalWallet]);
+  }, [
+    isVirtualChainSource,
+    isIntentSelectionUnsupported,
+    ctx.isDepositFromExternalWallet,
+  ]);
 
   useEffect(() => {
     if (pendingIsExternal === null) {
@@ -445,6 +457,13 @@ export const DepositMethodSwitcher = ({
               return t(
                 'deposit.method.switcher.tooltip.noTargetToken',
                 'Select a token to receive first.',
+              );
+            }
+
+            if (mode === 'swap' && isIntentSelectionUnsupported) {
+              return t(
+                'deposit.method.switcher.tooltip.intents',
+                'External wallet swaps aren’t available for Near Intents assets.',
               );
             }
 

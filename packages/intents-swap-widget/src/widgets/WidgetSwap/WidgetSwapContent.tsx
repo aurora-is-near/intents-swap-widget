@@ -27,7 +27,7 @@ import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { RefundAddressField } from '@/features/RefundAddressStep/Field';
 import { WalletCompatibilityCheck } from '@/features/WalletCompatibilityCheck';
 import { DepositMethodSwitcher } from '@/features/DepositMethodSwitcher';
-import type { ChainsFilters, Token, TransferResult } from '@/types';
+import type { Token, TransferResult } from '@/types';
 
 import { useTypedTranslation } from '../../localisation';
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -35,6 +35,7 @@ import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
+import { getSwapChainsFilters } from './getSwapChainsFilters';
 
 export type Msg =
   | { type: 'on_click_edit_slippage' }
@@ -69,6 +70,16 @@ export const WidgetSwapContent = ({
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
+
+  const onChangeSwapToken = (input: TokenInputType, token: Token) => {
+    if (ctx.isDepositFromExternalWallet && token.isIntent) {
+      return false;
+    }
+
+    onChangeToken(input, token);
+
+    return true;
+  };
 
   const { walletSignOut } = useWalletConnection();
   const { unsupportedChain } = useUnsupportedChain();
@@ -121,37 +132,21 @@ export const WidgetSwapContent = ({
     ],
   });
 
-  const chainsFilters = useMemo((): ChainsFilters => {
-    if (customChainsFilter) {
-      return customChainsFilter;
-    }
-
-    const enabledIntentsFilter = ctx.walletAddress ? 'with-balance' : 'all';
-
-    return {
-      source: {
-        intents: enableAccountAbstraction ? enabledIntentsFilter : 'none',
-        external:
-          ctx.walletAddress && !ctx.isDepositFromExternalWallet
-            ? 'wallet-supported'
-            : 'all',
-      },
-      target: {
-        // walletless QR flow is external-only — intent targets need a wallet
-        intents:
-          enableAccountAbstraction &&
-          !(ctx.isDepositFromExternalWallet && !ctx.walletAddress)
-            ? 'all'
-            : 'none',
-        external: 'all',
-      },
-    };
-  }, [
-    customChainsFilter,
-    enableAccountAbstraction,
-    ctx.walletAddress,
-    ctx.isDepositFromExternalWallet,
-  ]);
+  const chainsFilters = useMemo(
+    () =>
+      getSwapChainsFilters({
+        customChainsFilter,
+        enableAccountAbstraction: !!enableAccountAbstraction,
+        hasWallet: !!ctx.walletAddress,
+        isQrSwap: ctx.isDepositFromExternalWallet,
+      }),
+    [
+      customChainsFilter,
+      enableAccountAbstraction,
+      ctx.walletAddress,
+      ctx.isDepositFromExternalWallet,
+    ],
+  );
 
   if (!!isLoading || isLoadingTokens) {
     return <WidgetSwapSkeleton />;
@@ -226,7 +221,10 @@ export const WidgetSwapContent = ({
             onMsg={(msg) => {
               switch (msg.type) {
                 case 'on_select_token':
-                  onChangeToken(tokenModalOpen, msg.token);
+                  if (!onChangeSwapToken(tokenModalOpen, msg.token)) {
+                    break;
+                  }
+
                   updateTokenModalState('none');
                   onMsg?.({
                     type: msg.type,
@@ -255,7 +253,7 @@ export const WidgetSwapContent = ({
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_select_token':
-                    onChangeToken('source', msg.token);
+                    onChangeSwapToken('source', msg.token);
                     break;
                   case 'on_change_amount':
                     onChangeAmount('source', msg.amount);
@@ -280,7 +278,7 @@ export const WidgetSwapContent = ({
               onMsg={(msg) => {
                 switch (msg.type) {
                   case 'on_select_token':
-                    onChangeToken('target', msg.token);
+                    onChangeSwapToken('target', msg.token);
                     break;
                   case 'on_change_amount':
                     onChangeAmount('target', msg.amount);
