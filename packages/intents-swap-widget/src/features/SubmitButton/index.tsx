@@ -312,14 +312,7 @@ const SubmitButtonError: FC = () => {
 
 const ConnectWalletButton = () => {
   const { t } = useTypedTranslation();
-  const { ctx } = useUnsafeSnapshot();
   const { walletSignIn } = useWalletConnection();
-
-  const SubmitErrorButton = useGetErrorButton(ctx);
-
-  if (SubmitErrorButton) {
-    return SubmitErrorButton;
-  }
 
   return (
     <Button
