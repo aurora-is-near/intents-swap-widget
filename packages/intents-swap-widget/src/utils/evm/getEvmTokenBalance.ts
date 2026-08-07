@@ -1,13 +1,14 @@
-import { Contract, JsonRpcProvider } from 'ethers';
+import { Contract } from 'ethers';
 
 import type { Token } from '@/types/token';
+import { getEvmRpcProvider } from './getEvmRpcProvider';
 
 export const getEvmTokenBalance = async (
   token: Token,
   wallet: string,
   rpcUrl: string,
 ) => {
-  const provider = new JsonRpcProvider(rpcUrl);
+  const provider = getEvmRpcProvider(rpcUrl);
   const erc20Abi = [
     'function balanceOf(address owner) view returns (uint256)',
     'function decimals() view returns (uint8)',

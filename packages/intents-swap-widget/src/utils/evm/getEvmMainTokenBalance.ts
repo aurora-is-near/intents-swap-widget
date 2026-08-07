@@ -1,10 +1,10 @@
-import { JsonRpcProvider } from 'ethers';
+import { getEvmRpcProvider } from './getEvmRpcProvider';
 
 export const getEvmMainTokenBalance = async (
   wallet: string,
   rpcUrl: string,
 ) => {
-  const provider = new JsonRpcProvider(rpcUrl);
+  const provider = getEvmRpcProvider(rpcUrl);
   const balance = await provider.getBalance(wallet);
 
   return balance.toString();
