@@ -1,9 +1,10 @@
-import type { Chains } from '@/types/chain';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
+import type { Chains } from '@/types/chain';
+
 import { isEvmAddress } from './isEvmAddress';
+import { isTonAddress } from './isTonAddress';
 import { isNearAddress } from './isNearAddress';
 import { isSolanaAddress } from './isSolanaAddress';
-import { isTonAddress } from './isTonAddress';
 
 export const isWalletAddressCompatibleWithChain = (
   address: string,

@@ -1,26 +1,28 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { useMemo } from 'react';
+import { logger } from '@/logger';
 import { useConfig } from '@/config';
+import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
+import type { Token, WalletAddresses } from '@/types';
+import type { ChainRpcUrls } from '@/types/chain';
+
+import { buildNearRpcUrls } from '@/utils/near/rpc';
 import { isEvmChain } from '@/utils/evm/isEvmChain';
 import { isEvmToken } from '@/utils/evm/isEvmToken';
 import { isEvmBaseToken } from '@/utils/evm/isEvmBaseToken';
-import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
-import { getEvmMainTokenBalance } from '@/utils/evm/getEvmMainTokenBalance';
-import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
-import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
-import { buildNearRpcUrls } from '@/utils/near/rpc';
+import { getTonTokenBalance } from '@/utils/ton/getTonTokenBalance';
 import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
+import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
+import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
+import { getEvmMainTokenBalance } from '@/utils/evm/getEvmMainTokenBalance';
+import { getSolanaTokenBalance } from '@/utils/solana/getSolanaTokenBalance';
 import { isWalletAddressCompatibleWithChain } from '@/utils/chains/isWalletAddressCompatibleWithChain';
-import type { ChainRpcUrls } from '@/types/chain';
-import type { Token } from '@/types/token';
-import { useSupportedChains } from '../../hooks/useSupportedChains';
-import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
-import { WalletAddresses } from '../../types';
+
+import { useSupportedChains } from '@/hooks/useSupportedChains';
+import { useWalletAddressForToken } from '@/hooks/useWalletAddressForToken';
+
 import { getBalanceSourceForChain } from './getBalanceSourceForChain';
-import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
-import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
-import { logger } from '../../logger';
 
 type Args = {
   token: Token;
