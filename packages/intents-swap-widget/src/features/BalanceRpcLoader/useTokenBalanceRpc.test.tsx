@@ -7,9 +7,10 @@ import { useTokenBalanceRpc } from './useTokenBalanceRpc';
 
 const mockUseWalletAddressForToken = jest.fn();
 const mockGetEvmMainTokenBalance = jest.fn();
+const mockUseConfig = jest.fn();
 
 jest.mock('@/config', () => ({
-  useConfig: () => ({}),
+  useConfig: () => mockUseConfig(),
 }));
 jest.mock('@/hooks/useSupportedChains', () => ({
   useSupportedChains: () => ({ supportedChains: ['eth'] }),
@@ -73,6 +74,7 @@ const renderBalance = (connectedWallets: WalletAddresses) => {
 
 describe('useTokenBalanceRpc', () => {
   beforeEach(() => {
+    mockUseConfig.mockReturnValue({});
     mockGetEvmMainTokenBalance.mockResolvedValue('1');
   });
 
@@ -100,5 +102,17 @@ describe('useTokenBalanceRpc', () => {
       walletAddress,
       'https://eth.example',
     );
+  });
+
+  it('does not load an RPC balance when Alchemy is configured', () => {
+    const walletAddress = '0x0000000000000000000000000000000000000001';
+
+    mockUseConfig.mockReturnValue({ alchemyApiKey: 'alchemy-key' });
+    mockUseWalletAddressForToken.mockReturnValue({ walletAddress });
+
+    const { result } = renderBalance({ default: walletAddress });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(mockGetEvmMainTokenBalance).not.toHaveBeenCalled();
   });
 });

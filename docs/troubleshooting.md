@@ -17,7 +17,7 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 
 **Causes & Solutions:**
 
-1. **Missing API key** - The widget will try to use a set of RPCs by default, but Alchemy is more reliable and you can have better control with Alchemy API key.
+1. **Missing API key** - Without an Alchemy API key, the widget uses its configured RPCs for balance loading. When an Alchemy key is provided, Alchemy becomes the exclusive balance source for the chains it supports; configured RPCs remain available for other chains.
 
    ```tsx
    <SwapWidget
@@ -37,7 +37,7 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
    />
    ```
 
-4. **RPC endpoint issues** - The widget retries failed RPC calls twice before giving up. If balances still fail, check network connectivity and RPC availability.
+4. **RPC endpoint issues** - The widget retries failed RPC calls twice before giving up. If balances still fail, check network connectivity and RPC availability. An Alchemy request failure does not automatically fan out to public RPCs.
 
 ## Dependency Conflicts
 

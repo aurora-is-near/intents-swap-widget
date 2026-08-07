@@ -17,6 +17,7 @@ import type { Token } from '@/types/token';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useWalletAddressForToken } from '../../hooks/useWalletAddressForToken';
 import { WalletAddresses } from '../../types';
+import { getBalanceSourceForChain } from './getBalanceSourceForChain';
 import { getSolanaTokenBalance } from '../../utils/solana/getSolanaTokenBalance';
 import { getTonTokenBalance } from '../../utils/ton/getTonTokenBalance';
 import { logger } from '../../logger';
@@ -45,10 +46,15 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
     supportedChains.includes(token.blockchain) &&
     isWalletAddressCompatibleWithChain(walletAddress, token.blockchain);
 
+  const balanceSource = getBalanceSourceForChain({
+    alchemyApiKey,
+    chain: token.blockchain,
+    rpcs,
+  });
+
   return useQuery<string | null>({
     retry: 2,
-    enabled:
-      hasCompatibleWallet && Object.keys(rpcs).includes(token.blockchain),
+    enabled: hasCompatibleWallet && balanceSource === 'rpc',
     queryKey: [
       'tokenBalance',
       token.assetId,
@@ -60,6 +66,7 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       // 1. No wallet address to retrieve balance
       if (
         !walletAddress ||
+        balanceSource !== 'rpc' ||
         !supportedChains.includes(token.blockchain) ||
         !isWalletAddressCompatibleWithChain(walletAddress, token.blockchain)
       ) {
