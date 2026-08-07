@@ -11,6 +11,7 @@ import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
 import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
 import { buildNearRpcUrls } from '@/utils/near/rpc';
 import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
+import { isWalletAddressCompatibleWithChain } from '@/utils/chains/isWalletAddressCompatibleWithChain';
 import type { ChainRpcUrls } from '@/types/chain';
 import type { Token } from '@/types/token';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
@@ -39,13 +40,29 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
       .join('|');
   }, [connectedWallets]);
 
+  const hasCompatibleWallet =
+    !!walletAddress &&
+    supportedChains.includes(token.blockchain) &&
+    isWalletAddressCompatibleWithChain(walletAddress, token.blockchain);
+
   return useQuery<string | null>({
     retry: 2,
-    enabled: !!walletAddress && Object.keys(rpcs).includes(token.blockchain),
-    queryKey: ['tokenBalance', token.assetId, token.blockchain, walletKey],
+    enabled:
+      hasCompatibleWallet && Object.keys(rpcs).includes(token.blockchain),
+    queryKey: [
+      'tokenBalance',
+      token.assetId,
+      token.blockchain,
+      walletAddress,
+      walletKey,
+    ],
     queryFn: async () => {
       // 1. No wallet address to retrieve balance
-      if (!walletAddress) {
+      if (
+        !walletAddress ||
+        !supportedChains.includes(token.blockchain) ||
+        !isWalletAddressCompatibleWithChain(walletAddress, token.blockchain)
+      ) {
         return null;
       }
 
