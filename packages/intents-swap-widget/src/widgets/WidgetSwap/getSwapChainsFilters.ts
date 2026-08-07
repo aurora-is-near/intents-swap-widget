@@ -2,22 +2,23 @@ import type { ChainsFilters } from '@/types';
 
 type Args = {
   customChainsFilter: ChainsFilters | undefined;
+  restrictToExternalAssets: boolean;
   enableAccountAbstraction: boolean;
   hasWallet: boolean;
-  isQrSwap: boolean;
 };
 
 export const getSwapChainsFilters = ({
   customChainsFilter,
+  restrictToExternalAssets,
   enableAccountAbstraction,
   hasWallet,
-  isQrSwap,
 }: Args): ChainsFilters => {
   const enabledIntentsFilter = hasWallet ? 'with-balance' : 'all';
   const filters = customChainsFilter ?? {
     source: {
       intents: enableAccountAbstraction ? enabledIntentsFilter : 'none',
-      external: hasWallet && !isQrSwap ? 'wallet-supported' : 'all',
+      external:
+        hasWallet && !restrictToExternalAssets ? 'wallet-supported' : 'all',
     },
     target: {
       intents: enableAccountAbstraction ? 'all' : 'none',
@@ -25,7 +26,7 @@ export const getSwapChainsFilters = ({
     },
   };
 
-  if (!isQrSwap) {
+  if (!restrictToExternalAssets) {
     return filters;
   }
 
@@ -36,3 +37,16 @@ export const getSwapChainsFilters = ({
     target: { ...filters.target, intents: 'none' },
   };
 };
+
+type RestrictionArgs = {
+  allowSwapWithExternalWallet: boolean;
+  hasWallet: boolean;
+  isDepositFromExternalWallet: boolean;
+};
+
+export const shouldRestrictSwapToExternalAssets = ({
+  allowSwapWithExternalWallet,
+  hasWallet,
+  isDepositFromExternalWallet,
+}: RestrictionArgs): boolean =>
+  isDepositFromExternalWallet || (allowSwapWithExternalWallet && !hasWallet);

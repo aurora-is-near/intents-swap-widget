@@ -35,7 +35,10 @@ import { useIntentsAccountType } from '../../hooks/useIntentsAccountType';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 import { WidgetSwapSkeleton } from './WidgetSwapSkeleton';
-import { getSwapChainsFilters } from './getSwapChainsFilters';
+import {
+  getSwapChainsFilters,
+  shouldRestrictSwapToExternalAssets,
+} from './getSwapChainsFilters';
 
 export type Msg =
   | { type: 'on_click_edit_slippage' }
@@ -71,8 +74,14 @@ export const WidgetSwapContent = ({
   const { onChangeAmount, onChangeToken, lastChangedInput } =
     useTokenInputPair();
 
+  const restrictToExternalAssets = shouldRestrictSwapToExternalAssets({
+    allowSwapWithExternalWallet: !!allowSwapWithExternalWallet,
+    isDepositFromExternalWallet: ctx.isDepositFromExternalWallet,
+    hasWallet: !!ctx.walletAddress,
+  });
+
   const onChangeSwapToken = (input: TokenInputType, token: Token) => {
-    if (ctx.isDepositFromExternalWallet && token.isIntent) {
+    if (restrictToExternalAssets && token.isIntent) {
       return false;
     }
 
@@ -136,15 +145,15 @@ export const WidgetSwapContent = ({
     () =>
       getSwapChainsFilters({
         customChainsFilter,
+        restrictToExternalAssets,
         enableAccountAbstraction: !!enableAccountAbstraction,
         hasWallet: !!ctx.walletAddress,
-        isQrSwap: ctx.isDepositFromExternalWallet,
       }),
     [
       customChainsFilter,
+      restrictToExternalAssets,
       enableAccountAbstraction,
       ctx.walletAddress,
-      ctx.isDepositFromExternalWallet,
     ],
   );
 

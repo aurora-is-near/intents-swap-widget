@@ -18,13 +18,14 @@ import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
-import type { ChainsFilters, Token, TransferResult } from '@/types';
+import type { Token, TransferResult } from '@/types';
 
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
+import { getDepositModeChainsFilters } from './getDepositModeChainsFilters';
 
 export type Msg =
   | { type: 'on_click_edit_slippage' }
@@ -165,19 +166,15 @@ export const WidgetDepositModeContent = ({
     });
   }, [ctx.isDepositFromExternalWallet]);
 
-  const chainsFilters = useMemo((): ChainsFilters => {
-    if (customChainsFilter) {
-      return customChainsFilter;
-    }
-
-    return {
-      source: {
-        intents: 'none',
-        external: ctx.isDepositFromExternalWallet ? 'all' : 'wallet-supported',
-      },
-      target: { intents: 'all', external: 'none' },
-    };
-  }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
+  const chainsFilters = useMemo(
+    () =>
+      getDepositModeChainsFilters({
+        customChainsFilter,
+        hasWallet: !!ctx.walletAddress,
+        isDepositFromExternalWallet: ctx.isDepositFromExternalWallet,
+      }),
+    [customChainsFilter, ctx.walletAddress, ctx.isDepositFromExternalWallet],
+  );
 
   const onBackToSwap = () => {
     fireEvent('reset', {
