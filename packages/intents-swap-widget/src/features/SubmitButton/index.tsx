@@ -3,21 +3,30 @@ import WalletPlusIcon from 'reicon-react/icons/WalletPlus';
 import { OpenInNewW700 as OpenInNew } from '@material-symbols-svg/react-rounded/icons/open-in-new';
 import type { FC } from 'react';
 
-import { useConfig } from '@/config';
 import { logger } from '@/logger';
+import { useConfig } from '@/config';
+import { fireEvent } from '@/machine';
+import { useTypedTranslation } from '@/localisation';
+
+import type { MakeTransfer, TransferResult } from '@/types/transfer';
+
 import { Button } from '@/components/Button';
 import { TinyNumber } from '@/components/TinyNumber';
-import { ErrorMessage } from '@/components/ErrorMessage';
+import { StatusMessage } from '@/components/StatusMessage';
+
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import { useTypedTranslation } from '@/localisation';
-import { useWalletConnection } from '@/hooks/useWalletConnection';
-import { useMakeTransfer } from '@/hooks/useMakeTransfer';
-import { fireEvent } from '@/machine';
-import { useSwitchChain } from '@/hooks/useSwitchChain';
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
-import { isFullGasTokenAmount } from '@/utils/checkers/isFullGasTokenAmount';
-import type { MakeTransfer, TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
+import { isBalanceSufficient } from '@/machine/guards/checks/isBalanceSufficient';
+
+import { useSwitchChain } from '@/hooks/useSwitchChain';
+import { useMakeTransfer } from '@/hooks/useMakeTransfer';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
+
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import {
+  isFullGasTokenAmount,
+  isNearlyFullGasTokenAmount,
+} from '@/utils/checkers/isFullGasTokenAmount';
 
 type Props = {
   label: string;
@@ -29,6 +38,13 @@ const commonBtnProps = {
   size: 'lg' as const,
   variant: 'primary' as const,
 };
+
+const isSourceBalanceInsufficient = (ctx: Context): boolean =>
+  !ctx.isDepositFromExternalWallet &&
+  !!ctx.sourceToken &&
+  isNotEmptyAmount(ctx.sourceTokenAmount) &&
+  isNotEmptyAmount(ctx.sourceTokenBalance) &&
+  !isBalanceSufficient(ctx);
 
 const useGetErrorButton = (ctx: Context) => {
   const { apiKey, sendAddress, fetchQuote } = useConfig();
@@ -127,7 +143,7 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.amountTooLow.label', 'Amount is too low')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           <Trans i18nKey="submit.error.amountTooLow.message">
             Amount you entered is very low. Please try increasing it{' '}
             <span className="text-nowrap">
@@ -135,7 +151,7 @@ const useGetErrorButton = (ctx: Context) => {
               {ctx.sourceToken?.symbol ?? ''}.
             </span>
           </Trans>
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -146,12 +162,12 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.apiKeyInvalid', 'Invalid API key')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           {t(
             'submit.error.apiKeyInvalid.message',
             'Please contact support if the problem persists.',
           )}
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -163,12 +179,12 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.quoteFailed.label', 'Quote failed')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           {t(
             'submit.error.quoteFailed.message',
             'We couldn’t finalize your quote. Please try again or adjust your values.',
           )}
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -181,7 +197,7 @@ const useGetErrorButton = (ctx: Context) => {
           {t('submit.error.invalidTransferData.label', 'Invalid transfer data')}
         </Button>
         {ctx.error.meta?.message ? (
-          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+          <StatusMessage>{ctx.error.meta.message}</StatusMessage>
         ) : null}
       </div>
     );
@@ -205,12 +221,12 @@ const useGetErrorButton = (ctx: Context) => {
           onClick={() => fireEvent('retryExternalDeposit', null)}>
           {t('submit.error.externalTransferFailed.retry', 'Get another quote')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           {t(
             'submit.error.externalTransferFailed.incompleteMessage',
             'Incomplete transfer. Deposited amount will be refunded.',
           )}
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -221,12 +237,12 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.externalTransferFailed.label', 'Transfer failed')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           {t(
             'submit.error.externalTransferFailed.refundedMessage',
             'Deposited amount will be refunded.',
           )}
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -238,13 +254,16 @@ const useGetErrorButton = (ctx: Context) => {
           {t('submit.error.transferFailed.label', 'Transfer failed')}
         </Button>
         {ctx.error.meta?.message ? (
-          <ErrorMessage>{ctx.error.meta.message}</ErrorMessage>
+          <StatusMessage>{ctx.error.meta.message}</StatusMessage>
         ) : null}
       </div>
     );
   }
 
-  if (ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT') {
+  if (
+    ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT' ||
+    isSourceBalanceInsufficient(ctx)
+  ) {
     return (
       <Button state="error" {...commonBtnProps}>
         {t('submit.error.insufficientBalance', 'Insufficient balance')}
@@ -264,7 +283,7 @@ const useGetErrorButton = (ctx: Context) => {
         <Button state="error" {...commonBtnProps}>
           {t('submit.error.apiKeyRequired', 'API key is required')}
         </Button>
-        <ErrorMessage>
+        <StatusMessage>
           <Trans i18nKey="submit.error.apiKeyRequired.message">
             Visit{' '}
             <span className="inline-flex items-center gap-sw-xs px-sw-xs">
@@ -279,7 +298,7 @@ const useGetErrorButton = (ctx: Context) => {
             </span>{' '}
             to get your app key.
           </Trans>
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -359,6 +378,10 @@ const SubmitButtonBase = (props: Props) => {
     }
   };
 
+  if (isSourceBalanceInsufficient(ctx)) {
+    return SubmitErrorButton;
+  }
+
   if (!ctx.targetToken) {
     return (
       <Button {...commonBtnProps} state="disabled">
@@ -421,7 +444,7 @@ const SubmitButtonBase = (props: Props) => {
     return (
       <div className="gap-sw-md flex flex-col">
         <Button {...commonBtnProps}>{props.label}</Button>
-        <ErrorMessage>
+        <StatusMessage>
           {(() => {
             switch (ctx.error?.code) {
               case 'FEES_NOT_ESTIMATED':
@@ -449,7 +472,7 @@ const SubmitButtonBase = (props: Props) => {
                 );
             }
           })()}
-        </ErrorMessage>
+        </StatusMessage>
       </div>
     );
   }
@@ -552,8 +575,25 @@ const SubmitButtonWithWallet = (props: Props) => {
     );
   }
 
+  if (!ctx.sourceToken) {
+    return <SubmitButtonBase {...props} />;
+  }
+
   // 3. All good - show active button
-  return <SubmitButtonBase {...props} />;
+  return isNearlyFullGasTokenAmount(ctx) ? (
+    <div className="gap-sw-md flex flex-col">
+      <SubmitButtonBase {...props} />
+      <StatusMessage state="warning">
+        {t('submit.warning.balanceMax.message', {
+          symbol: ctx.sourceToken.symbol.toUpperCase(),
+          defaultValue:
+            'Make sure you keep enough {{symbol}} in your wallet to cover the network fee.',
+        })}
+      </StatusMessage>
+    </div>
+  ) : (
+    <SubmitButtonBase {...props} />
+  );
 };
 
 // Performant wrapper - minimal logic when no wallet, full logic when connected

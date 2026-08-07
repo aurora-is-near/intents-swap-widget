@@ -36,7 +36,6 @@ export type LocalisationKeys =
   | 'tokens.input.max.label'
   | 'tokens.input.half.label'
   | 'tokens.input.quarter.label'
-  | 'tokenInput.balanceMax.tooltip'
   | 'tokens.input.externalBalance.label'
   | 'tokens.input.externalBalanceOnly.label'
   | 'tokens.list.noBalanceOnApp.label'
@@ -109,6 +108,7 @@ export type LocalisationKeys =
   | 'submit.error.apiKeyInvalid.message'
   | 'submit.error.apiKeyRequired'
   | 'submit.error.apiKeyRequired.message'
+  | 'submit.warning.balanceMax.message'
   // send address
   | 'sendAddress.label'
   | 'sendAddress.myWalletLabel'

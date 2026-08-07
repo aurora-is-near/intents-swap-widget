@@ -3,9 +3,7 @@ import type { Variants } from 'framer-motion';
 
 import { cn } from '@/utils/cn';
 import { Badge } from '@/components/Badge';
-import { Tooltip } from '@/components/Tooltip';
 import { useTypedTranslation } from '@/localisation';
-import { CHAIN_BASE_TOKENS } from '@/constants/chains';
 import type { Token, TokenBalance } from '@/types/token';
 
 import { getBalancePortion } from './utils/getBalancePortion';
@@ -76,26 +74,11 @@ export const BalanceBadges = ({
         </Badge>
       </motion.div>
       <motion.div variants={QUICK_ACTION_VARIANTS}>
-        {CHAIN_BASE_TOKENS[token.blockchain] === token.symbol ? (
-          <Tooltip
-            className="mr-sw-xs"
-            text={t(
-              'tokenInput.balanceMax.tooltip',
-              'Make sure to leave some balance for gas fees.',
-            )}>
-            <Badge
-              isClickable={isClickable}
-              onClick={() => onSetPortionOfBalance(1)}>
-              {t('tokens.input.max.label', 'Max')}
-            </Badge>
-          </Tooltip>
-        ) : (
-          <Badge
-            isClickable={isClickable}
-            onClick={() => onSetPortionOfBalance(1)}>
-            {t('tokens.input.max.label', 'Max')}
-          </Badge>
-        )}
+        <Badge
+          isClickable={isClickable}
+          onClick={() => onSetPortionOfBalance(1)}>
+          {t('tokens.input.max.label', 'Max')}
+        </Badge>
       </motion.div>
     </motion.div>
   );
