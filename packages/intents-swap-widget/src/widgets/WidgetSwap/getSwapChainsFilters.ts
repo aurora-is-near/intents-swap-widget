@@ -30,8 +30,8 @@ export const getSwapChainsFilters = ({
     return filters;
   }
 
-  // QR swaps are funded by an unknown external wallet. Near Intents assets do
-  // not have an external wallet/deposit path, on either side of the swap.
+  // Near Intents assets require a connected wallet. Walletless quotes and QR
+  // swaps can only use assets with an external wallet/deposit path.
   return {
     source: { ...filters.source, intents: 'none' },
     target: { ...filters.target, intents: 'none' },
@@ -39,14 +39,11 @@ export const getSwapChainsFilters = ({
 };
 
 type RestrictionArgs = {
-  allowSwapWithExternalWallet: boolean;
   hasWallet: boolean;
   isDepositFromExternalWallet: boolean;
 };
 
 export const shouldRestrictSwapToExternalAssets = ({
-  allowSwapWithExternalWallet,
   hasWallet,
   isDepositFromExternalWallet,
-}: RestrictionArgs): boolean =>
-  isDepositFromExternalWallet || (allowSwapWithExternalWallet && !hasWallet);
+}: RestrictionArgs): boolean => isDepositFromExternalWallet || !hasWallet;

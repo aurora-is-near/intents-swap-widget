@@ -75,7 +75,6 @@ export const WidgetSwapContent = ({
     useTokenInputPair();
 
   const restrictToExternalAssets = shouldRestrictSwapToExternalAssets({
-    allowSwapWithExternalWallet: !!allowSwapWithExternalWallet,
     isDepositFromExternalWallet: ctx.isDepositFromExternalWallet,
     hasWallet: !!ctx.walletAddress,
   });
