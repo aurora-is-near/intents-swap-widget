@@ -49,7 +49,7 @@ export const Tooltip = ({
             content are force-mounted and AnimatePresence owns their lifetime
             instead — that is what gives the exit animation time to play. */}
         <AnimatePresence>
-          {isOpen && !isDisabled && (
+          {isOpen && !isDisabled && !!text.trim() && (
             <Portal forceMount>
               <Content
                 forceMount
