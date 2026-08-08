@@ -1,21 +1,14 @@
 import { z } from 'zod';
-import once from 'lodash.once';
 
 import { logger } from '@/logger';
 import { nearFailoverRpcProvider } from './rpc';
-
-const createNearClient = once((rpcUrls: string[]) => {
-  return nearFailoverRpcProvider({
-    urls: rpcUrls,
-  });
-});
 
 export const getNativeNearBalance = async (
   accountId: string,
   rpcUrls: string[],
 ): Promise<string | null> => {
   try {
-    const nearRpcClient = createNearClient(rpcUrls);
+    const nearRpcClient = nearFailoverRpcProvider({ urls: rpcUrls });
 
     const response = await nearRpcClient.query({
       request_type: 'view_account',
