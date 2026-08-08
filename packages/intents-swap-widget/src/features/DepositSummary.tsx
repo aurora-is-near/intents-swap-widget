@@ -107,7 +107,7 @@ export const DepositSummary = ({ onMsg }: Props) => {
       return 92;
     }
 
-    return 64;
+    return 71;
   }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
 
   return (
