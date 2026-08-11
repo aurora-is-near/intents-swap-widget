@@ -9,7 +9,12 @@ export const getEvmRpcProvider = (rpcUrl: string): JsonRpcProvider => {
     return cachedProvider;
   }
 
-  const provider = new JsonRpcProvider(rpcUrl);
+  // Some public RPCs (including dRPC's free tier) reject batches larger than
+  // three. A shared provider can otherwise batch one balance call per token up
+  // to Ethers' default limit of 100.
+  const provider = new JsonRpcProvider(rpcUrl, undefined, {
+    batchMaxCount: 3,
+  });
 
   providersByUrl.set(rpcUrl, provider);
 

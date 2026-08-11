@@ -33,7 +33,7 @@ import {
 import { defineChain } from 'viem';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
-import type { Theme } from '@aurora-is-near/intents-swap-widget';
+import { DEFAULT_RPCS, type Theme } from '@aurora-is-near/intents-swap-widget';
 
 type AppKitProviderProps = {
   appName?: string;
@@ -162,7 +162,14 @@ const customRpcUrls = Object.fromEntries(
     .filter((network) => typeof network.id === 'number')
     .map((network) => [
       `eip155:${network.id}`,
-      [{ url: network.rpcUrls.default.http[0] }],
+      [
+        {
+          url:
+            network.id === mainnet.id
+              ? (DEFAULT_RPCS.eth?.[0] ?? network.rpcUrls.default.http[0])
+              : network.rpcUrls.default.http[0],
+        },
+      ],
     ]),
 );
 
