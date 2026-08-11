@@ -1,5 +1,5 @@
-import { isDryQuote } from './checks/isDryQuote';
 import type { Context, QuoteSuccessDryContext } from '@/machine/context';
+import { isDryQuote } from './checks/isDryQuote';
 
 export const guardQuoteSuccessDry = (
   ctx: Context,

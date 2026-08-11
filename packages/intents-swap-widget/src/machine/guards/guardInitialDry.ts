@@ -1,8 +1,8 @@
+import type { Context, InitialDryContext } from '@/machine/context';
+import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isBalanceSufficient } from './checks/isBalanceSufficient';
 import { isRefundAddressValid } from './checks/isRefundAddressValid';
 import { isSendAddressValid } from './checks/isSendAddressValid';
-import type { Context, InitialDryContext } from '@/machine/context';
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 
 export const guardInitialDry = (ctx: Context): ctx is InitialDryContext => {
   return (
