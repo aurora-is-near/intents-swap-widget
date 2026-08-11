@@ -116,8 +116,18 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
         rpcs,
       });
 
-      if (balanceSource !== 'rpc') {
+      if (balanceSource === 'alchemy') {
         return null;
+      }
+
+      if (balanceSource === 'none') {
+        return (
+          <TokenBalanceLoader.Zero
+            token={tkn}
+            key={getTokenBalanceKey(tkn)}
+            onBalancesLoaded={onBalancesLoaded}
+          />
+        );
       }
 
       return (
@@ -133,7 +143,6 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
 
     return (
       <TokenBalanceLoader.Zero
-        rpcs={rpcs}
         token={tkn}
         key={getTokenBalanceKey(tkn)}
         onBalancesLoaded={onBalancesLoaded}

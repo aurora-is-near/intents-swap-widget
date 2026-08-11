@@ -1,4 +1,6 @@
-import { JsonRpcProvider } from 'ethers';
+import { FetchRequest, JsonRpcProvider } from 'ethers';
+
+const RPC_REQUEST_TIMEOUT_MS = 10_000;
 
 const providersByUrl = new Map<string, JsonRpcProvider>();
 
@@ -12,7 +14,11 @@ export const getEvmRpcProvider = (rpcUrl: string): JsonRpcProvider => {
   // Some public RPCs (including dRPC's free tier) reject batches larger than
   // three. A shared provider can otherwise batch one balance call per token up
   // to Ethers' default limit of 100.
-  const provider = new JsonRpcProvider(rpcUrl, undefined, {
+  const request = new FetchRequest(rpcUrl);
+
+  request.timeout = RPC_REQUEST_TIMEOUT_MS;
+
+  const provider = new JsonRpcProvider(request, undefined, {
     batchMaxCount: 3,
   });
 

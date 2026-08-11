@@ -14,12 +14,11 @@ type Props = {
 };
 
 const TokenBalanceZeroLoader = ({
-  rpcs,
   token,
   onBalancesLoaded,
-}: Omit<Props, 'connectedWallets'>) => {
+}: Pick<Props, 'token' | 'onBalancesLoaded'>) => {
   useEffect(() => {
-    if (token.isIntent || !Object.keys(rpcs).includes(token.blockchain)) {
+    if (token.isIntent) {
       return;
     }
 
@@ -32,7 +31,11 @@ const TokenBalanceZeroLoader = ({
 
 const TokenBalanceBaseLoader = memo(
   ({ rpcs, token, connectedWallets, onBalancesLoaded }: Props) => {
-    const { data: balance } = useTokenBalanceRpc({
+    const {
+      data: balance,
+      isError,
+      isFetched,
+    } = useTokenBalanceRpc({
       rpcs,
       token,
       connectedWallets,
@@ -41,20 +44,24 @@ const TokenBalanceBaseLoader = memo(
     const lastSent = useRef<string | null>(null);
 
     useEffect(() => {
-      if (token.isIntent || balance == null) {
+      if (token.isIntent || (balance == null && !isError && !isFetched)) {
         return;
       }
 
+      // A missing result or an exhausted query should settle the UI instead of
+      // leaving the token balance skeleton visible forever.
+      const settledBalance = balance ?? '0';
+
       // A unique key to avoid firing onBalancesLoaded with duplicate balances
-      const key = `${getTokenBalanceKey(token)}:${balance}`;
+      const key = `${getTokenBalanceKey(token)}:${settledBalance}`;
 
       if (lastSent.current === key) {
         return;
       }
 
       lastSent.current = key;
-      onBalancesLoaded({ [getTokenBalanceKey(token)]: balance });
-    }, [token, balance, onBalancesLoaded]);
+      onBalancesLoaded({ [getTokenBalanceKey(token)]: settledBalance });
+    }, [token, balance, isError, isFetched, onBalancesLoaded]);
 
     return null;
   },

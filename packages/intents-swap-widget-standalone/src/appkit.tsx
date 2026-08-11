@@ -33,7 +33,12 @@ import {
 import { defineChain } from 'viem';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
-import { DEFAULT_RPCS, type Theme } from '@aurora-is-near/intents-swap-widget';
+import {
+  type Chains,
+  DEFAULT_RPCS,
+  type Theme,
+} from '@aurora-is-near/intents-swap-widget';
+import { CHAIN_IDS_MAP } from '@aurora-is-near/intents-swap-widget/constants';
 
 type AppKitProviderProps = {
   appName?: string;
@@ -154,9 +159,17 @@ const appKitNetworks = [
   aurora,
 ] satisfies CreateAppKit['networks'];
 
+const defaultRpcUrlsByChainId = new Map(
+  Object.entries(CHAIN_IDS_MAP).flatMap(([chain, chainId]) => {
+    const rpcUrl = DEFAULT_RPCS[chain as Chains]?.[0];
+
+    return chainId && rpcUrl ? ([[chainId, rpcUrl]] as const) : [];
+  }),
+);
+
 // Reown puts its Blockchain API first for supported EVM chains. The Ethers
-// adapter does not fall back when that endpoint is unavailable, so keep the
-// networks' own RPC URLs first for balance refreshes.
+// adapter does not fall back when that endpoint is unavailable, so use the
+// same browser-safe defaults as the core balance loader.
 const customRpcUrls = Object.fromEntries(
   appKitNetworks
     .filter((network) => typeof network.id === 'number')
@@ -165,9 +178,8 @@ const customRpcUrls = Object.fromEntries(
       [
         {
           url:
-            network.id === mainnet.id
-              ? (DEFAULT_RPCS.eth?.[0] ?? network.rpcUrls.default.http[0])
-              : network.rpcUrls.default.http[0],
+            defaultRpcUrlsByChainId.get(network.id) ??
+            network.rpcUrls.default.http[0],
         },
       ],
     ]),
