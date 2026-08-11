@@ -45,30 +45,23 @@ If you can't find an answer here, please [open an issue](https://github.com/auro
 
 **Cause:** The widget uses several libraries that your project may also use. When versions differ, bundlers may include multiple versions causing conflicts.
 
-**Solution:** Add resolutions to your `package.json` to lock versions, example:
+**Solution:** Avoid blanket resolutions for transitive cryptography, wallet, or
+connector packages. Those packages intentionally use multiple versions and may
+not expose compatible APIs.
+
+If your application installs a conflicting Valtio version, constrain only the
+package with the demonstrated conflict:
 
 ```json
 "resolutions": {
   "valtio": "2.1.7",
-  "valtio-fsm": "1.0.0",
-  "@noble/curves": "^1.6.0",
-  "@noble/hashes": "^1.5.0",
-  "strip-ansi": "6.0.1",
-  "@reown/appkit": "1.8.17",
-  "@reown/appkit-common": "1.8.17",
-  "@reown/appkit-controllers": "1.8.17",
-  "@reown/appkit-pay": "1.8.17",
-  "@reown/appkit-polyfills": "1.8.17",
-  "@reown/appkit-scaffold-ui": "1.8.17",
-  "@reown/appkit-ui": "1.8.17",
-  "@reown/appkit-utils": "1.8.17",
-  "@reown/appkit-wallet": "1.8.17",
-  "@solana/addresses": "5.5.1",
-  "@solana/codecs-core": "5.5.1",
-  "@solana/errors": "5.5.1",
-  "@solana/keys": "5.5.1"
+  "valtio-fsm": "1.0.0"
 }
 ```
+
+Do not globally resolve `@noble/hashes` or `@noble/curves`. Some wallet
+dependencies require older, exact Noble APIs, while newer dependencies require
+later versions. Let the package manager install those versions side by side.
 
 For **Yarn**, resolutions work as shown above. For **npm** or **bun**, use `overrides` instead:
 

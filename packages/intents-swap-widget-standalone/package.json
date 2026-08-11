@@ -35,12 +35,16 @@
     "@aurora-is-near/intents-swap-widget-solana": "^7.17.1",
     "@aurora-is-near/intents-swap-widget-stellar": "^7.17.1",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
+    "@ethersproject/sha2": "5.8.0",
     "@headlessui/react": "^2.2.4",
     "@hot-labs/near-connect": "^0.6.8",
-    "@reown/appkit": "^1.8.10",
-    "@reown/appkit-adapter-solana": "^1.8.10",
-    "@reown/appkit-adapter-wagmi": "^1.8.11",
-    "@solana/wallet-adapter-wallets": "^0.19.32",
-    "ethers": "^6.15.0"
+    "@reown/appkit": "1.8.11",
+    "@reown/appkit-adapter-ethers": "1.8.11",
+    "@reown/appkit-adapter-solana": "1.8.11",
+    "@solana/wallet-adapter-phantom": "0.9.28",
+    "@solana/wallet-adapter-solflare": "0.6.32",
+    "@solana/web3.js": "1.98.4",
+    "ethers": "^6.15.0",
+    "viem": "2.38.4"
   }
 }

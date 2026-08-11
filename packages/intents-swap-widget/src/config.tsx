@@ -1,7 +1,6 @@
 import i18n from 'i18next';
 import { deepClone } from 'valtio/utils';
 import { proxy, useSnapshot } from 'valtio';
-import { HelmetProvider } from 'react-helmet-async';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -146,14 +145,12 @@ export const WidgetConfigProvider = ({
       <I18nextProvider i18n={i18n}>
         <WidgetConfigContext.Provider value={storeRef.current}>
           <ThemeProvider theme={theme}>
-            <HelmetProvider>
-              {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
-              {process.env.NODE_ENV === 'test' ? (
-                children
-              ) : (
-                <ErrorBoundary>{children}</ErrorBoundary>
-              )}
-            </HelmetProvider>
+            {/* ErrorBoundary hides error trace which makes it impossible to debug during testing */}
+            {process.env.NODE_ENV === 'test' ? (
+              children
+            ) : (
+              <ErrorBoundary>{children}</ErrorBoundary>
+            )}
             {balanceViaRpc && <BalanceRpcLoader rpcs={rpcs ?? DEFAULT_RPCS} />}
           </ThemeProvider>
         </WidgetConfigContext.Provider>

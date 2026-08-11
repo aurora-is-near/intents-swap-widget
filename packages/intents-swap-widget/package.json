@@ -81,7 +81,6 @@
     "near-api-js": "^6.2.5",
     "qr-code-styling": "1.9.2",
     "react-error-boundary": "^6.0.0",
-    "react-helmet-async": "^2.0.5",
     "react-i18next": "^15.7.3",
     "react-imask": "^7.6.1",
     "reicon-react": "^1.1.302",

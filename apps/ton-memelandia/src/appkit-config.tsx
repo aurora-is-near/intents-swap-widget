@@ -1,5 +1,5 @@
 import { createAppKit as reownCreateAppKit } from '@reown/appkit/react';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
   arbitrum,
@@ -14,11 +14,9 @@ import {
   polygon,
   scroll,
   xLayer,
-} from '@reown/appkit/networks';
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from '@solana/wallet-adapter-wallets';
+} from 'viem/chains';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 
 const projectId = '76f61d4322c80976d1a24a1263a9d082';
 const appUrl = 'https://www.ton-intents.com';
@@ -30,26 +28,7 @@ const metadata = {
   icons: [`${appUrl}/favicon.svg`],
 };
 
-const evmNetworks = [
-  mainnet,
-  arbitrum,
-  polygon,
-  bsc,
-  optimism,
-  avalanche,
-  base,
-  berachain,
-  gnosis,
-  plasma,
-  scroll,
-  xLayer,
-];
-
-const wagmiAdapter = new WagmiAdapter({
-  networks: evmNetworks,
-  projectId,
-  ssr: false,
-});
+const ethersAdapter = new EthersAdapter();
 
 const solanaAdapter = new SolanaAdapter({
   wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
@@ -57,9 +36,8 @@ const solanaAdapter = new SolanaAdapter({
 
 export const createAppKit = () => {
   reownCreateAppKit({
-    adapters: [wagmiAdapter, solanaAdapter],
-    // Networks must be inlined here (not spread from evmNetworks array)
-    // because TypeScript requires a tuple type for AppKit networks
+    adapters: [ethersAdapter, solanaAdapter],
+    // AppKit requires the networks option to have a tuple type.
     networks: [
       mainnet,
       arbitrum,

@@ -9,8 +9,12 @@ import {
   useState,
 } from 'react';
 
-import { type AppKit, createAppKit } from '@reown/appkit/react';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import {
+  type AppKit,
+  createAppKit,
+  type CreateAppKit,
+} from '@reown/appkit/react';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import {
   arbitrum,
@@ -18,20 +22,17 @@ import {
   base,
   berachain,
   bsc,
-  defineChain,
   gnosis,
   mainnet,
   optimism,
   plasma,
   polygon,
   scroll,
-  solana,
   xLayer,
-} from '@reown/appkit/networks';
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from '@solana/wallet-adapter-wallets';
+} from 'viem/chains';
+import { defineChain } from 'viem';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import type { Theme } from '@aurora-is-near/intents-swap-widget';
 
 type AppKitProviderProps = {
@@ -117,6 +118,54 @@ const aurora = defineChain({
   },
 });
 
+const solanaMainnet = {
+  id: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  name: 'Solana',
+  network: 'solana-mainnet',
+  nativeCurrency: { name: 'Solana', symbol: 'SOL', decimals: 9 },
+  rpcUrls: {
+    default: { http: ['https://rpc.walletconnect.org/v1'] },
+  },
+  blockExplorers: {
+    default: { name: 'Solscan', url: 'https://solscan.io' },
+  },
+  testnet: false,
+  chainNamespace: 'solana',
+  caipNetworkId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  deprecatedCaipNetworkId: 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ',
+} as const;
+
+const appKitNetworks = [
+  mainnet,
+  arbitrum,
+  polygon,
+  bsc,
+  optimism,
+  avalanche,
+  base,
+  solanaMainnet,
+  berachain,
+  monadMainnet,
+  gnosis,
+  plasma,
+  scroll,
+  xLayer,
+  adi,
+  aurora,
+] satisfies CreateAppKit['networks'];
+
+// Reown puts its Blockchain API first for supported EVM chains. The Ethers
+// adapter does not fall back when that endpoint is unavailable, so keep the
+// networks' own RPC URLs first for balance refreshes.
+const customRpcUrls = Object.fromEntries(
+  appKitNetworks
+    .filter((network) => typeof network.id === 'number')
+    .map((network) => [
+      `eip155:${network.id}`,
+      [{ url: network.rpcUrls.default.http[0] }],
+    ]),
+);
+
 export const initAppKit = ({
   appName,
   theme,
@@ -126,29 +175,7 @@ export const initAppKit = ({
 }) => {
   const projectId = '76f61d4322c80976d1a24a1263a9d082';
 
-  const evmNetworks = [
-    mainnet,
-    arbitrum,
-    polygon,
-    bsc,
-    optimism,
-    avalanche,
-    base,
-    berachain,
-    monadMainnet,
-    gnosis,
-    plasma,
-    scroll,
-    xLayer,
-    adi,
-    aurora,
-  ];
-
-  const wagmiAdapter = new WagmiAdapter({
-    networks: evmNetworks,
-    projectId,
-    ssr: false,
-  });
+  const ethersAdapter = new EthersAdapter();
 
   const solanaAdapter = new SolanaAdapter({
     wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
@@ -157,27 +184,9 @@ export const initAppKit = ({
   const websiteFavicon = findFavicon();
 
   return createAppKit({
-    adapters: [wagmiAdapter, solanaAdapter],
-    // Networks must be inlined here (not spread from evmNetworks array)
-    // because TypeScript requires a tuple type for AppKit networks
-    networks: [
-      mainnet,
-      arbitrum,
-      polygon,
-      bsc,
-      optimism,
-      avalanche,
-      base,
-      solana,
-      berachain,
-      monadMainnet,
-      gnosis,
-      plasma,
-      scroll,
-      xLayer,
-      adi,
-      aurora,
-    ],
+    adapters: [ethersAdapter, solanaAdapter],
+    networks: appKitNetworks,
+    customRpcUrls,
     projectId,
     metadata: {
       name: appName ?? 'Intents Swap Widget',
