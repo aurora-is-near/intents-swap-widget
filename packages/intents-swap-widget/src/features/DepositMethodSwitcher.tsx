@@ -442,7 +442,7 @@ export const DepositMethodSwitcher = ({
         <Tooltip
           isDisabled={canBeToggled}
           text={(() => {
-            if (canBeToggled || canConnectWallet) {
+            if (canBeToggled || canConnectWallet || isExternalTxReceived) {
               return '';
             }
 
@@ -467,10 +467,14 @@ export const DepositMethodSwitcher = ({
               );
             }
 
-            return t(
-              'deposit.method.switcher.tooltip.virtualChain',
-              'External wallet deposits aren’t available for this asset.',
-            );
+            if (ctx.sourceToken?.isIntent) {
+              return t(
+                'deposit.method.switcher.tooltip.virtualChain',
+                'External wallet deposits aren’t available for this asset.',
+              );
+            }
+
+            return '';
           })()}>
           <span tabIndex={canBeToggled ? undefined : 0} className="flex">
             <Toggle
