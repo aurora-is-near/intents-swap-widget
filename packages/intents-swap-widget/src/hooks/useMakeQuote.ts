@@ -1,11 +1,11 @@
 import { useCallback, useRef } from 'react';
 import { snakeCase } from 'change-case';
-import {
+import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
+import { AxiosError, AxiosResponse, CanceledError } from 'axios';
+import type {
   Quote as OneClickQuote,
-  QuoteRequest,
   QuoteResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
-import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
@@ -187,8 +187,15 @@ export const useMakeQuote = () => {
 
     let commonQuoteParams: Omit<
       QuoteRequest,
-      'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
-    > & { confidentiality: 'public' | 'basic' } = {
+      | 'recipient'
+      | 'recipientType'
+      | 'depositType'
+      | 'refundTo'
+      | 'refundType'
+      | 'confidentiality'
+    > & {
+      confidentiality: NonNullable<QuoteRequest['confidentiality']>;
+    } = {
       // Settings
       dry: isDry,
       slippageTolerance: ctx.maxSlippage,
@@ -196,7 +203,9 @@ export const useMakeQuote = () => {
 
       // Confidentiality
       confidentiality:
-        ctx.confidentialMode === 'confidential' ? 'basic' : 'public',
+        ctx.confidentialMode === 'confidential'
+          ? QuoteRequest.confidentiality.BASIC
+          : QuoteRequest.confidentiality.PUBLIC,
 
       // Target
       destinationAsset:

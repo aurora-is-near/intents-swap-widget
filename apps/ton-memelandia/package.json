@@ -14,7 +14,7 @@
     "@aurora-is-near/intents-swap-widget": "*",
     "@aurora-is-near/intents-swap-widget-evm": "*",
     "@aurora-is-near/intents-swap-widget-solana": "*",
-    "@defuse-protocol/one-click-sdk-typescript": "^0.1.17",
+    "@defuse-protocol/one-click-sdk-typescript": "^0.1.25",
     "@ethersproject/sha2": "5.8.0",
     "@material-symbols-svg/react-rounded": "^0.1.19",
     "@reown/appkit": "1.8.11",

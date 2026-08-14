@@ -16,6 +16,7 @@ const nodeModulesToTransform = [
   '@lit',
   '@wagmi',
   '@walletconnect',
+  '@defuse-protocol/one-click-sdk-typescript',
 ].join('|');
 
 module.exports = {

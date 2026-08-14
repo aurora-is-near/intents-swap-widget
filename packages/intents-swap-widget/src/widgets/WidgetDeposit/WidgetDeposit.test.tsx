@@ -4,7 +4,6 @@
 import {
   mockAlchemyApi,
   mockFeeServiceApi,
-  mockOneClickApi,
 } from '../../tests/mock-axios-requests';
 import '../../tests/mock-qr-code';
 import { mockEvmWallet } from '../../tests/mock-evm-wallet';
@@ -12,10 +11,8 @@ import { mockMakeTransfer } from '../../tests/mock-make-transfer';
 import { mockAlchemyResponse } from '../../tests/mock-alchemy-response';
 import { mockGetIntentsBalances } from '../../tests/mock-get-intents-balances';
 import { mockConnectedWalletAddress } from '../../tests/mock-connected-wallet-address';
-import { getMockPendingDepositStatus } from '../../tests/mock-quote';
 import { mockOneClickQuote } from '../../tests/mock-one-click-quote';
 import { mockedLocalStorage } from '../../tests/mock-localstorage';
-import { mockOneClickSDK } from '../../tests/mock-one-click-sdk';
 
 import { setup } from '../../tests/setup';
 import { CtxDebugger } from '../../tests/ctx';
@@ -112,13 +109,6 @@ describe('Deposit', () => {
       recipient: mockConnectedWalletAddress('evm'),
     });
 
-    mockOneClickSDK.getQuote.mockResolvedValue(quoteMock);
-    mockOneClickSDK.getTokens.mockResolvedValue([sourceToken, targetToken]);
-    mockOneClickSDK.getExecutionStatus.mockResolvedValue(
-      getMockPendingDepositStatus(quoteMock),
-    );
-
-    mockOneClickApi.post.mockResolvedValue({ data: quoteMock });
     mockFeeServiceApi.post.mockResolvedValue({ data: quoteMock });
     mockFeeServiceApi.get.mockResolvedValue({
       data: { asset_stats: [], tokens: [sourceToken, targetToken] },

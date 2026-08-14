@@ -1,6 +1,7 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosResponse } from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { GetExecutionStatusResponse } from '@defuse-protocol/one-click-sdk-typescript';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';

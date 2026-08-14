@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
 import {
@@ -50,9 +49,15 @@ export const useTokens = ({
     apiKey,
   } = useConfig();
 
-  const hasCustomFetch =
-    (variant === 'source' && !!fetchSourceTokens) ||
-    (variant === 'target' && !!fetchTargetTokens);
+  let customFetch: (() => Promise<SimpleToken[]>) | undefined;
+
+  if (variant === 'source') {
+    customFetch = fetchSourceTokens;
+  } else if (variant === 'target') {
+    customFetch = fetchTargetTokens;
+  }
+
+  const hasCustomFetch = !!customFetch;
 
   // Primary: fee service (returns both tokens + asset_stats in one request).
   // Shares the same cache entry with useTokenVolumeStats — no duplicate network call.
@@ -64,25 +69,17 @@ export const useTokens = ({
     select: (response) => response.tokens,
   });
 
-  // Fallback: 1Click API (used when no apiKey) or custom variant fetch.
-  const { data: fallbackData, ...fallbackQuery } = useQuery<SimpleToken[]>({
+  // A custom variant fetch takes precedence over the fee service.
+  const { data: customData, ...customQuery } = useQuery<SimpleToken[]>({
     queryKey: ['tokens', variant].filter(Boolean),
     queryFn: async (): Promise<SimpleToken[]> => {
-      if (variant === 'source' && fetchSourceTokens) {
-        return fetchSourceTokens();
-      }
-
-      if (variant === 'target' && fetchTargetTokens) {
-        return fetchTargetTokens();
-      }
-
-      return OneClickService.getTokens();
+      return customFetch ? customFetch() : [];
     },
-    enabled: !apiKey || hasCustomFetch,
+    enabled: hasCustomFetch,
   });
 
-  const queryData = feeServiceData ?? fallbackData;
-  const query = !!apiKey && !hasCustomFetch ? feeQuery : fallbackQuery;
+  const queryData = feeServiceData ?? customData;
+  const query = hasCustomFetch ? customQuery : feeQuery;
 
   const data = useMemo(() => {
     if (!queryData) {

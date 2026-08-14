@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { logger } from '@/logger';
 import { TransferError } from '@/errors';
+import { feeServiceApi } from '@/network';
 import { useUnsafeSnapshot } from '@/machine/snap';
 import { NATIVE_NEAR_DUMB_ASSET_ID } from '@/constants/tokens';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
@@ -44,7 +44,7 @@ export const useMakeQuoteTransfer = ({
   plugins,
 }: QuoteTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
-  const { alchemyApiKey } = useConfig();
+  const { alchemyApiKey, apiKey } = useConfig();
 
   const { make: makeNearTransfer } = useMakeNearTransfer({
     provider: providers?.near,
@@ -235,13 +235,15 @@ export const useMakeQuoteTransfer = ({
       // Proactively notify 1Click of the deposit so its indexer doesn't have
       // to discover the tx on its own. This speeds up status resolution.
       // Fails with 500 for confidential intents.
-      if (ctx.confidentialMode !== 'confidential') {
-        void OneClickService.submitDepositTx({
-          txHash: depositResult.hash,
-          depositAddress: ctx.quote.depositAddress,
-        }).catch((e) => {
-          logger.warn('Failed to submit deposit tx to 1Click', e);
-        });
+      if (ctx.confidentialMode !== 'confidential' && apiKey) {
+        void feeServiceApi
+          .post(`/api/deposit/submit/${apiKey}`, {
+            txHash: depositResult.hash,
+            depositAddress: ctx.quote.depositAddress,
+          })
+          .catch((e) => {
+            logger.warn('Failed to submit deposit tx through fee service', e);
+          });
       }
 
       return {

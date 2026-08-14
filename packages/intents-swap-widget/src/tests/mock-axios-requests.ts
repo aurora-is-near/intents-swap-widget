@@ -22,12 +22,6 @@ export const mockAlchemyApi: {
   post: jest.fn<(...args: Args) => Promise<Return>>(),
 };
 
-export const mockOneClickApi: {
-  post: Mock<(...args: Args) => Promise<{ data: QuoteResponse }>>;
-} = {
-  post: jest.fn<(...args: Args) => Promise<{ data: QuoteResponse }>>(),
-};
-
 export const mockFeeServiceApi: {
   post: Mock<(...args: Args) => Promise<{ data: QuoteResponse }>>;
   get: Mock<(url: string) => Promise<{ data: unknown }>>;
@@ -39,7 +33,6 @@ export const mockFeeServiceApi: {
 jest.mock('../network', () => ({
   __esModule: true,
   alchemyApi: mockAlchemyApi,
-  oneClickApi: mockOneClickApi,
   feeServiceApi: mockFeeServiceApi,
   getIntentsApiBaseUrl: () => 'https://intents-api.aurora.dev',
 }));

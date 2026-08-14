@@ -9,3 +9,4 @@ export * from './connectors';
 export * from './theme';
 export * from './widget';
 export * from './transaction';
+export * from './intents';

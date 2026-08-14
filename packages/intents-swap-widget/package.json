@@ -57,7 +57,7 @@
   "dependencies": {
     "@defuse-protocol/intents-sdk": "^0.43.3",
     "@defuse-protocol/internal-utils": "^0.13.0",
-    "@defuse-protocol/one-click-sdk-typescript": "^0.1.17",
+    "@defuse-protocol/one-click-sdk-typescript": "^0.1.25",
     "@fontsource/figtree": "^5.3.0",
     "@headlessui/react": "^2.2.4",
     "@material-symbols-svg/react-rounded": "^0.1.19",
