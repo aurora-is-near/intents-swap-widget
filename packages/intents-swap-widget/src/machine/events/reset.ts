@@ -25,11 +25,23 @@ export const reset = (ctx: Context, payload: ResetPayload, m: Machine) => {
     ctx.isDepositFromExternalWallet = false;
   }
 
+  // "Receive in my wallet" is not user input to throw away: it mirrors the
+  // connected wallet, so returning to the form (from the success screen, say)
+  // should keep it. Clearing it here would also suppress the auto-fill in
+  // `isSendAddressAsConnected`, which ignores batches that touch `sendAddress`.
+  const keepSendAddress =
+    !payload.clearWalletAddress &&
+    !!ctx.walletAddress &&
+    ctx.sendAddress === ctx.walletAddress;
+
   if (keepDepositType && ctx.isDepositFromExternalWallet) {
     // persist refund to and receive in addresses
   } else {
     ctx.refundToAddress = undefined;
-    ctx.sendAddress = undefined;
+
+    if (!keepSendAddress) {
+      ctx.sendAddress = undefined;
+    }
   }
 
   ctx.error = null;

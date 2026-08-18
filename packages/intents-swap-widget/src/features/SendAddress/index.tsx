@@ -44,6 +44,8 @@ export const SendAddress = ({ error, className }: Props) => {
     notification?.variant !== 'error' &&
     supportedChains.includes(ctx.targetToken.blockchain);
 
+  const isReceivingInMyWallet = !!receiveInMyWallet && !!possibleToMyWallet;
+
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;
 
@@ -59,10 +61,8 @@ export const SendAddress = ({ error, className }: Props) => {
   }, [sendAddress, ctx.sendAddress]);
 
   useEffect(() => {
-    if (receiveInMyWallet === null && possibleToMyWallet) {
-      setReceiveInMyWallet(
-        !ctx.sendAddress || ctx.sendAddress === ctx.walletAddress,
-      );
+    if (receiveInMyWallet === null && possibleToMyWallet && ctx.sendAddress) {
+      setReceiveInMyWallet(ctx.sendAddress === ctx.walletAddress);
     }
   }, [
     receiveInMyWallet,
@@ -112,7 +112,7 @@ export const SendAddress = ({ error, className }: Props) => {
       )}>
       <header
         className={cn('flex items-center justify-between w-full', {
-          'pb-sw-md': !receiveInMyWallet || notification?.variant !== 'success',
+          'pb-sw-md': !isReceivingInMyWallet,
         })}>
         {possibleToMyWallet && (
           <Toggle
@@ -142,14 +142,12 @@ export const SendAddress = ({ error, className }: Props) => {
             iconPosition="right"
             {...notification}
             message={
-              receiveInMyWallet && possibleToMyWallet
-                ? 'Compatible'
-                : notification.message
+              isReceivingInMyWallet ? 'Compatible' : notification.message
             }
           />
         )}
       </header>
-      {(!receiveInMyWallet || notification?.variant !== 'success') && (
+      {!isReceivingInMyWallet && (
         <Input
           fontSize="sm"
           defaultValue={ctx.sendAddress}
