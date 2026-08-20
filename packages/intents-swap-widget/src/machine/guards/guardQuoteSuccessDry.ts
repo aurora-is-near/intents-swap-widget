@@ -1,6 +1,5 @@
-import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import type { Context, QuoteSuccessDryContext } from '@/machine/context';
-import { isBalanceSufficient } from './checks/isBalanceSufficient';
+import { isDryQuote } from './checks/isDryQuote';
 
 export const guardQuoteSuccessDry = (
   ctx: Context,
@@ -9,12 +8,8 @@ export const guardQuoteSuccessDry = (
     !!ctx.quote &&
     ctx.quoteStatus === 'success' &&
     ctx.transferStatus.status === 'idle' &&
-    (!ctx.walletAddress ||
-      (!!ctx.walletAddress &&
-        !isBalanceSufficient(ctx) &&
-        !ctx.isDepositFromExternalWallet)) &&
+    isDryQuote(ctx) &&
     !!ctx.sourceToken &&
-    !!ctx.targetToken &&
-    isNotEmptyAmount(ctx.sourceTokenAmount)
+    !!ctx.targetToken
   );
 };

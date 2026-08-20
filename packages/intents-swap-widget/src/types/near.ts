@@ -4,6 +4,7 @@ export interface NearSignMessageParams {
   message: string;
   recipient: string;
   nonce: Uint8Array;
+  callbackUrl?: string;
 }
 
 export interface NearSignedMessage {

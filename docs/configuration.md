@@ -421,7 +421,10 @@ const config = {
 
 An API key for integrating with [Alchemy](alchemy.com).
 
-This is useful for enabling more reliable balance fetching for EVM chains.
+When configured, Alchemy is the exclusive balance source for its supported
+chains. The widget continues to use configured RPCs for chains that Alchemy
+does not support. Without an Alchemy key, configured RPCs are used for all
+supported balance loaders.
 
 ### `tonCenterApiKey`
 

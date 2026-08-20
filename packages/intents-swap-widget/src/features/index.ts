@@ -1,6 +1,7 @@
 export * from './BalanceRpcLoader';
 export * from './ChainsDropdown';
 export * from './SendAddress';
+export * from './RefundAddressStep';
 export * from './SubmitButton';
 export * from './SuccessScreen';
 export * from './SwapQuote';

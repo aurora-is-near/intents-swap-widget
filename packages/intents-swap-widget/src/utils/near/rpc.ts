@@ -1,11 +1,11 @@
-import {
-  FailoverRpcProvider,
-  JsonRpcProvider,
-} from 'near-api-js/lib/providers';
+import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { snapshot } from 'valtio';
 
 import { configStore } from '@/config';
 import { getIntentsApiBaseUrl } from '@/network';
+import { nearFailoverRpcProvider } from './nearFailoverRpcProvider';
+
+export { nearFailoverRpcProvider } from './nearFailoverRpcProvider';
 
 // Public NEAR RPCs used as failover behind the rate-limited fee-service proxy.
 const PUBLIC_NEAR_RPC_URLS = ['https://rpc.mainnet.near.org'];
@@ -29,43 +29,21 @@ export const buildNearRpcUrls = (
   return proxyUrl ? [proxyUrl, ...fallbacks] : fallbacks;
 };
 
-function createNearFailoverRpcProvider({
-  providersList,
-}: {
-  providersList: JsonRpcProvider[];
-}) {
-  return new FailoverRpcProvider(providersList);
-}
+// The clients depend on the configured API key and environment, which are only
+// known at runtime, so cache them by their complete ordered URL list.
+let failoverCache: { urlsKey: string; client: JsonRpcProvider } | undefined;
 
-/**
- * @note This function is specifically designed for NEAR RPC providers and should not be used with other blockchain networks.
- * It creates a failover provider that will automatically switch between the provided RPC endpoints if one fails.
- */
-export function nearFailoverRpcProvider({ urls }: { urls: string[] }) {
-  const providersList = urls.map((url) => new JsonRpcProvider({ url }));
+let singleCache: { urlsKey: string; client: JsonRpcProvider } | undefined;
 
-  return createNearFailoverRpcProvider({ providersList });
-}
-
-// The clients depend on the configured API key, which is only known at runtime,
-// so they are built lazily and rebuilt whenever the key changes.
-let failoverCache:
-  | { apiKey: string | undefined; client: FailoverRpcProvider }
-  | undefined;
-
-let singleCache:
-  | { apiKey: string | undefined; client: JsonRpcProvider }
-  | undefined;
-
-export const getNearRpcClient = (): FailoverRpcProvider => {
+export const getNearRpcClient = (): JsonRpcProvider => {
   const { apiKey } = snapshot(configStore).config;
+  const urls = buildNearRpcUrls(apiKey, PUBLIC_NEAR_RPC_URLS);
+  const urlsKey = JSON.stringify(urls);
 
-  if (!failoverCache || failoverCache.apiKey !== apiKey) {
+  if (!failoverCache || failoverCache.urlsKey !== urlsKey) {
     failoverCache = {
-      apiKey,
-      client: nearFailoverRpcProvider({
-        urls: buildNearRpcUrls(apiKey, PUBLIC_NEAR_RPC_URLS),
-      }),
+      urlsKey,
+      client: nearFailoverRpcProvider({ urls }),
     };
   }
 
@@ -75,12 +53,14 @@ export const getNearRpcClient = (): FailoverRpcProvider => {
 // Single RPC for precise error messages (failover loses original errors)
 export const getNearSingleRpcClient = (): JsonRpcProvider => {
   const { apiKey } = snapshot(configStore).config;
+  const urls = buildNearRpcUrls(apiKey, PUBLIC_NEAR_RPC_URLS);
+  const urlsKey = JSON.stringify(urls);
 
-  if (!singleCache || singleCache.apiKey !== apiKey) {
+  if (!singleCache || singleCache.urlsKey !== urlsKey) {
     singleCache = {
-      apiKey,
+      urlsKey,
       client: new JsonRpcProvider({
-        url: buildNearRpcUrls(apiKey, PUBLIC_NEAR_RPC_URLS)[0] as string,
+        url: urls[0] as string,
       }),
     };
   }

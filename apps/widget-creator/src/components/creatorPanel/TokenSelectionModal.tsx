@@ -32,10 +32,14 @@ export function TokenSelectionModal({
 }: TokenSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const allTokens = useTokensGroupedBySymbol();
+  const allTokenSymbols = useMemo(
+    () => allTokens.map((token) => token.symbol),
+    [allTokens],
+  );
+
   const { state, dispatch } = useCreator();
 
-  const selectedTokens = state.selectedTokenSymbols;
-
+  const selectedTokens = state.selectedTokenSymbols ?? allTokenSymbols;
   const selectedTokenCount = getSelectableTokenSymbols(selectedTokens).length;
 
   const onTokensChange = (tokens: string[]) => {

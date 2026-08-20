@@ -32,6 +32,7 @@ import { WidgetDepositSkeleton } from './WidgetDepositSkeleton';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
   | ({ type: 'on_transfer_success' } & TransferResult)
@@ -121,7 +122,11 @@ export const WidgetDepositContent = ({
   }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+    fireEvent('reset', {
+      clearWalletAddress: false,
+      keepSelectedTokens: true,
+      keepDepositType: true,
+    });
   };
 
   if (!!isLoading || isLoadingTokens) {
@@ -293,7 +298,7 @@ export const WidgetDepositContent = ({
             }}
           />
 
-          {!!ctx.walletAddress && <DepositSummary />}
+          {!!ctx.walletAddress && <DepositSummary onMsg={onMsg ?? noop} />}
 
           <SubmitButton
             makeTransfer={makeTransfer}

@@ -1,7 +1,7 @@
-import { useConfig } from '@/config';
 import { useUnsafeSnapshot } from '@/machine/snap';
 
 import { Notes } from '@/components/Notes';
+import { Badge } from '@/components/Badge';
 import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
@@ -11,24 +11,31 @@ import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 import { useTypedTranslation } from '@/localisation';
 import { SwapQuoteSkeleton } from './SwapQuoteSkeleton';
 
+type Msg = { type: 'on_click_edit_slippage' };
+
 type Props = {
   className?: string;
+  onMsg: (msg: Msg) => void;
 };
 
-export const SwapQuote = ({ className }: Props) => {
+export const SwapQuote = ({ className, onMsg }: Props) => {
   const { t } = useTypedTranslation();
-  const { slippageTolerance } = useConfig();
   const { ctx } = useUnsafeSnapshot();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
-  const feesUsd = getAppFeesUsd({
-    appFees: ctx.quote?.appFees,
-    swapType: ctx.quote?.swapType,
-    amountInUsd:
-      ctx.quote && 'amountInUsd' in ctx.quote
-        ? ctx.quote.amountInUsd
-        : undefined,
-  });
+
+  // for QR code deposit/swap user may send any amount that we don't know in advance
+  // so we can't calculate fees in USD, but we still show fees in percent
+  const feesUsd = ctx.isDepositFromExternalWallet
+    ? null
+    : getAppFeesUsd({
+        appFees: ctx.quote?.appFees,
+        swapType: ctx.quote?.swapType,
+        amountInUsd:
+          ctx.quote && 'amountInUsd' in ctx.quote
+            ? ctx.quote.amountInUsd
+            : undefined,
+      });
 
   const price =
     ctx.sourceToken &&
@@ -42,7 +49,7 @@ export const SwapQuote = ({ className }: Props) => {
   return (
     <Accordion
       expandedByDefault={false}
-      expandedHeightPx={ctx.walletAddress ? 90 : 60}
+      expandedHeightPx={62}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate} sec` : undefined}
       className={className}
@@ -62,22 +69,26 @@ export const SwapQuote = ({ className }: Props) => {
       }>
       <Notes>
         <Notes.Item
-          label={t('quote.result.maxSlippage.label', 'Max slippage')}
-          value={`${(slippageTolerance / 100).toFixed(2)}%`}
+          label={t('quote.result.fees.label', 'Fees')}
+          value={
+            feesPercent ? (
+              <FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />
+            ) : (
+              '—'
+            )
+          }
         />
-        {!!feesPercent && (
-          <Notes.Item
-            label={t('quote.result.fees.label', 'Fees')}
-            value={<FeeValue feesPercent={feesPercent} feesUsd={feesUsd} />}
-          />
-        )}
-        {!!ctx.walletAddress && (
-          <Notes.Item
-            isLoading={ctx.quoteStatus === 'pending'}
-            label={t('quote.result.processingTime.label', 'Processing time')}
-            value={ctx.quote ? `${ctx.quote.timeEstimate} sec.` : '—'}
-          />
-        )}
+
+        <Notes.Item
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
+          value={
+            <Badge
+              isClickable
+              onClick={() =>
+                onMsg({ type: 'on_click_edit_slippage' })
+              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+          }
+        />
       </Notes>
     </Accordion>
   );

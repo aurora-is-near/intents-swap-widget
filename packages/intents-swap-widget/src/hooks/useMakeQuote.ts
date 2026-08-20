@@ -1,11 +1,11 @@
 import { useCallback, useRef } from 'react';
 import { snakeCase } from 'change-case';
-import {
+import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
+import { AxiosError, AxiosResponse, CanceledError } from 'axios';
+import type {
   Quote as OneClickQuote,
-  QuoteRequest,
   QuoteResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
-import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
@@ -68,14 +68,8 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const {
-    apiKey,
-    appFees,
-    fetchQuote,
-    referral,
-    slippageTolerance,
-    extraQuoteParameters,
-  } = useConfig();
+  const { apiKey, appFees, fetchQuote, referral, extraQuoteParameters } =
+    useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -168,7 +162,13 @@ export const useMakeQuote = () => {
         isAuroraSource ||
         !supportedChains.includes(ctx.sourceToken.blockchain));
 
-    if (!recipientIntentsAccountId) {
+    const isUserDefinedRefundAddress =
+      ctx.isDepositFromExternalWallet &&
+      !ctx.walletAddress &&
+      !!ctx.sendAddress &&
+      !ctx.targetToken.isIntent;
+
+    if (!recipientIntentsAccountId && !isUserDefinedRefundAddress) {
       const msg = 'No corresponding intents account to run a quote';
 
       logger.error(`[WIDGET] ${msg}`);
@@ -187,16 +187,25 @@ export const useMakeQuote = () => {
 
     let commonQuoteParams: Omit<
       QuoteRequest,
-      'recipient' | 'recipientType' | 'depositType' | 'refundTo' | 'refundType'
-    > & { confidentiality: 'public' | 'basic' } = {
+      | 'recipient'
+      | 'recipientType'
+      | 'depositType'
+      | 'refundTo'
+      | 'refundType'
+      | 'confidentiality'
+    > & {
+      confidentiality: NonNullable<QuoteRequest['confidentiality']>;
+    } = {
       // Settings
       dry: isDry,
-      slippageTolerance,
+      slippageTolerance: ctx.maxSlippage,
       deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour
 
       // Confidentiality
       confidentiality:
-        ctx.confidentialMode === 'confidential' ? 'basic' : 'public',
+        ctx.confidentialMode === 'confidential'
+          ? QuoteRequest.confidentiality.BASIC
+          : QuoteRequest.confidentiality.PUBLIC,
 
       // Target
       destinationAsset:
@@ -246,12 +255,6 @@ export const useMakeQuote = () => {
           meta: { isDry, message: 'No source token amount' },
         });
       }
-    } else if (isNotEmptyAmount(ctx.sourceTokenAmount)) {
-      commonQuoteParams = {
-        ...commonQuoteParams,
-        swapType: QuoteRequest.swapType.EXACT_INPUT,
-        amount: ctx.sourceTokenAmount,
-      };
     } else {
       commonQuoteParams = {
         ...commonQuoteParams,
@@ -382,6 +385,17 @@ export const useMakeQuote = () => {
 
     try {
       if (ctx.sourceToken.isIntent && ctx.targetToken.isIntent) {
+        if (!recipientIntentsAccountId) {
+          throw new QuoteError({
+            code: 'QUOTE_INVALID_INITIAL',
+            meta: {
+              isDry,
+              message:
+                'recipientIntentsAccountId is not set for internal quote',
+            },
+          });
+        }
+
         request.current = requestQuote(
           {
             ...commonQuoteParams,
@@ -399,17 +413,29 @@ export const useMakeQuote = () => {
 
         quoteResult = await request.current;
       } else {
+        const recipient = getQuoteRecipient({
+          intentsAccountType,
+          sendAddress: ctx.sendAddress,
+          targetToken: ctx.targetToken,
+          walletAddress: recipientWalletAddress,
+          defaultRecipient: recipientIntentsAccountId,
+        });
+
+        if (!recipient) {
+          throw new QuoteError({
+            code: 'QUOTE_INVALID_INITIAL',
+            meta: {
+              isDry,
+              message: 'Recipient is not set for a quote',
+            },
+          });
+        }
+
         request.current = requestQuote(
           {
             ...commonQuoteParams,
             ...filteredExtraQuoteParameters,
-            recipient: getQuoteRecipient({
-              walletAddress: recipientWalletAddress,
-              sendAddress: ctx.sendAddress,
-              targetToken: ctx.targetToken,
-              intentsAccountType,
-              defaultRecipient: recipientIntentsAccountId,
-            }),
+            recipient,
             recipientType: ctx.targetToken.isIntent
               ? QuoteRequest.recipientType.INTENTS
               : QuoteRequest.recipientType.DESTINATION_CHAIN,
@@ -421,8 +447,12 @@ export const useMakeQuote = () => {
             // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
             // is the literal 'aurora' account, otherwise it's the user's
             // address on the origin chain.
-            refundTo: getRefundTo(),
-            refundType: getRefundType(),
+            refundTo: isUserDefinedRefundAddress
+              ? (ctx.refundToAddress ?? '')
+              : getRefundTo(),
+            refundType: isUserDefinedRefundAddress
+              ? QuoteRequest.refundType.ORIGIN_CHAIN
+              : getRefundType(),
 
             depositMode:
               ctx.sourceToken.blockchain === 'stellar'
@@ -511,10 +541,9 @@ export const useMakeQuote = () => {
     return {
       dry: false,
       type:
-        !ctx.isDepositFromExternalWallet ||
-        isNotEmptyAmount(ctx.sourceTokenAmount)
-          ? 'QUOTE_REAL_WITH_AMOUNT'
-          : 'QUOTE_DEPOSIT_ANY_AMOUNT',
+        commonQuoteParams.swapType === QuoteRequest.swapType.FLEX_INPUT
+          ? 'QUOTE_DEPOSIT_ANY_AMOUNT'
+          : 'QUOTE_REAL_WITH_AMOUNT',
       ...quoteResult.quote,
       appFees: quoteResult.appFees,
       swapType: commonQuoteParams.swapType,

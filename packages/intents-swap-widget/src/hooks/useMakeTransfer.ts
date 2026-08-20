@@ -107,7 +107,6 @@ export const useMakeTransfer = ({
         }
       } else {
         transferResult = await makeIntentsTransfer({
-          message,
           onPending: (reason) => {
             fireEvent('transferSetStatus', {
               status: 'pending',
@@ -251,9 +250,9 @@ export const useMakeTransfer = ({
           amountOutUsd: ctx.quote.amountOutUsd,
           createdAt: new Date().toISOString(),
           senders: [ctx.walletAddress],
-          recipient,
           refundTo,
           refundType,
+          recipient: recipient ?? '',
           originChainTxHashes: [transferResult.hash],
           intentHashes: transferResult.intent,
           depositAddress: ctx.quote.depositAddress,

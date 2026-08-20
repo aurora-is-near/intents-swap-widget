@@ -1,38 +1,39 @@
-import {
-  createIntentSignerNEP413,
-  createInternalTransferRoute,
-  createNearWithdrawalRoute,
-  FeeExceedsAmountError,
-  IntentsSDK,
-  MinWithdrawalAmountError,
-  type RouteConfig,
-} from '@defuse-protocol/intents-sdk';
+import { IntentsSDK } from '@defuse-protocol/intents-sdk';
 import { snakeCase } from 'change-case';
 
 import { logger } from '@/logger';
 import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
-import { FALLBACK_REFERRAL, INTENTS_CONTRACT } from '@/constants';
 import { notReachable } from '@/utils/notReachable';
-import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { localStorageTyped } from '@/utils/localstorage';
 import { queryContract } from '@/utils/near/queryContract';
+import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { IntentSignerStellar } from '@/utils/intents/signers/stellar';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import { isUserDeniedSigning } from '@/utils/checkers/isUserDeniedSigning';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { FALLBACK_REFERRAL, INTENTS_CONTRACT } from '@/constants';
+import {
+  assertPreparedIntent,
+  requestIntentForSigning,
+  submitSignedIntent,
+} from '@/utils/intents/oneClickIntentApi';
+
+import type { PreparedIntentSigner } from '@/utils/intents/signers/types';
 import type { NearWalletBase as NearWallet } from '@/types/near';
 import type { TransferResult } from '@/types/transfer';
 import type { Context } from '@/machine/context';
-import { useIntentsAccountType } from './useIntentsAccountType';
-import { Plugins } from '../types/connectors';
-import { Providers } from '../types/providers';
+
 import { IntentSignerSolana } from '../utils/intents/signers/solana';
 import { generateRandomBytes } from '../utils/near/getRandomBytes';
+import type { Providers } from '../types/providers';
+import type { Plugins } from '../types/connectors';
+
+import { useIntentsAccountType } from './useIntentsAccountType';
 
 type IntentsTransferArgs = {
   providers?: Providers;
@@ -40,15 +41,14 @@ type IntentsTransferArgs = {
 };
 
 type MakeArgs = {
-  message?: string;
   onPending: (reason: 'WAITING_CONFIRMATION' | 'PROCESSING') => void;
 };
 
-const getDestinationAddress = (ctx: Context) => {
+const getDepositAddress = (ctx: Context) => {
   if (!ctx.quote || ctx.quote.dry) {
     throw new TransferError({
       code: 'TRANSFER_INVALID_INITIAL',
-      meta: { message: 'Quote is required for intents non-direct transfer' },
+      meta: { message: 'Quote is required for an intents transfer' },
     });
   }
 
@@ -144,13 +144,11 @@ export const useMakeIntentsTransfer = ({
   plugins,
 }: IntentsTransferArgs) => {
   const { ctx } = useUnsafeSnapshot();
+  const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
-  const { referral } = useConfig();
-  const { isNativeNearDeposit, isDirectNearTokenWithdrawal } =
-    useComputedSnapshot();
+  const { apiKey, referral } = useConfig();
 
   const make = async ({
-    message,
     onPending,
   }: MakeArgs): Promise<TransferResult | undefined> => {
     if (!ctx.walletAddress) {
@@ -172,15 +170,10 @@ export const useMakeIntentsTransfer = ({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: {
           message:
-            'For not intents source token use useMakeQuoteTransfer instead',
+            'For a non-intents source token use useMakeQuoteTransfer instead',
         },
       });
     }
-
-    let signer:
-      | IntentSignerPrivy
-      | ReturnType<typeof createIntentSignerNEP413>
-      | undefined;
 
     if (!intentsAccountType) {
       throw new TransferError({
@@ -188,6 +181,8 @@ export const useMakeIntentsTransfer = ({
         meta: { message: 'Intents account type is not defined' },
       });
     }
+
+    let signer: PreparedIntentSigner;
 
     switch (intentsAccountType) {
       case 'evm':
@@ -218,7 +213,6 @@ export const useMakeIntentsTransfer = ({
           { walletAddress: ctx.walletAddress },
           providers.sol,
         );
-
         break;
 
       case 'near': {
@@ -236,7 +230,6 @@ export const useMakeIntentsTransfer = ({
           walletAddress: ctx.walletAddress,
           getProvider: providers.near,
         });
-
         break;
       }
 
@@ -263,7 +256,6 @@ export const useMakeIntentsTransfer = ({
           providers.stellar,
           stellarPlugin,
         );
-
         break;
       }
 
@@ -271,121 +263,95 @@ export const useMakeIntentsTransfer = ({
         notReachable(intentsAccountType);
     }
 
-    const sdk = new IntentsSDK({
-      referral: snakeCase(referral ?? FALLBACK_REFERRAL),
+    const signerId = getIntentsAccountId({
+      walletAddress: ctx.walletAddress,
+      addressType: intentsAccountType,
     });
 
-    sdk.setIntentSigner(signer);
-
-    let routeConfig: RouteConfig | undefined;
-
-    if (isNativeNearDeposit) {
-      logger.debug('[WIDGET] Native Near deposit');
-      routeConfig = undefined;
-    } else if (isDirectNearTokenWithdrawal) {
-      logger.debug('[WIDGET] Direct Near token withdrawal');
-      routeConfig = createNearWithdrawalRoute(message ?? undefined);
-    } else {
-      routeConfig = createInternalTransferRoute();
+    if (!signerId) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'Unable to derive the intents signer ID' },
+      });
     }
 
-    const destinationAddress = getDestinationAddress(ctx);
-    const withdrawalParams = {
-      assetId: ctx.sourceToken.assetId,
-      amount: BigInt(ctx.sourceTokenAmount),
-      destinationAddress,
-      destinationMemo: undefined,
-      feeInclusive: true,
-      routeConfig,
-    };
+    const depositAddress = getDepositAddress(ctx);
 
     onPending('WAITING_CONFIRMATION');
 
     try {
-      logger.debug('[WIDGET] Fee estimation...', withdrawalParams);
-
-      const feeEstimation = await sdk.estimateWithdrawalFee({
-        withdrawalParams,
+      logger.debug('[WIDGET] Request intent payload from 1Click.', {
+        standard: signer.standard,
+        signerId,
+        depositAddress,
       });
 
-      if (!feeEstimation) {
-        throw new TransferError({
-          code: 'TRANSFER_INVALID_INITIAL',
-          meta: { message: 'Fee estimation failed' },
-        });
-      }
-
-      logger.debug('[WIDGET] Sign and send withdrawal intent...');
-      const { intentHash } = await sdk.signAndSendWithdrawalIntent({
-        withdrawalParams,
-        feeEstimation,
+      const generated = await requestIntentForSigning({
+        apiKey,
+        request: {
+          type: 'swap_transfer',
+          standard: signer.standard,
+          signerId,
+          depositAddress,
+        },
       });
 
-      logger.debug('[WIDGET] Wait for intent settlement...');
+      assertPreparedIntent(generated.intent, signer.standard);
+
+      logger.debug('[WIDGET] Sign the exact 1Click intent payload.', {
+        correlationId: generated.correlationId,
+        standard: signer.standard,
+      });
+      const signedData = await signer.signIntent(generated.intent);
 
       onPending('PROCESSING');
-      const intentTx = await sdk.waitForIntentSettlement({ intentHash });
-
-      logger.debug('[WIDGET] Wait for withdrawal completion...');
-
-      const completionResult = await sdk.waitForWithdrawalCompletion({
-        withdrawalParams,
-        intentTx,
+      logger.debug('[WIDGET] Submit signed intent to 1Click.');
+      const submitted = await submitSignedIntent({
+        apiKey,
+        request: { type: 'swap_transfer', signedData },
       });
 
-      logger.debug('[WIDGET] Withdrawal completed.', completionResult);
+      if (!submitted.intentHash) {
+        throw new Error('1Click returned no intent hash');
+      }
+
+      logger.debug('[WIDGET] Wait for intent settlement.', {
+        correlationId: submitted.correlationId,
+        intentHash: submitted.intentHash,
+      });
+
+      const sdk = new IntentsSDK({
+        referral: snakeCase(referral ?? FALLBACK_REFERRAL),
+      });
+
+      const intentTx = await sdk.waitForIntentSettlement({
+        intentHash: submitted.intentHash,
+      });
+
+      logger.debug('[WIDGET] Intent settled.', intentTx);
 
       return {
-        // The Explorer API indexes intents by their intent hash, and the
-        // optimistic history entry is de-duplicated against it — so this must be
-        // the intent hash, NOT `intentTx.hash` (the NEAR settlement tx hash).
-        intent: intentHash,
-        // no hash means completion not trackable for this bridge
-        hash: completionResult.hash ?? '',
-        transactionLink: getTransactionLink(destinationAddress, {
-          isDirectNearTransfer: isDirectNearTokenWithdrawal,
-        }),
+        intent: submitted.intentHash,
+        hash: intentTx.hash,
+        transactionLink: isDirectNearTokenWithdrawal
+          ? getTransactionLink(intentTx.hash, { isDirectNearTransfer: true })
+          : getTransactionLink(depositAddress),
         isOneClickDeposit: !isDirectNearTokenWithdrawal,
       };
     } catch (e: unknown) {
       logger.error('[TRANSFER ERROR]', e);
 
-      if (e instanceof MinWithdrawalAmountError) {
-        throw new TransferError({
-          code: 'MIN_WITHDRAWAL_AMOUNT_ERROR',
-          meta: {
-            minAmount: formatBigToHuman(
-              e.minAmount.toString(),
-              ctx.sourceToken.decimals,
-            ),
-          },
-        });
-      }
+      if (isErrorLikeObject(e) && isUserDeniedSigning(e)) {
+        logger.warn('User denied signing the transaction');
 
-      if (e instanceof FeeExceedsAmountError) {
-        throw new TransferError({
-          code: 'TRANSFER_INVALID_INITIAL',
-          meta: { message: 'Fee is above the maximum allowed' },
-        });
-      }
-
-      if (isErrorLikeObject(e)) {
-        if (e.message.includes('Fee is not estimated')) {
-          throw new TransferError({
-            code: 'FEES_NOT_ESTIMATED',
-          });
-        }
-
-        // User rejected
-        if (isUserDeniedSigning(e)) {
-          logger.warn('User denied signing the transaction');
-
-          return undefined;
-        }
+        return undefined;
       }
 
       throw new TransferError({
         code: 'DIRECT_TRANSFER_ERROR',
+        meta: {
+          message: getResponseErrorMessage(e) ?? 'Unable to submit the intent',
+        },
       });
     }
   };

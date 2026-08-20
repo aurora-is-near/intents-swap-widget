@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { useConfig } from '@/config';
 import {
@@ -50,9 +49,15 @@ export const useTokens = ({
     apiKey,
   } = useConfig();
 
-  const hasCustomFetch =
-    (variant === 'source' && !!fetchSourceTokens) ||
-    (variant === 'target' && !!fetchTargetTokens);
+  let customFetch: (() => Promise<SimpleToken[]>) | undefined;
+
+  if (variant === 'source') {
+    customFetch = fetchSourceTokens;
+  } else if (variant === 'target') {
+    customFetch = fetchTargetTokens;
+  }
+
+  const hasCustomFetch = !!customFetch;
 
   // Primary: fee service (returns both tokens + asset_stats in one request).
   // Shares the same cache entry with useTokenVolumeStats — no duplicate network call.
@@ -64,30 +69,63 @@ export const useTokens = ({
     select: (response) => response.tokens,
   });
 
-  // Fallback: 1Click API (used when no apiKey) or custom variant fetch.
-  const { data: fallbackData, ...fallbackQuery } = useQuery<SimpleToken[]>({
+  // A custom variant fetch takes precedence over the fee service.
+  const { data: customData, ...customQuery } = useQuery<SimpleToken[]>({
     queryKey: ['tokens', variant].filter(Boolean),
     queryFn: async (): Promise<SimpleToken[]> => {
-      if (variant === 'source' && fetchSourceTokens) {
-        return fetchSourceTokens();
-      }
-
-      if (variant === 'target' && fetchTargetTokens) {
-        return fetchTargetTokens();
-      }
-
-      return OneClickService.getTokens();
+      return customFetch ? customFetch() : [];
     },
-    enabled: !apiKey || hasCustomFetch,
+    enabled: hasCustomFetch,
   });
 
-  const queryData = feeServiceData ?? fallbackData;
-  const query = !!apiKey && !hasCustomFetch ? feeQuery : fallbackQuery;
+  const queryData = feeServiceData ?? customData;
+  const query = hasCustomFetch ? customQuery : feeQuery;
 
   const data = useMemo(() => {
     if (!queryData) {
       return [];
     }
+
+    // Shared by the upstream list and the synthesised Aurora entries below, so
+    // an allowlist cannot be sidestepped by a token that never came from the
+    // upstream response.
+    const isAllowedToken = (assetId: string, symbol: string): boolean => {
+      if (unrestricted) {
+        return true;
+      }
+
+      if (
+        allowedTokensList &&
+        !allowedTokensList.includes(assetId) &&
+        !allowedTokensList.includes(symbol)
+      ) {
+        return false;
+      }
+
+      if (
+        variant === 'source' &&
+        allowedSourceTokensList &&
+        !(
+          allowedSourceTokensList.includes(assetId) ||
+          allowedSourceTokensList.includes(symbol)
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        variant === 'target' &&
+        allowedTargetTokensList &&
+        !(
+          allowedTargetTokensList.includes(assetId) ||
+          allowedTargetTokensList.includes(symbol)
+        )
+      ) {
+        return false;
+      }
+
+      return true;
+    };
 
     const tokens: Token[] = queryData
       .map((token: SimpleToken): Token | null => {
@@ -101,36 +139,7 @@ export const useTokens = ({
           return null;
         }
 
-        if (
-          !unrestricted &&
-          allowedTokensList &&
-          !allowedTokensList.includes(token.assetId) &&
-          !allowedTokensList.includes(token.symbol)
-        ) {
-          return null;
-        }
-
-        if (
-          !unrestricted &&
-          variant === 'source' &&
-          allowedSourceTokensList &&
-          !(
-            allowedSourceTokensList.includes(token.assetId) ||
-            allowedSourceTokensList.includes(token.symbol)
-          )
-        ) {
-          return null;
-        }
-
-        if (
-          !unrestricted &&
-          variant === 'target' &&
-          allowedTargetTokensList &&
-          !(
-            allowedTargetTokensList.includes(token.assetId) ||
-            allowedTargetTokensList.includes(token.symbol)
-          )
-        ) {
+        if (!isAllowedToken(token.assetId, token.symbol)) {
           return null;
         }
 
@@ -188,6 +197,12 @@ export const useTokens = ({
           return;
         }
 
+        // They are synthesised rather than returned upstream, so they have to
+        // be gated here — otherwise a restricted config still shows all of them.
+        if (!isAllowedToken(asset.assetId, asset.symbol)) {
+          return;
+        }
+
         return {
           assetId: asset.assetId,
           symbol: asset.symbol,
@@ -201,7 +216,9 @@ export const useTokens = ({
           contractAddress: asset.evmAddress,
         };
       },
-    ).filter((t): t is Token => !!t);
+    )
+      .filter((t): t is Token => !!t)
+      .filter(unrestricted ? () => true : (filterTokens ?? (() => true)));
 
     tokensWithoutWNEAR = [...tokensWithoutWNEAR, ...auroraTokens];
 

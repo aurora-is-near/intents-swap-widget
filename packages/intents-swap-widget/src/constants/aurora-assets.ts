@@ -6,8 +6,7 @@ type AuroraBridgeableAsset = {
 };
 
 // Mappings derived from https://github.com/aurora-is-near/rainbow-bridge-next/blob/main/data/tokens.ts
-// and mapped to NEP-141 tokens that https://1click.chaindefuser.com/v0/tokens
-// currently returns.
+// and mapped to the NEP-141 tokens returned by the Aurora fee service.
 export const AURORA_BRIDGEABLE_ASSETS: AuroraBridgeableAsset[] = [
   {
     symbol: 'AURORA',

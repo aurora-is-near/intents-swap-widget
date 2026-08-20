@@ -1,40 +1,22 @@
 import clsx from 'clsx';
 
 import { SkeletonBox } from '@/components/SkeletonBox';
-import { useUnsafeSnapshot } from '@/machine/snap';
 import { useConfig } from '@/config';
 
 export const WidgetDepositModeSkeleton = () => {
   const { hideTokenInputHeadings } = useConfig();
-  const { ctx } = useUnsafeSnapshot();
-
-  if (!ctx.walletAddress) {
-    return (
-      <div className="w-full gap-sw-2xl relative flex flex-col">
-        <SkeletonBox
-          className={clsx({
-            'h-[108px]': hideTokenInputHeadings,
-            'h-[165px]': !hideTokenInputHeadings,
-          })}
-        />
-
-        <SkeletonBox className="w-full h-[56px]" />
-      </div>
-    );
-  }
 
   return (
-    <div className="w-full gap-sw-2xl relative flex flex-col">
+    <div className="w-full gap-[10px] relative flex flex-col px-sw-lg pb-sw-lg pt-[42px] rounded-sw-lg bg-sw-gray-900/33">
+      <SkeletonBox className="h-[48px]" />
       <SkeletonBox
         className={clsx({
-          'h-[108px]': hideTokenInputHeadings,
-          'h-[165px]': !hideTokenInputHeadings,
+          'h-[98px]': hideTokenInputHeadings,
+          'h-[120px]': !hideTokenInputHeadings,
         })}
       />
-
-      <SkeletonBox className="h-[56px]" />
-      <SkeletonBox className="h-[148px]" />
-      <SkeletonBox className="h-[56px]" />
+      <SkeletonBox className="h-[40px]" />
+      <SkeletonBox className="w-full h-[56px]" />
     </div>
   );
 };

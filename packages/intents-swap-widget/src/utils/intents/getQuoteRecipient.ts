@@ -9,7 +9,7 @@ type Args = {
   sendAddress?: string | null;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
-  defaultRecipient: string;
+  defaultRecipient: string | undefined;
 };
 
 export const getQuoteRecipient = ({
@@ -18,13 +18,18 @@ export const getQuoteRecipient = ({
   targetToken,
   intentsAccountType,
   defaultRecipient,
-}: Args): string => {
+}: Args): string | undefined => {
   if (isAuroraRecipient(targetToken)) {
     return 'aurora';
   }
 
-  if (!targetToken.isIntent && sendAddress) {
-    return sendAddress;
+  // Destination-chain recipients must stay in their chain-native format.
+  // This matters for dry quotes, where there is no sendAddress and
+  // walletAddress contains a placeholder for the target chain. Converting a
+  // Solana or Stellar placeholder to an Intents account ID produces a hex
+  // address that 1Click correctly rejects as an invalid destination address.
+  if (!targetToken.isIntent) {
+    return sendAddress ?? walletAddress;
   }
 
   return (

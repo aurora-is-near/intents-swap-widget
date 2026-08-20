@@ -1,4 +1,7 @@
-import { Quote, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
+import type {
+  Quote,
+  QuoteRequest,
+} from '@defuse-protocol/one-click-sdk-typescript';
 
 import { FetchQuoteOptions, SwapConfidentialMode } from './quote';
 import { Chains, ChainsFilters } from './chain';

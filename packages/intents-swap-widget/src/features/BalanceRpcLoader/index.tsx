@@ -11,6 +11,7 @@ import { useConfig } from '../../config';
 import { useSupportedChains } from '../../hooks/useSupportedChains';
 import { useAllTokens } from '../../hooks/useAllTokens';
 import { TokenBalanceLoader } from './TokenBalanceLoader';
+import { getBalanceSourceForChain } from './getBalanceSourceForChain';
 
 type Props = {
   rpcs: ChainRpcUrls;
@@ -68,7 +69,7 @@ const sortTokensByPriority = (tokens: ReadonlyArray<Token>) => {
 };
 
 export const BalanceRpcLoader = ({ rpcs }: Props) => {
-  const { connectedWallets, providers, plugins } = useConfig();
+  const { alchemyApiKey, connectedWallets, providers, plugins } = useConfig();
   const { tokens } = useAllTokens();
   const { supportedChains } = useSupportedChains();
   const { ctx } = useUnsafeSnapshot();
@@ -109,6 +110,26 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
 
   return sortedTokens.map((tkn) => {
     if (supportedChains.includes(tkn.blockchain)) {
+      const balanceSource = getBalanceSourceForChain({
+        alchemyApiKey,
+        chain: tkn.blockchain,
+        rpcs,
+      });
+
+      if (balanceSource === 'alchemy') {
+        return null;
+      }
+
+      if (balanceSource === 'none') {
+        return (
+          <TokenBalanceLoader.Zero
+            token={tkn}
+            key={getTokenBalanceKey(tkn)}
+            onBalancesLoaded={onBalancesLoaded}
+          />
+        );
+      }
+
       return (
         <TokenBalanceLoader
           rpcs={rpcs}
@@ -122,7 +143,6 @@ export const BalanceRpcLoader = ({ rpcs }: Props) => {
 
     return (
       <TokenBalanceLoader.Zero
-        rpcs={rpcs}
         token={tkn}
         key={getTokenBalanceKey(tkn)}
         onBalancesLoaded={onBalancesLoaded}

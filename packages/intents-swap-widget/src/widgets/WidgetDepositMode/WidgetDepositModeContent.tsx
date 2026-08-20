@@ -13,20 +13,22 @@ import {
 import { useConfig } from '@/config';
 import { BlockingError } from '@/components';
 import { useUnsafeSnapshot } from '@/machine/snap';
-import { isDebug, notReachable } from '@/utils';
+import { isDebug, noop, notReachable } from '@/utils';
 import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
-import type { ChainsFilters, Token, TransferResult } from '@/types';
+import type { Token, TransferResult } from '@/types';
 
 import { useTokenModal } from '../../hooks/useTokenModal';
 import { useTypedTranslation } from '../../localisation';
 import type { CommonWidgetProps, TokenInputType } from '../types';
 
 import { WidgetDepositModeSkeleton } from './WidgetDepositModeSkeleton';
+import { getDepositModeChainsFilters } from './getDepositModeChainsFilters';
 
 export type Msg =
+  | { type: 'on_click_edit_slippage' }
   | { type: 'on_select_token'; token: Token; variant: TokenInputType }
   | { type: 'on_change_deposit_type'; isExternal: boolean }
   | ({ type: 'on_transfer_success' } & TransferResult)
@@ -76,6 +78,7 @@ export const WidgetDepositModeContent = ({
   const { tokenModalOpen, updateTokenModalState } = useTokenModal({ onMsg });
   const { unsupportedChain } = useUnsupportedChain();
 
+  const [isExternalTxReceived, setIsExternalTxReceived] = useState(false);
   const [transferResult, setTransferResult] = useState<
     TransferResult | undefined
   >();
@@ -151,28 +154,34 @@ export const WidgetDepositModeContent = ({
   }, [ctx.walletAddress, tokens.length]);
 
   useEffect(() => {
+    if (!ctx.walletAddress) {
+      fireEvent('depositTypeSet', { isExternal: true });
+    }
+  }, [ctx.walletAddress]);
+
+  useEffect(() => {
     onMsg?.({
       type: 'on_change_deposit_type',
       isExternal: ctx.isDepositFromExternalWallet,
     });
   }, [ctx.isDepositFromExternalWallet]);
 
-  const chainsFilters = useMemo((): ChainsFilters => {
-    if (customChainsFilter) {
-      return customChainsFilter;
-    }
-
-    return {
-      source: {
-        intents: 'none',
-        external: ctx.isDepositFromExternalWallet ? 'all' : 'wallet-supported',
-      },
-      target: { intents: 'all', external: 'none' },
-    };
-  }, [customChainsFilter, ctx.isDepositFromExternalWallet]);
+  const chainsFilters = useMemo(
+    () =>
+      getDepositModeChainsFilters({
+        customChainsFilter,
+        hasWallet: !!ctx.walletAddress,
+        isDepositFromExternalWallet: ctx.isDepositFromExternalWallet,
+      }),
+    [customChainsFilter, ctx.walletAddress, ctx.isDepositFromExternalWallet],
+  );
 
   const onBackToSwap = () => {
-    fireEvent('reset', { clearWalletAddress: false, keepSelectedTokens: true });
+    fireEvent('reset', {
+      clearWalletAddress: false,
+      keepSelectedTokens: true,
+      keepDepositType: true,
+    });
   };
 
   const isTargetTokenAddressValid =
@@ -287,31 +296,11 @@ export const WidgetDepositModeContent = ({
       }
 
       return (
-        <div className="gap-sw-lg flex flex-col w-full">
-          <DepositMethodSwitcher
-            mode="deposit"
-            onMsg={(msg) => {
-              switch (msg.type) {
-                case 'on_toggle_tokens_modal':
-                  updateTokenModalState(msg.isOpen ? 'source' : 'none');
-                  break;
-                case 'on_successful_transfer':
-                  setTransferResult(msg.transferResult);
-                  break;
-                case 'on_transaction_received':
-                  // Transaction received, no action needed
-                  break;
-                default:
-                  notReachable(msg);
-              }
-            }}
-          />
-
-          {ctx.isDepositFromExternalWallet ? null : (
+        <div className="gap-[10px] flex flex-col w-full">
+          {!!ctx.walletAddress && (
             <TokenInput.Source
-              showBalance={
-                !!ctx.walletAddress && !ctx.isDepositFromExternalWallet
-              }
+              showBalance={!ctx.isDepositFromExternalWallet}
+              state={isExternalTxReceived ? 'disabled' : 'default'}
               heading={t('tokenInput.heading.source.deposit', 'Deposit')}
               onMsg={(msg) => {
                 switch (msg.type) {
@@ -331,8 +320,29 @@ export const WidgetDepositModeContent = ({
             />
           )}
 
+          <DepositMethodSwitcher
+            mode="deposit"
+            isExternalTxReceived={isExternalTxReceived}
+            onMsg={(msg) => {
+              switch (msg.type) {
+                case 'on_toggle_tokens_modal':
+                  updateTokenModalState(msg.isOpen ? 'source' : 'none');
+                  break;
+                case 'on_successful_transfer':
+                  setTransferResult(msg.transferResult);
+                  setIsExternalTxReceived(false);
+                  break;
+                case 'on_transaction_received':
+                  setIsExternalTxReceived(true);
+                  break;
+                default:
+                  notReachable(msg);
+              }
+            }}
+          />
+
           {(!!ctx.walletAddress || ctx.isDepositFromExternalWallet) && (
-            <DepositSummary />
+            <DepositSummary onMsg={onMsg ?? noop} />
           )}
 
           {ctx.isDepositFromExternalWallet && <ExternalDepositWaitingHint />}

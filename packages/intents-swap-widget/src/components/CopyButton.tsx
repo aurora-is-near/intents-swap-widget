@@ -1,9 +1,9 @@
-import copy from 'copy-text-to-clipboard';
 import { useEffect, useRef, useState } from 'react';
 import { ContentCopyW700 as ContentCopy } from '@material-symbols-svg/react-rounded/icons/content-copy';
 import { CheckFillW700 as Check } from '@material-symbols-svg/react-rounded/icons/check';
 
 import { cn } from '@/utils/cn';
+import { copyToClipboard } from '@/utils/copyToClipboard';
 
 type Props = {
   value: string;
@@ -23,11 +23,16 @@ export const CopyButton = ({ value, className }: Props) => {
     [],
   );
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
 
-    copy(value);
+    const didCopy = await copyToClipboard(value);
+
+    if (!didCopy) {
+      return;
+    }
+
     setCopied(true);
 
     if (timeoutRef.current) {

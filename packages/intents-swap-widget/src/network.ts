@@ -1,12 +1,9 @@
 import axios from 'axios';
 import { snapshot } from 'valtio';
-import { OpenAPI } from '@defuse-protocol/one-click-sdk-typescript';
 import type { AxiosRequestConfig } from 'axios';
 
 import { configStore } from '@/config';
 import type { WidgetEnvironment } from '@/types/config';
-
-OpenAPI.BASE = 'https://1click.chaindefuser.com';
 
 const INTENTS_API_BASE_URLS: Record<WidgetEnvironment, string> = {
   production: 'https://intents-api.aurora.dev',
@@ -32,8 +29,6 @@ export const createNetworkClient = (config: AxiosRequestConfig = {}) => {
 export const bridgeApi = createNetworkClient({
   baseURL: 'https://bridge.chaindefuser.com/rpc',
 });
-
-export const oneClickApi = createNetworkClient();
 
 export const alchemyApi = createNetworkClient({
   baseURL: 'https://api.g.alchemy.com/data/v1',

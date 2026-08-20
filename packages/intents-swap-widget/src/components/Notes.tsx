@@ -16,10 +16,10 @@ const NoteItem = ({
   value?: React.ReactNode;
   isLoading?: boolean;
 }) => (
-  <li className="flex w-full items-center justify-between min-h-[24px]">
+  <li className="flex w-full items-center justify-between min-h-sw-2xl">
     <span className="text-sw-label-sm text-sw-gray-200">{label}</span>
     {isLoading ? (
-      <div className="h-[12px] w-[40px] animate-pulse rounded-full bg-sw-gray-600" />
+      <div className="h-sw-lg w-[40px] animate-pulse rounded-full bg-sw-gray-600" />
     ) : (
       <span className="text-sw-label-sm text-sw-gray-50">{value ?? '—'}</span>
     )}
@@ -28,7 +28,7 @@ const NoteItem = ({
 
 const NotesList = ({ children, className }: Props) => {
   return (
-    <ul className={cn('gap-sw-md flex flex-col', className)}>{children}</ul>
+    <ul className={cn('gap-sw-sm flex flex-col', className)}>{children}</ul>
   );
 };
 

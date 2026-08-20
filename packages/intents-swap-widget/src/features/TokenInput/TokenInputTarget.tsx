@@ -2,20 +2,24 @@ import { useMemo } from 'react';
 
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
-import { Msg, TokenInputWithToken } from './TokenInput';
-import { TokenInputEmpty } from './TokenInputEmpty';
+
 import { useTokenInputBalance } from './hooks';
+import { TokenInputWithToken } from './TokenInput';
+import { TokenInputEmpty } from './TokenInputEmpty';
+import type { Msg, Props as TokenInputProps } from './TokenInput';
 
 export type Props = {
-  isChanging?: boolean;
-  onMsg: (msg: Msg) => void;
   heading: string;
+  isChanging?: boolean;
+  state?: TokenInputProps['state'];
+  onMsg: (msg: Msg) => void;
 };
 
 export const TokenInputTarget = ({
+  state,
+  heading,
   isChanging = false,
   onMsg,
-  heading,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
   const { usdTradeDelta } = useComputedSnapshot();
@@ -45,7 +49,7 @@ export const TokenInputTarget = ({
           : undefined
       }
       value={formatBigToHuman(ctx.targetTokenAmount, ctx.targetToken?.decimals)}
-      state={sourceInputState}
+      state={state ?? sourceInputState}
       showQuickBalanceActions={false}
       showBalance={true}
       onMsg={onMsg}

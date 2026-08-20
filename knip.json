@@ -7,6 +7,9 @@
         "@semantic-release/*",
         "tailwindcss"
       ]
+    },
+    "packages/intents-swap-widget": {
+      "ignoreDependencies": ["@fontsource/figtree"]
     }
   }
 }

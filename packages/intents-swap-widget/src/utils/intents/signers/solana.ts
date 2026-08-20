@@ -1,46 +1,42 @@
-import { utils } from '@defuse-protocol/internal-utils';
-import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
 import bs58 from 'bs58';
-import { SolanaProvider } from '../../../types/providers';
 
-type SignIntentResult = ReturnType<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->;
-type SignIntentPayload = Parameters<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->[0];
+import { WidgetError } from '@/errors';
+import type { PreparedIntent, SignedIntent } from '@/types/intents';
+import type { SolanaProvider } from '@/types/providers';
 
-export class IntentSignerSolana
-  implements ReturnType<typeof createIntentSignerViem>
-{
+import type { PreparedIntentSigner } from './types';
+
+export class IntentSignerSolana implements PreparedIntentSigner {
+  readonly standard = 'raw_ed25519' as const;
+
   constructor(
     private account: { walletAddress: string },
     private solanaWallet: SolanaProvider,
   ) {}
 
-  async signIntent(intent: SignIntentPayload): SignIntentResult {
-    const message = JSON.stringify({
-      verifying_contract: intent.verifying_contract,
-      deadline: intent.deadline,
-      nonce: intent.nonce,
-      intents: intent.intents,
-      signer_id:
-        intent.signer_id ??
-        utils.authHandleToIntentsUserId({
-          identifier: this.account.walletAddress,
-          method: 'solana',
-        }),
-    });
+  async signIntent(intent: PreparedIntent): Promise<SignedIntent> {
+    if (intent.standard !== this.standard) {
+      throw new WidgetError(
+        `Solana signer cannot sign ${intent.standard} payload`,
+      );
+    }
+
+    const providerPublicKey = this.solanaWallet.publicKey?.toString();
+
+    if (providerPublicKey && providerPublicKey !== this.account.walletAddress) {
+      throw new WidgetError(
+        'Connected Solana account does not match the widget',
+      );
+    }
 
     const signature = await this.solanaWallet.signMessage(
-      new TextEncoder().encode(message),
+      new TextEncoder().encode(intent.payload),
     );
 
     return {
-      payload: message,
-      public_key: this.account.walletAddress,
-      standard: 'raw_ed25519',
-      signature: bs58.encode(signature),
+      ...intent,
+      public_key: `ed25519:${this.account.walletAddress}`,
+      signature: `ed25519:${bs58.encode(signature)}`,
     };
   }
 }

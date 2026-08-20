@@ -1,43 +1,25 @@
 import { utils } from '@defuse-protocol/internal-utils';
-import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
 
-import { EvmProvider } from '@/types';
 import { WidgetError } from '@/errors';
+import type { EvmProvider } from '@/types';
+import type { PreparedIntent, SignedIntent } from '@/types/intents';
 
-type SignIntentResult = ReturnType<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->;
-type SignIntentPayload = Parameters<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->[0];
+import type { PreparedIntentSigner } from './types';
 
-interface IPrivySigner extends ReturnType<typeof createIntentSignerViem> {
-  provider: EvmProvider;
-}
-
-export class IntentSignerPrivy implements IPrivySigner {
-  declare provider: EvmProvider;
+export class IntentSignerPrivy implements PreparedIntentSigner {
+  readonly standard = 'erc191' as const;
 
   constructor(
     private account: { walletAddress: string },
-    provider: EvmProvider,
-  ) {
-    this.provider = provider;
-  }
+    private provider: EvmProvider,
+  ) {}
 
-  async signIntent(intent: SignIntentPayload): SignIntentResult {
-    const message = JSON.stringify({
-      verifying_contract: intent.verifying_contract,
-      deadline: intent.deadline,
-      nonce: intent.nonce,
-      intents: intent.intents,
-      signer_id:
-        intent.signer_id ??
-        utils.authHandleToIntentsUserId({
-          identifier: this.account.walletAddress,
-          method: 'evm',
-        }),
-    });
+  async signIntent(intent: PreparedIntent): Promise<SignedIntent> {
+    if (intent.standard !== this.standard) {
+      throw new WidgetError(
+        `EVM signer cannot sign ${intent.standard} payload`,
+      );
+    }
 
     const resolvedProvider =
       typeof this.provider === 'function'
@@ -48,18 +30,31 @@ export class IntentSignerPrivy implements IPrivySigner {
       method: 'eth_requestAccounts',
     });
 
+    if (!Array.isArray(accounts)) {
+      throw new WidgetError('EVM provider returned no accounts');
+    }
+
+    const signingAccount = accounts.find(
+      (account): account is string =>
+        typeof account === 'string' &&
+        account.toLowerCase() === this.account.walletAddress.toLowerCase(),
+    );
+
+    if (!signingAccount) {
+      throw new WidgetError('Connected EVM account does not match the widget');
+    }
+
     const signature = await resolvedProvider.request({
       method: 'personal_sign',
-      params: [message, accounts[0]],
+      params: [intent.payload, signingAccount],
     });
 
-    if (signature == null) {
+    if (typeof signature !== 'string') {
       throw new WidgetError('No signature is returned');
     }
 
     return {
-      payload: message,
-      standard: 'erc191',
+      ...intent,
       signature: utils.transformERC191Signature(signature),
     };
   }

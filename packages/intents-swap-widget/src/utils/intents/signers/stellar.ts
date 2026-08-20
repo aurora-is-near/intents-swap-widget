@@ -1,51 +1,46 @@
-import { utils } from '@defuse-protocol/internal-utils';
-import { createIntentSignerViem } from '@defuse-protocol/intents-sdk';
 import bs58 from 'bs58';
 
-import { StellarNetworkPlugin } from '../../../types/connectors';
-import { StellarProvider } from '../../../types/providers';
+import { WidgetError } from '@/errors';
+import type { PreparedIntent, SignedIntent } from '@/types/intents';
+import type { StellarNetworkPlugin } from '@/types/connectors';
+import type { StellarProvider } from '@/types/providers';
 
-type SignIntentResult = ReturnType<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->;
-type SignIntentPayload = Parameters<
-  ReturnType<typeof createIntentSignerViem>['signIntent']
->[0];
+import type { PreparedIntentSigner } from './types';
 
 function transformStellarSignature(signature: string) {
   return `ed25519:${bs58.encode(Buffer.from(signature, 'base64'))}`;
 }
 
-export class IntentSignerStellar
-  implements ReturnType<typeof createIntentSignerViem>
-{
+export class IntentSignerStellar implements PreparedIntentSigner {
+  readonly standard = 'sep53' as const;
+
   constructor(
     private account: { walletAddress: string },
     private stellarWallet: StellarProvider,
     private plugin: StellarNetworkPlugin,
   ) {}
 
-  async signIntent(intent: SignIntentPayload): SignIntentResult {
-    const message = JSON.stringify({
-      verifying_contract: intent.verifying_contract,
-      deadline: intent.deadline,
-      nonce: intent.nonce,
-      intents: intent.intents,
-      signer_id:
-        intent.signer_id ??
-        utils.authHandleToIntentsUserId({
-          identifier: this.account.walletAddress,
-          method: 'stellar',
-        }),
-    });
+  async signIntent(intent: PreparedIntent): Promise<SignedIntent> {
+    if (intent.standard !== this.standard) {
+      throw new WidgetError(
+        `Stellar signer cannot sign ${intent.standard} payload`,
+      );
+    }
 
-    const { signedMessage } = await this.stellarWallet.signMessage(message);
+    const { signedMessage, signerAddress } =
+      await this.stellarWallet.signMessage(intent.payload);
+
+    if (signerAddress && signerAddress !== this.account.walletAddress) {
+      throw new WidgetError(
+        'Connected Stellar account does not match the widget',
+      );
+    }
+
     const publicKeyBytes = this.plugin.decodePublicKey(this.stellarWallet);
 
     return {
-      payload: message,
+      ...intent,
       public_key: `ed25519:${bs58.encode(publicKeyBytes)}`,
-      standard: 'sep53',
       signature: transformStellarSignature(signedMessage),
     };
   }

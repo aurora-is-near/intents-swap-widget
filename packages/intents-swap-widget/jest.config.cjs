@@ -16,6 +16,7 @@ const nodeModulesToTransform = [
   '@lit',
   '@wagmi',
   '@walletconnect',
+  '@defuse-protocol/one-click-sdk-typescript',
 ].join('|');
 
 module.exports = {
@@ -55,5 +56,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@material-symbols-svg/react-rounded/(.*)$':
       '<rootDir>/jest-mock-icons.js',
+    // reicon-react is ESM-only and its `exports` map offers no `require` or
+    // `browser` condition, so jsdom cannot resolve it at all. Stubbed like the
+    // other icon packs rather than transformed — tests never assert on icons.
+    '^reicon-react(/.*)?$': '<rootDir>/jest-mock-icons.js',
   },
 };

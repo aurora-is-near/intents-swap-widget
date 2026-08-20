@@ -42,7 +42,10 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
       return hex.encode(base58.decode(walletAddress));
     default:
       logger.error('Unsupported connected wallet type');
+      // not returned: notReachable is typed `void` here, which would widen the
+      // return type to `string | void` and force `?? ''` on every caller
+      notReachable(addressType, { throwError: false });
 
-      return notReachable(addressType, { throwError: false });
+      return;
   }
 };

@@ -24,6 +24,6 @@ export const validateInputAndMoveTo = (ctx: Context) => {
   } else if (isInternal && validateInternalInputs(ctx)) {
     moveTo('input_valid_internal');
   } else {
-    moveTo('initial_wallet');
+    moveTo(ctx.walletAddress ? 'initial_wallet' : 'initial_dry');
   }
 };

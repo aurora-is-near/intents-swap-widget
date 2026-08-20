@@ -1,36 +1,39 @@
-import { useConfig } from '@/config';
+import { useMemo } from 'react';
+
+import { Badge } from '@/components/Badge';
 import { Notes } from '@/components/Notes';
 import { FeeValue } from '@/components/FeeValue';
 import { Accordion } from '@/components/Accordion';
 import { TinyNumber } from '@/components/TinyNumber';
 import { useTypedTranslation } from '@/localisation';
-import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
+import { useUnsafeSnapshot } from '@/machine/snap';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { formatTinyNumber } from '@/utils/formatters/formatTinyNumber';
 import { formatUsdAmount } from '@/utils/formatters/formatUsdAmount';
 import { getAppFeesPercent } from '@/utils/getAppFeesPercent';
 import { getAppFeesUsd } from '@/utils/getAppFeesUsd';
 
-export const DepositSummary = () => {
+type Msg = { type: 'on_click_edit_slippage' };
+
+type Props = {
+  onMsg: (msg: Msg) => void;
+};
+
+export const DepositSummary = ({ onMsg }: Props) => {
   const { t } = useTypedTranslation();
   const { ctx } = useUnsafeSnapshot();
-  const { slippageTolerance } = useConfig();
 
   const feesPercent = getAppFeesPercent(ctx.quote?.appFees);
-  const feesUsd = getAppFeesUsd({
-    appFees: ctx.quote?.appFees,
-    swapType: ctx.quote?.swapType,
-    amountInUsd:
-      ctx.quote && 'amountInUsd' in ctx.quote
-        ? ctx.quote.amountInUsd
-        : undefined,
-  });
-
-  const {
-    isDirectNearTokenWithdrawal,
-    isDirectTokenOnNearTransfer,
-    isNativeNearDeposit,
-  } = useComputedSnapshot();
+  const feesUsd = ctx.isDepositFromExternalWallet
+    ? null
+    : getAppFeesUsd({
+        appFees: ctx.quote?.appFees,
+        swapType: ctx.quote?.swapType,
+        amountInUsd:
+          ctx.quote && 'amountInUsd' in ctx.quote
+            ? ctx.quote.amountInUsd
+            : undefined,
+      });
 
   const getDepositAmount = () => {
     let amount: string | undefined;
@@ -59,22 +62,6 @@ export const DepositSummary = () => {
 
     if (amount && ctx.sourceToken) {
       return `${amount} ${ctx.sourceToken.symbol}`;
-    }
-
-    return '—';
-  };
-
-  const getProcessingTime = () => {
-    if (ctx.quote) {
-      return `${ctx.quote.timeEstimate} sec.`;
-    }
-
-    if (
-      isDirectNearTokenWithdrawal ||
-      isDirectTokenOnNearTransfer ||
-      isNativeNearDeposit
-    ) {
-      return '1 sec.';
     }
 
     return '—';
@@ -115,21 +102,26 @@ export const DepositSummary = () => {
     );
   })();
 
+  const accordionHeight = useMemo(() => {
+    if (feesPercent !== null) {
+      return 92;
+    }
+
+    return 71;
+  }, [ctx.walletAddress, ctx.quote, ctx.walletAddress]);
+
   return (
     <Accordion
-      expandedHeightPx={121}
       expandedByDefault={false}
+      expandedHeightPx={accordionHeight}
       isBadgeLoading={ctx.quoteStatus === 'pending'}
       badge={ctx.quote ? `~ ${ctx.quote.timeEstimate ?? 0} sec` : undefined}
+      className="rounded-sw-md py-sw-lg px-sw-2xl"
       title={detailsTitle}>
       <Notes>
         <Notes.Item
           label={t('deposit.summary.youWillDeposit.label', 'You will deposit')}
           value={getDepositAmount()}
-        />
-        <Notes.Item
-          label={t('quote.result.maxSlippage.label', 'Max slippage')}
-          value={`${(slippageTolerance / 100).toFixed(2)}%`}
         />
         {!!feesPercent && (
           <Notes.Item
@@ -138,9 +130,14 @@ export const DepositSummary = () => {
           />
         )}
         <Notes.Item
-          isLoading={ctx.quoteStatus === 'pending'}
-          label={t('quote.result.processingTime.label', 'Processing time')}
-          value={getProcessingTime()}
+          label={t('quote.result.maxSlippage.label', 'Max slippage')}
+          value={
+            <Badge
+              isClickable
+              onClick={() =>
+                onMsg({ type: 'on_click_edit_slippage' })
+              }>{`${(ctx.maxSlippage / 100).toFixed(2)}%`}</Badge>
+          }
         />
       </Notes>
     </Accordion>

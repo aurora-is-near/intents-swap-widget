@@ -22,7 +22,11 @@ export const machine = createMachine<MachineState, Context>(
   {
     // 1. Wallet not connected
     initial_dry: {
-      transitions: ['initial_wallet', 'input_valid_dry'],
+      transitions: [
+        'initial_wallet',
+        'input_valid_dry',
+        'input_valid_external',
+      ],
     },
 
     // 2. Wallet connected

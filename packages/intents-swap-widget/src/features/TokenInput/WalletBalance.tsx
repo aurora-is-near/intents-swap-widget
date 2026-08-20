@@ -56,9 +56,9 @@ export const WalletBalance = ({
               ? { borderBottomWidth: '2px', borderStyle: 'dotted' }
               : undefined
           }
-          className={clsx('text-sw-label-sm', {
+          className={clsx('text-sw-label-sm transition-colors', {
             'text-sw-status-error': isNotSufficient,
-            'text-sw-gray-100': !isNotSufficient,
+            'text-sw-gray-300 hover:text-sw-gray-100': !isNotSufficient,
             'cursor-pointer': !!balance && !!onClick,
             'animate-pulse': isBalanceUpdating,
           })}>

@@ -1,7 +1,7 @@
-import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
-import type {
-  QuoteResponse,
-  TokenResponse,
+import {
+  QuoteRequest,
+  type QuoteResponse,
+  type TokenResponse,
 } from '@defuse-protocol/one-click-sdk-typescript';
 
 import { formatBigToHuman } from '../utils/formatters/formatBigToHuman';

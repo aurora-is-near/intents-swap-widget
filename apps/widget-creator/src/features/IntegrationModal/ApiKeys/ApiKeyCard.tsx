@@ -6,6 +6,7 @@ import { ContentCopyW700 as Copy } from '@material-symbols-svg/react-rounded/ico
 
 import { Button } from '@/uikit/Button';
 import { useDeleteApiKey } from '@/api/hooks';
+import { copyToClipboard } from '@/utils/copyToClipboard';
 import type { ApiKey } from '@/api/types';
 import {
   getPercentFromBasisPoints,
@@ -37,7 +38,7 @@ export const ApiKeyCard = ({ apiKey, onClickFees, onKeyRemoved }: Props) => {
   );
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(apiKey.apiKey);
+    await copyToClipboard(apiKey.apiKey);
     setTimeout(() => setIsCopied(false), 2000);
     setIsCopied(true);
   };

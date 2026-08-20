@@ -48,7 +48,7 @@ export const WidgetContainer = ({
     return (
       <div
         className={cn(
-          'relative w-auto mx-auto',
+          'relative w-auto mx-auto px-sw-lg pb-sw-lg pt-sw-md rounded-sw-lg bg-sw-gray-900/33',
           theme?.showContainer
             ? cn(
                 'max-w-[496px] sm:w-[496px] p-csw-2xl rounded-sw-lg',

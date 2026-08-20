@@ -6,7 +6,6 @@ export * from './Button';
 export * from './Card';
 export * from './CopyButton';
 export * from './DirectionSwitcher';
-export * from './ErrorMessage';
 export * from './Hr';
 export * from './Icon';
 export * from './Input';

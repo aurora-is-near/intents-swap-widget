@@ -19,6 +19,12 @@ import { isDashAddress } from './isDashAddress';
 import { EVM_CHAINS } from '../../constants';
 
 const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
+  // Check the unambiguous 0x prefix before NEAR's permissive named-account
+  // grammar, which also accepts lowercase 0x strings as valid account IDs.
+  if (isEvmAddress(address)) {
+    return EVM_CHAINS;
+  }
+
   if (isSolanaAddress(address)) {
     return ['sol'];
   }
@@ -61,10 +67,6 @@ const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
 
   if (isSuiAddress(address)) {
     return ['sui'];
-  }
-
-  if (isEvmAddress(address)) {
-    return EVM_CHAINS;
   }
 
   if (isStellarAddress(address)) {

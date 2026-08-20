@@ -4,6 +4,7 @@ import type {
   IconProps,
   MaterialSymbolsComponent,
 } from '@material-symbols-svg/react-rounded';
+import { IconComponent } from 'reicon-react';
 
 import { cn as clsx } from '@/utils/cn';
 import { useIsDarkMode } from '../hooks/useIsDarkMode';
@@ -19,7 +20,10 @@ type Props = {
   onClick?: () => void;
   fluid?: boolean;
 } & (
-  | { icon: MaterialSymbolsComponent; iconPosition?: 'head' | 'tail' }
+  | {
+      icon: MaterialSymbolsComponent | IconComponent;
+      iconPosition?: 'head' | 'tail';
+    }
   | { icon?: never; iconPosition?: never }
 ) &
   (
@@ -71,7 +75,7 @@ const ButtonChildren = ({
     <span className="text-sw-label-md flex w-full items-center justify-center gap-sw-lg py-sw-xs">
       {(hasIcon && iconPosition !== 'tail') ||
       (!hasIcon && state === 'loading') ? (
-        <Icon className={styles.icon} />
+        <Icon weight="Filled" className={styles.icon} />
       ) : null}
       {children}
       {hasIcon && iconPosition === 'tail' && <Icon className={styles.icon} />}
