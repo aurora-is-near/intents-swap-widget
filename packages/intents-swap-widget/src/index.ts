@@ -24,3 +24,4 @@ export { WidgetWithdrawSkeleton } from './widgets/WidgetWithdraw/WidgetWithdrawS
 export { WidgetDepositSkeleton } from './widgets/WidgetDeposit/WidgetDepositSkeleton';
 
 export { isValidChainAddress } from './utils/checkers/isValidChainAddress';
+export { getTokenBalanceKey } from './utils/intents/getTokenBalanceKey';
