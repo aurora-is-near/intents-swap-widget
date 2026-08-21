@@ -63,6 +63,19 @@ const AppContent = () => {
     appliedConfigIdRef.current = appliedConfigKey;
   }, [apiKey, dispatch, publicWidgetConfig, publicWidgetConfigStatus]);
 
+  // Pick up on a key arriving via the query params. A key arriving without a
+  // config. This can be used to test the widget with a specific key.
+  //
+  // Without this it keeps the placeholder, which useWidgetConfig quietly swaps
+  // for the demo key, and the swap is attributed to that instead.
+  useLayoutEffect(() => {
+    if (!apiKey || configId) {
+      return;
+    }
+
+    dispatch({ type: 'SET_API_KEY', payload: apiKey });
+  }, [apiKey, configId, dispatch]);
+
   const { ready } = usePrivy();
   const isRemoteConfigLoading = configId
     ? publicWidgetConfigStatus === 'pending'
