@@ -42,10 +42,10 @@ Do not include private keys, seed phrases, passwords, or other credentials.
 
 > **Transaction hash:** `0x...` \
 > **Deposit address:** `0x...`\
-> **Route:** NEAR → Ethereum **Assets:** USDC → USDC\
+> **Route:** Base USDC → Ethereum ETH\
 > **Amount:** 100 USDC
 >
-> User has not yet received the funds, even after waiting for 1 hour.
+> User has not yet received the funds on the destination chain, even after waiting for 1 hour. The deposit seems to be stuck in the deposit address.
 
 This level of detail gives the support team enough information to begin investigating the case immediately.
 
