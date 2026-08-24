@@ -23,3 +23,4 @@ export { noop } from './noop';
 export { notReachable } from './notReachable';
 export { copyToClipboard } from './copyToClipboard';
 export { isErrorLikeObject } from './isErrorLikeObject';
+export { warnIncompleteConfig } from './warnIncompleteConfig';

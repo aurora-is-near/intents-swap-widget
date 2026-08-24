@@ -7,6 +7,7 @@ import { I18nextProvider } from 'react-i18next';
 import type { PropsWithChildren } from 'react';
 
 import { useAddClassToPortal } from '@/hooks/useAddClassToPortal';
+import { warnIncompleteConfig } from '@/utils/warnIncompleteConfig';
 import { ErrorBoundary } from '@/features/ErrorBoundary';
 import { DEFAULT_CHAINS_ORDER } from '@/constants/chains';
 import type { Token } from '@/types/token';
@@ -132,6 +133,8 @@ export const WidgetConfigProvider = ({
 
     Object.assign(storeRef.current.config, next);
     resetConfig(next);
+
+    warnIncompleteConfig(next);
   }, [userConfig]);
 
   // Initialise localisation
