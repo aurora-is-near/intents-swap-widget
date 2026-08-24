@@ -34,6 +34,8 @@
     * [Using Solana as destination](intents-connect/developer-guides/solana/using-solana-as-destination.md)
   * [Submit signing](intents-connect/developer-guides/submit-signing.md)
   * [Delete execution](intents-connect/developer-guides/delete-execution.md)
+* [Integration Best Practices](intents-connect/integration-best-practices/README.md)
+  * [Handling Support Cases](intents-connect/integration-best-practices/handling-support-cases.md)
 
 ## Intents Deposits
 
