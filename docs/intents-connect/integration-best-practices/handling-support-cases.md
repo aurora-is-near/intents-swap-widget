@@ -12,7 +12,7 @@ The goal is to keep user cases in a single support pipeline, ensure the support 
 
 All user support cases should be submitted through the Intents Support form:
 
-**https://aurora.dev/intents-support**
+[**https://aurora.dev/intents-support**](https://aurora.dev/intents-support)
 
 Submitting the form creates a support case that is reviewed by the relevant teams.
 
@@ -54,13 +54,13 @@ This level of detail gives the support team enough information to begin investig
 1. The report is submitted through the Intents Support form.
 2. A support case is created.
 3. The support team reviews the case and the information provided.
-4. The issue is investigated and routed to the appropriate team when needed.
+4. The issue is investigated and, when needed, routed to the appropriate team.
 5. Updates are handled through the support case so that the investigation remains in one place.
 
 ### Guidance for integrators
 
 If one of your users reports an issue, collect the relevant transaction and error details and submit the case through the support form.
 
-For transaction-specific incidents, avoid opening the same case through several channels at once. Keeping the investigation in the support pipeline makes ownership and status easier to track and reduces duplicated work.
+For transaction-specific incidents, avoid opening the same case through multiple channels simultaneously. Keeping the investigation in the support pipeline makes ownership and status easier to track and reduces duplicated work.
 
-**Report an Intents issue:** https://aurora.dev/intents-support
+**Report an Intents issue:** [https://aurora.dev/intents-support](https://aurora.dev/intents-support)
