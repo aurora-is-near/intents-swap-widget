@@ -1,0 +1,28 @@
+{
+  "name": "intents-connect-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.tsx"
+  },
+  "dependencies": {
+    "@aurora-is-near/intents-connect": "*",
+    "@aurora-is-near/intents-connect-wallet": "*",
+    "@aurora-is-near/intents-swap-widget": "*",
+    "@headlessui/react": "^2.2.4",
+    "@reown/appkit": "1.8.11",
+    "@reown/appkit-adapter-ethers": "1.8.11",
+    "@reown/appkit-adapter-solana": "1.8.11",
+    "@solana/wallet-adapter-phantom": "0.9.28",
+    "@solana/wallet-adapter-solflare": "0.6.32",
+    "qr-code-styling": "1.9.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "viem": "^2.38.4"
+  }
+}

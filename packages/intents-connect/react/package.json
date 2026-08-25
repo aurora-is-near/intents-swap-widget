@@ -1,0 +1,8 @@
+{
+  "//": "Resolution stub for consumers on moduleResolution: node, which ignores the exports map. Do not publish-ignore this directory.",
+  "name": "@aurora-is-near/intents-connect-react-subpath",
+  "private": true,
+  "main": "../dist/react/index.js",
+  "module": "../dist/react/index.js",
+  "types": "../dist/react/index.d.ts"
+}

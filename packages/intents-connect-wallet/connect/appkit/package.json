@@ -1,0 +1,8 @@
+{
+  "//": "Resolution stub for moduleResolution: node, which ignores the exports map.",
+  "name": "@aurora-is-near/intents-connect-wallet-connect-appkit-subpath",
+  "private": true,
+  "main": "../../dist/connect/appkit/index.js",
+  "module": "../../dist/connect/appkit/index.js",
+  "types": "../../dist/connect/appkit/index.d.ts"
+}

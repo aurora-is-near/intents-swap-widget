@@ -9,7 +9,31 @@
       ]
     },
     "packages/intents-swap-widget": {
-      "ignoreDependencies": ["@fontsource/figtree"]
+      "ignoreDependencies": [
+        "@fontsource/figtree"
+      ]
+    },
+    "packages/intents-connect": {
+      "ignoreDependencies": [
+        "react"
+      ]
+    },
+    "packages/intents-connect-wallet": {
+      "ignoreDependencies": [
+        "@creit.tech/stellar-wallets-kit",
+        "@headlessui/react",
+        "@hot-labs/near-connect",
+        "@reown/appkit",
+        "@reown/appkit-adapter-ethers",
+        "@reown/appkit-adapter-solana",
+        "@solana/spl-token",
+        "@solana/wallet-adapter-phantom",
+        "@solana/wallet-adapter-solflare",
+        "@solana/web3.js",
+        "@stellar/stellar-sdk",
+        "react",
+        "viem"
+      ]
     }
   }
 }
