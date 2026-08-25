@@ -1,0 +1,8 @@
+{
+  "//": "Resolution stub for moduleResolution: node, which ignores the exports map.",
+  "name": "@aurora-is-near/intents-connect-wallet-near-subpath",
+  "private": true,
+  "main": "../dist/near/index.js",
+  "module": "../dist/near/index.js",
+  "types": "../dist/near/index.d.ts"
+}

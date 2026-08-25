@@ -1,0 +1,119 @@
+{
+  "name": "@aurora-is-near/intents-connect-wallet",
+  "version": "7.19.0",
+  "description": "Chain wallets for @aurora-is-near/intents-connect: deposit transfers and wallet connection, one subpath per chain",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "./dist/index.js",
+  "source": "src/index.ts",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "build": "vite build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "src",
+    "dist",
+    "evm",
+    "solana",
+    "stellar",
+    "near",
+    "connect"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./evm": "./dist/evm/index.js",
+    "./solana": "./dist/solana/index.js",
+    "./stellar": "./dist/stellar/index.js",
+    "./near": "./dist/near/index.js",
+    "./connect": "./dist/connect/index.js",
+    "./connect/appkit": "./dist/connect/appkit/index.js",
+    "./connect/near": "./dist/connect/near/index.js",
+    "./connect/stellar": "./dist/connect/stellar/index.js"
+  },
+  "peerDependencies": {
+    "@aurora-is-near/intents-connect": "^7.19.0",
+    "@creit.tech/stellar-wallets-kit": "^2.1.0",
+    "@headlessui/react": "^2.2.4",
+    "@hot-labs/near-connect": "^0.6.8",
+    "@reown/appkit": "^1.8.11",
+    "@reown/appkit-adapter-ethers": "^1.8.11",
+    "@reown/appkit-adapter-solana": "^1.8.11",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/wallet-adapter-solflare": "^0.6.32",
+    "@solana/web3.js": "^1.98.4",
+    "@stellar/stellar-sdk": "^14.6.1",
+    "react": ">=18.2.0",
+    "viem": "^2.38.4"
+  },
+  "peerDependenciesMeta": {
+    "@creit.tech/stellar-wallets-kit": {
+      "optional": true
+    },
+    "@headlessui/react": {
+      "optional": true
+    },
+    "@hot-labs/near-connect": {
+      "optional": true
+    },
+    "@reown/appkit": {
+      "optional": true
+    },
+    "@reown/appkit-adapter-ethers": {
+      "optional": true
+    },
+    "@reown/appkit-adapter-solana": {
+      "optional": true
+    },
+    "@solana/spl-token": {
+      "optional": true
+    },
+    "@solana/wallet-adapter-phantom": {
+      "optional": true
+    },
+    "@solana/wallet-adapter-solflare": {
+      "optional": true
+    },
+    "@solana/web3.js": {
+      "optional": true
+    },
+    "@stellar/stellar-sdk": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "viem": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@aurora-is-near/intents-connect": "^7.19.0",
+    "@creit.tech/stellar-wallets-kit": "^2.1.0",
+    "@headlessui/react": "^2.2.4",
+    "@hot-labs/near-connect": "^0.6.8",
+    "@reown/appkit": "^1.8.11",
+    "@reown/appkit-adapter-ethers": "^1.8.11",
+    "@reown/appkit-adapter-solana": "^1.8.11",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/wallet-adapter-solflare": "^0.6.32",
+    "@solana/web3.js": "^1.98.4",
+    "@stellar/stellar-sdk": "^14.6.1",
+    "react": "^18.2.0",
+    "viem": "^2.38.4",
+    "react-dom": "^18.2.0"
+  }
+}
