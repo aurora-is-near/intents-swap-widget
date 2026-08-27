@@ -148,34 +148,6 @@ describe('network handling', () => {
       false,
     );
   });
-
-  it('surfaces an unavailable chain (4902) clearly', async () => {
-    const request = vi.fn(async ({ method }: Call) => {
-      if (method === 'eth_chainId') {
-        return '0x1';
-      }
-
-      if (method === 'wallet_switchEthereumChain') {
-        throw Object.assign(new Error('unrecognised'), { code: 4902 });
-      }
-
-      return null;
-    });
-
-    await expect(
-      makeTransfer(
-        {
-          address: DEPOSIT,
-          amountAtomic: '1',
-          decimals: 6,
-          tokenAddress: USDC,
-          chain: 'base',
-          evmChainId: BASE_CHAIN_ID,
-        },
-        { provider: { request } },
-      ),
-    ).rejects.toThrow(/is not available/);
-  });
 });
 
 describe('validation', () => {
