@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-connect-wallet",
-  "version": "7.20.0",
+  "version": "7.20.1",
   "description": "Chain wallets for @aurora-is-near/intents-connect: deposit transfers and wallet connection, one subpath per chain",
   "license": "MIT",
   "main": "dist/index.js",
@@ -43,7 +43,7 @@
     "./connect/stellar": "./dist/connect/stellar/index.js"
   },
   "peerDependencies": {
-    "@aurora-is-near/intents-connect": "^7.20.0",
+    "@aurora-is-near/intents-connect": "^7.20.1",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
     "@headlessui/react": "^2.2.4",
     "@hot-labs/near-connect": "^0.6.8",
@@ -100,7 +100,7 @@
     }
   },
   "devDependencies": {
-    "@aurora-is-near/intents-connect": "^7.20.0",
+    "@aurora-is-near/intents-connect": "^7.20.1",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
     "@headlessui/react": "^2.2.4",
     "@hot-labs/near-connect": "^0.6.8",
