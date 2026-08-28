@@ -188,18 +188,16 @@ export const createIntentsConnectApi = (
     return unwrap<T>(payload);
   };
 
-  const encode = (value: string) => encodeURIComponent(value);
-
   return {
     getIntermediary: (wallet, opts) =>
       request<Intermediary>({
-        path: `api/v1/executions/${encode(wallet)}/intermediary`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}/intermediary`,
         query: { publicKey: opts?.publicKey },
       }),
 
     createExecution: (wallet: string, body: CreateExecutionBody) =>
       request<Execution>({
-        path: `api/v1/executions/${encode(wallet)}`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}`,
         method: 'POST',
         body,
         withApiKey: true,
@@ -207,7 +205,7 @@ export const createIntentsConnectApi = (
 
     createStepsExecution: (wallet: string, body: CreateStepsExecutionBody) =>
       request<Execution>({
-        path: `api/v1/executions/${encode(wallet)}/steps`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}/steps`,
         method: 'POST',
         body,
         withApiKey: true,
@@ -221,7 +219,7 @@ export const createIntentsConnectApi = (
 
     submitSignature: (wallet: string, body: SubmitSignatureBody) =>
       request<{ status: SubmitStatus }>({
-        path: `api/v1/executions/${encode(wallet)}/submit`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}/submit`,
         method: 'POST',
         body,
       }),
@@ -236,9 +234,12 @@ export const createIntentsConnectApi = (
 
     listExecutions: async (wallet: string, query?: ListExecutionsQuery) => {
       const result = await request<Execution[] | Execution>({
-        path: `api/v1/executions/${encode(wallet)}`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}`,
         query: {
           id: query?.id,
+          // The cast is required: `Array.isArray` narrows to `any[]`, which a
+          // `readonly ExecutionStatus[]` is not assignable to, so the false
+          // branch keeps the array member of the union.
           status: Array.isArray(query?.status)
             ? query.status.join(',')
             : (query?.status as string | undefined),
@@ -254,7 +255,7 @@ export const createIntentsConnectApi = (
       signature: DeleteSignatureEnvelope,
     ) => {
       await request<unknown>({
-        path: `api/v1/executions/${encode(wallet)}/${encode(executionId)}`,
+        path: `api/v1/executions/${encodeURIComponent(wallet)}/${encodeURIComponent(executionId)}`,
         method: 'DELETE',
         body: signature,
       });

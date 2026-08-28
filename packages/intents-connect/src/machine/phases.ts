@@ -36,6 +36,10 @@ export type Phase =
  * - `expired` re-enters `settling`. `EXPIRED` looks terminal but is not: a
  *   deposit that settles late revives an execution straight to
  *   `OPERATION_PROCESSING`.
+ * - `awaiting-deposit` and `expired` go DIRECTLY to `success` (and `failed`):
+ *   a terminal status can be observed on the very poll that would otherwise
+ *   have flipped to `settling` first, and hopping through an intermediate
+ *   phase would emit a `settling` the execution never meaningfully occupied.
  * - `idle` may go directly to `awaiting-signature`, `awaiting-deposit` or
  *   `settling`. Those are `resume()` re-entry points: identity and planning
  *   already happened in an earlier session, so replaying them would emit events
@@ -63,9 +67,9 @@ export const PHASE_TRANSITIONS: Readonly<Record<Phase, readonly Phase[]>> = {
   creating: ['awaiting-signature', 'failed', 'cancelled'],
   'awaiting-signature': ['submitting', 'failed', 'cancelled'],
   submitting: ['awaiting-deposit', 'settling', 'failed', 'cancelled'],
-  'awaiting-deposit': ['settling', 'expired', 'cancelled', 'failed'],
+  'awaiting-deposit': ['settling', 'success', 'expired', 'cancelled', 'failed'],
   settling: ['success', 'failed', 'expired', 'cancelled'],
-  expired: ['settling', 'failed', 'cancelled'],
+  expired: ['settling', 'success', 'failed', 'cancelled'],
   success: [],
   failed: [],
   cancelled: [],
@@ -79,3 +83,25 @@ export const TERMINAL_PHASES: readonly Phase[] = [
 
 export const isTerminalPhase = (phase: Phase): boolean =>
   TERMINAL_PHASES.includes(phase);
+
+/**
+ * Phases in which a flow is (or may still be) driving the execution, so
+ * `run()` / `resume()` / `retryDeposit()` would refuse re-entry.
+ *
+ * DERIVED from the taxonomy rather than listed by hand, and deliberately
+ * defined here rather than in the React binding: `expired` keeps polling for
+ * a late deposit (see the transition table above), so a UI that treated it as
+ * idle would re-enable its submit control for a click that can only fail with
+ * EXECUTION_IN_FLIGHT. A new intermediate phase is in-flight by construction.
+ *
+ * NOT sufficient on its own: `awaiting-deposit` is also where a rejected
+ * transfer PARKS with nothing running. Use {@link isInFlightPhase} together
+ * with the absence of a recorded error — which is exactly what `useExecution`
+ * exposes as `isBusy`.
+ */
+export const IN_FLIGHT_PHASES: readonly Phase[] = (
+  Object.keys(PHASE_TRANSITIONS) as Phase[]
+).filter((phase) => phase !== 'idle' && !isTerminalPhase(phase));
+
+export const isInFlightPhase = (phase: Phase): boolean =>
+  IN_FLIGHT_PHASES.includes(phase);

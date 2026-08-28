@@ -27,13 +27,7 @@ export default defineConfig({
   plugins: [
     react(),
     dts({
-      include: ['src'],
-      exclude: [
-        '**/*.test.ts',
-        '**/*.test.tsx',
-        'src/api/generated/**',
-        'src/tests/**',
-      ],
+      // include/exclude are inherited from tsconfig.build.json.
       entryRoot: 'src',
       outDir: 'dist',
       tsconfigPath: 'tsconfig.build.json',

@@ -1,10 +1,10 @@
 {
   "name": "@aurora-is-near/intents-connect",
-  "version": "7.20.0",
+  "version": "7.19.0",
   "description": "Headless client for the Aurora Intents Connect execution API, with optional React bindings",
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
   "source": "src/index.ts",
   "type": "module",
@@ -24,12 +24,20 @@
   },
   "files": [
     "src",
+    "!src/**/*.test.*",
+    "!src/tests",
     "dist",
     "react"
   ],
   "exports": {
-    ".": "./dist/index.js",
-    "./react": "./dist/react/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {

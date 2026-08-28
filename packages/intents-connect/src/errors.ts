@@ -63,12 +63,28 @@ export const toError = (value: unknown): Error => {
 };
 
 /**
+ * How wallets word a rejection when they report no code. Kept in sync with the
+ * widget's `isUserDeniedSigning`: Freighter says "User declined access", and
+ * several connectors report a dismissed popup as "user closed".
+ */
+const USER_REJECTION_PROSE =
+  /user (rejected|denied|cancell?ed|declined|closed)/i;
+
+const saysRejected = (value: unknown): boolean =>
+  typeof value === 'string' && USER_REJECTION_PROSE.test(value);
+
+/**
  * Whether a thrown value is the user declining a wallet prompt.
  *
  * EIP-1193 names it `userRejectedRequest` = 4001, and the major Solana wallets
  * reuse the same code. The code may sit on the value itself, nested one level
  * (`{ error: { code } }`), or on a wrapping Error's `cause`; older providers
  * only say it in prose, hence the message fallback.
+ *
+ * The prose fallback reads the nested value too, not just `message`: a wallet
+ * that reports a rejection IN-BAND (Freighter's `{ error }`) reaches
+ * `toError` as a bare string, so it arrives here as a `cause` carrying the
+ * only evidence there is.
  */
 export const isUserRejection = (value: unknown): boolean => {
   if (!value || typeof value !== 'object') {
@@ -87,18 +103,19 @@ export const isUserRejection = (value: unknown): boolean => {
   }
 
   const inner = outer.error ?? outer.cause;
+  const innerObject =
+    inner && typeof inner === 'object'
+      ? (inner as { code?: unknown; message?: unknown })
+      : undefined;
 
-  if (
-    inner &&
-    typeof inner === 'object' &&
-    (inner as { code?: unknown }).code === 4001
-  ) {
+  if (innerObject?.code === 4001) {
     return true;
   }
 
   return (
-    typeof outer.message === 'string' &&
-    /user (rejected|denied|cancell?ed)/i.test(outer.message)
+    saysRejected(outer.message) ||
+    saysRejected(inner) ||
+    saysRejected(innerObject?.message)
   );
 };
 
@@ -189,7 +206,6 @@ export class DepositTransferError extends IntentsConnectError {
  */
 export type GuardCode =
   | 'STEPS_REQUIRED'
-  | 'ROUND1_MUST_BE_STEPLESS'
   | 'FEE_NOT_ESTIMATED'
   | 'FEE_EXCEEDS_AMOUNT'
   | 'QUOTE_MOVED'

@@ -46,15 +46,3 @@ export type WalletConnector = {
   /** EVM only: feeds the origin-network mismatch guard. */
   getChainId?: () => Promise<number>;
 };
-
-/**
- * Projection of connectors into the widget's config shape.
- *
- * Unused by v1. It exists so `intents-swap-widget-standalone` can later be
- * backed by `intents-connect-ui` + the `-wallet-*` packages instead of its own
- * `useWalletSelector`, which returns exactly this triple.
- */
-export type WidgetWalletProjection = {
-  connectedWallets: { default?: string };
-  providers: Providers;
-};

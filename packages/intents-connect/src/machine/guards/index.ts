@@ -13,10 +13,7 @@ export { originNetworkMatches } from '@/machine/guards/checks/originNetworkMatch
 export { publicKeyMatchesStandard } from '@/machine/guards/checks/publicKeyMatchesStandard';
 export { quoteMustNotHaveMoved } from '@/machine/guards/checks/quoteMustNotHaveMoved';
 export { recipientOnlyOnOutOperation } from '@/machine/guards/checks/recipientOnlyOnOutOperation';
-export { round1MustBeStepless } from '@/machine/guards/checks/round1MustBeStepless';
 export { stepShapeIsLegal } from '@/machine/guards/checks/stepShapeIsLegal';
 export { stepsRequiredForRealCreate } from '@/machine/guards/checks/stepsRequiredForRealCreate';
-export {
-  stepsUsePlaceholder,
-  strategiesAreExclusive,
-} from '@/machine/guards/checks/strategiesAreExclusive';
+export { stepsUsePlaceholder } from '@/machine/guards/checks/stepsUsePlaceholder';
+export { strategiesAreExclusive } from '@/machine/guards/checks/strategiesAreExclusive';

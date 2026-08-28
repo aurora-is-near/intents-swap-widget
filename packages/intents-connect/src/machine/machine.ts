@@ -15,8 +15,8 @@ export type ExecutionMachine = {
   readonly context: Context;
   getStore: () => ExecutionMachineStore;
   canMoveTo: (phase: Phase) => boolean;
-  /** Refuses an illegal transition; check `current` to see whether it moved. */
-  moveTo: (phase: Phase) => ExecutionMachine;
+  /** Returns whether it moved — an illegal transition is refused. */
+  moveTo: (phase: Phase) => boolean;
   /**
    * Returns to `idle` with a fresh context. Deliberately bypasses the
    * transition table: it is how a runner is made reusable after a terminal
@@ -56,11 +56,13 @@ export const createExecutionMachine = (): ExecutionMachine => {
     getStore: () => store,
     canMoveTo: (phase) => PHASE_TRANSITIONS[store.state].includes(phase),
     moveTo: (phase) => {
-      if (machine.canMoveTo(phase)) {
-        store.state = phase;
+      if (!machine.canMoveTo(phase)) {
+        return false;
       }
 
-      return machine;
+      store.state = phase;
+
+      return true;
     },
     reset: () => {
       store.state = 'idle';
@@ -92,7 +94,7 @@ export const moveTo = (
     return true;
   }
 
-  if (!machine.canMoveTo(phase)) {
+  if (!machine.moveTo(phase)) {
     logger.error(
       `invalid transition requested (from ${machine.current} to ${phase})`,
     );
@@ -100,13 +102,6 @@ export const moveTo = (
     return false;
   }
 
-  const { current, context } = machine.moveTo(phase);
-
-  if (current !== phase) {
-    return false;
-  }
-
-  context.phase = phase;
   onMoved?.(phase);
 
   return true;

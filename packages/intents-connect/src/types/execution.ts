@@ -47,6 +47,21 @@ export const IN_FLIGHT_STATUSES: readonly ExecutionStatus[] = [
   'OPERATION_PROCESSING',
 ];
 
+/**
+ * Statuses that still mean "waiting on the user's funds": `CREATED` before
+ * the signature, `DEPOSIT_PENDING` after it (the /submit response names the
+ * same state SIGNED_PENDING_DEPOSIT). Everything later means the watcher has
+ * observed the deposit.
+ *
+ * `EXPIRED` is deliberately excluded: the deadline has passed, so nothing is
+ * "waiting" — but a late deposit still revives it, which is why `resume()`
+ * treats EXPIRED as deposit-needing on top of this set.
+ */
+export const AWAITING_FUNDS_STATUSES: readonly ExecutionStatus[] = [
+  'CREATED',
+  'DEPOSIT_PENDING',
+];
+
 /** Status values `/submit` may answer with, which are not execution statuses. */
 export type SubmitStatus =
   | 'SIGNED_PENDING_DEPOSIT'

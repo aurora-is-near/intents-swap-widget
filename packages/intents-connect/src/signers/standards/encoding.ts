@@ -1,4 +1,4 @@
-import { base58, base64 } from '@scure/base';
+import { base58, base64, hex } from '@scure/base';
 
 /**
  * Wire encodings the NEAR intents verifier expects.
@@ -18,28 +18,13 @@ export const toBase64 = (bytes: Uint8Array): string => base64.encode(bytes);
 
 export const toBase58 = (bytes: Uint8Array): string => base58.encode(bytes);
 
-export const fromHex = (value: string): Uint8Array => {
-  const normalised = value.replace(/^0x/i, '').toLowerCase();
-
-  if (normalised.length % 2 !== 0) {
-    throw new Error('Hex string has an odd length');
-  }
-
-  // Without this, `Number.parseInt('zz', 16)` yields NaN, which a Uint8Array
-  // stores as 0 — turning a malformed wallet signature into a well-formed
-  // all-zero one that only fails later, server-side, with an opaque message.
-  if (!/^[0-9a-f]*$/.test(normalised)) {
-    throw new Error('Hex string contains non-hexadecimal characters');
-  }
-
-  const bytes = new Uint8Array(normalised.length / 2);
-
-  for (let i = 0; i < bytes.length; i += 1) {
-    bytes[i] = Number.parseInt(normalised.slice(i * 2, i * 2 + 2), 16);
-  }
-
-  return bytes;
-};
+/**
+ * `hex.decode` accepts both cases and throws loudly on odd length or a
+ * non-hex character — a malformed wallet signature must never decode into a
+ * well-formed all-zero one. Only the `0x` prefix has to be stripped here.
+ */
+export const fromHex = (value: string): Uint8Array =>
+  hex.decode(value.replace(/^0x/i, ''));
 
 /**
  * `personal_sign` / TIP-191 return `v` as 27 or 28; the verifier wants 0 or 1.

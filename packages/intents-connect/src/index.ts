@@ -27,11 +27,13 @@ export type {
 } from '@/runner';
 
 export {
+  IN_FLIGHT_PHASES,
   PHASE_TRANSITIONS,
   TERMINAL_PHASES,
   createExecutionMachine,
   createInitialContext,
   guards,
+  isInFlightPhase,
   isTerminalPhase,
   moveTo,
   type Context,
@@ -67,7 +69,10 @@ export {
   IntentsConnectError,
   RunnerDisposedError,
   failGuard,
+  isUserRejection,
+  toError,
   type GuardCode,
+  type GuardMeta,
 } from '@/errors';
 
 export { defaultLogger, noopLogger, type Logger } from '@/logger';

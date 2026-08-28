@@ -4,7 +4,7 @@ Headless client for the Aurora **Intents Connect** execution API: bridge any
 asset from any chain, then execute contract calls on the destination chain from
 a service-controlled *intermediary* account.
 
-No React, no chain SDKs. Its only runtime dependencies are `valtio-fsm` and
+No React, no chain SDKs. Its only runtime dependencies are `valtio` and
 `@scure/base`.
 
 ## What it does for you
@@ -92,9 +92,10 @@ amount. Two ways out:
 
 ## Wallets
 
-`WalletConnector` is the only wallet seam. Bring your own, or use a
-`@aurora-is-near/intents-connect-wallet-*` package. It supplies the address,
-signing standard, providers, and the deposit transfer.
+`WalletConnector` is the only wallet seam. Bring your own, or use
+[`@aurora-is-near/intents-connect-wallet`](../intents-connect-wallet) (one
+subpath per chain). It supplies the address, signing standard, providers, and
+the deposit transfer.
 
 Signing standards implemented: `erc191`, `raw_ed25519`, `nep413`, `sep53`.
 `tip191` (Tron) and `ton_connect` (TON) are not yet covered.
@@ -131,8 +132,9 @@ Point it at another environment with
 
 One deviation is pinned deliberately: the document types step `parameters` as
 `array` of `object`, which generates an uninhabited element type. Parameters are
-ABI scalars, so `Step['parameters']` stays `string[]` and the assertion starts
-failing once the spec is corrected.
+ABI scalars or nested arrays of them, so `Step['parameters']` stays the
+recursive `StepParameter[]` and the assertion starts failing once the spec is
+corrected.
 
 ## React
 
@@ -168,9 +170,3 @@ Notes:
   for fields it actually reads.
 - `run`, `resume` and `cancel` always **reject** rather than throwing
   synchronously, so `run(plan).catch(…)` behaves.
-
-## Wallets
-
-Deposit transfers and wallet connection live in
-[`@aurora-is-near/intents-connect-wallet`](../intents-connect-wallet), one
-subpath per chain.

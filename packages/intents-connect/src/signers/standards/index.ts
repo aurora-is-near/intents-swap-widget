@@ -13,7 +13,6 @@ export {
 } from '@/signers/standards/rawEd25519';
 export {
   signNep413,
-  encodePublicKey,
   type Nep413Payload,
   type Nep413SignArgs,
 } from '@/signers/standards/nep413';

@@ -218,7 +218,8 @@ export type StepFieldsFit = AssertNone<
  * never plain objects, as every worked example in the developer guides shows.
  *
  * So this is a spec defect, not a mismatch on our side, and `Step['parameters']`
- * stays `string[]`. The assertion pins the deviation rather than hiding it: it
+ * stays the recursive `StepParameter[]` (scalar strings and nested arrays of
+ * them). The assertion pins the deviation rather than hiding it: it
  * holds while the document is still wrong and starts failing once `parameters`
  * is corrected — at which point delete this block and drop `parameters` from the
  * `StepFieldsFit` exclusion above.

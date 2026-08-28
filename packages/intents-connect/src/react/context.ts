@@ -1,9 +1,7 @@
 import { createContext, useContext } from 'react';
-import type {
-  ExecutionRunnerOptions,
-  IntentsConnectApi,
-  WalletConnector,
-} from '@/index';
+import type { IntentsConnectApi } from '@/api/types';
+import type { ExecutionRunnerOptions } from '@/runner/types';
+import type { WalletConnector } from '@/types/wallet';
 
 /** Everything a `useExecution` call needs that is not per-execution. */
 export type IntentsConnectContextValue = Omit<

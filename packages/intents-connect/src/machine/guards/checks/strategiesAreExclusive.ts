@@ -1,13 +1,6 @@
 import { failGuard } from '@/errors';
-import {
-  BACKEND_PLACEHOLDERS,
-  type FeeStrategy,
-  type Step,
-} from '@/types/execution';
-
-/** True when the steps embed the `{MIN_AMOUNT_OUT}` placeholder. */
-export const stepsUsePlaceholder = (steps: Step[]): boolean =>
-  JSON.stringify(steps).includes(BACKEND_PLACEHOLDERS.minAmountOut);
+import type { FeeStrategy, Step } from '@/types/execution';
+import { stepsUsePlaceholder } from '@/machine/guards/checks/stepsUsePlaceholder';
 
 /**
  * `{MIN_AMOUNT_OUT}` exists to collapse the three-round protocol into one call,

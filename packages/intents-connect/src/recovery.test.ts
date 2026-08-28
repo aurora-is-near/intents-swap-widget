@@ -16,8 +16,8 @@ describe('deriveExecutionRecovery', () => {
   });
 
   it('ignores an in-flight guard with no blocking execution id', () => {
-    // prepareForNewFlow throws this shape: the RUNNER is busy, but there is
-    // no other execution to resume or cancel.
+    // The guard is thrown before any execution exists — nothing to resume or
+    // cancel, so there is no action to offer.
     const error = new GuardError('EXECUTION_IN_FLIGHT', 'runner busy');
 
     expect(deriveExecutionRecovery(error)).toBeUndefined();

@@ -1,3 +1,4 @@
+import { toError } from '@/errors';
 import type { StellarProvider } from '@/types/providers';
 import type { SignatureEnvelope } from '@/types/signing';
 import {
@@ -38,15 +39,13 @@ export const signSep53 = async ({
   // Freighter reports failures IN-BAND rather than rejecting: a user
   // rejection arrives as `{ error }` with no signedMessage, and destructuring
   // it blindly turns a clean rejection into an opaque decoding crash.
+  // Rethrown through toError so the original value survives on `cause` —
+  // isUserRejection reads the rejection code from there.
   const inBandError = (result as { error?: { message?: string } | string })
     ?.error;
 
   if (inBandError) {
-    throw new Error(
-      typeof inBandError === 'string'
-        ? inBandError
-        : (inBandError.message ?? 'Stellar wallet refused to sign'),
-    );
+    throw toError(inBandError);
   }
 
   const { signedMessage, signerAddress } = result;

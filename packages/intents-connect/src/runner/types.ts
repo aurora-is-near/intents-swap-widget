@@ -9,6 +9,7 @@ import type {
 import type { Recipe } from '@/types/recipe';
 import type { MakeTransfer, TransferPlugins } from '@/types/transfer';
 import type { WalletConnector } from '@/types/wallet';
+import type { ExecutionMachineStore } from '@/machine/machine';
 import type { Phase } from '@/machine/phases';
 
 export type RunnerEvent =
@@ -47,7 +48,15 @@ export type ExecutionPlan<TParams = void> = {
    * `deposit/submit`, settlement observed by the backend's deposit watcher.
    */
   depositViaWallet: boolean;
-  /** EVM origins: enables the network-mismatch guard. */
+  /**
+   * EVM origins: the chain the deposit transfer must run on, and what arms the
+   * network-mismatch guard.
+   *
+   * Defaulted from the built-in `EVM_CHAIN_IDS` registry, so it is only needed
+   * for an EVM chain the registry does not know. It is NOT merely advisory —
+   * the EVM transfer path refuses to run without one — which is why it is
+   * filled in rather than left to fail after the signature.
+   */
   originChainId?: number | null;
 };
 
@@ -110,7 +119,15 @@ export type ExecutionRunnerOptions = {
 export type ResumeDepositOptions = {
   originToken?: OriginToken;
   originChainId?: number | null;
-  /** `false` skips any wallet-transfer attempt (QR / exchange deposits). */
+  /**
+   * `false` skips any wallet-transfer attempt (QR / exchange deposits).
+   *
+   * `true` additionally FORCES the transfer for a cross-session resume of a
+   * `DEPOSIT_PENDING` execution, where the runner cannot tell a transfer that
+   * never ran from one already broadcast and not yet observed. Left unset,
+   * that case only surfaces the deposit address, so funds are never sent
+   * twice; pass `true` when the caller knows no deposit was made.
+   */
   depositViaWallet?: boolean;
 };
 
@@ -140,9 +157,14 @@ export type ExecutionRunner = {
    * itself is untouched and can be `resume()`d from a correctly bound runner.
    */
   dispose: () => void;
+  /**
+   * Whether `dispose()` has been called. Disposal is irreversible, so a
+   * holder that may have raced a deferred dispose (e.g. a React binding whose
+   * cleanup and re-setup were separated) can detect a dead runner and rebuild
+   * instead of keeping one whose every call rejects.
+   */
+  isDisposed: () => boolean;
   getPhase: () => Phase;
   /** The valtio store, for framework bindings. */
-  getStore: () => ReturnType<
-    import('../machine/machine').ExecutionMachine['getStore']
-  >;
+  getStore: () => ExecutionMachineStore;
 };

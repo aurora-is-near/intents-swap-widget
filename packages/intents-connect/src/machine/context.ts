@@ -3,7 +3,6 @@ import type {
   ExecutionStatus,
   Intermediary,
 } from '@/types/execution';
-import type { Phase } from '@/machine/phases';
 
 /**
  * Declared as a type alias rather than an interface so it keeps an implicit
@@ -11,8 +10,6 @@ import type { Phase } from '@/machine/phases';
  * `Record<string, unknown>`, which interfaces do not satisfy.
  */
 export type Context = {
-  phase: Phase;
-
   intermediary?: Intermediary;
 
   executionId?: string;
@@ -50,7 +47,6 @@ export type Context = {
 };
 
 export const createInitialContext = (): Context => ({
-  phase: 'idle',
   hasSubmittedSignature: false,
   isCancelling: false,
 });

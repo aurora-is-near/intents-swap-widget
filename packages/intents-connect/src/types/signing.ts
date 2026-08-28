@@ -25,8 +25,12 @@ export type SupportedSigningStandard = Extract<
   'erc191' | 'raw_ed25519' | 'nep413' | 'sep53'
 >;
 
-export const SUPPORTED_SIGNING_STANDARDS: readonly SupportedSigningStandard[] =
-  ['erc191', 'raw_ed25519', 'nep413', 'sep53'];
+const SUPPORTED_SIGNING_STANDARDS: readonly SupportedSigningStandard[] = [
+  'erc191',
+  'raw_ed25519',
+  'nep413',
+  'sep53',
+];
 
 /**
  * Standards whose `/submit` body must carry a `publicKey`: ed25519 cannot

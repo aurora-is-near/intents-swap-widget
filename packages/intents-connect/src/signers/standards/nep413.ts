@@ -1,9 +1,9 @@
 import type { NearWalletBase } from '@/types/providers';
 import type { SignatureEnvelope } from '@/types/signing';
 import {
+  ed25519PublicKeyFromBase58,
   ed25519Signature,
   fromBase64,
-  toBase58,
 } from '@/signers/standards/encoding';
 
 export type Nep413Payload = {
@@ -57,9 +57,7 @@ export const signNep413 = async ({
     throw new Error('Connected NEAR account does not match the execution');
   }
 
-  const publicKey = signed.publicKey.startsWith('ed25519:')
-    ? signed.publicKey
-    : `ed25519:${signed.publicKey}`;
+  const publicKey = ed25519PublicKeyFromBase58(signed.publicKey);
 
   // NEP-413 wallets return base64; the verifier wants ed25519:<base58>.
   // Wallets disagree about whether they already applied the prefix — and some
@@ -78,7 +76,3 @@ export const signNep413 = async ({
 
   return { signature, publicKey };
 };
-
-/** Exported for adapters that need to re-encode a raw key. */
-export const encodePublicKey = (bytes: Uint8Array): string =>
-  `ed25519:${toBase58(bytes)}`;

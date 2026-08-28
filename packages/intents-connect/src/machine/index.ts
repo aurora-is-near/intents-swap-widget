@@ -7,8 +7,10 @@ export {
 } from '@/machine/machine';
 export { createInitialContext, type Context } from '@/machine/context';
 export {
+  IN_FLIGHT_PHASES,
   PHASE_TRANSITIONS,
   TERMINAL_PHASES,
+  isInFlightPhase,
   isTerminalPhase,
   type Phase,
 } from '@/machine/phases';
