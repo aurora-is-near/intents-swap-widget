@@ -1,0 +1,62 @@
+{
+  "name": "@aurora-is-near/intents-connect",
+  "version": "7.20.1",
+  "description": "Headless client for the Aurora Intents Connect execution API, with optional React bindings",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "source": "src/index.ts",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "build": "vite build",
+    "generate:api": "node ./scripts/generate-api-types.mjs"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "src",
+    "!src/**/*.test.*",
+    "!src/tests",
+    "dist",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@scure/base": "^2.2.0",
+    "valtio": "2.1.7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "openapi-typescript": "^7.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

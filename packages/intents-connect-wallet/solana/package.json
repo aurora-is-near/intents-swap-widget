@@ -1,0 +1,8 @@
+{
+  "//": "Resolution stub for moduleResolution: node, which ignores the exports map.",
+  "name": "@aurora-is-near/intents-connect-wallet-solana-subpath",
+  "private": true,
+  "main": "../dist/solana/index.js",
+  "module": "../dist/solana/index.js",
+  "types": "../dist/solana/index.d.ts"
+}

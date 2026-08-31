@@ -12,7 +12,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const SCOPE_PREFIX = '@aurora-is-near/intents-swap-widget';
+// Every workspace scope published from this repo. `intents-connect*` does not
+// share the `intents-swap-widget` prefix, so matching a single prefix would
+// silently leave its inter-package ranges un-rewritten on release.
+const SCOPE_PREFIXES = [
+  '@aurora-is-near/intents-swap-widget',
+  '@aurora-is-near/intents-connect',
+];
+
 const DEP_FIELDS = ['dependencies', 'peerDependencies', 'devDependencies'];
 
 const nextVersion = process.argv[2];
@@ -27,8 +34,11 @@ const packagesDir = path.join(__dirname, '..', 'packages');
 
 const isLooseRange = (range) => range === '*';
 
+const isWorkspaceScope = (name) =>
+  SCOPE_PREFIXES.some((prefix) => name.startsWith(prefix));
+
 const shouldRewrite = ([name, range]) =>
-  name.startsWith(SCOPE_PREFIX) && !isLooseRange(range) && range !== nextRange;
+  isWorkspaceScope(name) && !isLooseRange(range) && range !== nextRange;
 
 const rewriteField = (pkg, field) => {
   const deps = pkg[field];

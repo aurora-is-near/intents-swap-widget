@@ -39,11 +39,17 @@ export const WidgetSection = ({
         'relative flex flex-col flex-grow max-w-full md:max-w-none w-full px-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl',
         {
           'justify-between sm:rounded-csw-lg pb-csw-4xl': !isEmbedded,
-          'h-full items-center justify-center py-csw-2xl': isEmbedded,
+          'h-full py-csw-2xl': isEmbedded,
         },
       )}
       style={{ backgroundColor }}>
-      {children}
+      {isEmbedded ? (
+        <div className="m-auto flex w-full flex-col items-center">
+          {children}
+        </div>
+      ) : (
+        children
+      )}
 
       {!isEmbedded && (
         <div className="w-full flex items-center justify-center gap-csw-2md text-center text-csw-label-md text-csw-gray-300 pt-csw-3xl">

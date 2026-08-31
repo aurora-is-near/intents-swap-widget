@@ -9,6 +9,7 @@ export { useMergedBalance } from './useMergedBalance';
 export { useSwitchChain } from './useSwitchChain';
 export { useUnsupportedChain } from './useUnsupportedChain';
 export { useTokenInputPair } from './useTokenInputPair';
+export { useTokenModal } from './useTokenModal';
 export { useTokensFiltered } from './useTokensFiltered';
 export { useTokens } from './useTokens';
 export { useWalletBalance } from './useWalletBalance';

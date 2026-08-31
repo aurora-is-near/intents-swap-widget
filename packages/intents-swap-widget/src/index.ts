@@ -8,6 +8,7 @@ export {
 export { WidgetConfigProvider, type WidgetConfigProviderProps } from './config';
 export { DEFAULT_RPCS } from './rpcs';
 export { CHAINS } from './chains';
+export { AURORA_BASE64_LOGO } from './constants/chains';
 
 export * from './icons';
 export * from './components';
@@ -24,3 +25,4 @@ export { WidgetWithdrawSkeleton } from './widgets/WidgetWithdraw/WidgetWithdrawS
 export { WidgetDepositSkeleton } from './widgets/WidgetDeposit/WidgetDepositSkeleton';
 
 export { isValidChainAddress } from './utils/checkers/isValidChainAddress';
+export { getTokenBalanceKey } from './utils/intents/getTokenBalanceKey';
