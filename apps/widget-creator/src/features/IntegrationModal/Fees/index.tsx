@@ -260,6 +260,13 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
       <NestedHeader onClickBack={onClickBack} title="Edit fees" />
 
       <div className="flex flex-col gap-csw-2xl my-csw-2xl">
+        {!!apiKey.feeRulesConfidential && (
+          <InfoBanner
+            title="Confidential swaps use separate fees"
+            description="This API key has its own fee configuration for confidential swaps, so the fees below apply to public swaps only."
+          />
+        )}
+
         <ExpandableToggleCard
           label="Add custom fee"
           isExpanded={isCustomFeeOpen}
