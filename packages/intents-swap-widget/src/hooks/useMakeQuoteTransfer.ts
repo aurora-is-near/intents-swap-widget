@@ -98,11 +98,6 @@ export const useMakeQuoteTransfer = ({
         'Solana transfers are not supported. Add a Solana provider via the `providers` configuration property.',
       );
 
-      assertChainSupport(
-        alchemyApiKey,
-        'Solana transfers are not supported. Add an Alchemy API key via the `alchemyApiKey` configuration property.',
-      );
-
       return (args: MakeTransferArgs) =>
         solPlugin.makeTransfer(args, { provider, alchemyApiKey });
     }

@@ -1,8 +1,6 @@
 import { Token } from '../../types';
 import { isSolanaAddress } from '../chains/isSolanaAddress';
 
-const ALCHEMY_SOLANA_RPC_BASE = 'https://solana-mainnet.g.alchemy.com/v2';
-
 type SolanaRpcResponse<T> = {
   jsonrpc: string;
   result?: T;
@@ -40,14 +38,8 @@ type GetTokenAccountsResult = {
 
 const getNativeSolanaBalance = async (
   walletAddress: string,
-  alchemyApiKey?: string,
+  rpcUrl: string,
 ): Promise<string | null> => {
-  if (!alchemyApiKey) {
-    return null;
-  }
-
-  const rpcUrl = `${ALCHEMY_SOLANA_RPC_BASE}/${alchemyApiKey}`;
-
   try {
     const response = await fetch(rpcUrl, {
       method: 'POST',
@@ -77,17 +69,11 @@ const getNativeSolanaBalance = async (
 const getSolanaSplTokenBalance = async (
   token: Token,
   walletAddress: string,
-  alchemyApiKey?: string,
+  rpcUrl: string,
 ): Promise<string | null> => {
   if (!token.contractAddress) {
     return null;
   }
-
-  if (!alchemyApiKey) {
-    return null;
-  }
-
-  const rpcUrl = `${ALCHEMY_SOLANA_RPC_BASE}/${alchemyApiKey}`;
 
   try {
     const response = await fetch(rpcUrl, {
@@ -132,18 +118,32 @@ const getSolanaSplTokenBalance = async (
   }
 };
 
-export const getSolanaTokenBalance = (
+export const getSolanaTokenBalance = async (
   token: Token,
   walletAddress: string,
-  alchemyApiKey?: string,
-): Promise<string | null> | null => {
+  rpcUrls: string[],
+): Promise<string | null> => {
   if (!isSolanaAddress(walletAddress)) {
     return null;
   }
 
-  if (token.symbol === 'SOL' && !token.contractAddress) {
-    return getNativeSolanaBalance(walletAddress, alchemyApiKey);
+  const isNativeSol = token.symbol === 'SOL' && !token.contractAddress;
+
+  if (!isNativeSol && !token.contractAddress) {
+    return null;
   }
 
-  return getSolanaSplTokenBalance(token, walletAddress, alchemyApiKey);
+  const [rpcUrl, ...fallbackRpcUrls] = rpcUrls;
+
+  if (!rpcUrl) {
+    return null;
+  }
+
+  const balance = isNativeSol
+    ? await getNativeSolanaBalance(walletAddress, rpcUrl)
+    : await getSolanaSplTokenBalance(token, walletAddress, rpcUrl);
+
+  return (
+    balance ?? getSolanaTokenBalance(token, walletAddress, fallbackRpcUrls)
+  );
 };

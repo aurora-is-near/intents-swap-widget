@@ -16,6 +16,7 @@ import { getEvmTokenBalance } from '@/utils/evm/getEvmTokenBalance';
 import { getNearTokenBalance } from '@/utils/near/getNearTokenBalance';
 import { getNativeNearBalance } from '@/utils/near/getNativeNearBalance';
 import { getEvmMainTokenBalance } from '@/utils/evm/getEvmMainTokenBalance';
+import { getSolanaRpcUrls } from '@/utils/solana/getSolanaRpcUrls';
 import { getSolanaTokenBalance } from '@/utils/solana/getSolanaTokenBalance';
 import { isWalletAddressCompatibleWithChain } from '@/utils/chains/isWalletAddressCompatibleWithChain';
 
@@ -129,7 +130,11 @@ export function useTokenBalanceRpc({ rpcs, token, connectedWallets }: Args) {
         token.blockchain === 'sol' &&
         supportedChains.includes(token.blockchain)
       ) {
-        return getSolanaTokenBalance(token, walletAddress, alchemyApiKey);
+        return getSolanaTokenBalance(
+          token,
+          walletAddress,
+          getSolanaRpcUrls({ alchemyApiKey, rpcs }),
+        );
       }
 
       logger.warn(
