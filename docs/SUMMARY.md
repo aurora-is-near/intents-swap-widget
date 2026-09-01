@@ -13,6 +13,7 @@
   * [Security & Trust Model](intents-connect/deep-dive/security-and-trust-model.md)
   * [API Usage](intents-connect/deep-dive/api-usage.md)
   * [Execution Lifecycle](intents-connect/deep-dive/execution-lifecycle.md)
+  * [Intermediary Accounts](intents-connect/deep-dive/intermediary-accounts.md)
 * [Intents Connect Widget](intents-connect/intents-connect-widget/README.md)
   * [Introduction](intents-connect/intents-connect-widget/introduction.md)
   * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
