@@ -74,7 +74,7 @@
     "jsdom": "^26.0.0",
     "knip": "^5.34.0",
     "minimatch": "^10.2.5",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.18",
     "postcss-prefix-selector": "^2.1.1",
     "prettier": "^3.5.3",
     "puppeteer": "^24.31.0",
