@@ -89,6 +89,7 @@
 
 * [What is Swap Widget?](intents-swap/what-is-swap-widget.md)
 * [API Keys & Fees](intents-swap/api-keys-and-fees.md)
+* [Client Portal](intents-swap/client-portal.md)
 * [Supported Assets](intents-swap/supported-assets.md)
 * [Supported Chains](intents-swap/supported-chains.md)
 * [Widget integration](intents-swap/widget-integration.md)
