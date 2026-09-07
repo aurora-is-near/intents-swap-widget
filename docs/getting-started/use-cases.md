@@ -26,7 +26,7 @@ No bridging, no network switching — just a seamless experience.
 
 [**https://swap.nearmobile.app/**](https://swap.nearmobile.app/)<br>
 
-👉 **Best fit:** [Swap Widget](intents-swap/what-is-swap-widget.md)
+👉 **Best fit:** [Swap Widget](../intents-swap/what-is-swap-widget.md)
 
 ***
 

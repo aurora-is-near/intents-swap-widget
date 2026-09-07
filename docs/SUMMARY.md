@@ -1,8 +1,13 @@
 # Table of contents
 
 * [Welcome to Aurora Intents](README.md)
-* [Use cases](use-cases.md)
 * [Confidential Intents](confidential-intents.md)
+
+## Getting started
+
+* [Use cases](getting-started/use-cases.md)
+* [API Keys & Fees](getting-started/api-keys-and-fees.md)
+* [Client Portal](getting-started/client-portal.md)
 
 ## Intents Connect
 
@@ -88,8 +93,6 @@
 ## Intents Swap
 
 * [What is Swap Widget?](intents-swap/what-is-swap-widget.md)
-* [API Keys & Fees](intents-swap/api-keys-and-fees.md)
-* [Client Portal](intents-swap/client-portal.md)
 * [Supported Assets](intents-swap/supported-assets.md)
 * [Supported Chains](intents-swap/supported-chains.md)
 * [Widget integration](intents-swap/widget-integration.md)

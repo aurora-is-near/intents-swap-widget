@@ -9,7 +9,7 @@ Intents API allows you to perform cross-chain deposits across all [supported-cha
 You'll need to reference supported assets by their IDs, then request a quote that generates a deposited address to which the requested funds need to be transferred. After that, the swap will be processed, and the destination asset will land in the recipient's account.
 
 {% hint style="info" %}
-You need to [create an API key](../../intents-swap/api-keys-and-fees.md) to interact with the API.
+You need to [create an API key](../../getting-started/api-keys-and-fees.md) to interact with the API.
 {% endhint %}
 
 {% stepper %}

@@ -91,7 +91,7 @@ Export and analyse usage.
 {% step %}
 ### Create API key
 
-First, create an account and set up [api-keys-and-fees.md](api-keys-and-fees.md "mention") for your integration.
+First, create an account and set up [api-keys-and-fees.md](../getting-started/api-keys-and-fees.md "mention") for your integration.
 {% endstep %}
 
 {% step %}
