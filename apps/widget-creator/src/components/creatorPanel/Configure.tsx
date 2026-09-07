@@ -23,7 +23,6 @@ import {
   isTokenAvailable,
 } from '../../utils/tokenSelection';
 import { IntegrationModal } from '../../features/IntegrationModal';
-import { getUrlParam } from '../../utils/get-url-param';
 import type { TokenType } from '../../hooks/useTokens';
 
 import { SelectATokenText } from './SelectATokenText';
@@ -47,8 +46,6 @@ export function Configure() {
   );
 
   const { data: apiKeys } = useApiKeys();
-
-  const isDebugMode = getUrlParam('widget') === 'debug';
 
   // Whether the widget will include the Intents layer. This is exactly what
   // `enableAccountAbstraction` sends, so it holds in deposit mode too.
@@ -273,21 +270,19 @@ export function Configure() {
                   )}
               </>
             ) : (
-              isDebugMode && (
-                <>
-                  <div className="my-csw-2xl border-t border-csw-gray-800" />
-                  <Toggle
-                    label="Allow swap with QR code"
-                    isEnabled={state.allowSwapWithExternalWallet}
-                    onChange={(enabled) =>
-                      dispatch({
-                        type: 'SET_ALLOW_SWAP_WITH_QR',
-                        payload: enabled,
-                      })
-                    }
-                  />
-                </>
-              )
+              <>
+                <div className="my-csw-2xl border-t border-csw-gray-800" />
+                <Toggle
+                  label="Allow swap with QR code"
+                  isEnabled={state.allowSwapWithExternalWallet}
+                  onChange={(enabled) =>
+                    dispatch({
+                      type: 'SET_ALLOW_SWAP_WITH_QR',
+                      payload: enabled,
+                    })
+                  }
+                />
+              </>
             )}
           </div>
         </ConfigSection>
