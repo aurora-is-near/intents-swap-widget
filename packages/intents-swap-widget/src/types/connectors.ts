@@ -12,7 +12,8 @@ type NetworkMap = {
     args: MakeTransferArgs;
     options: {
       provider: SolanaProvider;
-      alchemyApiKey: string;
+      alchemyApiKey?: string;
+      rpcUrl?: string;
     };
   };
   stellar: {

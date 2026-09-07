@@ -66,6 +66,7 @@ export const apiKeySchema: z.ZodSchema<ApiKey> = z
     createdAt: z.string(),
     apiKey: z.string(),
     feeRules: FeeConfigSchema,
+    feeRulesConfidential: FeeConfigSchema.nullish(),
     auroraFeeBps: z.number().int().nullish(),
     auroraFeePercent: z.number().int().nullish(),
     role: z.enum(['admin']).optional(),

@@ -15,13 +15,19 @@ import type {
 } from '@aurora-is-near/intents-swap-widget';
 import { MakeTransferOptions } from './types';
 
+const ALCHEMY_RPC_BASE = 'https://solana-mainnet.g.alchemy.com/v2';
+const DEFAULT_RPC_URL = 'https://solana-rpc.publicnode.com';
+
+const resolveRpcUrl = ({ rpcUrl, alchemyApiKey }: MakeTransferOptions) =>
+  rpcUrl ??
+  (alchemyApiKey ? `${ALCHEMY_RPC_BASE}/${alchemyApiKey}` : DEFAULT_RPC_URL);
+
 export const makeTransfer = async (
   args: MakeTransferArgs,
-  { provider, alchemyApiKey }: MakeTransferOptions,
+  options: MakeTransferOptions,
 ): Promise<Pick<TransferResult, 'hash'>> => {
-  const connection = new Connection(
-    `https://solana-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
-  );
+  const { provider } = options;
+  const connection = new Connection(resolveRpcUrl(options));
 
   const fromPubkey = provider.publicKey as PublicKey | undefined;
 

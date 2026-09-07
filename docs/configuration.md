@@ -426,6 +426,14 @@ chains. The widget continues to use configured RPCs for chains that Alchemy
 does not support. Without an Alchemy key, configured RPCs are used for all
 supported balance loaders.
 
+For Solana, adding an Alchemy API key also switches the widget to the Alchemy
+RPC for submitting swap deposits. Without it, the widget falls back to a public
+Solana RPC (`https://solana-rpc.publicnode.com`) for both balances and
+transfers.
+
+Public RPCs are rate-limited, so an Alchemy key is recommended for production
+traffic.
+
 ### `tonCenterApiKey`
 
 An API key for integrating with [TON Center](https://toncenter.com/).
