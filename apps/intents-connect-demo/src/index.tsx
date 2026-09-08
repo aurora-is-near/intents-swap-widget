@@ -23,6 +23,7 @@ import { Tabs } from './shared/components/Tabs';
 import { walletFamilyMap } from './shared/utils/walletFamilyMap';
 import { ALCHEMY_API_KEY, API_KEY, API_URL } from './shared/config';
 import { HydrexTab } from './hydrex/components/HydrexTab';
+import { AaveTab } from './aave/components/AaveTab';
 import { PolymarketTab } from './polymarket/components/PolymarketTab';
 
 const api = createIntentsConnectApi({
@@ -34,10 +35,11 @@ const api = createIntentsConnectApi({
  * The integration registry lives HERE, not in shared/ — shared knows nothing
  * about which integrations exist, only how to render a row of tabs.
  */
-type TabId = 'hydrex' | 'polymarket';
+type TabId = 'hydrex' | 'aave' | 'polymarket';
 
 const TABS: { id: TabId; label: string; accent: string }[] = [
   { id: 'hydrex', label: 'Hydrex', accent: '#00C896' },
+  { id: 'aave', label: 'Aave', accent: '#B8A3FF' },
   { id: 'polymarket', label: 'Polymarket', accent: '#2D9CDB' },
 ];
 
@@ -96,9 +98,13 @@ const AppContent = () => {
               widget's balance side effects and double every fetch. Everything
               here is inside WidgetConfigProvider, which mounts the QueryClient
               the panels' queries run on. */}
-          {tab === 'hydrex' ? (
+          {tab === 'hydrex' && (
             <HydrexTab HeaderComponent={header} onBusyChange={setIsBusy} />
-          ) : (
+          )}
+          {tab === 'aave' && (
+            <AaveTab HeaderComponent={header} onBusyChange={setIsBusy} />
+          )}
+          {tab === 'polymarket' && (
             <PolymarketTab
               HeaderComponent={header}
               account={account}
