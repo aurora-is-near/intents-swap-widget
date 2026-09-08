@@ -40,7 +40,6 @@ type QuoteRequestResult = {
 };
 
 type MakeArgs = {
-  message?: string;
   quoteType?: 'exact_in' | 'exact_out';
   options?: {
     isRefetch?: boolean;
@@ -68,8 +67,14 @@ export const useMakeQuote = () => {
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
   const { supportedChains } = useSupportedChains();
-  const { apiKey, appFees, fetchQuote, referral, extraQuoteParameters } =
-    useConfig();
+  const {
+    apiKey,
+    appFees,
+    fetchQuote,
+    referral,
+    extraQuoteParameters,
+    attachWalletAddressToQuote,
+  } = useConfig();
 
   const isDry = isDryQuote(ctx);
 
@@ -108,7 +113,6 @@ export const useMakeQuote = () => {
   );
 
   const make = async ({
-    message,
     quoteType = 'exact_in',
     options = {},
   }: MakeArgs = {}): Promise<Quote | undefined> => {
@@ -225,6 +229,11 @@ export const useMakeQuote = () => {
       // to be overridden below
       amount: '0',
       swapType: QuoteRequest.swapType.EXACT_INPUT,
+
+      // other
+      ...(attachWalletAddressToQuote && ctx.walletAddress
+        ? { connectedWallets: [ctx.walletAddress] }
+        : {}),
     };
 
     // UX wise we support FLEX_INPUT only for external deposits
@@ -263,10 +272,6 @@ export const useMakeQuote = () => {
       };
     }
 
-    if (message) {
-      commonQuoteParams.customRecipientMsg = message;
-    }
-
     if (referral) {
       commonQuoteParams.referral = snakeCase(referral);
     }
@@ -275,8 +280,12 @@ export const useMakeQuote = () => {
       commonQuoteParams.appFees = [...appFees];
     }
 
-    const { sessionId, virtualChainRecipient, virtualChainRefundRecipient } =
-      extraQuoteParameters ?? {};
+    const {
+      sessionId,
+      virtualChainRecipient,
+      virtualChainRefundRecipient,
+      customRecipientMsg,
+    } = extraQuoteParameters ?? {};
 
     // Aurora is a NEAR virtual chain. 1Click forwards the asset by calling
     // ft_transfer_call on the `aurora` bridge account. So `recipient` is the
@@ -381,6 +390,7 @@ export const useMakeQuote = () => {
         ? { virtualChainRefundRecipient: resolvedVirtualChainRefundRecipient }
         : {}),
       ...(sessionId ? { sessionId } : {}),
+      ...(customRecipientMsg ? { customRecipientMsg } : {}),
     };
 
     try {

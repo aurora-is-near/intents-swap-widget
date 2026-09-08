@@ -53,6 +53,7 @@ export type WidgetConfig = {
   // Quotes & Transfers
   slippageTolerance: number;
   enableAutoTokensSwitching?: boolean;
+  attachWalletAddressToQuote?: boolean;
   refetchQuoteInterval?: number;
   confidentialMode?: SwapConfidentialMode | 'user-choice';
 
@@ -65,6 +66,7 @@ export type WidgetConfig = {
     sessionId?: string;
     virtualChainRecipient?: string;
     virtualChainRefundRecipient?: string;
+    customRecipientMsg?: string;
   };
 
   // Default tokens

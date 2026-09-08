@@ -95,7 +95,7 @@ export const WidgetDepositContent = ({
       'checkWalletConnection',
       'setSourceTokenBalance',
       'setSourceTokenIntentsTarget',
-      ['makeQuote', { message: undefined, refetchQuoteInterval }],
+      ['makeQuote', { refetchQuoteInterval }],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });

@@ -8,19 +8,18 @@ import { useMakeQuote } from '@/hooks/useMakeQuote';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo';
 import type { FetchQuoteOptions } from '@/types/quote';
-import type { ListenerProps } from './types';
-import { isDryQuote } from '../guards/checks/isDryQuote';
+
 import { logger } from '../../logger';
+import { isDryQuote } from '../guards/checks/isDryQuote';
+import type { ListenerProps } from './types';
 
 export type Props = ListenerProps & {
-  message?: string;
   type?: 'exact_in' | 'exact_out';
   refetchQuoteInterval?: number;
 };
 
 export const useMakeQuoteEffect = ({
   isEnabled,
-  message,
   type: quoteType = 'exact_in',
   refetchQuoteInterval,
 }: Props) => {
@@ -80,7 +79,7 @@ export const useMakeQuoteEffect = ({
           fireEvent('quoteSetStatus', 'pending');
         }
 
-        const quote = await makeQuote({ message, quoteType, options });
+        const quote = await makeQuote({ quoteType, options });
 
         if (!quote) {
           return;
@@ -141,7 +140,7 @@ export const useMakeQuoteEffect = ({
         });
       }
     },
-    [ctx, isDry, makeQuote, message, quoteType, shouldRun],
+    [ctx, isDry, makeQuote, quoteType, shouldRun],
   );
 
   useEffect(() => {

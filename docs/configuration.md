@@ -140,6 +140,13 @@ for 1% slippage, or 50 for 0.5% slippage.
 When enabled, the widget automatically rotates the source and target tokens if
 the user selects the same token on both sides.
 
+### `attachWalletAddressToQuote`
+
+Optional boolean, disabled by default. When enabled and an active wallet address
+is available, the widget includes that address in the quote request's
+`connectedWallets` array. The field is omitted when no active wallet address is
+available.
+
 ### `refetchQuoteInterval`
 
 The interval in milliseconds at which new quotes are fetched automatically.
@@ -472,8 +479,18 @@ Enables live swap conversion preview in the tokens list on hover.
 
 ### `extraQuoteParameters`
 
-Allows you to pass extra attributes for each of the 1Click quote request.
-Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`.
+Allows you to pass extra attributes with each 1Click quote request.
+Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`,
+`customRecipientMsg`.
+
+`customRecipientMsg` is an optional string passed as the message to
+`ft_transfer_call` when withdrawing tokens to NEAR. If omitted or empty, it is
+not included in the quote request, and 1Click uses `ft_transfer` instead.
+
+This experimental option requires NEP-141 tokens, sufficient `storage_deposit`,
+and a recipient contract that implements `ft_on_transfer`. Using it without
+these prerequisites can cause loss of funds.
+
 More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
 
 ### `confidentialMode`

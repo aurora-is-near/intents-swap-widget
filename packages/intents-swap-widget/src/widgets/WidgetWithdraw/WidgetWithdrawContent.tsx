@@ -90,7 +90,6 @@ export const WidgetWithdrawContent = ({
       [
         'makeQuote',
         {
-          message: undefined,
           type: lastChangedInput === 'target' ? 'exact_out' : 'exact_in',
           refetchQuoteInterval,
         },

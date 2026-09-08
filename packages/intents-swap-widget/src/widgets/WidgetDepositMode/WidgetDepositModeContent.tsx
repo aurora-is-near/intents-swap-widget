@@ -142,7 +142,7 @@ export const WidgetDepositModeContent = ({
       'updateBalances',
       'checkWalletConnection',
       'setSourceTokenBalance',
-      ['makeQuote', { message: undefined, refetchQuoteInterval }],
+      ['makeQuote', { refetchQuoteInterval }],
       ['setBalancesUsingAlchemyExt', { alchemyApiKey }],
     ],
   });
