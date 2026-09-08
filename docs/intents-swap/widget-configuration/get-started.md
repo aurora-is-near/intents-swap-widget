@@ -125,6 +125,10 @@ This value is defined in basis points (1/100th of a percent). For example, 100 f
 
 When enabled, the widget automatically rotates the source and target tokens if the user selects the same token on both sides.
 
+#### `attachWalletAddressToQuote`
+
+Optional boolean, disabled by default. When enabled and an active wallet address is available, the widget includes that address in the quote request's `connectedWallets` array. The field is omitted when no active wallet address is available.
+
 #### `refetchQuoteInterval`
 
 The interval in milliseconds at which new quotes are fetched automatically. Useful for keeping market prices updated in volatile conditions.
@@ -373,7 +377,11 @@ const config = {
 
 An API key for integrating with Alchemy.
 
-This is useful for enabling more reliable balance fetching for EVM chains.
+When configured, Alchemy is the exclusive balance source for its supported chains. The widget continues to use configured RPCs for chains that Alchemy does not support. Without an Alchemy key, configured RPCs are used for all supported balance loaders.
+
+For Solana, adding an Alchemy API key also switches the widget to the Alchemy RPC for submitting swap deposits. Without it, the widget falls back to a public Solana RPC (`https://solana-rpc.publicnode.com`) for both balances and transfers.
+
+Public RPCs are rate-limited, so an Alchemy key is recommended for production traffic.
 
 #### `tonCenterApiKey`
 
@@ -411,8 +419,18 @@ Enables live swap conversion preview in the tokens list on hover.
 
 #### `extraQuoteParameters`
 
-Allows you to pass extra attributes for each of the 1Click quote request. Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`. More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
+Allows you to pass extra attributes with each 1Click quote request. Includes: `virtualChainRecipient`, `virtualChainRefundRecipient`, `sessionId`, `customRecipientMsg`.
+
+`customRecipientMsg` is an optional string passed as the message to `ft_transfer_call` when withdrawing tokens to NEAR. If omitted or empty, it is not included in the quote request, and 1Click uses `ft_transfer` instead.
+
+This experimental option requires NEP-141 tokens, sufficient `storage_deposit`, and a recipient contract that implements `ft_on_transfer`. Using it without these prerequisites can cause loss of funds.
+
+More information: [1Click API Documentation](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote#body-virtual-chain-recipient)
 
 #### `confidentialMode`
 
 Allows you to configure how the widget supports [confidential intents](https://docs.intents.aurora.dev/confidential-intents). Allowed values: `public` - no confidential swaps, `confidential` - all swaps are confidential, `user-choice` - user may toggle confidential mode by themselves.
+
+#### `allowSwapWithExternalWallet`
+
+Adds a block to the widget that allows to toggle between swaps from a connected wallet and swaps with external wallet using QR code.
