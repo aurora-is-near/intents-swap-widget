@@ -4,10 +4,6 @@ icon: book
 
 # How It Works
 
-{% hint style="warning" %}
-**Pre-release** — Details are subject to change as the design is finalised.
-{% endhint %}
-
 ## User flow
 
 When a user initiates an action through Intents Connect, the following happens:
@@ -45,6 +41,10 @@ The intermediary account, authorised by the user's signature and remotely contro
 The user sees the result in the UI: transaction hashes, status updates, and a clear record of exactly what was executed.
 {% endstep %}
 {% endstepper %}
+
+{% hint style="info" %}
+Our [examples](../examples/ "mention")and [developer-guides](../developer-guides/ "mention") will help you understand how this flow works in detail.
+{% endhint %}
 
 ## Core concepts
 
