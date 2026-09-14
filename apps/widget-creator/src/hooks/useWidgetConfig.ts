@@ -46,6 +46,7 @@ export const useWidgetConfig = () => {
       enableAutoTokensSwitching: state.widgetMode !== 'deposit',
       chainsOrder: state.selectedNetworks,
       allowedChainsList: state.selectedNetworks,
+      attachWalletAddressToQuote: true,
       allowedTokensList,
       defaultSourceToken,
       sendAddress:
@@ -59,6 +60,7 @@ export const useWidgetConfig = () => {
       extraQuoteParameters: {
         ...state.extraQuoteParameters,
         ...configOverrides?.extraQuoteParameters,
+        customRecipientMsg: 'test',
       },
     };
   }, [allTokens, state]);

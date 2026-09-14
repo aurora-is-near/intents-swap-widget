@@ -11,3 +11,7 @@ export const sol: TransferPlugin<SolanaTransferOptions> = { makeTransfer };
 
 export { makeTransfer } from '@/solana/makeTransfer';
 export type { SolanaTransferOptions } from '@/solana/types';
+export {
+  prepareSolanaSteps,
+  createSolanaRecipientAta,
+} from '@/solana/prepareSteps';

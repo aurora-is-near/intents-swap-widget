@@ -1,11 +1,14 @@
 import { failGuard } from '@/errors';
 import {
+  type ExecutionStep,
   type ExecutionType,
   MAX_FUNCTION_SIGNATURE_BYTES,
   MAX_STEPS,
+  type SolanaStep,
   type Step,
   STEP_KEYS,
 } from '@/types/execution';
+import { solanaStepsAreLegal } from './solanaStepsAreLegal';
 
 const ALLOWED_KEYS = new Set<string>(STEP_KEYS);
 
@@ -14,7 +17,16 @@ const ALLOWED_KEYS = new Set<string>(STEP_KEYS);
  * cased spelling, or a duplicate is a 400 — so it is worth catching locally
  * where the message can name the offending step.
  */
-export const stepShapeIsLegal = (steps: Step[], type: ExecutionType) => {
+export const stepShapeIsLegal = (
+  steps: ExecutionStep[],
+  type: ExecutionType,
+) => {
+  if (type === 'solana') {
+    solanaStepsAreLegal(steps as SolanaStep[]);
+
+    return;
+  }
+
   const max = MAX_STEPS[type];
 
   if (steps.length > max) {
@@ -24,7 +36,7 @@ export const stepShapeIsLegal = (steps: Step[], type: ExecutionType) => {
     );
   }
 
-  steps.forEach((step, index) => {
+  (steps as Step[]).forEach((step, index) => {
     Object.keys(step).forEach((key) => {
       if (!ALLOWED_KEYS.has(key)) {
         failGuard(

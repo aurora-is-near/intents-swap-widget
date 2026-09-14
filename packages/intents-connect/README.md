@@ -80,7 +80,7 @@ Two phases behave in non-obvious ways:
 ## Fee strategies
 
 The gas fee is charged in the *destination* token and the backend appends its own
-fee-transfer step, so `spendable + networkFee ≤ quote.minAmountOut`. That is
+fee-transfer step, so the bridged funds must cover both the spend and the fee. That is
 circular — the amount depends on the fee, the fee on the steps, the steps on the
 amount. Two ways out:
 
@@ -170,3 +170,63 @@ Notes:
   for fields it actually reads.
 - `run`, `resume` and `cancel` always **reject** rather than throwing
   synchronously, so `run(plan).catch(…)` behaves.
+
+
+## Solana bridge-in previews
+
+Use `SolanaRecipe<TParams>` for a Solana destination. Its asynchronous
+`buildSteps({ intermediary, userAddress, amount }, params)` returns
+`{ steps: SolanaStep[], addressLookupTables?: string[] }`. Existing EVM
+`Recipe` builders keep their synchronous API.
+
+Solana uses the existing `threeRound` fee strategy: build at the gross bridge
+amount to measure the fee, then rebuild at the concrete post-fee amount.
+Solana responses keep `quote.minAmountOut` as the gross bridge guarantee and
+report `details.networkFee` separately. The SDK subtracts that fee before
+building instructions and checks `encoded input + fee <= gross guarantee`
+again before signing and on unsigned resume. EVM responses already report a
+net minimum; their fee is not subtracted again.
+An optional `feeStrategy: { kind: 'threeRound', amountReserveBps: 25 }` leaves
+0.25% of the post-fee guarantee out of the encoded input, rounded down in atomic
+units, to cover movement before real create. It defaults to zero. Account for
+this reserve in the application's slippage budget and display output estimates
+for the actual prepared input. Unspent funds remain at the intermediary.
+Instruction fetching and encoding belong to the caller; the SDK does not
+include a Jupiter client. The wallet package's
+[`/solana` helpers](../intents-connect-wallet#solana-execution-instructions)
+convert native instructions and prepare recipient token accounts.
+
+```ts
+const preview = await runner.preview(solanaPlan);
+// Show the caller's final-token quote; preview.execution.quote is the bridge quote.
+// After the user accepts, commit these exact prepared instructions:
+const execution = await runner.run(preview.plan);
+console.log(execution.id, execution.transaction?.solanaTxHash);
+```
+
+`preview()` makes only dry create requests, emits no runner events, and leaves
+the active machine untouched. It returns the final dry response and a plan
+containing an immutable snapshot of the prepared steps and lookup tables.
+`useExecution()` exposes the same `preview()` method.
+If a final Solana dry response no longer funds its instructions, preview rebuilds
+them at the latest post-fee amount (with any configured reserve), at most twice.
+Only a successfully checked build is returned. This never changes a committed
+execution or triggers signing, funding, or cancellation.
+
+`run(preview.plan)` checks the wallet, intermediary, quote, deadline, and real
+post-fee guarantee before signing. A fee increase is acceptable only if the
+returned guarantee still covers the encoded input. A missing fee or lower
+guarantee rejects before signing; an already-created execution remains
+available for cancellation. `validateExecution` on the plan can impose
+additional acceptance checks (such as the final token minimum).
+
+Resume uses the existing execution and never rebuilds its instructions. The
+prepared spendable amount is saved in execution metadata and checked again
+when an unsigned Solana execution resumes. After reload, pass any
+application-specific `validateExecution` check to `resume()` again. Existing
+safe deposit-resume rules still apply: persist the execution ID and deposit
+hash, and do not force `depositViaWallet: true` if a deposit may be in flight.
+
+This adds bridge-in support only. The service's full transaction size, compute
+budget, gasless USDC fee handling, and actual recipient delivery still need a
+controlled integration check before enabling a swap route.

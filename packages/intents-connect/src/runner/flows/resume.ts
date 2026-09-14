@@ -6,6 +6,7 @@ import { awaitDeposit, exposeDepositAddress } from '@/runner/stages/deposit';
 import { fail } from '@/runner/stages/fail';
 import { settle } from '@/runner/stages/settle';
 import { signAndSubmit } from '@/runner/stages/signAndSubmit';
+import { validatePreparedExecution } from '@/runner/stages/validatePreparedExecution';
 import { findTransfer } from '@/runner/transfer';
 import type { ResumeDepositOptions } from '@/runner/types';
 
@@ -68,6 +69,12 @@ export const resume = async (
       execution.status === 'EXPIRED';
 
     if (needsSigning) {
+      validatePreparedExecution(execution);
+      const validate =
+        depositOptions?.validateExecution ??
+        state.executionValidators.get(execution.id);
+
+      await validate?.(execution);
       // ANDed, never overwritten: /submit's answer distinguishes "still needs
       // a deposit" from "out-operation, nothing to deposit" — it cannot
       // re-enable the transfer for an execution whose funds were already

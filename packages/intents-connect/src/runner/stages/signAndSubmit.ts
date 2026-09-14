@@ -36,6 +36,7 @@ export const signAndSubmit = async (
   const { api, requireAddress, to, patch, assertLive } = ctx;
 
   to('awaiting-signature');
+  assertLive(execution.id);
 
   const { envelope, standard } = await signPayload(ctx, execution);
 

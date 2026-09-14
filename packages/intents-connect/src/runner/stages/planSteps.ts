@@ -1,9 +1,20 @@
+import { failGuard } from '@/errors';
 import * as guards from '@/machine/guards';
-import { BACKEND_PLACEHOLDERS, type Step } from '@/types/execution';
+import {
+  BACKEND_PLACEHOLDERS,
+  type FeeStrategy,
+  type PreparedSteps,
+} from '@/types/execution';
 import { DEFAULT_FEE_STRATEGY } from '@/runner/constants';
 import type { RunnerCtx } from '@/runner/ctx';
-import { buildBody, validateSteps } from '@/runner/planHelpers';
+import {
+  buildBody,
+  getSpendableAmount,
+  prepareRecipeSteps,
+  validateSteps,
+} from '@/runner/planHelpers';
 import type { ExecutionPlan } from '@/runner/types';
+import { getQuoteSpendable } from '@/runner/quoteAmounts';
 
 export const planSteps = async <TParams>(
   ctx: RunnerCtx,
@@ -14,13 +25,23 @@ export const planSteps = async <TParams>(
    * concurrently with the identity round-trip instead of after it.
    */
   resolveIntermediaryAddress: () => Promise<string>,
-): Promise<Step[]> => {
+): Promise<PreparedSteps> => {
   const { api, getWallet, requireAddress, to, patch, emit, logger } = ctx;
 
   to('planning');
 
-  const { recipe, params } = plan;
-  const feeStrategy = plan.feeStrategy ?? DEFAULT_FEE_STRATEGY;
+  const { recipe } = plan;
+  const feeStrategy: FeeStrategy =
+    plan.feeStrategy ??
+    (recipe.type === 'solana' ? { kind: 'threeRound' } : DEFAULT_FEE_STRATEGY);
+
+  if (recipe.type === 'solana' && feeStrategy.kind !== 'threeRound') {
+    failGuard(
+      'STRATEGY_CONFLICT',
+      'Solana bridge-in preparation requires concrete amounts (threeRound)',
+    );
+  }
+
   const activeWallet = getWallet();
 
   // Bound to the connector so a class-based implementation keeps its `this`
@@ -31,6 +52,41 @@ export const planSteps = async <TParams>(
     plan.originChainId,
   );
 
+  if (plan.prepared) {
+    if (plan.quote.deadline && Date.parse(plan.quote.deadline) <= Date.now()) {
+      failGuard(
+        'QUOTE_MOVED',
+        'The prepared quote has expired; prepare a new preview',
+      );
+    }
+
+    const prepared = structuredClone(plan.prepared);
+    const intermediary = await resolveIntermediaryAddress();
+
+    ctx.throwIfDisposed();
+    const sameQuote = Object.keys({ ...prepared.quote, ...plan.quote }).every(
+      (key) =>
+        prepared.quote[key as keyof typeof prepared.quote] ===
+        plan.quote[key as keyof typeof plan.quote],
+    );
+
+    if (
+      prepared.walletAddress !== requireAddress() ||
+      prepared.intermediary !== intermediary ||
+      !sameQuote
+    ) {
+      failGuard(
+        'QUOTE_MOVED',
+        'The preview belongs to a different wallet or quote; prepare a new preview',
+      );
+    }
+
+    patch({ bakedAmount: prepared.spendable, spendable: prepared.spendable });
+    guards.strategiesAreExclusive(feeStrategy, prepared.steps);
+
+    return validateSteps(plan, prepared);
+  }
+
   // Strategy A — one round. The service substitutes the post-fee amount.
   if (feeStrategy.kind === 'placeholder') {
     const base = {
@@ -38,14 +94,16 @@ export const planSteps = async <TParams>(
       userAddress: requireAddress(),
     };
 
-    const steps = recipe.buildSteps(
-      { ...base, amount: BACKEND_PLACEHOLDERS.minAmountOut },
-      params,
-    );
+    const steps = await prepareRecipeSteps(plan, {
+      ...base,
+      amount: BACKEND_PLACEHOLDERS.minAmountOut,
+    });
 
-    guards.strategiesAreExclusive(feeStrategy, steps);
+    ctx.throwIfDisposed();
 
-    if (!guards.stepsUsePlaceholder(steps)) {
+    guards.strategiesAreExclusive(feeStrategy, steps.steps);
+
+    if (!guards.stepsUsePlaceholder(steps.steps)) {
       logger.warn(
         `recipe "${recipe.id}" ignored ctx.amount under the placeholder fee strategy, so the service has no amount to substitute — intended only if its amounts are deliberately fixed`,
       );
@@ -59,7 +117,10 @@ export const planSteps = async <TParams>(
   // steps, so this is what yields an un-carved quote. It needs no
   // intermediary either, so it races the identity round-trip.
   const [gross, intermediaryAddress] = await Promise.all([
-    api.createExecution(requireAddress(), buildBody(getWallet, plan, [], true)),
+    api.createExecution(
+      requireAddress(),
+      buildBody(getWallet, plan, { steps: [] }, true),
+    ),
     resolveIntermediaryAddress(),
   ]);
 
@@ -69,31 +130,43 @@ export const planSteps = async <TParams>(
   };
 
   // Round 2 — real steps at the gross amount, which measures the fee.
-  const probe = recipe.buildSteps(
-    { ...base, amount: gross.quote.minAmountOut },
-    params,
-  );
+  ctx.throwIfDisposed();
+  const probe = await prepareRecipeSteps(plan, {
+    ...base,
+    amount: gross.quote.minAmountOut,
+  });
 
-  guards.strategiesAreExclusive(feeStrategy, probe);
+  ctx.throwIfDisposed();
+
+  guards.strategiesAreExclusive(feeStrategy, probe.steps);
 
   const measured = await api.createExecution(
     requireAddress(),
     buildBody(getWallet, plan, validateSteps(plan, probe), true),
   );
 
+  ctx.throwIfDisposed();
   const networkFee = guards.feeMustBeEstimated(measured);
 
-  guards.amountMustExceedFee(gross.quote.minAmountOut, networkFee);
+  if (recipe.type !== 'solana') {
+    guards.amountMustExceedFee(gross.quote.minAmountOut, networkFee);
+  }
 
-  // Already post-fee — do NOT subtract again.
-  const spendable = measured.quote.minAmountOut;
+  // Solana returns its fee separately; EVM has already carved it from the quote.
+  const spendable = getSpendableAmount(
+    getQuoteSpendable(measured),
+    feeStrategy,
+  );
 
   patch({ networkFee, spendable, bakedAmount: spendable });
   emit({ type: 'quoted', networkFee, spendable });
 
   // Round 3 steps, rebuilt at the carved amount. The invariant now holds:
-  //   spendable + networkFee === the bridge's guaranteed delivery
-  const final = recipe.buildSteps({ ...base, amount: spendable }, params);
+  //   spendable + networkFee <= the bridge's guaranteed delivery
+  const final = await prepareRecipeSteps(plan, { ...base, amount: spendable });
+
+  ctx.throwIfDisposed();
+  guards.strategiesAreExclusive(feeStrategy, final.steps);
 
   return validateSteps(plan, final);
 };

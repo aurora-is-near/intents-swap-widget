@@ -31,6 +31,9 @@ import type {
   ExecutionStatus,
   ExecutionType,
   Intermediary,
+  SolanaAccountMeta,
+  SolanaArg,
+  SolanaStep,
   Step,
   SwapType,
 } from '@/types/execution';
@@ -231,4 +234,28 @@ export type StepParametersStillDeviates = AssertNone<
       : 'spec parameters schema was fixed — re-enable the StepFieldsFit check',
     never
   >
+>;
+
+/* Solana uses the same envelope. The spec still describes steps as EVM in
+ * that envelope, and arg.value as an object despite documenting JSON scalars. */
+type SpecSolanaStep = Schemas['controllers.executionStepSolanaDoc'];
+type SpecSolanaAccount = Schemas['controllers.solanaAccountMetaDoc'];
+type SpecSolanaArg = Schemas['controllers.solanaArgDoc'];
+
+export type SolanaStepFieldsExist = AssertNone<
+  MissingKeys<SolanaStep, SpecSolanaStep>
+>;
+export type SolanaStepHasNoUnmodelledFields = AssertNone<
+  MissingKeys<SpecSolanaStep, SolanaStep>
+>;
+export type SolanaAccountFieldsFit = AssertNone<
+  IncompatibleKeys<SolanaAccountMeta, SpecSolanaAccount>
+>;
+export type SolanaArgTypesMatch = AssertNone<
+  UncoveredMembers<NonNullable<SpecSolanaArg['type']>, SolanaArg['type']>
+>;
+export type SolanaArgValueStillDeviates = AssertNone<
+  NonNullable<SpecSolanaArg['value']> extends Record<string, never>
+    ? never
+    : 'spec arg value schema was fixed — check scalar compatibility'
 >;

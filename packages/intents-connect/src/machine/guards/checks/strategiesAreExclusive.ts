@@ -1,5 +1,5 @@
 import { failGuard } from '@/errors';
-import type { FeeStrategy, Step } from '@/types/execution';
+import type { ExecutionStep, FeeStrategy } from '@/types/execution';
 import { stepsUsePlaceholder } from '@/machine/guards/checks/stepsUsePlaceholder';
 
 /**
@@ -17,7 +17,7 @@ import { stepsUsePlaceholder } from '@/machine/guards/checks/stepsUsePlaceholder
  */
 export const strategiesAreExclusive = (
   strategy: FeeStrategy,
-  steps: Step[],
+  steps: ExecutionStep[],
 ) => {
   if (strategy.kind === 'threeRound' && stepsUsePlaceholder(steps)) {
     failGuard(

@@ -2,24 +2,26 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { GuardError } from '@/errors';
 import type { Intermediary } from '@/types/execution';
-import type { Recipe } from '@/types/recipe';
+import type { AnyRecipe } from '@/types/recipe';
 import {
+  getSpendableAmount,
   pickIntermediaryAddress,
   withQuoteDeadline,
 } from '@/runner/planHelpers';
 import type { ExecutionPlan } from '@/runner/types';
 
-const recipe = (type: Recipe['type']): Recipe => ({
+const recipe = (type: AnyRecipe['type']): AnyRecipe => ({
   id: 'test',
   intent: 'test',
   title: 'Test',
   flow: 'bridge-in',
-  type,
   destination: { chain: 'base', assetId: 'nep141:x', tokenAddress: '0xToken' },
-  buildSteps: () => [],
+  ...(type === 'solana'
+    ? { type, buildSteps: () => ({ steps: [] }) }
+    : { type, buildSteps: () => [] }),
 });
 
-const plan = (type: Recipe['type'], deadline?: string): ExecutionPlan => ({
+const plan = (type: AnyRecipe['type'], deadline?: string): ExecutionPlan => ({
   recipe: recipe(type),
   params: undefined,
   quote: {
@@ -41,6 +43,46 @@ const intermediary = (overrides: Partial<Intermediary> = {}): Intermediary => ({
   evm: '0xEvmIntermediary',
   solana: 'SolIntermediary',
   ...overrides,
+});
+
+describe('getSpendableAmount', () => {
+  it('keeps existing amounts by default and reserves atomic units without rounding up', () => {
+    expect(getSpendableAmount('715710')).toBe('715710');
+    expect(getSpendableAmount('715710', { kind: 'threeRound' })).toBe('715710');
+    expect(
+      getSpendableAmount('715710', {
+        kind: 'threeRound',
+        amountReserveBps: 25,
+      }),
+    ).toBe('713920');
+    expect(
+      getSpendableAmount('1000000000000000001', {
+        kind: 'threeRound',
+        amountReserveBps: 25,
+      }),
+    ).toBe('997500000000000000');
+  });
+
+  it.each([-1, 10_000, 0.5, NaN])(
+    'rejects an invalid reserve %s',
+    (amountReserveBps) => {
+      expect(() =>
+        getSpendableAmount('1000', { kind: 'threeRound', amountReserveBps }),
+      ).toThrow(/amountReserveBps/);
+    },
+  );
+
+  it.each(['0', '-1', '1'])(
+    'rejects a non-positive remaining input from %s',
+    (minimum) => {
+      expect(() =>
+        getSpendableAmount(minimum, {
+          kind: 'threeRound',
+          amountReserveBps: 25,
+        }),
+      ).toThrow(/No spendable amount/);
+    },
+  );
 });
 
 describe('pickIntermediaryAddress', () => {

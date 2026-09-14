@@ -11,7 +11,7 @@ import type { Execution } from '@/types/execution';
 export const feeMustBeEstimated = (execution: Execution): string => {
   const fee = execution.details.networkFee;
 
-  if (!fee) {
+  if (typeof fee !== 'string' || !/^[0-9]+$/.test(fee)) {
     return failGuard(
       'FEE_NOT_ESTIMATED',
       'no details.networkFee returned — gas estimation failed; retry the round',

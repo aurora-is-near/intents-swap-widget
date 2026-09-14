@@ -1,10 +1,10 @@
 import type {
   Execution,
   ExecutionStatus,
+  ExecutionStep,
   ExecutionType,
   Intermediary,
   QuoteRequest,
-  Step,
   SubmitStatus,
 } from '@/types/execution';
 import type {
@@ -23,7 +23,9 @@ export type CreateExecutionBody = {
   version: '1.0';
   type: ExecutionType;
   quote: QuoteRequest;
-  steps: Step[];
+  steps: ExecutionStep[];
+  /** Solana Address Lookup Table accounts, kept in caller order. */
+  addressLookupTables?: string[];
   metadata: ExecutionMetadata;
   dry: boolean;
   outOperation?: boolean;
@@ -53,7 +55,7 @@ export type CreateStepsExecutionBody = {
   type?: ExecutionType;
   /** 1Click asset id of the destination token. */
   destinationAsset?: string;
-  steps: Step[];
+  steps: ExecutionStep[];
   metadata?: ExecutionMetadata;
   dry: boolean;
   /** Solana destinations only — base58 Address Lookup Table accounts. */

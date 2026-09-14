@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { isNotEmptyAmount } from '@aurora-is-near/intents-swap-widget/utils';
 import type { Token } from '@aurora-is-near/intents-swap-widget';
@@ -19,6 +19,8 @@ type Args<TParams = unknown> = {
   /** Read at submit time, so toggling it never affects a live execution. */
   depositViaWallet: boolean;
   buildPlan: BuildPlanFn<TParams>;
+  /** Optional quote/review interaction owned by an integration. */
+  executePlan?: (plan: ExecutionPlan<TParams>) => Promise<void>;
 };
 
 export const useIntentsConnectDeposit = <TParams>({
@@ -27,16 +29,26 @@ export const useIntentsConnectDeposit = <TParams>({
   amount,
   depositViaWallet,
   buildPlan,
+  executePlan,
 }: Args<TParams>) => {
   const [isDepositing, setIsDepositing] = useState(false);
+  const [preparationError, setPreparationError] = useState<Error>();
+  const submitting = useRef(false);
   const isBusy = exec.isBusy || isDepositing;
 
   const deposit = async () => {
-    if (!token || !isNotEmptyAmount(amount)) {
+    if (
+      !token ||
+      !isNotEmptyAmount(amount) ||
+      submitting.current ||
+      exec.isBusy
+    ) {
       return;
     }
 
+    submitting.current = true;
     setIsDepositing(true);
+    setPreparationError(undefined);
 
     try {
       const plan = await buildPlan({
@@ -45,10 +57,17 @@ export const useIntentsConnectDeposit = <TParams>({
         depositViaWallet,
       });
 
-      // Failures surface via exec.error / exec.recovery; the rejection
-      // carries the same object.
-      await exec.run(plan).catch(() => undefined);
+      if (executePlan) {
+        await executePlan(plan);
+      } else {
+        await exec.run(plan);
+      }
+    } catch (error) {
+      setPreparationError(
+        error instanceof Error ? error : new Error(String(error)),
+      );
     } finally {
+      submitting.current = false;
       setIsDepositing(false);
     }
   };
@@ -58,7 +77,7 @@ export const useIntentsConnectDeposit = <TParams>({
   // transfer that never ran from one already broadcast, so the SDK only
   // re-prompts when the caller says it is safe — which for this demo is
   // exactly "the user is in wallet-deposit mode and pressed Resume".
-  const commonReturn = { isBusy, deposit, depositViaWallet };
+  const commonReturn = { isBusy, deposit, depositViaWallet, preparationError };
 
   if (exec.recovery?.kind === 'resume-or-cancel') {
     return {

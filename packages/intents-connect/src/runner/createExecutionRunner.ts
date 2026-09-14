@@ -18,6 +18,7 @@ import type { DepositPlan } from '@/runner/depositPlan';
 import { resume } from '@/runner/flows/resume';
 import { retryDeposit } from '@/runner/flows/retryDeposit';
 import { run } from '@/runner/flows/run';
+import { preview } from '@/runner/flows/preview';
 import { cancel } from '@/runner/stages/cancel';
 import type {
   ExecutionPlan,
@@ -87,6 +88,7 @@ export const createExecutionRunner = (
   const state: RunnerState = {
     cancelledExecutionIds: new Set(),
     depositSentExecutionIds: new Set(),
+    executionValidators: new Map(),
     disposed: false,
     flowInFlight: false,
     flowSettled: undefined,
@@ -274,6 +276,7 @@ export const createExecutionRunner = (
   };
 
   return {
+    preview: <TParams>(plan: ExecutionPlan<TParams>) => preview(ctx, plan),
     run: <TParams>(plan: ExecutionPlan<TParams>) =>
       withFlowLock(() => run(ctx, plan)),
     resume: (executionId: string, resumeOptions?: ResumeDepositOptions) =>

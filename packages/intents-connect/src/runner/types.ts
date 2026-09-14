@@ -4,9 +4,10 @@ import type {
   Execution,
   ExecutionStatus,
   FeeStrategy,
+  PreparedSteps,
   QuoteRequest,
 } from '@/types/execution';
-import type { Recipe } from '@/types/recipe';
+import type { AnyRecipe } from '@/types/recipe';
 import type { MakeTransfer, TransferPlugins } from '@/types/transfer';
 import type { WalletConnector } from '@/types/wallet';
 import type { ExecutionMachineStore } from '@/machine/machine';
@@ -35,10 +36,10 @@ export type OriginToken = {
 };
 
 export type ExecutionPlan<TParams = void> = {
-  recipe: Recipe<TParams>;
+  recipe: AnyRecipe<TParams>;
   params: TParams;
   quote: QuoteRequest;
-  /** Defaults to `{ kind: 'placeholder' }` — one round, service carves the fee. */
+  /** Defaults to placeholder for EVM, threeRound for Solana. */
   feeStrategy?: FeeStrategy;
   /** Lowercase chain id of the origin asset, e.g. `base`, `sol`, `btc`. */
   originChain: string;
@@ -58,6 +59,23 @@ export type ExecutionPlan<TParams = void> = {
    * filled in rather than left to fail after the signature.
    */
   originChainId?: number | null;
+  /** Produced by preview(). Reused verbatim by run(); do not edit it or its quote. */
+  prepared?: PreparedSteps & {
+    walletAddress: string;
+    intermediary: string;
+    quote: QuoteRequest;
+    spendable?: string;
+  };
+  /** Additional acceptance checks after real create, before requesting a signature. */
+  validateExecution?: (execution: Execution) => void | Promise<void>;
+};
+
+export type ExecutionPreview<TParams = void> = {
+  /** Dry response: amounts are in the bridge asset, not the recipe's final output. */
+  execution: Execution;
+  /** Pass this plan to run() to commit the exact prepared instructions. */
+  plan: ExecutionPlan<TParams>;
+  spendable?: string;
 };
 
 export type ExecutionRunnerOptions = {
@@ -117,6 +135,8 @@ export type ExecutionRunnerOptions = {
  *   deposit address is surfaced for a manual transfer instead.
  */
 export type ResumeDepositOptions = {
+  /** Reapply application-specific acceptance checks if the execution still needs signing. */
+  validateExecution?: (execution: Execution) => void | Promise<void>;
   originToken?: OriginToken;
   originChainId?: number | null;
   /**
@@ -132,6 +152,10 @@ export type ResumeDepositOptions = {
 };
 
 export type ExecutionRunner = {
+  /** Dry preparation only; leaves the runner's active machine and events untouched. */
+  preview: <TParams>(
+    plan: ExecutionPlan<TParams>,
+  ) => Promise<ExecutionPreview<TParams>>;
   /** Drives the full bridge-in lifecycle and resolves on a terminal status. */
   run: <TParams>(plan: ExecutionPlan<TParams>) => Promise<Execution>;
   /**

@@ -5,11 +5,47 @@ import {
 } from '@/chains';
 import { failGuard } from '@/errors';
 import * as guards from '@/machine/guards';
-import type { ExecutionType, Intermediary, Step } from '@/types/execution';
+import type {
+  ExecutionType,
+  FeeStrategy,
+  Intermediary,
+  PreparedSteps,
+  SolanaStep,
+  Step,
+} from '@/types/execution';
 import type { WalletConnector } from '@/types/wallet';
 import type { CreateExecutionBody } from '@/api/types';
 import { DEFAULT_QUOTE_DEADLINE_MS } from '@/runner/constants';
 import type { ExecutionPlan } from '@/runner/types';
+
+/** Post-fee input, rounded down so fixed instructions never spend the reserve. */
+export const getSpendableAmount = (
+  minimum: string,
+  feeStrategy?: FeeStrategy,
+): string => {
+  const reserve =
+    feeStrategy?.kind === 'threeRound'
+      ? (feeStrategy.amountReserveBps ?? 0)
+      : 0;
+
+  if (!Number.isInteger(reserve) || reserve < 0 || reserve >= 10_000) {
+    return failGuard(
+      'STRATEGY_CONFLICT',
+      'amountReserveBps must be an integer between 0 and 9999',
+    );
+  }
+
+  const amount = (BigInt(minimum) * BigInt(10_000 - reserve)) / 10_000n;
+
+  if (amount <= 0n) {
+    return failGuard(
+      'FEE_EXCEEDS_AMOUNT',
+      'No spendable amount remains after fees and the quote movement reserve',
+    );
+  }
+
+  return amount.toString();
+};
 
 /**
  * Exhaustive on purpose: `Intermediary` already names more account types
@@ -97,14 +133,23 @@ export const withQuoteDeadline = <TParams>(
 export const buildBody = <TParams>(
   getWallet: () => WalletConnector,
   plan: ExecutionPlan<TParams>,
-  steps: Step[],
+  prepared: PreparedSteps,
   dry: boolean,
 ): CreateExecutionBody => ({
   version: '1.0',
   type: plan.recipe.type,
   quote: plan.quote,
-  steps,
-  metadata: { title: plan.recipe.title, intent: plan.recipe.intent },
+  steps: prepared.steps,
+  ...(prepared.addressLookupTables?.length
+    ? { addressLookupTables: prepared.addressLookupTables }
+    : {}),
+  metadata: {
+    title: plan.recipe.title,
+    intent: plan.recipe.intent,
+    ...(plan.prepared?.spendable
+      ? { intentsConnectSpendable: plan.prepared.spendable }
+      : {}),
+  },
   dry,
   publicKey: PUBLIC_KEY_REQUIRED_CHAINS.has(plan.originChain)
     ? getWallet().getPublicKey?.()
@@ -113,10 +158,39 @@ export const buildBody = <TParams>(
 
 export const validateSteps = <TParams>(
   plan: ExecutionPlan<TParams>,
-  steps: Step[],
-): Step[] => {
-  guards.stepShapeIsLegal(steps, plan.recipe.type);
-  guards.destinationTokenIsTouched(steps, plan.recipe.destination.tokenAddress);
+  prepared: PreparedSteps,
+): PreparedSteps => {
+  const { steps, addressLookupTables } = prepared;
 
-  return steps;
+  guards.stepShapeIsLegal(steps, plan.recipe.type);
+
+  if (plan.recipe.type === 'solana') {
+    guards.solanaStepsAreLegal(steps as SolanaStep[], addressLookupTables);
+  } else {
+    guards.destinationTokenIsTouched(
+      steps as Step[],
+      plan.recipe.destination.tokenAddress,
+    );
+
+    if (addressLookupTables?.length) {
+      failGuard(
+        'ILLEGAL_STEP_SHAPE',
+        'Lookup tables are only supported for Solana',
+      );
+    }
+  }
+
+  return prepared;
+};
+
+export const prepareRecipeSteps = async <TParams>(
+  plan: ExecutionPlan<TParams>,
+  context: import('@/types/recipe').StepContext,
+): Promise<PreparedSteps> => {
+  const prepared =
+    plan.recipe.type === 'solana'
+      ? await plan.recipe.buildSteps(context, plan.params)
+      : { steps: plan.recipe.buildSteps(context, plan.params) };
+
+  return validateSteps(plan, prepared);
 };

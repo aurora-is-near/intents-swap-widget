@@ -7,6 +7,7 @@ import type { MakeTransfer, TransferPlugins } from '@/types/transfer';
 import type { WalletConnector } from '@/types/wallet';
 import type { DepositPlan } from '@/runner/depositPlan';
 import type { RunnerEvent } from '@/runner/types';
+import type { Execution } from '@/types/execution';
 
 /**
  * The runner's mutable state, shared BY REFERENCE with every stage and flow.
@@ -33,6 +34,11 @@ export type RunnerState = {
    * whole point is to outlive the flow that sent it.
    */
   depositSentExecutionIds: Set<string>;
+  /** Keep rejected pre-sign checks in force on a same-session resume. */
+  executionValidators: Map<
+    string,
+    (execution: Execution) => void | Promise<void>
+  >;
   /**
    * Set by `dispose()`. A disposed runner must stop touching the wallet and
    * the API: its owner has been rebound (typically to another account), so any

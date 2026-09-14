@@ -3,17 +3,18 @@ import * as guards from '@/machine/guards';
 import {
   type Execution,
   IN_FLIGHT_STATUSES,
-  type Step,
+  type PreparedSteps,
 } from '@/types/execution';
 import type { Captured } from '@/runner/capture';
 import type { RunnerCtx } from '@/runner/ctx';
 import { buildBody } from '@/runner/planHelpers';
 import type { ExecutionPlan } from '@/runner/types';
+import { validatePreparedExecution } from './validatePreparedExecution';
 
 export const create = async <TParams>(
   ctx: RunnerCtx,
   plan: ExecutionPlan<TParams>,
-  steps: Step[],
+  prepared: PreparedSteps,
   /**
    * The in-flight preflight, started by `run()` alongside identity resolution
    * so it does not add a serial round-trip right before the wallet prompt.
@@ -26,7 +27,7 @@ export const create = async <TParams>(
 
   to('creating');
 
-  guards.stepsRequiredForRealCreate(steps);
+  guards.stepsRequiredForRealCreate(prepared.steps);
 
   const address = requireAddress();
 
@@ -64,13 +65,14 @@ export const create = async <TParams>(
   }
 
   guards.noExecutionInFlight(inFlight);
+  ctx.throwIfDisposed();
 
   let execution: Execution;
 
   try {
     execution = await api.createExecution(
       address,
-      buildBody(getWallet, plan, steps, false),
+      buildBody(getWallet, plan, prepared, false),
     );
   } catch (error) {
     if (error instanceof IntentsConnectApiError && error.isExecutionInFlight) {
@@ -109,12 +111,16 @@ export const create = async <TParams>(
 
   emit({ type: 'created', executionId: execution.id });
 
+  if (plan.validateExecution) {
+    ctx.state.executionValidators.set(execution.id, plan.validateExecution);
+  }
+
   try {
     const { bakedAmount } = machine.context;
 
-    if (bakedAmount) {
-      guards.quoteMustNotHaveMoved(bakedAmount, execution.quote.minAmountOut);
-    }
+    validatePreparedExecution(execution, bakedAmount);
+    await plan.validateExecution?.(execution);
+    ctx.assertLive(execution.id);
 
     guards.mustHaveSigningPayload(execution);
   } catch (error) {

@@ -132,3 +132,31 @@ it. `select()` disconnects the others first.
   from an `alchemyApiKey`; pass `rpcUrl` or a `connection` instead.
 - **NEAR uses `ft_transfer`, not `ft_transfer_call`,** and does not swallow user
   rejection. See the notes in `src/near/makeTransfer.ts`.
+
+
+## Solana execution instructions
+
+The `/solana` entry point also prepares instructions for an
+`intents-connect` `SolanaRecipe`. Use the concrete intermediary address to derive
+accounts; the converter substitutes `{INTERMEDIARY}` in account metadata.
+
+```ts
+import {
+  createSolanaRecipientAta,
+  prepareSolanaSteps,
+} from '@aurora-is-near/intents-connect-wallet/solana';
+
+const recipientAta = createSolanaRecipientAta({ intermediary, recipient, mint });
+// Request swap instructions that pay recipientAta.address.
+const prepared = prepareSolanaSteps(
+  [recipientAta.instruction, ...swapInstructions],
+  { intermediary, addressLookupTables },
+);
+// Return prepared from SolanaRecipe.buildSteps.
+```
+
+The recipient helper creates a standard SPL ATA idempotently. The converter
+preserves instruction bytes, account order, duplicate accounts, and lookup-table
+order; it rejects foreign signers and omits compute-budget instructions supplied
+by Connect. Supply action instructions only, excluding provider tips and
+nonce/fee infrastructure. These helpers perform no network requests or signing.

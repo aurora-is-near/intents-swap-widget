@@ -25,6 +25,8 @@ import { ALCHEMY_API_KEY, API_KEY, API_URL } from './shared/config';
 import { HydrexTab } from './hydrex/components/HydrexTab';
 import { AaveTab } from './aave/components/AaveTab';
 import { PolymarketTab } from './polymarket/components/PolymarketTab';
+import { SolanaTab } from './solana/components/SolanaTab';
+import { BUY_TOKENS } from './solana/constants';
 
 const api = createIntentsConnectApi({
   baseUrl: API_URL,
@@ -35,18 +37,20 @@ const api = createIntentsConnectApi({
  * The integration registry lives HERE, not in shared/ — shared knows nothing
  * about which integrations exist, only how to render a row of tabs.
  */
-type TabId = 'hydrex' | 'aave' | 'polymarket';
+type TabId = 'hydrex' | 'aave' | 'polymarket' | 'solana';
 
 const TABS: { id: TabId; label: string; accent: string }[] = [
   { id: 'hydrex', label: 'Hydrex', accent: '#00C896' },
   { id: 'aave', label: 'Aave', accent: '#B8A3FF' },
   { id: 'polymarket', label: 'Polymarket', accent: '#2D9CDB' },
+  { id: 'solana', label: 'Solana', accent: '#14F195' },
 ];
 
 const AppContent = () => {
   const [pickWallet, setPickWallet] = useState(false);
   const [tab, setTab] = useState<TabId>('hydrex');
   const [account, setAccount] = useState('');
+  const [solanaOutputMint, setSolanaOutputMint] = useState(BUY_TOKENS[0]!.mint);
   const [isBusy, setIsBusy] = useState(false);
   const { wallet, address, family, isConnected, connect, disconnect } =
     useIntentsConnectWallet();
@@ -65,7 +69,8 @@ const AppContent = () => {
   const header = (
     <div className="flex items-center justify-between gap-sw-lg pt-sw-md">
       <h1 className="text-sw-h5">
-        Deposit into <span style={{ color: accent }}>{label}</span>
+        {tab === 'solana' ? 'Buy on ' : 'Deposit into '}
+        <span style={{ color: accent }}>{label}</span>
       </h1>
       <Button
         size="sm"
@@ -109,6 +114,14 @@ const AppContent = () => {
               HeaderComponent={header}
               account={account}
               onAccountChange={setAccount}
+              onBusyChange={setIsBusy}
+            />
+          )}
+          {tab === 'solana' && (
+            <SolanaTab
+              HeaderComponent={header}
+              outputMint={solanaOutputMint}
+              onOutputChange={setSolanaOutputMint}
               onBusyChange={setIsBusy}
             />
           )}

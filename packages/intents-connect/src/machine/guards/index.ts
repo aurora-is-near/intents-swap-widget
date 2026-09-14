@@ -14,6 +14,7 @@ export { publicKeyMatchesStandard } from '@/machine/guards/checks/publicKeyMatch
 export { quoteMustNotHaveMoved } from '@/machine/guards/checks/quoteMustNotHaveMoved';
 export { recipientOnlyOnOutOperation } from '@/machine/guards/checks/recipientOnlyOnOutOperation';
 export { stepShapeIsLegal } from '@/machine/guards/checks/stepShapeIsLegal';
+export { solanaStepsAreLegal } from '@/machine/guards/checks/solanaStepsAreLegal';
 export { stepsRequiredForRealCreate } from '@/machine/guards/checks/stepsRequiredForRealCreate';
 export { stepsUsePlaceholder } from '@/machine/guards/checks/stepsUsePlaceholder';
 export { strategiesAreExclusive } from '@/machine/guards/checks/strategiesAreExclusive';

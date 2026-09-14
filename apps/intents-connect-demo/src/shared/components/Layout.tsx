@@ -10,6 +10,8 @@ import {
 } from '@aurora-is-near/intents-swap-widget';
 import { isNotEmptyAmount } from '@aurora-is-near/intents-swap-widget/utils';
 import type { UseExecutionResult } from '@aurora-is-near/intents-connect/react';
+import type { ExecutionPlan } from '@aurora-is-near/intents-connect';
+import { GuardError } from '@aurora-is-near/intents-connect';
 
 import { SubmitButton } from './SubmitButton';
 import { DepositQrCode } from './DepositQrCode';
@@ -37,6 +39,7 @@ export type IntegrationProps = {
 
 type Props<TParams = unknown> = IntegrationProps & {
   buildPlan: BuildPlanFn<TParams>;
+  executePlan?: (plan: ExecutionPlan<TParams>) => Promise<void>;
   onBusyChange: (isBusy: boolean) => void;
 };
 
@@ -78,7 +81,13 @@ const ExecutionErrorMessage = ({
   const cause =
     exec.error.cause instanceof Error ? exec.error.cause.message : undefined;
 
-  const message = `${exec.error.message}${cause ? ` — ${cause}` : ''}`;
+  const message =
+    exec.execution?.type === 'solana' &&
+    exec.status === 'CREATED' &&
+    exec.error instanceof GuardError &&
+    exec.error.code === 'QUOTE_MOVED'
+      ? 'The refreshed bridge quote no longer covers this swap. Cancel this execution, then get a new quote.'
+      : `${exec.error.message}${cause ? ` — ${cause}` : ''}`;
 
   return (
     <Banner
@@ -94,6 +103,7 @@ const ExecutionErrorMessage = ({
 const Content = <TParams,>({
   exec,
   buildPlan,
+  executePlan,
   onBusyChange,
   destinationToken,
   successMessage,
@@ -114,6 +124,7 @@ const Content = <TParams,>({
     amount: ctx.sourceTokenAmount,
     depositViaWallet,
     buildPlan,
+    executePlan,
   });
 
   const canDeposit =
@@ -170,14 +181,28 @@ const Content = <TParams,>({
 
       {/* A failure is superseded the moment a new attempt runs — showing it
           while the wallet prompt is open reads as "still failed". */}
-      {!depositState.isBusy && exec.error !== dismissedError && (
-        <ExecutionErrorMessage
-          exec={exec}
-          onDismiss={() => setDismissedError(exec.error)}
-        />
-      )}
+      {!depositState.isBusy &&
+        (!depositState.preparationError ||
+          depositState.preparationError === exec.error) &&
+        exec.error !== dismissedError && (
+          <ExecutionErrorMessage
+            exec={exec}
+            onDismiss={() => setDismissedError(exec.error)}
+          />
+        )}
 
-      {exec.phase === 'success' && (
+      {!depositState.isBusy &&
+        depositState.preparationError &&
+        depositState.preparationError !== exec.error && (
+          <Banner
+            hasBg
+            multiline
+            variant="error"
+            message={depositState.preparationError.message}
+          />
+        )}
+
+      {exec.phase === 'success' && !depositState.isBusy && (
         <Banner hasBg multiline variant="success" message={successMessage} />
       )}
     </>
@@ -211,6 +236,21 @@ const Content = <TParams,>({
     return (
       <>
         {externalDeposit}
+        <SubmitButton.Cancel exec={exec} executionId={cancelExecutionId} />
+        {messages}
+      </>
+    );
+  }
+
+  // A real Solana create can fail its fee check before any signature. It
+  // already holds the lock, so offer the existing cancel action immediately.
+  if (
+    exec.execution?.type === 'solana' &&
+    exec.phase === 'failed' &&
+    exec.status === 'CREATED'
+  ) {
+    return (
+      <>
         <SubmitButton.Cancel exec={exec} executionId={cancelExecutionId} />
         {messages}
       </>
@@ -296,6 +336,7 @@ const Content = <TParams,>({
 export const Layout = <TParams,>({
   exec,
   buildPlan,
+  executePlan,
   destinationToken,
   successMessage,
   submitLabel,
@@ -303,7 +344,7 @@ export const Layout = <TParams,>({
   isReady,
   onBusyChange,
   ...widgetProps
-}: Pick<Props<TParams>, 'buildPlan'> &
+}: Pick<Props<TParams>, 'buildPlan' | 'executePlan'> &
   IntegrationProps & {
     /** Lifted so the tab bar can refuse to switch away mid-execution. */
     onBusyChange?: (isBusy: boolean) => void;
@@ -315,6 +356,7 @@ export const Layout = <TParams,>({
       <Content
         exec={exec}
         buildPlan={buildPlan}
+        executePlan={executePlan}
         destinationToken={destinationToken}
         successMessage={successMessage}
         submitLabel={submitLabel}

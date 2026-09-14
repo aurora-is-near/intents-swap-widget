@@ -11,7 +11,7 @@ import type {
   Step,
   SubmitStatus,
 } from '@/types/execution';
-import type { Recipe } from '@/types/recipe';
+import type { Recipe, SolanaRecipe } from '@/types/recipe';
 import type { WalletConnector } from '@/types/wallet';
 import { createExecutionRunner } from '@/runner/createExecutionRunner';
 import type { RunnerEvent } from '@/runner/types';
@@ -2035,5 +2035,437 @@ describe('createExecutionRunner — third-round regressions', () => {
     expect(api.recordDeposit).not.toHaveBeenCalled();
     expect(events.some((e) => e.type === 'deposit-sent')).toBe(false);
     expect(runner.getStore().context.depositTxHash).toBeUndefined();
+  });
+});
+
+const SOL_INTERMEDIARY = '4nn959rPTCxboxXKUxZwMq4knJMKPURA4WciuJyrDAvQ';
+const SOL_USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const SOL_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+
+const solanaSetup = () => {
+  const buildSteps = vi.fn<SolanaRecipe['buildSteps']>(async ({ amount }) => ({
+    steps: [
+      {
+        programId: SOL_PROGRAM,
+        discriminator: '0c',
+        args: [
+          { name: 'amount', type: 'u64', value: amount },
+          { name: 'decimals', type: 'u8', value: 6 },
+        ],
+        accounts: [
+          { pubkey: SOL_USDC, isSigner: false, isWritable: true },
+          { pubkey: SOL_USDC, isSigner: false, isWritable: false },
+          { pubkey: SOL_INTERMEDIARY, isSigner: false, isWritable: true },
+          { pubkey: '{INTERMEDIARY}', isSigner: true, isWritable: false },
+        ],
+      },
+    ],
+    addressLookupTables: [amount === '1000' ? SOL_USDC : SOL_INTERMEDIARY],
+  }));
+
+  const solRecipe: SolanaRecipe = {
+    id: 'solana-test',
+    intent: 'solana-test',
+    title: 'Solana test',
+    flow: 'bridge-in',
+    type: 'solana',
+    destination: {
+      chain: 'sol',
+      assetId: 'nep141:sol-usdc',
+      tokenAddress: SOL_USDC,
+    },
+    buildSteps,
+  };
+
+  const plan = {
+    ...basePlan,
+    recipe: solRecipe,
+    params: undefined,
+    quote: {
+      ...basePlan.quote,
+      destinationAsset: 'nep141:sol-usdc',
+      deadline: new Date(Date.now() + 60000).toISOString(),
+    },
+  };
+
+  let realMinimum = '1000';
+  let realFee: string | undefined = '100';
+  let created: Execution | undefined;
+  const api = makeApi({
+    getIntermediary: vi.fn().mockResolvedValue({
+      originAccount: ADDRESS,
+      originType: 'evm',
+      evm: INTERMEDIARY,
+      solana: SOL_INTERMEDIARY,
+    }),
+    createExecution: vi.fn<IntentsConnectApi['createExecution']>(
+      async (_address, body) => {
+        // Solana keeps the gross bridge guarantee; the SDK deducts dryFee.
+        const dryMinimum = '1000';
+        const dryFee = body.steps.length ? '100' : undefined;
+        const value: Execution = {
+          ...execution(),
+          type: 'solana',
+          steps: body.steps,
+          metadata: body.metadata,
+          quote: {
+            ...execution().quote,
+            minAmountOut: body.dry ? dryMinimum : realMinimum,
+          },
+          details: {
+            ...execution().details,
+            intermediaryAddress: SOL_INTERMEDIARY,
+            networkFee: body.dry ? dryFee : realFee,
+          },
+        };
+
+        if (!body.dry) {
+          created = value;
+        }
+
+        return value;
+      },
+    ),
+    listExecutions: vi.fn<IntentsConnectApi['listExecutions']>(
+      async (_address, query) =>
+        query?.id
+          ? [
+              {
+                ...created!,
+                status: 'SUCCESS',
+                transaction: { solanaTxHash: 'solana-hash' },
+              },
+            ]
+          : [],
+    ),
+  });
+
+  const wallet = makeWallet();
+  const events = collect();
+  const runner = createExecutionRunner({
+    api,
+    wallet,
+    logger: noopLogger,
+    pollIntervalMs: 0,
+    autoCancelOnSignatureRejection: false,
+    onEvent: events.onEvent,
+  });
+
+  return {
+    api,
+    wallet,
+    runner,
+    plan,
+    buildSteps,
+    events,
+    setReal: (minimum: string, fee: string | undefined) => {
+      realMinimum = minimum;
+      realFee = fee;
+    },
+    created: () => created!,
+  };
+};
+
+describe('Solana bridge-in preparation', () => {
+  it('previews without touching the live machine, then commits those exact steps and tables', async () => {
+    const h = solanaSetup();
+    const preview = await h.runner.preview(h.plan);
+
+    expect(h.runner.getPhase()).toBe('idle');
+    expect(h.runner.getStore().context.executionId).toBeUndefined();
+    expect(h.events.events).toEqual([]);
+    expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+    expect(h.api.submitSignature).not.toHaveBeenCalled();
+    expect(h.api.listExecutions).not.toHaveBeenCalled();
+    expect(h.api.createExecution).toHaveBeenCalledTimes(3);
+    expect(
+      vi.mocked(h.api.createExecution).mock.calls.every(([, body]) => body.dry),
+    ).toBe(true);
+    expect(h.buildSteps.mock.calls.map(([ctx]) => ctx.amount)).toEqual([
+      '1000',
+      '900',
+    ]);
+    expect(preview.spendable).toBe('900');
+    expect(preview.plan.prepared?.addressLookupTables).toEqual([
+      SOL_INTERMEDIARY,
+    ]);
+    expect(Object.isFrozen(preview.plan.prepared?.steps[0])).toBe(true);
+
+    const result = await h.runner.run(preview.plan);
+
+    expect(result.transaction?.solanaTxHash).toBe('solana-hash');
+    expect(h.buildSteps).toHaveBeenCalledTimes(2);
+
+    const body = vi.mocked(h.api.createExecution).mock.calls.at(-1)![1];
+
+    expect(body).toMatchObject({
+      dry: false,
+      type: 'solana',
+      steps: preview.plan.prepared!.steps,
+      addressLookupTables: [SOL_INTERMEDIARY],
+      metadata: { intentsConnectSpendable: '900' },
+    });
+    expect(h.api.submitSignature).toHaveBeenCalledOnce();
+    expect(h.wallet.makeTransfer).toHaveBeenCalledOnce();
+    expect(
+      vi.mocked(h.api.submitSignature).mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      vi.mocked(h.wallet.makeTransfer!).mock.invocationCallOrder[0],
+    );
+  });
+
+  it.each([
+    ['1000', '200'],
+    ['1000', undefined],
+    ['1000', '-1'],
+  ])(
+    'stops before signing when create returns minimum %s and fee %s',
+    async (minimum, fee) => {
+      const h = solanaSetup();
+      const preview = await h.runner.preview(h.plan);
+
+      h.setReal(minimum!, fee);
+
+      await expect(h.runner.run(preview.plan)).rejects.toMatchObject({
+        code: fee === '200' ? 'QUOTE_MOVED' : 'FEE_NOT_ESTIMATED',
+      });
+      expect(h.api.submitSignature).not.toHaveBeenCalled();
+      expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+      expect(h.runner.getStore().context.executionId).toBe('exec-1');
+
+      // Resume must not bypass the failed funding check.
+      vi.mocked(h.api.listExecutions).mockResolvedValue([h.created()]);
+
+      await expect(h.runner.resume('exec-1')).rejects.toBeDefined();
+      expect(h.api.submitSignature).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rebuilds a lower final dry guarantee before returning the preview', async () => {
+    const h = solanaSetup();
+    const create = h.api.createExecution;
+    const original = vi.mocked(create).getMockImplementation()!;
+
+    vi.mocked(h.api.createExecution).mockImplementationOnce(async () => ({
+      ...execution(),
+      quote: { ...execution().quote, minAmountOut: '1000' },
+    }));
+    // The second call measures 1000 gross / 900 net; the third falls to 800 net.
+    vi.mocked(create).mockImplementationOnce(async () => ({
+      ...execution(),
+      type: 'solana',
+      details: { ...execution().details, networkFee: '100' },
+      quote: { ...execution().quote, minAmountOut: '1000' },
+    }));
+    vi.mocked(create).mockImplementationOnce(async (...args) => {
+      const value = await original(...args);
+
+      return { ...value, quote: { ...value.quote, minAmountOut: '900' } };
+    });
+
+    const preview = await h.runner.preview(h.plan);
+
+    expect(preview.spendable).toBe('800');
+    expect(h.buildSteps.mock.calls.map(([ctx]) => ctx.amount)).toEqual([
+      '1000',
+      '900',
+      '800',
+    ]);
+    expect(preview.plan.prepared?.spendable).toBe('800');
+
+    const finalBuild = await h.buildSteps.mock.results.at(-1)!.value;
+
+    expect(preview.plan.prepared?.steps).toEqual(finalBuild.steps);
+    expect(vi.mocked(create).mock.calls.every(([, body]) => body.dry)).toBe(
+      true,
+    );
+    expect(h.runner.getPhase()).toBe('idle');
+    expect(h.events.events).toEqual([]);
+    expect(h.api.submitSignature).not.toHaveBeenCalled();
+    expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+  });
+
+  it('bounds preview rebuilds when every quote continues to fall', async () => {
+    const h = solanaSetup();
+    const original = vi.mocked(h.api.createExecution).getMockImplementation()!;
+    let minimum = 1000;
+
+    vi.mocked(h.api.createExecution).mockImplementation(async (...args) => {
+      const value = await original(...args);
+
+      value.quote.minAmountOut = String(
+        minimum + (args[1].steps.length ? 100 : 0),
+      );
+      minimum -= 100;
+
+      return value;
+    });
+
+    await expect(h.runner.preview(h.plan)).rejects.toMatchObject({
+      code: 'QUOTE_MOVED',
+      message: expect.stringContaining('get a new quote'),
+    });
+    expect(h.api.createExecution).toHaveBeenCalledTimes(5);
+    expect(h.buildSteps.mock.calls.map(([ctx]) => ctx.amount)).toEqual([
+      '1000',
+      '900',
+      '800',
+      '700',
+    ]);
+    expect(h.api.submitSignature).not.toHaveBeenCalled();
+    expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+  });
+
+  it('does not rebuild a preview with a missing fee estimate', async () => {
+    const h = solanaSetup();
+    const original = vi.mocked(h.api.createExecution).getMockImplementation()!;
+    let calls = 0;
+
+    vi.mocked(h.api.createExecution).mockImplementation(async (...args) => {
+      const value = await original(...args);
+
+      calls += 1;
+
+      if (calls === 3) {
+        value.quote.minAmountOut = '800';
+        value.details.networkFee = undefined;
+      }
+
+      return value;
+    });
+
+    await expect(h.runner.preview(h.plan)).rejects.toMatchObject({
+      code: 'FEE_NOT_ESTIMATED',
+    });
+    expect(h.buildSteps).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects modified, expired, and wrong-network preview plans without a real create', async () => {
+    const h = solanaSetup();
+    const preview = await h.runner.preview(h.plan);
+
+    await expect(
+      h.runner.run({
+        ...preview.plan,
+        quote: { ...preview.plan.quote, amount: '1' },
+      }),
+    ).rejects.toMatchObject({ code: 'QUOTE_MOVED' });
+    await expect(
+      h.runner.run({
+        ...preview.plan,
+        quote: { ...preview.plan.quote, deadline: '2000-01-01T00:00:00Z' },
+      }),
+    ).rejects.toMatchObject({ code: 'QUOTE_MOVED' });
+
+    h.wallet.getChainId = async () => 1;
+
+    await expect(h.runner.run(preview.plan)).rejects.toMatchObject({
+      code: 'NETWORK_MISMATCH',
+    });
+    expect(
+      vi.mocked(h.api.createExecution).mock.calls.every(([, body]) => body.dry),
+    ).toBe(true);
+  });
+
+  it('runs application acceptance checks before signing', async () => {
+    const h = solanaSetup();
+
+    await expect(
+      h.runner.run({
+        ...h.plan,
+        validateExecution: () => {
+          throw new Error('Final minimum needs acceptance');
+        },
+      }),
+    ).rejects.toThrow('Final minimum needs acceptance');
+
+    vi.mocked(h.api.listExecutions).mockResolvedValue([h.created()]);
+
+    await expect(h.runner.resume('exec-1')).rejects.toThrow(
+      'Final minimum needs acceptance',
+    );
+    expect(h.api.submitSignature).not.toHaveBeenCalled();
+    expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+  });
+
+  it('retains instructions after signature rejection and resumes without preparing another swap', async () => {
+    const h = solanaSetup();
+    const providers = h.wallet.getProviders();
+
+    h.wallet.getProviders = () => providers;
+    vi.mocked(
+      (providers.evm as import('@/types/providers').Eip1193Provider).request,
+    ).mockRejectedValueOnce({ code: 4001 });
+
+    await expect(h.runner.run(h.plan)).rejects.toBeDefined();
+    expect(h.wallet.makeTransfer).not.toHaveBeenCalled();
+
+    const created = h.created();
+
+    vi.mocked(h.api.listExecutions)
+      .mockResolvedValueOnce([created])
+      .mockResolvedValueOnce([{ ...created, status: 'SUCCESS' }]);
+    await h.runner.resume(created.id);
+
+    expect(h.buildSteps).toHaveBeenCalledTimes(2);
+    expect(h.wallet.makeTransfer).toHaveBeenCalledOnce();
+
+    // The watcher can lag after broadcast: never pay the same deposit twice.
+    vi.mocked(h.api.listExecutions)
+      .mockResolvedValueOnce([
+        {
+          ...created,
+          status: 'DEPOSIT_PENDING',
+          details: { ...created.details, messageSigned: true },
+        },
+      ])
+      .mockResolvedValueOnce([{ ...created, status: 'SUCCESS' }]);
+    await h.runner.resume(created.id);
+
+    expect(h.wallet.makeTransfer).toHaveBeenCalledOnce();
+  });
+
+  it('does not prompt for another deposit on a signed cross-session resume', async () => {
+    const h = solanaSetup();
+
+    await h.runner.run(h.plan);
+    const created = h.created();
+    const wallet = makeWallet();
+    const runner = createExecutionRunner({
+      api: h.api,
+      wallet,
+      logger: noopLogger,
+      pollIntervalMs: 0,
+    });
+
+    vi.mocked(h.api.listExecutions)
+      .mockResolvedValueOnce([
+        {
+          ...created,
+          status: 'DEPOSIT_PENDING',
+          details: { ...created.details, messageSigned: true },
+        },
+      ])
+      .mockResolvedValueOnce([{ ...created, status: 'SUCCESS' }]);
+    await runner.resume(created.id);
+
+    expect(wallet.makeTransfer).not.toHaveBeenCalled();
+  });
+
+  it('stops after asynchronous preparation when disposed', async () => {
+    const h = solanaSetup();
+    const build = h.buildSteps.getMockImplementation()!;
+
+    h.buildSteps.mockImplementationOnce(async (...args) => {
+      h.runner.dispose();
+
+      return build(...args);
+    });
+
+    await expect(h.runner.run(h.plan)).rejects.toMatchObject({
+      name: 'RunnerDisposedError',
+    });
+    expect(h.api.createExecution).toHaveBeenCalledTimes(1);
+    expect(h.api.submitSignature).not.toHaveBeenCalled();
   });
 });

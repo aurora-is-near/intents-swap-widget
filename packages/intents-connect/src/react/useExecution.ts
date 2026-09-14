@@ -15,6 +15,7 @@ import { deriveExecutionRecovery, type ExecutionRecovery } from '@/recovery';
 import { createExecutionRunner } from '@/runner/createExecutionRunner';
 import type {
   ExecutionPlan,
+  ExecutionPreview,
   ResumeDepositOptions,
   RunnerEvent,
 } from '@/runner/types';
@@ -56,6 +57,9 @@ export type UseExecutionResult = {
   isCancelling: boolean;
   isBusy: boolean;
 
+  preview: <TParams>(
+    plan: ExecutionPlan<TParams>,
+  ) => Promise<ExecutionPreview<TParams>>;
   run: <TParams>(plan: ExecutionPlan<TParams>) => Promise<Execution>;
   resume: (
     executionId: string,
@@ -265,6 +269,12 @@ export const useExecution = (
     [requireRunner],
   );
 
+  const preview = useCallback(
+    async <TParams>(plan: ExecutionPlan<TParams>) =>
+      requireRunner().preview(plan),
+    [requireRunner],
+  );
+
   const resume = useCallback(
     async (executionId: string, depositOptions?: ResumeDepositOptions) =>
       requireRunner().resume(executionId, depositOptions),
@@ -306,6 +316,7 @@ export const useExecution = (
     // terminal phase (the in-flight recovery), where no phase says "working".
     isBusy: (isInFlightPhase(snapshot.state) && !ctx.error) || ctx.isCancelling,
     run,
+    preview,
     resume,
     retryDeposit,
     cancel,

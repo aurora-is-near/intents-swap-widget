@@ -89,7 +89,25 @@ export const run = async <TParams>(
       pickIntermediaryAddress(plan, unwrap(await identity)),
     );
 
-    const execution = await create(ctx, plan, steps, inFlightPreflight);
+    // Save the amount beside the signed instructions so an unsigned resume
+    // rechecks the same funding guarantee, including after a reload.
+    const executionPlan = {
+      ...plan,
+      prepared: {
+        ...steps,
+        spendable: ctx.machine.context.bakedAmount,
+        walletAddress: ctx.requireAddress(),
+        intermediary: pickIntermediaryAddress(plan, unwrap(await identity)),
+        quote: plan.quote,
+      },
+    };
+
+    const execution = await create(
+      ctx,
+      executionPlan,
+      steps,
+      inFlightPreflight,
+    );
 
     // Retained only once an execution exists to bind it to. Assigning any
     // earlier would let a run() that dies in the guards — most commonly the

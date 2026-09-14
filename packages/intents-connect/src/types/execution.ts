@@ -92,6 +92,50 @@ export type Step = {
   metadata?: Record<string, unknown>;
 };
 
+export type SolanaAccountMeta = {
+  pubkey: string;
+  isSigner: boolean;
+  isWritable: boolean;
+};
+
+export type SolanaArg = {
+  name: string;
+} & (
+  | {
+      type:
+        | 'u8'
+        | 'u16'
+        | 'u32'
+        | 'u64'
+        | 'u128'
+        | 'i8'
+        | 'i16'
+        | 'i32'
+        | 'i64';
+      value: string | number;
+    }
+  | { type: 'bool'; value: boolean }
+  | { type: 'pubkey' | 'bytes' | 'string'; value: string }
+);
+
+export type SolanaStep = {
+  programId: string;
+  /** Hex without 0x. May contain the entire encoded instruction when args is empty. */
+  discriminator?: string;
+  args: SolanaArg[];
+  /** Order is significant; only {INTERMEDIARY} may be a signer. */
+  accounts: SolanaAccountMeta[];
+  metadata?: Record<string, unknown>;
+};
+
+/** Step remains the EVM alias for existing consumers. */
+export type ExecutionStep = Step | SolanaStep;
+
+export type PreparedSteps<TStep extends ExecutionStep = ExecutionStep> = {
+  steps: TStep[];
+  addressLookupTables?: string[];
+};
+
 export const MAX_STEPS: Readonly<Record<ExecutionType, number>> = {
   evm: 30,
   solana: 50,
@@ -109,6 +153,7 @@ export const STEP_KEYS = [
 
 /** Placeholders the backend substitutes server-side. Emit them literally. */
 export const BACKEND_PLACEHOLDERS = {
+  intermediary: '{INTERMEDIARY}',
   minAmountOut: '{MIN_AMOUNT_OUT}',
   depositAddress: '{DEPOSIT_ADDRESS}',
   amountIn: '{AMOUNT_IN}',
@@ -133,7 +178,7 @@ export type ExecutionQuote = {
   /** Deposit THIS for EXACT_OUTPUT. Never recompute it. */
   amountIn: string;
   amountOut: string;
-  /** Already post-fee once a fee was estimated — do not subtract again. */
+  /** EVM: post-fee after estimation. Solana: gross; subtract details.networkFee. */
   minAmountOut: string;
   depositAddress: string;
   /** Stellar: required on both the transfer and `deposit/submit`. */
@@ -165,10 +210,11 @@ export type Execution = {
   quote: ExecutionQuote;
   details: ExecutionDetails;
   /** Your steps plus the service's appended fee-transfer step. */
-  steps: Step[];
+  steps: ExecutionStep[];
+  metadata?: Record<string, unknown>;
   type?: ExecutionType;
   version?: string;
-  transaction?: { evmTxHash?: string };
+  transaction?: { evmTxHash?: string; solanaTxHash?: string };
 };
 
 export type Intermediary = {
@@ -189,4 +235,12 @@ export type FeeStrategy =
   /** One round. The service substitutes the post-fee amount server-side. */
   | { kind: 'placeholder' }
   /** Three rounds. You compute the amount and can show an exact figure first. */
-  | { kind: 'threeRound' };
+  | {
+      kind: 'threeRound';
+      /**
+       * Portion of the post-fee guarantee left out of the encoded spend to
+       * absorb movement before real create. Defaults to 0; integer 0–9999.
+       * Callers must account for this reserve in their total slippage budget.
+       */
+      amountReserveBps?: number;
+    };

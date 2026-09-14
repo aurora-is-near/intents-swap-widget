@@ -1,6 +1,6 @@
 import {
   BACKEND_PLACEHOLDERS,
-  type Step,
+  type ExecutionStep,
   type StepParameter,
 } from '@/types/execution';
 
@@ -18,10 +18,14 @@ const parameterUsesPlaceholder = (parameter: StepParameter): boolean =>
  * through untouched, so placeholder-looking text there is inert and must not
  * trip the strategy-conflict guard.
  */
-export const stepsUsePlaceholder = (steps: Step[]): boolean =>
-  steps.some(
-    (step) =>
-      step.to.includes(PLACEHOLDER) ||
-      step.value.includes(PLACEHOLDER) ||
-      step.parameters.some(parameterUsesPlaceholder),
+export const stepsUsePlaceholder = (steps: ExecutionStep[]): boolean =>
+  steps.some((step) =>
+    'programId' in step
+      ? step.args.some(
+          (arg) =>
+            typeof arg.value === 'string' && arg.value.includes(PLACEHOLDER),
+        )
+      : step.to.includes(PLACEHOLDER) ||
+        step.value.includes(PLACEHOLDER) ||
+        step.parameters.some(parameterUsesPlaceholder),
   );

@@ -19,6 +19,7 @@ export type {
 export { createExecutionRunner } from '@/runner';
 export type {
   ExecutionPlan,
+  ExecutionPreview,
   ExecutionRunner,
   ExecutionRunnerOptions,
   OriginToken,
