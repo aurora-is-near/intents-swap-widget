@@ -6,10 +6,6 @@ tags:
 
 # Deposit into Aave from Solana
 
-{% hint style="warning" %}
-**Pre-release** — The Intents Connect API is currently in development. If you're interested in early access, get in touch with the team.
-{% endhint %}
-
 Below is an example flow depositing into Aave using a Solana wallet using the Intents Connect API.
 
 You'll need to reference supported assets by their IDs, then run a dry execution to get the estimated output amount, and estimate costs for the destination chain action, signing the intent (deposit to Aave), and the transfer transaction to move SOL from the Solana wallet. As a result, you'll have deposited Aave into an intermediary account associated with your Solana wallet.

@@ -27,6 +27,6 @@ You provide the intent parameters — source chain and wallet, destination chain
 4. Executes on the destination chain via the intermediary account
 5. Returns status updates and transaction hashes throughout
 
-#### Get early access
+#### Get access
 
-The API is moving toward public availability. To register interest or request early access, contact the team. [Talk to the team](mailto:contact@aurora.dev)
+Start using the API or contact the team. [Talk to the team](mailto:contact@aurora.dev)

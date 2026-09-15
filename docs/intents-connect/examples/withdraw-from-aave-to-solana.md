@@ -6,10 +6,6 @@ tags:
 
 # Withdraw from Aave to Solana
 
-{% hint style="warning" %}
-**Pre-release** — The Intents Connect API is currently in development. If you're interested in early access, get in touch with the team.
-{% endhint %}
-
 Below is an example flow withdrawing from Aave using a Solana wallet using the Intents Connect API.
 
 You'll need to run an execution to get the estimated output amount, estimate costs for the destination chain action, and sign the intent (withdraw from Aave). As a result, you'll withdraw from Aave into your Solana wallet.
