@@ -4,10 +4,6 @@ icon: gear-api
 
 # API Usage
 
-{% hint style="warning" %}
-**Pre-release** — The Intents Connect API is currently in development. If you're interested in early access, get in touch with the team.
-{% endhint %}
-
 The Intents Connect API gives developers full programmatic control over cross-chain protocol interactions. Rather than embedding a UI component, you call the API directly — constructing intents, receiving transaction plans, and managing execution from your own backend or application logic.
 
 #### When to use the API

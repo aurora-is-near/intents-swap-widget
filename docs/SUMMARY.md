@@ -21,7 +21,6 @@
   * [Intermediary Accounts](intents-connect/deep-dive/intermediary-accounts.md)
 * [Intents Connect Widget](intents-connect/intents-connect-widget/README.md)
   * [Introduction](intents-connect/intents-connect-widget/introduction.md)
-  * [Coming Soon](intents-connect/intents-connect-widget/coming-soon.md)
 * [Examples](intents-connect/examples/README.md)
   * [Deposit into Aave from Solana](intents-connect/examples/deposit-into-aave-from-solana.md)
   * [Withdraw from Aave to Solana](intents-connect/examples/withdraw-from-aave-to-solana.md)

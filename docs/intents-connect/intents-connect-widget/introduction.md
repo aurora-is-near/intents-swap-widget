@@ -4,10 +4,6 @@ icon: file-lines
 
 # Introduction
 
-{% hint style="warning" %}
-**Pre-release** — The Intents Connect Widget is currently in development. If you're interested in early access, get in touch.
-{% endhint %}
-
 The Intents Connect Widget is an embeddable UI component that lets your users interact with your dApp from any other chain or using any asset, without leaving your interface or managing any cross-chain complexity themselves.
 
 <figure><img src="https://387686700-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FLp9IVb8Xkubcbzzk80Br%2Fuploads%2FDWhjQoQp33t1HdJ7yQ8z%2Fimage%2019.png?alt=media&#x26;token=2632ab3d-4c17-4085-a5a4-7dd14ad18950" alt=""><figcaption></figcaption></figure>

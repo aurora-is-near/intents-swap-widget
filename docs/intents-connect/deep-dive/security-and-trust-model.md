@@ -4,10 +4,6 @@ icon: shield-keyhole
 
 # Security & Trust Model
 
-{% hint style="warning" %}
-**Pre-release** — Details are subject to change as the design is finalised.
-{% endhint %}
-
 ### What the user signs
 
 Every action through Intents Connect requires an explicit user signature. The signed message contains the complete specification of the action:
