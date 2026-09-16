@@ -287,16 +287,15 @@ They remain controlled by the source wallet.
 Intents Connect tracks the execution lifecycle through states such as:
 
 ```
-RECEIVED
-VALIDATED
-PLANNED
-FUNDED
-BROADCAST
-CONFIRMED
-FAILED
-REFUND_PENDING
-RECOVERY_REQUIRED
-COMPLETED
+CREATED
+DEPOSIT_PENDING
+DEPOSIT_PROCESSING
+OPERATION_PENDING
+OPERATION_PROCESSING
+SUCCESS
+EXPIRED
+DEPOSIT_FAILED
+OPERATION_FAILED
 ```
 
 When recovery is required, Intents Connect prepares and funds the recovery execution while the source wallet remains the root of authorization.

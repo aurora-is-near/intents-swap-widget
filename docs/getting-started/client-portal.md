@@ -101,8 +101,6 @@ Open an existing key to view its configuration and configure its fee rules.
 
 We recommend using separate API keys for production, development, QA, or separate applications. This makes analytics easier to understand and lets you manage each integration independently.
 
-> Keep API keys private. Do not expose an API key in client-side code or commit it to a public repository.
-
 <figure><img src="../.gitbook/assets/Screenshot 2026-09-04 at 15.17.46.png" alt=""><figcaption></figcaption></figure>
 
 ### Organization

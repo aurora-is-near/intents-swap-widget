@@ -4,7 +4,7 @@ icon: book-open
 
 # Getting your Solana intermediary address
 
-A Solana action does not run from your own wallet. It runs from a dedicated **intermediary account** that the service controls on your behalf. On Solana this is an ed25519 account **deterministically derived from your origin wallet** — it is stable for a given origin wallet, but you cannot compute it yourself, so you fetch it from the API.
+A Solana action runs from your own wallet through a coresponding **intermediary account** that you control with your wallet. On Solana this is an ed25519 account **deterministically derived from your origin wallet** — it is stable for a given origin wallet, but you cannot compute it yourself, so you fetch it from the API.
 
 This document covers how to obtain that address from an origin wallet (an EVM `0x…` address is the worked example), what the response looks like for every origin type, and how to derive the intermediary's token accounts from it.
 

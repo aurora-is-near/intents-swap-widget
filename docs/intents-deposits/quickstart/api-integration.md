@@ -85,7 +85,7 @@ Use [request-a-quote.md](../../api-reference/swap-api-reference/request-a-quote.
 {% tabs %}
 {% tab title="cURL" %}
 ```sh
-curl -X POST "https://intents-api.aurora.dev/api/tokens/${appKey}" \
+curl -X POST "https://intents-api.aurora.dev/api/quote/${appKey}" \
   -H "Content-Type: application/json" \
   -d '{
     "dry": false,
@@ -99,7 +99,7 @@ curl -X POST "https://intents-api.aurora.dev/api/tokens/${appKey}" \
     "recipientType": "DESTINATION_CHAIN",
     "refundTo": "your-account.near",
     "refundType": "ORIGIN_CHAIN",
-    "deadline": "2025-01-01T00:00:00.000Z"
+    "deadline": "2026-12-30T00:00:00.000Z"
   }'
 ```
 {% endtab %}
