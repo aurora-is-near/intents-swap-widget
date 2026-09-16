@@ -30,7 +30,7 @@ No allowlist, no approval process. API keys are issued immediately. Start genera
 
 Stay informed about transaction status updates with webhooks. Set up URL endpoints to receive event notifications directly from the system, allowing seamless integration into your existing workflows.
 
-### Persistent addresses (coming soon)
+### Persistent addresses
 
 Each address is permanent and reusable. There is no TTL, no session, and no requirement to re-generate between deposits. The same address accepts unlimited sequential deposits. Read more about [persistent-addresses.md](persistent-addresses.md "mention").
 

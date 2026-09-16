@@ -37,7 +37,7 @@ round 2  → producer step amount: 197373 → 190421
            quote.amount:         197373 (unchanged)
 ```
 
-**Only the producer step changes.** The `withdraw` still pulls the full amount out of Aave, and `quote.amount` is still the full amount — that is the origin exposure the user signs for. The carve splits it: `190421` bridges out, `6952` pays the fee.
+**Many EVM chains are enabled as EVM destinations. If you need any that aren't enabled yet, contact us.** The `withdraw` still pulls the full amount out of Aave, and `quote.amount` is still the full amount — that is the origin exposure the user signs for. The carve splits it: `190421` bridges out, `6952` pays the fee.
 
 `quote.amountIn` from round 1 is the number to copy. It is already `amount − networkFee` — no arithmetic needed on your side.
 
