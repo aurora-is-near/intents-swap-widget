@@ -70,6 +70,7 @@
   * [Submit a deposit](api-reference/swap-api-reference/submit-a-deposit.md)
   * [Get swap status](api-reference/swap-api-reference/get-swap-status.md)
   * [Get transactions history](api-reference/swap-api-reference/get-transactions-history.md)
+  * [Get ongoing incidents](api-reference/swap-api-reference/get-ongoing-incidents.md)
 * [Confidential Swaps API Reference](api-reference/confidential-swaps-api-reference/README.md)
   * [Authenticate user with signed data](api-reference/confidential-swaps-api-reference/authenticate-user-with-signed-data.md)
   * [Refresh access token](api-reference/confidential-swaps-api-reference/refresh-access-token.md)
