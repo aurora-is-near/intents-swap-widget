@@ -21,7 +21,7 @@ Use [list-supported-tokens.md](../../api-reference/intents-connect-api-reference
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/supported_tokens`);
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/supported_tokens`);
 const tokens = await response.json();
 ```
 {% endtab %}
@@ -69,7 +69,7 @@ Use [request-an-execution.md](../../api-reference/intents-connect-api-reference/
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ Use [submit-digest.md](../../api-reference/intents-connect-api-reference/submit-
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/${solanaWalletAccount}/submit`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ Use [fetch-executions.md](../../api-reference/intents-connect-api-reference/fetc
 {% tabs %}
 {% tab title="JavaScript" %}
 ```javascript
-const response = await fetch(`https://intents-connect-alpha-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=74e0cbfe-def3-47fb-8f1c-469778c6acbc`);
+const response = await fetch(`https://intents-connect-api.aurora.dev/api/v1/executions/BTKcXNp1wSzs9Mp2ejsPrHLr59z5UkEDJgqcWyXGhGc4?id=74e0cbfe-def3-47fb-8f1c-469778c6acbc`);
 const execution = await response.json();
 ```
 {% endtab %}
