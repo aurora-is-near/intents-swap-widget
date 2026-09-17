@@ -49,7 +49,7 @@ The example uses **USDC on Base**. A different chain or reserve changes the pool
 | aBasUSDC (supply receipt) | `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB`                                               |
 | Fee collector             | per-deployment config — read it back from the appended fee step rather than hard-coding it |
 
-**Many EVM chains are enabled as EVM destinations. If you need any that aren't enabled yet, contact us.** Anything else is rejected with `400 blockchain <chain> is not supported as a destination` before the rest of this flow applies. The pools on the other two:
+Aave is available on several EVM destination chains; see Supported Chains for the current list. Unsupported chains are rejected with `400 blockchain <chain> is not supported as a destination`. Pool addresses used in this guide:
 
 | Chain | Pool                                         |
 | ----- | -------------------------------------------- |

@@ -76,7 +76,7 @@ This trips people up, so it is worth stating plainly:
 | aBasUSDC (the position) | `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB`                                               |
 | Fee collector           | per-deployment config — read it back from the appended fee step rather than hard-coding it |
 
-**Many EVM chains are enabled as EVM destinations. If you need any that aren't enabled yet, contact us.** Anything else is rejected with `400 blockchain <chain> is not supported as a destination`. The pools on the other two, as example:
+Aave is available on several EVM destination chains; see Supported Chains for the current list. Unsupported chains are rejected with `400 blockchain <chain> is not supported as a destination`. Pool addresses used in this guide:
 
 | Chain | Pool                                         |
 | ----- | -------------------------------------------- |
