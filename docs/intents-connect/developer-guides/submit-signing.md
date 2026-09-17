@@ -331,7 +331,7 @@ Content-Type: application/json
 }
 ```
 
-`publicKey` and `tonConnect` are both **required**. Omitting the envelope returns `400 {"error": "tonConnect {domain, timestamp, address} is required for TON"}`. `{walletAddress}` is the URL-safe non-bounceable account (`UQ…`). Full per-chain Full per-chain guide: [submit-signing.md](submit-signing.md "mention")
+`publicKey` and `tonConnect` are both **required**. Omitting the envelope returns `400 {"error": "tonConnect {domain, timestamp, address} is required for TON"}`. `{walletAddress}` is the URL-safe non-bounceable account (`UQ…`). Full per-chain guide: [submit-signing.md](submit-signing.md "mention")
 
 ### Tron / `tip191`
 

@@ -87,7 +87,7 @@ The response returns a `depositAddress` as usual. Send the origin asset to that 
 ```javascript
 // Notify the API after depositing to speed up processing
 await fetch(`https://intents-api.aurora.dev/api/status/${API_KEY}?depositAddress=0x76b4c56085ED136a8744D52bE956396624a730E8`, {
-  method: "GET",
+  method: "POST",
 });
 
 // Poll until terminal: SUCCESS, FAILED, REFUNDED
