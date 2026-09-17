@@ -26,7 +26,7 @@ Apps call the PDA API with the minimal parameters: deposit chain, recipient and 
 {% step %}
 ### Receive a reusable address
 
-The PDA API returns a reusable Deposit Address along with the current exchange rates.
+The PDA API returns a reusable Deposit Address.
 {% endstep %}
 
 {% step %}

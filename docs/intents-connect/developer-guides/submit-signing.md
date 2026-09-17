@@ -331,7 +331,7 @@ Content-Type: application/json
 }
 ```
 
-`publicKey` and `tonConnect` are both **required**. Omitting the envelope returns `400 {"error": "tonConnect {domain, timestamp, address} is required for TON"}`. `{walletAddress}` is the URL-safe non-bounceable account (`UQ…`). Full per-chain TON guide: `ton-signing.md`. Backend rationale: `../ton/ton-public-key.md` and `../ton/ton-signature-verification.md`.
+`publicKey` and `tonConnect` are both **required**. Omitting the envelope returns `400 {"error": "tonConnect {domain, timestamp, address} is required for TON"}`. `{walletAddress}` is the URL-safe non-bounceable account (`UQ…`). Full per-chain Full per-chain guide: [submit-signing.md](submit-signing.md "mention")
 
 ### Tron / `tip191`
 
@@ -370,7 +370,7 @@ Content-Type: application/json
 }
 ```
 
-**Do not include `publicKey`.** The backend recovers the secp256k1 signer, converts the wallet's base58 `T…` address to its embedded 20-byte account, and compares. Full per-chain guide: `tron-signing.md`.
+**Do not include `publicKey`.** The backend recovers the secp256k1 signer, converts the wallet's base58 `T…` address to its embedded 20-byte account, and compares. Full per-chain guide: [submit-signing.md](submit-signing.md "mention")
 
 ### Why `publicKey` is required for NEAR/Solana/Stellar/TON but not EVM/Tron
 

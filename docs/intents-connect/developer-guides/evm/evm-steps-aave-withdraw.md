@@ -37,7 +37,7 @@ round 2  → producer step amount: 197373 → 190421
            quote.amount:         197373 (unchanged)
 ```
 
-**Many EVM chains are enabled as EVM destinations. If you need any that aren't enabled yet, contact us.** The `withdraw` still pulls the full amount out of Aave, and `quote.amount` is still the full amount — that is the origin exposure the user signs for. The carve splits it: `190421` bridges out, `6952` pays the fee.
+**Only the producer step changes.** The `withdraw` still pulls the full amount out of Aave, and `quote.amount` is still the full amount — that is the origin exposure the user signs for. The carve splits it: `190421` bridges out, `6952` pays the fee.
 
 `quote.amountIn` from round 1 is the number to copy. It is already `amount − networkFee` — no arithmetic needed on your side.
 
@@ -76,7 +76,7 @@ This trips people up, so it is worth stating plainly:
 | aBasUSDC (the position) | `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB`                                               |
 | Fee collector           | per-deployment config — read it back from the appended fee step rather than hard-coding it |
 
-**Only `base`, `eth` and `arb` are enabled as EVM execution chains.** Anything else is rejected with `400 blockchain <chain> is not supported as a destination`. The pools on the other two:
+**Many EVM chains are enabled as EVM destinations. If you need any that aren't enabled yet, contact us.** Anything else is rejected with `400 blockchain <chain> is not supported as a destination`. The pools on the other two, as example:
 
 | Chain | Pool                                         |
 | ----- | -------------------------------------------- |

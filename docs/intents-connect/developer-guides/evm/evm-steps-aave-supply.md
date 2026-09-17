@@ -358,7 +358,7 @@ Signing before the deposit is deliberate: the service holds the pre-signed batch
     OPERATION_PENDING → OPERATION_PROCESSING → SUCCESS
     ```
 
-    `DEPOSIT_FAILED` and `OPERATION_FAILED` are terminal. `EXPIRED` looks terminal but is not always: a deposit that settles late can revive the execution straight to `OPERATION_PROCESSING`.
+    `DEPOSIT_FAILED` and `OPERATION_FAILED` are terminal.
 
 After `SUCCESS` the intermediary holds aBasUSDC representing the supplied USDC plus accrued interest, redeemable later through an out-operation execution.
 

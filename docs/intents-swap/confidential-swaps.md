@@ -25,7 +25,7 @@ Navigate to [Widget Studio](https://studio.aurora.dev/) and generate an API key.
 Call the quote endpoint exactly as you do today, then add `confidentiality: "advanced"` to the request body. Everything else stays the same.
 
 ```bash
-curl -X POST https://intents-api.aurora.dev/api/quote/{$YOUR_API_KEY} \
+curl -X POST https://intents-api.aurora.dev/api/quote/${API_KEY} \
   -H "Content-Type: application/json" \
   -d '{
     "dry": false,
