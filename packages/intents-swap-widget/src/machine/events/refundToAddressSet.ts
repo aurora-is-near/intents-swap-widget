@@ -6,11 +6,13 @@ export const refundToAddressSet = (
   ctx: Context,
   payload: RefundToAddressSetPayload,
 ): void => {
-  if (!payload) {
+  const address = payload?.trim();
+
+  if (!address) {
     delete ctx.refundToAddress;
 
     return;
   }
 
-  ctx.refundToAddress = payload;
+  ctx.refundToAddress = address;
 };

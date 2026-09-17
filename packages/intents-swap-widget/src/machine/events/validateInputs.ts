@@ -30,7 +30,7 @@ const setAsyncError = (err: InitialExternalStateError) => {
   fireEvent('transferSetStatus', { status: 'idle' });
 };
 
-const asyncValidateSendAddress = async (ctx: Context) => {
+const asyncValidateSendAddressOnNear = async (ctx: Context) => {
   const address = ctx.sendAddress;
 
   if (!address) {
@@ -166,8 +166,16 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
           meta: { address: ctx.sendAddress, chain: 'near' },
         };
       } else {
-        void asyncValidateSendAddress(ctx);
+        void asyncValidateSendAddressOnNear(ctx);
       }
+    } else if (
+      ctx.sendAddress &&
+      !isValidChainAddress(ctx.targetToken.blockchain, ctx.sendAddress)
+    ) {
+      err = {
+        code: 'SEND_ADDRESS_IS_INVALID',
+        meta: { address: ctx.sendAddress, chain: ctx.targetToken.blockchain },
+      };
     } else if (!ctx.isDepositFromExternalWallet) {
       if (!isNotEmptyAmount(ctx.sourceTokenAmount)) {
         err = { code: 'SOURCE_TOKEN_AMOUNT_IS_EMPTY' };
@@ -204,7 +212,7 @@ export const validateExternalInputs = (ctx: Context): boolean | undefined => {
   // transition to input_valid_external state was made
   if (isValidInputsState) {
     if (ctx.targetToken.blockchain === 'near') {
-      void asyncValidateSendAddress(ctx);
+      void asyncValidateSendAddressOnNear(ctx);
     }
   }
 
