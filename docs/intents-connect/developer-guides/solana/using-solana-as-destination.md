@@ -10,7 +10,7 @@ When an execution targets Solana, the only thing that changes versus any other d
 
 ### Your Solana intermediary account
 
-The action does not run from your own wallet. It runs from a dedicated **intermediary account** that the service controls on your behalf. On Solana this is an ed25519 account that is **deterministically derived from your origin wallet** — it is stable for a given origin wallet, but you cannot compute it yourself, so you fetch it from the API.
+The action does not run from your own wallet. It runs from a dedicated **intermediary account** that your wallet controls through the service. On Solana this is an ed25519 account that is **deterministically derived from your origin wallet** — it is stable for a given origin wallet, but you cannot compute it yourself, so you fetch it from the API.
 
 #### Get your Solana address from your origin wallet
 
