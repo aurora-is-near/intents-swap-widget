@@ -14,9 +14,22 @@ import type {
   Step,
 } from '@/types/execution';
 import type { WalletConnector } from '@/types/wallet';
-import type { CreateExecutionBody } from '@/api/types';
+import type { AnyRecipe, StepContext } from '@/types/recipe';
+import type {
+  CreateExecutionBody,
+  CreateStepsExecutionBody,
+} from '@/api/types';
 import { DEFAULT_QUOTE_DEADLINE_MS } from '@/runner/constants';
-import type { ExecutionPlan } from '@/runner/types';
+import type { ExecutionPlan, StepsPlan } from '@/runner/types';
+
+/**
+ * What the recipe-level helpers below actually read. Both `ExecutionPlan` and
+ * `StepsPlan` satisfy it, so one implementation serves both flows.
+ */
+export type RecipePlan<TParams> = {
+  recipe: AnyRecipe<TParams>;
+  params: TParams;
+};
 
 /** Post-fee input, rounded down so fixed instructions never spend the reserve. */
 export const getSpendableAmount = (
@@ -77,7 +90,7 @@ const intermediaryAccountFor = (
  * base58 address), and it may legitimately be null when the feature is off.
  */
 export const pickIntermediaryAddress = <TParams>(
-  plan: ExecutionPlan<TParams>,
+  plan: RecipePlan<TParams>,
   intermediary: Intermediary,
 ): string => {
   const address = intermediaryAccountFor(plan.recipe.type, intermediary);
@@ -156,8 +169,39 @@ export const buildBody = <TParams>(
     : undefined,
 });
 
+/**
+ * Steps-only body. No quote, no origin: the intermediary already holds the
+ * funds. `destinationAsset` names the token the fee is charged in.
+ *
+ * Two metadata markers travel with the execution so a cross-session
+ * `resume()` can recognise it without the plan: `intentsConnectFlow`
+ * (older deployments omit `executionMode`) and `intentsConnectFeeBudget`
+ * (re-checked against the real fee before an unsigned execution is signed).
+ */
+export const buildStepsBody = <TParams>(
+  plan: StepsPlan<TParams>,
+  prepared: PreparedSteps,
+  dry: boolean,
+  extra: { feeBudget?: string } = {},
+): CreateStepsExecutionBody => ({
+  version: '1.0',
+  type: plan.recipe.type,
+  destinationAsset: plan.recipe.destination.assetId,
+  steps: prepared.steps,
+  ...(prepared.addressLookupTables?.length
+    ? { addressLookupTables: prepared.addressLookupTables }
+    : {}),
+  metadata: {
+    title: plan.recipe.title,
+    intent: plan.recipe.intent,
+    intentsConnectFlow: 'steps-only',
+    ...(extra.feeBudget ? { intentsConnectFeeBudget: extra.feeBudget } : {}),
+  },
+  dry,
+});
+
 export const validateSteps = <TParams>(
-  plan: ExecutionPlan<TParams>,
+  plan: RecipePlan<TParams>,
   prepared: PreparedSteps,
 ): PreparedSteps => {
   const { steps, addressLookupTables } = prepared;
@@ -184,8 +228,8 @@ export const validateSteps = <TParams>(
 };
 
 export const prepareRecipeSteps = async <TParams>(
-  plan: ExecutionPlan<TParams>,
-  context: import('@/types/recipe').StepContext,
+  plan: RecipePlan<TParams>,
+  context: StepContext,
 ): Promise<PreparedSteps> => {
   const prepared =
     plan.recipe.type === 'solana'

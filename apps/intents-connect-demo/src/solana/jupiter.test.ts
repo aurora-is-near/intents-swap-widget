@@ -1,10 +1,12 @@
 // @vitest-environment node
 import { Buffer } from 'buffer';
 import { ComputeBudgetProgram, Keypair, PublicKey } from '@solana/web3.js';
+import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { createSolanaRecipientAta } from '@aurora-is-near/intents-connect-wallet/solana';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildJupiterSwap, prepareJupiterBuild } from './jupiter';
+import { BUY_TOKENS, SOLANA_USDC } from './constants';
 import { INTERMEDIARY, jupiterFixture, swapInput } from './testFixtures';
 
 beforeEach(() =>
@@ -50,6 +52,38 @@ describe('Jupiter instructions', () => {
       '{INTERMEDIARY}',
     );
     expect(result.recipientAta).toBe(build.swapInstruction.accounts[2]!.pubkey);
+  });
+
+  it('swaps a Connect-account token into the intermediary USDC ATA for a sale', () => {
+    const input = swapInput('5000000', {
+      input: BUY_TOKENS[0]!,
+      output: SOLANA_USDC,
+    });
+
+    const result = prepareJupiterBuild(jupiterFixture(input), input);
+    const owner = new PublicKey(INTERMEDIARY);
+    const usdcAta = getAssociatedTokenAddressSync(
+      new PublicKey(SOLANA_USDC.mint),
+      owner,
+      true,
+    ).toBase58();
+
+    const orcaAta = getAssociatedTokenAddressSync(
+      new PublicKey(BUY_TOKENS[0]!.mint),
+      owner,
+      true,
+    ).toBase58();
+
+    expect(result.recipientAta).toBe(usdcAta);
+    // Jupiter omitted the setup, so the USDC ATA create is inserted first.
+    expect(result.prepared.steps).toHaveLength(2);
+    expect(result.prepared.steps[0]!.accounts[1]!.pubkey).toBe(usdcAta);
+    expect(result.prepared.steps[1]!.accounts[1]!.pubkey).toBe(orcaAta);
+
+    // A build that swapped the other way is refused.
+    expect(() =>
+      prepareJupiterBuild(jupiterFixture(swapInput('5000000')), input),
+    ).toThrow(/different swap/);
   });
 
   it('keeps Jupiter ATA setup without inserting a duplicate create', () => {

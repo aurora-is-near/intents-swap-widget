@@ -27,6 +27,7 @@
 import type {
   Execution,
   ExecutionDetails,
+  ExecutionMode,
   ExecutionQuote,
   ExecutionStatus,
   ExecutionType,
@@ -43,7 +44,11 @@ import type {
   SigningStandard,
   TonConnectEnvelope,
 } from '@/types/signing';
-import type { CreateExecutionBody, SubmitSignatureBody } from '@/api/types';
+import type {
+  CreateExecutionBody,
+  CreateStepsExecutionBody,
+  SubmitSignatureBody,
+} from '@/api/types';
 import type { components } from '@/api/generated/openapi';
 
 type Schemas = components['schemas'];
@@ -82,6 +87,7 @@ type SpecPayload = Schemas['controllers.signingPayloadDoc'];
 type SpecIntermediary = Schemas['controllers.intermediaryResult'];
 type SpecStep = Schemas['controllers.executionStepEVMDoc'];
 type SpecCreateBody = Schemas['controllers.createExecutionRequestDoc'];
+type SpecStepsBody = Schemas['controllers.createStepsExecutionRequestDoc'];
 type SpecSubmitBody = Schemas['controllers.submitSignatureRequestDoc'];
 type SpecDeleteBody = Schemas['controllers.deleteExecutionRequestDoc'];
 type SpecTonConnect = Schemas['controllers.tonConnectEnvelopeDoc'];
@@ -115,6 +121,13 @@ export type NoStaleSwapTypes = AssertNone<
 
 export type NoNewExecutionTypes = AssertNone<
   UncoveredMembers<NonNullable<SpecExecution['type']>, ExecutionType>
+>;
+
+export type NoNewExecutionModes = AssertNone<
+  UncoveredMembers<NonNullable<SpecExecution['executionMode']>, ExecutionMode>
+>;
+export type NoStaleExecutionModes = AssertNone<
+  UncoveredMembers<ExecutionMode, NonNullable<SpecExecution['executionMode']>>
 >;
 
 export type NoNewOriginTypes = AssertNone<
@@ -185,6 +198,13 @@ export type CreateBodyFieldsAccepted = AssertNone<
 >;
 export type CreateBodyHasNoUnknownFields = AssertNone<
   MissingKeys<Omit<CreateExecutionBody, 'steps'>, SpecCreateBody>
+>;
+
+export type StepsBodyFieldsAccepted = AssertNone<
+  IncompatibleKeys<Omit<CreateStepsExecutionBody, 'steps'>, SpecStepsBody>
+>;
+export type StepsBodyHasNoUnknownFields = AssertNone<
+  MissingKeys<Omit<CreateStepsExecutionBody, 'steps'>, SpecStepsBody>
 >;
 
 export type SubmitBodyFieldsAccepted = AssertNone<

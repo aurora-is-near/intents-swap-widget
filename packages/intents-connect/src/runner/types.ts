@@ -17,7 +17,7 @@ export type RunnerEvent =
   | { type: 'phase'; phase: Phase }
   | { type: 'status'; status: ExecutionStatus }
   | { type: 'created'; executionId: string }
-  /** Exact figures. Only emitted by the `threeRound` fee strategy. */
+  /** Exact figures. Emitted by the `threeRound` fee strategy and by steps-only planning. */
   | { type: 'quoted'; networkFee: string; spendable: string }
   /** Never emitted before the signature is submitted. */
   | {
@@ -76,6 +76,66 @@ export type ExecutionPreview<TParams = void> = {
   /** Pass this plan to run() to commit the exact prepared instructions. */
   plan: ExecutionPlan<TParams>;
   spendable?: string;
+};
+
+/**
+ * A steps-only execution: no 1Click quote and no deposit leg. The steps spend
+ * what the intermediary ALREADY holds, and the service charges its fee in the
+ * recipe's `destination.assetId`.
+ */
+export type StepsPlan<TParams = void> = {
+  /** `flow` must be `steps-only`. */
+  recipe: AnyRecipe<TParams>;
+  params: TParams;
+  /** Gross atomic amount handed to `buildSteps` as `ctx.amount`. */
+  amount: string;
+  /**
+   * Set when the fee is charged in the SAME token the steps spend (a plain
+   * transfer of the destination asset): the runner measures the fee with a dry
+   * create at `amount`, then rebuilds the steps at `amount - fee`, less an
+   * optional reserve in basis points against fee movement before the real
+   * create. Leave unset when the fee comes out of what the steps PRODUCE (a
+   * swap into the destination asset) — the steps are then built once, at
+   * `amount`.
+   */
+  feeFromAmount?: boolean | { amountReserveBps?: number };
+  /**
+   * Absolute cap on `details.networkFee` at planning, at real create and on
+   * an unsigned resume. Derived as `amount - spendable` when `feeFromAmount`
+   * is set; a swap recipe should pass its minimum output so a fee that would
+   * consume the whole output is refused before signing.
+   */
+  maxNetworkFee?: string;
+  /** How long a `previewSteps()` result stays committable. Defaults to 30 000 ms. */
+  previewTtlMs?: number;
+  /** Additional acceptance checks after real create, before requesting a signature. */
+  validateExecution?: (execution: Execution) => void | Promise<void>;
+  /** Produced by previewSteps(). Reused verbatim by runSteps(); do not edit it. */
+  prepared?: PreparedSteps & {
+    walletAddress: string;
+    intermediary: string;
+    amount: string;
+    spendable: string;
+    /** Absent when the service estimated no fee and the plan did not need one. */
+    networkFee?: string;
+    feeBudget?: string;
+    /** ISO — after this, runSteps() refuses the snapshot and asks for a new preview. */
+    expiresAt: string;
+  };
+};
+
+export type StepsPreview<TParams = void> = {
+  /** The final dry response. */
+  execution: Execution;
+  /**
+   * Absent when the plan does not carve the fee from `amount` and the service
+   * estimated none: the steps are still committable, but no fee can be shown.
+   */
+  networkFee?: string;
+  /** The amount actually baked into the prepared steps. */
+  spendable: string;
+  /** Pass this plan to runSteps() to commit the exact prepared instructions. */
+  plan: StepsPlan<TParams>;
 };
 
 export type ExecutionRunnerOptions = {
@@ -158,6 +218,15 @@ export type ExecutionRunner = {
   ) => Promise<ExecutionPreview<TParams>>;
   /** Drives the full bridge-in lifecycle and resolves on a terminal status. */
   run: <TParams>(plan: ExecutionPlan<TParams>) => Promise<Execution>;
+  /** Dry preparation of a steps-only execution; no live machine or events. */
+  previewSteps: <TParams>(
+    plan: StepsPlan<TParams>,
+  ) => Promise<StepsPreview<TParams>>;
+  /**
+   * Drives a steps-only execution — spend the intermediary's existing balance
+   * — through create, signature and settlement. There is no deposit leg.
+   */
+  runSteps: <TParams>(plan: StepsPlan<TParams>) => Promise<Execution>;
   /**
    * Reattaches to an execution after a reload and resumes from wherever it
    * actually got — including driving the deposit transfer for a signed but

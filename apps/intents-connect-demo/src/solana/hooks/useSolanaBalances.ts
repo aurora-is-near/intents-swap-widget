@@ -8,7 +8,14 @@ import { SOLANA_RPC_URL } from '../config';
 import { getSolanaConnection } from '../client';
 import { fetchSolanaBalances } from '../balances';
 
-export const useSolanaBalances = (phase: Phase) => {
+const SETTLED: readonly Phase[] = ['success', 'failed', 'cancelled'];
+
+/**
+ * The Connect account's ORCA / KMNO / USDC balances. Refetched right after —
+ * and four seconds after — any of the given execution phases settles, so a
+ * purchase, a sale or a withdrawal shows up without a manual refresh.
+ */
+export const useSolanaBalances = (...phases: Phase[]) => {
   const { api, wallet } = useIntentsConnect();
   const address = wallet?.getAddress();
   const standard = wallet?.signingStandard;
@@ -47,9 +54,14 @@ export const useSolanaBalances = (phase: Phase) => {
   });
 
   const { refetch } = query;
+  // Changes only when a phase enters, leaves or changes its settled state, so
+  // the intermediate phases of a running flow do not each trigger a refetch.
+  const settledKey = phases
+    .map((phase) => (SETTLED.includes(phase) ? phase : ''))
+    .join();
 
   useEffect(() => {
-    if (!address || !['success', 'failed', 'cancelled'].includes(phase)) {
+    if (!address || !phases.some((phase) => SETTLED.includes(phase))) {
       return;
     }
 
@@ -59,7 +71,8 @@ export const useSolanaBalances = (phase: Phase) => {
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [address, standard, phase, refetch]);
+    // `phases` is a fresh array per render; `settledKey` is its identity.
+  }, [address, standard, settledKey, refetch]);
 
   return { ...query, address };
 };

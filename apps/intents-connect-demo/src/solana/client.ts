@@ -2,8 +2,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, unpackMint } from '@solana/spl-token';
 
 import { SOLANA_RPC_URL } from './config';
-import { SOLANA_USDC } from './constants';
-import type { SolanaBuyToken } from './constants';
+import type { SolanaToken } from './constants';
 
 export const getSolanaConnection = () =>
   new Connection(new URL(SOLANA_RPC_URL, window.location.origin).href, {
@@ -13,9 +12,8 @@ export const getSolanaConnection = () =>
 
 export const validateMints = async (
   connection: Connection,
-  output: SolanaBuyToken,
+  tokens: readonly SolanaToken[],
 ) => {
-  const tokens = [SOLANA_USDC, output];
   const addresses = tokens.map(({ mint }) => new PublicKey(mint));
   const accounts = await connection.getMultipleAccountsInfo(addresses);
 

@@ -18,6 +18,8 @@ import type {
   ExecutionPreview,
   ResumeDepositOptions,
   RunnerEvent,
+  StepsPlan,
+  StepsPreview,
 } from '@/runner/types';
 import type { Execution, ExecutionStatus } from '@/types/execution';
 import type { WalletConnector } from '@/types/wallet';
@@ -46,6 +48,13 @@ export type UseExecutionResult = {
   deadline?: string;
   depositTxHash?: string;
 
+  /**
+   * The execution's signature was submitted. A created execution that has
+   * NOT reached this point still holds the per-wallet lock and can be
+   * released with `cancel()` — whatever server status it reports.
+   */
+  hasSubmittedSignature: boolean;
+
   error?: Error;
   /** Actionable classification of `error` — see `ExecutionRecovery`. */
   recovery?: ExecutionRecovery;
@@ -61,6 +70,12 @@ export type UseExecutionResult = {
     plan: ExecutionPlan<TParams>,
   ) => Promise<ExecutionPreview<TParams>>;
   run: <TParams>(plan: ExecutionPlan<TParams>) => Promise<Execution>;
+  /** Dry preparation of a steps-only execution (spend the intermediary's balance). */
+  previewSteps: <TParams>(
+    plan: StepsPlan<TParams>,
+  ) => Promise<StepsPreview<TParams>>;
+  /** Drives a steps-only execution: create, sign, settle — no deposit leg. */
+  runSteps: <TParams>(plan: StepsPlan<TParams>) => Promise<Execution>;
   resume: (
     executionId: string,
     options?: ResumeDepositOptions,
@@ -275,6 +290,17 @@ export const useExecution = (
     [requireRunner],
   );
 
+  const runSteps = useCallback(
+    async <TParams>(plan: StepsPlan<TParams>) => requireRunner().runSteps(plan),
+    [requireRunner],
+  );
+
+  const previewSteps = useCallback(
+    async <TParams>(plan: StepsPlan<TParams>) =>
+      requireRunner().previewSteps(plan),
+    [requireRunner],
+  );
+
   const resume = useCallback(
     async (executionId: string, depositOptions?: ResumeDepositOptions) =>
       requireRunner().resume(executionId, depositOptions),
@@ -302,6 +328,7 @@ export const useExecution = (
     depositMemo: ctx.depositMemo,
     deadline: ctx.deadline,
     depositTxHash: ctx.depositTxHash,
+    hasSubmittedSignature: ctx.hasSubmittedSignature,
     error: ctx.error,
     recovery,
     isCancelling: ctx.isCancelling,
@@ -317,6 +344,8 @@ export const useExecution = (
     isBusy: (isInFlightPhase(snapshot.state) && !ctx.error) || ctx.isCancelling,
     run,
     preview,
+    runSteps,
+    previewSteps,
     resume,
     retryDeposit,
     cancel,

@@ -227,6 +227,71 @@ application-specific `validateExecution` check to `resume()` again. Existing
 safe deposit-resume rules still apply: persist the execution ID and deposit
 hash, and do not force `depositViaWallet: true` if a deposit may be in flight.
 
-This adds bridge-in support only. The service's full transaction size, compute
-budget, gasless USDC fee handling, and actual recipient delivery still need a
-controlled integration check before enabling a swap route.
+The service's full transaction size, compute budget, gasless USDC fee handling,
+and actual recipient delivery still need a controlled integration check before
+enabling a swap route.
+
+## Steps-only executions
+
+A `steps-only` execution spends what the intermediary **already holds**: no
+1Click quote, no deposit leg. The service still appends its fee-transfer step,
+charged in the recipe's `destination.assetId`, and answers a signing payload.
+
+```
+idle → resolving-identity → planning → creating → awaiting-signature
+     → submitting → settling → success | failed
+```
+
+Give the recipe `flow: 'steps-only'` and drive it with `runSteps()` /
+`previewSteps()` (also on `useExecution()`):
+
+```ts
+const sell: SolanaRecipe = {
+  id: 'sell-orca', intent: 'sell_orca', title: 'Sell ORCA to USDC',
+  flow: 'steps-only', type: 'solana',
+  destination: { chain: 'sol', assetId: USDC_ASSET_ID, tokenAddress: USDC_MINT },
+  buildSteps: async ({ intermediary, amount }) => jupiterSwap(intermediary, amount),
+};
+
+const preview = await runner.previewSteps({
+  recipe: sell, params: undefined,
+  amount: orcaBalance,          // ctx.amount for buildSteps
+  maxNetworkFee: minimumUsdcOut, // refuse a fee that would eat the output
+});
+// preview.networkFee, preview.spendable — show them, then commit verbatim:
+await runner.runSteps(preview.plan);
+```
+
+Two fee shapes:
+
+| | fee comes out of what the steps **produce** | fee comes out of what the steps **spend** |
+|---|---|---|
+| Example | swap ORCA → USDC | transfer USDC out |
+| Plan | `feeFromAmount` unset | `feeFromAmount: true` or `{ amountReserveBps }` |
+| Rounds | one dry (measure), real | dry at `amount`, rebuild at `amount − fee − reserve`, real |
+| `spendable` | `amount` | `amount − fee − reserve` |
+| Fee cap | `maxNetworkFee` if given | `amount − spendable`, automatic |
+
+The cap is enforced against the dry and the real create's `details.networkFee`
+before signing (`FEE_EXCEEDS_AMOUNT`), and recorded in
+`metadata.intentsConnectFeeBudget` so an unsigned cross-session `resume()`
+re-checks it. `metadata.intentsConnectFlow: 'steps-only'` marks the execution
+for `resume()` on deployments that omit `executionMode`.
+
+`previewSteps()` runs on an isolated machine (no events, no real create) and
+returns a frozen `prepared` snapshot valid for `previewTtlMs` (default 30 s).
+`runSteps(preview.plan)` refuses an expired snapshot, a different wallet or
+intermediary, or a changed `amount` with `QUOTE_MOVED`. When the fee is carved
+from the spent amount and the confirming dry reports a higher fee, the preview
+rebuilds at the new fee at most twice.
+
+A missing `details.networkFee` is fatal only when the fee is carved from the
+spent amount (`FEE_NOT_ESTIMATED`) — the steps cannot be sized without it.
+Otherwise the service still appends its fee transfer and the steps stay
+committable; `networkFee` is then simply absent from the preview and the
+`quoted` event is not emitted.
+
+Steps-only and bridge-in executions share the per-wallet in-flight lock: a live
+one of either kind blocks the other until it settles or is cancelled. A `503`
+from the steps endpoint means no Solana durable-nonce account was free — retry
+shortly. `retryDeposit()` does not apply; there is nothing to deposit.

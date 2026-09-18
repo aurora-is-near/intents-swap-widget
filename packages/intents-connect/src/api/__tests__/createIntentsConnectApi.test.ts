@@ -127,6 +127,27 @@ describe('query building', () => {
     );
   });
 
+  it('posts steps-only creates to the /steps endpoint with the api key', async () => {
+    const fetchImpl = vi.fn(async () =>
+      respond(JSON.stringify({ result: { id: 'steps-1' } })),
+    );
+
+    await apiWith(fetchImpl as unknown as FetchLike).createStepsExecution(
+      '0xabc',
+      { version: '1.0', type: 'solana', steps: [], dry: true },
+    );
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [
+      string,
+      { method: string; headers: Record<string, string>; body: string },
+    ];
+
+    expect(new URL(url).pathname).toBe('/api/v1/executions/0xabc/steps');
+    expect(init.method).toBe('POST');
+    expect(init.headers['x-api-key']).toBeDefined();
+    expect(JSON.parse(init.body)).toMatchObject({ type: 'solana', dry: true });
+  });
+
   it('sends x-api-key on create and nowhere else', async () => {
     const fetchImpl = vi.fn(async () =>
       respond(JSON.stringify({ result: [] })),

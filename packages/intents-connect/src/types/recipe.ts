@@ -24,7 +24,10 @@ export type StepContext = {
 
 export type RecipeDestination = {
   chain: Chain;
-  /** 1Click asset id, e.g. `nep141:base-0x…omft.near`. */
+  /**
+   * 1Click asset id, e.g. `nep141:base-0x…omft.near`. On a `steps-only`
+   * recipe it is sent as `destinationAsset` — the token the fee is charged in.
+   */
   assetId: string;
   /**
    * Destination token contract. Undefined means the chain's native asset, which

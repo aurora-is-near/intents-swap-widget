@@ -32,3 +32,5 @@ export const MAX_HOLDING_POLL_INTERVAL_MS = 30_000;
  * it — and nothing can abort that from here, so the wait must be bounded.
  */
 export const DOOMED_FLOW_SETTLE_TIMEOUT_MS = 10_000;
+/** How long a `previewSteps()` snapshot stays committable by default. */
+export const DEFAULT_PREVIEW_TTL_MS = 30_000;

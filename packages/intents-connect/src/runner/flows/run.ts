@@ -1,44 +1,25 @@
-import { failGuard, isUserRejection } from '@/errors';
 import * as guards from '@/machine/guards';
 import { type Execution, IN_FLIGHT_STATUSES } from '@/types/execution';
-import { isSupportedSigningStandard } from '@/types/signing';
 import { capture, unwrap } from '@/runner/capture';
 import type { RunnerCtx } from '@/runner/ctx';
 import {
+  assertSignableStandard,
+  resolveIdentity,
+  signAndSubmitOrCancel,
+} from '@/runner/identity';
+import {
+  buildBody,
   pickIntermediaryAddress,
   withOriginChainId,
   withQuoteDeadline,
 } from '@/runner/planHelpers';
-import { cancel } from '@/runner/stages/cancel';
 import { create } from '@/runner/stages/create';
 import { awaitDeposit } from '@/runner/stages/deposit';
 import { fail } from '@/runner/stages/fail';
 import { planSteps } from '@/runner/stages/planSteps';
 import { settle } from '@/runner/stages/settle';
-import { signAndSubmit } from '@/runner/stages/signAndSubmit';
+import { validatePreparedExecution } from '@/runner/stages/validatePreparedExecution';
 import type { ExecutionPlan } from '@/runner/types';
-
-const resolveIdentity = async (ctx: RunnerCtx) => {
-  const { api, machine, state, getWallet, requireAddress, to, patch } = ctx;
-
-  to('resolving-identity');
-
-  // capture()d by run(), so this round-trip can outlive its flow when
-  // planning dies before unwrapping it. Every reset installs a fresh context
-  // object, so its identity pins the patch to THIS flow — a late response
-  // must not write into a later flow's (or a disposed runner's) context.
-  const flowContext = machine.context;
-
-  const intermediary = await api.getIntermediary(requireAddress(), {
-    publicKey: getWallet().getPublicKey?.(),
-  });
-
-  if (machine.context === flowContext && !state.disposed) {
-    patch({ intermediary });
-  }
-
-  return intermediary;
-};
 
 export const run = async <TParams>(
   ctx: RunnerCtx,
@@ -47,17 +28,7 @@ export const run = async <TParams>(
   ctx.prepareForNewFlow();
 
   try {
-    // The connector's standard must be signable BEFORE anything is created:
-    // a real create for a standard we cannot sign (ton_connect, tip191)
-    // would strand an execution holding the in-flight lock.
-    const { signingStandard } = ctx.getWallet();
-
-    if (!isSupportedSigningStandard(signingStandard)) {
-      failGuard(
-        'UNSUPPORTED_SIGNING_STANDARD',
-        `this package cannot sign ${String(signingStandard)} yet — refusing to create an execution it could never complete`,
-      );
-    }
+    assertSignableStandard(ctx);
 
     // Normalised ONCE, before anything reads it: the normalised plan is what
     // planning guards against, what the deposit transfer runs on, and what
@@ -104,8 +75,17 @@ export const run = async <TParams>(
 
     const execution = await create(
       ctx,
-      executionPlan,
-      steps,
+      {
+        prepared: steps,
+        submit: (address) =>
+          ctx.api.createExecution(
+            address,
+            buildBody(ctx.getWallet, executionPlan, steps, false),
+          ),
+        accept: (created) =>
+          validatePreparedExecution(created, ctx.machine.context.bakedAmount),
+        validateExecution: plan.validateExecution,
+      },
       inFlightPreflight,
     );
 
@@ -116,31 +96,7 @@ export const run = async <TParams>(
     // previous execution's deposit.
     ctx.setActivePlan(plan, execution.id);
 
-    let needsDeposit: boolean;
-
-    try {
-      needsDeposit = await signAndSubmit(ctx, execution);
-    } catch (error) {
-      // A rejected signing prompt means the user abandoned THIS attempt —
-      // but the created execution still holds the per-wallet in-flight
-      // lock. Best effort: offer the delete signature right away so the
-      // next run() starts clean instead of tripping EXECUTION_IN_FLIGHT
-      // and demanding a resume-or-cancel decision. Declining that second
-      // prompt (or any delete failure) falls back to the normal recovery,
-      // with the ORIGINAL rejection as the recorded error either way.
-      if (ctx.autoCancelOnSignatureRejection && isUserRejection(error)) {
-        try {
-          await cancel(ctx, execution.id);
-        } catch (cancelError) {
-          ctx.logger.warn(
-            'auto-cancel after a rejected signature failed — the execution still holds the in-flight lock',
-            cancelError,
-          );
-        }
-      }
-
-      throw error;
-    }
+    const needsDeposit = await signAndSubmitOrCancel(ctx, execution);
 
     if (needsDeposit) {
       await awaitDeposit(ctx, plan, execution);

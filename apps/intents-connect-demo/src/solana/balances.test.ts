@@ -117,19 +117,19 @@ describe('intermediary balances', () => {
     };
 
     await expect(
-      validateMints(connection([info, info]), BUY_TOKENS[0]!),
+      validateMints(connection([info, info]), [SOLANA_USDC, BUY_TOKENS[0]!]),
     ).resolves.toBeUndefined();
     await expect(
       validateMints(
         connection([info, { ...info, owner: TOKEN_2022_PROGRAM_ID }]),
-        BUY_TOKENS[0]!,
+        [SOLANA_USDC, BUY_TOKENS[0]!],
       ),
     ).rejects.toThrow(/standard SPL/);
     await expect(
-      validateMints(connection([info, info]), {
-        ...BUY_TOKENS[0]!,
-        decimals: 9,
-      }),
+      validateMints(connection([info, info]), [
+        SOLANA_USDC,
+        { ...BUY_TOKENS[0]!, decimals: 9 },
+      ]),
     ).rejects.toThrow(/metadata/);
   });
 });

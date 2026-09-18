@@ -165,6 +165,19 @@ describe('feeMustBeEstimated', () => {
   });
 });
 
+describe('feeWithinBudget', () => {
+  it('accepts a fee at or below the budget', () => {
+    expect(() => guards.feeWithinBudget('100', '100')).not.toThrow();
+    expect(() => guards.feeWithinBudget('99', '100')).not.toThrow();
+  });
+
+  it('rejects a fee above the budget the steps were sized for', () => {
+    expectGuard('FEE_EXCEEDS_AMOUNT', () =>
+      guards.feeWithinBudget('101', '100'),
+    );
+  });
+});
+
 describe('amountMustExceedFee', () => {
   it('allows a fee below the delivered amount', () => {
     expect(() => guards.amountMustExceedFee('1000', '70')).not.toThrow();

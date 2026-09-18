@@ -51,7 +51,14 @@ export const buildSolanaPlan = (
       tokenAddress: SOLANA_USDC.mint,
     },
     buildSteps: async ({ intermediary, amount }) =>
-      (await buildJupiterSwap({ intermediary, amount, output })).prepared,
+      (
+        await buildJupiterSwap({
+          intermediary,
+          amount,
+          input: SOLANA_USDC,
+          output,
+        })
+      ).prepared,
   };
 
   return {
@@ -105,7 +112,7 @@ export const previewSolanaBuy = async (
     );
   }
 
-  await validateMints(getSolanaConnection(), output);
+  await validateMints(getSolanaConnection(), [SOLANA_USDC, output]);
 
   // Each preview owns its results: gross probing must never overwrite another
   // request's final quote. Only the last, fee-adjusted build is displayed.
@@ -115,7 +122,12 @@ export const previewSolanaBuy = async (
     ...plan.recipe,
     type: 'solana',
     buildSteps: async ({ intermediary, amount }) => {
-      finalSwap = await buildJupiterSwap({ intermediary, amount, output });
+      finalSwap = await buildJupiterSwap({
+        intermediary,
+        amount,
+        input: SOLANA_USDC,
+        output,
+      });
       builtAt = Date.now();
 
       return finalSwap.prepared;

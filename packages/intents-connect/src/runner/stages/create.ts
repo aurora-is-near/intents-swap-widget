@@ -7,27 +7,42 @@ import {
 } from '@/types/execution';
 import type { Captured } from '@/runner/capture';
 import type { RunnerCtx } from '@/runner/ctx';
-import { buildBody } from '@/runner/planHelpers';
-import type { ExecutionPlan } from '@/runner/types';
-import { validatePreparedExecution } from './validatePreparedExecution';
 
-export const create = async <TParams>(
-  ctx: RunnerCtx,
-  plan: ExecutionPlan<TParams>,
-  prepared: PreparedSteps,
+/**
+ * What differs between a bridge-in and a steps-only real create. Everything
+ * else in `create()` — the in-flight preflight, the 409 translation, the
+ * post-create bookkeeping and the guard re-wrap — is shared.
+ */
+export type CreateRequest = {
+  prepared: PreparedSteps;
+  /** The `dry: false` API call, body already built. */
+  submit: (address: string) => Promise<Execution>;
   /**
-   * The in-flight preflight, started by `run()` alongside identity resolution
-   * so it does not add a serial round-trip right before the wallet prompt.
-   * Captured, so a flow that dies earlier cannot turn a lost preflight into
-   * an unhandled rejection; absent, `create` lists inline.
+   * Funding acceptance for the created execution, run before the signing
+   * payload is checked: bridge-in compares the guaranteed amount with the
+   * baked one; steps-only checks the fee against its budget.
+   */
+  accept?: (execution: Execution) => void;
+  /** Application-level acceptance, retained for a same-session resume. */
+  validateExecution?: (execution: Execution) => void | Promise<void>;
+};
+
+export const create = async (
+  ctx: RunnerCtx,
+  request: CreateRequest,
+  /**
+   * The in-flight preflight, started by the flow alongside identity
+   * resolution so it does not add a serial round-trip right before the wallet
+   * prompt. Captured, so a flow that dies earlier cannot turn a lost preflight
+   * into an unhandled rejection; absent, `create` lists inline.
    */
   preflight?: Promise<Captured<Execution[]>>,
 ): Promise<Execution> => {
-  const { api, getWallet, requireAddress, to, patch, emit, machine } = ctx;
+  const { api, requireAddress, to, patch, emit, machine } = ctx;
 
   to('creating');
 
-  guards.stepsRequiredForRealCreate(prepared.steps);
+  guards.stepsRequiredForRealCreate(request.prepared.steps);
 
   const address = requireAddress();
 
@@ -70,10 +85,7 @@ export const create = async <TParams>(
   let execution: Execution;
 
   try {
-    execution = await api.createExecution(
-      address,
-      buildBody(getWallet, plan, prepared, false),
-    );
+    execution = await request.submit(address);
   } catch (error) {
     if (error instanceof IntentsConnectApiError && error.isExecutionInFlight) {
       // The preflight raced: another create won between its check and ours.
@@ -111,15 +123,13 @@ export const create = async <TParams>(
 
   emit({ type: 'created', executionId: execution.id });
 
-  if (plan.validateExecution) {
-    ctx.state.executionValidators.set(execution.id, plan.validateExecution);
+  if (request.validateExecution) {
+    ctx.state.executionValidators.set(execution.id, request.validateExecution);
   }
 
   try {
-    const { bakedAmount } = machine.context;
-
-    validatePreparedExecution(execution, bakedAmount);
-    await plan.validateExecution?.(execution);
+    request.accept?.(execution);
+    await request.validateExecution?.(execution);
     ctx.assertLive(execution.id);
 
     guards.mustHaveSigningPayload(execution);

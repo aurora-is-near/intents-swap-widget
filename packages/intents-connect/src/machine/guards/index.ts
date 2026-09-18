@@ -5,6 +5,7 @@
 export { amountMustExceedFee } from '@/machine/guards/checks/amountMustExceedFee';
 export { destinationTokenIsTouched } from '@/machine/guards/checks/destinationTokenIsTouched';
 export { feeMustBeEstimated } from '@/machine/guards/checks/feeMustBeEstimated';
+export { feeWithinBudget } from '@/machine/guards/checks/feeWithinBudget';
 export { memoPresentForStellar } from '@/machine/guards/checks/memoPresentForStellar';
 export { mustBeSignedBeforeDeposit } from '@/machine/guards/checks/mustBeSignedBeforeDeposit';
 export { mustHaveSigningPayload } from '@/machine/guards/checks/mustHaveSigningPayload';

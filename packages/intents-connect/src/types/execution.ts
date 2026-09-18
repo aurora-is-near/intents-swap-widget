@@ -2,8 +2,17 @@ import type { SigningPayload, SigningStandard } from '@/types/signing';
 
 export type Chain = string;
 
-/** Which endpoint shape an execution uses. v1 implements `bridge-in` only. */
-export type FlowShape = 'bridge-in';
+/**
+ * Which endpoint shape an execution uses.
+ *
+ * - `bridge-in`: a 1Click quote funds the intermediary, then the steps run.
+ * - `steps-only`: no quote — the steps spend what the intermediary already
+ *   holds (`POST /executions/{wallet}/steps`).
+ */
+export type FlowShape = 'bridge-in' | 'steps-only';
+
+/** How the service created an execution. Optional on the wire. */
+export type ExecutionMode = 'quote_with_steps' | 'steps_only';
 
 export type SwapType = 'EXACT_INPUT' | 'EXACT_OUTPUT';
 
@@ -213,6 +222,8 @@ export type Execution = {
   steps: ExecutionStep[];
   metadata?: Record<string, unknown>;
   type?: ExecutionType;
+  /** Absent on older deployments; `metadata.intentsConnectFlow` is the fallback. */
+  executionMode?: ExecutionMode;
   version?: string;
   transaction?: { evmTxHash?: string; solanaTxHash?: string };
 };

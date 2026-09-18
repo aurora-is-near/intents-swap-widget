@@ -23,16 +23,22 @@ export const SOURCE = {
   isIntent: false,
 } as Token;
 
-export const swapInput = (amount = '9900000'): SwapInput => ({
+export const swapInput = (
+  amount = '9900000',
+  direction: Pick<SwapInput, 'input' | 'output'> = {
+    input: SOLANA_USDC,
+    output: BUY_TOKENS[0]!,
+  },
+): SwapInput => ({
   intermediary: INTERMEDIARY,
   amount,
-  output: BUY_TOKENS[0]!,
+  ...direction,
 });
 
 export const jupiterFixture = (input = swapInput()): JupiterBuild => {
   const owner = new PublicKey(input.intermediary);
   const source = getAssociatedTokenAddressSync(
-    new PublicKey(SOLANA_USDC.mint),
+    new PublicKey(input.input.mint),
     owner,
     true,
   ).toBase58();
@@ -44,7 +50,7 @@ export const jupiterFixture = (input = swapInput()): JupiterBuild => {
   ).toBase58();
 
   return {
-    inputMint: SOLANA_USDC.mint,
+    inputMint: input.input.mint,
     outputMint: input.output.mint,
     inAmount: input.amount,
     outAmount: (BigInt(input.amount) * 2n).toString(),

@@ -11,6 +11,28 @@ import { findTransfer } from '@/runner/transfer';
 import type { ResumeDepositOptions } from '@/runner/types';
 
 /**
+ * Whether an execution was created steps-only, i.e. has no deposit leg.
+ * `executionMode` is optional on the wire, so the marker `runSteps()` writes
+ * into metadata is the fallback for older deployments.
+ */
+export const isStepsOnlyExecution = (execution: Execution): boolean =>
+  execution.executionMode === 'steps_only' ||
+  execution.metadata?.intentsConnectFlow === 'steps-only';
+
+/**
+ * The steps-only counterpart of `validatePreparedExecution`: there is no
+ * quote to compare, but the fee the steps were sized for travels in metadata
+ * and the real fee must still fit it.
+ */
+const validateStepsExecution = (execution: Execution) => {
+  const budget = execution.metadata?.intentsConnectFeeBudget;
+
+  if (typeof budget === 'string') {
+    guards.feeWithinBudget(guards.feeMustBeEstimated(execution), budget);
+  }
+};
+
+/**
  * Reattaches to an execution from an earlier session.
  *
  * Picks up from wherever it actually got rather than assuming it is already
@@ -64,12 +86,23 @@ export const resume = async (
     // which requires re-surfacing the address, or the user has no means to
     // effect the revival. From DEPOSIT_PROCESSING onward the funds have been
     // observed, so prompting another transfer would double-spend.
+    //
+    // A steps-only execution spends the intermediary's existing balance and
+    // never has a deposit leg, whatever its status reads.
+    const stepsOnly = isStepsOnlyExecution(execution);
+
     let needsDeposit =
-      AWAITING_FUNDS_STATUSES.includes(execution.status) ||
-      execution.status === 'EXPIRED';
+      !stepsOnly &&
+      (AWAITING_FUNDS_STATUSES.includes(execution.status) ||
+        execution.status === 'EXPIRED');
 
     if (needsSigning) {
-      validatePreparedExecution(execution);
+      if (stepsOnly) {
+        validateStepsExecution(execution);
+      } else {
+        validatePreparedExecution(execution);
+      }
+
       const validate =
         depositOptions?.validateExecution ??
         state.executionValidators.get(execution.id);
@@ -83,7 +116,7 @@ export const resume = async (
       needsDeposit = (await signAndSubmit(ctx, execution)) && needsDeposit;
     }
 
-    if (needsDeposit && execution.quote.depositAddress) {
+    if (needsDeposit && execution.quote?.depositAddress) {
       // Same-session resume: this runner created the execution and still
       // holds its plan, so the wallet deposit itself can be replayed — the
       // recovery path for "rejected the signature, trying again".

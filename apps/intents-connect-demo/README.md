@@ -56,8 +56,40 @@ For controlled, wallet-signed purchases of each target in both funding modes,
 check the final transaction and intermediary ATA increase, and exercise signature rejection,
 fee movement, delayed external deposits, and SDK resume/cancel controls. Never
 send a second deposit if the first has already been broadcast. Cancellation
-releases a lock; it does not refund funds. Selling, withdrawing, and spending
-existing intermediary funds are not part of this demo iteration.
+releases a lock; it does not refund funds.
+
+## Sell and withdraw
+
+Each row of the balances panel has one action. Both are **steps-only**
+executions (`runSteps` / `previewSteps` in the SDK): the Connect account
+already holds the asset, so there is no bridge quote and no deposit — one
+signature, then Connect's relayer runs the instructions.
+
+- **Sell** (ORCA, KMNO): Jupiter swaps the row's whole balance into USDC inside
+  the same Connect account. The fee is taken from the USDC the swap produces,
+  so the panel shows the estimated and minimum USDC and the fee, and refuses a
+  sale whose guaranteed output would not cover the fee.
+- **Withdraw** (USDC): a plain SPL `transferChecked` of the whole USDC balance,
+  less Connect's fee, to a Solana wallet address you enter (prefilled with the
+  connected wallet when it is a Solana wallet; token accounts and other
+  off-curve addresses are rejected). The SDK measures the fee with a dry
+  create, then transfers `balance − fee`.
+
+**Get quote** previews (dry creates only), the quote is valid for 30 seconds,
+and **Confirm** previews again and commits the prepared instructions unless
+the guaranteed USDC fell — then it asks you to accept the refreshed figure.
+Only one row can be in review at a time, and nothing can start while the buy
+card is running (the Connect account has one in-flight execution at a time).
+A real create whose fee outgrows the preview stops before signing and offers
+**Cancel** to release the lock. A `503` means Connect had no free Solana
+durable-nonce account; retry shortly.
+
+Dry steps-only creates against an empty Connect account returned no
+`networkFee` in testing (the simulation has nothing to spend). A withdrawal
+needs the figure to size the transfer and stops with "Connect could not
+estimate the fee"; a sale proceeds and shows the fee as unavailable, since the
+service appends its fee transfer either way. Withdrawing to a wallet with no
+USDC account yet warns that the account's rent falls on the Connect account.
 
 Read-only checks on 2026-09-11 confirmed Solana USDC in both service token lists,
 ORCA/KMNO absent from 1Click, and both target mints owned by the standard SPL token

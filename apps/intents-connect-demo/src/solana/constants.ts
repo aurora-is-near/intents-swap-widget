@@ -1,4 +1,4 @@
-export type SolanaBuyToken = {
+export type SolanaToken = {
   symbol: string;
   name: string;
   mint: string;
@@ -6,7 +6,7 @@ export type SolanaBuyToken = {
 };
 
 // Standard SPL mints; mint accounts and decimals verified on 2026-09-11.
-export const BUY_TOKENS: readonly SolanaBuyToken[] = [
+export const BUY_TOKENS: readonly SolanaToken[] = [
   {
     symbol: 'ORCA',
     name: 'Orca',
@@ -21,7 +21,7 @@ export const BUY_TOKENS: readonly SolanaBuyToken[] = [
   },
 ];
 
-export const SOLANA_USDC = {
+export const SOLANA_USDC: SolanaToken & { assetId: string } = {
   symbol: 'USDC',
   name: 'USD Coin',
   decimals: 6,
@@ -35,9 +35,13 @@ export const BRIDGE_SLIPPAGE_BPS = 25;
 export const BRIDGE_AMOUNT_RESERVE_BPS = 25;
 export const SWAP_SLIPPAGE_BPS = 50;
 export const PREVIEW_VALIDITY_MS = 30_000;
+// A fixed SPL transfer's fee does not depend on the amount, so nothing is held
+// back from a withdrawal beyond the fee itself; raise if real fees ever exceed
+// the dry estimate.
+export const WITHDRAW_RESERVE_BPS = 0;
 export const JUPITER_PROGRAM = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
 
-export const getBuyToken = (mint: string): SolanaBuyToken => {
+export const getBuyToken = (mint: string): SolanaToken => {
   const token = BUY_TOKENS.find((item) => item.mint === mint);
 
   if (!token) {

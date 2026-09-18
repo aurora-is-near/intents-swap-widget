@@ -18,8 +18,8 @@ import {
 } from '@aurora-is-near/intents-connect-wallet/solana';
 
 import { JUPITER_BUILD_URL } from './config';
-import { JUPITER_PROGRAM, SOLANA_USDC, SWAP_SLIPPAGE_BPS } from './constants';
-import type { SolanaBuyToken } from './constants';
+import { JUPITER_PROGRAM, SWAP_SLIPPAGE_BPS } from './constants';
+import type { SolanaToken } from './constants';
 
 export type JupiterInstruction = {
   programId: string;
@@ -46,8 +46,10 @@ export type JupiterBuild = {
 
 export type SwapInput = {
   intermediary: string;
+  /** Atomic amount of `input` to swap, exact-in. */
   amount: string;
-  output: SolanaBuyToken;
+  input: SolanaToken;
+  output: SolanaToken;
 };
 
 const positiveAmount = (value: string) =>
@@ -80,7 +82,7 @@ const decodeInstruction = (instruction: JupiterInstruction) => {
   });
 };
 
-// USDC -> standard SPL needs only idempotent ATA setup and the swap itself.
+// Standard SPL -> standard SPL needs only idempotent ATA setup and the swap itself.
 // Reject additional instruction shapes until they have been tested with Connect.
 const validateSetup = (
   instruction: TransactionInstruction,
@@ -108,7 +110,7 @@ const validateSetup = (
 
 export const prepareJupiterBuild = (build: JupiterBuild, input: SwapInput) => {
   if (
-    build.inputMint !== SOLANA_USDC.mint ||
+    build.inputMint !== input.input.mint ||
     build.outputMint !== input.output.mint ||
     build.inAmount !== input.amount ||
     build.swapMode !== 'ExactIn' ||
@@ -144,7 +146,7 @@ export const prepareJupiterBuild = (build: JupiterBuild, input: SwapInput) => {
 
   const swap = decodeInstruction(build.swapInstruction);
   const source = getAssociatedTokenAddressSync(
-    new PublicKey(SOLANA_USDC.mint),
+    new PublicKey(input.input.mint),
     owner,
     true,
   );
@@ -217,7 +219,7 @@ export const prepareJupiterBuild = (build: JupiterBuild, input: SwapInput) => {
 
 export const buildJupiterSwap = async (input: SwapInput) => {
   if (!positiveAmount(input.amount)) {
-    throw new Error('Not enough USDC remains after fees');
+    throw new Error(`Nothing to swap: no ${input.input.symbol} amount remains`);
   }
 
   const recipient = getAssociatedTokenAddressSync(
@@ -229,7 +231,7 @@ export const buildJupiterSwap = async (input: SwapInput) => {
   const url = new URL(JUPITER_BUILD_URL, window.location.origin);
 
   url.search = new URLSearchParams({
-    inputMint: SOLANA_USDC.mint,
+    inputMint: input.input.mint,
     outputMint: input.output.mint,
     amount: input.amount,
     taker: input.intermediary,

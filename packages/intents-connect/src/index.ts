@@ -25,6 +25,8 @@ export type {
   OriginToken,
   ResumeDepositOptions,
   RunnerEvent,
+  StepsPlan,
+  StepsPreview,
 } from '@/runner';
 
 export {

@@ -1,8 +1,8 @@
 import { failGuard } from '@/errors';
 import * as guards from '@/machine/guards';
-import { createExecutionMachine, moveTo } from '@/machine/machine';
-import type { RunnerCtx } from '@/runner/ctx';
 import type { Execution } from '@/types/execution';
+import type { RunnerCtx } from '@/runner/ctx';
+import { createIsolatedCtx, freeze } from '@/runner/isolated';
 import {
   buildBody,
   getSpendableAmount,
@@ -16,34 +16,14 @@ import { validatePreparedExecution } from '@/runner/stages/validatePreparedExecu
 import type { ExecutionPlan, ExecutionPreview } from '@/runner/types';
 import { getQuoteSpendable } from '@/runner/quoteAmounts';
 
-const freeze = <T>(value: T): T => {
-  if (value && typeof value === 'object') {
-    Object.values(value).forEach(freeze);
-    Object.freeze(value);
-  }
-
-  return value;
-};
-
 /** An isolated planning machine: no real create, signatures, deposit, or live runner events. */
 export const preview = async <TParams>(
   ctx: RunnerCtx,
   input: ExecutionPlan<TParams>,
 ): Promise<ExecutionPreview<TParams>> => {
-  ctx.throwIfDisposed();
-  const address = ctx.requireAddress();
-  const requireAddress = () => {
-    ctx.throwIfDisposed();
-
-    if (ctx.requireAddress() !== address) {
-      failGuard(
-        'WALLET_NOT_CONNECTED',
-        'Wallet changed while preparing the preview',
-      );
-    }
-
-    return address;
-  };
+  const local = createIsolatedCtx(ctx);
+  const { requireAddress, machine } = local;
+  const address = requireAddress();
 
   const plan = withOriginChainId(
     withQuoteDeadline({
@@ -54,17 +34,6 @@ export const preview = async <TParams>(
   );
 
   guards.recipientOnlyOnOutOperation(plan.recipe.flow, plan.quote.recipient);
-  const machine = createExecutionMachine();
-  const local: RunnerCtx = {
-    ...ctx,
-    machine,
-    requireAddress,
-    patch: (values) => {
-      Object.assign(machine.context, values);
-    },
-    emit: () => undefined,
-    to: (phase) => moveTo(machine, phase, { logger: ctx.logger }),
-  };
 
   local.to('resolving-identity');
   const intermediary = await ctx.api.getIntermediary(requireAddress(), {

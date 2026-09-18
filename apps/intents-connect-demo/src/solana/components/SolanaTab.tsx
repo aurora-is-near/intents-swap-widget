@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
   useExecution,
@@ -33,6 +33,7 @@ export const SolanaTab = ({
   const { api, wallet } = useIntentsConnect();
   const { ctx } = useUnsafeSnapshot();
   const [isBusy, setIsBusy] = useState(false);
+  const [isSpending, setIsSpending] = useState(false);
   const output = getBuyToken(outputMint);
   const isSolanaSource = ctx.sourceToken?.blockchain === 'sol';
   const inputKey = JSON.stringify([
@@ -50,6 +51,12 @@ export const SolanaTab = ({
   });
 
   const hasReview = !!quote && !isCommitted;
+
+  // The tab bar locks while EITHER card is running.
+  useEffect(
+    () => onBusyChange(isBusy || isSpending),
+    [isBusy, isSpending, onBusyChange],
+  );
 
   return (
     <>
@@ -74,10 +81,7 @@ export const SolanaTab = ({
         submitLabel={hasReview ? `Buy ${output.symbol}` : 'Get quote'}
         successMessage="Purchase completed in your Connect Solana account"
         isReady={!isSolanaSource}
-        onBusyChange={(busy) => {
-          setIsBusy(busy);
-          onBusyChange(busy);
-        }}
+        onBusyChange={setIsBusy}
         FieldsComponent={
           <div className="flex flex-col gap-sw-md">
             <AssetSelect
@@ -159,7 +163,11 @@ export const SolanaTab = ({
           </div>
         }
       />
-      <BalancesList phase={exec.phase} />
+      <BalancesList
+        phase={exec.phase}
+        isLocked={isBusy}
+        onBusyChange={setIsSpending}
+      />
     </>
   );
 };

@@ -8,6 +8,7 @@ import {
   noopLogger,
   type Recipe,
   type Step,
+  type StepsPlan,
   type WalletConnector,
 } from '@/index';
 
@@ -116,8 +117,18 @@ const plan: ExecutionPlan<void> = {
   depositViaWallet: true,
 };
 
+const stepsPlan: StepsPlan<void> = {
+  recipe: { ...recipe, flow: 'steps-only' },
+  params: undefined,
+  amount: '1000',
+};
+
 type HarnessProps = {
-  onReady?: (run: () => Promise<unknown>) => void;
+  onReady?: (
+    run: () => Promise<unknown>,
+    runSteps: () => Promise<unknown>,
+    previewSteps: () => Promise<unknown>,
+  ) => void;
 };
 
 let renderCount = 0;
@@ -126,7 +137,11 @@ const Harness = ({ onReady }: HarnessProps) => {
   const execution$ = useExecution();
 
   renderCount += 1;
-  onReady?.(() => execution$.run(plan));
+  onReady?.(
+    () => execution$.run(plan),
+    () => execution$.runSteps(stepsPlan),
+    () => execution$.previewSteps(stepsPlan),
+  );
 
   return (
     <div>
@@ -140,6 +155,8 @@ const Harness = ({ onReady }: HarnessProps) => {
 
 const renderHarness = (connector: WalletConnector | null) => {
   let start: (() => Promise<unknown>) | undefined;
+  let startSteps: (() => Promise<unknown>) | undefined;
+  let previewSteps: (() => Promise<unknown>) | undefined;
 
   render(
     <IntentsConnectProvider
@@ -148,14 +165,21 @@ const renderHarness = (connector: WalletConnector | null) => {
       logger={noopLogger}
       pollIntervalMs={0}>
       <Harness
-        onReady={(run) => {
+        onReady={(run, runSteps, preview) => {
           start = run;
+          startSteps = runSteps;
+          previewSteps = preview;
         }}
       />
     </IntentsConnectProvider>,
   );
 
-  return () => start!();
+  const trigger = () => start!();
+
+  trigger.steps = () => startSteps!();
+  trigger.previewSteps = () => previewSteps!();
+
+  return trigger;
 };
 
 // Auto-cleanup only registers under vitest `globals: true`, so unmount explicitly.
@@ -183,6 +207,33 @@ describe('useExecution', () => {
     expect(screen.getByTestId('status')).toHaveTextContent('SUCCESS');
     expect(screen.getByTestId('deposit')).toHaveTextContent('deposit-address');
     expect(screen.getByTestId('busy')).toHaveTextContent('false');
+  });
+
+  it('drives a steps-only execution to success with no deposit address', async () => {
+    const start = renderHarness(wallet());
+
+    await act(async () => {
+      await start.steps();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('phase')).toHaveTextContent('success');
+    });
+
+    expect(screen.getByTestId('deposit')).toHaveTextContent('-');
+    expect(screen.getByTestId('busy')).toHaveTextContent('false');
+  });
+
+  it('previews a steps-only execution without leaving idle', async () => {
+    const start = renderHarness(wallet());
+
+    await act(async () => {
+      const preview = await start.previewSteps();
+
+      expect(preview).toMatchObject({ spendable: '1000', networkFee: '70' });
+    });
+
+    expect(screen.getByTestId('phase')).toHaveTextContent('idle');
   });
 
   it('surfaces a guard error instead of throwing when no wallet is connected', async () => {
