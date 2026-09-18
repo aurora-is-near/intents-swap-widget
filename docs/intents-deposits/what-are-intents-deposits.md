@@ -34,6 +34,10 @@ Stay informed about transaction status updates with webhooks. Set up URL endpoin
 
 Each address is permanent and reusable. There is no TTL, no session, and no requirement to re-generate between deposits. The same address accepts unlimited sequential deposits. Read more about [persistent-addresses.md](persistent-addresses.md "mention").
 
+### Confidentiality
+
+This is an optional feature where source deposits are separated from destination withdrawals, so outside actors don’t have a link between deposits and withdrawals because they go through confidential intents.
+
 ## Next Steps
 
 {% stepper %}
