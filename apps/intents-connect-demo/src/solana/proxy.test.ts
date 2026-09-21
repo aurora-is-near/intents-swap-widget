@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ViteDevServer } from 'vite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { solanaProxy } from '../../solanaProxy';
+import { handleSolanaRpc, solanaProxy } from '../../solanaProxy';
 
 const callProxy = async (
   env: Record<string, string>,
@@ -106,6 +106,45 @@ describe('demo Solana proxies', () => {
     expect(read.res.statusCode).toBe(200);
     expect(write.res.statusCode).toBe(400);
     expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('serves the Vercel function path with a web Request', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response('{"result":1}', { status: 200 }));
+
+    vi.stubGlobal('fetch', fetcher);
+
+    const response = await handleSolanaRpc(
+      new Request('https://demo.example/api/solana-rpc', {
+        method: 'POST',
+        headers: { 'x-api-key': 'untrusted-browser-key' },
+        body: JSON.stringify({ method: 'getMultipleAccounts' }),
+      }),
+      { SOLANA_RPC_URL: 'https://rpc.example' },
+    );
+
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://rpc.example',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('{"result":1}');
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(
+      (
+        await handleSolanaRpc(
+          new Request('https://demo.example/api/solana-rpc', {
+            method: 'POST',
+            body: 'not json',
+          }),
+          {},
+        )
+      ).status,
+    ).toBe(400);
   });
 
   it('passes unrelated routes through and limits methods and request sizes', async () => {

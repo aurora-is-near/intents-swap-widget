@@ -11,10 +11,13 @@ uses supported 1Click assets. Only cross-chain exact-input purchases are offered
 both connected-wallet transfers and external/QR deposits use the same recipe.
 
 Copy `.env.example` to `.env.local` and configure `JUPITER_API_KEY`, then restart
-the demo. Vite's local `/api/jupiter/swap/v2/build` proxy attaches the key on the
-server. Never put that key in a `VITE_` variable. The `/api/solana-rpc` proxy uses
-`SOLANA_RPC_URL` and permits account reads only. Both proxies work with `dev` and
-`preview`; static deployments need hosted equivalents configured through
+the demo. The `/api/jupiter/swap/v2/build` proxy attaches the key on the server.
+Never put that key in a `VITE_` variable. The `/api/solana-rpc` proxy uses
+`SOLANA_RPC_URL` and permits account reads only. Locally both routes are served
+by the Vite middleware in `solanaProxy.ts` (`dev` and `preview`); on Vercel they
+are served by the functions in `api/`, which call the same handlers. Set
+`JUPITER_API_KEY` and optionally `SOLANA_RPC_URL` in the Vercel project
+environment. Other static hosts need equivalent proxies configured through
 `VITE_JUPITER_BUILD_URL` and `VITE_SOLANA_RPC_URL`.
 
 1. Connect an origin wallet and choose a supported asset on another chain.
