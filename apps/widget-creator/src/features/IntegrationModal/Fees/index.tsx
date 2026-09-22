@@ -79,11 +79,19 @@ export const convertFeeShare = (feeBps: number, totalPercent: string) => {
 export const Fees = ({ apiKey, onClickBack }: Props) => {
   // value based fee
   const valueBasedFee = getSimpleValueBasedFee(apiKey.feeRules);
-  const { floorBps: auroraFloorBps, cutPercent: auroraCutPercent } =
-    getAuroraFeeConfig(apiKey.auroraFeeBps, apiKey.auroraFeePercent);
+  const {
+    floorBps: auroraFloorBps,
+    stableFloorBps: auroraStableFloorBps,
+    cutPercent: auroraCutPercent,
+  } = getAuroraFeeConfig(apiKey.auroraFeeBps, apiKey.auroraFeePercent);
 
   const clientCutPercent = 100 - auroraCutPercent;
   const auroraMinPercent = getPercentFromBasisPoints(auroraFloorBps);
+  const auroraMinLabel =
+    auroraStableFloorBps != null
+      ? `min ${auroraMinPercent}%, ${getPercentFromBasisPoints(auroraStableFloorBps)}% on stable pairs`
+      : `min ${auroraMinPercent}%`;
+
   const [hasConfigAssetRules, setHasConfigAssetRules] = useState(
     apiKey.feeRules.rules.length > 0,
   );
@@ -276,7 +284,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
               Set up optional custom fees added on top of the protocol fee.{' '}
               <br className="hidden sm:block" />
               You earn {clientCutPercent}% of your custom fee; Aurora retains{' '}
-              {auroraCutPercent}% (min {auroraMinPercent}%).
+              {auroraCutPercent}% ({auroraMinLabel}).
             </>
           }>
           <div className="flex flex-col gap-csw-2xl">
@@ -322,7 +330,7 @@ export const Fees = ({ apiKey, onClickBack }: Props) => {
                     <>
                       <li className="flex items-center justify-between text-csw-label-sm">
                         <span className="text-csw-gray-300">
-                          Aurora fee (min {auroraMinPercent}%)
+                          Aurora fee ({auroraMinLabel})
                         </span>
                         <span className="text-csw-gray-50">
                           {convertFeeShare(auroraBps, customFee)}% (
