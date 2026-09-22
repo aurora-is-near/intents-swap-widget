@@ -129,6 +129,7 @@ export const previewSolanaSell = async (
     receive: swap.estimatedOutput,
     minimumReceive: swap.minimumOutput,
     networkFee: preview.networkFee,
+    route: swap.route,
     expiresAt: Math.min(
       builtAt + PREVIEW_VALIDITY_MS,
       Date.parse(preview.plan.prepared!.expiresAt),

@@ -58,6 +58,7 @@ const quote = (): SolanaSpendQuote => ({
   minimumReceive: '9950000',
   networkFee: '100000',
   expiresAt: Date.now() + 30_000,
+  route: 'Orca V2 → Whirlpool',
 });
 
 const baseProps = {
@@ -89,7 +90,7 @@ describe('SpendRow', () => {
       />,
     );
 
-    expect(screen.getByText('ORCA')).toBeInTheDocument();
+    expect(screen.getByText(BUY_TOKENS[0]!.symbol)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Sell' }));
 
@@ -124,6 +125,8 @@ describe('SpendRow', () => {
     expect(screen.getByText('Estimated USDC')).toBeInTheDocument();
     expect(screen.getByText('Minimum USDC')).toBeInTheDocument();
     expect(screen.getByText('Connect network fee')).toBeInTheDocument();
+    expect(screen.getByText('Jupiter route')).toBeInTheDocument();
+    expect(screen.getByText('Orca V2 → Whirlpool')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Confirm sell' }),
     ).toBeInTheDocument();
@@ -270,7 +273,9 @@ describe('SpendRow', () => {
     );
 
     expect(
-      screen.getByText('Sold ORCA for USDC in your Connect account'),
+      screen.getByText(
+        `Sold ${BUY_TOKENS[0]!.symbol} for USDC in your Connect account`,
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'View Solana transaction' }),

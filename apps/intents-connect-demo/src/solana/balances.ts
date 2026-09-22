@@ -5,6 +5,7 @@ import {
   unpackAccount,
 } from '@solana/spl-token';
 
+import { getAccountsInfo } from './client';
 import { BUY_TOKENS, SOLANA_USDC } from './constants';
 
 export const fetchSolanaBalances = async (
@@ -17,7 +18,7 @@ export const fetchSolanaBalances = async (
     getAssociatedTokenAddressSync(new PublicKey(mint), owner, true),
   );
 
-  const accounts = await connection.getMultipleAccountsInfo(addresses);
+  const accounts = await getAccountsInfo(connection, addresses);
 
   return tokens.map((token, index) => {
     const info = accounts[index];

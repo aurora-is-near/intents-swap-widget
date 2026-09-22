@@ -27,6 +27,8 @@ export type SolanaBuyQuote = {
   recipientAta: string;
   networkFee: string;
   expiresAt: number;
+  /** The DEXes Jupiter routed through at quote time, when it reported them. */
+  route?: string;
 };
 
 export const buildSolanaPlan = (
@@ -156,5 +158,6 @@ export const previewSolanaBuy = async (
     recipientAta: swap.recipientAta,
     networkFee,
     expiresAt: builtAt + PREVIEW_VALIDITY_MS,
+    route: swap.route,
   };
 };

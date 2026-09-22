@@ -27,6 +27,16 @@ export type JupiterInstruction = {
   data: string;
 };
 
+export type JupiterRouteStep = {
+  swapInfo?: {
+    label?: string;
+    inputMint?: string;
+    outputMint?: string;
+  } | null;
+  /** Share of the leg's input this step handles; below 100 on split routes. */
+  percent?: number;
+};
+
 export type JupiterBuild = {
   inputMint: string;
   outputMint: string;
@@ -42,6 +52,7 @@ export type JupiterBuild = {
   computeBudgetInstructions?: JupiterInstruction[];
   tipInstruction?: JupiterInstruction | null;
   addressesByLookupTableAddress?: Record<string, string[]> | null;
+  routePlan?: JupiterRouteStep[] | null;
 };
 
 export type SwapInput = {
@@ -106,6 +117,38 @@ const validateSetup = (
       'Unsupported Jupiter setup: expected an intermediary-owned SPL ATA',
     );
   }
+};
+
+/**
+ * The venues Jupiter routed through, e.g. `Whirlpool`, `Orca V2 → Whirlpool`
+ * or `Raydium CLMM 60% + Whirlpool 40% → Manifest`. Steps that start from the
+ * same mint as the previous one are parallel splits of one leg.
+ */
+export const describeJupiterRoute = (
+  routePlan: JupiterRouteStep[] | null | undefined,
+) => {
+  const steps = (routePlan ?? []).filter((step) => step.swapInfo?.label);
+
+  if (steps.length === 0) {
+    return undefined;
+  }
+
+  return steps
+    .map((step, index) => {
+      const { label, inputMint } = step.swapInfo!;
+      const percent = step.percent ?? 100;
+      const name = percent < 100 ? `${label} ${percent}%` : label;
+
+      if (index === 0) {
+        return name;
+      }
+
+      const previous = steps[index - 1]!.swapInfo!;
+      const isSplit = !!inputMint && inputMint === previous.inputMint;
+
+      return `${isSplit ? ' + ' : ' → '}${name}`;
+    })
+    .join('');
 };
 
 export const prepareJupiterBuild = (build: JupiterBuild, input: SwapInput) => {
@@ -214,6 +257,7 @@ export const prepareJupiterBuild = (build: JupiterBuild, input: SwapInput) => {
     estimatedOutput: build.outAmount,
     minimumOutput: build.otherAmountThreshold,
     recipientAta: recipient.address,
+    route: describeJupiterRoute(build.routePlan),
   };
 };
 
@@ -238,8 +282,8 @@ export const buildJupiterSwap = async (input: SwapInput) => {
     destinationTokenAccount: recipient.toBase58(),
     slippageBps: String(SWAP_SLIPPAGE_BPS),
     wrapAndUnwrapSol: 'false',
-    maxAccounts: '32',
-    dexes: 'Hadron',
+    restrictIntermediateTokens: 'true',
+    maxAccounts: '24',
   }).toString();
 
   const response = await fetch(url, { signal: AbortSignal.timeout(20_000) });

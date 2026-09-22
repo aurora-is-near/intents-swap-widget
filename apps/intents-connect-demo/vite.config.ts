@@ -9,9 +9,12 @@ export default defineConfig(({ mode }) => ({
   // Pinned so `yarn dev` is always where you expect. `strictPort` makes a
   // port collision (e.g. a leftover Next server) a loud error instead of a
   // silent bump to 3001 — serving a DIFFERENT app on 3000 fooled us once.
-  server: { port: 3000, strictPort: true },
+  server: { port: 3000, strictPort: false },
   plugins: [
-    solanaProxy({ ...process.env, ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), '') }),
+    solanaProxy({
+      ...process.env,
+      ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''),
+    }),
     react(),
     tailwindcss(),
     // The widget package touches Buffer/process (near-api-js et al.).

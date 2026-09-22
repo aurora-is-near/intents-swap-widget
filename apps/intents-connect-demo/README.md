@@ -5,8 +5,9 @@ Run `yarn workspace intents-connect-demo dev` from the repository root, then ope
 
 ## Buy Solana assets
 
-The Solana tab buys ORCA or KMNO into the connected wallet's **Connect Solana
-intermediary**, not into the connected wallet itself. The source selector still
+The Solana tab buys one of ten Solana assets that 1Click does not list — JitoSOL,
+BNSOL, JUP, JLP, RENDER, BP, JupSOL, USDe, PYTH or RAY — into the connected
+wallet's **Connect Solana intermediary**, not into the connected wallet itself. The source selector still
 uses supported 1Click assets. Only cross-chain exact-input purchases are offered;
 both connected-wallet transfers and external/QR deposits use the same recipe.
 
@@ -21,7 +22,7 @@ environment. Other static hosts need equivalent proxies configured through
 `VITE_JUPITER_BUILD_URL` and `VITE_SOLANA_RPC_URL`.
 
 1. Connect an origin wallet and choose a supported asset on another chain.
-2. Select ORCA or KMNO and press **Get quote**. Connect previews the bridge and
+2. Select the asset to buy and press **Get quote**. Connect previews the bridge and
    fees; the SDK subtracts Connect's separately reported Solana fee and Jupiter
    builds at the remaining USDC amount. The card shows the
    final token estimate/minimum and the network fee in USDC. Other fees and USD
@@ -39,8 +40,8 @@ environment. Other static hosts need equivalent proxies configured through
    `NO_QUOTE` means Connect could not obtain a bridge quote for that request.
    The old review is cleared so another attempt starts with **Get quote**;
    real execution creation is never automatically retried.
-4. The balances panel reads the intermediary's ORCA, KMNO, and USDC ATAs through
-   RPC. It refreshes on connection, manually, and immediately/four seconds after
+4. The balances panel reads the intermediary's ATAs for every buyable asset and
+   USDC through RPC. It refreshes on connection, manually, and immediately/four seconds after
    completion or failure. USDC remaining after fees and the fixed swap input is
    listed separately. Existing holdings are loaded again after a page reload.
 
@@ -68,7 +69,7 @@ executions (`runSteps` / `previewSteps` in the SDK): the Connect account
 already holds the asset, so there is no bridge quote and no deposit — one
 signature, then Connect's relayer runs the instructions.
 
-- **Sell** (ORCA, KMNO): Jupiter swaps the row's whole balance into USDC inside
+- **Sell** (any bought asset): Jupiter swaps the row's whole balance into USDC inside
   the same Connect account. The fee is taken from the USDC the swap produces,
   so the panel shows the estimated and minimum USDC and the fee, and refuses a
   sale whose guaranteed output would not cover the fee.
@@ -94,16 +95,18 @@ estimate the fee"; a sale proceeds and shows the fee as unavailable, since the
 service appends its fee transfer either way. Withdrawing to a wallet with no
 USDC account yet warns that the account's rent falls on the Connect account.
 
-Read-only checks on 2026-09-11 confirmed Solana USDC in both service token lists,
-ORCA/KMNO absent from 1Click, and both target mints owned by the standard SPL token
-program with six decimals. Live Base USDC → ORCA dry previews also confirmed
-Jupiter instruction preparation and Connect's separate Solana fee accounting.
-Full transaction execution and funded settlement have **not** been verified
-with a wallet-signed purchase.
+Read-only checks on 2026-09-22 confirmed Solana USDC in both service token lists,
+all ten target assets absent from 1Click, and every target mint owned by the
+standard SPL token program with the configured decimals. Live USDC → target
+Jupiter builds under the demo's routing constraints (`restrictIntermediateTokens`,
+`maxAccounts=24`) passed instruction preparation for all ten; the larger ones
+route in two hops with up to 44 accounts, so the deployment's transaction size
+check is the final gate. Token-2022 assets such as PUMP, PYUSD and USDG were
+excluded because the demo supports the standard token program only. Funded,
+wallet-signed purchases have **not** been verified for these assets.
 
 References: [Jupiter build API](https://developers.jup.ag/docs/api-reference/swap/build),
-[ORCA token](https://docs.orca.so/governance/tokenomics),
-[KMNO token](https://kamino.com/docs/kmno),
+[Jupiter verified token list](https://lite-api.jup.ag/tokens/v2/tag?query=verified),
 [1Click catalogue](https://1click.chaindefuser.com/v0/tokens).
 
 ## Aave on Monad

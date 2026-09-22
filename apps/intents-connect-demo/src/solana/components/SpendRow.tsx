@@ -222,6 +222,12 @@ export const SpendRow = ({
                   )}
                 </dd>
               </div>
+              {!!quote.route && (
+                <div className="flex justify-between gap-sw-md">
+                  <dt>Jupiter route</dt>
+                  <dd className="text-right">{quote.route}</dd>
+                </div>
+              )}
             </dl>
           )}
 

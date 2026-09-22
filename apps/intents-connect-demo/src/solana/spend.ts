@@ -19,6 +19,8 @@ export type SolanaSpendQuote<TParams = any> = {
   networkFee?: string;
   /** Something the user should know before confirming, if anything. */
   warning?: string;
+  /** The DEXes Jupiter routed through; absent for withdrawals. */
+  route?: string;
   /** Epoch ms after which the prepared steps must be previewed again. */
   expiresAt: number;
 };

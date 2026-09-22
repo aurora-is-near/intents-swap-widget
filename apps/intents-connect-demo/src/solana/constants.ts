@@ -5,18 +5,70 @@ export type SolanaToken = {
   decimals: number;
 };
 
-// Standard SPL mints; mint accounts and decimals verified on 2026-09-11.
+// The ten largest Solana assets (by market cap, Jupiter verified list) that
+// 1Click does not list. Standard SPL mints only: Token-2022 assets such as
+// PUMP, PYUSD and USDG are excluded because the demo's ATA handling and setup
+// validation support the standard token program alone. Mint owners and
+// decimals verified on-chain on 2026-09-22.
 export const BUY_TOKENS: readonly SolanaToken[] = [
   {
-    symbol: 'ORCA',
-    name: 'Orca',
-    mint: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
+    symbol: 'JitoSOL',
+    name: 'Jito Staked SOL',
+    mint: 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    decimals: 9,
+  },
+  {
+    symbol: 'BNSOL',
+    name: 'Binance Staked SOL',
+    mint: 'BNso1VUJnh4zcfpZa6986Ea66P6TCp59hvtNJ8b1X85',
+    decimals: 9,
+  },
+  {
+    symbol: 'JUP',
+    name: 'Jupiter',
+    mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     decimals: 6,
   },
   {
-    symbol: 'KMNO',
-    name: 'Kamino',
-    mint: 'KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS',
+    symbol: 'JLP',
+    name: 'Jupiter Perps',
+    mint: '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
+    decimals: 6,
+  },
+  {
+    symbol: 'RENDER',
+    name: 'Render Token',
+    mint: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
+    decimals: 8,
+  },
+  {
+    symbol: 'BP',
+    name: 'Backpack',
+    mint: 'BPxxfRCXkUVhig4HS1Lh7kZqV6SPJhzfEk4x6fVBjPCy',
+    decimals: 9,
+  },
+  {
+    symbol: 'JupSOL',
+    name: 'Jupiter Staked SOL',
+    mint: 'jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v',
+    decimals: 9,
+  },
+  {
+    symbol: 'USDe',
+    name: 'Ethena USDe',
+    mint: 'DEkqHyPN7GMRJ5cArtQFAWefqbZb33Hyf6s5iCwjEonT',
+    decimals: 9,
+  },
+  {
+    symbol: 'PYTH',
+    name: 'Pyth Network',
+    mint: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
+    decimals: 6,
+  },
+  {
+    symbol: 'RAY',
+    name: 'Raydium',
+    mint: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
     decimals: 6,
   },
 ];
@@ -45,7 +97,7 @@ export const getBuyToken = (mint: string): SolanaToken => {
   const token = BUY_TOKENS.find((item) => item.mint === mint);
 
   if (!token) {
-    throw new Error('Select ORCA or KMNO to buy');
+    throw new Error('Select a supported Solana asset to buy');
   }
 
   return token;
