@@ -299,6 +299,6 @@ describe('Solana buy plan with the SDK runner', () => {
     ).toThrow(/another chain/);
     expect(() =>
       buildSolanaPlan({ ...args, outputMint: SOLANA_USDC.mint }),
-    ).toThrow(/ORCA or KMNO/);
+    ).toThrow(/supported Solana asset/);
   });
 });

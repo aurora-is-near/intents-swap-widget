@@ -11,7 +11,7 @@ import { fetchSolanaBalances } from '../balances';
 const SETTLED: readonly Phase[] = ['success', 'failed', 'cancelled'];
 
 /**
- * The Connect account's ORCA / KMNO / USDC balances. Refetched right after —
+ * The Connect account's balances of every buyable asset and USDC. Refetched right after —
  * and four seconds after — any of the given execution phases settles, so a
  * purchase, a sale or a withdrawal shows up without a manual refresh.
  */

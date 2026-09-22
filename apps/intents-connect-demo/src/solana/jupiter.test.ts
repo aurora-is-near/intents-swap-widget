@@ -5,7 +5,11 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { createSolanaRecipientAta } from '@aurora-is-near/intents-connect-wallet/solana';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { buildJupiterSwap, prepareJupiterBuild } from './jupiter';
+import {
+  buildJupiterSwap,
+  describeJupiterRoute,
+  prepareJupiterBuild,
+} from './jupiter';
 import { BUY_TOKENS, SOLANA_USDC } from './constants';
 import { INTERMEDIARY, jupiterFixture, swapInput } from './testFixtures';
 
@@ -68,7 +72,7 @@ describe('Jupiter instructions', () => {
       true,
     ).toBase58();
 
-    const orcaAta = getAssociatedTokenAddressSync(
+    const boughtAta = getAssociatedTokenAddressSync(
       new PublicKey(BUY_TOKENS[0]!.mint),
       owner,
       true,
@@ -78,7 +82,7 @@ describe('Jupiter instructions', () => {
     // Jupiter omitted the setup, so the USDC ATA create is inserted first.
     expect(result.prepared.steps).toHaveLength(2);
     expect(result.prepared.steps[0]!.accounts[1]!.pubkey).toBe(usdcAta);
-    expect(result.prepared.steps[1]!.accounts[1]!.pubkey).toBe(orcaAta);
+    expect(result.prepared.steps[1]!.accounts[1]!.pubkey).toBe(boughtAta);
 
     // A build that swapped the other way is refused.
     expect(() =>
@@ -189,11 +193,56 @@ describe('Jupiter instructions', () => {
     expect(url.searchParams.get('amount')).toBe('9900000');
     expect(url.searchParams.get('taker')).toBe(INTERMEDIARY);
     expect(url.searchParams.get('slippageBps')).toBe('50');
-    expect(url.searchParams.get('dexes')).toBe('Hadron');
+    expect(url.searchParams.get('restrictIntermediateTokens')).toBe('true');
+    expect(url.searchParams.get('maxAccounts')).toBe('24');
+    expect(url.searchParams.get('dexes')).toBeNull();
     expect(url.searchParams.get('destinationTokenAccount')).toBe(
       jupiterFixture().swapInstruction.accounts[2]!.pubkey,
     );
     expect(fetcher.mock.calls[0]![1].headers).toBeUndefined();
     expect(PublicKey.isOnCurve(new PublicKey(INTERMEDIARY))).toBe(true);
+  });
+});
+
+describe('describeJupiterRoute', () => {
+  const step = (label: string, inputMint: string, percent = 100) => ({
+    swapInfo: { label, inputMint, outputMint: 'x' },
+    percent,
+  });
+
+  it('names single and multi-hop routes', () => {
+    expect(describeJupiterRoute([step('Whirlpool', 'usdc')])).toBe('Whirlpool');
+    expect(
+      describeJupiterRoute([step('Orca V2', 'usdc'), step('Whirlpool', 'mid')]),
+    ).toBe('Orca V2 → Whirlpool');
+  });
+
+  it('marks parallel splits of one leg with their shares', () => {
+    expect(
+      describeJupiterRoute([
+        step('Raydium CLMM', 'usdc', 60),
+        step('Whirlpool', 'usdc', 40),
+        step('Manifest', 'mid'),
+      ]),
+    ).toBe('Raydium CLMM 60% + Whirlpool 40% → Manifest');
+  });
+
+  it('is absent when Jupiter reports no plan', () => {
+    expect(describeJupiterRoute(undefined)).toBeUndefined();
+    expect(describeJupiterRoute([])).toBeUndefined();
+    expect(describeJupiterRoute([{ swapInfo: null }])).toBeUndefined();
+  });
+
+  it('is returned with the prepared build', () => {
+    const input = swapInput();
+    const build = {
+      ...jupiterFixture(input),
+      routePlan: [step('Whirlpool', SOLANA_USDC.mint)],
+    };
+
+    expect(prepareJupiterBuild(build, input).route).toBe('Whirlpool');
+    expect(prepareJupiterBuild(jupiterFixture(input), input).route).toBe(
+      undefined,
+    );
   });
 });

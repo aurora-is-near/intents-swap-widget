@@ -14,12 +14,15 @@ export type WidgetIntentsConnectProps = PropsWithChildren<
   {
     isBusy: boolean;
     alchemyApiKey: string;
+    /** The user edited the source amount or token. */
+    onUserInput?: () => void;
   } & Omit<WidgetContainerProps, 'children'>
 >;
 
 const WidgetIntentsConnectContent = ({
   isBusy,
   alchemyApiKey,
+  onUserInput,
   children,
 }: WidgetIntentsConnectProps) => {
   useStoreSideEffects({
@@ -49,6 +52,7 @@ const WidgetIntentsConnectContent = ({
         onMsg={(msg) => {
           if (msg.type === 'on_select_token') {
             onChangeToken('source', msg.token);
+            onUserInput?.();
           }
 
           updateTokenModalState('none');
@@ -69,10 +73,12 @@ const WidgetIntentsConnectContent = ({
 
           if (msg.type === 'on_change_amount') {
             onChangeAmount('source', msg.amount);
+            onUserInput?.();
           }
 
           if (msg.type === 'on_select_token') {
             onChangeToken('source', msg.token);
+            onUserInput?.();
           }
         }}
       />

@@ -80,6 +80,7 @@ export const SolanaTab = ({
         destinationToken={SOLANA_USDC}
         submitLabel={hasReview ? `Buy ${output.symbol}` : 'Get quote'}
         successMessage="Purchase completed in your Connect Solana account"
+        inputsKey={outputMint}
         isReady={!isSolanaSource}
         onBusyChange={setIsBusy}
         FieldsComponent={
@@ -136,6 +137,12 @@ export const SolanaTab = ({
                   <dt>USD value / other fees</dt>
                   <dd>Unavailable</dd>
                 </div>
+                {!!quote.route && (
+                  <div className="flex justify-between gap-sw-md">
+                    <dt>Jupiter route</dt>
+                    <dd className="text-right">{quote.route}</dd>
+                  </div>
+                )}
               </dl>
             )}
             {quoteMoved && (

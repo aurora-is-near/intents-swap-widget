@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import {
@@ -6,6 +6,7 @@ import {
   CopyButton,
   TinyNumber,
   Toggle,
+  useTokenInputPair,
   useUnsafeSnapshot,
 } from '@aurora-is-near/intents-swap-widget';
 import { isNotEmptyAmount } from '@aurora-is-near/intents-swap-widget/utils';
@@ -35,12 +36,19 @@ export type IntegrationProps = {
   FieldsComponent?: ReactNode;
   /** Gates the deposit button on top of token/amount/wallet. */
   isReady?: boolean;
+  /**
+   * Identity of the integration's own inputs (e.g. the asset to buy). A change
+   * retires the previous success message the same way editing the form does.
+   */
+  inputsKey?: string;
 };
 
 type Props<TParams = unknown> = IntegrationProps & {
   buildPlan: BuildPlanFn<TParams>;
   executePlan?: (plan: ExecutionPlan<TParams>) => Promise<void>;
   onBusyChange: (isBusy: boolean) => void;
+  /** Bumped by the widget whenever the user edits the source amount or token. */
+  inputVersion: number;
 };
 
 const ExecutionPhaseMessage = ({
@@ -110,8 +118,11 @@ const Content = <TParams,>({
   submitLabel,
   FieldsComponent,
   isReady = true,
+  inputsKey,
+  inputVersion,
 }: Props<TParams>) => {
   const { ctx } = useUnsafeSnapshot();
+  const { onChangeAmount } = useTokenInputPair();
 
   // Which side moves the funds. `true` prompts the connected wallet; `false`
   // is the exchange / QR path, where the deposit address is surfaced and the
@@ -170,6 +181,65 @@ const Content = <TParams,>({
     }
   }, [depositState.isBusy]);
 
+  // The success message belongs to ONE settled execution. `exec.phase` alone
+  // cannot scope it: the runner stays at 'success' until the next run starts,
+  // so a failed quote after a purchase would show both banners. The message
+  // is therefore retired as soon as the user moves on — edits the amount,
+  // token, integration inputs or deposit mode, or starts another attempt.
+  const [success, setSuccess] = useState<{
+    inputVersion: number;
+    inputsKey?: string;
+    depositViaWallet: boolean;
+    superseded: boolean;
+  }>();
+
+  const previousPhase = useRef<UseExecutionResult['phase'] | undefined>(
+    undefined,
+  );
+
+  const previousBusy = useRef(depositState.isBusy);
+
+  useEffect(() => {
+    const settled =
+      exec.phase === 'success' && previousPhase.current !== 'success';
+
+    previousPhase.current = exec.phase;
+
+    if (settled) {
+      // The funds have moved: the next purchase starts from an empty amount.
+      onChangeAmount('source', '');
+      setSuccess({
+        inputVersion,
+        inputsKey,
+        depositViaWallet,
+        superseded: false,
+      });
+    } else if (exec.phase !== 'success') {
+      setSuccess(undefined);
+    }
+  }, [exec.phase]);
+
+  useEffect(() => {
+    // Only a NEW attempt supersedes: the busy flag can still be settling on
+    // the render that first reports success.
+    const attemptStarted = depositState.isBusy && !previousBusy.current;
+
+    previousBusy.current = depositState.isBusy;
+
+    if (success && !success.superseded && attemptStarted) {
+      setSuccess({ ...success, superseded: true });
+    }
+  }, [depositState.isBusy]);
+
+  const showSuccess =
+    exec.phase === 'success' &&
+    !depositState.isBusy &&
+    !!success &&
+    !success.superseded &&
+    success.inputVersion === inputVersion &&
+    success.inputsKey === inputsKey &&
+    success.depositViaWallet === depositViaWallet;
+
   const messages = (
     <>
       {exec.phase !== 'idle' && exec.phase !== 'success' && !!exec.status && (
@@ -202,7 +272,7 @@ const Content = <TParams,>({
           />
         )}
 
-      {exec.phase === 'success' && !depositState.isBusy && (
+      {showSuccess && (
         <Banner hasBg multiline variant="success" message={successMessage} />
       )}
     </>
@@ -342,17 +412,25 @@ export const Layout = <TParams,>({
   submitLabel,
   FieldsComponent,
   isReady,
+  inputsKey,
   onBusyChange,
   ...widgetProps
 }: Pick<Props<TParams>, 'buildPlan' | 'executePlan'> &
   IntegrationProps & {
     /** Lifted so the tab bar can refuse to switch away mid-execution. */
     onBusyChange?: (isBusy: boolean) => void;
-  } & Omit<WidgetProps, 'isBusy' | 'children' | 'onBusyChange'>) => {
+  } & Omit<
+    WidgetProps,
+    'isBusy' | 'children' | 'onBusyChange' | 'onUserInput'
+  >) => {
   const [isBusy, setIsBusy] = useState(false);
+  const [inputVersion, setInputVersion] = useState(0);
 
   return (
-    <WidgetIntentsConnect {...widgetProps} isBusy={isBusy}>
+    <WidgetIntentsConnect
+      {...widgetProps}
+      isBusy={isBusy}
+      onUserInput={() => setInputVersion((version) => version + 1)}>
       <Content
         exec={exec}
         buildPlan={buildPlan}
@@ -362,6 +440,8 @@ export const Layout = <TParams,>({
         submitLabel={submitLabel}
         FieldsComponent={FieldsComponent}
         isReady={isReady}
+        inputsKey={inputsKey}
+        inputVersion={inputVersion}
         onBusyChange={(busy) => {
           setIsBusy(busy);
           onBusyChange?.(busy);

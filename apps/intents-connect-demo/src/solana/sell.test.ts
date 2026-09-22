@@ -22,7 +22,7 @@ vi.mock('./jupiter', async (original) => ({
   buildJupiterSwap: vi.fn(),
 }));
 
-const ORCA = BUY_TOKENS[0]!;
+const BOUGHT = BUY_TOKENS[0]!;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -71,14 +71,14 @@ const fakePreviewSteps =
 
 describe('buildSolanaSellPlan', () => {
   it('describes a steps-only swap of the whole balance into USDC', async () => {
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '5000000' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '5000000' });
 
     expect(plan).toMatchObject({
       amount: '5000000',
-      params: { mint: ORCA.mint },
+      params: { mint: BOUGHT.mint },
       previewTtlMs: 30_000,
       recipe: {
-        id: 'solana-sell-orca',
+        id: `solana-sell-${BOUGHT.symbol.toLowerCase()}`,
         flow: 'steps-only',
         type: 'solana',
         destination: {
@@ -102,7 +102,7 @@ describe('buildSolanaSellPlan', () => {
     expect(buildJupiterSwap).toHaveBeenCalledWith({
       intermediary: INTERMEDIARY,
       amount: '5000000',
-      input: ORCA,
+      input: BOUGHT,
       output: SOLANA_USDC,
     });
   });
@@ -110,7 +110,7 @@ describe('buildSolanaSellPlan', () => {
 
 describe('previewSolanaSell', () => {
   it('builds Jupiter once, caps the fee below the guaranteed output, and reports USDC figures', async () => {
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '5000000' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '5000000' });
     const previewed: StepsPlan<SolanaSellParams>[] = [];
     const previewSteps = async <TParams>(input: StepsPlan<TParams>) => {
       previewed.push(input as unknown as StepsPlan<SolanaSellParams>);
@@ -121,11 +121,14 @@ describe('previewSolanaSell', () => {
     const quote = await previewSolanaSell(
       { previewSteps },
       plan,
-      ORCA,
+      BOUGHT,
       INTERMEDIARY,
     );
 
-    expect(validateMints).toHaveBeenCalledWith(undefined, [ORCA, SOLANA_USDC]);
+    expect(validateMints).toHaveBeenCalledWith(undefined, [
+      BOUGHT,
+      SOLANA_USDC,
+    ]);
     // One upfront build at the plan amount; the SDK's own call reuses it.
     expect(buildJupiterSwap).toHaveBeenCalledOnce();
     // The fixture doubles the input; the minimum is 99.5% of that.
@@ -141,7 +144,7 @@ describe('previewSolanaSell', () => {
   });
 
   it('rebuilds when the SDK asks for a different amount or account', async () => {
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '5000000' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '5000000' });
     const previewSteps = async <TParams>(input: StepsPlan<TParams>) => {
       if (input.recipe.type === 'solana') {
         await input.recipe.buildSteps(
@@ -160,7 +163,7 @@ describe('previewSolanaSell', () => {
     const quote = await previewSolanaSell(
       { previewSteps },
       plan,
-      ORCA,
+      BOUGHT,
       INTERMEDIARY,
     );
 
@@ -170,14 +173,14 @@ describe('previewSolanaSell', () => {
   });
 
   it('refuses a preview whose spendable does not match the kept build', async () => {
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '5000000' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '5000000' });
     const previewSteps = async <TParams>(input: StepsPlan<TParams>) => ({
       ...(await fakePreviewSteps('100000')(input)),
       spendable: '4999999',
     });
 
     await expect(
-      previewSolanaSell({ previewSteps }, plan, ORCA, INTERMEDIARY),
+      previewSolanaSell({ previewSteps }, plan, BOUGHT, INTERMEDIARY),
     ).rejects.toThrow(/Could not confirm/);
   });
 
@@ -186,20 +189,20 @@ describe('previewSolanaSell', () => {
       ...prepareJupiterBuild(jupiterFixture(input), input),
       minimumOutput: '1',
     }));
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '1' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '1' });
 
     await expect(
       previewSolanaSell(
         { previewSteps: fakePreviewSteps('0') },
         plan,
-        ORCA,
+        BOUGHT,
         INTERMEDIARY,
       ),
     ).rejects.toThrow(/too small to sell/);
   });
 
   it('passes through a preview without a fee figure', async () => {
-    const plan = buildSolanaSellPlan({ token: ORCA, amount: '5000000' });
+    const plan = buildSolanaSellPlan({ token: BOUGHT, amount: '5000000' });
     const previewSteps = async <TParams>(input: StepsPlan<TParams>) => {
       const preview = await fakePreviewSteps('100000')(input);
 
@@ -209,7 +212,7 @@ describe('previewSolanaSell', () => {
     const quote = await previewSolanaSell(
       { previewSteps },
       plan,
-      ORCA,
+      BOUGHT,
       INTERMEDIARY,
     );
 
@@ -226,6 +229,8 @@ describe('sell plan typing', () => {
     });
 
     expect(plan.params.mint).toBe(BUY_TOKENS[1]!.mint);
-    expect(plan.recipe.id).toBe('solana-sell-kmno');
+    expect(plan.recipe.id).toBe(
+      `solana-sell-${BUY_TOKENS[1]!.symbol.toLowerCase()}`,
+    );
   });
 });
