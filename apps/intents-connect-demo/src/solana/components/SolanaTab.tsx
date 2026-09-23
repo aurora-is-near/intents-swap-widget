@@ -35,7 +35,6 @@ export const SolanaTab = ({
   const [isBusy, setIsBusy] = useState(false);
   const [isSpending, setIsSpending] = useState(false);
   const output = getBuyToken(outputMint);
-  const isSolanaSource = ctx.sourceToken?.blockchain === 'sol';
   const inputKey = JSON.stringify([
     wallet?.signingStandard,
     wallet?.getAddress(),
@@ -81,7 +80,6 @@ export const SolanaTab = ({
         submitLabel={hasReview ? `Buy ${output.symbol}` : 'Get quote'}
         successMessage="Purchase completed in your Connect Solana account"
         inputsKey={outputMint}
-        isReady={!isSolanaSource}
         onBusyChange={setIsBusy}
         FieldsComponent={
           <div className="flex flex-col gap-sw-md">
@@ -93,14 +91,6 @@ export const SolanaTab = ({
             <p className="text-sw-body-sm text-sw-gray-400">
               Bought tokens stay in your Connect Solana account.
             </p>
-            {isSolanaSource && (
-              <Banner
-                hasBg
-                multiline
-                variant="warn"
-                message="Choose a source asset on another chain for this demo"
-              />
-            )}
             {quote && (
               <dl className="flex flex-col gap-sw-sm text-sw-body-sm text-sw-gray-300">
                 <div className="flex justify-between gap-sw-md">

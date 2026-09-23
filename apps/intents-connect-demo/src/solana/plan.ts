@@ -37,8 +37,12 @@ export const buildSolanaPlan = (
   const { token, amountAtomic, depositViaWallet, outputMint } = args;
   const output = getBuyToken(outputMint);
 
-  if (token.blockchain === 'sol' || token.isIntent) {
-    throw new Error('Choose a supported source asset on another chain');
+  // A Solana-origin source is a same-chain bridge (SOL → USDC on Solana),
+  // which Connect quotes and settles like any other; it is simply pricier
+  // than a direct DEX swap. Only NEAR-intents-internal balances are refused:
+  // they are not a wallet-held origin the deposit leg can move.
+  if (token.isIntent) {
+    throw new Error('Choose a wallet-held source asset');
   }
 
   const recipe: SolanaRecipe<SolanaBuyParams> = {

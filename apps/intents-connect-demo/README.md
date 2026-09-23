@@ -8,8 +8,11 @@ Run `yarn workspace intents-connect-demo dev` from the repository root, then ope
 The Solana tab buys one of ten Solana assets that 1Click does not list — JitoSOL,
 BNSOL, JUP, JLP, RENDER, BP, JupSOL, USDe, PYTH or RAY — into the connected
 wallet's **Connect Solana intermediary**, not into the connected wallet itself. The source selector still
-uses supported 1Click assets. Only cross-chain exact-input purchases are offered;
-both connected-wallet transfers and external/QR deposits use the same recipe.
+uses supported 1Click assets, including Solana ones: a Solana-origin source is a
+same-chain bridge (SOL → USDC on Solana) that Connect quotes and settles like any
+other, though it costs noticeably more than a direct DEX swap. Only exact-input
+purchases are offered; both connected-wallet transfers and external/QR deposits
+use the same recipe.
 
 Copy `.env.example` to `.env.local` and configure `JUPITER_API_KEY`, then restart
 the demo. The `/api/jupiter/swap/v2/build` proxy attaches the key on the server.
@@ -21,7 +24,7 @@ are served by the functions in `api/`, which call the same handlers. Set
 environment. Other static hosts need equivalent proxies configured through
 `VITE_JUPITER_BUILD_URL` and `VITE_SOLANA_RPC_URL`.
 
-1. Connect an origin wallet and choose a supported asset on another chain.
+1. Connect an origin wallet and choose a supported source asset.
 2. Select the asset to buy and press **Get quote**. Connect previews the bridge and
    fees; the SDK subtracts Connect's separately reported Solana fee and Jupiter
    builds at the remaining USDC amount. The card shows the

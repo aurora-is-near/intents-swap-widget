@@ -283,7 +283,7 @@ describe('Solana buy plan with the SDK runner', () => {
     h.runner.dispose();
   });
 
-  it('rejects same-chain, Intents balance, and unknown target purchases', () => {
+  it('accepts a Solana-origin source, rejects Intents balances and unknown targets', () => {
     const args = {
       token: SOURCE,
       amountAtomic: '1',
@@ -291,12 +291,13 @@ describe('Solana buy plan with the SDK runner', () => {
       depositViaWallet: true,
     };
 
-    expect(() =>
+    // A same-chain bridge (SOL → USDC on Solana) is a valid Connect route.
+    expect(
       buildSolanaPlan({ ...args, token: { ...SOURCE, blockchain: 'sol' } }),
-    ).toThrow(/another chain/);
+    ).toMatchObject({ originChain: 'sol', originChainId: null });
     expect(() =>
       buildSolanaPlan({ ...args, token: { ...SOURCE, isIntent: true } }),
-    ).toThrow(/another chain/);
+    ).toThrow(/wallet-held/);
     expect(() =>
       buildSolanaPlan({ ...args, outputMint: SOLANA_USDC.mint }),
     ).toThrow(/supported Solana asset/);
