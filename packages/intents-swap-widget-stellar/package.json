@@ -3,6 +3,11 @@
   "version": "7.24.0",
   "description": "Stellar connector for the Intents swap widget",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aurora-is-near/intents-swap-widget",
+    "directory": "packages/intents-swap-widget-stellar"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "./dist/index.js",

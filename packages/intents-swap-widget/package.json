@@ -4,6 +4,11 @@
   "description": "Provides components and hooks to build your own Intents swap widget",
   "author": "Maksim Vashchuk",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aurora-is-near/intents-swap-widget",
+    "directory": "packages/intents-swap-widget"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "source": "src/index.ts",
