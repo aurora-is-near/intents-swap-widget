@@ -36,33 +36,21 @@ The monorepo for the **Intents Swap Widget**, a React widget for cross-chain swa
 
 ```mermaid
 flowchart TB
-    subgraph yourapp [Your app]
+    subgraph SA ["@aurora-is-near/intents-swap-widget-standalone"]
       direction LR
-      IF[iframe from Studio]
-      SA["<b>-standalone</b><br/>wallets built in"]
-      CORE_USE["<b>core</b> + your wallets"]
+      AD["<b>Chain adapters</b><br/>-evm · -solana · -stellar"] -- plugins --> CORE["<b>intents-swap-widget</b> (core)<br/>UI · hooks · state · quotes"]
+      MODAL["Wallet modal<br/>AppKit · NEAR Connect · Stellar Wallets Kit"] -- wallets --> CORE
     end
 
-    SA --> CORE["<b>@aurora-is-near/intents-swap-widget</b><br/>UI · hooks · state machine · quotes"]
-    CORE_USE --> CORE
-    SA --> ADAPTERS
-    CORE_USE -.->|"plugins: evm, sol, stellar"| ADAPTERS
-    subgraph ADAPTERS [Chain adapters]
-      direction LR
-      EVM[-evm]
-      SOL[-solana]
-      XLM[-stellar]
-    end
-
-    CORE --> API["Aurora Intents API<br/>(apiKey from Studio)"]
-    IF --> API
+    SA --> API["Aurora Intents API<br/>(apiKey from Studio)"]
     API --> NI[(NEAR Intents)]
 ```
 
+- **Use the whole box** (`-standalone`) for wallets out of the box, **or pick the pieces inside it**: core + the adapters you need + your own wallet connection.
 - **Core** runs the swap flow for all chains: quote, deposit, status. NEAR support is built in.
 - **Adapters** only send the source-chain deposit transaction. Install one per wallet family you connect.
-- **Standalone** = core + all adapters + wallet modal.
-- Every integration needs an **API key** from [Widget Studio](https://studio.aurora.dev/). Fees are configured on that key.
+- **No code?** Embed an iframe from [Widget Studio](https://studio.aurora.dev/). It talks to the same API.
+- Every integration needs an **API key** from Studio. Fees are configured on that key.
 
 ## Documentation
 
