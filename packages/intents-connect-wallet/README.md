@@ -7,6 +7,8 @@ Ported from `intents-swap-widget-evm/-solana/-stellar`, the widget's
 `useMakeNEARFtTransferCall` hook, and `intents-swap-widget-standalone` — with no
 dependency on the widget.
 
+📖 **Docs:** [Wallet integrations](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/wallet-integrations) · [Intents Connect SDK](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk)
+
 ## Why subpaths
 
 Every chain SDK is an **optional peer dependency**, reachable only through its

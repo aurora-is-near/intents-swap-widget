@@ -7,6 +7,8 @@ a service-controlled *intermediary* account.
 No React, no chain SDKs. Its only runtime dependencies are `valtio` and
 `@scure/base`.
 
+📖 **Docs:** [TypeScript SDK](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/typescript-sdk) · [Examples](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/examples) · [Wallet integrations](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/wallet-integrations)
+
 ## What it does for you
 
 A new integration is a **step builder**. Everything else — intermediary

@@ -64,6 +64,7 @@ flowchart TB
 | Privacy | [Confidential swaps](https://docs.intents.aurora.dev/intents-swap/confidential-swaps) |
 | API keys, fee split, reports | [API Keys & Fees](https://docs.intents.aurora.dev/getting-started/api-keys-and-fees) |
 | Swap API (no widget) | [Swap API Reference](https://docs.intents.aurora.dev/api-reference/swap-api-reference) |
+| Intents Connect SDK (beta) | [Intents Connect SDK](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk) · [TypeScript SDK](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/typescript-sdk) · [Wallet integrations](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/wallet-integrations) · [Examples](https://docs.intents.aurora.dev/intents-connect/intents-connect-sdk/examples) |
 
 > [!NOTE]
 > **For AI agents:** [`llms.txt`](https://docs.intents.aurora.dev/llms.txt) indexes all the docs. Add `.md` to any docs URL to get Markdown, or `?ask=<question>` to query it. The source of truth for config is the `WidgetConfig` type in [`packages/intents-swap-widget/src/types/config.ts`](./packages/intents-swap-widget/src/types/config.ts). `yarn check-docs` checks that `docs/configuration.md` documents every key.
