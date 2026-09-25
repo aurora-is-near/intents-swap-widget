@@ -1,7 +1,5 @@
 ---
 icon: gear-complex-code
-tags:
-  - coming-soon
 ---
 
 # Withdraw from Aave to Solana
