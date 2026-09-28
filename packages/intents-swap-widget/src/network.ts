@@ -5,9 +5,14 @@ import type { AxiosRequestConfig } from 'axios';
 import { configStore } from '@/config';
 import type { WidgetEnvironment } from '@/types/config';
 
+// const INTENTS_API_BASE_URLS: Record<WidgetEnvironment, string> = {
+//   production: 'https://intents-api.aurora.dev',
+//   staging: 'https://staging-intents-api.aurora.dev',
+// };
+
 const INTENTS_API_BASE_URLS: Record<WidgetEnvironment, string> = {
-  production: 'https://intents-api.aurora.dev',
-  staging: 'https://staging-intents-api.aurora.dev',
+  production: 'http://localhost:3005',
+  staging: 'http://localhost:3005',
 };
 
 export const getIntentsApiBaseUrl = (): string => {
