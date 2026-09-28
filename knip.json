@@ -34,17 +34,6 @@
         "react",
         "viem"
       ]
-    },
-    "apps/intents-chrome-ext": {
-      "entry": [
-        "src/sidepanel/main.tsx",
-        "src/background/index.ts",
-        "src/content/*.ts",
-        "manifest.config.ts"
-      ],
-      "ignoreDependencies": [
-        "@fontsource/figtree"
-      ]
     }
   }
 }
