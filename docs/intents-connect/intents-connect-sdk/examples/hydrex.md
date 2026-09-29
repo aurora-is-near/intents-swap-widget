@@ -1,31 +1,31 @@
 ---
+description: >-
+  Mint a cbETH/WETH liquidity position on Hydrex (Base) from any chain, in one
+  signature.
 icon: droplet
-description: Mint a cbETH/WETH liquidity position on Hydrex (Base) from any chain, in one signature.
 ---
 
 # Hydrex
-
-> **Beta.** Part of [Examples](README.md).
 
 **A user on any chain opens a concentrated-liquidity position in Hydrex's cbETH/WETH pool on Base.** The position NFT lands in their own wallet. They don't need ETH on Base or a bridge.
 
 ## At a glance
 
-| | |
-|---|---|
-| **Destination** | Base |
-| **Protocol** | Hydrex: cbETH/WETH pool `0xB1383DC4…6e97`, position manager (NPM) `0xC63E9672…Ab86` |
-| **Bridged asset** | Native ETH on Base (`nep141:base.omft.near`) |
-| **Output** | A position NFT minted to the **user's wallet**. The position holds WETH only |
-| **Flow / fee** | `bridge-in` · placeholder (EVM default) · fee paid in ETH |
-| **Source** | [`hydrex/constants.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/hydrex/constants.ts) · [`hydrex/plan.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/hydrex/plan.ts) |
+|                   |                                                                                                                                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Destination**   | Base                                                                                                                                                                                                                                                                          |
+| **Protocol**      | Hydrex: cbETH/WETH pool `0xB1383DC4…6e97`, position manager (NPM) `0xC63E9672…Ab86`                                                                                                                                                                                           |
+| **Bridged asset** | Native ETH on Base (`nep141:base.omft.near`)                                                                                                                                                                                                                                  |
+| **Output**        | A position NFT minted to the **user's wallet**. The position holds WETH only                                                                                                                                                                                                  |
+| **Flow / fee**    | `bridge-in` · placeholder (EVM default) · fee paid in ETH                                                                                                                                                                                                                     |
+| **Source**        | [`hydrex/constants.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/hydrex/constants.ts) · [`hydrex/plan.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/hydrex/plan.ts) |
 
 ## What the user does
 
 1. **Connects** an EVM wallet.
 2. **Picks** a source token and amount on any supported chain.
-3. **Chooses** how to pay: *send from connected wallet*, or deposit to an address or QR code.
-4. **Clicks** *Deposit into cbETH/WETH* and **signs** the Intents Connect message.
+3. **Chooses** how to pay: _send from connected wallet_, or deposit to an address or QR code.
+4. **Clicks** _Deposit into cbETH/WETH_ and **signs** the Intents Connect message.
 5. **Approves** the transfer in the wallet (or sends to the QR address).
 6. **Sees** the status move to success, and the new position appear in the positions list.
 
@@ -58,7 +58,7 @@ sequenceDiagram
     H-->>U: position NFT
 ```
 
-1. **Pick the range.** The dApp reads the pool's current tick and sets `tickUpper = tick − 2` and `tickLower = tickUpper − 100`. The range sits *below* the price, so the position needs WETH only, and WETH is all the bridge delivers.
+1. **Pick the range.** The dApp reads the pool's current tick and sets `tickUpper = tick − 2` and `tickLower = tickUpper − 100`. The range sits _below_ the price, so the position needs WETH only, and WETH is all the bridge delivers.
 2. **Preflight.** The SDK resolves the user's Base intermediary and checks that no other execution is in flight.
 3. **Plan.** `buildSteps` runs with `amount = '{MIN_AMOUNT_OUT}'` (placeholder strategy), so one create call is enough.
 4. **Create.** The execution is created with three steps. The destination is native ETH, so the destination-token rule doesn't apply.
@@ -120,5 +120,5 @@ await exec.run({
 
 ## Related
 
-- [Recipes & fees](../typescript-sdk/recipes-and-fees.md): placeholders and the placeholder strategy
-- [Polymarket](polymarket.md): the same flow with a token destination
+* [Recipes & fees](../typescript-sdk/recipes-and-fees.md): placeholders and the placeholder strategy
+* [Polymarket](polymarket.md): the same flow with a token destination

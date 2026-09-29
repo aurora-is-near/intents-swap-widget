@@ -1,31 +1,31 @@
 ---
+description: >-
+  Fund a Polymarket account with pUSD on Polygon from any chain, in one
+  signature.
 icon: chart-simple
-description: Fund a Polymarket account with pUSD on Polygon from any chain, in one signature.
 ---
 
 # Polymarket
-
-> **Beta.** Part of [Examples](README.md).
 
 **A user on any chain tops up their Polymarket account.** Their funds become pUSD on Polygon, paid straight into the Polymarket account (a proxy contract), ready to trade. They don't need MATIC, a bridge or a Polygon wallet.
 
 ## At a glance
 
-| | |
-|---|---|
-| **Destination** | Polygon |
-| **Protocol** | Uniswap SwapRouter02 `0x68b34658…Fc45`: USDC → pUSD (`0xC011a7E1…2DFB`), 0.01% pool |
-| **Bridged asset** | Native Polygon USDC `0x3c499c…3359` (`nep245:v2_1.omni.hot.tg:137_qiSt…L`) |
-| **Output** | pUSD in the **user's Polymarket account** (not the signing wallet) |
-| **Flow / fee** | `bridge-in` · placeholder (EVM default) · fee paid in USDC |
-| **Source** | [`polymarket/constants.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/polymarket/constants.ts) · [`polymarket/plan.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/polymarket/plan.ts) |
+|                   |                                                                                                                                                                                                                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Destination**   | Polygon                                                                                                                                                                                                                                                                                       |
+| **Protocol**      | Uniswap SwapRouter02 `0x68b34658…Fc45`: USDC → pUSD (`0xC011a7E1…2DFB`), 0.01% pool                                                                                                                                                                                                           |
+| **Bridged asset** | Native Polygon USDC `0x3c499c…3359` (`nep245:v2_1.omni.hot.tg:137_qiSt…L`)                                                                                                                                                                                                                    |
+| **Output**        | pUSD in the **user's Polymarket account** (not the signing wallet)                                                                                                                                                                                                                            |
+| **Flow / fee**    | `bridge-in` · placeholder (EVM default) · fee paid in USDC                                                                                                                                                                                                                                    |
+| **Source**        | [`polymarket/constants.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/polymarket/constants.ts) · [`polymarket/plan.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/apps/intents-connect-demo/src/polymarket/plan.ts) |
 
 ## What the user does
 
 1. **Connects** a wallet (EVM or Solana).
 2. **Pastes** their Polymarket account address. On polymarket.com, hover the account icon to find it. The button stays disabled until the address is valid.
 3. **Picks** a source token and amount, and chooses to send from the wallet or deposit via QR.
-4. **Clicks** *Deposit to Polymarket*, **signs**, and **approves** the transfer.
+4. **Clicks** _Deposit to Polymarket_, **signs**, and **approves** the transfer.
 5. **Sees** the account's pUSD balance update on success.
 
 ## How it works
@@ -113,5 +113,5 @@ await exec.run({
 
 ## Related
 
-- [Recipes & fees](../typescript-sdk/recipes-and-fees.md#rules-and-limits): the destination-token and recipient rules
-- [Hydrex](hydrex.md): the same flow with a native destination
+* [Recipes & fees](../typescript-sdk/recipes-and-fees.md#rules-and-limits): the destination-token and recipient rules
+* [Hydrex](hydrex.md): the same flow with a native destination
