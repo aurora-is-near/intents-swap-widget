@@ -8,6 +8,10 @@
 * [Use cases](getting-started/use-cases.md)
 * [API Keys & Fees](getting-started/api-keys-and-fees.md)
 * [Client Portal](getting-started/client-portal.md)
+* [Integration Best Practices](getting-started/integration-best-practices/README.md)
+  * [Handling Support Cases](getting-started/integration-best-practices/handling-support-cases.md)
+  * [Fees Collection](getting-started/integration-best-practices/fees-collection.md)
+  * [UX Recommendations](getting-started/integration-best-practices/ux-recommendations.md)
 
 ## Intents Connect
 
@@ -55,10 +59,6 @@
     * [Sui as destination](intents-connect/developer-guides/sui/sui-as-destination.md)
   * [Submit signing](intents-connect/developer-guides/submit-signing.md)
   * [Delete execution](intents-connect/developer-guides/delete-execution.md)
-* [Integration Best Practices](intents-connect/integration-best-practices/README.md)
-  * [Handling Support Cases](intents-connect/integration-best-practices/handling-support-cases.md)
-  * [Fees Collection](intents-connect/integration-best-practices/fees-collection.md)
-  * [UX Recommendations](intents-connect/integration-best-practices/ux-recommendations.md)
 
 ## Intents Deposits
 
