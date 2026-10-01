@@ -12,6 +12,7 @@ import { getUrlBooleanParam, getUrlParam } from './utils/get-url-param';
 
 import { Menu } from './components/Menu';
 import { Header } from './components/Header';
+import { MaintenanceBanner } from './components/MaintenanceBanner';
 import { CreatorPanel } from './components/creatorPanel/CreatorPanel';
 import { WidgetSection } from './components/widget/WidgetSection';
 import { WidgetContent } from './components/widget/WidgetContent';
@@ -157,63 +158,69 @@ const AppContent = () => {
 
   if (isRemoteConfigLoading) {
     return (
-      <main className="flex flex-col py-csw-2xl sm:p-csw-2xl relative sm:h-full lg:max-h-screen lg:overflow-hidden bg-[#1D1E24] min-h-full">
-        <Header
-          onOpenDrawer={() => setIsDrawerOpen(true)}
-          onOpenExportModal={openExportModal}
-        />
-        <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
-          <WidgetSection>
-            <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full max-w-[456px] sm:w-[456px]">
-              <div className="w-full gap-csw-lg relative flex flex-col">
-                <div className="gap-csw-lg relative flex flex-col">
-                  <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
-                  <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
+      <div className="flex flex-col min-h-full sm:h-full bg-[#1D1E24]">
+        <MaintenanceBanner />
+        <main className="flex flex-col flex-grow py-csw-2xl sm:p-csw-2xl relative sm:min-h-0 lg:overflow-hidden bg-[#1D1E24]">
+          <Header
+            onOpenDrawer={() => setIsDrawerOpen(true)}
+            onOpenExportModal={openExportModal}
+          />
+          <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
+            <WidgetSection>
+              <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full max-w-[456px] sm:w-[456px]">
+                <div className="w-full gap-csw-lg relative flex flex-col">
+                  <div className="gap-csw-lg relative flex flex-col">
+                    <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
+                    <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[165px]" />
+                  </div>
+                  <div className="gap-csw-lg relative flex flex-col">
+                    <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[44px]" />
+                    <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[48px]" />
+                  </div>
                 </div>
-                <div className="gap-csw-lg relative flex flex-col">
-                  <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[44px]" />
-                  <div className="animate-pulse rounded-csw-lg bg-csw-gray-800 h-[48px]" />
-                </div>
+              </aside>
+            </WidgetSection>
+            <section className="hidden lg:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full lg:max-w-[455px] lg:w-full lg:h-full">
+              <div className="flex flex-col px-csw-2xl sm:pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full w-full gap-[22px]">
+                <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[38px]" />
+                <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[274px]" />
+                <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[380px]" />
+                <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[324px]" />
               </div>
-            </aside>
-          </WidgetSection>
-          <section className="hidden lg:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full lg:max-w-[455px] lg:w-full lg:h-full">
-            <div className="flex flex-col px-csw-2xl sm:pt-[22px] pb-csw-2xl overflow-y-auto custom-scrollbar custom-scrollbar-offset-2xl h-full w-full gap-[22px]">
-              <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[38px]" />
-              <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[274px]" />
-              <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[380px]" />
-              <div className="bg-csw-gray-800 animate-pulse rounded-csw-md w-full h-[324px]" />
-            </div>
-          </section>
-        </div>
-      </main>
+            </section>
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
     <>
-      <main className="flex flex-col py-csw-2xl sm:p-csw-2xl relative sm:h-full lg:max-h-screen lg:overflow-hidden bg-[#1D1E24] min-h-full">
-        <Header
-          onOpenDrawer={() => setIsDrawerOpen(true)}
-          onOpenExportModal={openExportModal}
-        />
-        <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
-          <WidgetSection>
-            <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full lg:w-auto">
-              {widgetConfigLoadError ? (
-                <div className="w-full max-w-[456px] sm:w-[456px]">
-                  <BlockingError message="Couldn't load widget configuration." />
-                </div>
-              ) : (
-                <WidgetContent />
-              )}
-            </aside>
-          </WidgetSection>
-          <section className="hidden lg:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full lg:max-w-[455px] lg:w-full lg:h-full">
-            <CreatorPanel />
-          </section>
-        </div>
-      </main>
+      <div className="flex flex-col min-h-full sm:h-full bg-[#1D1E24]">
+        <MaintenanceBanner />
+        <main className="flex flex-col flex-grow py-csw-2xl sm:p-csw-2xl relative sm:min-h-0 lg:overflow-hidden bg-[#1D1E24]">
+          <Header
+            onOpenDrawer={() => setIsDrawerOpen(true)}
+            onOpenExportModal={openExportModal}
+          />
+          <div className="flex items-center lg:items-stretch flex-grow mt-csw-2xl gap-csw-2xl flex-col lg:flex-row lg:h-[calc(100%-62px)]">
+            <WidgetSection>
+              <aside className="mt-csw-2xl sm:mt-csw-10xl m-auto sw w-full lg:w-auto">
+                {widgetConfigLoadError ? (
+                  <div className="w-full max-w-[456px] sm:w-[456px]">
+                    <BlockingError message="Couldn't load widget configuration." />
+                  </div>
+                ) : (
+                  <WidgetContent />
+                )}
+              </aside>
+            </WidgetSection>
+            <section className="hidden lg:flex bg-csw-gray-950 rounded-csw-lg max-w-full w-full lg:max-w-[455px] lg:w-full lg:h-full">
+              <CreatorPanel />
+            </section>
+          </div>
+        </main>
+      </div>
       <Menu
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
