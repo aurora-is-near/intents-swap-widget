@@ -73,6 +73,21 @@
   * [Custom actions - Widget](intents-deposits/custom-actions/custom-actions-widget.md)
   * [Custom actions - API](intents-deposits/custom-actions/custom-actions-api.md)
 
+## Intents Swap
+
+* [What is Swap Widget?](intents-swap/what-is-swap-widget.md)
+* [Supported Assets](intents-swap/supported-assets.md)
+* [Supported Chains](intents-swap/supported-chains.md)
+* [Widget integration](intents-swap/widget-integration.md)
+* [Widget Configuration](intents-swap/widget-configuration/README.md)
+  * [Get started](intents-swap/widget-configuration/get-started.md)
+  * [Theming](intents-swap/widget-configuration/theming.md)
+  * [Wallet Connection](intents-swap/widget-configuration/wallet-connection.md)
+  * [Troubleshooting](intents-swap/widget-configuration/troubleshooting.md)
+  * [Localisation](intents-swap/widget-configuration/localisation.md)
+  * [Widgets](intents-swap/widget-configuration/widgets.md)
+* [Confidential Swaps](intents-swap/confidential-swaps.md)
+
 ## API Reference
 
 * [Swap API Reference](api-reference/swap-api-reference/README.md)
@@ -100,18 +115,3 @@
   * [Delete an execution](api-reference/intents-connect-api-reference/delete-an-execution.md)
   * [Submit digest](api-reference/intents-connect-api-reference/submit-digest.md)
   * [Submit deposit hash](api-reference/intents-connect-api-reference/submit-deposit-hash.md)
-
-## Intents Swap
-
-* [What is Swap Widget?](intents-swap/what-is-swap-widget.md)
-* [Supported Assets](intents-swap/supported-assets.md)
-* [Supported Chains](intents-swap/supported-chains.md)
-* [Widget integration](intents-swap/widget-integration.md)
-* [Widget Configuration](intents-swap/widget-configuration/README.md)
-  * [Get started](intents-swap/widget-configuration/get-started.md)
-  * [Theming](intents-swap/widget-configuration/theming.md)
-  * [Wallet Connection](intents-swap/widget-configuration/wallet-connection.md)
-  * [Troubleshooting](intents-swap/widget-configuration/troubleshooting.md)
-  * [Localisation](intents-swap/widget-configuration/localisation.md)
-  * [Widgets](intents-swap/widget-configuration/widgets.md)
-* [Confidential Swaps](intents-swap/confidential-swaps.md)
