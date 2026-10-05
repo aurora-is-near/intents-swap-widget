@@ -13,8 +13,15 @@ export const MaintenanceBanner = () => {
       className="w-full shrink-0 flex items-center justify-center gap-csw-md px-csw-2xl py-csw-lg bg-csw-status-warning">
       <p className="text-csw-body-md text-csw-gray-950 text-center">
         Intents is currently under maintenance, some features may be temporarily
-        inactive. Quotes and swapping will return as soon as maintenance is
-        complete.
+        inactive. Check{' '}
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://status.near-intents.org/posts/dashboard"
+          className="text-csw-accent-700 underline">
+          status page
+        </a>{' '}
+        for updates.
       </p>
     </div>
   );

@@ -110,6 +110,8 @@ export type LocalisationKeys =
   | 'submit.error.apiKeyRequired'
   | 'submit.error.apiKeyRequired.message'
   | 'submit.warning.balanceMax.message'
+  | 'submit.error.quoteFailed.noPair.message'
+  | 'submit.error.quoteFailed.noPair.label'
   // send address
   | 'sendAddress.label'
   | 'sendAddress.myWalletLabel'

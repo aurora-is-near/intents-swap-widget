@@ -44,6 +44,7 @@ export type InitialExternalStateError =
 export type InputValidDryError =
   | { code: 'NO_NEAR_TOKEN_FOUND'; meta: { symbol: string } }
   | { code: 'TOKEN_IS_NOT_SUPPORTED' }
+  | { code: 'QUOTE_PAIR_NOT_AVAILABLE' }
   | { code: 'QUOTE_FAILED'; meta: { message: string } }
   | { code: 'QUOTE_INVALID'; meta: { isDry: boolean } }
   | { code: 'QUOTE_INVALID_INITIAL'; meta: { isDry: boolean; message: string } }

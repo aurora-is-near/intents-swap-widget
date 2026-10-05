@@ -518,6 +518,12 @@ export const useMakeQuote = () => {
           });
         }
 
+        if (errorMessage.includes('Quoting for this pair is not available')) {
+          throw new QuoteError({
+            code: 'QUOTE_PAIR_NOT_AVAILABLE',
+          });
+        }
+
         throw error;
       }
 

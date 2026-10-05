@@ -174,6 +174,29 @@ const useGetErrorButton = (ctx: Context) => {
 
   // other quote errors
   if (ctx.quoteStatus === 'error') {
+    if (ctx.error?.code === 'QUOTE_PAIR_NOT_AVAILABLE') {
+      return (
+        <div className="gap-sw-md flex flex-col">
+          <Button state="disabled" {...commonBtnProps}>
+            {t('submit.error.quoteFailed.noPair.label', 'Pair not available')}
+          </Button>
+          <StatusMessage state="warning">
+            <Trans i18nKey="submit.error.quoteFailed.noPair.message">
+              We couldn’t finalize your quote. Check{' '}
+              <a
+                href="https://partners.near-intents.org/shield/status"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline">
+                status page
+              </a>{' '}
+              for details or try again or adjust your values.
+            </Trans>
+          </StatusMessage>
+        </div>
+      );
+    }
+
     return (
       <div className="gap-sw-md flex flex-col">
         <Button state="error" {...commonBtnProps}>
