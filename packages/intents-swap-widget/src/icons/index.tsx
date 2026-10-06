@@ -52,6 +52,7 @@ import XbtcIcon from './xbtc.svg';
 import XdaiIcon from './xdai.svg';
 import XrpIcon from './xrp.svg';
 import ZecIcon from './zec.svg';
+import QtcIcon from './qtc.svg';
 import StellarIcon from './stellar.svg';
 import AleoIcon from './aleo.svg';
 import BchIcon from './bch.svg';
@@ -124,6 +125,7 @@ export const ASSET_ICONS: Record<string, React.ReactElement> = {
   doge: <DogeIcon />,
   eth: <EthIcon />,
   frax: <FraxIcon />,
+  qtc: <QtcIcon />,
   gnear: <GnearIcon />,
   gnosis: <GnosisIcon />,
   itlx: <ItlxIcon />,
