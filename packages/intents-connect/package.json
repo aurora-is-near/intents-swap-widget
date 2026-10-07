@@ -1,6 +1,6 @@
 {
   "name": "@aurora-is-near/intents-connect",
-  "version": "7.24.4",
+  "version": "7.25.0",
   "description": "Headless client for the Aurora Intents Connect execution API, with optional React bindings",
   "license": "MIT",
   "repository": {
