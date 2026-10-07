@@ -1,7 +1,3 @@
-import {
-  OneClickService,
-  TokenResponse,
-} from '@defuse-protocol/one-click-sdk-typescript';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {
@@ -11,6 +7,10 @@ import {
   SimpleToken,
   TOKENS_DATA,
 } from '@aurora-is-near/intents-swap-widget';
+
+import { getTokens } from '@/api/requests/getTokens';
+import { getWidgetApiKey } from '@/utils/get-widget-api-key';
+import { useCreator } from './useCreatorConfig';
 
 export type TokenType = {
   decimals: number;
@@ -45,11 +45,13 @@ const getTokenChain = (blockchain: string): Chains | null => {
 };
 
 export const useTokens = (): SimpleToken[] => {
-  const { data } = useQuery<TokenResponse[]>({
-    queryKey: ['tokens'],
-    queryFn: async (): Promise<TokenResponse[]> => {
-      return OneClickService.getTokens();
-    },
+  const { state } = useCreator();
+  const apiKey = getWidgetApiKey(state.apiKey);
+
+  // Same list the preview widget loads for this API key.
+  const { data } = useQuery({
+    queryKey: ['fee-service-tokens', apiKey],
+    queryFn: () => getTokens(apiKey),
   });
 
   if (!data || data.length === 0) {
@@ -76,7 +78,7 @@ export const useTokens = (): SimpleToken[] => {
     })
     .filter((token): token is SimpleToken => token !== null);
 
-  // 1Click does not return Aurora tokens, so we synthesise them from a
+  // The fee service does not return Aurora tokens, so we synthesise them from a
   // hardcoded map (mirrors the widget's own useTokens).
   const auroraTokens = AURORA_BRIDGEABLE_ASSETS.map(
     (asset): SimpleToken | null => {

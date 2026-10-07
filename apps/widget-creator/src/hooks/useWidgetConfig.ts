@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
-import { DEFAULT_APP_KEY, PLACEHOLDER_APP_KEY } from '@/constants';
 import type { SerializableWidgetConfig } from '@/api/types';
 import { getAllowedTokensList } from '@/utils/tokenSelection';
 import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
+import { getWidgetApiKey } from '@/utils/get-widget-api-key';
 import { useTokensGroupedBySymbol } from './useTokens';
 import { useCreator } from './useCreatorConfig';
 
@@ -34,10 +34,7 @@ export const useWidgetConfig = () => {
     );
 
     return {
-      apiKey:
-        state.apiKey && state.apiKey !== PLACEHOLDER_APP_KEY
-          ? state.apiKey
-          : DEFAULT_APP_KEY,
+      apiKey: getWidgetApiKey(state.apiKey),
       connectedWallets: {},
       slippageTolerance: 100,
       confidentialMode: state.confidentialMode,
