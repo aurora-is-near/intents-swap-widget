@@ -235,7 +235,7 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
   },
   qtc: {
     id: 'qtc',
-    label: 'Qubitcoin',
+    label: 'Quantus',
   },
 };
 

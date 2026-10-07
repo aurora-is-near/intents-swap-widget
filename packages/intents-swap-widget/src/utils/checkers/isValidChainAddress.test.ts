@@ -33,10 +33,16 @@ describe('isValidChainAddress', () => {
     expect(isValidChainAddress('btc', addr)).toBe(expected);
   });
 
-  // Real Qubitcoin addresses, taken from explorer.superquantum.io.
+  // Real Quantus addresses, taken from explorer.quantus.com.
   it.each([
-    ['bc1qe3eyy59mjegr046mm3tt4nrjaexxjugu8ud4l4', true],
-    ['3NZ63ooNmEtWMTTseuwmAik9LvZfTVbt38', true],
+    ['qznE1MGLKBzbHnnndbEQ6xSn3XkjMQzyRF6Rm5mrd5mhQN1hT', true],
+    ['qzkfaz6NtU41fUx3T3GE8mjEwwZtuMqsGwzw9usnKzRMhAb1o', true],
+    // One character short / long.
+    ['qznE1MGLKBzbHnnndbEQ6xSn3XkjMQzyRF6Rm5mrd5mhQN1h', false],
+    ['qznE1MGLKBzbHnnndbEQ6xSn3XkjMQzyRF6Rm5mrd5mhQN1hTT', false],
+    // `0` is not a base58 character.
+    ['qznE1MGLKBzbHnnndbEQ6xSn3XkjMQzyRF6Rm5mrd5mhQN1h0', false],
+    ['bc1qe3eyy59mjegr046mm3tt4nrjaexxjugu8ud4l4', false],
     ['0x5a52e96bacdabb82fd05763e25335261b270efcb', false],
     ['alice.near', false],
   ])('qtc %s -> %s', (addr, expected) => {

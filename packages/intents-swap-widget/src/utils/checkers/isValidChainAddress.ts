@@ -17,6 +17,7 @@ import { isDashAddress } from '../chains/isDashAddress';
 import { isStarknetAddress } from '../chains/isStarknetAddress';
 import { isBchAddress } from '../chains/isBchAddress';
 import { isAleoAddress } from '../chains/isAleoAddress';
+import { isQuantusAddress } from '../chains/isQuantusAddress';
 
 /**
  * Returns `true`/`false` for a known chain, or `null` when the chain has no
@@ -39,8 +40,7 @@ export const isValidChainAddress = (
     case 'btc':
       return isBtcAddress(address);
     case 'qtc':
-      // Qubitcoin uses Bitcoin's address formats (`bc1…`, `3…`).
-      return isBtcAddress(address);
+      return isQuantusAddress(address);
     case 'doge':
       return isDogeAddress(address);
     case 'stellar':
