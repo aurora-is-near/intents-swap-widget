@@ -103,6 +103,21 @@ export const useTokens = (): SimpleToken[] => {
   return [...tokens, ...auroraTokens];
 };
 
+// Chains the API key has at least one token on (the fee service hides
+// restricted ones, e.g. QTC, from keys not allowed them). Every chain is
+// offered until the list loads, so the pickers never come up empty.
+export const useAvailableChains = (): typeof CHAINS => {
+  const tokens = useTokens();
+
+  if (!tokens.length) {
+    return CHAINS;
+  }
+
+  const chainsWithTokens = new Set(tokens.map((token) => token.blockchain));
+
+  return CHAINS.filter((chain) => chainsWithTokens.has(chain.id));
+};
+
 export const useTokensGroupedBySymbol = (): TokenType[] => {
   const tokens = useTokens();
 

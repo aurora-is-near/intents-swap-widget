@@ -8,7 +8,11 @@ import {
   Icon,
   SimpleToken,
 } from '@aurora-is-near/intents-swap-widget';
-import { getTokenIcon, useTokens } from '../../hooks/useTokens';
+import {
+  getTokenIcon,
+  useAvailableChains,
+  useTokens,
+} from '../../hooks/useTokens';
 import { getChainName } from '../../utils/get-chain-name';
 
 interface TokenWithChainSelectorProps {
@@ -27,6 +31,7 @@ export function TokenWithChainSelector({
   const [isChainDropdownOpen, setIsChainDropdownOpen] = useState(false);
 
   const allTokens = useTokens();
+  const availableChains = useAvailableChains();
 
   useEffect(() => {
     if (isOpen) {
@@ -147,7 +152,7 @@ export function TokenWithChainSelector({
                         All networks
                       </span>
                     </button>
-                    {CHAINS.map((chain) => (
+                    {availableChains.map((chain) => (
                       <button
                         key={chain.id}
                         onClick={() => {

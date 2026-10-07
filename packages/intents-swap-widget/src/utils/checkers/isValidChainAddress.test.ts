@@ -33,6 +33,16 @@ describe('isValidChainAddress', () => {
     expect(isValidChainAddress('btc', addr)).toBe(expected);
   });
 
+  // Real Qubitcoin addresses, taken from explorer.superquantum.io.
+  it.each([
+    ['bc1qe3eyy59mjegr046mm3tt4nrjaexxjugu8ud4l4', true],
+    ['3NZ63ooNmEtWMTTseuwmAik9LvZfTVbt38', true],
+    ['0x5a52e96bacdabb82fd05763e25335261b270efcb', false],
+    ['alice.near', false],
+  ])('qtc %s -> %s', (addr, expected) => {
+    expect(isValidChainAddress('qtc', addr)).toBe(expected);
+  });
+
   it.each([
     ['ltc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el', true],
     ['LTC1Q8C6FSHW2DLWUN7EKN9QWF37CU2RN755UPCP6EL', true],

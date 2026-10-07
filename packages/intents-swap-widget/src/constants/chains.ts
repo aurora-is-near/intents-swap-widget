@@ -62,6 +62,7 @@ export const NOT_EVM_CHAINS = [
   'dash',
   'starknet',
   'hypercore',
+  'qtc',
 ] as const;
 
 export const CHAINS = [...EVM_CHAINS, ...NOT_EVM_CHAINS] as const;
@@ -100,6 +101,7 @@ export const CHAIN_BASE_TOKENS: Partial<Record<Chains, string>> = {
   bch: 'BCH',
   dash: 'DASH',
   starknet: 'STRK',
+  qtc: 'QTC',
 };
 
 export const CHAINS_LIST: Record<Chains, Chain> = {
@@ -231,6 +233,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'hypercore',
     label: 'Hyperliquid',
   },
+  qtc: {
+    id: 'qtc',
+    label: 'Qubitcoin',
+  },
 };
 
 export const DEFAULT_CHAINS_ORDER: Chains[] = [
@@ -264,4 +270,5 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'adi',
   'aurora',
   'hypercore',
+  'qtc',
 ];

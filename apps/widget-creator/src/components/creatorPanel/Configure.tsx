@@ -17,7 +17,10 @@ import { TokenTag } from '../../uikit/TokenTag';
 import { useCreator } from '../../hooks/useCreatorConfig';
 import { RadioButton } from '../../uikit/RadioButton';
 import { Toggle } from '../../uikit/Toggle';
-import { useTokensGroupedBySymbol } from '../../hooks/useTokens';
+import {
+  useAvailableChains,
+  useTokensGroupedBySymbol,
+} from '../../hooks/useTokens';
 import {
   getSelectableTokenSymbols,
   isTokenAvailable,
@@ -40,6 +43,7 @@ export function Configure() {
   );
 
   const allTokens = useTokensGroupedBySymbol();
+  const availableChains = useAvailableChains();
   const allTokenSymbols = allTokens.map((token) => token.symbol);
   const selectedTokens = getSelectableTokenSymbols(
     state.selectedTokenSymbols ?? allTokenSymbols,
@@ -105,10 +109,14 @@ export function Configure() {
         )
       : true;
 
+  // Only count selected networks that are listed, so a chain hidden for this
+  // API key doesn't inflate the count or break "all selected".
   const selectedNetworkCount =
-    state.selectedNetworks.length + (isIntentsNetworkSelected ? 1 : 0);
+    availableChains.filter((chain) => state.selectedNetworks.includes(chain.id))
+      .length + (isIntentsNetworkSelected ? 1 : 0);
 
-  const totalNetworkCount = CHAINS.length + (isIntentsNetworkShown ? 1 : 0);
+  const totalNetworkCount =
+    availableChains.length + (isIntentsNetworkShown ? 1 : 0);
 
   const allNetworksSelected = selectedNetworkCount === totalNetworkCount;
 
@@ -302,7 +310,7 @@ export function Configure() {
                 onClick={() => {
                   const newNetworks = allNetworksSelected
                     ? []
-                    : CHAINS.map((chain) => chain.id);
+                    : availableChains.map((chain) => chain.id);
 
                   // Keep the Intents tile in sync with Select/Deselect all, but
                   // leave account abstraction untouched where it has no tile.
@@ -323,7 +331,7 @@ export function Configure() {
               </OutlinedButton>
             </div>
             <div className="flex flex-wrap gap-csw-md">
-              {CHAINS.map((chain) => (
+              {availableChains.map((chain) => (
                 <button
                   key={chain.id}
                   onClick={() => {

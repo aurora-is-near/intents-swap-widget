@@ -38,6 +38,9 @@ export const isValidChainAddress = (
   switch (chain) {
     case 'btc':
       return isBtcAddress(address);
+    case 'qtc':
+      // Qubitcoin uses Bitcoin's address formats (`bc1…`, `3…`).
+      return isBtcAddress(address);
     case 'doge':
       return isDogeAddress(address);
     case 'stellar':

@@ -106,6 +106,7 @@ export const CHAIN_ICONS: Record<
   xlayer: <XlayerIcon />,
   aurora: <AuroraIcon />,
   hypercore: <HypercoreIcon />,
+  qtc: <QtcIcon />,
 };
 
 export const ASSET_ICONS: Record<string, React.ReactElement> = {
