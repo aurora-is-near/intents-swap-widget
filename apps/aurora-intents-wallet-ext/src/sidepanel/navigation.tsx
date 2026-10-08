@@ -24,6 +24,7 @@ type Screen =
   | { name: 'send'; source?: Token }
   | { name: 'asset'; token: Token }
   | { name: 'activity' }
+  | { name: 'apps' }
   | { name: 'activityDetail'; transaction: ActivityTransaction }
   | { name: 'settings' };
 

@@ -14,6 +14,7 @@ import { NavigationProvider, useNavigation } from './navigation';
 import { isAccountVerified } from './wallet/walletVerification';
 import { ActivityDetailScreen } from './screens/activity/ActivityDetailScreen';
 import { ActivityScreen } from './screens/activity/ActivityScreen';
+import { AppsScreen } from './screens/apps/AppsScreen';
 import { AssetScreen } from './screens/asset/AssetScreen';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
@@ -70,6 +71,8 @@ const Screens = ({ account }: { account: Account | null }) => {
       return account ? (
         <SendScreen account={account} source={screen.source} />
       ) : null;
+    case 'apps':
+      return account ? <AppsScreen account={account} /> : null;
     case 'activity':
       return account ? <ActivityScreen /> : null;
     case 'activityDetail':

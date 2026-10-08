@@ -297,7 +297,12 @@ export const HomeScreen = ({ account }: { account: Account }) => {
                 label="Send"
                 onClick={() => push({ name: 'send' })}
               />
-              <ActionButton icon="apps" label="Apps" />
+              <ActionButton
+                icon="apps"
+                label="Apps"
+                tone="light"
+                onClick={() => push({ name: 'apps' })}
+              />
             </nav>
             {assets.isEmpty ? (
               <EmptyCard onDeposit={openDeposit} />
