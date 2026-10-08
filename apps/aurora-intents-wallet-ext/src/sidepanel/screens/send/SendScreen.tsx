@@ -33,11 +33,14 @@ import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
 import { NetworkSelect } from './NetworkSelect';
 
-/** Sends spend the account's intents balance. */
-const SOURCE_FILTER: ChainsFilter = {
+/**
+ * Sends spend the account's intents balance and, for a wallet account, the
+ * wallet's tokens (through 1Click, like a swap from the wallet).
+ */
+const sourceFilter = (hasWallet: boolean): ChainsFilter => ({
   intents: 'with-balance',
-  external: 'none',
-};
+  external: hasWallet ? 'with-balance' : 'none',
+});
 
 /** The source asset on every network it exists on, one token per chain. */
 const networksOf = (tokens: Token[], source: Token | undefined) => {
@@ -72,7 +75,7 @@ const ADDRESS_ERRORS: string[] = [
 const isSameToken = (a: Token, b: Token) =>
   a.assetId === b.assetId && a.blockchain === b.blockchain;
 
-/** Withdraws an intents token to an address, on a network of that asset. */
+/** Sends a token (from the account or the wallet) to an address, on a network of that asset. */
 export const SendScreen = ({
   account,
   source,
@@ -84,7 +87,7 @@ export const SendScreen = ({
   const { ctx } = useUnsafeSnapshot();
   const { tokens, status: tokensStatus, refetch } = useTokens();
   const { onChangeAmount, onChangeToken, isLoading, isEmpty } = useTransferForm(
-    { fromWallet: false, preferredSource: source },
+    { fromWallet: account.kind === 'wallet', preferredSource: source },
   );
 
   const outcome = useTransferOutcome();
@@ -216,7 +219,7 @@ export const SendScreen = ({
         screenTitle="Send"
         title={`Sending ${summary.amountIn} ${summary.source.symbol} to ${summary.target.chainName}`}
         isSigned={outcome.isSigned}
-        isFromWallet={false}
+        isFromWallet={!summary.source.isIntent}
         steps={[
           `Sending on ${summary.target.chainName}`,
           'Delivered to the recipient',
@@ -242,7 +245,7 @@ export const SendScreen = ({
         screenTitle="Send"
         tone="error"
         title="Send wasn’t completed"
-        description={`Nothing was sent. Your ${summary.amountIn} ${summary.source.symbol} is refunded to your account.`}
+        description={`Nothing was sent. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent || account.kind !== 'wallet' ? 'your account' : account.name}.`}
         notes={noteRows}
         footer={
           <>
@@ -293,7 +296,7 @@ export const SendScreen = ({
     return (
       <TokenPicker
         variant="source"
-        chainsFilter={SOURCE_FILTER}
+        chainsFilter={sourceFilter(account.kind === 'wallet')}
         onSelect={(token) => {
           onChangeToken('source', token);
           setIsPickerOpen(false);

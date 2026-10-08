@@ -146,6 +146,29 @@ export const SwapScreen = ({
     }
   }, [isSendOutRequired]);
 
+  /**
+   * The widget's auto-switching (off for the extension, so Send can target
+   * its source token): the other side's token flips the two around.
+   */
+  const selectToken = (variant: 'source' | 'target', token: Token) => {
+    const other = variant === 'source' ? ctx.targetToken : ctx.sourceToken;
+    const isOther =
+      !!other &&
+      other.assetId === token.assetId &&
+      other.isIntent === token.isIntent &&
+      other.blockchain === token.blockchain;
+
+    const current = variant === 'source' ? ctx.sourceToken : ctx.targetToken;
+
+    if (!isOther) {
+      onChangeToken(variant, token);
+    } else if (current) {
+      // As the widget: with nothing to flip to, picking the other side's
+      // token does nothing.
+      fireEvent('tokenSelectRotate', null);
+    }
+  };
+
   const toggleSendsOut = (isOn: boolean) => {
     setSendsOut(isOn);
 
@@ -353,7 +376,7 @@ export const SwapScreen = ({
         variant={picker}
         chainsFilter={chainsFilter[picker]}
         onSelect={(token) => {
-          onChangeToken(picker, token);
+          selectToken(picker, token);
           setPicker('none');
         }}
         onClose={() => setPicker('none')}
@@ -398,7 +421,7 @@ export const SwapScreen = ({
                   onChangeAmount('source', msg.amount);
                   break;
                 case 'on_select_token':
-                  onChangeToken('source', msg.token);
+                  selectToken('source', msg.token);
                   break;
                 default:
                   setPicker('source');
@@ -424,7 +447,7 @@ export const SwapScreen = ({
                   onChangeAmount('target', msg.amount);
                   break;
                 case 'on_select_token':
-                  onChangeToken('target', msg.token);
+                  selectToken('target', msg.token);
                   break;
                 default:
                   setPicker('target');

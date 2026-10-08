@@ -206,12 +206,7 @@ export const AssetScreen = ({
           <ActionButton
             icon="send"
             label="Send"
-            // Sends spend the account's balance.
-            onClick={
-              token.isIntent
-                ? () => push({ name: 'send', source: token })
-                : undefined
-            }
+            onClick={() => push({ name: 'send', source: token })}
           />
           <ActionButton
             icon="swap"

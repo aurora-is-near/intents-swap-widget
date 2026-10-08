@@ -33,13 +33,16 @@ export const EmptyAccount = ({ title, account }: Props) => {
           <Icon name={title === 'Send' ? 'send' : 'swap'} size={28} />
         </div>
         <div className="flex flex-col items-center gap-sw-md">
-          <h2 className="text-sw-h5 text-sw-gray-50">Your account is empty</h2>
-          <p className="max-w-[300px] text-sw-body-md text-sw-gray-200">
-            {title === 'Send' ? 'Sends' : 'Swaps'} spend your account balance.
-            Receive funds from any chain to get started.
+          <h2 className="text-sw-h5 text-sw-gray-50">
             {account.kind === 'wallet'
-              ? ` Tokens in ${account.name} can be sent to your deposit addresses too.`
-              : ''}
+              ? `Nothing to ${title.toLowerCase()} yet`
+              : 'Your account is empty'}
+          </h2>
+          <p className="max-w-[300px] text-sw-body-md text-sw-gray-200">
+            {account.kind === 'wallet'
+              ? `Your account and ${account.name} have no tokens.`
+              : `${title === 'Send' ? 'Sends' : 'Swaps'} spend your account balance.`}{' '}
+            Receive funds from any chain to get started.
           </p>
         </div>
       </div>

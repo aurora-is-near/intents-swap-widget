@@ -74,7 +74,8 @@ Both run on the swap widget's state machine (quotes, validation, signing) with
 the extension's own screens. As in the widget, swaps go between the account's
 NEAR Intents balance and, for a wallet account, the connected wallet, in any
 direction; "Send to another address" swaps out to an address on any chain.
-Send withdraws an intents token to an address on a network of the same asset.
+Send moves a token (from the account or, for a wallet account, the wallet) to
+an address on a network of the same asset; wallet tokens go through 1Click.
 Result screens follow 1Click's execution status, so "complete" means filled,
 and an unfilled swap shows as refunded.
 

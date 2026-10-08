@@ -65,6 +65,9 @@ export const buildWidgetConfig = (
   const service = {
     apiKey: FEE_SERVICE_API_KEY,
     intentsApiUrl: WIDGET_INTENTS_API_URL,
+    // Send's target may be its source token (same asset, same chain);
+    // Swap flips the tokens itself instead.
+    enableAutoTokensSwitching: false,
   };
 
   if (!account) {
