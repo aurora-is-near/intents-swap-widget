@@ -4,6 +4,7 @@ import { Button } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import { Icon } from '../../components/Icon';
+import { PrimaryBadge } from '../../components/PrimaryBadge';
 import { Screen } from '../../components/Screen';
 import type { WalletOption } from './walletOptions';
 
@@ -75,9 +76,7 @@ export const WalletPicker = <T extends WalletOption>({
                         {option.name}
                       </span>
                       {option.badge ? (
-                        <span className="shrink-0 rounded-full bg-sw-accent-950 px-sw-sm py-[1px] text-sw-label-sm text-sw-accent-600">
-                          {option.badge}
-                        </span>
+                        <PrimaryBadge label={option.badge} />
                       ) : null}
                     </span>
                     <span className="truncate text-sw-label-sm text-sw-gray-300">

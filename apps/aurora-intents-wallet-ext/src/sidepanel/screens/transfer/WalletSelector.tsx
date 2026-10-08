@@ -1,4 +1,5 @@
 import { Icon } from '../../components/Icon';
+import { PrimaryBadge } from '../../components/PrimaryBadge';
 import { shortAddress } from '../../utils';
 import type { WalletOption } from './walletOptions';
 
@@ -42,6 +43,7 @@ export const WalletSelector = ({
           </span>
         ) : null}
       </span>
+      {option.badge ? <PrimaryBadge label={option.badge} /> : null}
       {onClick ? (
         <span className="shrink-0 text-sw-gray-300">
           <Icon name="chevronDown" size={16} />

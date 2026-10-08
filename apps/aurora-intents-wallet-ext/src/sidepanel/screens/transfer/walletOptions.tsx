@@ -50,6 +50,8 @@ const walletIcon =
     />
   );
 
+const PRIMARY = 'Primary';
+
 /**
  * The account's wallets to spend from: the primary (its own wallet, or the
  * passkey), whose token list includes the account's intents balance, then
@@ -66,6 +68,7 @@ export const sourceOptions = (
         name: account.name,
         detail: describeWallet(account),
         address: account.address,
+        badge: PRIMARY,
         icon: walletIcon(account),
       }
     : {
@@ -73,6 +76,7 @@ export const sourceOptions = (
         source: { kind: 'primary' },
         name: account.name,
         detail: 'Passkey · NEAR Intents balance',
+        badge: PRIMARY,
         icon: accountTile,
       },
   ...secondaries.map((wallet) => ({
@@ -117,6 +121,7 @@ export const recipientOptions = (
         address,
         name: wallet.name,
         detail: describeWallet(wallet),
+        badge: wallet.id === account.id ? PRIMARY : undefined,
         icon: walletIcon(wallet),
       },
     ];
