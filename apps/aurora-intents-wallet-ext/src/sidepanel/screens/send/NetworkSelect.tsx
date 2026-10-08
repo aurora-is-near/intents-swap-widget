@@ -46,9 +46,6 @@ export const NetworkSelect = ({ options, selected, onSelect }: Props) => {
             <span className="text-sw-label-lg text-sw-gray-50">
               {selected.chainName}
             </span>
-            <span className="text-sw-label-sm text-sw-gray-300">
-              {selected.symbol}
-            </span>
           </>
         ) : (
           <span className="text-sw-label-lg text-sw-gray-300">
