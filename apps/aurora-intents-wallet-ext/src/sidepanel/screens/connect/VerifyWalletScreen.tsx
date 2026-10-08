@@ -1,4 +1,9 @@
-import { WalletCompatibilityCheck } from '@aurora-is-near/intents-swap-widget';
+import { useState } from 'react';
+
+import {
+  Banner,
+  WalletCompatibilityCheck,
+} from '@aurora-is-near/intents-swap-widget';
 
 import type { WalletAccount } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
@@ -17,6 +22,8 @@ import { isAccountVerified } from '../../wallet/walletVerification';
 export const VerifyWalletScreen = ({ account }: { account: WalletAccount }) => {
   const { accounts, remove } = useAccounts();
   const { reset } = useNavigation();
+  // The widget's error view is generic; this is what actually went wrong.
+  const [failure, setFailure] = useState<string | null>(null);
 
   const signOut = async () => {
     if (account.source === 'walletconnect') {
@@ -44,9 +51,15 @@ export const VerifyWalletScreen = ({ account }: { account: WalletAccount }) => {
       <div className="flex shrink-0 items-center rounded-sw-lg bg-sw-gray-900 p-sw-lg">
         <AccountSummary account={account} />
       </div>
+      {failure ? (
+        <Banner variant="error" message={failure} hasBg multiline />
+      ) : null}
       <WalletCompatibilityCheck
         hideCloseButton
         isFullHeight
+        onError={(error) =>
+          setFailure(error instanceof Error ? error.message : String(error))
+        }
         onMsg={(msg) => {
           if (msg.type === 'on_sign_out') {
             void closeConnector();

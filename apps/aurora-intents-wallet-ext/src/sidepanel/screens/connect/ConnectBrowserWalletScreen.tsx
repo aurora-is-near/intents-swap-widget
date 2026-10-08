@@ -10,6 +10,7 @@ import { WalletIcon } from '../../components/WalletIcon';
 import { useNavigation } from '../../navigation';
 import { connectWallet } from '../../wallet/connectWallet';
 import { closeConnector } from '../../wallet/connectorWindow';
+import { isAccountVerified } from '../../wallet/walletVerification';
 import { FAMILY_NETWORKS } from '../../wallet/families';
 import type { DetectedWallet } from '../../wallet/types';
 
@@ -34,7 +35,7 @@ export const ConnectBrowserWalletScreen = ({
     try {
       const { address, publicKey } = await connectWallet(wallet);
 
-      await add({
+      const added = await add({
         kind: 'wallet',
         id: crypto.randomUUID(),
         name: nextAccountName(accounts),
@@ -48,11 +49,15 @@ export const ConnectBrowserWalletScreen = ({
         createdAt: Date.now(),
       });
 
+      // The compatibility check signs next, through the same window: keep it
+      // open, or a quick Verify races the close. Verification closes it.
+      if (isAccountVerified(added)) {
+        void closeConnector();
+      }
+
       reset({ name: 'home' });
     } catch (error) {
       setStep({ name: 'rejected', message: describeError(error) });
-    } finally {
-      // Opened for this prompt; signing reopens it when it needs the wallet.
       void closeConnector();
     }
   };
