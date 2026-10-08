@@ -50,7 +50,10 @@ export const WalletPicker = <T extends WalletOption>({
             {description}
           </p>
         ) : null}
-        <ul className="m-0 flex flex-col p-0" role="listbox" aria-label={title}>
+        <ul
+          className="m-0 flex flex-col gap-sw-sm p-0"
+          role="listbox"
+          aria-label={title}>
           {options.map((option) => {
             const isSelected = option.id === selectedId;
 
@@ -65,7 +68,7 @@ export const WalletPicker = <T extends WalletOption>({
                     'flex w-full items-center gap-sw-lg rounded-sw-md p-sw-lg text-left hover:bg-sw-gray-900',
                     isSelected && 'bg-sw-gray-900',
                   )}>
-                  {option.icon}
+                  {option.icon(40)}
                   <span className="flex min-w-[0px] grow flex-col gap-sw-xs">
                     <span className="truncate text-sw-label-md text-sw-gray-50">
                       {option.name}

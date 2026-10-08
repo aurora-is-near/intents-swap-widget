@@ -25,6 +25,7 @@ import { useNavigation } from '../../navigation';
 import { shortAddress } from '../../utils';
 import { sourceOptions } from '../transfer/walletOptions';
 import { WalletPicker } from '../transfer/WalletPicker';
+import { WalletSelector } from '../transfer/WalletSelector';
 
 const EMPTY_STATE_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc', 'ton'];
 const DEPOSIT_CARD_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc'];
@@ -143,26 +144,17 @@ const WalletChip = ({ account }: { account: Account }) => {
       : // The account's own wallet also stands for "account" here.
         'primary';
 
+  const current = options.find((option) => option.id === selectedId);
+
   return (
     <>
-      <button
-        type="button"
-        aria-label="Wallet"
-        onClick={() => setIsPicking(true)}
-        className="flex items-center gap-sw-md self-start rounded-full bg-sw-gray-900 py-sw-xs pl-sw-xs pr-sw-md text-left hover:bg-sw-gray-800">
-        <span className="[&>*]:h-[24px] [&>*]:w-[24px] [&>*]:rounded-full [&_svg]:h-[14px] [&_svg]:w-[14px]">
-          {options.find((option) => option.id === selectedId)?.icon}
-        </span>
-        <span className="truncate text-sw-label-md text-sw-gray-50">
-          {wallet.name}
-        </span>
-        <span className="text-sw-label-sm text-sw-gray-300">
-          {shortAddress(wallet.address)}
-        </span>
-        <span className="text-sw-gray-300">
-          <Icon name="chevronDown" size={16} />
-        </span>
-      </button>
+      {current ? (
+        <WalletSelector
+          ariaLabel="Wallet"
+          option={current}
+          onClick={() => setIsPicking(true)}
+        />
+      ) : null}
       {isPicking ? (
         <WalletPicker
           title="Wallet"

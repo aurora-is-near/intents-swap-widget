@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import type { Chains } from '@aurora-is-near/intents-swap-widget';
+import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type {
   Account,
@@ -19,18 +20,33 @@ export type WalletOption = {
   id: string;
   name: string;
   detail: string;
-  icon: ReactNode;
+  /** Short address, shown next to the name in the selector. */
+  address?: string;
+  /** The icon at `size` px: 40 in lists, smaller in the selector. */
+  icon: (size: number) => ReactNode;
 };
 
-const AccountTile = () => (
-  <span className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-sw-md bg-sw-accent-500 text-sw-gray-950">
-    <Icon name="key" />
+const accountTile = (size: number) => (
+  <span
+    className={cn(
+      'flex shrink-0 items-center justify-center bg-sw-accent-500 text-sw-gray-950',
+      size < 32 ? 'rounded-sw-sm' : 'rounded-sw-md',
+    )}
+    style={{ width: size, height: size }}>
+    <Icon name="key" size={Math.round(size / 2)} />
   </span>
 );
 
-const walletIcon = (
-  wallet: Pick<ConnectedWallet, 'walletName' | 'walletIcon'>,
-) => <WalletIcon name={wallet.walletName} icon={wallet.walletIcon} />;
+const walletIcon =
+  (wallet: Pick<ConnectedWallet, 'walletName' | 'walletIcon'>) =>
+  (size: number) => (
+    <WalletIcon
+      name={wallet.walletName}
+      icon={wallet.walletIcon}
+      size={size}
+      className={size < 32 ? 'rounded-sw-sm text-sw-label-sm' : undefined}
+    />
+  );
 
 /** The account's intents balance, its own wallet, and its secondary wallets. */
 export const sourceOptions = (
@@ -45,7 +61,7 @@ export const sourceOptions = (
       account.kind === 'passkey'
         ? 'Passkey · balance on NEAR Intents'
         : `${account.name} · balance on NEAR Intents`,
-    icon: <AccountTile />,
+    icon: accountTile,
   },
   ...(account.kind === 'wallet'
     ? [
@@ -54,6 +70,7 @@ export const sourceOptions = (
           source: { kind: 'primary' } as const,
           name: account.name,
           detail: describeWallet(account),
+          address: account.address,
           icon: walletIcon(account),
         },
       ]
@@ -63,6 +80,7 @@ export const sourceOptions = (
     source: { kind: 'secondary', id: wallet.id } as const,
     name: wallet.name,
     detail: describeWallet(wallet),
+    address: wallet.address,
     icon: walletIcon(wallet),
   })),
 ];

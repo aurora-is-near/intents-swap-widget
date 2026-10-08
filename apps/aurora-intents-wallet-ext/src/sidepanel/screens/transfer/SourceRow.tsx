@@ -4,11 +4,10 @@ import type { Account } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
 import { sourceKey, useTransferSource } from '../../accounts/useTransferSource';
 import type { TransferSource } from '../../accounts/useTransferSource';
-import { Icon } from '../../components/Icon';
 import { useNavigation } from '../../navigation';
-import { shortAddress } from '../../utils';
 import { sourceOptions } from './walletOptions';
 import { WalletPicker } from './WalletPicker';
+import { WalletSelector } from './WalletSelector';
 
 type Props = {
   account: Account;
@@ -23,7 +22,7 @@ type Props = {
  */
 export const SourceRow = ({ account, screen, onChange }: Props) => {
   const { secondaries } = useAccounts();
-  const { source, wallet } = useTransferSource();
+  const { source } = useTransferSource();
   const { push } = useNavigation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -35,37 +34,18 @@ export const SourceRow = ({ account, screen, onChange }: Props) => {
     return null;
   }
 
-  const address = source.kind === 'account' ? undefined : wallet?.address;
-
   return (
     <>
-      <button
-        type="button"
-        aria-label="Spend from"
+      <WalletSelector
+        label="From"
+        ariaLabel="Send from wallet"
+        option={current}
         onClick={() => setIsOpen(true)}
-        className="flex shrink-0 items-center gap-sw-md rounded-sw-md bg-sw-gray-900 px-sw-lg py-sw-md text-left hover:bg-sw-gray-800">
-        <span className="text-sw-label-sm text-sw-gray-300">From</span>
-        <span className="[&>*]:h-[24px] [&>*]:w-[24px] [&>*]:rounded-sw-sm [&_svg]:h-[14px] [&_svg]:w-[14px]">
-          {current.icon}
-        </span>
-        <span className="flex min-w-[0px] grow items-baseline gap-sw-sm">
-          <span className="truncate text-sw-label-md text-sw-gray-50">
-            {current.name}
-          </span>
-          {address ? (
-            <span className="shrink-0 text-sw-label-sm text-sw-gray-400">
-              {shortAddress(address)}
-            </span>
-          ) : null}
-        </span>
-        <span className="text-sw-gray-300">
-          <Icon name="chevronDown" size={16} />
-        </span>
-      </button>
+      />
 
       {isOpen ? (
         <WalletPicker
-          title="Spend from"
+          title="Send from wallet"
           options={options}
           selectedId={current.id}
           onSelect={(option) => {
