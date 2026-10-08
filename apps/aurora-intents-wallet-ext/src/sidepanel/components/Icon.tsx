@@ -38,6 +38,7 @@ const PATHS = {
     <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
   ),
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  edit: <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />,
   swap: <path d="M7 4v16M4 7l3-3 3 3M17 20V4M14 17l3 3 3-3" />,
   deposit: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
   send: <path d="M7 17L17 7M9 7h8v8" />,

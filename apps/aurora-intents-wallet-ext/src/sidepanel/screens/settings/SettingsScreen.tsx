@@ -1,6 +1,11 @@
 import { useState } from 'react';
 
-import { Badge, Banner, Button } from '@aurora-is-near/intents-swap-widget';
+import {
+  Badge,
+  Banner,
+  Button,
+  Input,
+} from '@aurora-is-near/intents-swap-widget';
 
 import type { Account } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
@@ -27,11 +32,13 @@ const AccountRow = ({
   account,
   isActive,
   onSelect,
+  onRename,
   onRemove,
 }: {
   account: Account;
   isActive: boolean;
   onSelect: () => void;
+  onRename: () => void;
   onRemove: () => void;
 }) => (
   <li className="flex list-none items-center gap-sw-md">
@@ -56,6 +63,14 @@ const AccountRow = ({
     </button>
     <button
       type="button"
+      aria-label={`Rename ${account.name}`}
+      title="Rename"
+      onClick={onRename}
+      className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-sw-md text-sw-gray-300 hover:bg-sw-gray-900 hover:text-sw-gray-50">
+      <Icon name="edit" size={18} />
+    </button>
+    <button
+      type="button"
       aria-label={`Remove ${account.name}`}
       title="Remove"
       onClick={onRemove}
@@ -66,9 +81,23 @@ const AccountRow = ({
 );
 
 export const SettingsScreen = () => {
-  const { accounts, active, setActive, remove } = useAccounts();
+  const { accounts, active, setActive, rename, remove } = useAccounts();
   const { back, push, reset } = useNavigation();
   const [removing, setRemoving] = useState<Account | null>(null);
+  const [renaming, setRenaming] = useState<Account | null>(null);
+  const [name, setName] = useState('');
+
+  const startRename = (account: Account) => {
+    setName(account.name);
+    setRenaming(account);
+  };
+
+  const saveName = async () => {
+    if (renaming && name.trim()) {
+      await rename(renaming.id, name.trim());
+      setRenaming(null);
+    }
+  };
 
   const confirmRemove = async () => {
     if (!removing) {
@@ -87,6 +116,47 @@ export const SettingsScreen = () => {
       reset({ name: 'welcome' });
     }
   };
+
+  if (renaming) {
+    return (
+      <Screen
+        title="Rename account"
+        onBack={() => setRenaming(null)}
+        footer={
+          <>
+            <Button
+              variant="primary"
+              size="lg"
+              state={name.trim() ? 'default' : 'disabled'}
+              onClick={saveName}>
+              Save
+            </Button>
+            <Button
+              variant="outlined"
+              size="lg"
+              onClick={() => setRenaming(null)}>
+              Cancel
+            </Button>
+          </>
+        }>
+        <label className="flex flex-col gap-sw-md">
+          <span className="text-sw-label-sm text-sw-gray-200">
+            Account name
+          </span>
+          <Input
+            defaultValue={renaming.name}
+            placeholder="Account name"
+            maxLength={32}
+            focusOnMount
+            onChange={(event) => setName(event.target.value)}
+          />
+        </label>
+        <p className="m-0 text-sw-body-sm text-sw-gray-300">
+          {describe(renaming)}
+        </p>
+      </Screen>
+    );
+  }
 
   if (removing) {
     return (
@@ -133,6 +203,7 @@ export const SettingsScreen = () => {
                 await setActive(account.id);
                 back();
               }}
+              onRename={() => startRename(account)}
               onRemove={() => setRemoving(account)}
             />
           ))}

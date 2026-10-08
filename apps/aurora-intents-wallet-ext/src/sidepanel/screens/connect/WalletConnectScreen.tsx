@@ -4,6 +4,7 @@ import {
   Banner,
   Button,
   CopyButton,
+  Input,
 } from '@aurora-is-near/intents-swap-widget';
 
 import { nextAccountName, useAccounts } from '../../accounts/useAccounts';
@@ -22,9 +23,12 @@ type Step =
   | { name: 'expired' }
   | { name: 'failed'; message: string };
 
-/** A blank stand-in the size of `QrCode`'s own white frame. */
+/**
+ * A blank stand-in for `QrCode`'s white frame, sized like a typical pairing
+ * URI's code (73 modules × 4 px + padding).
+ */
 const QrPlaceholder = ({ children }: { children: React.ReactNode }) => (
-  <div className="mx-auto flex h-[208px] w-[208px] items-center justify-center rounded-[28px] bg-[#fff]">
+  <div className="mx-auto flex h-[316px] w-[316px] items-center justify-center rounded-sw-lg bg-[#fff]">
     {children}
   </div>
 );
@@ -34,8 +38,10 @@ export const WalletConnectScreen = () => {
   const { back, push, reset } = useNavigation();
   const [step, setStep] = useState<Step>({ name: 'pairing', uri: null });
   const [attempt, setAttempt] = useState(0);
-  // The latest accounts, for the async completion below.
+  // The latest accounts and typed name, for the async completion below.
   const accountsRef = useRef(accounts);
+  const [defaultName] = useState(() => nextAccountName(accounts));
+  const nameRef = useRef(defaultName);
 
   accountsRef.current = accounts;
 
@@ -73,9 +79,11 @@ export const WalletConnectScreen = () => {
           kind: 'wallet',
           source: 'walletconnect',
           id: crypto.randomUUID(),
-          name: nextAccountName(
-            accountsRef.current.filter((account) => !stale.includes(account)),
-          ),
+          name:
+            nameRef.current.trim() ||
+            nextAccountName(
+              accountsRef.current.filter((account) => !stale.includes(account)),
+            ),
           family: 'evm',
           walletId: 'walletconnect',
           bridgeId: 'walletconnect',
@@ -160,6 +168,19 @@ export const WalletConnectScreen = () => {
               <CopyButton value={step.uri} />
             </div>
           ) : null}
+          <label className="flex flex-col gap-sw-md">
+            <span className="text-sw-label-sm text-sw-gray-200">
+              Account name
+            </span>
+            <Input
+              defaultValue={defaultName}
+              placeholder="Account name"
+              maxLength={32}
+              onChange={(event) => {
+                nameRef.current = event.target.value;
+              }}
+            />
+          </label>
         </>
       )}
 

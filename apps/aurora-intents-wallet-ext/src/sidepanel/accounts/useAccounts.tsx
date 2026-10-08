@@ -82,6 +82,17 @@ const useAccountsStore = () => {
     }
   }, []);
 
+  const rename = useCallback(async (id: string, name: string) => {
+    const current = await read();
+
+    await write({
+      ...current,
+      accounts: current.accounts.map((account) =>
+        account.id === id ? { ...account, name } : account,
+      ),
+    });
+  }, []);
+
   /** Removes the account; the next one becomes active if it was active. */
   const remove = useCallback(async (id: string) => {
     const current = await read();
@@ -99,7 +110,7 @@ const useAccountsStore = () => {
     state.accounts[0] ??
     null;
 
-  return { ...state, active, isLoaded, add, setActive, remove };
+  return { ...state, active, isLoaded, add, setActive, rename, remove };
 };
 
 type Accounts = ReturnType<typeof useAccountsStore>;
