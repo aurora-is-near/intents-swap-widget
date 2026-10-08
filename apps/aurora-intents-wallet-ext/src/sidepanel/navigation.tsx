@@ -7,13 +7,22 @@ import type { ActivityTransaction } from './activity/activity';
 import type { DepositNetwork } from './deposit/networks';
 import type { DetectedWallet } from './wallet/types';
 
+/**
+ * Connecting a secondary wallet for the active account, instead of a new
+ * account (the default): a browser wallet only, back to `returnTo` after.
+ */
+export type ConnectRole = {
+  kind: 'secondary';
+  returnTo: 'wallets' | 'swap' | 'send' | 'home';
+};
+
 type Screen =
   | { name: 'welcome' }
   | { name: 'createPasskey' }
   | { name: 'passkeyCreated'; accountId: string }
   | { name: 'connectWallet' }
-  | { name: 'browserWallets' }
-  | { name: 'connectBrowserWallet'; wallet: DetectedWallet }
+  | { name: 'browserWallets'; role?: ConnectRole }
+  | { name: 'connectBrowserWallet'; wallet: DetectedWallet; role?: ConnectRole }
   | { name: 'walletConnect' }
   | { name: 'verifyWallet' }
   | { name: 'home' }
@@ -26,7 +35,8 @@ type Screen =
   | { name: 'activity' }
   | { name: 'apps' }
   | { name: 'activityDetail'; transaction: ActivityTransaction }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'wallets' };
 
 type Navigation = {
   screen: Screen;
@@ -36,6 +46,8 @@ type Navigation = {
   /** Replaces the whole stack, e.g. after onboarding. */
   reset: (screen: Screen) => void;
   back: () => void;
+  /** Back to the nearest screen of that name; home when there is none. */
+  popTo: (name: Screen['name']) => void;
 };
 
 const NavigationContext = createContext<Navigation | null>(null);
@@ -57,6 +69,14 @@ export const NavigationProvider = ({
         setStack((current) =>
           current.length > 1 ? current.slice(0, -1) : current,
         ),
+      popTo: (name) =>
+        setStack((current) => {
+          const index = current.map((item) => item.name).lastIndexOf(name);
+
+          return index === -1
+            ? [{ name: 'home' }]
+            : current.slice(0, index + 1);
+        }),
     }),
     [stack, initial],
   );

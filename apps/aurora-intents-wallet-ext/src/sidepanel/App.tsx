@@ -7,6 +7,10 @@ import {
 
 import type { Account } from './accounts/types';
 import { AccountsProvider, useAccounts } from './accounts/useAccounts';
+import {
+  SelectedWalletProvider,
+  useSelectedWallet,
+} from './accounts/useSelectedWallet';
 import { buildWidgetConfig } from './accounts/widgetConfig';
 import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
@@ -129,17 +133,25 @@ const Router = ({ account }: { account: Account | null }) => {
 
 const Wallet = () => {
   const { active, isLoaded } = useAccounts();
-  const config = useMemo(() => buildWidgetConfig(active), [active]);
+  const { secondary } = useSelectedWallet();
+  const config = useMemo(
+    () => buildWidgetConfig(active, secondary),
+    [active, secondary],
+  );
 
   if (!isLoaded) {
     return null;
   }
 
+  // The wallet the widget spends from: the selected secondary, else the
+  // account's own.
+  const wallet = secondary ?? (active?.kind === 'wallet' ? active : null);
+
   return (
     <WidgetConfigProvider
       config={config}
       // Alchemy covers EVM and Solana wallets; NEAR balances come over RPC.
-      balanceViaRpc={active?.kind === 'wallet' && active.family === 'near'}
+      balanceViaRpc={wallet?.family === 'near'}
       theme={{ colorScheme: 'dark' }}>
       <WidgetSync />
       <NavigationProvider initial={{ name: active ? 'home' : 'welcome' }}>
@@ -151,6 +163,8 @@ const Wallet = () => {
 
 export const App = () => (
   <AccountsProvider>
-    <Wallet />
+    <SelectedWalletProvider>
+      <Wallet />
+    </SelectedWalletProvider>
   </AccountsProvider>
 );

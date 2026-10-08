@@ -15,9 +15,14 @@ import { createNearPageProvider } from '../wallet/createNearPageProvider';
 import { createPageProvider } from '../wallet/createPageProvider';
 import { createSolanaPageProvider } from '../wallet/createSolanaPageProvider';
 import { createWalletConnectProvider } from '../wallet/walletConnect';
-import type { Account, WalletAccount } from './types';
+import {
+  guardEvmProvider,
+  guardSolanaProvider,
+} from '../wallet/withAccountGuard';
+import { getAccountIntentsId } from './intentsAccountId';
+import type { Account, ConnectedWallet, SecondaryWallet } from './types';
 
-const ACCOUNT_TYPES: Record<WalletAccount['family'], IntentsAccountType> = {
+const ACCOUNT_TYPES: Record<ConnectedWallet['family'], IntentsAccountType> = {
   evm: 'evm',
   sol: 'sol',
   near: 'near',
@@ -25,27 +30,41 @@ const ACCOUNT_TYPES: Record<WalletAccount['family'], IntentsAccountType> = {
 
 /**
  * Browser wallet requests are served by the connector page, opened on demand;
- * a mobile wallet's go over its WalletConnect session.
+ * a mobile wallet's go over its WalletConnect session. A secondary wallet's
+ * requests are checked against its account first: the bridge reaches the
+ * wallet, which may have another account selected.
  */
-const walletProviders = (account: WalletAccount): Providers => {
-  if (account.source === 'walletconnect') {
+const walletProviders = (
+  wallet: ConnectedWallet,
+  { isSecondary }: { isSecondary: boolean },
+): Providers => {
+  if (wallet.source === 'walletconnect') {
     return { evm: createWalletConnectProvider() };
   }
 
-  switch (account.family) {
-    case 'evm':
-      return { evm: createPageProvider(ensureConnectorTab, account.bridgeId) };
-    case 'sol':
+  switch (wallet.family) {
+    case 'evm': {
+      const evm = createPageProvider(ensureConnectorTab, wallet.bridgeId);
+
+      return { evm: isSecondary ? guardEvmProvider(evm, wallet) : evm };
+    }
+
+    case 'sol': {
+      const sol = createSolanaPageProvider(
+        ensureConnectorTab,
+        wallet.bridgeId,
+        wallet.address,
+      );
+
       return {
-        sol: createSolanaPageProvider(
-          ensureConnectorTab,
-          account.bridgeId,
-          account.address,
-        ),
+        sol: isSecondary
+          ? guardSolanaProvider(sol, ensureConnectorTab, wallet)
+          : sol,
       };
+    }
 
     case 'near': {
-      const near = createNearPageProvider(ensureConnectorTab, account.bridgeId);
+      const near = createNearPageProvider(ensureConnectorTab, wallet.bridgeId);
 
       return { near: () => near };
     }
@@ -55,12 +74,20 @@ const walletProviders = (account: WalletAccount): Providers => {
 };
 
 /**
- * Widget config for the active account. A passkey account only holds intents
- * balances: no wallet chains, so no on-chain balance loading, and refunds and
- * swaps stay on NEAR Intents.
+ * Widget config for the active account, and the wallet it spends from:
+ *
+ * - its own wallet (or passkey): the widget's wallet is the account's. A
+ *   passkey account only holds intents balances: no wallet chains, so no
+ *   on-chain balance loading, and refunds and swaps stay on NEAR Intents.
+ * - a secondary wallet: the widget's wallet is the secondary — its balances,
+ *   its provider signs on-chain, refunds return to it — while the intents
+ *   account stays the primary's (`intentsAccountId`), so a swap into intents
+ *   lands in the account. It never signs intents: screens restrict its source
+ *   to on-chain tokens.
  */
 export const buildWidgetConfig = (
   account: Account | null,
+  secondary: SecondaryWallet | null = null,
 ): Partial<WidgetConfig> => {
   const service = {
     apiKey: FEE_SERVICE_API_KEY,
@@ -72,6 +99,18 @@ export const buildWidgetConfig = (
 
   if (!account) {
     return { ...service, connectedWallets: {} };
+  }
+
+  if (secondary) {
+    return {
+      ...service,
+      enableAccountAbstraction: true,
+      intentsAccountType: ACCOUNT_TYPES[secondary.family],
+      intentsAccountId: getAccountIntentsId(account),
+      connectedWallets: { default: secondary.address },
+      alchemyApiKey: ALCHEMY_API_KEY,
+      providers: walletProviders(secondary, { isSecondary: true }),
+    };
   }
 
   if (account.kind === 'passkey') {
@@ -91,6 +130,6 @@ export const buildWidgetConfig = (
     connectedWallets: { default: account.address },
     // Wallet balances: Alchemy for EVM and Solana, RPC for NEAR (App).
     alchemyApiKey: ALCHEMY_API_KEY,
-    providers: walletProviders(account),
+    providers: walletProviders(account, { isSecondary: false }),
   };
 };

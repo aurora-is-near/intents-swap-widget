@@ -14,8 +14,7 @@ type PasskeyAccount = Passkey & {
  * A wallet connected to the extension: a browser wallet through the connector
  * page, or a mobile wallet over WalletConnect.
  */
-export type WalletAccount = {
-  kind: 'wallet';
+export type ConnectedWallet = {
   /** Absent for browser wallets (accounts stored before it existed). */
   source?: 'walletconnect';
   id: string;
@@ -33,9 +32,22 @@ export type WalletAccount = {
   createdAt: number;
 };
 
+/** A connected wallet that is an account of its own (its intents account). */
+export type WalletAccount = ConnectedWallet & { kind: 'wallet' };
+
 export type Account = PasskeyAccount | WalletAccount;
+
+/**
+ * A browser wallet attached to one account (its "primary") only to move
+ * funds from and to: it never signs for the account or for apps.
+ */
+export type SecondaryWallet = Omit<ConnectedWallet, 'source'> & {
+  primaryId: string;
+};
 
 export type AccountsState = {
   accounts: Account[];
   activeId: string | null;
+  /** Absent in installs from before secondary wallets. */
+  secondaryWallets?: SecondaryWallet[];
 };
