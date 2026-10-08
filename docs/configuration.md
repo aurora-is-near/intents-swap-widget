@@ -293,6 +293,12 @@ are any `connectedWallets`. However, this option exists for the case where you
 want more fine-grained control, for example, when building your own custom
 widget using our components.
 
+- `intents`: `none`, `all`, or `with-balance` (only the intents tokens the
+  account holds).
+- `external`: `none`, `all`, `wallet-supported` (tokens on the connected
+  wallet's chains), or `with-balance` (only the tokens the wallet holds on
+  them).
+
 #### Example
 
 ```ts
