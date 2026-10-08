@@ -528,6 +528,17 @@ export const SwapScreen = ({
         </div>
       )}
 
+      {!sendsOut && onChainTarget && receiver ? (
+        <WalletSelector
+          label="To"
+          ariaLabel="Receive to wallet"
+          option={receiver}
+          onClick={
+            receivers.length > 1 ? () => setIsPickingReceiver(true) : undefined
+          }
+        />
+      ) : null}
+
       {onChainTarget ? (
         <div className="flex shrink-0 items-center justify-between gap-sw-md rounded-sw-md bg-sw-gray-900 px-sw-xl py-sw-lg">
           <div className="flex flex-col gap-sw-xs">
@@ -547,17 +558,6 @@ export const SwapScreen = ({
             onToggle={toggleSendsOut}
           />
         </div>
-      ) : null}
-
-      {!sendsOut && onChainTarget && receiver ? (
-        <WalletSelector
-          label="To"
-          ariaLabel="Receive to wallet"
-          option={receiver}
-          onClick={
-            receivers.length > 1 ? () => setIsPickingReceiver(true) : undefined
-          }
-        />
       ) : null}
 
       {isPickingReceiver && !sendsOut && onChainTarget ? (
