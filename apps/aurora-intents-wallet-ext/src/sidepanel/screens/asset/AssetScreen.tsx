@@ -140,162 +140,164 @@ export const AssetScreen = ({
   const heldIn = token.isIntent ? 'Your account' : walletName;
 
   return (
-    // Blocks 32px apart; the actions row twice that (gap + its own padding).
-    <Screen title={token.symbol} onBack={back} className="gap-sw-4xl">
-      <div className="flex shrink-0 flex-col gap-sw-2xl">
-        <div className="flex shrink-0 flex-col gap-sw-lg">
-          <div className="flex items-center gap-sw-lg">
+    <Screen title={token.symbol} onBack={back}>
+      {/* Own gap: Screen's default can't be overridden through className.
+          Blocks 24px apart; the actions row 48px (gap + its own padding). */}
+      <div className="flex flex-col gap-sw-3xl">
+        <div className="flex shrink-0 flex-col gap-sw-2xl">
+          <div className="flex shrink-0 flex-col gap-sw-lg">
+            <div className="flex items-center gap-sw-lg">
+              <TokenWithChain token={token} />
+              <div className="flex min-w-[0px] flex-col gap-sw-xs">
+                <span className="truncate text-sw-label-md text-sw-gray-50">
+                  {coin.data?.name ?? token.name}
+                </span>
+                <span className="text-sw-label-sm text-sw-gray-300">
+                  on {chainLabel(token.blockchain)}
+                  {token.isIntent ? ' · in your account' : ''}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-sw-sm">
+              <span className="text-sw-value-lg text-sw-gray-50">
+                {formatPrice(shownPrice)}
+              </span>
+              <span className="flex gap-sw-md text-sw-label-sm text-sw-gray-300">
+                <Change value={shownChange} />
+                <span>
+                  {hovered
+                    ? formatMoment(hovered[0], range)
+                    : RANGE_LABELS[range]}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 flex-col gap-sw-lg">
+            {isChartLoading ? (
+              <div className="h-[160px] animate-pulse rounded-sw-lg bg-sw-gray-900" />
+            ) : null}
+            {!isChartLoading && unavailable ? (
+              <div className="flex h-[160px] items-center justify-center rounded-sw-lg bg-sw-gray-900 px-sw-xl text-center text-sw-body-sm text-sw-gray-300">
+                {unavailable}
+              </div>
+            ) : null}
+            {!isChartLoading && !unavailable && points.length > 1 ? (
+              <PriceChart points={points} onHover={setHovered} />
+            ) : null}
+            <Tabs
+              label="Chart range"
+              tabs={RANGES}
+              value={range}
+              onChange={(next) => {
+                setHovered(null);
+                setRange(next);
+              }}
+            />
+          </div>
+        </div>
+
+        <nav aria-label="Actions" className="flex shrink-0 gap-sw-md py-sw-3xl">
+          <ActionButton
+            icon="deposit"
+            label="Receive"
+            onClick={() => push({ name: 'deposit' })}
+          />
+          <ActionButton
+            icon="send"
+            label="Send"
+            // Sends spend the account's balance.
+            onClick={
+              token.isIntent
+                ? () => push({ name: 'send', source: token })
+                : undefined
+            }
+          />
+          <ActionButton
+            icon="swap"
+            label="Swap"
+            onClick={() => push({ name: 'swap', source: token })}
+          />
+        </nav>
+
+        <Section title="Your balance">
+          <div className="flex items-center gap-sw-lg rounded-sw-lg bg-sw-gray-900 p-sw-xl">
             <TokenWithChain token={token} />
-            <div className="flex min-w-[0px] flex-col gap-sw-xs">
+            <div className="flex min-w-[0px] grow flex-col gap-sw-xs">
               <span className="truncate text-sw-label-md text-sw-gray-50">
                 {coin.data?.name ?? token.name}
               </span>
+              <span className="text-sw-label-sm">
+                <Change value={market?.price_change_percentage_24h ?? null} />
+              </span>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-sw-xs">
+              <span className="text-sw-label-md text-sw-gray-50">
+                {formatUsdAmount(held?.usd ?? 0)}
+              </span>
               <span className="text-sw-label-sm text-sw-gray-300">
-                on {chainLabel(token.blockchain)}
-                {token.isIntent ? ' · in your account' : ''}
+                {formatTokenAmount(held?.balance, token) || '0'} {token.symbol}
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-sw-sm">
-            <span className="text-sw-value-lg text-sw-gray-50">
-              {formatPrice(shownPrice)}
-            </span>
-            <span className="flex gap-sw-md text-sw-label-sm text-sw-gray-300">
-              <Change value={shownChange} />
-              <span>
-                {hovered
-                  ? formatMoment(hovered[0], range)
-                  : RANGE_LABELS[range]}
-              </span>
-            </span>
-          </div>
-        </div>
+        </Section>
 
-        <div className="flex shrink-0 flex-col gap-sw-lg">
-          {isChartLoading ? (
-            <div className="h-[160px] animate-pulse rounded-sw-lg bg-sw-gray-900" />
-          ) : null}
-          {!isChartLoading && unavailable ? (
-            <div className="flex h-[160px] items-center justify-center rounded-sw-lg bg-sw-gray-900 px-sw-xl text-center text-sw-body-sm text-sw-gray-300">
-              {unavailable}
-            </div>
-          ) : null}
-          {!isChartLoading && !unavailable && points.length > 1 ? (
-            <PriceChart points={points} onHover={setHovered} />
-          ) : null}
-          <Tabs
-            label="Chart range"
-            tabs={RANGES}
-            value={range}
-            onChange={(next) => {
-              setHovered(null);
-              setRange(next);
-            }}
-          />
-        </div>
-      </div>
-
-      <nav aria-label="Actions" className="flex shrink-0 gap-sw-md py-sw-4xl">
-        <ActionButton
-          icon="deposit"
-          label="Receive"
-          onClick={() => push({ name: 'deposit' })}
-        />
-        <ActionButton
-          icon="send"
-          label="Send"
-          // Sends spend the account's balance.
-          onClick={
-            token.isIntent
-              ? () => push({ name: 'send', source: token })
-              : undefined
-          }
-        />
-        <ActionButton
-          icon="swap"
-          label="Swap"
-          onClick={() => push({ name: 'swap', source: token })}
-        />
-      </nav>
-
-      <Section title="Your balance">
-        <div className="flex items-center gap-sw-lg rounded-sw-lg bg-sw-gray-900 p-sw-xl">
-          <TokenWithChain token={token} />
-          <div className="flex min-w-[0px] grow flex-col gap-sw-xs">
-            <span className="truncate text-sw-label-md text-sw-gray-50">
-              {coin.data?.name ?? token.name}
-            </span>
-            <span className="text-sw-label-sm">
-              <Change value={market?.price_change_percentage_24h ?? null} />
-            </span>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-sw-xs">
-            <span className="text-sw-label-md text-sw-gray-50">
-              {formatUsdAmount(held?.usd ?? 0)}
-            </span>
-            <span className="text-sw-label-sm text-sw-gray-300">
-              {formatTokenAmount(held?.balance, token) || '0'} {token.symbol}
-            </span>
-          </div>
-        </div>
-      </Section>
-
-      <Section title="Token details">
-        <NotesCard>
-          <Notes.Item
-            label="Network"
-            value={<InlineChain chain={token.blockchain} />}
-          />
-          <Notes.Item label="Held in" value={heldIn} />
-          {token.contractAddress ? (
-            <Notes.Item
-              label="Contract address"
-              value={
-                <span className="flex items-center gap-sw-sm">
-                  {shortAddress(token.contractAddress)}
-                  <CopyButton value={token.contractAddress} />
-                </span>
-              }
-            />
-          ) : null}
-          <Notes.Item label="Token decimals" value={String(token.decimals)} />
-        </NotesCard>
-      </Section>
-
-      {market ? (
-        <Section title="Market details">
+        <Section title="Token details">
           <NotesCard>
             <Notes.Item
-              label="Market cap"
-              value={formatCompactUsd(market.market_cap?.usd)}
+              label="Network"
+              value={<InlineChain chain={token.blockchain} />}
             />
-            <Notes.Item
-              label="Total volume"
-              value={formatCompactUsd(market.total_volume?.usd)}
-            />
-            <Notes.Item
-              label="Circulating supply"
-              value={formatCompact(market.circulating_supply)}
-            />
-            <Notes.Item
-              label="All-time high"
-              value={
-                market.ath?.usd !== undefined
-                  ? formatPrice(market.ath.usd)
-                  : undefined
-              }
-            />
-            <Notes.Item
-              label="All-time low"
-              value={
-                market.atl?.usd !== undefined
-                  ? formatPrice(market.atl.usd)
-                  : undefined
-              }
-            />
+            <Notes.Item label="Held in" value={heldIn} />
+            {token.contractAddress ? (
+              <Notes.Item
+                label="Contract address"
+                value={
+                  <span className="flex items-center gap-sw-sm">
+                    {shortAddress(token.contractAddress)}
+                    <CopyButton value={token.contractAddress} />
+                  </span>
+                }
+              />
+            ) : null}
           </NotesCard>
         </Section>
-      ) : null}
+
+        {market ? (
+          <Section title="Market details">
+            <NotesCard>
+              <Notes.Item
+                label="Market cap"
+                value={formatCompactUsd(market.market_cap?.usd)}
+              />
+              <Notes.Item
+                label="Total volume"
+                value={formatCompactUsd(market.total_volume?.usd)}
+              />
+              <Notes.Item
+                label="Circulating supply"
+                value={formatCompact(market.circulating_supply)}
+              />
+              <Notes.Item
+                label="All-time high"
+                value={
+                  market.ath?.usd !== undefined
+                    ? formatPrice(market.ath.usd)
+                    : undefined
+                }
+              />
+              <Notes.Item
+                label="All-time low"
+                value={
+                  market.atl?.usd !== undefined
+                    ? formatPrice(market.atl.usd)
+                    : undefined
+                }
+              />
+            </NotesCard>
+          </Section>
+        ) : null}
+      </div>
     </Screen>
   );
 };
