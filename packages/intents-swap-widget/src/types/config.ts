@@ -35,6 +35,8 @@ export type WidgetConfig = {
 
   // Backend environment for the widget
   environment?: WidgetEnvironment;
+  // Fee service base URL, overriding `environment` (e.g. a local instance)
+  intentsApiUrl?: string;
 
   // Account abstraction
   enableAccountAbstraction?: boolean;

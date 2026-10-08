@@ -11,9 +11,10 @@ const INTENTS_API_BASE_URLS: Record<WidgetEnvironment, string> = {
 };
 
 export const getIntentsApiBaseUrl = (): string => {
-  const { environment = 'production' } = snapshot(configStore).config;
+  const { environment = 'production', intentsApiUrl } =
+    snapshot(configStore).config;
 
-  return INTENTS_API_BASE_URLS[environment];
+  return intentsApiUrl ?? INTENTS_API_BASE_URLS[environment];
 };
 
 export const createNetworkClient = (config: AxiosRequestConfig = {}) => {
