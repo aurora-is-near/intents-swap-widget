@@ -310,6 +310,7 @@ export const AssetScreen = ({
             {tokenActivity.length ? (
               <>
                 <ActivityList
+                  grouped={false}
                   items={tokenActivity.slice(0, ACTIVITY_PREVIEW)}
                   onOpen={(item) =>
                     push({

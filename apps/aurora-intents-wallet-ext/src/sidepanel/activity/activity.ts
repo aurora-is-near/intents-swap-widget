@@ -151,6 +151,12 @@ export const timeLabel = (date: Date, now = new Date()) => {
     : `${Math.floor(minutes / 60)} h ago`;
 };
 
+/** The time with its day when it isn't today: "Yesterday, 18:42". */
+export const dateTimeLabel = (date: Date, now = new Date()) =>
+  sameDay(date, now)
+    ? timeLabel(date, now)
+    : `${dayLabel(date, now)}, ${timeLabel(date, now)}`;
+
 /** Items in day groups, newest first. */
 export const groupByDay = (items: ActivityItem[]) =>
   items.reduce<Array<{ label: string; items: ActivityItem[] }>>(

@@ -6,7 +6,7 @@ import { Icon, Spinner } from '../components/Icon';
 import { chainLabel } from '../screens/transfer/summary';
 import { shortAddress } from '../utils';
 import type { ActivityItem, ActivityStatus } from './activity';
-import { groupByDay, KIND_LABELS, timeLabel } from './activity';
+import { dateTimeLabel, groupByDay, KIND_LABELS, timeLabel } from './activity';
 
 const STATUS_LABELS: Record<ActivityStatus, string> = {
   pending: 'Pending',
@@ -64,9 +64,12 @@ const Side = ({
 /** One swap, deposit or send, as in the design's Activity list. */
 const ActivityCard = ({
   item,
+  withDay = false,
   onClick,
 }: {
   item: ActivityItem;
+  /** No day heading above it: say the day next to the time. */
+  withDay?: boolean;
   onClick: () => void;
 }) => {
   const { from, to } = item;
@@ -89,7 +92,7 @@ const ActivityCard = ({
           {KIND_LABELS[item.kind]}
         </span>
         <span className="text-sw-label-sm text-sw-gray-400">
-          {timeLabel(item.createdAt)}
+          {withDay ? dateTimeLabel(item.createdAt) : timeLabel(item.createdAt)}
         </span>
       </span>
       <span className="flex items-center justify-between gap-sw-md">
@@ -113,27 +116,45 @@ const ActivityCard = ({
 };
 
 /** Cards under day headings ("Today", "Yesterday", "28 Sep"). */
+/**
+ * Cards under day headings ("Today", "Yesterday", "28 Sep"), or with
+ * `grouped={false}` a plain list whose cards carry their own day.
+ */
 export const ActivityList = ({
   items,
+  grouped = true,
   onOpen,
 }: {
   items: ActivityItem[];
+  grouped?: boolean;
   onOpen: (item: ActivityItem) => void;
-}) => (
-  <>
-    {groupByDay(items).map((group) => (
-      <section key={group.label} className="flex flex-col gap-sw-sm">
-        <h2 className="px-sw-xs pb-sw-xxs text-sw-label-sm text-sw-gray-100">
-          {group.label}
-        </h2>
-        {group.items.map((item) => (
-          <ActivityCard
-            key={item.id}
-            item={item}
-            onClick={() => onOpen(item)}
-          />
-        ))}
-      </section>
-    ))}
-  </>
-);
+}) =>
+  grouped ? (
+    <div className="flex flex-col gap-sw-3xl">
+      {groupByDay(items).map((group) => (
+        <section key={group.label} className="flex flex-col gap-sw-sm">
+          <h2 className="px-sw-xs pb-sw-xxs text-sw-label-sm text-sw-gray-100">
+            {group.label}
+          </h2>
+          {group.items.map((item) => (
+            <ActivityCard
+              key={item.id}
+              item={item}
+              onClick={() => onOpen(item)}
+            />
+          ))}
+        </section>
+      ))}
+    </div>
+  ) : (
+    <div className="flex flex-col gap-sw-sm">
+      {items.map((item) => (
+        <ActivityCard
+          key={item.id}
+          item={item}
+          withDay
+          onClick={() => onOpen(item)}
+        />
+      ))}
+    </div>
+  );
