@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { CHAINS, Input } from '@aurora-is-near/intents-swap-widget';
+import { CHAINS } from '@aurora-is-near/intents-swap-widget';
 import type { Token } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
@@ -22,61 +22,54 @@ type Props = {
   onSelect: (token: Token) => void;
 };
 
-/** "To network": which chain the sent asset arrives on. */
+/** "Use network": which chain the sent asset arrives on. */
 export const NetworkSelect = ({ options, selected, onSelect }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-
-  const query = search.trim().toLowerCase();
-  const visible = options.filter((token) =>
-    token.chainName.toLowerCase().includes(query),
-  );
 
   return (
     <div className="flex shrink-0 flex-col gap-sw-md">
-      <div className="flex flex-col gap-sw-md rounded-sw-lg bg-sw-gray-900 px-sw-2xl py-sw-xl">
-        <span className="text-sw-label-sm text-sw-gray-200">To network</span>
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          disabled={!options.length}
-          onClick={() => setIsOpen((open) => !open)}
-          className="flex items-center gap-sw-md rounded-sw-md text-left disabled:opacity-60">
-          {selected ? (
-            <>
-              <ChainIcon token={selected} size={24} />
-              <span className="text-sw-label-lg text-sw-gray-50">
-                {selected.chainName}
-              </span>
-              <span className="text-sw-label-sm text-sw-gray-300">
-                {selected.symbol}
-              </span>
-            </>
-          ) : (
-            <span className="text-sw-label-lg text-sw-gray-300">
-              {options.length
-                ? 'Choose a network'
-                : 'No networks for this token'}
+      <span
+        id="network-label"
+        className="px-sw-xs text-sw-label-sm text-sw-gray-200">
+        Use network
+      </span>
+      <button
+        type="button"
+        aria-labelledby="network-label"
+        aria-expanded={isOpen}
+        disabled={!options.length}
+        onClick={() => setIsOpen((open) => !open)}
+        className="flex items-center gap-sw-md rounded-sw-lg bg-sw-gray-900 px-sw-xl py-sw-lg text-left hover:bg-sw-gray-800 disabled:opacity-60">
+        {selected ? (
+          <>
+            <ChainIcon token={selected} size={24} />
+            <span className="text-sw-label-lg text-sw-gray-50">
+              {selected.chainName}
             </span>
-          )}
-          <span className="ml-auto text-sw-gray-200">
-            <Icon name="chevronDown" />
+            <span className="text-sw-label-sm text-sw-gray-300">
+              {selected.symbol}
+            </span>
+          </>
+        ) : (
+          <span className="text-sw-label-lg text-sw-gray-300">
+            {options.length ? 'Choose a network' : 'No networks for this token'}
           </span>
-        </button>
-      </div>
+        )}
+        <span
+          className={cn(
+            'ml-auto text-sw-gray-200 transition-transform',
+            isOpen && 'rotate-180',
+          )}>
+          <Icon name="chevronDown" />
+        </span>
+      </button>
 
       {isOpen ? (
         <div
           role="listbox"
-          aria-label="Networks"
+          aria-labelledby="network-label"
           className="flex flex-col gap-sw-xs rounded-sw-lg bg-sw-gray-900 p-sw-md">
-          <Input
-            fontSize="sm"
-            defaultValue={search}
-            placeholder="Search network"
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          {visible.map((token) => {
+          {options.map((token) => {
             const isSelected = token.blockchain === selected?.blockchain;
 
             return (
@@ -88,7 +81,6 @@ export const NetworkSelect = ({ options, selected, onSelect }: Props) => {
                 onClick={() => {
                   onSelect(token);
                   setIsOpen(false);
-                  setSearch('');
                 }}
                 className={cn(
                   'flex items-center gap-sw-md rounded-sw-md px-sw-md py-sw-md text-left hover:bg-sw-gray-800',
@@ -106,11 +98,6 @@ export const NetworkSelect = ({ options, selected, onSelect }: Props) => {
               </button>
             );
           })}
-          {visible.length === 0 ? (
-            <p className="px-sw-md py-sw-md text-sw-body-sm text-sw-gray-300">
-              No network matches “{search}”.
-            </p>
-          ) : null}
         </div>
       ) : null}
     </div>

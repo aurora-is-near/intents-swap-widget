@@ -296,12 +296,6 @@ export const SendScreen = ({ account }: { account: Account }) => {
         />
       )}
 
-      <NetworkSelect
-        options={networks}
-        selected={ctx.targetToken}
-        onSelect={(token) => onChangeToken('target', token)}
-      />
-
       {ctx.targetToken && !ctx.targetToken.isIntent ? (
         <RecipientField
           label="Recipient address"
@@ -313,6 +307,12 @@ export const SendScreen = ({ account }: { account: Account }) => {
           }
         />
       ) : null}
+
+      <NetworkSelect
+        options={networks}
+        selected={ctx.targetToken}
+        onSelect={(token) => onChangeToken('target', token)}
+      />
 
       {summary &&
       ctx.sourceTokenAmount &&
