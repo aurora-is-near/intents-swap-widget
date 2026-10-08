@@ -8,7 +8,6 @@ import type { MaterialSymbolsComponent } from '@material-symbols-svg/react-round
 
 import { useTimer } from 'use-timer';
 import { useEffect } from 'react';
-import type { ReactNode } from 'react';
 
 import { useTypedTranslation } from '@/localisation';
 
@@ -23,10 +22,11 @@ type MsgError = { type: 'on_close' | 'on_try_again' | 'on_sign_out' };
 export interface LayoutProps {
   /** Hides the close button and disables closing with Escape. */
   hideCloseButton?: boolean;
-  /** Fills the parent's height, with the actions pinned to the bottom. */
+  /**
+   * Fills the parent's height, or the height left by siblings in a flex
+   * column, with the actions pinned to the bottom.
+   */
   isFullHeight?: boolean;
-  /** Rendered above the icon, e.g. the wallet being verified. */
-  header?: ReactNode;
 }
 
 interface Props extends LayoutProps {
@@ -37,7 +37,8 @@ interface Props extends LayoutProps {
 
 const cardClassName = (isFullHeight?: boolean) =>
   cn('relative w-full gap-sw-2xl flex flex-col', {
-    'h-full min-h-full flex-1': isFullHeight,
+    // In a flex column the 0% basis wins over h-full: siblings keep their space.
+    'h-full flex-1': isFullHeight,
   });
 
 // Either margin, not both: cn doesn't resolve mt-sw-lg against mt-auto.
@@ -85,7 +86,6 @@ export const Initial = ({
   onMsg,
   hideCloseButton,
   isFullHeight,
-  header,
 }: Props) => {
   const { t } = useTypedTranslation();
   const handleClose = () => onMsg({ type: 'on_close' });
@@ -116,7 +116,6 @@ export const Initial = ({
           className="absolute top-sw-2xl right-sw-2xl"
         />
       )}
-      {header}
       <ArmingCountdownFill size={48} className="text-sw-status-warning" />
 
       <header className="flex flex-col gap-sw-lg">
@@ -212,7 +211,6 @@ export const ErrorView = ({
   onMsg,
   hideCloseButton,
   isFullHeight,
-  header,
 }: ErrorProps) => {
   const { t } = useTypedTranslation();
   const handleClose = () => onMsg({ type: 'on_close' });
@@ -227,7 +225,6 @@ export const ErrorView = ({
           className="absolute top-sw-2xl right-sw-2xl"
         />
       )}
-      {header}
       <GppBadFill size={48} className="text-sw-status-error" />
 
       <header className="flex flex-col gap-sw-lg">

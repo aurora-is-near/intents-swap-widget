@@ -39,16 +39,14 @@ export const VerifyWalletScreen = ({ account }: { account: WalletAccount }) => {
   };
 
   return (
-    // Same inset on every side of the full-height card.
+    // Same inset on every side; the check fills the height under the card.
     <Screen className="pt-sw-xl">
+      <div className="flex shrink-0 items-center rounded-sw-lg bg-sw-gray-900 p-sw-lg">
+        <AccountSummary account={account} />
+      </div>
       <WalletCompatibilityCheck
         hideCloseButton
         isFullHeight
-        header={
-          <div className="flex items-center rounded-sw-md bg-sw-gray-800 p-sw-lg">
-            <AccountSummary account={account} />
-          </div>
-        }
         onMsg={(msg) => {
           if (msg.type === 'on_sign_out') {
             void closeConnector();
