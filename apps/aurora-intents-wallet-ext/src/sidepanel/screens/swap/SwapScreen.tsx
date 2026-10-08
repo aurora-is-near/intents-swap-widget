@@ -46,13 +46,15 @@ import { recipientOptions, walletNameAt } from '../transfer/walletOptions';
 import { SlippageScreen } from './SlippageScreen';
 
 /**
- * Like the widget: swap from the account's intents balance or from one of
- * its wallets ("From"). Buy anything on any chain: into the account, the
- * spending wallet when it's on that chain, or else an address ("Send to
- * another address", forced on for those).
+ * Like the widget: swap from the primary wallet (with the account's intents
+ * balance) or a secondary wallet ("From"). Buy anything on any chain: into
+ * the account — from a secondary wallet too, as a deposit — the spending
+ * wallet when it's on that chain, or else an address ("Send to another
+ * address", forced on for those). Only a send-out the user turned on leaves
+ * the account's tokens out; a forced one doesn't, so they stay pickable.
  */
-const targetFilter = (sendsOut: boolean): ChainsFilter =>
-  sendsOut
+const targetFilter = (excludesAccount: boolean): ChainsFilter =>
+  excludesAccount
     ? { intents: 'none', external: 'all' }
     : { intents: 'all', external: 'all' };
 
@@ -193,6 +195,12 @@ export const SwapScreen = ({
 
     if (!isOther) {
       onChangeToken(variant, token);
+
+      // Into the account: nothing to send out (a forced toggle turns off).
+      if (variant === 'target' && token.isIntent && sendsOut) {
+        setSendsOut(false);
+        fireEvent('addressSet', null);
+      }
     } else if (current) {
       // As the widget: with nothing to flip to, picking the other side's
       // token does nothing.
@@ -418,7 +426,9 @@ export const SwapScreen = ({
       <TokenPicker
         variant={picker}
         chainsFilter={
-          picker === 'source' ? sourceFilter : targetFilter(sendsOut)
+          picker === 'source'
+            ? sourceFilter
+            : targetFilter(sendsOut && !isSendOutRequired)
         }
         onSelect={(token) => {
           selectToken(picker, token);
