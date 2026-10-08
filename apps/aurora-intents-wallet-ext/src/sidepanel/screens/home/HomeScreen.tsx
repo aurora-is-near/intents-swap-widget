@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -14,7 +15,9 @@ import { Icon } from '../../components/Icon';
 import type { IconName } from '../../components/Icon';
 import { EVM_NETWORK, OTHER_NETWORKS } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
+import { SiteConnectionBar } from '../../components/SiteConnectionBar';
 import { useAccountAssets } from '../../home/useAccountAssets';
+import { useSiteConnection } from '../../home/useSiteConnection';
 import type { Asset } from '../../home/useAccountAssets';
 import { useNavigation } from '../../navigation';
 import { shortAddress } from '../../utils';
@@ -79,11 +82,13 @@ const Action = ({
     type="button"
     onClick={onClick}
     disabled={!onClick}
-    className="flex flex-1 flex-col items-center gap-sw-sm text-sw-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
-    <span className="flex h-[52px] w-[52px] items-center justify-center rounded-sw-lg bg-sw-accent-500 text-sw-gray-950">
+    className="group flex flex-1 flex-col items-center gap-sw-sm text-sw-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
+    <span className="flex h-[52px] w-[52px] items-center justify-center rounded-sw-lg bg-sw-accent-500 text-sw-gray-950 transition-colors group-enabled:group-hover:bg-sw-accent-300">
       <Icon name={icon} size={22} />
     </span>
-    <span className="text-sw-label-sm text-sw-gray-100">{label}</span>
+    <span className="text-sw-label-sm text-sw-gray-100 transition-colors group-enabled:group-hover:text-sw-gray-50">
+      {label}
+    </span>
   </button>
 );
 
@@ -103,7 +108,7 @@ const DepositCard = ({
       className="flex items-center gap-sw-lg rounded-sw-lg bg-sw-gray-900 px-sw-xl py-sw-lg text-left text-sw-gray-50 hover:bg-sw-gray-800">
       <span className="flex grow flex-col gap-sw-xs">
         <span className="text-sw-label-md text-sw-gray-50">
-          Your deposit addresses
+          Receive from different chains
         </span>
         <span className="flex items-center gap-sw-sm">
           {data ? (
@@ -128,46 +133,87 @@ const DepositCard = ({
   );
 };
 
+type AssetTab = 'account' | 'wallet';
+
+const Tabs = ({
+  value,
+  onChange,
+}: {
+  value: AssetTab;
+  onChange: (tab: AssetTab) => void;
+}) => (
+  <div
+    role="tablist"
+    aria-label="Assets"
+    className="flex gap-sw-xs rounded-sw-md bg-sw-gray-900 p-sw-xs">
+    {(
+      [
+        ['account', 'Account'],
+        ['wallet', 'Connected wallet'],
+      ] as const
+    ).map(([tab, label]) => (
+      <button
+        key={tab}
+        type="button"
+        role="tab"
+        aria-selected={value === tab}
+        onClick={() => onChange(tab)}
+        className={cn(
+          'flex-1 rounded-sw-sm px-sw-md py-sw-sm text-sw-label-sm transition-colors',
+          value === tab
+            ? 'bg-sw-gray-700 text-sw-gray-50'
+            : 'text-sw-gray-300 hover:text-sw-gray-50',
+        )}>
+        {label}
+      </button>
+    ))}
+  </div>
+);
+
 const AssetSection = ({
-  title,
   assets,
+  emptyMessage,
   onRefresh,
   isRefreshing,
 }: {
-  title: string;
   assets: Asset[];
-  onRefresh?: () => void;
+  emptyMessage: string;
+  onRefresh: () => void;
   isRefreshing?: boolean;
 }) => (
   <section className="flex flex-col gap-sw-sm">
     <div className="flex items-center justify-between px-sw-xs">
       <span className="text-sw-label-sm text-sw-gray-100">
-        {title} — {assets.length}
+        Assets — {assets.length}
       </span>
-      {onRefresh ? (
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-sw-xs text-sw-label-sm text-sw-gray-300 hover:text-sw-gray-50 disabled:opacity-60">
-          <span className={cn(isRefreshing && 'animate-spin')}>
-            <Icon name="refresh" size={13} />
-          </span>
-          Refresh
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        className="flex items-center gap-sw-xs text-sw-label-sm text-sw-gray-300 hover:text-sw-gray-50 disabled:opacity-60">
+        <span className={cn(isRefreshing && 'animate-spin')}>
+          <Icon name="refresh" size={13} />
+        </span>
+        Refresh
+      </button>
     </div>
-    <ul className="-mx-[12px] m-0 flex flex-col p-0">
-      {assets.map(({ token, balance }) => (
-        <TokensList.Item
-          key={`${token.assetId}-${token.blockchain}-${String(token.isIntent)}`}
-          token={token}
-          balance={balance}
-          variant="source"
-          onMsg={noop}
-        />
-      ))}
-    </ul>
+    {assets.length > 0 ? (
+      <ul className="-mx-[12px] m-0 flex flex-col p-0">
+        {assets.map(({ token, balance }) => (
+          <TokensList.Item
+            key={`${token.assetId}-${token.blockchain}-${String(token.isIntent)}`}
+            token={token}
+            balance={balance}
+            variant="source"
+            onMsg={noop}
+          />
+        ))}
+      </ul>
+    ) : (
+      <p className="m-0 px-sw-xs py-sw-lg text-sw-body-md text-sw-gray-300">
+        {emptyMessage}
+      </p>
+    )}
   </section>
 );
 
@@ -220,7 +266,7 @@ const EmptyCard = ({ onDeposit }: { onDeposit: () => void }) => (
       </p>
     </div>
     <Button variant="primary" size="md" onClick={onDeposit}>
-      Show deposit addresses
+      Receive funds
     </Button>
   </div>
 );
@@ -229,6 +275,16 @@ export const HomeScreen = ({ account }: { account: Account }) => {
   const { push } = useNavigation();
   const queryClient = useQueryClient();
   const assets = useAccountAssets();
+  const siteConnection = useSiteConnection(account);
+  const [chosenTab, setChosenTab] = useState<AssetTab | null>(null);
+  // Account first; the wallet when only it holds anything (until chosen).
+  const tab: AssetTab =
+    account.kind === 'passkey'
+      ? 'account'
+      : (chosenTab ??
+        (assets.account.length === 0 && assets.wallet.length > 0
+          ? 'wallet'
+          : 'account'));
 
   const openSettings = () => push({ name: 'settings' });
   const openDeposit = () => push({ name: 'deposit' });
@@ -280,7 +336,7 @@ export const HomeScreen = ({ account }: { account: Account }) => {
             </section>
             <nav aria-label="Actions" className="flex gap-sw-md">
               <Action icon="swap" label="Swap" />
-              <Action icon="deposit" label="Deposit" onClick={openDeposit} />
+              <Action icon="deposit" label="Receive" onClick={openDeposit} />
               <Action icon="send" label="Send" />
               <Action icon="apps" label="Apps" />
             </nav>
@@ -289,30 +345,27 @@ export const HomeScreen = ({ account }: { account: Account }) => {
             ) : (
               <>
                 <DepositCard account={account} onClick={openDeposit} />
-                {assets.account.length > 0 ? (
-                  <AssetSection
-                    title="In your account"
-                    assets={assets.account}
-                    onRefresh={refresh}
-                    isRefreshing={assets.isRefreshing}
-                  />
+                {account.kind === 'wallet' ? (
+                  <Tabs value={tab} onChange={setChosenTab} />
                 ) : null}
-                {assets.wallet.length > 0 ? (
-                  <AssetSection
-                    title={
-                      account.kind === 'wallet'
-                        ? `In ${account.walletName}`
-                        : 'In your wallet'
-                    }
-                    assets={assets.wallet}
-                    onRefresh={assets.account.length > 0 ? undefined : refresh}
-                  />
-                ) : null}
+                <AssetSection
+                  assets={tab === 'account' ? assets.account : assets.wallet}
+                  emptyMessage={
+                    tab === 'account'
+                      ? 'Nothing in your account yet. Receive funds from any chain to start.'
+                      : `No tokens found in ${account.kind === 'wallet' ? account.walletName : 'your wallet'}.`
+                  }
+                  onRefresh={refresh}
+                  isRefreshing={assets.isRefreshing}
+                />
               </>
             )}
           </>
         )}
       </main>
+      {account.kind === 'wallet' && siteConnection ? (
+        <SiteConnectionBar account={account} connection={siteConnection} />
+      ) : null}
     </div>
   );
 };

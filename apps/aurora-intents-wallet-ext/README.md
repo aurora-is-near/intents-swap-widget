@@ -35,6 +35,17 @@ when a wallet is needed. The content scripts (`src/content/`, copied from
 (EIP-6963, Solana Wallet Standard, NEAR Connect) to the panel. Prompts name the
 connector's origin.
 
+The same content scripts run on every web page, so Home can tell when the
+open site is connected with the active account's wallet (MetaMask-style
+status bar). They only read accounts the site already has (`eth_accounts`,
+never a prompt) and answer only this extension, but they make Chrome show the
+"read and change your data on all websites" permission at install.
+
+A connected wallet must pass the widget's wallet compatibility check
+(`WalletCompatibilityCheck`) before Home opens; the widget records verified
+addresses in localStorage (`sw.verifiedWallets`), so it's asked once per
+wallet per device.
+
 The page must be served at `VITE_CONNECTOR_URL` (default
 `http://localhost:5191/`, baked into the manifest's content-script matches at
 build time):

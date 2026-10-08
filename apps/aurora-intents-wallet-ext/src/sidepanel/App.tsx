@@ -11,9 +11,11 @@ import { buildWidgetConfig } from './accounts/widgetConfig';
 import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
 import { NavigationProvider, useNavigation } from './navigation';
+import { isAccountVerified } from './wallet/walletVerification';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
 import { ConnectWalletScreen } from './screens/connect/ConnectWalletScreen';
+import { VerifyWalletScreen } from './screens/connect/VerifyWalletScreen';
 import { WalletConnectScreen } from './screens/connect/WalletConnectScreen';
 import { DepositAddressesScreen } from './screens/deposit/DepositAddressesScreen';
 import { DepositDetailScreen } from './screens/deposit/DepositDetailScreen';
@@ -41,6 +43,12 @@ const Screens = ({ account }: { account: Account | null }) => {
       return <ConnectBrowserWalletScreen wallet={screen.wallet} />;
     case 'walletConnect':
       return <WalletConnectScreen />;
+    case 'verifyWallet':
+      return account?.kind === 'wallet' ? (
+        <VerifyWalletScreen account={account} />
+      ) : (
+        <WelcomeScreen />
+      );
     case 'settings':
       return <SettingsScreen />;
     case 'deposit':
@@ -50,7 +58,16 @@ const Screens = ({ account }: { account: Account | null }) => {
         <DepositDetailScreen account={account} networkId={screen.network} />
       ) : null;
     case 'home':
-      return account ? <HomeScreen account={account} /> : <WelcomeScreen />;
+      if (!account) {
+        return <WelcomeScreen />;
+      }
+
+      // A wallet is only usable once it passed the compatibility check.
+      return account.kind === 'wallet' && !isAccountVerified(account) ? (
+        <VerifyWalletScreen account={account} />
+      ) : (
+        <HomeScreen account={account} />
+      );
     default:
       return null;
   }

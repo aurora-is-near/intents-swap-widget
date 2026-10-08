@@ -188,6 +188,15 @@
         min-height: 100%;
     }
 
+    /* Tailwind v4's preflight gives buttons the default cursor. */
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    a[href],
+    select,
+    summary {
+        cursor: pointer;
+    }
+
     body {
         margin: 0;
         min-width: 320px;

@@ -12,6 +12,7 @@ type Screen =
   | { name: 'browserWallets' }
   | { name: 'connectBrowserWallet'; wallet: DetectedWallet }
   | { name: 'walletConnect' }
+  | { name: 'verifyWallet' }
   | { name: 'home' }
   | { name: 'deposit' }
   | { name: 'depositDetail'; network: DepositNetwork['id'] }

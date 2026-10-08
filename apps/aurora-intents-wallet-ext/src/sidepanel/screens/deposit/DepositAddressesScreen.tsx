@@ -87,7 +87,7 @@ export const DepositAddressesScreen = ({ account }: { account: Account }) => {
   const evm = useDepositAddress(account, EVM_NETWORK);
 
   return (
-    <Screen title="Deposit" onBack={back}>
+    <Screen title="Receive" onBack={back}>
       <p className="m-0 text-sw-body-md text-sw-gray-200">
         Send crypto to one of your addresses. Whatever you send is converted to
         USDC and credited to your account.

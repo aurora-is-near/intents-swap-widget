@@ -24,7 +24,13 @@ const KEY =
  *   page's origin and every request for them is served there.
  */
 export const createManifest = (connectorUrl: string) => {
-  const bridgedPages = [`${new URL(connectorUrl).origin}/*`];
+  // Every web page, the connector included: the panel also reads (never
+  // prompts) which wallet accounts the open site is connected with.
+  if (!/^https?:/.test(connectorUrl)) {
+    throw new Error(`VITE_CONNECTOR_URL must be http(s): ${connectorUrl}`);
+  }
+
+  const bridgedPages = ['https://*/*', 'http://*/*'];
 
   return defineManifest({
     manifest_version: 3,
@@ -37,7 +43,7 @@ export const createManifest = (connectorUrl: string) => {
     side_panel: { default_path: 'sidepanel.html' },
     background: { service_worker: 'src/background/index.ts', type: 'module' },
     // `storage` keeps the accounts (passkeys and connected wallets); `tabs`
-    // finds the connector page's tab.
+    // finds the connector page's tab and the open site's URL and icon.
     permissions: ['sidePanel', 'storage', 'tabs'],
     content_scripts: [
       {

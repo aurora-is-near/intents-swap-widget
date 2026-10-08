@@ -32,9 +32,17 @@ const local = {
   },
 };
 
+const noopEvent = { addListener: () => {}, removeListener: () => {} };
+
 Object.assign(globalThis, {
   chrome: {
-    runtime: { id: 'dev' },
+    runtime: { id: 'dev', onMessage: noopEvent },
+    // No active web page outside the extension.
+    tabs: {
+      query: () => Promise.resolve([]),
+      onActivated: noopEvent,
+      onUpdated: noopEvent,
+    },
     storage: {
       local,
       onChanged: {
