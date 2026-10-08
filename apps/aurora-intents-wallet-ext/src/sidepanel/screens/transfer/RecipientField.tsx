@@ -44,11 +44,18 @@ export const RecipientField = ({
       return `There's no ${target.chainName} account with this name.`;
     }
 
-    // Rejected by the machine, or by 1Click when the quote is made.
-    const isRejected =
-      code === 'SEND_ADDRESS_IS_INVALID' || code === 'TOKEN_IS_NOT_SUPPORTED';
+    if (!address) {
+      return null;
+    }
 
-    if (!isRejected || !address) {
+    // Checked here as it's typed, whatever state the machine is in; also
+    // rejected by the machine, or by 1Click when the quote is made.
+    const isRejected =
+      isValidChainAddress(target.blockchain, address) === false ||
+      code === 'SEND_ADDRESS_IS_INVALID' ||
+      code === 'TOKEN_IS_NOT_SUPPORTED';
+
+    if (!isRejected) {
       return null;
     }
 

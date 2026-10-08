@@ -48,6 +48,8 @@ type PendingProps = {
   isFromWallet: boolean;
   /** What happens after signing, then the end state. */
   steps: [string, string];
+  /** The transfer in one line, e.g. with `InlineAmount` and `InlineChain`. */
+  assets?: ReactNode;
   notes: ReactNode;
   onBack: () => void;
 };
@@ -59,6 +61,7 @@ export const TransferPending = ({
   isSigned,
   isFromWallet,
   steps,
+  assets,
   notes,
   onBack,
 }: PendingProps) => {
@@ -89,7 +92,16 @@ export const TransferPending = ({
         tone="pending"
         title={title}
         description={
-          isSigned ? 'Submitted. Closing the panel won’t stop it.' : prompt
+          <div className="flex flex-col items-center gap-sw-md">
+            {assets ? (
+              <div className="leading-[24px] text-sw-gray-200">{assets}</div>
+            ) : null}
+            <div className="text-sw-body-sm text-sw-gray-300">
+              {isSigned
+                ? 'Submitted. Closing the panel won’t stop it.'
+                : prompt}
+            </div>
+          </div>
         }
       />
       <div className="flex shrink-0 flex-col rounded-sw-lg bg-sw-gray-900 p-sw-xl">

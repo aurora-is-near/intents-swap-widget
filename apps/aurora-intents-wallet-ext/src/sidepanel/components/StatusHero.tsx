@@ -36,9 +36,10 @@ export const StatusHero = ({ tone, title, description, children }: Props) => (
     )}
     <div className="flex flex-col items-center gap-sw-md">
       <h2 className="m-0 text-sw-h5 text-sw-gray-50">{title}</h2>
-      <p className="m-0 max-w-[300px] text-sw-body-md text-sw-gray-200">
+      {/* A div: descriptions may hold inline icons (block elements). */}
+      <div className="m-0 max-w-[300px] text-sw-body-md text-sw-gray-200">
         {description}
-      </p>
+      </div>
     </div>
     {children}
   </div>

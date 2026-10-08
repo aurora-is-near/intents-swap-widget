@@ -17,6 +17,7 @@ import type { Account } from '../../accounts/types';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
+import { InlineAmount, InlineChain } from '../transfer/InlineAsset';
 import { RecipientField } from '../transfer/RecipientField';
 import { TransferLegs } from '../transfer/TransferLegs';
 import { describeAmount, getTransferSummary } from '../transfer/summary';
@@ -214,6 +215,15 @@ export const SendScreen = ({ account }: { account: Account }) => {
           `Sending on ${summary.target.chainName}`,
           'Delivered to the recipient',
         ]}
+        assets={
+          <>
+            <InlineAmount amount={summary.amountIn} token={summary.source} /> to{' '}
+            {summary.recipient
+              ? shortAddress(summary.recipient)
+              : 'the recipient'}{' '}
+            on <InlineChain chain={summary.target.blockchain} />
+          </>
+        }
         notes={noteRows}
         onBack={goHome}
       />

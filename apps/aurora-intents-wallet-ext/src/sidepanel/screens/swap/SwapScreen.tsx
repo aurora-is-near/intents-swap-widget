@@ -22,6 +22,7 @@ import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
 import { ownAddress } from '../transfer/ownAddress';
+import { InlineAmount, InlineChain } from '../transfer/InlineAsset';
 import { RecipientField } from '../transfer/RecipientField';
 import { TransferLegs } from '../transfer/TransferLegs';
 import {
@@ -266,6 +267,18 @@ export const SwapScreen = ({ account }: { account: Account }) => {
             ? `${summary.target.symbol} sent to ${destination}`
             : `${summary.target.symbol} credited to your account`,
         ]}
+        assets={
+          <>
+            <InlineAmount amount={summary.amountIn} token={summary.source} /> on{' '}
+            <InlineChain chain={summary.source.blockchain} /> for{' '}
+            <InlineAmount
+              isEstimate
+              amount={summary.amountOut}
+              token={summary.target}
+            />{' '}
+            on <InlineChain chain={summary.target.blockchain} />
+          </>
+        }
         notes={noteRows}
         onBack={goHome}
       />
@@ -424,6 +437,7 @@ export const SwapScreen = ({ account }: { account: Account }) => {
           </span>
         </div>
         <Toggle
+          className="shrink-0"
           isOn={sendsOut}
           isDisabled={isSendOutRequired}
           onToggle={toggleSendsOut}
