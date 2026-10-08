@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -10,6 +10,8 @@ import type { Chains } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { Account } from '../../accounts/types';
+import { useAccounts } from '../../accounts/useAccounts';
+import { useTransferSource } from '../../accounts/useTransferSource';
 import { Icon } from '../../components/Icon';
 import { EVM_NETWORK, OTHER_NETWORKS } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
@@ -21,6 +23,8 @@ import { useSiteConnection } from '../../home/useSiteConnection';
 import type { Asset } from '../../home/useAccountAssets';
 import { useNavigation } from '../../navigation';
 import { shortAddress } from '../../utils';
+import { sourceOptions } from '../transfer/walletOptions';
+import { WalletPicker } from '../transfer/WalletPicker';
 
 const EMPTY_STATE_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc', 'ton'];
 const DEPOSIT_CARD_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc'];
@@ -109,10 +113,72 @@ const DepositCard = ({
 
 type AssetTab = 'account' | 'wallet';
 
-const ASSET_TABS = [
-  ['account', 'Account'],
-  ['wallet', 'Connected wallet'],
-] as const;
+const assetTabs = (hasSecondaries: boolean) =>
+  [
+    ['account', 'Account'],
+    ['wallet', hasSecondaries ? 'Wallets' : 'Connected wallet'],
+  ] as const;
+
+/**
+ * Which of the account's wallets the Wallets tab shows (and Swap and Send
+ * spend from): a pill with a picker, when there is more than one.
+ */
+const WalletChip = ({ account }: { account: Account }) => {
+  const { secondaries } = useAccounts();
+  const { source, wallet, select } = useTransferSource();
+  const [isPicking, setIsPicking] = useState(false);
+
+  if (!wallet) {
+    return null;
+  }
+
+  // The account's wallets only: its intents balance has the other tab.
+  const options = sourceOptions(account, secondaries).filter(
+    (option) => option.source.kind !== 'account',
+  );
+
+  const selectedId =
+    source.kind === 'secondary'
+      ? `secondary:${source.id}`
+      : // The account's own wallet also stands for "account" here.
+        'primary';
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Wallet"
+        onClick={() => setIsPicking(true)}
+        className="flex items-center gap-sw-md self-start rounded-full bg-sw-gray-900 py-sw-xs pl-sw-xs pr-sw-md text-left hover:bg-sw-gray-800">
+        <span className="[&>*]:h-[24px] [&>*]:w-[24px] [&>*]:rounded-full [&_svg]:h-[14px] [&_svg]:w-[14px]">
+          {options.find((option) => option.id === selectedId)?.icon}
+        </span>
+        <span className="truncate text-sw-label-md text-sw-gray-50">
+          {wallet.name}
+        </span>
+        <span className="text-sw-label-sm text-sw-gray-300">
+          {shortAddress(wallet.address)}
+        </span>
+        <span className="text-sw-gray-300">
+          <Icon name="chevronDown" size={16} />
+        </span>
+      </button>
+      {isPicking ? (
+        <WalletPicker
+          title="Wallet"
+          description="Whose tokens to show here, and to spend on Swap and Send."
+          options={options}
+          selectedId={selectedId}
+          onSelect={(option) => {
+            select(option.source);
+            setIsPicking(false);
+          }}
+          onClose={() => setIsPicking(false)}
+        />
+      ) : null}
+    </>
+  );
+};
 
 const AssetSection = ({
   assets,
@@ -219,18 +285,31 @@ const EmptyCard = ({ onDeposit }: { onDeposit: () => void }) => (
 
 export const HomeScreen = ({ account }: { account: Account }) => {
   const { push } = useNavigation();
+  const { secondaries } = useAccounts();
+  const { wallet, select } = useTransferSource();
   const queryClient = useQueryClient();
   const assets = useAccountAssets();
   const siteConnection = useSiteConnection(account);
   const [chosenTab, setChosenTab] = useState<AssetTab | null>(null);
+  // Wallets to show: the account's own, or secondary ones.
+  const hasWallets = account.kind === 'wallet' || secondaries.length > 0;
   // Account first; the wallet when only it holds anything (until chosen).
-  const tab: AssetTab =
-    account.kind === 'passkey'
-      ? 'account'
-      : (chosenTab ??
-        (assets.account.length === 0 && assets.wallet.length > 0
-          ? 'wallet'
-          : 'account'));
+  const tab: AssetTab = !hasWallets
+    ? 'account'
+    : (chosenTab ??
+      (assets.account.length === 0 && assets.wallet.length > 0
+        ? 'wallet'
+        : 'account'));
+
+  // A passkey account's Wallets tab shows a secondary wallet: the first one
+  // until picked.
+  useEffect(() => {
+    const first = secondaries[0];
+
+    if (tab === 'wallet' && !wallet && first) {
+      select({ kind: 'secondary', id: first.id });
+    }
+  }, [tab, wallet, secondaries]);
 
   const openSettings = () => push({ name: 'settings' });
   const openDeposit = () => push({ name: 'deposit' });
@@ -309,20 +388,23 @@ export const HomeScreen = ({ account }: { account: Account }) => {
             ) : (
               <>
                 <DepositCard account={account} onClick={openDeposit} />
-                {account.kind === 'wallet' ? (
+                {hasWallets ? (
                   <Tabs
                     label="Assets"
-                    tabs={ASSET_TABS}
+                    tabs={assetTabs(secondaries.length > 0)}
                     value={tab}
                     onChange={setChosenTab}
                   />
+                ) : null}
+                {tab === 'wallet' && secondaries.length > 0 ? (
+                  <WalletChip account={account} />
                 ) : null}
                 <AssetSection
                   assets={tab === 'account' ? assets.account : assets.wallet}
                   emptyMessage={
                     tab === 'account'
                       ? 'Nothing in your account yet. Receive funds from any chain to start.'
-                      : `No tokens found in ${account.kind === 'wallet' ? account.name : 'your wallet'}.`
+                      : `No tokens found in ${wallet?.name ?? 'your wallet'}.`
                   }
                   onRefresh={refresh}
                   isRefreshing={assets.isRefreshing}

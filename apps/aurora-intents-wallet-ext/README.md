@@ -57,6 +57,23 @@ yarn workspace aurora-intents-wallet-ext connector
 For a release, deploy `connector/` as a static site and build with
 `VITE_CONNECTOR_URL=https://…/`.
 
+### Secondary wallets
+
+An account can have any number of secondary wallets: browser wallets (never
+WalletConnect or passkeys) attached to it only to move funds from and to.
+They never sign for the account or for apps. Settings → Secondary wallets
+lists them; Home's Wallets tab, Swap and Send have a picker for which wallet
+to show and spend from, and recipient fields offer the account's other
+wallets on the target chain ("My wallets").
+
+To spend from a secondary wallet the widget is configured with that wallet
+(`connectedWallets`, `providers`, its family as `intentsAccountType`) and the
+account as `intentsAccountId`: balances and the on-chain signature are the
+wallet's, refunds return to it, and a swap into intents lands in the account.
+The wallet's provider refuses to sign while the wallet has another account
+selected than the one connected here. The selection is per account and kept
+for the session (`sessionStorage`).
+
 ## Balances and deposits
 
 Home shows the account's NEAR Intents balance and, for a connected wallet,
@@ -71,11 +88,12 @@ They never change, so they are cached per account in `chrome.storage.local`.
 ## Swap and send
 
 Both run on the swap widget's state machine (quotes, validation, signing) with
-the extension's own screens. As in the widget, swaps go between the account's
-NEAR Intents balance and, for a wallet account, the connected wallet, in any
-direction; "Send to another address" swaps out to an address on any chain.
-Send moves a token (from the account or, for a wallet account, the wallet) to
-an address on a network of the same asset; wallet tokens go through 1Click.
+the extension's own screens. Both start with a "From" row: the account's NEAR
+Intents balance, its own wallet or a secondary wallet, each listing only its
+own tokens. Swaps go into the account, the spending wallet when it's on the
+target chain, or — "Send to another address" — to an address on any chain.
+Send moves a token to an address on a network of the same asset; wallet
+tokens go through 1Click.
 Result screens follow 1Click's execution status, so "complete" means filled,
 and an unfilled swap shows as refunded.
 
