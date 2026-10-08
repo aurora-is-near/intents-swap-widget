@@ -4,6 +4,7 @@ import type { Account } from '../../accounts/types';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
+import { TransferTabs } from './TransferTabs';
 
 type Props = {
   title: string;
@@ -26,6 +27,7 @@ export const EmptyAccount = ({ title, account }: Props) => {
           Receive funds
         </Button>
       }>
+      <TransferTabs value={title === 'Send' ? 'send' : 'swap'} />
       <div className="flex flex-col items-center gap-sw-xl px-sw-md pb-sw-3xl pt-sw-5xl text-center">
         <div className="flex h-[56px] w-[56px] items-center justify-center rounded-sw-lg bg-sw-gray-900 text-sw-gray-200">
           <Icon name={title === 'Send' ? 'send' : 'swap'} size={28} />

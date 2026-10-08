@@ -26,6 +26,7 @@ import {
   TransferResultView,
 } from '../transfer/TransferStatus';
 import { EmptyAccount } from '../transfer/EmptyAccount';
+import { TransferTabs } from '../transfer/TransferTabs';
 import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
 import { NetworkSelect } from './NetworkSelect';
@@ -276,6 +277,8 @@ export const SendScreen = ({ account }: { account: Account }) => {
       onBack={back}
       className="gap-sw-md"
       footer={<SubmitButton label="Send" onSuccess={outcome.onSuccess} />}>
+      <TransferTabs value="send" />
+
       {tokensStatus === 'pending' || isLoading ? (
         <TokenInput.Skeleton />
       ) : (

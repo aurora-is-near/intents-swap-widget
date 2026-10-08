@@ -35,6 +35,7 @@ import {
   TransferResultView,
 } from '../transfer/TransferStatus';
 import { EmptyAccount } from '../transfer/EmptyAccount';
+import { TransferTabs } from '../transfer/TransferTabs';
 import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
 import { SlippageScreen } from './SlippageScreen';
@@ -322,6 +323,8 @@ export const SwapScreen = ({ account }: { account: Account }) => {
           onSuccess={outcome.onSuccess}
         />
       }>
+      <TransferTabs value="swap" />
+
       {tokensStatus === 'pending' || isLoading ? (
         <div className="flex flex-col gap-sw-xs">
           <TokenInput.Skeleton />

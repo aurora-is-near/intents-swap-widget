@@ -15,6 +15,7 @@ import { Icon } from '../../components/Icon';
 import type { IconName } from '../../components/Icon';
 import { EVM_NETWORK, OTHER_NETWORKS } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
+import { Tabs } from '../../components/Tabs';
 import { SiteConnectionBar } from '../../components/SiteConnectionBar';
 import { useAccountAssets } from '../../home/useAccountAssets';
 import { useSiteConnection } from '../../home/useSiteConnection';
@@ -135,40 +136,10 @@ const DepositCard = ({
 
 type AssetTab = 'account' | 'wallet';
 
-const Tabs = ({
-  value,
-  onChange,
-}: {
-  value: AssetTab;
-  onChange: (tab: AssetTab) => void;
-}) => (
-  <div
-    role="tablist"
-    aria-label="Assets"
-    className="flex gap-sw-xs rounded-sw-md bg-sw-gray-900 p-sw-xs">
-    {(
-      [
-        ['account', 'Account'],
-        ['wallet', 'Connected wallet'],
-      ] as const
-    ).map(([tab, label]) => (
-      <button
-        key={tab}
-        type="button"
-        role="tab"
-        aria-selected={value === tab}
-        onClick={() => onChange(tab)}
-        className={cn(
-          'flex-1 rounded-sw-sm px-sw-md py-sw-sm text-sw-label-sm transition-colors',
-          value === tab
-            ? 'bg-sw-gray-700 text-sw-gray-50'
-            : 'text-sw-gray-300 hover:text-sw-gray-50',
-        )}>
-        {label}
-      </button>
-    ))}
-  </div>
-);
+const ASSET_TABS = [
+  ['account', 'Account'],
+  ['wallet', 'Connected wallet'],
+] as const;
 
 const AssetSection = ({
   assets,
@@ -354,7 +325,12 @@ export const HomeScreen = ({ account }: { account: Account }) => {
               <>
                 <DepositCard account={account} onClick={openDeposit} />
                 {account.kind === 'wallet' ? (
-                  <Tabs value={tab} onChange={setChosenTab} />
+                  <Tabs
+                    label="Assets"
+                    tabs={ASSET_TABS}
+                    value={tab}
+                    onChange={setChosenTab}
+                  />
                 ) : null}
                 <AssetSection
                   assets={tab === 'account' ? assets.account : assets.wallet}

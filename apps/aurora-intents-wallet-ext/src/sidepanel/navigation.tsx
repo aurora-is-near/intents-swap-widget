@@ -23,6 +23,8 @@ type Screen =
 type Navigation = {
   screen: Screen;
   push: (screen: Screen) => void;
+  /** Swaps the current screen for another, keeping what's under it. */
+  replace: (screen: Screen) => void;
   /** Replaces the whole stack, e.g. after onboarding. */
   reset: (screen: Screen) => void;
   back: () => void;
@@ -40,6 +42,8 @@ export const NavigationProvider = ({
     () => ({
       screen: stack[stack.length - 1] ?? initial,
       push: (screen) => setStack((current) => [...current, screen]),
+      replace: (screen) =>
+        setStack((current) => [...current.slice(0, -1), screen]),
       reset: (screen) => setStack([screen]),
       back: () =>
         setStack((current) =>
