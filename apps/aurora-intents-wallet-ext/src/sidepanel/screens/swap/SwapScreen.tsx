@@ -395,7 +395,13 @@ export const SwapScreen = ({ account }: { account: Account }) => {
 
       {sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
         <RecipientField
-          label={`Receive ${ctx.targetToken.symbol} at`}
+          label={
+            !!ctx.sendAddress &&
+            ctx.sendAddress.toLowerCase() ===
+              ownAddress(account, ctx.targetToken.blockchain)?.toLowerCase()
+              ? `Receive ${ctx.targetToken.symbol} at your connected wallet`
+              : `Receive ${ctx.targetToken.symbol} at`
+          }
           account={account}
           target={ctx.targetToken}
           networks={ALL_CHAINS}
