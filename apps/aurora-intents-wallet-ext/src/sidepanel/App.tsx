@@ -9,6 +9,7 @@ import type { Account } from './accounts/types';
 import { AccountsProvider, useAccounts } from './accounts/useAccounts';
 import { buildWidgetConfig } from './accounts/widgetConfig';
 import { ALCHEMY_API_KEY } from './config';
+import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
 import { NavigationProvider, useNavigation } from './navigation';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
@@ -22,7 +23,7 @@ import { PasskeyCreatedScreen } from './screens/onboarding/PasskeyCreatedScreen'
 import { WelcomeScreen } from './screens/onboarding/WelcomeScreen';
 import { SettingsScreen } from './screens/settings/SettingsScreen';
 
-const Router = ({ account }: { account: Account | null }) => {
+const Screens = ({ account }: { account: Account | null }) => {
   const { screen } = useNavigation();
 
   switch (screen.name) {
@@ -69,6 +70,18 @@ const WidgetSync = () => {
   });
 
   return null;
+};
+
+const Router = ({ account }: { account: Account | null }) => {
+  const { screen, reset } = useNavigation();
+
+  return (
+    <ScreenErrorBoundary
+      key={screen.name}
+      onHome={() => reset({ name: account ? 'home' : 'welcome' })}>
+      <Screens account={account} />
+    </ScreenErrorBoundary>
+  );
 };
 
 const Wallet = () => {

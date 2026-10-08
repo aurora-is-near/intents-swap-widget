@@ -10,10 +10,7 @@ import {
   useTokens,
 } from '@aurora-is-near/intents-swap-widget';
 import { CHAINS_LIST } from '@aurora-is-near/intents-swap-widget/constants';
-import {
-  cn,
-  formatBigToHuman,
-} from '@aurora-is-near/intents-swap-widget/utils';
+import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { Account } from '../../accounts/types';
 import { Icon, Spinner } from '../../components/Icon';
@@ -21,6 +18,7 @@ import { QrCode } from '../../components/QrCode';
 import { Screen } from '../../components/Screen';
 import { DEPOSIT_SYMBOL } from '../../config';
 import type { DepositRecord } from '../../deposit/feeService';
+import { formatDepositAmount } from '../../deposit/formatDepositAmount';
 import { findNetwork } from '../../deposit/networks';
 import type { DepositNetwork } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
@@ -33,18 +31,28 @@ const useDescribe = () => {
   const { tokens } = useTokens();
 
   return (record: DepositRecord) => {
-    const token = tokens.find((item) => item.assetId === record.asset_id);
-    // "250.0" → "250"
-    const amount = formatBigToHuman(
+    // POA may report NEAR token IDs without the `nep141:` prefix.
+    const token = tokens.find(
+      (item) =>
+        !!record.asset_id &&
+        (item.assetId === record.asset_id ||
+          item.assetId === `nep141:${record.asset_id}`),
+    );
+
+    const amount = formatDepositAmount(
       record.amount,
       record.decimals ?? token?.decimals,
-    ).replace(/\.0+$/, '');
+    );
 
     const chain = record.fromChain
       ? CHAINS_LIST[record.fromChain as keyof typeof CHAINS_LIST]?.label
       : undefined;
 
-    return `${amount} ${token?.symbol ?? ''}${chain ? ` on ${chain}` : ''}`.trim();
+    // Native NEAR arrives as wrap.near; the user sent NEAR.
+    const symbol =
+      token?.assetId === 'nep141:wrap.near' ? 'NEAR' : (token?.symbol ?? '');
+
+    return `${amount} ${symbol}${chain ? ` on ${chain}` : ''}`.trim();
   };
 };
 
