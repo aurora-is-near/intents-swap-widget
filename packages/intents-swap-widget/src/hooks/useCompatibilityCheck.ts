@@ -19,6 +19,8 @@ import { useIntentsAccountType } from './useIntentsAccountType';
 type Props = {
   providers?: Providers;
   walletAddress?: string;
+  /** Why a check failed: the wallet's error, or a rejected signature. */
+  onError?: (error: unknown) => void;
 };
 
 function assertDefined<T>(
@@ -37,7 +39,11 @@ function assertDefined<T>(
 const getAuthMethod = (accountType: IntentsAccountType): AuthMethod =>
   accountType === 'sol' ? 'solana' : accountType;
 
-export function useCompatibilityCheck({ providers, walletAddress }: Props) {
+export function useCompatibilityCheck({
+  providers,
+  walletAddress,
+  onError,
+}: Props) {
   const [isSigning, setIsSigning] = useState(false);
   const { intentsAccountType } = useIntentsAccountType();
   const intentsAccountId = getIntentsAccountId({
@@ -184,8 +190,17 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
         }
       }
 
+      if (!isValid) {
+        onError?.(
+          new Error('NEAR Intents did not accept the wallet’s signature'),
+        );
+      }
+
       return isValid;
     } catch (error) {
+      logger.warn('[WIDGET] Wallet compatibility check failed', error);
+      onError?.(error);
+
       return false;
     } finally {
       setIsSigning(false);

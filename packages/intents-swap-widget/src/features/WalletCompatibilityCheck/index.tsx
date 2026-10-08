@@ -12,9 +12,11 @@ type Msg = { type: 'on_sign_out' | 'on_close' };
 
 type Props = LayoutProps & {
   onMsg: (msg: Msg) => void;
+  /** Called with the reason when a verification attempt fails. */
+  onError?: (error: unknown) => void;
 };
 
-export function WalletCompatibilityCheck({ onMsg, ...layout }: Props) {
+export function WalletCompatibilityCheck({ onMsg, onError, ...layout }: Props) {
   const { providers } = useConfig();
   const [hasError, setHasError] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
@@ -26,6 +28,7 @@ export function WalletCompatibilityCheck({ onMsg, ...layout }: Props) {
   const { handleSign, isSigning } = useCompatibilityCheck({
     providers,
     walletAddress,
+    onError,
   });
 
   async function handleCompatibilityCheck() {
