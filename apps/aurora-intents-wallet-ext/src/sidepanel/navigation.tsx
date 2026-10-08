@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
+import type { Token } from '@aurora-is-near/intents-swap-widget';
+
 import type { DepositNetwork } from './deposit/networks';
 import type { DetectedWallet } from './wallet/types';
 
@@ -16,8 +18,10 @@ type Screen =
   | { name: 'home' }
   | { name: 'deposit' }
   | { name: 'depositDetail'; network: DepositNetwork['id'] }
-  | { name: 'swap' }
-  | { name: 'send' }
+  // `source`: start from this token instead of the largest holding.
+  | { name: 'swap'; source?: Token }
+  | { name: 'send'; source?: Token }
+  | { name: 'asset'; token: Token }
   | { name: 'settings' };
 
 type Navigation = {

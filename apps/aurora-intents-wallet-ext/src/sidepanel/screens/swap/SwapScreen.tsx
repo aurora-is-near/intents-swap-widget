@@ -83,7 +83,13 @@ const SettingsButton = ({ onClick }: { onClick: () => void }) => (
   </button>
 );
 
-export const SwapScreen = ({ account }: { account: Account }) => {
+export const SwapScreen = ({
+  account,
+  source,
+}: {
+  account: Account;
+  source?: Token;
+}) => {
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { tokens, status: tokensStatus, refetch } = useTokens();
@@ -93,7 +99,10 @@ export const SwapScreen = ({ account }: { account: Account }) => {
     lastChangedInput,
     isLoading,
     isEmpty,
-  } = useTransferForm({ fromWallet: account.kind === 'wallet' });
+  } = useTransferForm({
+    fromWallet: account.kind === 'wallet',
+    preferredSource: source,
+  });
 
   const outcome = useTransferOutcome();
 

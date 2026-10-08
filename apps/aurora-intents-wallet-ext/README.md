@@ -82,6 +82,22 @@ Passkey accounts sign with the passkey (`webauthn` intents); the fee service's
 `submit-intent` must accept `webauthn` signed data. Wallet accounts sign with
 their wallet, through the connector page for browser wallets.
 
+## Asset screen
+
+Opening a token from Home shows its price, chart (1D to All), balance, token
+details and market data from CoinGecko. Set a key to raise the rate limit;
+without one the free public API is used:
+
+```bash
+# .env.local
+VITE_COINGECKO_API_KEY=CG-…
+# A Pro key (pro-api.coingecko.com); a Demo key is assumed otherwise
+VITE_COINGECKO_API_PLAN=pro
+```
+
+The key ships in the bundle. Tokens CoinGecko doesn't list show their price
+without a chart or market data.
+
 ## Fee service
 
 Point the app (deposit addresses, and the widget's quotes and intents) at

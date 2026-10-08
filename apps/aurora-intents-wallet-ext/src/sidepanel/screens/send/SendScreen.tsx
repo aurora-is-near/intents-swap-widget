@@ -73,12 +73,18 @@ const isSameToken = (a: Token, b: Token) =>
   a.assetId === b.assetId && a.blockchain === b.blockchain;
 
 /** Withdraws an intents token to an address, on a network of that asset. */
-export const SendScreen = ({ account }: { account: Account }) => {
+export const SendScreen = ({
+  account,
+  source,
+}: {
+  account: Account;
+  source?: Token;
+}) => {
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { tokens, status: tokensStatus, refetch } = useTokens();
   const { onChangeAmount, onChangeToken, isLoading, isEmpty } = useTransferForm(
-    { fromWallet: false },
+    { fromWallet: false, preferredSource: source },
   );
 
   const outcome = useTransferOutcome();

@@ -12,9 +12,9 @@ import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { Account } from '../../accounts/types';
 import { Icon } from '../../components/Icon';
-import type { IconName } from '../../components/Icon';
 import { EVM_NETWORK, OTHER_NETWORKS } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
+import { ActionButton } from '../../components/ActionButton';
 import { Tabs } from '../../components/Tabs';
 import { SiteConnectionBar } from '../../components/SiteConnectionBar';
 import { useAccountAssets } from '../../home/useAccountAssets';
@@ -25,8 +25,6 @@ import { shortAddress } from '../../utils';
 
 const EMPTY_STATE_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc', 'ton'];
 const DEPOSIT_CARD_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc'];
-
-const noop = () => {};
 
 const ChainIcon = ({
   chain,
@@ -65,30 +63,6 @@ const AccountPill = ({
     </span>
     <span className="text-sw-gray-300">
       <Icon name="chevronDown" size={16} />
-    </span>
-  </button>
-);
-
-const Action = ({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: IconName;
-  label: string;
-  /** No handler: the flow isn't available yet. */
-  onClick?: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={!onClick}
-    className="group flex flex-1 flex-col items-center gap-sw-sm text-sw-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
-    <span className="flex h-[52px] w-[52px] items-center justify-center rounded-sw-lg bg-sw-accent-500 text-sw-gray-950 transition-colors group-enabled:group-hover:bg-sw-accent-300">
-      <Icon name={icon} size={22} />
-    </span>
-    <span className="text-sw-label-sm text-sw-gray-100 transition-colors group-enabled:group-hover:text-sw-gray-50">
-      {label}
     </span>
   </button>
 );
@@ -145,11 +119,13 @@ const AssetSection = ({
   assets,
   emptyMessage,
   onRefresh,
+  onOpen,
   isRefreshing,
 }: {
   assets: Asset[];
   emptyMessage: string;
   onRefresh: () => void;
+  onOpen: (token: Asset['token']) => void;
   isRefreshing?: boolean;
 }) => (
   <section className="flex flex-col gap-sw-sm">
@@ -176,7 +152,7 @@ const AssetSection = ({
             token={token}
             balance={balance}
             variant="source"
-            onMsg={noop}
+            onMsg={(msg) => onOpen(msg.token)}
           />
         ))}
       </ul>
@@ -306,18 +282,22 @@ export const HomeScreen = ({ account }: { account: Account }) => {
               ) : null}
             </section>
             <nav aria-label="Actions" className="flex gap-sw-md">
-              <Action
+              <ActionButton
                 icon="swap"
                 label="Swap"
                 onClick={() => push({ name: 'swap' })}
               />
-              <Action icon="deposit" label="Receive" onClick={openDeposit} />
-              <Action
+              <ActionButton
+                icon="deposit"
+                label="Receive"
+                onClick={openDeposit}
+              />
+              <ActionButton
                 icon="send"
                 label="Send"
                 onClick={() => push({ name: 'send' })}
               />
-              <Action icon="apps" label="Apps" />
+              <ActionButton icon="apps" label="Apps" />
             </nav>
             {assets.isEmpty ? (
               <EmptyCard onDeposit={openDeposit} />
@@ -341,6 +321,7 @@ export const HomeScreen = ({ account }: { account: Account }) => {
                   }
                   onRefresh={refresh}
                   isRefreshing={assets.isRefreshing}
+                  onOpen={(token) => push({ name: 'asset', token })}
                 />
               </>
             )}

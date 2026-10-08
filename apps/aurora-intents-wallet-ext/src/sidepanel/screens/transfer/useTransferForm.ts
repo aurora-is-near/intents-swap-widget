@@ -7,6 +7,7 @@ import {
   useTokenInputPair,
   useUnsafeSnapshot,
 } from '@aurora-is-near/intents-swap-widget';
+import type { Token } from '@aurora-is-near/intents-swap-widget';
 
 import { useAccountAssets } from '../../home/useAccountAssets';
 
@@ -19,7 +20,14 @@ import { useAccountAssets } from '../../home/useAccountAssets';
  * connected wallet's tokens too (account first). It's picked here because the
  * widget's own default doesn't know which of the two a screen spends.
  */
-export const useTransferForm = ({ fromWallet }: { fromWallet: boolean }) => {
+export const useTransferForm = ({
+  fromWallet,
+  preferredSource,
+}: {
+  fromWallet: boolean;
+  /** Start from this token (e.g. opened from its asset screen). */
+  preferredSource?: Token;
+}) => {
   const pair = useTokenInputPair();
   const { ctx } = useUnsafeSnapshot();
   const assets = useAccountAssets();
@@ -28,6 +36,11 @@ export const useTransferForm = ({ fromWallet }: { fromWallet: boolean }) => {
     : assets.account;
 
   const largest = spendable[0]?.token;
+  const initial =
+    preferredSource && (preferredSource.isIntent || fromWallet)
+      ? preferredSource
+      : largest;
+
   const isSourceAllowed = !!ctx.sourceToken?.isIntent || fromWallet;
 
   // The machine's reset keeps a send address equal to the wallet's own (for
@@ -56,10 +69,10 @@ export const useTransferForm = ({ fromWallet }: { fromWallet: boolean }) => {
   }, [targetChain, ctx.sendAddress, ctx.walletAddress]);
 
   useEffect(() => {
-    if (largest && (!ctx.sourceToken || !isSourceAllowed)) {
-      fireEvent('tokenSelect', { variant: 'source', token: largest });
+    if (initial && (!ctx.sourceToken || !isSourceAllowed)) {
+      fireEvent('tokenSelect', { variant: 'source', token: initial });
     }
-  }, [largest, ctx.sourceToken, isSourceAllowed]);
+  }, [initial, ctx.sourceToken, isSourceAllowed]);
 
   useStoreSideEffects({
     listenTo: [

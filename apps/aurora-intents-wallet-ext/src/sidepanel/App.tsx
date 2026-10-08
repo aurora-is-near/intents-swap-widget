@@ -12,6 +12,7 @@ import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
 import { NavigationProvider, useNavigation } from './navigation';
 import { isAccountVerified } from './wallet/walletVerification';
+import { AssetScreen } from './screens/asset/AssetScreen';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
 import { ConnectWalletScreen } from './screens/connect/ConnectWalletScreen';
@@ -60,9 +61,17 @@ const Screens = ({ account }: { account: Account | null }) => {
         <DepositDetailScreen account={account} networkId={screen.network} />
       ) : null;
     case 'swap':
-      return account ? <SwapScreen account={account} /> : null;
+      return account ? (
+        <SwapScreen account={account} source={screen.source} />
+      ) : null;
     case 'send':
-      return account ? <SendScreen account={account} /> : null;
+      return account ? (
+        <SendScreen account={account} source={screen.source} />
+      ) : null;
+    case 'asset':
+      return account ? (
+        <AssetScreen account={account} token={screen.token} />
+      ) : null;
     case 'home':
       if (!account) {
         return <WelcomeScreen />;
