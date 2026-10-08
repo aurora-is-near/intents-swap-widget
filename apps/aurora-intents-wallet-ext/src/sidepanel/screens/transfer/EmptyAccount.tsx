@@ -38,7 +38,7 @@ export const EmptyAccount = ({ title, account }: Props) => {
             {title === 'Send' ? 'Sends' : 'Swaps'} spend your account balance.
             Receive funds from any chain to get started.
             {account.kind === 'wallet'
-              ? ` Tokens in ${account.walletName} can be sent to your deposit addresses too.`
+              ? ` Tokens in ${account.name} can be sent to your deposit addresses too.`
               : ''}
           </p>
         </div>

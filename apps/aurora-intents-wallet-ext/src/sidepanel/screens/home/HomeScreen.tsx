@@ -337,7 +337,7 @@ export const HomeScreen = ({ account }: { account: Account }) => {
                   emptyMessage={
                     tab === 'account'
                       ? 'Nothing in your account yet. Receive funds from any chain to start.'
-                      : `No tokens found in ${account.kind === 'wallet' ? account.walletName : 'your wallet'}.`
+                      : `No tokens found in ${account.kind === 'wallet' ? account.name : 'your wallet'}.`
                   }
                   onRefresh={refresh}
                   isRefreshing={assets.isRefreshing}

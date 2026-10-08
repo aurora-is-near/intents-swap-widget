@@ -100,7 +100,8 @@ export const SwapScreen = ({ account }: { account: Account }) => {
   const [sendsOut, setSendsOut] = useState(false);
 
   const hasWallet = account.kind === 'wallet';
-  const walletName = hasWallet ? account.walletName : 'your wallet';
+  // The account's name in the extension, not the wallet app's.
+  const walletName = hasWallet ? account.name : 'your wallet';
   const chainsFilter = filters(hasWallet, sendsOut);
   const summary = getTransferSummary(ctx);
   const goHome = () => reset({ name: 'home' });

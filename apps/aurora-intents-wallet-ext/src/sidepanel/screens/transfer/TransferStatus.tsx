@@ -34,9 +34,9 @@ const StepIcon = ({ state }: { state: StepState }) => {
   }
 };
 
-/** Who signs the intent: the passkey, or the connected wallet. */
+/** Who signs: the passkey, or the wallet account (by its name here). */
 const signer = (account: Account) =>
-  account.kind === 'passkey' ? 'passkey' : account.walletName;
+  account.kind === 'passkey' ? 'passkey' : account.name;
 
 type PendingProps = {
   account: Account;
@@ -64,12 +64,18 @@ export const TransferPending = ({
 }: PendingProps) => {
   const who = signer(account);
   const [waiting, done] = isFromWallet
-    ? [`Confirm in ${who}`, `Sent from ${who}`]
+    ? [`Confirm for ${who}`, `Sent from ${who}`]
     : [`Approve with ${who}`, `Signed with ${who}`];
 
-  const prompt = isFromWallet
-    ? `Confirm the transaction in ${who} to continue.`
-    : `Approve the request with your ${who} to continue.`;
+  const prompt = (() => {
+    if (account.kind === 'passkey') {
+      return 'Approve the request with your passkey to continue.';
+    }
+
+    return isFromWallet
+      ? `Confirm the transaction for ${who} to continue.`
+      : `Approve the request for ${who} to continue.`;
+  })();
 
   const rows: Array<[string, StepState]> = [
     [isSigned ? done : waiting, isSigned ? 'done' : 'active'],

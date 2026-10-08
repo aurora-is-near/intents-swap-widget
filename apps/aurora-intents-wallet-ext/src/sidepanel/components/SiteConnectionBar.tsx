@@ -34,7 +34,7 @@ export const SiteConnectionBar = ({
 }) => (
   <div
     role="status"
-    aria-label={`${connection.host} is connected with ${account.walletName}`}
+    aria-label={`${connection.host} is connected with ${account.name}`}
     className="flex shrink-0 items-center gap-sw-lg border-t border-sw-gray-900 bg-sw-gray-950 px-sw-xl py-sw-lg">
     <span className="relative shrink-0">
       <SiteIcon connection={connection} />
@@ -45,7 +45,7 @@ export const SiteConnectionBar = ({
         {connection.host}
       </span>
       <span className="truncate text-sw-label-sm text-sw-gray-300">
-        Connected with {account.walletName}
+        Connected with {account.name}
       </span>
     </span>
   </div>
