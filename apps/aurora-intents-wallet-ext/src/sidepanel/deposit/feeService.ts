@@ -68,7 +68,8 @@ export const getPersistentDepositAddress = async ({
   recipient: string;
   sender: string;
   depositChain: string;
-  destination: { chain: string; symbol: string };
+  /** `asset` is an asset ID or a symbol unique on `chain`. */
+  destination: { chain: string; asset: string };
 }): Promise<DepositAddress> => {
   const { depositAddress, memo } = await request<{
     depositAddress: string;
@@ -82,7 +83,7 @@ export const getPersistentDepositAddress = async ({
       sender,
       depositChain,
       destinationChain: destination.chain,
-      destinationAsset: destination.symbol,
+      destinationAsset: destination.asset,
     }),
   });
 

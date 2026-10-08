@@ -18,5 +18,8 @@ export const FEE_SERVICE_URL =
 export const PDA_API_KEY =
   (import.meta.env.VITE_PDA_API_KEY as string | undefined) ?? API_KEY;
 
-/** Every deposit is converted to this asset inside the account. */
-export const DEPOSIT_ASSET = { chain: 'base', symbol: 'USDC' } as const;
+/**
+ * Every deposit is converted to this asset, as its intents representation
+ * (USDC on NEAR, the same mapping the swap widget uses for deposits).
+ */
+export const DEPOSIT_SYMBOL = 'USDC';

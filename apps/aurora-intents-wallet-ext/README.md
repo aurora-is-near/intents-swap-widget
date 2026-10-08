@@ -52,8 +52,9 @@ Home shows the account's NEAR Intents balance and, for a connected wallet,
 the wallet's own tokens (Alchemy for EVM and Solana, RPC for NEAR).
 
 Deposit addresses are the fee service's persistent deposit addresses with
-`recipientType: INTENTS`: whatever arrives is converted to USDC (Base) inside
-the account. One address covers every EVM chain; other networks get one each.
+`recipientType: INTENTS`: whatever arrives is converted to one asset inside
+the account, USDC as its single intents representation on NEAR
+(`getIntentsTargetToken`, the swap widget's deposit mapping). One address covers every EVM chain; other networks get one each.
 They never change, so they are cached per account in `chrome.storage.local`.
 Point the app at another fee service (e.g. a local one) with:
 

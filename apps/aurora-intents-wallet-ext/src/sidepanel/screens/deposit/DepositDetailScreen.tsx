@@ -19,7 +19,7 @@ import type { Account } from '../../accounts/types';
 import { Icon, Spinner } from '../../components/Icon';
 import { QrCode } from '../../components/QrCode';
 import { Screen } from '../../components/Screen';
-import { DEPOSIT_ASSET } from '../../config';
+import { DEPOSIT_SYMBOL } from '../../config';
 import type { DepositRecord } from '../../deposit/feeService';
 import { findNetwork } from '../../deposit/networks';
 import type { DepositNetwork } from '../../deposit/networks';
@@ -90,12 +90,11 @@ const StatusCard = ({ progress }: { progress: DepositProgress }) => {
               Deposit detected · {describe(progress.received)}
             </span>
             <p className="m-0 text-sw-body-sm text-sw-gray-300">
-              Converting to {DEPOSIT_ASSET.symbol}. This usually takes under a
-              minute.
+              Converting to {DEPOSIT_SYMBOL}. This usually takes under a minute.
             </p>
             <ol className="m-0 mt-sw-xs flex list-none flex-col gap-sw-md p-0">
               <Step state="done">Received {describe(progress.received)}</Step>
-              <Step state="active">Converting to {DEPOSIT_ASSET.symbol}</Step>
+              <Step state="active">Converting to {DEPOSIT_SYMBOL}</Step>
               <Step state="todo">Credit your account</Step>
             </ol>
           </div>
@@ -173,7 +172,7 @@ const Networks = ({ network }: { network: DepositNetwork }) => (
       {network.id === 'evm'
         ? 'ETH, USDC, USDT or any supported token on these networks.'
         : `Any supported token on ${network.title}.`}{' '}
-      It is converted to {DEPOSIT_ASSET.symbol} and credited to your account.
+      It is converted to {DEPOSIT_SYMBOL} and credited to your account.
     </p>
     <div className="flex flex-wrap gap-sw-sm">
       {network.chains.map((chain) => (

@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 
+import type { Token } from '@aurora-is-near/intents-swap-widget';
+
 import { getAccountIntentsId } from '../accounts/intentsAccountId';
 import type { Account } from '../accounts/types';
-import { DEPOSIT_ASSET } from '../config';
 import { getPersistentDepositAddress, isRetryable } from './feeService';
 import type { DepositAddress } from './feeService';
 import type { DepositNetwork } from './networks';
+import { useDepositDestination } from './useDepositDestination';
 
-const storageKey = (intentsId: string) => `depositAddresses:${intentsId}`;
+// Per destination asset: addresses for another asset are another account.
+const storageKey = (intentsId: string, destination: Token) =>
+  `depositAddresses:${intentsId}:${destination.assetId}`;
 
 type Cached = Partial<Record<DepositNetwork['id'], DepositAddress>>;
 
-const readCache = async (intentsId: string): Promise<Cached> => {
-  const key = storageKey(intentsId);
+const readCache = async (
+  intentsId: string,
+  destination: Token,
+): Promise<Cached> => {
+  const key = storageKey(intentsId, destination);
 
   return (
     ((await chrome.storage.local.get(key))[key] as Cached | undefined) ?? {}
@@ -22,9 +29,10 @@ const readCache = async (intentsId: string): Promise<Cached> => {
 const fetchDepositAddress = async (
   account: Account,
   network: DepositNetwork,
+  destination: Token,
 ): Promise<DepositAddress> => {
   const intentsId = getAccountIntentsId(account);
-  const cached = (await readCache(intentsId))[network.id];
+  const cached = (await readCache(intentsId, destination))[network.id];
 
   if (cached) {
     return cached;
@@ -36,13 +44,13 @@ const fetchDepositAddress = async (
     // same addresses.
     sender: `aurora-intents-wallet-ext:${intentsId}`,
     depositChain: network.id,
-    destination: DEPOSIT_ASSET,
+    destination: { chain: destination.blockchain, asset: destination.assetId },
   });
 
   // Re-read: other networks may have been stored meanwhile.
   await chrome.storage.local.set({
-    [storageKey(intentsId)]: {
-      ...(await readCache(intentsId)),
+    [storageKey(intentsId, destination)]: {
+      ...(await readCache(intentsId, destination)),
       [network.id]: address,
     },
   });
@@ -58,12 +66,21 @@ export const useDepositAddress = (
   account: Account,
   network: DepositNetwork,
   { enabled = true }: { enabled?: boolean } = {},
-) =>
-  useQuery({
-    queryKey: ['depositAddress', getAccountIntentsId(account), network.id],
-    queryFn: () => fetchDepositAddress(account, network),
-    enabled,
+) => {
+  const destination = useDepositDestination();
+
+  return useQuery({
+    queryKey: [
+      'depositAddress',
+      getAccountIntentsId(account),
+      destination?.assetId,
+      network.id,
+    ],
+    queryFn: () => fetchDepositAddress(account, network, destination!),
+    // The destination comes from the token list, which loads first.
+    enabled: enabled && !!destination,
     staleTime: Infinity,
     // A 4xx (unknown key, no PDA access, unsupported chain) won't change.
     retry: (failures, error) => failures < 3 && isRetryable(error),
   });
+};
