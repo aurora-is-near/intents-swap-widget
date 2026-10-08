@@ -27,7 +27,8 @@ export const EmptyAccount = ({
 }: Props) => {
   const { back, push } = useNavigation();
   const screen = title === 'Send' ? 'send' : 'swap';
-  const isAccount = source.kind === 'account';
+  const isPrimary = source.kind === 'primary';
+  const verb = title.toLowerCase();
 
   return (
     <Screen
@@ -35,7 +36,7 @@ export const EmptyAccount = ({
       onBack={back}
       className="gap-sw-md"
       footer={
-        isAccount ? (
+        isPrimary ? (
           <Button
             variant="primary"
             size="lg"
@@ -52,14 +53,20 @@ export const EmptyAccount = ({
         </div>
         <div className="flex flex-col items-center gap-sw-md">
           <h2 className="text-sw-h5 text-sw-gray-50">
-            {isAccount
-              ? 'Your account is empty'
-              : `Nothing to ${title.toLowerCase()} in ${sourceName}`}
+            {isPrimary
+              ? `Nothing to ${verb} yet`
+              : `Nothing to ${verb} in ${sourceName}`}
           </h2>
           <p className="max-w-[300px] text-sw-body-md text-sw-gray-200">
-            {isAccount
-              ? `${title === 'Send' ? 'Sends' : 'Swaps'} from your account spend its NEAR Intents balance. Receive funds from any chain, or spend from a wallet.`
-              : `No tokens were found in ${sourceName}. Pick another wallet or your account above.`}
+            {(() => {
+              if (!isPrimary) {
+                return `No tokens were found in ${sourceName}. Pick another wallet above.`;
+              }
+
+              return account.kind === 'wallet'
+                ? `Your account and ${account.name} have no tokens. Receive funds from any chain, or pick another wallet above.`
+                : 'Your account is empty. Receive funds from any chain, or pick a wallet above.';
+            })()}
           </p>
         </div>
       </div>

@@ -14,15 +14,40 @@ import { sourceKey, useTransferSource } from '../../accounts/useTransferSource';
 import type { TransferSource } from '../../accounts/useTransferSource';
 import { useAccountAssets } from '../../home/useAccountAssets';
 
-/** Only what the source holds: the account's intents balance, or the wallet's tokens. */
-const sourceFilterOf = (source: TransferSource): ChainsFilter =>
-  source.kind === 'account'
-    ? { intents: 'with-balance', external: 'none' }
-    : { intents: 'none', external: 'with-balance' };
+/**
+ * Only what the source holds: the primary's intents balance and (for a wallet
+ * account) its wallet's tokens; a secondary wallet's tokens.
+ */
+const sourceFilterOf = (
+  source: TransferSource,
+  account: Account,
+): ChainsFilter => {
+  if (source.kind === 'secondary') {
+    return { intents: 'none', external: 'with-balance' };
+  }
+
+  return {
+    intents: 'with-balance',
+    external: account.kind === 'wallet' ? 'with-balance' : 'none',
+  };
+};
 
 /** Whether `token` can be spent from `source`. */
-const belongsTo = (token: Token | undefined, source: TransferSource) =>
-  !!token && token.isIntent === (source.kind === 'account');
+const belongsTo = (
+  token: Token | undefined,
+  source: TransferSource,
+  account: Account,
+) => {
+  if (!token) {
+    return false;
+  }
+
+  if (source.kind === 'secondary') {
+    return !token.isIntent;
+  }
+
+  return token.isIntent || account.kind === 'wallet';
+};
 
 /**
  * The widget machine's swap form for a screen: a clean start, the largest
@@ -45,52 +70,30 @@ export const useTransferForm = ({
   const pair = useTokenInputPair();
   const { ctx } = useUnsafeSnapshot();
   const assets = useAccountAssets();
-  const { source, secondary, wallet, select, isDefault } = useTransferSource();
+  const { source, wallet, select } = useTransferSource();
 
-  const spendable = source.kind === 'account' ? assets.account : assets.wallet;
+  // The widget is configured with the source's wallet, so `assets.wallet`
+  // is that wallet's tokens. Account first, as before.
+  const spendable =
+    source.kind === 'secondary'
+      ? assets.wallet
+      : [...assets.account, ...assets.wallet];
+
   const largest = spendable[0]?.token;
-  const initial = belongsTo(preferredSource, source)
+  const initial = belongsTo(preferredSource, source, account)
     ? preferredSource
     : largest;
 
-  const isSourceAllowed = belongsTo(ctx.sourceToken, source);
+  const isSourceAllowed = belongsTo(ctx.sourceToken, source, account);
   const key = sourceKey(source);
 
-  // A token opened from the wallet's asset screen is spent from that wallet.
-  // Also, with nothing picked yet and an empty account, start from the
-  // account's own wallet when it holds something (as before sources).
-  const isStarting = useRef(true);
-
+  // An account token opened from its asset screen is spent from the
+  // primary, whichever wallet was selected.
   useEffect(() => {
-    if (isStarting.current && assets.isLoading) {
-      return;
-    }
-
-    if (!isStarting.current) {
-      return;
-    }
-
-    isStarting.current = false;
-
-    if (source.kind !== 'account') {
-      return;
-    }
-
-    if (preferredSource && !preferredSource.isIntent) {
-      select(
-        secondary
-          ? { kind: 'secondary', id: secondary.id }
-          : { kind: 'primary' },
-      );
-    } else if (
-      isDefault &&
-      account.kind === 'wallet' &&
-      assets.account.length === 0 &&
-      assets.wallet.length > 0
-    ) {
+    if (preferredSource?.isIntent && source.kind === 'secondary') {
       select({ kind: 'primary' });
     }
-  }, [assets.isLoading]);
+  }, []);
 
   // The machine's reset keeps a send address equal to the wallet's own (for
   // the widget's "receive in my wallet"); a new form starts without one. The
@@ -173,12 +176,9 @@ export const useTransferForm = ({
     source,
     /** The wallet the widget spends from; null for the account of a passkey. */
     wallet,
-    /** The wallet named in the UI: the spending wallet, or "your account". */
-    sourceName:
-      source.kind === 'account'
-        ? 'your account'
-        : (wallet?.name ?? 'your wallet'),
-    sourceFilter: sourceFilterOf(source),
+    /** The spending wallet's name; the account's for a passkey. */
+    sourceName: wallet?.name ?? account.name,
+    sourceFilter: sourceFilterOf(source, account),
     changeSource: select,
     changeSourceKeepingToken,
     isLoading: assets.isLoading,

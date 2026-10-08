@@ -240,8 +240,8 @@ export const SendScreen = ({
     return (
       <TransferPending
         signer={{
-          name: wallet?.name ?? account.name,
-          isPasskey: source.kind === 'account' && account.kind === 'passkey',
+          name: !summary.source.isIntent && wallet ? wallet.name : account.name,
+          isPasskey: summary.source.isIntent && account.kind === 'passkey',
         }}
         screenTitle="Send"
         title={`Sending ${summary.amountIn} ${summary.source.symbol} to ${summary.target.chainName}`}

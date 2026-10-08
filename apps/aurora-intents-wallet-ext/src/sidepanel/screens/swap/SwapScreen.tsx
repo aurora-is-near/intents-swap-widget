@@ -171,9 +171,8 @@ export const SwapScreen = ({
 
     fireEvent('tokenSelectRotate', null);
 
+    // Account tokens are spent from the primary.
     if (target.isIntent) {
-      changeSourceKeepingToken({ kind: 'account' });
-    } else if (source.kind === 'account' && wallet) {
       changeSourceKeepingToken({ kind: 'primary' });
     }
   };
@@ -322,8 +321,8 @@ export const SwapScreen = ({
     return (
       <TransferPending
         signer={{
-          name: wallet?.name ?? account.name,
-          isPasskey: source.kind === 'account' && account.kind === 'passkey',
+          name: !summary.source.isIntent && wallet ? wallet.name : account.name,
+          isPasskey: summary.source.isIntent && account.kind === 'passkey',
         }}
         screenTitle="Swap"
         title={`Swapping ${summary.amountIn} ${summary.source.symbol} for ${summary.target.symbol}`}
@@ -558,7 +557,7 @@ export const SwapScreen = ({
           variant="error"
           hasBg
           multiline
-          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)} in ${sourceName}. Lower the amount or ${ctx.sourceToken.isIntent ? 'deposit more' : 'pick another token'}.`}
+          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)} in ${ctx.sourceToken.isIntent ? 'your account' : sourceName}. Lower the amount or ${ctx.sourceToken.isIntent ? 'deposit more' : 'pick another token'}.`}
         />
       ) : null}
 

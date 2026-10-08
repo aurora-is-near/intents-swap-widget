@@ -5,19 +5,17 @@ import type { ConnectedWallet, SecondaryWallet } from './types';
 import { useAccounts } from './useAccounts';
 
 /**
- * Where funds are spent from: the account's intents balance, the account's
- * own wallet, or one of its secondary wallets.
+ * Where funds are spent from: the primary — the account's own wallet and its
+ * intents balance (only the intents balance for a passkey) — or one of its
+ * secondary wallets (only that wallet's tokens).
  */
 export type TransferSource =
-  | { kind: 'account' }
   | { kind: 'primary' }
   | { kind: 'secondary'; id: string };
 
 type Selection = {
   source: TransferSource;
-  /** Nothing was picked for this account yet (screens may pick for the user). */
-  isDefault: boolean;
-  /** The selected secondary wallet; null for the account or its own wallet. */
+  /** The selected secondary wallet; null for the primary. */
   secondary: SecondaryWallet | null;
   /**
    * The wallet the widget is configured with — whose on-chain balances show
@@ -28,7 +26,7 @@ type Selection = {
   select: (source: TransferSource) => void;
 };
 
-const ACCOUNT: TransferSource = { kind: 'account' };
+const PRIMARY: TransferSource = { kind: 'primary' };
 
 const storageKey = (accountId: string) => `transferSource:${accountId}`;
 
@@ -53,23 +51,17 @@ export const TransferSourceProvider = ({ children }: PropsWithChildren) => {
   const [choices, setChoices] = useState<Record<string, TransferSource>>({});
 
   const value = useMemo<Selection>(() => {
-    const stored = active ? (choices[active.id] ?? restore(active.id)) : null;
-    const chosen = stored ?? ACCOUNT;
+    const chosen =
+      (active ? (choices[active.id] ?? restore(active.id)) : null) ?? PRIMARY;
 
     const secondary =
       chosen.kind === 'secondary'
         ? (secondaries.find((wallet) => wallet.id === chosen.id) ?? null)
         : null;
 
-    // A removed secondary, or a passkey's "own wallet", means the account.
-    const isValid =
-      chosen.kind === 'account' ||
-      (chosen.kind === 'primary' && active?.kind === 'wallet') ||
-      !!secondary;
-
     return {
-      source: isValid ? chosen : ACCOUNT,
-      isDefault: stored === null,
+      // A removed secondary (or anything stored before) means the primary.
+      source: secondary ? chosen : PRIMARY,
       secondary,
       wallet: secondary ?? (active?.kind === 'wallet' ? active : null),
       select: (source) => {
@@ -109,4 +101,4 @@ export const useTransferSource = () => {
 
 /** A stable key for a source, to notice it changing. */
 export const sourceKey = (source: TransferSource) =>
-  source.kind === 'secondary' ? `secondary:${source.id}` : source.kind;
+  source.kind === 'secondary' ? `secondary:${source.id}` : 'primary';

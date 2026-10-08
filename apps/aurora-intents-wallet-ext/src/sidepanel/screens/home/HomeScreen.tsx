@@ -11,7 +11,7 @@ import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { Account } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
-import { useTransferSource } from '../../accounts/useTransferSource';
+import { sourceKey, useTransferSource } from '../../accounts/useTransferSource';
 import { Icon } from '../../components/Icon';
 import { EVM_NETWORK, OTHER_NETWORKS } from '../../deposit/networks';
 import { useDepositAddress } from '../../deposit/useDepositAddress';
@@ -133,16 +133,12 @@ const WalletChip = ({ account }: { account: Account }) => {
     return null;
   }
 
-  // The account's wallets only: its intents balance has the other tab.
+  // On-chain wallets only: a passkey's balance is on the Account tab.
   const options = sourceOptions(account, secondaries).filter(
-    (option) => option.source.kind !== 'account',
+    (option) => option.source.kind === 'secondary' || account.kind === 'wallet',
   );
 
-  const selectedId =
-    source.kind === 'secondary'
-      ? `secondary:${source.id}`
-      : // The account's own wallet also stands for "account" here.
-        'primary';
+  const selectedId = sourceKey(source);
 
   const current = options.find((option) => option.id === selectedId);
 

@@ -48,33 +48,31 @@ const walletIcon =
     />
   );
 
-/** The account's intents balance, its own wallet, and its secondary wallets. */
+/**
+ * The account's wallets to spend from: the primary (its own wallet, or the
+ * passkey), whose token list includes the account's intents balance, then
+ * its secondary wallets.
+ */
 export const sourceOptions = (
   account: Account,
   secondaries: SecondaryWallet[],
 ): Array<WalletOption & { source: TransferSource }> => [
-  {
-    id: sourceKey({ kind: 'account' }),
-    source: { kind: 'account' },
-    name: account.kind === 'passkey' ? account.name : 'Intents account',
-    detail:
-      account.kind === 'passkey'
-        ? 'Passkey · balance on NEAR Intents'
-        : `${account.name} · balance on NEAR Intents`,
-    icon: accountTile,
-  },
-  ...(account.kind === 'wallet'
-    ? [
-        {
-          id: sourceKey({ kind: 'primary' }),
-          source: { kind: 'primary' } as const,
-          name: account.name,
-          detail: describeWallet(account),
-          address: account.address,
-          icon: walletIcon(account),
-        },
-      ]
-    : []),
+  account.kind === 'wallet'
+    ? {
+        id: sourceKey({ kind: 'primary' }),
+        source: { kind: 'primary' },
+        name: account.name,
+        detail: describeWallet(account),
+        address: account.address,
+        icon: walletIcon(account),
+      }
+    : {
+        id: sourceKey({ kind: 'primary' }),
+        source: { kind: 'primary' },
+        name: account.name,
+        detail: 'Passkey · NEAR Intents balance',
+        icon: accountTile,
+      },
   ...secondaries.map((wallet) => ({
     id: sourceKey({ kind: 'secondary', id: wallet.id }),
     source: { kind: 'secondary', id: wallet.id } as const,

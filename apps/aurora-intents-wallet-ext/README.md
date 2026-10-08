@@ -88,9 +88,10 @@ They never change, so they are cached per account in `chrome.storage.local`.
 ## Swap and send
 
 Both run on the swap widget's state machine (quotes, validation, signing) with
-the extension's own screens. Both start with a "From" row: the account's NEAR
-Intents balance, its own wallet or a secondary wallet, each listing only its
-own tokens. Swaps go into the account, the spending wallet when it's on the
+the extension's own screens. Both start with a "From" row: the primary wallet
+(the account's own wallet, or the passkey), whose token list holds the
+account's NEAR Intents balance and the wallet's tokens, or a secondary wallet,
+listing only its own tokens. Swaps go into the account, the spending wallet when it's on the
 target chain, or — "Send to another address" — to an address on any chain.
 Send moves a token to an address on a network of the same asset; wallet
 tokens go through 1Click.
