@@ -70,8 +70,15 @@ export const WalletPicker = <T extends WalletOption>({
                   )}>
                   {option.icon(40)}
                   <span className="flex min-w-[0px] grow flex-col gap-sw-xs">
-                    <span className="truncate text-sw-label-md text-sw-gray-50">
-                      {option.name}
+                    <span className="flex min-w-[0px] items-center gap-sw-sm">
+                      <span className="truncate text-sw-label-md text-sw-gray-50">
+                        {option.name}
+                      </span>
+                      {option.badge ? (
+                        <span className="shrink-0 rounded-full bg-sw-accent-500 px-sw-sm py-[2px] text-sw-label-sm text-sw-gray-950">
+                          {option.badge}
+                        </span>
+                      ) : null}
                     </span>
                     <span className="truncate text-sw-label-sm text-sw-gray-300">
                       {option.detail}

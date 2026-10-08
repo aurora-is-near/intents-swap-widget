@@ -20,6 +20,8 @@ export type WalletOption = {
   id: string;
   name: string;
   detail: string;
+  /** A tag after the name in the picker, e.g. "Primary". */
+  badge?: string;
   /** Short address, shown next to the name in the selector. */
   address?: string;
   /** The icon at `size` px: 40 in lists, smaller in the selector. */

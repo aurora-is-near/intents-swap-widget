@@ -134,9 +134,16 @@ const WalletChip = ({ account }: { account: Account }) => {
   }
 
   // On-chain wallets only: a passkey's balance is on the Account tab.
-  const options = sourceOptions(account, secondaries).filter(
-    (option) => option.source.kind === 'secondary' || account.kind === 'wallet',
-  );
+  const options = sourceOptions(account, secondaries)
+    .filter(
+      (option) =>
+        option.source.kind === 'secondary' || account.kind === 'wallet',
+    )
+    .map((option) =>
+      option.source.kind === 'primary'
+        ? { ...option, badge: 'Primary' }
+        : option,
+    );
 
   const selectedId = sourceKey(source);
 
