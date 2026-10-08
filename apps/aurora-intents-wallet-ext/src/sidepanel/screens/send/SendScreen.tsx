@@ -16,8 +16,9 @@ import { formatTxHash } from '@aurora-is-near/intents-swap-widget/utils';
 import type { Account } from '../../accounts/types';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
-import { shortAddress } from '../../utils';
+import { formatAmount, shortAddress } from '../../utils';
 import { RecipientField } from '../transfer/RecipientField';
+import { TransferLegs } from '../transfer/TransferLegs';
 import { describeAmount, getTransferSummary } from '../transfer/summary';
 import { TokenPicker } from '../transfer/TokenPicker';
 import {
@@ -126,14 +127,32 @@ export const SendScreen = ({ account }: { account: Account }) => {
 
   if (outcome.view === 'success' && outcome.transfer && summary) {
     const { transfer } = outcome;
-    const delivered = outcome.amountOutFormatted ?? summary.amountOut;
+    const delivered = outcome.amountOutFormatted
+      ? formatAmount(outcome.amountOutFormatted)
+      : summary.amountOut;
 
     return (
       <TransferResultView
         screenTitle="Send"
         tone="success"
         title={`Sent ${summary.amountIn} ${summary.source.symbol}`}
-        description={`The recipient got ${describeAmount(delivered, summary.target)}.`}
+        description={
+          summary.recipient
+            ? `Delivered to ${shortAddress(summary.recipient)}.`
+            : 'Delivered.'
+        }
+        details={
+          <TransferLegs
+            to={{
+              label: 'Recipient got',
+              leg: {
+                token: summary.target,
+                amount: delivered,
+                usd: outcome.amountOutUsd ?? summary.amountOutUsd,
+              },
+            }}
+          />
+        }
         notes={
           <>
             {summary.recipient ? (

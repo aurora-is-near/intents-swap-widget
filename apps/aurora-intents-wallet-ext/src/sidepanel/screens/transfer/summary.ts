@@ -9,23 +9,19 @@ import {
   formatUsdAmount,
 } from '@aurora-is-near/intents-swap-widget/utils';
 
-/** Atomic units to `1,240.5`; '' while there's no amount. */
+import { formatAmount } from '../../utils';
+
+/** Atomic units to `1,240.5` (see `formatAmount`); '' while there's none. */
 export const formatTokenAmount = (
   amount: string | 0 | undefined,
   token: Pick<Token, 'decimals'>,
 ) => {
-  const human = amount ? formatBigToHuman(String(amount), token.decimals) : '';
-
-  return human
-    ? Number(human).toLocaleString('en-US', { maximumFractionDigits: 5 })
+  const human = amount
+    ? formatBigToHuman(String(amount), token.decimals, false)
     : '';
-};
 
-const formatRate = (value: number) =>
-  value.toLocaleString('en-US', {
-    maximumSignificantDigits: value >= 1 ? undefined : 4,
-    maximumFractionDigits: value >= 1 ? 2 : undefined,
-  });
+  return human ? formatAmount(human) : '';
+};
 
 type TransferSummary = {
   source: Token;
@@ -33,6 +29,9 @@ type TransferSummary = {
   amountIn: string;
   /** The quote's output, else the estimate from token prices. */
   amountOut: string;
+  /** The quote's USD values; null without a quote. */
+  amountInUsd: number | null;
+  amountOutUsd: number | null;
   /** What the swap costs: the USD value in minus the USD value out. */
   fee: { usd: string; percent: string } | null;
   /** `1 SOL = 150.12 USDC` */
@@ -79,9 +78,11 @@ export const getTransferSummary = (ctx: Context): TransferSummary | null => {
     target,
     amountIn: formatTokenAmount(ctx.sourceTokenAmount, source),
     amountOut: formatTokenAmount(amountOut, target),
+    amountInUsd: Number.isFinite(inUsd) ? inUsd : null,
+    amountOutUsd: Number.isFinite(outUsd) ? outUsd : null,
     fee,
     rate: Number.isFinite(price)
-      ? `1 ${target.symbol} = ${formatRate(price)} ${source.symbol}`
+      ? `1 ${target.symbol} = ${formatAmount(price)} ${source.symbol}`
       : '—',
     timeEstimate: ctx.quote?.timeEstimate ?? null,
     recipient: target.isIntent ? undefined : ctx.sendAddress,

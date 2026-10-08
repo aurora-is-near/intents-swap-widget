@@ -20,9 +20,10 @@ import type { Account } from '../../accounts/types';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
-import { shortAddress } from '../../utils';
+import { formatAmount, shortAddress } from '../../utils';
 import { ownAddress } from '../transfer/ownAddress';
 import { RecipientField } from '../transfer/RecipientField';
+import { TransferLegs } from '../transfer/TransferLegs';
 import {
   describeAmount,
   formatTokenAmount,
@@ -166,20 +167,10 @@ export const SwapScreen = ({ account }: { account: Account }) => {
         label="You pay"
         value={describeAmount(summary.amountIn, summary.source)}
       />
-      {outcome.view === 'success' ? (
-        <Notes.Item
-          label="You received"
-          value={describeAmount(
-            outcome.amountOutFormatted ?? summary.amountOut,
-            summary.target,
-          )}
-        />
-      ) : (
-        <Notes.Item
-          label="You receive"
-          value={`≈ ${describeAmount(summary.amountOut, summary.target)}`}
-        />
-      )}
+      <Notes.Item
+        label="You receive"
+        value={`≈ ${describeAmount(summary.amountOut, summary.target)}`}
+      />
       {summary.recipient ? (
         <Notes.Item label="Recipient" value={destination} />
       ) : null}
@@ -201,10 +192,9 @@ export const SwapScreen = ({ account }: { account: Account }) => {
   }
 
   if (outcome.view === 'success' && summary) {
-    const received = describeAmount(
-      outcome.amountOutFormatted ?? summary.amountOut,
-      summary.target,
-    );
+    const received = outcome.amountOutFormatted
+      ? formatAmount(outcome.amountOutFormatted)
+      : summary.amountOut;
 
     return (
       <TransferResultView
@@ -213,12 +203,35 @@ export const SwapScreen = ({ account }: { account: Account }) => {
         title="Swap complete"
         description={
           summary.recipient
-            ? `${received} sent to ${destination}.`
-            : `You received ${received}.`
+            ? `Sent to ${destination}.`
+            : 'It’s in your account.'
+        }
+        details={
+          <TransferLegs
+            from={{
+              label: 'You paid',
+              leg: {
+                token: summary.source,
+                amount: summary.amountIn,
+                usd: summary.amountInUsd,
+              },
+            }}
+            to={{
+              label: 'You received',
+              leg: {
+                token: summary.target,
+                amount: received,
+                usd: outcome.amountOutUsd ?? summary.amountOutUsd,
+              },
+            }}
+          />
         }
         notes={
           <>
-            {noteRows}
+            {summary.recipient ? (
+              <Notes.Item label="Recipient" value={destination} />
+            ) : null}
+            <Notes.Item label="Fees" value={summary.fee?.usd} />
             {outcome.seconds !== null ? (
               <Notes.Item label="Time" value={`${outcome.seconds} sec`} />
             ) : null}

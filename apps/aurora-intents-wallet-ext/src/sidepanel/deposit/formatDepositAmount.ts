@@ -1,5 +1,7 @@
 import { formatBigToHuman } from '@aurora-is-near/intents-swap-widget/utils';
 
+import { formatAmount } from '../utils';
+
 /**
  * Atomic units as an integer string. POA reports some amounts as JSON numbers
  * (NEAR's 24 decimals overflow them), which arrive as e.g. "1.5e+23"; those
@@ -17,7 +19,7 @@ const toAtomic = (amount: string): string | null => {
     : null;
 };
 
-/** "250", "0.15"; '' when the amount or decimals can't be read. */
+/** "250", "0.15", "0.0₆29"; '' when the amount or decimals can't be read. */
 export const formatDepositAmount = (
   amount: string,
   decimals: number | null | undefined,
@@ -29,10 +31,7 @@ export const formatDepositAmount = (
   }
 
   try {
-    // Trailing zeros: "250.0" → "250", "0.15000" → "0.15"
-    return formatBigToHuman(atomic, decimals)
-      .replace(/(\.\d*?)0+$/, '$1')
-      .replace(/\.$/, '');
+    return formatAmount(formatBigToHuman(atomic, decimals, false));
   } catch {
     return '';
   }

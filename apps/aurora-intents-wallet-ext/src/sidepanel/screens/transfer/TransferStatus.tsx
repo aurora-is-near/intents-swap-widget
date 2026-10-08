@@ -118,6 +118,8 @@ type ResultProps = {
   tone: 'success' | 'error';
   title: string;
   description: ReactNode;
+  /** Shown between the hero and the notes, e.g. `TransferLegs`. */
+  details?: ReactNode;
   notes: ReactNode;
   footer: ReactNode;
   onBack: () => void;
@@ -128,12 +130,14 @@ export const TransferResultView = ({
   tone,
   title,
   description,
+  details,
   notes,
   footer,
   onBack,
 }: ResultProps) => (
   <Screen title={screenTitle} onBack={onBack} footer={footer}>
     <StatusHero tone={tone} title={title} description={description} />
+    {details}
     <NotesCard>{notes}</NotesCard>
   </Screen>
 );

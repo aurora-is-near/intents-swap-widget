@@ -121,6 +121,7 @@ export const useTransferOutcome = () => {
     transfer: outcome?.transfer,
     /** What 1Click actually delivered, once it's done. */
     amountOutFormatted: details?.amountOutFormatted,
+    amountOutUsd: details?.amountOutUsd ? Number(details.amountOutUsd) : null,
     seconds:
       outcome && finishedAt
         ? Math.round((finishedAt - outcome.startedAt) / 1000)
