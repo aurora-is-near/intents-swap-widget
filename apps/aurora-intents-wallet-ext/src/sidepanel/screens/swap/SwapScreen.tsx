@@ -125,7 +125,7 @@ export const SwapScreen = ({ account }: { account: Account }) => {
 
   const targetNetwork = ctx.targetToken?.chainName ?? '';
   const requiredHint = hasWallet
-    ? `${walletName} isn’t on ${targetNetwork}. Enter a ${targetNetwork} address.`
+    ? `Your connected wallet doesn’t support ${targetNetwork} chain. Enter external ${targetNetwork} address.`
     : `Enter a ${targetNetwork} address to receive it.`;
 
   useEffect(() => {
