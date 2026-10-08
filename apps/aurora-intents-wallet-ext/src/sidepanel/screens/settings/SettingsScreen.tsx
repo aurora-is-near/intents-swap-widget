@@ -9,18 +9,14 @@ import {
 
 import type { Account } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
+import {
+  AccountSummary,
+  describeAccount,
+} from '../../components/AccountSummary';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
-import { WalletIcon } from '../../components/WalletIcon';
 import { useNavigation } from '../../navigation';
-import { shortAddress } from '../../utils';
-import { FAMILY_NETWORKS } from '../../wallet/families';
 import { disconnectWalletConnect } from '../../wallet/walletConnect';
-
-const describe = (account: Account) =>
-  account.kind === 'passkey'
-    ? 'Passkey'
-    : `${account.walletName} · ${FAMILY_NETWORKS[account.family]} · ${shortAddress(account.address)}`;
 
 /** What removing an account loses, in the confirmation step. */
 const removalWarning = (account: Account) =>
@@ -46,19 +42,7 @@ const AccountRow = ({
       type="button"
       onClick={onSelect}
       className="flex min-w-[0px] grow items-center gap-sw-lg rounded-sw-md p-sw-lg text-left hover:bg-sw-gray-900">
-      {account.kind === 'passkey' ? (
-        <span className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-sw-md bg-sw-accent-500 text-sw-gray-950">
-          <Icon name="key" />
-        </span>
-      ) : (
-        <WalletIcon name={account.walletName} icon={account.walletIcon} />
-      )}
-      <span className="flex min-w-[0px] grow flex-col gap-sw-xs">
-        <span className="text-sw-label-md text-sw-gray-50">{account.name}</span>
-        <span className="truncate text-sw-label-sm text-sw-gray-300">
-          {describe(account)}
-        </span>
-      </span>
+      <AccountSummary account={account} />
       {isActive && <Badge>Active</Badge>}
     </button>
     <button
@@ -152,7 +136,7 @@ export const SettingsScreen = () => {
           />
         </label>
         <p className="m-0 text-sw-body-sm text-sw-gray-300">
-          {describe(renaming)}
+          {describeAccount(renaming)}
         </p>
       </Screen>
     );

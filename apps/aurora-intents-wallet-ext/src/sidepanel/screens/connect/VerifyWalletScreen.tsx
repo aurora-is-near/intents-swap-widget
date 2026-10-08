@@ -2,6 +2,7 @@ import { WalletCompatibilityCheck } from '@aurora-is-near/intents-swap-widget';
 
 import type { WalletAccount } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
+import { AccountSummary } from '../../components/AccountSummary';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { closeConnector } from '../../wallet/connectorWindow';
@@ -38,8 +39,16 @@ export const VerifyWalletScreen = ({ account }: { account: WalletAccount }) => {
   };
 
   return (
-    <Screen className="justify-center">
+    // Same inset on every side of the full-height card.
+    <Screen className="pt-sw-xl">
       <WalletCompatibilityCheck
+        hideCloseButton
+        isFullHeight
+        header={
+          <div className="flex items-center rounded-sw-md bg-sw-gray-800 p-sw-lg">
+            <AccountSummary account={account} />
+          </div>
+        }
         onMsg={(msg) => {
           if (msg.type === 'on_sign_out') {
             void closeConnector();
