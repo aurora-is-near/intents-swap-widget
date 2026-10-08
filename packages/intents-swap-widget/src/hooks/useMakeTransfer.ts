@@ -7,7 +7,7 @@ import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { MakeTransfer, TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
-import { INTENT_DEPOSIT_TOKENS_MAP } from '@/machine/effects/useSetTokenIntentsTargetEffect';
+import { INTENT_DEPOSIT_TOKENS_MAP } from '@/utils/tokens/getIntentsTargetToken';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
