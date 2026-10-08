@@ -23,7 +23,9 @@ import { HomeScreen } from './screens/home/HomeScreen';
 import { CreatePasskeyScreen } from './screens/onboarding/CreatePasskeyScreen';
 import { PasskeyCreatedScreen } from './screens/onboarding/PasskeyCreatedScreen';
 import { WelcomeScreen } from './screens/onboarding/WelcomeScreen';
+import { SendScreen } from './screens/send/SendScreen';
 import { SettingsScreen } from './screens/settings/SettingsScreen';
+import { SwapScreen } from './screens/swap/SwapScreen';
 
 const Screens = ({ account }: { account: Account | null }) => {
   const { screen } = useNavigation();
@@ -57,6 +59,10 @@ const Screens = ({ account }: { account: Account | null }) => {
       return account ? (
         <DepositDetailScreen account={account} networkId={screen.network} />
       ) : null;
+    case 'swap':
+      return account ? <SwapScreen account={account} /> : null;
+    case 'send':
+      return account ? <SendScreen account={account} /> : null;
     case 'home':
       if (!account) {
         return <WelcomeScreen />;

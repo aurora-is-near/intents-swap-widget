@@ -4,7 +4,11 @@ import type {
   WidgetConfig,
 } from '@aurora-is-near/intents-swap-widget';
 
-import { ALCHEMY_API_KEY, API_KEY } from '../config';
+import {
+  ALCHEMY_API_KEY,
+  FEE_SERVICE_API_KEY,
+  WIDGET_INTENTS_API_URL,
+} from '../config';
 import { createWebAuthnProvider } from '../passkey/webauthn';
 import { ensureConnectorTab } from '../wallet/connectorWindow';
 import { createNearPageProvider } from '../wallet/createNearPageProvider';
@@ -58,13 +62,18 @@ const walletProviders = (account: WalletAccount): Providers => {
 export const buildWidgetConfig = (
   account: Account | null,
 ): Partial<WidgetConfig> => {
+  const service = {
+    apiKey: FEE_SERVICE_API_KEY,
+    intentsApiUrl: WIDGET_INTENTS_API_URL,
+  };
+
   if (!account) {
-    return { apiKey: API_KEY, connectedWallets: {} };
+    return { ...service, connectedWallets: {} };
   }
 
   if (account.kind === 'passkey') {
     return {
-      apiKey: API_KEY,
+      ...service,
       enableAccountAbstraction: true,
       intentsAccountType: 'webauthn',
       connectedWallets: { default: account.intentsAccountId },
@@ -73,7 +82,7 @@ export const buildWidgetConfig = (
   }
 
   return {
-    apiKey: API_KEY,
+    ...service,
     enableAccountAbstraction: true,
     intentsAccountType: ACCOUNT_TYPES[account.family],
     connectedWallets: { default: account.address },

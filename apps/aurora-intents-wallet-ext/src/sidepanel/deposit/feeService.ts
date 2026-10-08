@@ -1,4 +1,4 @@
-import { FEE_SERVICE_URL, PDA_API_KEY } from '../config';
+import { FEE_SERVICE_API_KEY, FEE_SERVICE_URL } from '../config';
 
 export type DepositAddress = { address: string; memo?: string };
 
@@ -36,7 +36,7 @@ const request = async <T>(
   query?: URLSearchParams,
 ): Promise<T> => {
   const response = await fetch(
-    `${FEE_SERVICE_URL}/api/${path}/${PDA_API_KEY}${query ? `?${query.toString()}` : ''}`,
+    `${FEE_SERVICE_URL}/api/${path}/${FEE_SERVICE_API_KEY}${query ? `?${query.toString()}` : ''}`,
     init,
   );
 

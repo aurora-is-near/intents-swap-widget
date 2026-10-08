@@ -335,9 +335,17 @@ export const HomeScreen = ({ account }: { account: Account }) => {
               ) : null}
             </section>
             <nav aria-label="Actions" className="flex gap-sw-md">
-              <Action icon="swap" label="Swap" />
+              <Action
+                icon="swap"
+                label="Swap"
+                onClick={() => push({ name: 'swap' })}
+              />
               <Action icon="deposit" label="Receive" onClick={openDeposit} />
-              <Action icon="send" label="Send" />
+              <Action
+                icon="send"
+                label="Send"
+                onClick={() => push({ name: 'send' })}
+              />
               <Action icon="apps" label="Apps" />
             </nav>
             {assets.isEmpty ? (

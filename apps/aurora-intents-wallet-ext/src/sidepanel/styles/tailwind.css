@@ -205,3 +205,21 @@
         font-family: var(--font-family-sw);
     }
 }
+
+/*
+ * The widget's token list is a fixed 450px; on the picker screen it fills the
+ * panel instead (TokenPicker): every box down to the list flexes.
+ */
+.token-picker > div,
+.token-picker div:has(> #virtual-tokens-list) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.token-picker #virtual-tokens-list {
+    flex: 1;
+    min-height: 0;
+    height: auto !important;
+}

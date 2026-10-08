@@ -8,6 +8,8 @@ type Props = {
   /** Header title; with `onBack` it gets a back button. No title: no header. */
   title?: string;
   onBack?: () => void;
+  /** Header buttons after the title. */
+  action?: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -17,6 +19,7 @@ type Props = {
 export const Screen = ({
   title,
   onBack,
+  action,
   footer,
   children,
   className,
@@ -41,6 +44,7 @@ export const Screen = ({
           )}>
           {title}
         </h1>
+        {action}
       </header>
     )}
     <main

@@ -67,7 +67,23 @@ Deposit addresses are the fee service's persistent deposit addresses with
 the account, USDC as its single intents representation on NEAR
 (`getIntentsTargetToken`, the swap widget's deposit mapping). One address covers every EVM chain; other networks get one each.
 They never change, so they are cached per account in `chrome.storage.local`.
-Point the app at another fee service (e.g. a local one) with:
+
+## Swap and send
+
+Both run on the swap widget's state machine (quotes, validation, signing) with
+the extension's own screens. Swaps spend the account's NEAR Intents balance:
+into another intents token, or out to an address on any chain ("Send to
+another address"). Send withdraws a token to an address on a network of the
+same asset.
+
+Passkey accounts sign with the passkey (`webauthn` intents); the fee service's
+`submit-intent` must accept `webauthn` signed data. Wallet accounts sign with
+their wallet, through the connector page for browser wallets.
+
+## Fee service
+
+Point the app (deposit addresses, and the widget's quotes and intents) at
+another fee service, e.g. a local one, with:
 
 ```bash
 # apps/aurora-intents-wallet-ext/.env.local (gitignored, used by dev and build)

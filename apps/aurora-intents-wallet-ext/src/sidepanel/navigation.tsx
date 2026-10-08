@@ -16,6 +16,8 @@ type Screen =
   | { name: 'home' }
   | { name: 'deposit' }
   | { name: 'depositDetail'; network: DepositNetwork['id'] }
+  | { name: 'swap' }
+  | { name: 'send' }
   | { name: 'settings' };
 
 type Navigation = {
