@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import {
   fireEvent,
   Input,
@@ -7,35 +9,39 @@ import {
 import type { Chains, Token } from '@aurora-is-near/intents-swap-widget';
 import { cn, isEvmChain } from '@aurora-is-near/intents-swap-widget/utils';
 
-import type { Account } from '../../accounts/types';
-import { ownAddress } from './ownAddress';
+import { Icon } from '../../components/Icon';
 import { chainLabel } from './summary';
+import type { WalletOption } from './walletOptions';
+import { WalletPicker } from './WalletPicker';
+
+type Recipient = WalletOption & { address: string };
 
 type Props = {
   label: string;
-  account: Account;
   target: Token;
   /** Networks a pasted address is recognised by, for a wrong-network hint. */
   networks: Chains[];
   /** What to do about an address from `network`, e.g. switch the network. */
   wrongNetworkHint: (network: string) => string;
+  /** The account's wallets on the target chain, offered as recipients. */
+  recipients: Recipient[];
 };
 
 /**
  * Where an external transfer goes. The widget machine validates the address
  * for the target chain; this explains the error and spots a pasted address
- * from another network.
+ * from another network. One of the account's own wallets is a tap away.
  */
 export const RecipientField = ({
   label,
-  account,
   target,
   networks,
   wrongNetworkHint,
+  recipients,
 }: Props) => {
   const { ctx } = useUnsafeSnapshot();
+  const [isPicking, setIsPicking] = useState(false);
   const address = ctx.sendAddress ?? '';
-  const own = ownAddress(account, target.blockchain);
 
   const message = (() => {
     const code = ctx.error?.code;
@@ -75,6 +81,10 @@ export const RecipientField = ({
     return `This is ${article} ${kind} address. ${wrongNetworkHint(chainLabel(other))}`;
   })();
 
+  const selected = recipients.find(
+    (recipient) => recipient.address.toLowerCase() === address.toLowerCase(),
+  );
+
   return (
     <div className="flex shrink-0 flex-col gap-sw-md">
       <div className="flex items-center justify-between px-sw-xs">
@@ -83,16 +93,19 @@ export const RecipientField = ({
           className="text-sw-label-sm text-sw-gray-200">
           {label}
         </label>
-        {own && own !== address ? (
+        {recipients.length > 0 ? (
           <button
             type="button"
-            onClick={() => fireEvent('addressSet', own)}
-            className="text-sw-label-sm text-sw-accent-300 hover:text-sw-accent-200">
-            Use my wallet
+            onClick={() => setIsPicking(true)}
+            className="flex items-center gap-sw-xs text-sw-label-sm text-sw-accent-300 hover:text-sw-accent-200">
+            My wallets
+            <Icon name="chevronDown" size={14} />
           </button>
         ) : null}
       </div>
       <Input
+        // Remounted when a wallet is picked, so the field shows its address.
+        key={selected?.id ?? 'typed'}
         id="recipient"
         fontSize="sm"
         defaultValue={address}
@@ -108,6 +121,20 @@ export const RecipientField = ({
         {message ??
           `Make sure the address is on ${target.chainName}. Transfers to the wrong network can’t be reversed.`}
       </p>
+
+      {isPicking ? (
+        <WalletPicker
+          title="Send to"
+          description={`Your wallets on ${target.chainName}.`}
+          options={recipients}
+          selectedId={selected?.id}
+          onSelect={(recipient) => {
+            fireEvent('addressSet', recipient.address);
+            setIsPicking(false);
+          }}
+          onClose={() => setIsPicking(false)}
+        />
+      ) : null}
     </div>
   );
 };

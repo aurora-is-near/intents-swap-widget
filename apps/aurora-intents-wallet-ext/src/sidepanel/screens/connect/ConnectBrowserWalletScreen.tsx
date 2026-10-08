@@ -8,7 +8,7 @@ import {
   OwnWalletError,
   useAccounts,
 } from '../../accounts/useAccounts';
-import { useSelectedWallet } from '../../accounts/useSelectedWallet';
+import { useTransferSource } from '../../accounts/useTransferSource';
 import { Spinner } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { StatusHero } from '../../components/StatusHero';
@@ -38,7 +38,7 @@ export const ConnectBrowserWalletScreen = ({
   role?: ConnectRole;
 }) => {
   const { accounts, active, secondaries, add, addSecondary } = useAccounts();
-  const { select } = useSelectedWallet();
+  const { select } = useTransferSource();
   const { back, reset, popTo } = useNavigation();
   const [step, setStep] = useState<Step>({ name: 'connecting' });
   const walletName = wallet.info.name;

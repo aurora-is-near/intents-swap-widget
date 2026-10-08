@@ -1,3 +1,4 @@
+import { TransferError } from '@aurora-is-near/intents-swap-widget';
 import type {
   EvmProvider,
   SolanaProvider,
@@ -10,13 +11,17 @@ import type { TabResolver } from './createPageProvider';
 
 type Eip1193Provider = Exclude<EvmProvider, () => unknown>;
 
-/** The wallet is on another of its accounts than the one connected here. */
-export class WrongWalletAccountError extends Error {
-  constructor(walletName: string, address: string) {
-    super(`Switch ${walletName} to ${shortAddress(address)} and try again.`);
-    this.name = 'WrongWalletAccountError';
-  }
-}
+/**
+ * The wallet is on another of its accounts than the one connected here. A
+ * widget error, so the transfer screens show its message.
+ */
+const wrongAccount = (walletName: string, address: string) =>
+  new TransferError({
+    code: 'DIRECT_TRANSFER_ERROR',
+    meta: {
+      message: `Switch ${walletName} to ${shortAddress(address)} and try again.`,
+    },
+  });
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
@@ -47,7 +52,7 @@ export const guardEvmProvider = (
         | undefined;
 
       if (!accounts?.some((account) => same(account, address))) {
-        throw new WrongWalletAccountError(walletName, address);
+        throw wrongAccount(walletName, address);
       }
     }
 
@@ -72,7 +77,7 @@ export const guardSolanaProvider = <T>(
     );
 
     if (!same(current, address)) {
-      throw new WrongWalletAccountError(walletName, address);
+      throw wrongAccount(walletName, address);
     }
   };
 

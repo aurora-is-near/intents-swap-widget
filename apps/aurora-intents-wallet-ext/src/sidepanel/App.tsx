@@ -8,9 +8,9 @@ import {
 import type { Account } from './accounts/types';
 import { AccountsProvider, useAccounts } from './accounts/useAccounts';
 import {
-  SelectedWalletProvider,
-  useSelectedWallet,
-} from './accounts/useSelectedWallet';
+  TransferSourceProvider,
+  useTransferSource,
+} from './accounts/useTransferSource';
 import { buildWidgetConfig } from './accounts/widgetConfig';
 import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
@@ -89,9 +89,7 @@ const Screens = ({ account }: { account: Account | null }) => {
         <ActivityDetailScreen transaction={screen.transaction} />
       ) : null;
     case 'asset':
-      return account ? (
-        <AssetScreen account={account} token={screen.token} />
-      ) : null;
+      return account ? <AssetScreen token={screen.token} /> : null;
     case 'home':
       if (!account) {
         return <WelcomeScreen />;
@@ -138,7 +136,7 @@ const Router = ({ account }: { account: Account | null }) => {
 
 const Wallet = () => {
   const { active, isLoaded } = useAccounts();
-  const { secondary } = useSelectedWallet();
+  const { secondary, wallet } = useTransferSource();
   const config = useMemo(
     () => buildWidgetConfig(active, secondary),
     [active, secondary],
@@ -147,10 +145,6 @@ const Wallet = () => {
   if (!isLoaded) {
     return null;
   }
-
-  // The wallet the widget spends from: the selected secondary, else the
-  // account's own.
-  const wallet = secondary ?? (active?.kind === 'wallet' ? active : null);
 
   return (
     <WidgetConfigProvider
@@ -168,8 +162,8 @@ const Wallet = () => {
 
 export const App = () => (
   <AccountsProvider>
-    <SelectedWalletProvider>
+    <TransferSourceProvider>
       <Wallet />
-    </SelectedWalletProvider>
+    </TransferSourceProvider>
   </AccountsProvider>
 );

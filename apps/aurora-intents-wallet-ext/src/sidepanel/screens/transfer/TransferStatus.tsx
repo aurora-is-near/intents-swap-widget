@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { Notes } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
-import type { Account } from '../../accounts/types';
 import { Icon, Spinner } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { StatusHero } from '../../components/StatusHero';
@@ -34,12 +33,11 @@ const StepIcon = ({ state }: { state: StepState }) => {
   }
 };
 
-/** Who signs: the passkey, or the wallet account (by its name here). */
-const signer = (account: Account) =>
-  account.kind === 'passkey' ? 'passkey' : account.name;
+/** Who signs: the passkey, or a wallet (by its name in the extension). */
+type Signer = { name: string; isPasskey: boolean };
 
 type PendingProps = {
-  account: Account;
+  signer: Signer;
   screenTitle: string;
   title: string;
   /** False until the intent is signed, or the wallet transaction sent. */
@@ -55,7 +53,7 @@ type PendingProps = {
 };
 
 export const TransferPending = ({
-  account,
+  signer,
   screenTitle,
   title,
   isSigned,
@@ -65,13 +63,13 @@ export const TransferPending = ({
   notes,
   onBack,
 }: PendingProps) => {
-  const who = signer(account);
+  const who = signer.isPasskey ? 'passkey' : signer.name;
   const [waiting, done] = isFromWallet
     ? [`Confirm for ${who}`, `Sent from ${who}`]
     : [`Approve with ${who}`, `Signed with ${who}`];
 
   const prompt = (() => {
-    if (account.kind === 'passkey') {
+    if (signer.isPasskey) {
       return 'Approve the request with your passkey to continue.';
     }
 

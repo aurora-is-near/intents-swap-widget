@@ -17,13 +17,15 @@ import {
 import type { ChainsFilter, Token } from '@aurora-is-near/intents-swap-widget';
 
 import type { Account } from '../../accounts/types';
+import { useAccounts } from '../../accounts/useAccounts';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
-import { ownAddress } from '../transfer/ownAddress';
+import { ownAddress, sameAddress } from '../transfer/ownAddress';
 import { InlineAmount, InlineChain } from '../transfer/InlineAsset';
 import { RecipientField } from '../transfer/RecipientField';
+import { SourceRow } from '../transfer/SourceRow';
 import { TransferLegs } from '../transfer/TransferLegs';
 import {
   describeAmount,
@@ -40,26 +42,19 @@ import { EmptyAccount } from '../transfer/EmptyAccount';
 import { TransferTabs } from '../transfer/TransferTabs';
 import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
+import { recipientOptions, walletNameAt } from '../transfer/walletOptions';
 import { SlippageScreen } from './SlippageScreen';
 
 /**
- * Like the widget: swap from the account's intents balance or, for a wallet
- * account, from the wallet. Buy anything on any chain: into the account, the
- * wallet when it's on that chain, or else an address ("Send to another
- * address", forced on for those).
+ * Like the widget: swap from the account's intents balance or from one of
+ * its wallets ("From"). Buy anything on any chain: into the account, the
+ * spending wallet when it's on that chain, or else an address ("Send to
+ * another address", forced on for those).
  */
-const filters = (hasWallet: boolean, sendsOut: boolean) => {
-  return {
-    // Only what can be sold: held in the account or in the wallet.
-    source: {
-      intents: 'with-balance',
-      external: hasWallet ? 'with-balance' : 'none',
-    } as ChainsFilter,
-    target: (sendsOut
-      ? { intents: 'none', external: 'all' }
-      : { intents: 'all', external: 'all' }) as ChainsFilter,
-  };
-};
+const targetFilter = (sendsOut: boolean): ChainsFilter =>
+  sendsOut
+    ? { intents: 'none', external: 'all' }
+    : { intents: 'all', external: 'all' };
 
 const ALL_CHAINS = CHAINS.map((chain) => chain.id);
 
@@ -85,24 +80,28 @@ const SettingsButton = ({ onClick }: { onClick: () => void }) => (
 
 export const SwapScreen = ({
   account,
-  source,
+  source: preferredSource,
 }: {
   account: Account;
   source?: Token;
 }) => {
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
+  const { secondaries } = useAccounts();
   const { tokens, status: tokensStatus, refetch } = useTokens();
   const {
     onChangeAmount,
     onChangeToken,
     lastChangedInput,
+    source,
+    wallet,
+    sourceName,
+    sourceFilter,
+    changeSource,
+    changeSourceKeepingToken,
     isLoading,
     isEmpty,
-  } = useTransferForm({
-    fromWallet: account.kind === 'wallet',
-    preferredSource: source,
-  });
+  } = useTransferForm({ account, preferredSource });
 
   const outcome = useTransferOutcome();
 
@@ -110,34 +109,42 @@ export const SwapScreen = ({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sendsOut, setSendsOut] = useState(false);
 
-  const hasWallet = account.kind === 'wallet';
-  // The account's name in the extension, not the wallet app's.
-  const walletName = hasWallet ? account.name : 'your wallet';
-  const chainsFilter = filters(hasWallet, sendsOut);
   const summary = getTransferSummary(ctx);
   const goHome = () => reset({ name: 'home' });
 
-  /** Where the target goes: the account, the own wallet, or an address. */
+  // The account's wallets on the target chain, other than the one spending.
+  const recipients = ctx.targetToken
+    ? recipientOptions(
+        account,
+        secondaries,
+        ctx.targetToken.blockchain,
+        wallet?.address,
+      )
+    : [];
+
+  /** Where the target goes: the account, one of its wallets, or an address. */
   const destination = (() => {
     if (!summary?.recipient) {
       return 'your account';
     }
 
-    return summary.recipient === ownAddress(account, summary.target.blockchain)
-      ? walletName
-      : shortAddress(summary.recipient);
+    return (
+      walletNameAt(account, secondaries, summary.recipient) ??
+      shortAddress(summary.recipient)
+    );
   })();
 
-  // A token on a chain the account has no address on can only go to one
-  // typed in: the toggle turns on and stays on until such a token is picked.
+  // A token on a chain the spending wallet has no address on can only go to
+  // one typed in: the toggle turns on and stays on until such a token is
+  // picked.
   const isSendOutRequired =
     !!ctx.targetToken &&
     !ctx.targetToken.isIntent &&
-    !ownAddress(account, ctx.targetToken.blockchain);
+    !ownAddress(wallet, ctx.targetToken.blockchain);
 
   const targetNetwork = ctx.targetToken?.chainName ?? '';
-  const requiredHint = hasWallet
-    ? `Your connected wallet doesn’t support ${targetNetwork} chain. Enter external ${targetNetwork} address.`
+  const requiredHint = wallet
+    ? `${wallet.name} doesn’t support ${targetNetwork} chain. Enter external ${targetNetwork} address.`
     : `Enter a ${targetNetwork} address to receive it.`;
 
   useEffect(() => {
@@ -145,6 +152,31 @@ export const SwapScreen = ({
       setSendsOut(true);
     }
   }, [isSendOutRequired]);
+
+  // Flipping makes the target the source: from the account when it's an
+  // intents token, else from the wallet it's on (the spending one).
+  const canFlip =
+    !sendsOut &&
+    !!ctx.sourceToken &&
+    !!ctx.targetToken &&
+    (ctx.targetToken.isIntent ||
+      (!!wallet && !!ownAddress(wallet, ctx.targetToken.blockchain)));
+
+  const flip = () => {
+    const target = ctx.targetToken;
+
+    if (!target) {
+      return;
+    }
+
+    fireEvent('tokenSelectRotate', null);
+
+    if (target.isIntent) {
+      changeSourceKeepingToken({ kind: 'account' });
+    } else if (source.kind === 'account' && wallet) {
+      changeSourceKeepingToken({ kind: 'primary' });
+    }
+  };
 
   /**
    * The widget's auto-switching (off for the extension, so Send can target
@@ -165,7 +197,7 @@ export const SwapScreen = ({
     } else if (current) {
       // As the widget: with nothing to flip to, picking the other side's
       // token does nothing.
-      fireEvent('tokenSelectRotate', null);
+      flip();
     }
   };
 
@@ -178,8 +210,9 @@ export const SwapScreen = ({
       return;
     }
 
-    // Off: back into the account, or the own wallet when it's on its chain.
-    const own = ownAddress(account, target.blockchain);
+    // Off: back into the account, or the spending wallet when it's on its
+    // chain.
+    const own = ownAddress(wallet, target.blockchain);
     const keepsTarget = isOn ? !target.isIntent : target.isIntent || !!own;
     const next = keepsTarget ? target : counterpart(tokens, target, !isOn);
 
@@ -288,7 +321,10 @@ export const SwapScreen = ({
   if ((outcome.view === 'pending' || outcome.view === 'settling') && summary) {
     return (
       <TransferPending
-        account={account}
+        signer={{
+          name: wallet?.name ?? account.name,
+          isPasskey: source.kind === 'account' && account.kind === 'passkey',
+        }}
         screenTitle="Swap"
         title={`Swapping ${summary.amountIn} ${summary.source.symbol} for ${summary.target.symbol}`}
         isSigned={outcome.isSigned}
@@ -323,7 +359,7 @@ export const SwapScreen = ({
         screenTitle="Swap"
         tone="error"
         title="Swap wasn’t filled"
-        description={`Nothing was swapped. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent ? 'your account' : walletName}.`}
+        description={`Nothing was swapped. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent ? 'your account' : sourceName}.`}
         notes={noteRows}
         footer={
           <>
@@ -367,14 +403,24 @@ export const SwapScreen = ({
   }
 
   if (isEmpty && outcome.view === 'form') {
-    return <EmptyAccount title="Swap" account={account} />;
+    return (
+      <EmptyAccount
+        title="Swap"
+        account={account}
+        source={source}
+        sourceName={sourceName}
+        onChangeSource={changeSource}
+      />
+    );
   }
 
   if (picker !== 'none') {
     return (
       <TokenPicker
         variant={picker}
-        chainsFilter={chainsFilter[picker]}
+        chainsFilter={
+          picker === 'source' ? sourceFilter : targetFilter(sendsOut)
+        }
         onSelect={(token) => {
           selectToken(picker, token);
           setPicker('none');
@@ -390,6 +436,12 @@ export const SwapScreen = ({
 
   const isInsufficient = ctx.error?.code === 'SOURCE_BALANCE_INSUFFICIENT';
   const isQuoting = ctx.quoteStatus === 'pending' && !ctx.quote;
+  const receivesAtOwn =
+    !!ctx.targetToken &&
+    sameAddress(
+      ctx.sendAddress,
+      ownAddress(wallet, ctx.targetToken.blockchain),
+    );
 
   return (
     <Screen
@@ -404,6 +456,7 @@ export const SwapScreen = ({
         />
       }>
       <TransferTabs value="swap" />
+      <SourceRow account={account} screen="swap" onChange={changeSource} />
 
       {tokensStatus === 'pending' || isLoading ? (
         <div className="flex flex-col gap-sw-xs">
@@ -429,14 +482,9 @@ export const SwapScreen = ({
             }}
           />
           <DirectionSwitcher
-            isEnabled={
-              !sendsOut &&
-              !!ctx.sourceToken &&
-              !!ctx.targetToken &&
-              (ctx.targetToken.isIntent || hasWallet)
-            }
+            isEnabled={canFlip}
             isLoading={ctx.quoteStatus === 'pending'}
-            onClick={() => fireEvent('tokenSelectRotate', null)}
+            onClick={flip}
           />
           <TokenInput.Target
             heading="Buy"
@@ -478,16 +526,20 @@ export const SwapScreen = ({
 
       {sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
         <RecipientField
-          label={
-            !!ctx.sendAddress &&
-            ctx.sendAddress.toLowerCase() ===
-              ownAddress(account, ctx.targetToken.blockchain)?.toLowerCase()
-              ? `Receive ${ctx.targetToken.symbol} at your connected wallet`
-              : `Receive ${ctx.targetToken.symbol} at`
-          }
-          account={account}
+          label={(() => {
+            const name = walletNameAt(account, secondaries, ctx.sendAddress);
+
+            if (receivesAtOwn) {
+              return `Receive ${ctx.targetToken.symbol} at your spending wallet`;
+            }
+
+            return name
+              ? `Receive ${ctx.targetToken.symbol} at ${name}`
+              : `Receive ${ctx.targetToken.symbol} at`;
+          })()}
           target={ctx.targetToken}
           networks={ALL_CHAINS}
+          recipients={recipients}
           wrongNetworkHint={(network) =>
             `Pick a token on ${network} or paste a ${ctx.targetToken?.chainName ?? ''} address.`
           }
@@ -496,7 +548,7 @@ export const SwapScreen = ({
 
       {!sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
         <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
-          {ctx.targetToken.symbol} arrives in {walletName}
+          {ctx.targetToken.symbol} arrives in {sourceName}
           {ctx.sendAddress ? ` (${shortAddress(ctx.sendAddress)})` : ''}.
         </p>
       ) : null}
@@ -506,7 +558,7 @@ export const SwapScreen = ({
           variant="error"
           hasBg
           multiline
-          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)} ${ctx.sourceToken.isIntent ? 'in your account' : `in ${walletName}`}. Lower the amount or ${ctx.sourceToken.isIntent ? 'deposit more' : 'pick another token'}.`}
+          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)} in ${sourceName}. Lower the amount or ${ctx.sourceToken.isIntent ? 'deposit more' : 'pick another token'}.`}
         />
       ) : null}
 

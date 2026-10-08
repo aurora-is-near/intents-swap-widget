@@ -10,15 +10,17 @@ import {
   useTokens,
   useUnsafeSnapshot,
 } from '@aurora-is-near/intents-swap-widget';
-import type { ChainsFilter, Token } from '@aurora-is-near/intents-swap-widget';
+import type { Token } from '@aurora-is-near/intents-swap-widget';
 import { formatTxHash } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { Account } from '../../accounts/types';
+import { useAccounts } from '../../accounts/useAccounts';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
 import { InlineAmount, InlineChain } from '../transfer/InlineAsset';
 import { RecipientField } from '../transfer/RecipientField';
+import { SourceRow } from '../transfer/SourceRow';
 import { TransferLegs } from '../transfer/TransferLegs';
 import { describeAmount, getTransferSummary } from '../transfer/summary';
 import { TokenPicker } from '../transfer/TokenPicker';
@@ -31,16 +33,8 @@ import { EmptyAccount } from '../transfer/EmptyAccount';
 import { TransferTabs } from '../transfer/TransferTabs';
 import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
+import { recipientOptions, walletNameAt } from '../transfer/walletOptions';
 import { NetworkSelect } from './NetworkSelect';
-
-/**
- * Sends spend the account's intents balance and, for a wallet account, the
- * wallet's tokens (through 1Click, like a swap from the wallet).
- */
-const sourceFilter = (hasWallet: boolean): ChainsFilter => ({
-  intents: 'with-balance',
-  external: hasWallet ? 'with-balance' : 'none',
-});
 
 /** The source asset on every network it exists on, one token per chain. */
 const networksOf = (tokens: Token[], source: Token | undefined) => {
@@ -75,20 +69,33 @@ const ADDRESS_ERRORS: string[] = [
 const isSameToken = (a: Token, b: Token) =>
   a.assetId === b.assetId && a.blockchain === b.blockchain;
 
-/** Sends a token (from the account or the wallet) to an address, on a network of that asset. */
+/**
+ * Sends a token — from the account's intents balance or one of its wallets
+ * ("From", through 1Click like a swap from the wallet) — to an address, on a
+ * network of that asset.
+ */
 export const SendScreen = ({
   account,
-  source,
+  source: preferredSource,
 }: {
   account: Account;
   source?: Token;
 }) => {
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
+  const { secondaries } = useAccounts();
   const { tokens, status: tokensStatus, refetch } = useTokens();
-  const { onChangeAmount, onChangeToken, isLoading, isEmpty } = useTransferForm(
-    { fromWallet: account.kind === 'wallet', preferredSource: source },
-  );
+  const {
+    onChangeAmount,
+    onChangeToken,
+    source,
+    wallet,
+    sourceName,
+    sourceFilter,
+    changeSource,
+    isLoading,
+    isEmpty,
+  } = useTransferForm({ account, preferredSource });
 
   const outcome = useTransferOutcome();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -122,6 +129,20 @@ export const SendScreen = ({
   const summary = getTransferSummary(ctx);
   const goHome = () => reset({ name: 'home' });
 
+  // The account's wallets on the target chain, other than the one spending.
+  const recipients = ctx.targetToken
+    ? recipientOptions(
+        account,
+        secondaries,
+        ctx.targetToken.blockchain,
+        wallet?.address,
+      )
+    : [];
+
+  /** The recipient by name when it's one of the account's wallets. */
+  const recipientLabel = (address: string) =>
+    walletNameAt(account, secondaries, address) ?? shortAddress(address);
+
   if (tokensStatus === 'error') {
     return (
       <Screen title="Send" onBack={back}>
@@ -148,7 +169,7 @@ export const SendScreen = ({
         title={`Sent ${summary.amountIn} ${summary.source.symbol}`}
         description={
           summary.recipient
-            ? `Delivered to ${shortAddress(summary.recipient)}.`
+            ? `Delivered to ${recipientLabel(summary.recipient)}.`
             : 'Delivered.'
         }
         details={
@@ -166,7 +187,10 @@ export const SendScreen = ({
         notes={
           <>
             {summary.recipient ? (
-              <Notes.Item label="To" value={shortAddress(summary.recipient)} />
+              <Notes.Item
+                label="To"
+                value={recipientLabel(summary.recipient)}
+              />
             ) : null}
             <Notes.Item label="Network" value={summary.target.chainName} />
             <Notes.Item label="Network fee" value={summary.fee?.usd} />
@@ -202,7 +226,7 @@ export const SendScreen = ({
   const noteRows = summary ? (
     <>
       {summary.recipient ? (
-        <Notes.Item label="To" value={shortAddress(summary.recipient)} />
+        <Notes.Item label="To" value={recipientLabel(summary.recipient)} />
       ) : null}
       <Notes.Item
         label="Recipient gets"
@@ -215,7 +239,10 @@ export const SendScreen = ({
   if ((outcome.view === 'pending' || outcome.view === 'settling') && summary) {
     return (
       <TransferPending
-        account={account}
+        signer={{
+          name: wallet?.name ?? account.name,
+          isPasskey: source.kind === 'account' && account.kind === 'passkey',
+        }}
         screenTitle="Send"
         title={`Sending ${summary.amountIn} ${summary.source.symbol} to ${summary.target.chainName}`}
         isSigned={outcome.isSigned}
@@ -228,7 +255,7 @@ export const SendScreen = ({
           <>
             <InlineAmount amount={summary.amountIn} token={summary.source} /> to{' '}
             {summary.recipient
-              ? shortAddress(summary.recipient)
+              ? recipientLabel(summary.recipient)
               : 'the recipient'}{' '}
             on <InlineChain chain={summary.target.blockchain} />
           </>
@@ -245,7 +272,7 @@ export const SendScreen = ({
         screenTitle="Send"
         tone="error"
         title="Send wasn’t completed"
-        description={`Nothing was sent. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent || account.kind !== 'wallet' ? 'your account' : account.name}.`}
+        description={`Nothing was sent. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent ? 'your account' : sourceName}.`}
         notes={noteRows}
         footer={
           <>
@@ -289,14 +316,22 @@ export const SendScreen = ({
   }
 
   if (isEmpty && outcome.view === 'form') {
-    return <EmptyAccount title="Send" account={account} />;
+    return (
+      <EmptyAccount
+        title="Send"
+        account={account}
+        source={source}
+        sourceName={sourceName}
+        onChangeSource={changeSource}
+      />
+    );
   }
 
   if (isPickerOpen) {
     return (
       <TokenPicker
         variant="source"
-        chainsFilter={sourceFilter(account.kind === 'wallet')}
+        chainsFilter={sourceFilter}
         onSelect={(token) => {
           onChangeToken('source', token);
           setIsPickerOpen(false);
@@ -316,6 +351,7 @@ export const SendScreen = ({
       className="gap-sw-md"
       footer={<SubmitButton label="Send" onSuccess={outcome.onSuccess} />}>
       <TransferTabs value="send" />
+      <SourceRow account={account} screen="send" onChange={changeSource} />
 
       {tokensStatus === 'pending' || isLoading ? (
         <TokenInput.Skeleton />
@@ -339,10 +375,14 @@ export const SendScreen = ({
 
       {ctx.targetToken && !ctx.targetToken.isIntent ? (
         <RecipientField
-          label="Recipient address"
-          account={account}
+          label={(() => {
+            const name = walletNameAt(account, secondaries, ctx.sendAddress);
+
+            return name ? `Recipient address · ${name}` : 'Recipient address';
+          })()}
           target={ctx.targetToken}
           networks={networks.map((token) => token.blockchain)}
+          recipients={recipients}
           wrongNetworkHint={(network) =>
             `Switch the network to ${network} or paste a ${ctx.targetToken?.chainName ?? ''} address.`
           }

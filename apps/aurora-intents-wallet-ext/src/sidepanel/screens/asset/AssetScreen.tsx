@@ -12,7 +12,7 @@ import { cn, formatUsdAmount } from '@aurora-is-near/intents-swap-widget/utils';
 import { involvesToken } from '../../activity/activity';
 import { ActivityList, ActivitySkeleton } from '../../activity/ActivityCard';
 import { useActivity } from '../../activity/useActivity';
-import type { Account } from '../../accounts/types';
+import { useTransferSource } from '../../accounts/useTransferSource';
 import { ActionButton } from '../../components/ActionButton';
 import { Screen } from '../../components/Screen';
 import { Tabs } from '../../components/Tabs';
@@ -104,13 +104,7 @@ const chartUnavailable = (error: unknown, isListed: boolean) => {
 };
 
 /** A token's price, chart, balance and details, opened from Home. */
-export const AssetScreen = ({
-  account,
-  token,
-}: {
-  account: Account;
-  token: Token;
-}) => {
+export const AssetScreen = ({ token }: { token: Token }) => {
   const { back, push } = useNavigation();
   const assets = useAccountAssets();
   const [range, setRange] = useState<ChartRange>('1D');
@@ -148,8 +142,9 @@ export const AssetScreen = ({
   const isChartLoading =
     coin.isPending || (!!coin.data && chart.isPending && !chart.error);
 
-  const walletName = account.kind === 'wallet' ? account.name : 'Wallet';
-  const heldIn = token.isIntent ? 'Your account' : walletName;
+  // On-chain tokens are the spending wallet's: the account's own or a secondary.
+  const { wallet } = useTransferSource();
+  const heldIn = token.isIntent ? 'Your account' : (wallet?.name ?? 'Wallet');
 
   return (
     <Screen title={token.symbol} onBack={back}>
