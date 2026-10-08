@@ -46,6 +46,16 @@
         "@fontsource/figtree",
         "@solana/spl-token"
       ]
+    },
+    "apps/aurora-intents-wallet-ext": {
+      "entry": [
+        "src/sidepanel/main.tsx",
+        "src/background/index.ts",
+        "manifest.config.ts"
+      ],
+      "ignoreDependencies": [
+        "@fontsource/figtree"
+      ]
     }
   }
 }
