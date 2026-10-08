@@ -49,7 +49,11 @@ const filters = (hasWallet: boolean, sendsOut: boolean) => {
   const wallet = hasWallet ? ('wallet-supported' as const) : ('none' as const);
 
   return {
-    source: { intents: 'with-balance', external: wallet } as ChainsFilter,
+    // Only what can be sold: held in the account or in the wallet.
+    source: {
+      intents: 'with-balance',
+      external: hasWallet ? 'with-balance' : 'none',
+    } as ChainsFilter,
     target: (sendsOut
       ? { intents: 'none', external: 'all' }
       : { intents: 'all', external: wallet }) as ChainsFilter,
