@@ -34,6 +34,7 @@ import { WelcomeScreen } from './screens/onboarding/WelcomeScreen';
 import { SendScreen } from './screens/send/SendScreen';
 import { SettingsScreen } from './screens/settings/SettingsScreen';
 import { SwapScreen } from './screens/swap/SwapScreen';
+import { WalletsScreen } from './screens/wallets/WalletsScreen';
 
 const Screens = ({ account }: { account: Account | null }) => {
   const { screen } = useNavigation();
@@ -48,9 +49,11 @@ const Screens = ({ account }: { account: Account | null }) => {
     case 'connectWallet':
       return <ConnectWalletScreen />;
     case 'browserWallets':
-      return <BrowserWalletsScreen />;
+      return <BrowserWalletsScreen role={screen.role} />;
     case 'connectBrowserWallet':
-      return <ConnectBrowserWalletScreen wallet={screen.wallet} />;
+      return (
+        <ConnectBrowserWalletScreen wallet={screen.wallet} role={screen.role} />
+      );
     case 'walletConnect':
       return <WalletConnectScreen />;
     case 'verifyWallet':
@@ -61,6 +64,8 @@ const Screens = ({ account }: { account: Account | null }) => {
       );
     case 'settings':
       return <SettingsScreen />;
+    case 'wallets':
+      return account ? <WalletsScreen account={account} /> : null;
     case 'deposit':
       return account ? <DepositAddressesScreen account={account} /> : null;
     case 'depositDetail':

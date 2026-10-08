@@ -7,6 +7,7 @@ import { Icon, Spinner } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { WalletIcon } from '../../components/WalletIcon';
 import { useNavigation } from '../../navigation';
+import type { ConnectRole } from '../../navigation';
 import {
   closeConnector,
   CONNECTOR_URL,
@@ -49,11 +50,11 @@ const useConnectorTab = (attempt: number) => {
 
 const WalletRow = ({
   wallet,
-  isLastUsed,
+  badge,
   onClick,
 }: {
   wallet: DetectedWallet;
-  isLastUsed: boolean;
+  badge?: string;
   onClick: () => void;
 }) => (
   <li className="list-none">
@@ -70,8 +71,8 @@ const WalletRow = ({
           {FAMILY_NETWORKS[wallet.family]}
         </span>
       </span>
-      {isLastUsed ? (
-        <Badge>Last used</Badge>
+      {badge ? (
+        <Badge>{badge}</Badge>
       ) : (
         <span className="text-sw-gray-300">
           <Icon name="chevronRight" size={18} />
@@ -81,8 +82,8 @@ const WalletRow = ({
   </li>
 );
 
-const WalletList = ({ tabId }: { tabId: number }) => {
-  const { accounts } = useAccounts();
+const WalletList = ({ tabId, role }: { tabId: number; role?: ConnectRole }) => {
+  const { accounts, active, secondaries } = useAccounts();
   const { push } = useNavigation();
   const detected = usePageWallets(tabId);
 
@@ -109,6 +110,25 @@ const WalletList = ({ tabId }: { tabId: number }) => {
     .flatMap((account) => (account.kind === 'wallet' ? [account] : []))
     .sort((a, b) => b.createdAt - a.createdAt)[0]?.walletId;
 
+  // For a secondary wallet: the wallets this account already uses. Another
+  // of their accounts can still be added.
+  const connected = new Set(
+    role
+      ? [
+          ...(active?.kind === 'wallet' ? [active.walletId] : []),
+          ...secondaries.map((wallet) => wallet.walletId),
+        ]
+      : [],
+  );
+
+  const badgeOf = (wallet: DetectedWallet) => {
+    if (role) {
+      return connected.has(wallet.id) ? 'Connected' : undefined;
+    }
+
+    return wallet.id === lastUsed ? 'Last used' : undefined;
+  };
+
   return (
     <div className="flex flex-col gap-sw-sm">
       <span className="px-sw-xs text-sw-label-sm text-sw-gray-100">
@@ -120,8 +140,10 @@ const WalletList = ({ tabId }: { tabId: number }) => {
             <WalletRow
               key={wallet.id}
               wallet={wallet}
-              isLastUsed={wallet.id === lastUsed}
-              onClick={() => push({ name: 'connectBrowserWallet', wallet })}
+              badge={badgeOf(wallet)}
+              onClick={() =>
+                push({ name: 'connectBrowserWallet', wallet, role })
+              }
             />
           ))}
         </ul>
@@ -134,7 +156,12 @@ const WalletList = ({ tabId }: { tabId: number }) => {
   );
 };
 
-export const BrowserWalletsScreen = () => {
+/**
+ * Wallets detected in the browser, to connect as a new account or, with
+ * `role`, as a secondary wallet of the active account (browser wallets only).
+ */
+export const BrowserWalletsScreen = ({ role }: { role?: ConnectRole }) => {
+  const { active } = useAccounts();
   const { back, push } = useNavigation();
   const [attempt, setAttempt] = useState(0);
   const tab = useConnectorTab(attempt);
@@ -150,16 +177,24 @@ export const BrowserWalletsScreen = () => {
       title="Browser wallet"
       onBack={leave}
       footer={
-        <Button
-          variant="outlined"
-          size="lg"
-          onClick={() => {
-            void closeConnector();
-            push({ name: 'walletConnect' });
-          }}>
-          Use a mobile wallet instead
-        </Button>
+        role ? null : (
+          <Button
+            variant="outlined"
+            size="lg"
+            onClick={() => {
+              void closeConnector();
+              push({ name: 'walletConnect' });
+            }}>
+            Use a mobile wallet instead
+          </Button>
+        )
       }>
+      {role && active ? (
+        <p className="m-0 text-sw-body-md text-sw-gray-200">
+          A secondary wallet for {active.name}: it only moves funds in and out,
+          and never signs for the account or for apps.
+        </p>
+      ) : null}
       <div className="flex flex-col gap-sw-sm">
         <div className="flex justify-end">
           <button
@@ -188,7 +223,7 @@ export const BrowserWalletsScreen = () => {
         )}
         {/* Keyed so Rescan restarts detection. */}
         {tab.status === 'open' && (
-          <WalletList key={attempt} tabId={tab.tabId} />
+          <WalletList key={attempt} tabId={tab.tabId} role={role} />
         )}
       </div>
       <Hr />

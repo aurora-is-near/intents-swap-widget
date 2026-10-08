@@ -2,62 +2,120 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Banner, Button, Notes } from '@aurora-is-near/intents-swap-widget';
 
-import { nextAccountName, useAccounts } from '../../accounts/useAccounts';
+import {
+  nextAccountName,
+  nextSecondaryName,
+  OwnWalletError,
+  useAccounts,
+} from '../../accounts/useAccounts';
+import { useSelectedWallet } from '../../accounts/useSelectedWallet';
 import { Spinner } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { StatusHero } from '../../components/StatusHero';
 import { WalletIcon } from '../../components/WalletIcon';
 import { useNavigation } from '../../navigation';
+import type { ConnectRole } from '../../navigation';
 import { connectWallet } from '../../wallet/connectWallet';
 import { closeConnector } from '../../wallet/connectorWindow';
 import { isAccountVerified } from '../../wallet/walletVerification';
 import { FAMILY_NETWORKS } from '../../wallet/families';
 import type { DetectedWallet } from '../../wallet/types';
 
-type Step = { name: 'connecting' } | { name: 'rejected'; message: string };
+type Step =
+  | { name: 'connecting' }
+  | { name: 'rejected'; message: string }
+  // The account's own wallet can't also be its secondary wallet.
+  | { name: 'own'; message: string };
 
 const describeError = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
 export const ConnectBrowserWalletScreen = ({
   wallet,
+  role,
 }: {
   wallet: DetectedWallet;
+  role?: ConnectRole;
 }) => {
-  const { accounts, add } = useAccounts();
-  const { back, reset } = useNavigation();
+  const { accounts, active, secondaries, add, addSecondary } = useAccounts();
+  const { select } = useSelectedWallet();
+  const { back, reset, popTo } = useNavigation();
   const [step, setStep] = useState<Step>({ name: 'connecting' });
   const walletName = wallet.info.name;
+
+  const connectAsAccount = async () => {
+    const { address, publicKey } = await connectWallet(wallet);
+
+    const added = await add({
+      kind: 'wallet',
+      id: crypto.randomUUID(),
+      name: nextAccountName(accounts),
+      family: wallet.family,
+      walletId: wallet.id,
+      bridgeId: wallet.bridgeId,
+      walletName,
+      walletIcon: wallet.info.icon,
+      address,
+      publicKey,
+      createdAt: Date.now(),
+    });
+
+    // The compatibility check signs next, through the same window: keep it
+    // open, or a quick Verify races the close. Verification closes it.
+    if (isAccountVerified(added)) {
+      void closeConnector();
+    }
+
+    reset({ name: 'home' });
+  };
+
+  const connectAsSecondary = async (returnTo: ConnectRole['returnTo']) => {
+    if (!active) {
+      throw new Error('No account to attach the wallet to');
+    }
+
+    const { address, publicKey } = await connectWallet(wallet);
+
+    const added = await addSecondary({
+      id: crypto.randomUUID(),
+      primaryId: active.id,
+      name: nextSecondaryName(secondaries, walletName),
+      family: wallet.family,
+      walletId: wallet.id,
+      bridgeId: wallet.bridgeId,
+      walletName,
+      walletIcon: wallet.info.icon,
+      address,
+      publicKey,
+      createdAt: Date.now(),
+    });
+
+    // It only sends transactions, which reopen the window when needed.
+    void closeConnector();
+
+    // Connected from a screen that spends from it: spend from it.
+    if (returnTo !== 'wallets') {
+      select({ kind: 'secondary', id: added.id });
+    }
+
+    popTo(returnTo);
+  };
 
   const connect = async () => {
     setStep({ name: 'connecting' });
 
     try {
-      const { address, publicKey } = await connectWallet(wallet);
-
-      const added = await add({
-        kind: 'wallet',
-        id: crypto.randomUUID(),
-        name: nextAccountName(accounts),
-        family: wallet.family,
-        walletId: wallet.id,
-        bridgeId: wallet.bridgeId,
-        walletName,
-        walletIcon: wallet.info.icon,
-        address,
-        publicKey,
-        createdAt: Date.now(),
-      });
-
-      // The compatibility check signs next, through the same window: keep it
-      // open, or a quick Verify races the close. Verification closes it.
-      if (isAccountVerified(added)) {
-        void closeConnector();
+      if (role) {
+        await connectAsSecondary(role.returnTo);
+      } else {
+        await connectAsAccount();
       }
-
-      reset({ name: 'home' });
     } catch (error) {
-      setStep({ name: 'rejected', message: describeError(error) });
+      setStep(
+        error instanceof OwnWalletError
+          ? { name: 'own', message: error.message }
+          : { name: 'rejected', message: describeError(error) },
+      );
       void closeConnector();
     }
   };
@@ -71,6 +129,25 @@ export const ConnectBrowserWalletScreen = ({
       void connect();
     }
   }, []);
+
+  if (step.name === 'own') {
+    return (
+      <Screen
+        title="Browser wallet"
+        onBack={back}
+        footer={
+          <Button variant="primary" size="lg" onClick={back}>
+            Choose another wallet
+          </Button>
+        }>
+        <StatusHero
+          tone="error"
+          title="Already your account’s wallet"
+          description={`${step.message} Switch ${walletName} to another account to add it as a secondary wallet, or pick a different wallet.`}
+        />
+      </Screen>
+    );
+  }
 
   if (step.name === 'rejected') {
     return (
@@ -90,7 +167,7 @@ export const ConnectBrowserWalletScreen = ({
         <StatusHero
           tone="error"
           title="Connection rejected"
-          description={`${walletName} declined the request, so no account was connected. You can try again or pick another wallet.`}
+          description={`${walletName} declined the request, so no ${role ? 'wallet' : 'account'} was connected. You can try again or pick another wallet.`}
         />
         <Banner variant="error" message={step.message} hasBg multiline />
       </Screen>
@@ -131,9 +208,16 @@ export const ConnectBrowserWalletScreen = ({
       <div className="flex flex-col gap-sw-md rounded-sw-lg bg-sw-gray-900 p-sw-xl">
         <Notes>
           <Notes.Item label="Wallet" value={walletName} />
+          {role && active ? (
+            <Notes.Item label="Secondary wallet of" value={active.name} />
+          ) : null}
           <Notes.Item
             label="Requested access"
-            value="View address, request signatures"
+            value={
+              role
+                ? 'View address, send transactions'
+                : 'View address, request signatures'
+            }
           />
           <Notes.Item label="Network" value={FAMILY_NETWORKS[wallet.family]} />
         </Notes>
