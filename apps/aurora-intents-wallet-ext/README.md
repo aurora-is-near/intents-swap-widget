@@ -46,6 +46,23 @@ yarn workspace aurora-intents-wallet-ext connector
 For a release, deploy `connector/` as a static site and build with
 `VITE_CONNECTOR_URL=https://…/`.
 
+## Balances and deposits
+
+Home shows the account's NEAR Intents balance and, for a connected wallet,
+the wallet's own tokens (Alchemy for EVM and Solana, RPC for NEAR).
+
+Deposit addresses are the fee service's persistent deposit addresses with
+`recipientType: INTENTS`: whatever arrives is converted to USDC (Base) inside
+the account. One address covers every EVM chain; other networks get one each.
+They never change, so they are cached per account in `chrome.storage.local`.
+Point the app at another fee service (e.g. a local one) with:
+
+```bash
+# apps/aurora-intents-wallet-ext/.env.local (gitignored, used by dev and build)
+VITE_FEE_SERVICE_URL=http://localhost:3005
+VITE_PDA_API_KEY=<an app key known to that fee service>
+```
+
 ## Develop
 
 Packages must be built first (the app consumes their `dist`):

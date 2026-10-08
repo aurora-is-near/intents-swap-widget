@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
+import type { DepositNetwork } from './deposit/networks';
 import type { DetectedWallet } from './wallet/types';
 
 type Screen =
@@ -12,6 +13,8 @@ type Screen =
   | { name: 'connectBrowserWallet'; wallet: DetectedWallet }
   | { name: 'walletConnect' }
   | { name: 'home' }
+  | { name: 'deposit' }
+  | { name: 'depositDetail'; network: DepositNetwork['id'] }
   | { name: 'settings' };
 
 type Navigation = {

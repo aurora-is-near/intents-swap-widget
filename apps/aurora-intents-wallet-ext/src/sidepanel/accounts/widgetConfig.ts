@@ -4,7 +4,7 @@ import type {
   WidgetConfig,
 } from '@aurora-is-near/intents-swap-widget';
 
-import { API_KEY } from '../config';
+import { ALCHEMY_API_KEY, API_KEY } from '../config';
 import { createWebAuthnProvider } from '../passkey/webauthn';
 import { ensureConnectorTab } from '../wallet/connectorWindow';
 import { createNearPageProvider } from '../wallet/createNearPageProvider';
@@ -77,6 +77,8 @@ export const buildWidgetConfig = (
     enableAccountAbstraction: true,
     intentsAccountType: ACCOUNT_TYPES[account.family],
     connectedWallets: { default: account.address },
+    // Wallet balances: Alchemy for EVM and Solana, RPC for NEAR (App).
+    alchemyApiKey: ALCHEMY_API_KEY,
     providers: walletProviders(account),
   };
 };
