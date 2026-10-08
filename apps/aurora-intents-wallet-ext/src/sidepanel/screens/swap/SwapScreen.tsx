@@ -21,6 +21,7 @@ import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { shortAddress } from '../../utils';
+import { ownAddress } from '../transfer/ownAddress';
 import { RecipientField } from '../transfer/RecipientField';
 import {
   describeAmount,
@@ -38,14 +39,21 @@ import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
 import { SlippageScreen } from './SlippageScreen';
 
-/** Swaps spend the account's intents balance. */
-const SOURCE_FILTER: ChainsFilter = {
-  intents: 'with-balance',
-  external: 'none',
-};
+/**
+ * Like the widget: swap from the account's intents balance or, for a wallet
+ * account, from the wallet; into either of them. "Send to another address"
+ * targets any chain with a recipient instead.
+ */
+const filters = (hasWallet: boolean, sendsOut: boolean) => {
+  const wallet = hasWallet ? ('wallet-supported' as const) : ('none' as const);
 
-const INTENTS_TARGET: ChainsFilter = { intents: 'all', external: 'none' };
-const EXTERNAL_TARGET: ChainsFilter = { intents: 'none', external: 'all' };
+  return {
+    source: { intents: 'with-balance', external: wallet } as ChainsFilter,
+    target: (sendsOut
+      ? { intents: 'none', external: 'all' }
+      : { intents: 'all', external: wallet }) as ChainsFilter,
+  };
+};
 
 const ALL_CHAINS = CHAINS.map((chain) => chain.id);
 
@@ -79,7 +87,7 @@ export const SwapScreen = ({ account }: { account: Account }) => {
     lastChangedInput,
     isLoading,
     isEmpty,
-  } = useTransferForm();
+  } = useTransferForm({ fromWallet: account.kind === 'wallet' });
 
   const outcome = useTransferOutcome();
 
@@ -87,24 +95,45 @@ export const SwapScreen = ({ account }: { account: Account }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sendsOut, setSendsOut] = useState(false);
 
+  const hasWallet = account.kind === 'wallet';
+  const walletName = hasWallet ? account.walletName : 'your wallet';
+  const chainsFilter = filters(hasWallet, sendsOut);
   const summary = getTransferSummary(ctx);
-  const targetFilter = sendsOut ? EXTERNAL_TARGET : INTENTS_TARGET;
   const goHome = () => reset({ name: 'home' });
+
+  /** Where the target goes: the account, the own wallet, or an address. */
+  const destination = (() => {
+    if (!summary?.recipient) {
+      return 'your account';
+    }
+
+    return summary.recipient === ownAddress(account, summary.target.blockchain)
+      ? walletName
+      : shortAddress(summary.recipient);
+  })();
 
   const toggleSendsOut = (isOn: boolean) => {
     setSendsOut(isOn);
 
     const target = ctx.targetToken;
-    const next = target ? counterpart(tokens, target, !isOn) : undefined;
 
-    if (next) {
-      onChangeToken('target', next);
-    } else {
+    if (!target) {
+      return;
+    }
+
+    // Off: back into the account, or the own wallet when it's on its chain.
+    const own = ownAddress(account, target.blockchain);
+    const keepsTarget = isOn ? !target.isIntent : target.isIntent || !!own;
+    const next = keepsTarget ? target : counterpart(tokens, target, !isOn);
+
+    if (!next) {
       fireEvent('tokenSelect', { variant: 'target', token: undefined });
+    } else if (next !== target) {
+      onChangeToken('target', next);
     }
 
     if (!isOn) {
-      fireEvent('addressSet', null);
+      fireEvent('addressSet', next && !next.isIntent ? (own ?? null) : null);
     }
   };
 
@@ -114,12 +143,22 @@ export const SwapScreen = ({ account }: { account: Account }) => {
         label="You pay"
         value={describeAmount(summary.amountIn, summary.source)}
       />
-      <Notes.Item
-        label={outcome.view === 'success' ? 'You received' : 'You receive'}
-        value={`${outcome.view === 'success' ? '' : '≈ '}${describeAmount(summary.amountOut, summary.target)}`}
-      />
+      {outcome.view === 'success' ? (
+        <Notes.Item
+          label="You received"
+          value={describeAmount(
+            outcome.amountOutFormatted ?? summary.amountOut,
+            summary.target,
+          )}
+        />
+      ) : (
+        <Notes.Item
+          label="You receive"
+          value={`≈ ${describeAmount(summary.amountOut, summary.target)}`}
+        />
+      )}
       {summary.recipient ? (
-        <Notes.Item label="Recipient" value={shortAddress(summary.recipient)} />
+        <Notes.Item label="Recipient" value={destination} />
       ) : null}
       <Notes.Item label="Fees" value={summary.fee?.usd} />
     </>
@@ -138,7 +177,12 @@ export const SwapScreen = ({ account }: { account: Account }) => {
     );
   }
 
-  if (outcome.view === 'success' && outcome.outcome && summary) {
+  if (outcome.view === 'success' && summary) {
+    const received = describeAmount(
+      outcome.amountOutFormatted ?? summary.amountOut,
+      summary.target,
+    );
+
     return (
       <TransferResultView
         screenTitle="Swap"
@@ -146,13 +190,15 @@ export const SwapScreen = ({ account }: { account: Account }) => {
         title="Swap complete"
         description={
           summary.recipient
-            ? `${shortAddress(summary.recipient)} received ${describeAmount(summary.amountOut, summary.target)}.`
-            : `You received ${describeAmount(summary.amountOut, summary.target)}.`
+            ? `${received} sent to ${destination}.`
+            : `You received ${received}.`
         }
         notes={
           <>
             {noteRows}
-            <Notes.Item label="Time" value={`${outcome.outcome.seconds} sec`} />
+            {outcome.seconds !== null ? (
+              <Notes.Item label="Time" value={`${outcome.seconds} sec`} />
+            ) : null}
           </>
         }
         footer={
@@ -170,21 +216,45 @@ export const SwapScreen = ({ account }: { account: Account }) => {
     );
   }
 
-  if (outcome.view === 'pending' && summary) {
+  if ((outcome.view === 'pending' || outcome.view === 'settling') && summary) {
     return (
       <TransferPending
         account={account}
         screenTitle="Swap"
         title={`Swapping ${summary.amountIn} ${summary.source.symbol} for ${summary.target.symbol}`}
         isSigned={outcome.isSigned}
+        isFromWallet={!summary.source.isIntent}
         steps={[
-          'Solvers filling your intent',
+          'Solvers filling your swap',
           summary.recipient
-            ? `${summary.target.symbol} sent to ${shortAddress(summary.recipient)}`
+            ? `${summary.target.symbol} sent to ${destination}`
             : `${summary.target.symbol} credited to your account`,
         ]}
         notes={noteRows}
         onBack={goHome}
+      />
+    );
+  }
+
+  if (outcome.view === 'refunded' && summary) {
+    return (
+      <TransferResultView
+        screenTitle="Swap"
+        tone="error"
+        title="Swap wasn’t filled"
+        description={`Nothing was swapped. Your ${summary.amountIn} ${summary.source.symbol} is refunded to ${summary.source.isIntent ? 'your account' : walletName}.`}
+        notes={noteRows}
+        footer={
+          <>
+            <Button variant="primary" size="lg" onClick={outcome.again}>
+              Try again
+            </Button>
+            <Button variant="outlined" size="lg" onClick={goHome}>
+              Back to wallet
+            </Button>
+          </>
+        }
+        onBack={outcome.again}
       />
     );
   }
@@ -223,7 +293,7 @@ export const SwapScreen = ({ account }: { account: Account }) => {
     return (
       <TokenPicker
         variant={picker}
-        chainsFilter={picker === 'source' ? SOURCE_FILTER : targetFilter}
+        chainsFilter={chainsFilter[picker]}
         onSelect={(token) => {
           onChangeToken(picker, token);
           setPicker('none');
@@ -277,7 +347,10 @@ export const SwapScreen = ({ account }: { account: Account }) => {
           />
           <DirectionSwitcher
             isEnabled={
-              !sendsOut && !!ctx.sourceToken && !!ctx.targetToken?.isIntent
+              !sendsOut &&
+              !!ctx.sourceToken &&
+              !!ctx.targetToken &&
+              (ctx.targetToken.isIntent || hasWallet)
             }
             isLoading={ctx.quoteStatus === 'pending'}
             onClick={() => fireEvent('tokenSelectRotate', null)}
@@ -325,12 +398,19 @@ export const SwapScreen = ({ account }: { account: Account }) => {
         />
       ) : null}
 
+      {!sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
+        <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
+          {ctx.targetToken.symbol} arrives in {walletName}
+          {ctx.sendAddress ? ` (${shortAddress(ctx.sendAddress)})` : ''}.
+        </p>
+      ) : null}
+
       {isInsufficient && ctx.sourceToken ? (
         <Banner
           variant="error"
           hasBg
           multiline
-          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)}. Lower the amount or deposit more.`}
+          message={`You have ${describeAmount(formatTokenAmount(ctx.sourceTokenBalance, ctx.sourceToken) || '0', ctx.sourceToken)} ${ctx.sourceToken.isIntent ? 'in your account' : `in ${walletName}`}. Lower the amount or ${ctx.sourceToken.isIntent ? 'deposit more' : 'pick another token'}.`}
         />
       ) : null}
 
@@ -346,11 +426,8 @@ export const SwapScreen = ({ account }: { account: Account }) => {
             }
             isLoading={isQuoting}
           />
-          {summary.recipient ? (
-            <Notes.Item
-              label="Recipient"
-              value={shortAddress(summary.recipient)}
-            />
+          {sendsOut && summary.recipient ? (
+            <Notes.Item label="Recipient" value={destination} />
           ) : null}
           <Notes.Item
             label="Max slippage"

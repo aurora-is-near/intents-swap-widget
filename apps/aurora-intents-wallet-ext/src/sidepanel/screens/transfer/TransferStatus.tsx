@@ -42,8 +42,10 @@ type PendingProps = {
   account: Account;
   screenTitle: string;
   title: string;
-  /** False until the intent is signed and submitted. */
+  /** False until the intent is signed, or the wallet transaction sent. */
   isSigned: boolean;
+  /** Spends wallet tokens: a transaction to confirm, not an intent to sign. */
+  isFromWallet: boolean;
   /** What happens after signing, then the end state. */
   steps: [string, string];
   notes: ReactNode;
@@ -55,17 +57,22 @@ export const TransferPending = ({
   screenTitle,
   title,
   isSigned,
+  isFromWallet,
   steps,
   notes,
   onBack,
 }: PendingProps) => {
+  const who = signer(account);
+  const [waiting, done] = isFromWallet
+    ? [`Confirm in ${who}`, `Sent from ${who}`]
+    : [`Approve with ${who}`, `Signed with ${who}`];
+
+  const prompt = isFromWallet
+    ? `Confirm the transaction in ${who} to continue.`
+    : `Approve the request with your ${who} to continue.`;
+
   const rows: Array<[string, StepState]> = [
-    [
-      isSigned
-        ? `Signed with ${signer(account)}`
-        : `Approve with ${signer(account)}`,
-      isSigned ? 'done' : 'active',
-    ],
+    [isSigned ? done : waiting, isSigned ? 'done' : 'active'],
     [steps[0], isSigned ? 'active' : 'todo'],
     [steps[1], 'todo'],
   ];
@@ -76,9 +83,7 @@ export const TransferPending = ({
         tone="pending"
         title={title}
         description={
-          isSigned
-            ? 'Submitted. Closing the panel won’t stop it.'
-            : `Approve the request with your ${signer(account)} to continue.`
+          isSigned ? 'Submitted. Closing the panel won’t stop it.' : prompt
         }
       />
       <div className="flex shrink-0 flex-col rounded-sw-lg bg-sw-gray-900 p-sw-xl">

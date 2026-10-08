@@ -74,8 +74,9 @@ export const SendScreen = ({ account }: { account: Account }) => {
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { tokens, status: tokensStatus, refetch } = useTokens();
-  const { onChangeAmount, onChangeToken, isLoading, isEmpty } =
-    useTransferForm();
+  const { onChangeAmount, onChangeToken, isLoading, isEmpty } = useTransferForm(
+    { fromWallet: false },
+  );
 
   const outcome = useTransferOutcome();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -122,15 +123,16 @@ export const SendScreen = ({ account }: { account: Account }) => {
     );
   }
 
-  if (outcome.view === 'success' && outcome.outcome && summary) {
-    const { transfer } = outcome.outcome;
+  if (outcome.view === 'success' && outcome.transfer && summary) {
+    const { transfer } = outcome;
+    const delivered = outcome.amountOutFormatted ?? summary.amountOut;
 
     return (
       <TransferResultView
         screenTitle="Send"
         tone="success"
         title={`Sent ${summary.amountIn} ${summary.source.symbol}`}
-        description={`The recipient got ${describeAmount(summary.amountOut, summary.target)}.`}
+        description={`The recipient got ${describeAmount(delivered, summary.target)}.`}
         notes={
           <>
             {summary.recipient ? (
@@ -180,19 +182,43 @@ export const SendScreen = ({ account }: { account: Account }) => {
     </>
   ) : null;
 
-  if (outcome.view === 'pending' && summary) {
+  if ((outcome.view === 'pending' || outcome.view === 'settling') && summary) {
     return (
       <TransferPending
         account={account}
         screenTitle="Send"
         title={`Sending ${summary.amountIn} ${summary.source.symbol} to ${summary.target.chainName}`}
         isSigned={outcome.isSigned}
+        isFromWallet={false}
         steps={[
           `Sending on ${summary.target.chainName}`,
           'Delivered to the recipient',
         ]}
         notes={noteRows}
         onBack={goHome}
+      />
+    );
+  }
+
+  if (outcome.view === 'refunded' && summary) {
+    return (
+      <TransferResultView
+        screenTitle="Send"
+        tone="error"
+        title="Send wasn’t completed"
+        description={`Nothing was sent. Your ${summary.amountIn} ${summary.source.symbol} is refunded to your account.`}
+        notes={noteRows}
+        footer={
+          <>
+            <Button variant="primary" size="lg" onClick={outcome.again}>
+              Try again
+            </Button>
+            <Button variant="outlined" size="lg" onClick={goHome}>
+              Back to wallet
+            </Button>
+          </>
+        }
+        onBack={outcome.again}
       />
     );
   }

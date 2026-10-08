@@ -71,10 +71,12 @@ They never change, so they are cached per account in `chrome.storage.local`.
 ## Swap and send
 
 Both run on the swap widget's state machine (quotes, validation, signing) with
-the extension's own screens. Swaps spend the account's NEAR Intents balance:
-into another intents token, or out to an address on any chain ("Send to
-another address"). Send withdraws a token to an address on a network of the
-same asset.
+the extension's own screens. As in the widget, swaps go between the account's
+NEAR Intents balance and, for a wallet account, the connected wallet, in any
+direction; "Send to another address" swaps out to an address on any chain.
+Send withdraws an intents token to an address on a network of the same asset.
+Result screens follow 1Click's execution status, so "complete" means filled,
+and an unfilled swap shows as refunded.
 
 Passkey accounts sign with the passkey (`webauthn` intents); the fee service's
 `submit-intent` must accept `webauthn` signed data. Wallet accounts sign with
