@@ -23,6 +23,11 @@ export const getQuoteRefundType = ({
   intentsAccountType,
   supportedChains,
 }: Args): NonNullable<Transaction['refundType']> => {
+  // See getQuoteRefundTo: passkey refunds always go to the intents account.
+  if (intentsAccountType === 'webauthn') {
+    return 'INTENTS';
+  }
+
   if (
     isAuroraRecipient(targetToken) ||
     isAuroraSourceRefund({ sourceToken, targetToken })

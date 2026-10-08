@@ -1,4 +1,4 @@
-import { Chains } from '../../types';
+import { Chains, IntentsAccountType } from '../../types';
 import { isEvmAddress } from './isEvmAddress';
 import { isNearAddress } from './isNearAddress';
 import { isSolanaAddress } from './isSolanaAddress';
@@ -96,10 +96,17 @@ const getSupportedChainsFromAddress = (address: string): readonly Chains[] => {
 export const getSupportedChains = ({
   walletAddress,
   walletSupportedChains,
+  intentsAccountType,
 }: {
   walletAddress?: string;
   walletSupportedChains?: readonly Chains[];
-}) => {
+  intentsAccountType?: IntentsAccountType;
+}): readonly Chains[] => {
+  // A passkey account holds intents balances only: no wallet on any chain.
+  if (intentsAccountType === 'webauthn') {
+    return [];
+  }
+
   if (walletSupportedChains?.length) {
     return walletSupportedChains;
   }

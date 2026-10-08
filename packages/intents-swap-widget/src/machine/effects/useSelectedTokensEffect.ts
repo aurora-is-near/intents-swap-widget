@@ -27,7 +27,10 @@ export type Props = ListenerProps & {
   target?: 'none' | 'same-asset';
 };
 
-const accountChainMap: Record<IntentsAccountType, Chains> = {
+// Passkey accounts have no wallet chain: they only hold intents balances.
+type WalletAccountType = Exclude<IntentsAccountType, 'webauthn'>;
+
+const accountChainMap: Record<WalletAccountType, Chains> = {
   sol: 'sol',
   evm: 'eth',
   near: 'near',
@@ -150,12 +153,16 @@ export const useSelectedTokensEffect = ({
               );
             }
 
-            tkn = tokens.find(
-              (t) =>
-                !t.isIntent &&
-                t.symbol === ctx.sourceToken?.symbol &&
-                t.blockchain === accountChainMap[intentsAccountType ?? 'evm'],
-            );
+            tkn =
+              intentsAccountType === 'webauthn'
+                ? undefined
+                : tokens.find(
+                    (t) =>
+                      !t.isIntent &&
+                      t.symbol === ctx.sourceToken?.symbol &&
+                      t.blockchain ===
+                        accountChainMap[intentsAccountType ?? 'evm'],
+                  );
           } else {
             tkn = tokens.find(
               (t) => t.isIntent && t.symbol === ctx.sourceToken?.symbol,
@@ -172,7 +179,7 @@ export const useSelectedTokensEffect = ({
   }, [ctx, sourceToken, targetToken, isEnabled, intentsAccountType]);
 
   const setTokenForIntentsAccountType = (
-    accountType: IntentsAccountType,
+    accountType: WalletAccountType,
     fallbackToken?: Token,
   ) => {
     const tkn =
@@ -212,18 +219,28 @@ export const useSelectedTokensEffect = ({
             token: highestIntentsToken,
           });
           // 2. Wallet base token if intents not supported
-        } else if (supportedChains.length && intentsAccountType) {
+        } else if (
+          supportedChains.length &&
+          intentsAccountType &&
+          intentsAccountType !== 'webauthn'
+        ) {
           setTokenForIntentsAccountType(intentsAccountType, fallbackToken);
-          // 3. Select base token by detecting Solana wallet address
+          // 3. Passkey account: its `0x` ID must not pick an on-chain EVM token
+        } else if (intentsAccountType === 'webauthn') {
+          fireEvent('tokenSelect', {
+            variant: 'source',
+            token: fallbackToken,
+          });
+          // 4. Select base token by detecting Solana wallet address
         } else if (ctx.walletAddress && isSolanaAddress(ctx.walletAddress)) {
           setTokenForIntentsAccountType('sol', fallbackToken);
-          // 4. Select base token by detecting EVM wallet address
+          // 5. Select base token by detecting EVM wallet address
         } else if (ctx.walletAddress && isEvmAddress(ctx.walletAddress)) {
           setTokenForIntentsAccountType('evm', fallbackToken);
-          // 5. Select base token by detecting NEAR wallet address
+          // 6. Select base token by detecting NEAR wallet address
         } else if (ctx.walletAddress && isNearAddress(ctx.walletAddress)) {
           setTokenForIntentsAccountType('near', fallbackToken);
-          // 6. Fallback if intents is not supported and wallet is not connected
+          // 7. Fallback if intents is not supported and wallet is not connected
         } else {
           fireEvent('tokenSelect', {
             variant: 'source',

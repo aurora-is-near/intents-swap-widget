@@ -26,3 +26,4 @@ export { WidgetDepositSkeleton } from './widgets/WidgetDeposit/WidgetDepositSkel
 
 export { isValidChainAddress } from './utils/checkers/isValidChainAddress';
 export { getTokenBalanceKey } from './utils/intents/getTokenBalanceKey';
+export { verifyPasskey } from './utils/intents/passkey';

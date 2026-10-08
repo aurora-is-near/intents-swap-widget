@@ -429,6 +429,7 @@ export const useMakeQuote = () => {
           targetToken: ctx.targetToken,
           walletAddress: recipientWalletAddress,
           defaultRecipient: recipientIntentsAccountId,
+          isDry,
         });
 
         if (!recipient) {

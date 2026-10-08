@@ -13,7 +13,12 @@ export type WalletAddresses = Partial<
   Record<Chains | 'default', string | null>
 >;
 
-export type IntentsAccountType = 'evm' | 'near' | 'sol' | 'stellar';
+export type IntentsAccountType =
+  | 'evm'
+  | 'near'
+  | 'sol'
+  | 'stellar'
+  | 'webauthn';
 
 export type WidgetEnvironment = 'production' | 'staging';
 
@@ -41,6 +46,9 @@ export type WidgetConfig = {
   plugins?: Plugins;
 
   // Connected wallet
+  // Explicit account type; required for passkey (`webauthn`) accounts, whose
+  // intents account ID looks like an EVM address.
+  intentsAccountType?: IntentsAccountType;
   allowSwapWithExternalWallet?: boolean;
   walletSupportedChains?: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;

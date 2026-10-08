@@ -32,9 +32,21 @@ export const getIntentsAccountId = ({ walletAddress, addressType }: Args) => {
     return;
   }
 
+  // A passkey account's address already is its intents account ID: `0x` +
+  // 20 bytes for P-256, 64 hex chars for Ed25519.
+  if (
+    addressType === 'webauthn' &&
+    !/^(0x[0-9a-f]{40}|[0-9a-f]{64})$/i.test(walletAddress)
+  ) {
+    logger.error('Passkey account ID is malformed');
+
+    return;
+  }
+
   switch (addressType) {
     case 'evm':
     case 'near':
+    case 'webauthn':
       return walletAddress.toLowerCase();
     case 'stellar':
       return hex.encode(stellarAddressToBytes(walletAddress));

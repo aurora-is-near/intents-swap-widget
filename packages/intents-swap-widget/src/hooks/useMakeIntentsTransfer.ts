@@ -10,6 +10,7 @@ import { queryContract } from '@/utils/near/queryContract';
 import { isErrorLikeObject } from '@/utils/isErrorLikeObject';
 import { IntentSignerPrivy } from '@/utils/intents/signers/privy';
 import { IntentSignerStellar } from '@/utils/intents/signers/stellar';
+import { IntentSignerWebAuthn } from '@/utils/intents/signers/webauthn';
 import { createNearWalletSigner } from '@/utils/intents/signers/near';
 import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
@@ -258,6 +259,21 @@ export const useMakeIntentsTransfer = ({
         );
         break;
       }
+
+      case 'webauthn':
+        if (!providers?.webauthn) {
+          throw new TransferError({
+            code: 'TRANSFER_INVALID_INITIAL',
+            meta: { message: 'No passkey provider configured' },
+          });
+        }
+
+        logger.debug('[WIDGET] Use passkey signer for transfer.');
+        signer = new IntentSignerWebAuthn(
+          { walletAddress: ctx.walletAddress },
+          providers.webauthn,
+        );
+        break;
 
       default:
         notReachable(intentsAccountType);

@@ -25,6 +25,15 @@ export const getQuoteRefundTo = ({
   supportedChains,
   defaultRefundTo,
 }: Args): string => {
+  // A passkey account can only be refunded to its intents account: it has
+  // no address on the origin chain or on Aurora.
+  if (intentsAccountType === 'webauthn') {
+    return (
+      getIntentsAccountId({ walletAddress, addressType: 'webauthn' }) ??
+      defaultRefundTo
+    );
+  }
+
   if (isAuroraRecipient(targetToken)) {
     return supportsAuroraVcRefund({ sourceToken, targetToken })
       ? 'aurora'
