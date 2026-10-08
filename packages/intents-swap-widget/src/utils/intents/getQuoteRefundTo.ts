@@ -13,6 +13,8 @@ type Args = {
   sourceToken: Pick<Token, 'isIntent' | 'blockchain'>;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
+  /** The intents account refunds go to, when not derived from `walletAddress`. */
+  intentsAccountId?: string;
   supportedChains: ReadonlyArray<Chains>;
   defaultRefundTo: string;
 };
@@ -22,6 +24,7 @@ export const getQuoteRefundTo = ({
   sourceToken,
   targetToken,
   intentsAccountType,
+  intentsAccountId,
   supportedChains,
   defaultRefundTo,
 }: Args): string => {
@@ -29,6 +32,7 @@ export const getQuoteRefundTo = ({
   // no address on the origin chain or on Aurora.
   if (intentsAccountType === 'webauthn') {
     return (
+      intentsAccountId ??
       getIntentsAccountId({ walletAddress, addressType: 'webauthn' }) ??
       defaultRefundTo
     );
@@ -44,11 +48,13 @@ export const getQuoteRefundTo = ({
     return 'aurora';
   }
 
-  const recipientIntentsAccountId = getIntentsAccountId({
-    addressType:
-      getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
-    walletAddress,
-  });
+  const recipientIntentsAccountId =
+    intentsAccountId ??
+    getIntentsAccountId({
+      addressType:
+        getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
+      walletAddress,
+    });
 
   const isRefundToIntentAccount =
     !!recipientIntentsAccountId &&

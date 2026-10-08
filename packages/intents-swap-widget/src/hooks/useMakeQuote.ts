@@ -32,6 +32,7 @@ import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
 import type { AppFee, Quote } from '../types';
 
 import { useSupportedChains } from './useSupportedChains';
+import { useIntentsAccountId } from './useIntentsAccountId';
 import { useIntentsAccountType } from './useIntentsAccountType';
 
 type QuoteRequestResult = {
@@ -66,6 +67,7 @@ export const useMakeQuote = () => {
   const { ctx } = useUnsafeSnapshot();
   const { minDepositTokenAmount } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
+  const intentsAccountId = useIntentsAccountId();
   const { supportedChains } = useSupportedChains();
   const {
     apiKey,
@@ -147,12 +149,15 @@ export const useMakeQuote = () => {
       ? getDryQuoteAddress(ctx.targetToken.blockchain)
       : (ctx.walletAddress ?? '');
 
-    const recipientIntentsAccountId = getIntentsAccountId({
-      addressType:
-        getIntentsAccountTypeFromAddress(recipientWalletAddress) ??
-        intentsAccountType,
-      walletAddress: recipientWalletAddress,
-    });
+    // A dry quote's placeholder address stands in for the account too.
+    const recipientIntentsAccountId = isDry
+      ? getIntentsAccountId({
+          addressType:
+            getIntentsAccountTypeFromAddress(recipientWalletAddress) ??
+            intentsAccountType,
+          walletAddress: recipientWalletAddress,
+        })
+      : intentsAccountId;
 
     // Withdrawals from Aurora reach Intents via the exitToNear precompile,
     // so the source funds always land on Intents — treat like an Intent source
@@ -345,6 +350,7 @@ export const useMakeQuote = () => {
         sourceToken: ctx.sourceToken,
         targetToken: ctx.targetToken,
         intentsAccountType,
+        intentsAccountId,
         supportedChains,
         defaultRefundTo: ctx.walletAddress ?? '',
       });
@@ -370,6 +376,7 @@ export const useMakeQuote = () => {
         sourceToken: ctx.sourceToken,
         targetToken: ctx.targetToken,
         intentsAccountType,
+        intentsAccountId,
         supportedChains,
       }) as QuoteRequest.refundType;
     };
@@ -425,6 +432,7 @@ export const useMakeQuote = () => {
       } else {
         const recipient = getQuoteRecipient({
           intentsAccountType,
+          intentsAccountId: isDry ? undefined : intentsAccountId,
           sendAddress: ctx.sendAddress,
           targetToken: ctx.targetToken,
           walletAddress: recipientWalletAddress,

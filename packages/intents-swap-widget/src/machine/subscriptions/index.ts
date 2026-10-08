@@ -10,6 +10,7 @@ import { isOnlyErrorChanged } from './checkers/isOnlyErrorChanged';
 import { isOnlyBalanceChanged } from './checkers/isOnlyBalanceChanged';
 import { isValidInitialState } from './checkers/isValidInitialState';
 import { isWalletDisconnected } from './checkers/isWalletDisconnected';
+import { isWalletSwitched } from './checkers/isWalletSwitched';
 import { isSendAddressForbidden } from './checkers/isSendAddressForbidden';
 import { isSendAddressAsConnected } from './checkers/isSendAddressAsConnected';
 import { isAmountChangedFromQuote } from './checkers/isAmountChangedFromQuote';
@@ -53,6 +54,17 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
         keepSelectedTokens: true,
       });
       moveTo('initial_dry');
+
+      return;
+    }
+
+    // another wallet took over: its balance and a quote made for the previous
+    // one (its refund address, its deposit) no longer apply
+    if (isWalletSwitched(ctx, changes)) {
+      fireEvent('reset', {
+        clearWalletAddress: false,
+        keepSelectedTokens: true,
+      });
 
       return;
     }

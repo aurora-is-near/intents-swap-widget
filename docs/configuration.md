@@ -136,6 +136,19 @@ like an EVM address but has no wallet on any chain. Pass the account ID as
 source, refunds to the intents account and requires a `sendAddress` for
 withdrawals.
 
+### `intentsAccountId`
+
+The intents account the widget acts for, when it isn't the one derived from
+the connected wallet. Use it to let one wallet fund another account: set
+`connectedWallets.default`, `providers` and `intentsAccountType` for the wallet
+that holds the tokens, and `intentsAccountId` to the account that should
+receive swaps into intents and intents refunds, and whose intents balance is
+shown.
+
+That wallet only signs on-chain transactions and takes origin-chain refunds; it
+cannot spend the account's intents balance (restrict the source to external
+tokens with `chainsFilter`, or the transfer is rejected).
+
 ### `sendAddress`
 
 Optional fixed destination wallet. If not specified the widget will use the

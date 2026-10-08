@@ -9,6 +9,8 @@ type Args = {
   sendAddress?: string | null;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
+  /** The intents account to credit, when not derived from `walletAddress`. */
+  intentsAccountId?: string;
   defaultRecipient: string | undefined;
   isDry?: boolean;
 };
@@ -18,6 +20,7 @@ export const getQuoteRecipient = ({
   sendAddress,
   targetToken,
   intentsAccountType,
+  intentsAccountId,
   defaultRecipient,
   isDry = false,
 }: Args): string | undefined => {
@@ -42,10 +45,12 @@ export const getQuoteRecipient = ({
   }
 
   return (
+    intentsAccountId ??
     getIntentsAccountId({
       addressType:
         getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
       walletAddress,
-    }) ?? defaultRecipient
+    }) ??
+    defaultRecipient
   );
 };

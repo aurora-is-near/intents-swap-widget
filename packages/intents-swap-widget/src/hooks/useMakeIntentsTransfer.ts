@@ -147,7 +147,11 @@ export const useMakeIntentsTransfer = ({
   const { ctx } = useUnsafeSnapshot();
   const { isDirectNearTokenWithdrawal } = useComputedSnapshot();
   const { intentsAccountType } = useIntentsAccountType();
-  const { apiKey, referral } = useConfig();
+  const {
+    apiKey,
+    referral,
+    intentsAccountId: configuredAccountId,
+  } = useConfig();
 
   const make = async ({
     onPending,
@@ -288,6 +292,15 @@ export const useMakeIntentsTransfer = ({
       throw new TransferError({
         code: 'TRANSFER_INVALID_INITIAL',
         meta: { message: 'Unable to derive the intents signer ID' },
+      });
+    }
+
+    // Only the account's own wallet can sign for it: a wallet configured to
+    // act for another account (`intentsAccountId`) can't spend its balance.
+    if (configuredAccountId && configuredAccountId !== signerId) {
+      throw new TransferError({
+        code: 'TRANSFER_INVALID_INITIAL',
+        meta: { message: 'The connected wallet can’t sign for this account.' },
       });
     }
 

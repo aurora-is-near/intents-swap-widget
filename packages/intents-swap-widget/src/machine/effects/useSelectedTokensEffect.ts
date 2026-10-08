@@ -212,8 +212,14 @@ export const useSelectedTokensEffect = ({
 
     const timer = setTimeout(() => {
       if (shouldLoadInternalDefaultSourceToken) {
-        // 1. Intents token if possible
-        if (!skipIntents && highestIntentsToken) {
+        // 1. Intents token if possible (and allowed as a source)
+        if (
+          !skipIntents &&
+          highestIntentsToken &&
+          (chainsFilter
+            ? chainsFilter.source.intents !== 'none'
+            : enableAccountAbstraction)
+        ) {
           fireEvent('tokenSelect', {
             variant: 'source',
             token: highestIntentsToken,

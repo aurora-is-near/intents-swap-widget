@@ -51,6 +51,11 @@ export type WidgetConfig = {
   // Explicit account type; required for passkey (`webauthn`) accounts, whose
   // intents account ID looks like an EVM address.
   intentsAccountType?: IntentsAccountType;
+  // The intents account the widget acts for when it isn't the one derived
+  // from the connected wallet: e.g. a secondary wallet funding a primary
+  // account. Balances, intents-side recipients and intents refunds use it;
+  // the connected wallet still signs on-chain and takes origin-chain refunds.
+  intentsAccountId?: string;
   allowSwapWithExternalWallet?: boolean;
   walletSupportedChains?: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;
