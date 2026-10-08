@@ -172,7 +172,25 @@ export const SettingsScreen = () => {
   }
 
   return (
-    <Screen title="Settings" onBack={back}>
+    <Screen
+      title="Settings"
+      onBack={back}
+      footer={
+        <>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => push({ name: 'createPasskey' })}>
+            Create passkey account
+          </Button>
+          <Button
+            variant="outlined"
+            size="lg"
+            onClick={() => push({ name: 'connectWallet' })}>
+            Connect another wallet
+          </Button>
+        </>
+      }>
       <section className="flex flex-col gap-sw-sm">
         <span className="px-sw-xs text-sw-label-sm text-sw-gray-100">
           Accounts — {accounts.length}
@@ -193,20 +211,6 @@ export const SettingsScreen = () => {
           ))}
         </ul>
       </section>
-      <div className="flex flex-col gap-sw-md">
-        <Button
-          variant="outlined"
-          size="md"
-          onClick={() => push({ name: 'createPasskey' })}>
-          Create passkey account
-        </Button>
-        <Button
-          variant="outlined"
-          size="md"
-          onClick={() => push({ name: 'connectWallet' })}>
-          Connect a wallet
-        </Button>
-      </div>
     </Screen>
   );
 };
