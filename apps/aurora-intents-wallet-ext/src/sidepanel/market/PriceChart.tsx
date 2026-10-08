@@ -121,6 +121,17 @@ export const PriceChart = ({ points, onHover }: Props) => {
           />
         ) : null}
       </svg>
+      {point && active !== null ? (
+        <span
+          className="pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap rounded-sw-sm bg-sw-gray-800 px-sw-sm py-sw-xxs text-sw-label-sm text-sw-gray-50 shadow-sm"
+          style={{
+            // Kept inside the chart near the edges.
+            left: `${Math.min(Math.max((point.x / WIDTH) * 100, 12), 88)}%`,
+            top: `${Math.max((point.y / HEIGHT) * 100 - 24, 0)}%`,
+          }}>
+          {edgeLabel(points[active]?.[1] ?? 0)}
+        </span>
+      ) : null}
       {point ? (
         <span
           className="pointer-events-none absolute h-[10px] w-[10px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-sw-gray-950 bg-sw-accent-400"
@@ -130,16 +141,21 @@ export const PriceChart = ({ points, onHover }: Props) => {
           }}
         />
       ) : null}
-      <span
-        className="pointer-events-none absolute top-[0px] text-sw-label-sm text-sw-gray-300"
-        style={label(shape.max.index)}>
-        {edgeLabel(shape.max.value)}
-      </span>
-      <span
-        className="pointer-events-none absolute bottom-[0px] text-sw-label-sm text-sw-gray-300"
-        style={label(shape.min.index)}>
-        {edgeLabel(shape.min.value)}
-      </span>
+      {/* The hovered price replaces the high and low while it's shown. */}
+      {point ? null : (
+        <>
+          <span
+            className="pointer-events-none absolute top-[0px] text-sw-label-sm text-sw-gray-300"
+            style={label(shape.max.index)}>
+            {edgeLabel(shape.max.value)}
+          </span>
+          <span
+            className="pointer-events-none absolute bottom-[0px] text-sw-label-sm text-sw-gray-300"
+            style={label(shape.min.index)}>
+            {edgeLabel(shape.min.value)}
+          </span>
+        </>
+      )}
     </div>
   );
 };

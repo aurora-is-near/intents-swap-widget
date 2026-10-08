@@ -140,57 +140,62 @@ export const AssetScreen = ({
   const heldIn = token.isIntent ? 'Your account' : walletName;
 
   return (
-    <Screen title={token.symbol} onBack={back} className="gap-sw-2xl">
-      <div className="flex shrink-0 flex-col gap-sw-lg">
-        <div className="flex items-center gap-sw-lg">
-          <TokenWithChain token={token} />
-          <div className="flex min-w-[0px] flex-col gap-sw-xs">
-            <span className="truncate text-sw-label-md text-sw-gray-50">
-              {coin.data?.name ?? token.name}
+    // Blocks 32px apart; the actions row twice that (gap + its own padding).
+    <Screen title={token.symbol} onBack={back} className="gap-sw-4xl">
+      <div className="flex shrink-0 flex-col gap-sw-2xl">
+        <div className="flex shrink-0 flex-col gap-sw-lg">
+          <div className="flex items-center gap-sw-lg">
+            <TokenWithChain token={token} />
+            <div className="flex min-w-[0px] flex-col gap-sw-xs">
+              <span className="truncate text-sw-label-md text-sw-gray-50">
+                {coin.data?.name ?? token.name}
+              </span>
+              <span className="text-sw-label-sm text-sw-gray-300">
+                on {chainLabel(token.blockchain)}
+                {token.isIntent ? ' · in your account' : ''}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-sw-sm">
+            <span className="text-sw-value-lg text-sw-gray-50">
+              {formatPrice(shownPrice)}
             </span>
-            <span className="text-sw-label-sm text-sw-gray-300">
-              on {chainLabel(token.blockchain)}
-              {token.isIntent ? ' · in your account' : ''}
+            <span className="flex gap-sw-md text-sw-label-sm text-sw-gray-300">
+              <Change value={shownChange} />
+              <span>
+                {hovered
+                  ? formatMoment(hovered[0], range)
+                  : RANGE_LABELS[range]}
+              </span>
             </span>
           </div>
         </div>
-        <div className="flex flex-col gap-sw-sm">
-          <span className="text-sw-value-lg text-sw-gray-50">
-            {formatPrice(shownPrice)}
-          </span>
-          <span className="flex gap-sw-md text-sw-label-sm text-sw-gray-300">
-            <Change value={shownChange} />
-            <span>
-              {hovered ? formatMoment(hovered[0], range) : RANGE_LABELS[range]}
-            </span>
-          </span>
+
+        <div className="flex shrink-0 flex-col gap-sw-lg">
+          {isChartLoading ? (
+            <div className="h-[160px] animate-pulse rounded-sw-lg bg-sw-gray-900" />
+          ) : null}
+          {!isChartLoading && unavailable ? (
+            <div className="flex h-[160px] items-center justify-center rounded-sw-lg bg-sw-gray-900 px-sw-xl text-center text-sw-body-sm text-sw-gray-300">
+              {unavailable}
+            </div>
+          ) : null}
+          {!isChartLoading && !unavailable && points.length > 1 ? (
+            <PriceChart points={points} onHover={setHovered} />
+          ) : null}
+          <Tabs
+            label="Chart range"
+            tabs={RANGES}
+            value={range}
+            onChange={(next) => {
+              setHovered(null);
+              setRange(next);
+            }}
+          />
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-sw-lg">
-        {isChartLoading ? (
-          <div className="h-[160px] animate-pulse rounded-sw-lg bg-sw-gray-900" />
-        ) : null}
-        {!isChartLoading && unavailable ? (
-          <div className="flex h-[160px] items-center justify-center rounded-sw-lg bg-sw-gray-900 px-sw-xl text-center text-sw-body-sm text-sw-gray-300">
-            {unavailable}
-          </div>
-        ) : null}
-        {!isChartLoading && !unavailable && points.length > 1 ? (
-          <PriceChart points={points} onHover={setHovered} />
-        ) : null}
-        <Tabs
-          label="Chart range"
-          tabs={RANGES}
-          value={range}
-          onChange={(next) => {
-            setHovered(null);
-            setRange(next);
-          }}
-        />
-      </div>
-
-      <nav aria-label="Actions" className="flex shrink-0 gap-sw-md">
+      <nav aria-label="Actions" className="flex shrink-0 gap-sw-md py-sw-4xl">
         <ActionButton
           icon="deposit"
           label="Receive"
