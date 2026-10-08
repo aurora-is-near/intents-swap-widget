@@ -47,6 +47,12 @@ export const ConnectWalletScreen = () => {
           description="MetaMask, Phantom, Rabby and other installed extensions"
           onClick={() => push({ name: 'browserWallets' })}
         />
+        <Option
+          icon="qr"
+          title="Mobile wallet"
+          description="Scan a QR code with your phone wallet using WalletConnect"
+          onClick={() => push({ name: 'walletConnect' })}
+        />
       </div>
       <div className="flex items-start gap-sw-md rounded-sw-md bg-sw-gray-900 p-sw-lg">
         <span className="text-sw-gray-300">

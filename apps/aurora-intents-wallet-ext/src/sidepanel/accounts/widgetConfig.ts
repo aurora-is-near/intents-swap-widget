@@ -10,6 +10,7 @@ import { ensureConnectorTab } from '../wallet/connectorWindow';
 import { createNearPageProvider } from '../wallet/createNearPageProvider';
 import { createPageProvider } from '../wallet/createPageProvider';
 import { createSolanaPageProvider } from '../wallet/createSolanaPageProvider';
+import { createWalletConnectProvider } from '../wallet/walletConnect';
 import type { Account, WalletAccount } from './types';
 
 const ACCOUNT_TYPES: Record<WalletAccount['family'], IntentsAccountType> = {
@@ -18,8 +19,15 @@ const ACCOUNT_TYPES: Record<WalletAccount['family'], IntentsAccountType> = {
   near: 'near',
 };
 
-/** Wallet requests are served by the connector page, opened on demand. */
+/**
+ * Browser wallet requests are served by the connector page, opened on demand;
+ * a mobile wallet's go over its WalletConnect session.
+ */
 const walletProviders = (account: WalletAccount): Providers => {
+  if (account.source === 'walletconnect') {
+    return { evm: createWalletConnectProvider() };
+  }
+
   switch (account.family) {
     case 'evm':
       return { evm: createPageProvider(ensureConnectorTab, account.bridgeId) };

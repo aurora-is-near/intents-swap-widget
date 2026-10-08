@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Badge, Banner, Hr } from '@aurora-is-near/intents-swap-widget';
+import { Badge, Banner, Button, Hr } from '@aurora-is-near/intents-swap-widget';
 
 import { useAccounts } from '../../accounts/useAccounts';
 import { Icon, Spinner } from '../../components/Icon';
@@ -135,7 +135,7 @@ const WalletList = ({ tabId }: { tabId: number }) => {
 };
 
 export const BrowserWalletsScreen = () => {
-  const { back } = useNavigation();
+  const { back, push } = useNavigation();
   const [attempt, setAttempt] = useState(0);
   const tab = useConnectorTab(attempt);
 
@@ -146,7 +146,20 @@ export const BrowserWalletsScreen = () => {
   };
 
   return (
-    <Screen title="Browser wallet" onBack={leave}>
+    <Screen
+      title="Browser wallet"
+      onBack={leave}
+      footer={
+        <Button
+          variant="outlined"
+          size="lg"
+          onClick={() => {
+            void closeConnector();
+            push({ name: 'walletConnect' });
+          }}>
+          Use a mobile wallet instead
+        </Button>
+      }>
       <div className="flex flex-col gap-sw-sm">
         <div className="flex justify-end">
           <button

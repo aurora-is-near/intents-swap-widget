@@ -9,6 +9,7 @@ import { NavigationProvider, useNavigation } from './navigation';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
 import { ConnectWalletScreen } from './screens/connect/ConnectWalletScreen';
+import { WalletConnectScreen } from './screens/connect/WalletConnectScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { CreatePasskeyScreen } from './screens/onboarding/CreatePasskeyScreen';
 import { PasskeyCreatedScreen } from './screens/onboarding/PasskeyCreatedScreen';
@@ -31,6 +32,8 @@ const Router = ({ account }: { account: Account | null }) => {
       return <BrowserWalletsScreen />;
     case 'connectBrowserWallet':
       return <ConnectBrowserWalletScreen wallet={screen.wallet} />;
+    case 'walletConnect':
+      return <WalletConnectScreen />;
     case 'settings':
       return <SettingsScreen />;
     case 'home':

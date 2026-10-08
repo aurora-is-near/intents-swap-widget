@@ -10,6 +10,7 @@ import { WalletIcon } from '../../components/WalletIcon';
 import { useNavigation } from '../../navigation';
 import { shortAddress } from '../../utils';
 import { FAMILY_NETWORKS } from '../../wallet/families';
+import { disconnectWalletConnect } from '../../wallet/walletConnect';
 
 const describe = (account: Account) =>
   account.kind === 'passkey'
@@ -72,6 +73,11 @@ export const SettingsScreen = () => {
   const confirmRemove = async () => {
     if (!removing) {
       return;
+    }
+
+    if (removing.kind === 'wallet' && removing.source === 'walletconnect') {
+      // Ends the session on the phone too; removal goes ahead regardless.
+      await disconnectWalletConnect().catch(() => undefined);
     }
 
     await remove(removing.id);

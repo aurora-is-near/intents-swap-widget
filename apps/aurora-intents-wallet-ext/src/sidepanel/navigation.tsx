@@ -10,6 +10,7 @@ type Screen =
   | { name: 'connectWallet' }
   | { name: 'browserWallets' }
   | { name: 'connectBrowserWallet'; wallet: DetectedWallet }
+  | { name: 'walletConnect' }
   | { name: 'home' }
   | { name: 'settings' };
 

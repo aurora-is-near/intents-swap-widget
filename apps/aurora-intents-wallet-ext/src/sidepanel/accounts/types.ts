@@ -10,9 +10,14 @@ type PasskeyAccount = Passkey & {
   createdAt: number;
 };
 
-/** A browser wallet connected to the extension through the connector page. */
+/**
+ * A wallet connected to the extension: a browser wallet through the connector
+ * page, or a mobile wallet over WalletConnect.
+ */
 export type WalletAccount = {
   kind: 'wallet';
+  /** Absent for browser wallets (accounts stored before it existed). */
+  source?: 'walletconnect';
   id: string;
   name: string;
   family: WalletFamily;
