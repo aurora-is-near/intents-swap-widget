@@ -1,26 +1,45 @@
 import { crx } from '@crxjs/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-import { manifest } from './manifest.config';
+import { createManifest } from './manifest.config';
 
-export default defineConfig({
-  // Not 5180: the reference extension (apps/intents-chrome-ext) uses it.
-  server: {
-    port: 5181,
-    strictPort: true,
-    cors: { origin: /chrome-extension:\/\// },
-  },
-  plugins: [
-    react(),
-    tailwindcss(),
-    // The widget package touches Buffer/process (near-api-js et al.).
-    nodePolyfills({
-      include: ['crypto', 'buffer', 'process', 'util'],
-      globals: { Buffer: true, global: true, process: true },
-    }),
-    crx({ manifest }),
-  ],
+// Local default; point VITE_CONNECTOR_URL at the deployed connector/ page.
+// Not 5190: the reference extension's connector uses it.
+const DEFAULT_CONNECTOR_URL = 'http://localhost:5191/';
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const connectorUrl = env.VITE_CONNECTOR_URL ?? DEFAULT_CONNECTOR_URL;
+
+  return {
+    // Not 5180: the reference extension (apps/intents-chrome-ext) uses it.
+    server: {
+      port: 5181,
+      strictPort: true,
+      cors: { origin: /chrome-extension:\/\// },
+    },
+    define: { __CONNECTOR_URL__: JSON.stringify(connectorUrl) },
+    plugins: [
+      react(),
+      tailwindcss(),
+      // The widget package touches Buffer/process (near-api-js et al.).
+      nodePolyfills({
+        include: ['crypto', 'buffer', 'process', 'util'],
+        globals: { Buffer: true, global: true, process: true },
+      }),
+      crx({
+        manifest: createManifest(connectorUrl),
+        contentScripts: {
+          // Both run as classic scripts, so every import must be inlined.
+          standaloneFiles: [
+            'src/content/pageBridge.ts',
+            'src/content/relay.ts',
+          ],
+        },
+      }),
+    ],
+  };
 });

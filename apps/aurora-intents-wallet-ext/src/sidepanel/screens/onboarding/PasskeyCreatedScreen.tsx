@@ -9,7 +9,9 @@ import { shortAddress } from '../../utils';
 export const PasskeyCreatedScreen = ({ accountId }: { accountId: string }) => {
   const { accounts } = useAccounts();
   const { reset } = useNavigation();
-  const account = accounts.find((item) => item.id === accountId);
+  const account = accounts.find(
+    (item) => item.id === accountId && item.kind === 'passkey',
+  );
 
   return (
     <Screen
@@ -25,7 +27,7 @@ export const PasskeyCreatedScreen = ({ accountId }: { accountId: string }) => {
         tone="success"
         title="Your account is ready"
         description={`${account?.name ?? 'Your account'} is protected by your passkey. Deposit from any chain to get started.`}>
-        {account && (
+        {account?.kind === 'passkey' && (
           <div className="flex w-full flex-col gap-sw-md rounded-sw-lg bg-sw-gray-900 p-sw-lg">
             <div className="flex items-center justify-between gap-sw-md">
               <div className="flex flex-col gap-sw-xs text-left">

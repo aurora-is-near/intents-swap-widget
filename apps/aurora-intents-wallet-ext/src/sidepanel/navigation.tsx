@@ -1,11 +1,17 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
+import type { DetectedWallet } from './wallet/types';
+
 type Screen =
   | { name: 'welcome' }
   | { name: 'createPasskey' }
   | { name: 'passkeyCreated'; accountId: string }
-  | { name: 'home' };
+  | { name: 'connectWallet' }
+  | { name: 'browserWallets' }
+  | { name: 'connectBrowserWallet'; wallet: DetectedWallet }
+  | { name: 'home' }
+  | { name: 'settings' };
 
 type Navigation = {
   screen: Screen;

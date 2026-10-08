@@ -24,6 +24,19 @@ const PATHS = {
     </>
   ),
   check: <path d="M5 12l5 5 9-10" />,
+  browser: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01" />
+    </>
+  ),
+  qr: (
+    <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2" />
+  ),
+  refresh: <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" />,
+  link: (
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  ),
   close: <path d="M6 6l12 12M18 6L6 18" />,
   swap: <path d="M7 4v16M4 7l3-3 3 3M17 20V4M14 17l3 3 3-3" />,
   deposit: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,

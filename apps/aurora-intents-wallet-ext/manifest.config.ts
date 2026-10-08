@@ -18,16 +18,40 @@ const ICONS = {
 const KEY =
   'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnHWoDCMMVvodQ8T0e72kw8g3MHovn4Ia0w+12pgrp1dB704xFAGFhSAxO3xmWhvCtitSoR29ziSQ6JQcDcTiaY79hrj/doEbfVFCef++BTapqe+XRd/NCaEOWb9UK1/FVildOoy2uaqvuoedE2aqd7F7XQkZVwRhyNj/dsqtkDKxRIJDk0YQhA0+a9Di4rOCMB3mg310LVdYFX/8lfkZaDdyrxQ1yGfLPSF/VOxvaLnjceYEIIxLVoFFdBlsGUBlC6DSCDmA8yHe2P9X8/jcquoRAke81oP5fID5uYMDcNEcBBA/h+QaNFzfeETMk8U0b6IUnRCK1oWOaHQH5iQZOwIDAQAB';
 
-export const manifest = defineManifest({
-  manifest_version: 3,
-  name: 'Aurora Intents',
-  description: 'Swap, deposit and send across 35+ chains with NEAR Intents.',
-  version: pkg.version,
-  key: KEY,
-  icons: ICONS,
-  action: { default_icon: ICONS, default_title: 'Aurora Intents' },
-  side_panel: { default_path: 'sidepanel.html' },
-  background: { service_worker: 'src/background/index.ts', type: 'module' },
-  // `storage` keeps the accounts (passkeys and connected wallets).
-  permissions: ['sidePanel', 'storage'],
-});
+/**
+ * @param connectorUrl The extension's own wallet page (see connector/).
+ *   Browser wallets only inject into web pages, so they are connected to that
+ *   page's origin and every request for them is served there.
+ */
+export const createManifest = (connectorUrl: string) => {
+  const bridgedPages = [`${new URL(connectorUrl).origin}/*`];
+
+  return defineManifest({
+    manifest_version: 3,
+    name: 'Aurora Intents',
+    description: 'Swap, deposit and send across 35+ chains with NEAR Intents.',
+    version: pkg.version,
+    key: KEY,
+    icons: ICONS,
+    action: { default_icon: ICONS, default_title: 'Aurora Intents' },
+    side_panel: { default_path: 'sidepanel.html' },
+    background: { service_worker: 'src/background/index.ts', type: 'module' },
+    // `storage` keeps the accounts (passkeys and connected wallets); `tabs`
+    // finds the connector page's tab.
+    permissions: ['sidePanel', 'storage', 'tabs'],
+    content_scripts: [
+      {
+        // MAIN world: the only place a page's injected wallets are visible.
+        matches: bridgedPages,
+        js: ['src/content/pageBridge.ts'],
+        world: 'MAIN',
+        run_at: 'document_start',
+      },
+      {
+        matches: bridgedPages,
+        js: ['src/content/relay.ts'],
+        run_at: 'document_start',
+      },
+    ],
+  });
+};

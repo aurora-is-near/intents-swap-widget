@@ -49,14 +49,29 @@ const useAccountsStore = () => {
     return () => chrome.storage.onChanged.removeListener(onChanged);
   }, []);
 
-  /** Adds the account and makes it the active one. */
+  /**
+   * Adds the account and makes it the active one. A wallet account that is
+   * already added (same family and address) is made active instead.
+   */
   const add = useCallback(async (account: Account) => {
     const current = await read();
+    const existing =
+      account.kind === 'wallet'
+        ? current.accounts.find(
+            (item) =>
+              item.kind === 'wallet' &&
+              item.family === account.family &&
+              item.address === account.address,
+          )
+        : undefined;
 
-    await write({
-      accounts: [...current.accounts, account],
-      activeId: account.id,
-    });
+    await write(
+      existing
+        ? { ...current, activeId: existing.id }
+        : { accounts: [...current.accounts, account], activeId: account.id },
+    );
+
+    return existing ?? account;
   }, []);
 
   const setActive = useCallback(async (id: string) => {
@@ -67,12 +82,24 @@ const useAccountsStore = () => {
     }
   }, []);
 
+  /** Removes the account; the next one becomes active if it was active. */
+  const remove = useCallback(async (id: string) => {
+    const current = await read();
+    const accounts = current.accounts.filter((account) => account.id !== id);
+
+    await write({
+      accounts,
+      activeId:
+        current.activeId === id ? (accounts[0]?.id ?? null) : current.activeId,
+    });
+  }, []);
+
   const active =
     state.accounts.find((account) => account.id === state.activeId) ??
     state.accounts[0] ??
     null;
 
-  return { ...state, active, isLoaded, add, setActive };
+  return { ...state, active, isLoaded, add, setActive, remove };
 };
 
 type Accounts = ReturnType<typeof useAccountsStore>;

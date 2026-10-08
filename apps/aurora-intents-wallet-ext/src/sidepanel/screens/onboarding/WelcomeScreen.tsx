@@ -33,9 +33,9 @@ const Hero = () => (
     role="img"
     aria-label="Tokens from many chains in one account"
     className="relative h-[208px] w-[280px] shrink-0">
-    <ChainTile chain="eth" className="left-0 top-0" />
-    <ChainTile chain="sol" className="left-0 top-[72px]" />
-    <div className="absolute left-[72px] top-0 flex h-[136px] w-[136px] items-center justify-center rounded-sw-lg bg-[#70d44b] text-white">
+    <ChainTile chain="eth" className="left-[0px] top-[0px]" />
+    <ChainTile chain="sol" className="left-[0px] top-[72px]" />
+    <div className="absolute left-[72px] top-[0px] flex h-[136px] w-[136px] items-center justify-center rounded-sw-lg bg-[#70d44b] text-white">
       <svg width="88" height="88" viewBox="0 0 288 288" aria-hidden="true">
         <g transform="translate(28.8 36) scale(0.8)">
           <path
@@ -48,9 +48,9 @@ const Hero = () => (
         </g>
       </svg>
     </div>
-    <ChainTile chain="near" className="left-[216px] top-0" />
+    <ChainTile chain="near" className="left-[216px] top-[0px]" />
     <ChainTile chain="btc" className="left-[216px] top-[72px]" />
-    <div className="absolute left-0 top-[144px] flex h-[64px] w-[136px] items-center gap-sw-lg rounded-sw-lg bg-sw-gray-900 px-sw-xl">
+    <div className="absolute left-[0px] top-[144px] flex h-[64px] w-[136px] items-center gap-sw-lg rounded-sw-lg bg-sw-gray-900 px-sw-xl">
       <span className="block h-[32px] w-[32px] overflow-hidden rounded-full [&>svg]:h-full [&>svg]:w-full">
         {CHAIN_ICONS.base}
       </span>
@@ -88,6 +88,12 @@ export const WelcomeScreen = () => {
             size="lg"
             onClick={() => push({ name: 'createPasskey' })}>
             Create new account
+          </Button>
+          <Button
+            variant="outlined"
+            size="lg"
+            onClick={() => push({ name: 'connectWallet' })}>
+            Connect existing wallet
           </Button>
           <p className="m-0 mt-sw-xs text-center text-sw-body-sm text-sw-gray-400">
             By continuing you agree to the Terms of Service.

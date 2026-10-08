@@ -1,35 +1,19 @@
 import { useMemo } from 'react';
 
 import { WidgetConfigProvider } from '@aurora-is-near/intents-swap-widget';
-import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 
 import type { Account } from './accounts/types';
 import { AccountsProvider, useAccounts } from './accounts/useAccounts';
-import { API_KEY } from './config';
+import { buildWidgetConfig } from './accounts/widgetConfig';
 import { NavigationProvider, useNavigation } from './navigation';
-import { createWebAuthnProvider } from './passkey/webauthn';
+import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
+import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
+import { ConnectWalletScreen } from './screens/connect/ConnectWalletScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { CreatePasskeyScreen } from './screens/onboarding/CreatePasskeyScreen';
 import { PasskeyCreatedScreen } from './screens/onboarding/PasskeyCreatedScreen';
 import { WelcomeScreen } from './screens/onboarding/WelcomeScreen';
-
-/**
- * A passkey account only holds intents balances: no wallet chains, so no
- * on-chain balance loading, and refunds and swaps stay on NEAR Intents.
- */
-const buildWidgetConfig = (account: Account | null): Partial<WidgetConfig> => {
-  if (!account) {
-    return { apiKey: API_KEY, connectedWallets: {} };
-  }
-
-  return {
-    apiKey: API_KEY,
-    enableAccountAbstraction: true,
-    intentsAccountType: 'webauthn',
-    connectedWallets: { default: account.intentsAccountId },
-    providers: { webauthn: createWebAuthnProvider(account) },
-  };
-};
+import { SettingsScreen } from './screens/settings/SettingsScreen';
 
 const Router = ({ account }: { account: Account | null }) => {
   const { screen } = useNavigation();
@@ -41,6 +25,14 @@ const Router = ({ account }: { account: Account | null }) => {
       return <CreatePasskeyScreen />;
     case 'passkeyCreated':
       return <PasskeyCreatedScreen accountId={screen.accountId} />;
+    case 'connectWallet':
+      return <ConnectWalletScreen />;
+    case 'browserWallets':
+      return <BrowserWalletsScreen />;
+    case 'connectBrowserWallet':
+      return <ConnectBrowserWalletScreen wallet={screen.wallet} />;
+    case 'settings':
+      return <SettingsScreen />;
     case 'home':
       return account ? <HomeScreen account={account} /> : <WelcomeScreen />;
     default:

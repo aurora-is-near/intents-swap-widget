@@ -26,6 +26,26 @@ sign for it, so it must never be shown or used as one.
   loses the passkey's public key; recovering it from the passkey is a planned
   follow-up.
 
+## Wallet accounts
+
+Browser wallets only inject into web pages, so the extension connects them on
+its own static page, `connector/`, which it opens in a small unfocused window
+when a wallet is needed. The content scripts (`src/content/`, copied from
+`apps/intents-chrome-ext` with their own channel) bridge that page's wallets
+(EIP-6963, Solana Wallet Standard, NEAR Connect) to the panel. Prompts name the
+connector's origin.
+
+The page must be served at `VITE_CONNECTOR_URL` (default
+`http://localhost:5191/`, baked into the manifest's content-script matches at
+build time):
+
+```bash
+yarn workspace aurora-intents-wallet-ext connector
+```
+
+For a release, deploy `connector/` as a static site and build with
+`VITE_CONNECTOR_URL=https://…/`.
+
 ## Develop
 
 Packages must be built first (the app consumes their `dist`):

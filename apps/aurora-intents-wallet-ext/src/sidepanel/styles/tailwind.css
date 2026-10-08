@@ -17,6 +17,12 @@
 @source "../../../../../node_modules/@aurora-is-near/intents-swap-widget/dist/**/*.js";
 
 @theme inline {
+    /*
+     * Resetting the spacing scale also removes the numeric utilities
+     * (`min-w-0`, `top-0`, `w-4`…): they compile to an invalid value and fall
+     * back to the property's initial value (`auto` for min-width and top).
+     * Use the sw tokens or arbitrary values (`min-w-[0px]`) instead.
+     */
     --spacing-*: initial;
     --radius-*: initial;
     --color-*: initial;

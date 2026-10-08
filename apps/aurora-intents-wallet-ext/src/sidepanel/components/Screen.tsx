@@ -45,7 +45,7 @@ export const Screen = ({
     )}
     <main
       className={cn(
-        'flex min-h-0 grow flex-col gap-sw-xl overflow-y-auto px-sw-xl pb-sw-xl pt-sw-md',
+        'flex min-h-[0px] grow flex-col gap-sw-xl overflow-y-auto px-sw-xl pb-sw-xl pt-sw-md',
         className,
       )}>
       {children}
