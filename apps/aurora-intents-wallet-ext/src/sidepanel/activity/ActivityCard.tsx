@@ -116,6 +116,46 @@ const ActivityCard = ({
 };
 
 /** Cards under day headings ("Today", "Yesterday", "28 Sep"). */
+const Bar = ({ className }: { className: string }) => (
+  <span
+    className={cn('block animate-pulse rounded-full bg-sw-gray-800', className)}
+  />
+);
+
+/** Placeholder cards while the activity loads, shaped like the real ones. */
+export const ActivitySkeleton = ({ count = 3 }: { count?: number }) => (
+  <div
+    className="flex flex-col gap-sw-sm"
+    aria-busy="true"
+    aria-label="Loading activity">
+    {Array.from({ length: count }, (_, index) => (
+      <div
+        key={index}
+        className="flex flex-col gap-sw-lg rounded-sw-lg bg-sw-gray-900 px-sw-xl pb-sw-xl pt-sw-lg">
+        <span className="flex items-center justify-between">
+          <Bar className="h-[14px] w-[56px]" />
+          <Bar className="h-[12px] w-[64px]" />
+        </span>
+        <span className="flex items-center justify-between">
+          <span className="flex items-center gap-sw-md">
+            <Bar className="h-[28px] w-[28px]" />
+            <span className="flex flex-col gap-sw-xs">
+              <Bar className="h-[14px] w-[44px]" />
+              <Bar className="h-[12px] w-[32px]" />
+            </span>
+            <Bar className="ml-sw-md h-[28px] w-[28px]" />
+            <span className="flex flex-col gap-sw-xs">
+              <Bar className="h-[14px] w-[44px]" />
+              <Bar className="h-[12px] w-[32px]" />
+            </span>
+          </span>
+          <Bar className="h-[14px] w-[64px]" />
+        </span>
+      </div>
+    ))}
+  </div>
+);
+
 /**
  * Cards under day headings ("Today", "Yesterday", "28 Sep"), or with
  * `grouped={false}` a plain list whose cards carry their own day.

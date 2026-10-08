@@ -10,7 +10,7 @@ import type { Token } from '@aurora-is-near/intents-swap-widget';
 import { cn, formatUsdAmount } from '@aurora-is-near/intents-swap-widget/utils';
 
 import { involvesToken } from '../../activity/activity';
-import { ActivityList } from '../../activity/ActivityCard';
+import { ActivityList, ActivitySkeleton } from '../../activity/ActivityCard';
 import { useActivity } from '../../activity/useActivity';
 import type { Account } from '../../accounts/types';
 import { ActionButton } from '../../components/ActionButton';
@@ -305,9 +305,21 @@ export const AssetScreen = ({
           </Section>
         ) : null}
 
-        {activity.isLoading ? null : (
-          <Section title="Your activity">
-            {tokenActivity.length ? (
+        <Section title="Your activity">
+          {(() => {
+            if (activity.isLoading) {
+              return <ActivitySkeleton count={2} />;
+            }
+
+            if (!tokenActivity.length) {
+              return (
+                <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
+                  No {token.symbol} activity yet.
+                </p>
+              );
+            }
+
+            return (
               <>
                 <ActivityList
                   grouped={false}
@@ -329,13 +341,9 @@ export const AssetScreen = ({
                   </Button>
                 ) : null}
               </>
-            ) : (
-              <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
-                No {token.symbol} activity yet.
-              </p>
-            )}
-          </Section>
-        )}
+            );
+          })()}
+        </Section>
       </div>
     </Screen>
   );

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
-  AURORA_BASE64_LOGO,
   Button,
   CHAIN_ICONS,
   TokensList,
@@ -244,13 +243,6 @@ export const HomeScreen = ({ account }: { account: Account }) => {
   return (
     <div className="sw flex h-screen flex-col bg-sw-gray-950 text-sw-gray-50">
       <header className="flex h-[56px] shrink-0 items-center gap-sw-md pl-sw-xl pr-sw-md">
-        <img
-          src={AURORA_BASE64_LOGO}
-          alt="Aurora Intents"
-          width={28}
-          height={28}
-          className="block h-[28px] w-[28px] shrink-0 rounded-sw-md"
-        />
         <AccountPill account={account} onClick={openSettings} />
         <div className="grow" />
         <button

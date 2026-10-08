@@ -4,7 +4,7 @@ import { BlockingError, Button } from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
 import type { ActivityKind } from '../../activity/activity';
-import { ActivityList } from '../../activity/ActivityCard';
+import { ActivityList, ActivitySkeleton } from '../../activity/ActivityCard';
 import { useActivity } from '../../activity/useActivity';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
@@ -19,17 +19,6 @@ const FILTERS: Array<[Filter, string]> = [
   ['deposit', 'Deposits'],
   ['send', 'Sends'],
 ];
-
-const Skeleton = () => (
-  <div className="flex flex-col gap-sw-sm" aria-busy="true">
-    {[0, 1, 2].map((index) => (
-      <div
-        key={index}
-        className="h-[92px] animate-pulse rounded-sw-lg bg-sw-gray-900"
-      />
-    ))}
-  </div>
-);
 
 const Empty = ({
   filter,
@@ -75,7 +64,7 @@ export const ActivityScreen = () => {
 
   const content = (() => {
     if (activity.isLoading) {
-      return <Skeleton />;
+      return <ActivitySkeleton />;
     }
 
     if (activity.isError && !activity.items.length) {
@@ -103,24 +92,28 @@ export const ActivityScreen = () => {
             push({ name: 'activityDetail', transaction: item.transaction })
           }
         />
-        {activity.hasNextPage ? (
+      </>
+    );
+  })();
+
+  return (
+    <Screen
+      title="Activity"
+      onBack={back}
+      footer={
+        // Pinned to the bottom like the other screens' main actions.
+        activity.hasNextPage && items.length ? (
           <Button
             variant="outlined"
-            size="md"
-            fluid
+            size="lg"
             state={activity.isFetchingNextPage ? 'loading' : 'default'}
             onClick={() => {
               activity.fetchNextPage().catch(() => undefined);
             }}>
             Load more
           </Button>
-        ) : null}
-      </>
-    );
-  })();
-
-  return (
-    <Screen title="Activity" onBack={back}>
+        ) : null
+      }>
       <div className="flex flex-col gap-sw-lg">
         <div role="tablist" aria-label="Filter" className="flex gap-sw-sm">
           {FILTERS.map(([key, label]) => (
