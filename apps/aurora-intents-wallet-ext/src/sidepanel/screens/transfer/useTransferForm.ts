@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import {
   fireEvent,
+  isValidChainAddress,
   useStoreSideEffects,
   useTokenInputPair,
   useUnsafeSnapshot,
@@ -29,9 +30,30 @@ export const useTransferForm = ({ fromWallet }: { fromWallet: boolean }) => {
   const largest = spendable[0]?.token;
   const isSourceAllowed = !!ctx.sourceToken?.isIntent || fromWallet;
 
+  // The machine's reset keeps a send address equal to the wallet's own (for
+  // the widget's "receive in my wallet"); a new form starts without one. The
+  // machine fills it in again when the target is on the wallet's chain.
   useEffect(() => {
     fireEvent('reset', { clearWalletAddress: false });
+    fireEvent('addressSet', null);
   }, []);
+
+  // That auto-filled own address stays when the target moves to a chain it
+  // isn't valid on (EVM to NEAR, say): drop it there.
+  const targetChain = ctx.targetToken?.isIntent
+    ? undefined
+    : ctx.targetToken?.blockchain;
+
+  useEffect(() => {
+    if (
+      targetChain &&
+      ctx.sendAddress &&
+      ctx.sendAddress === ctx.walletAddress &&
+      isValidChainAddress(targetChain, ctx.sendAddress) === false
+    ) {
+      fireEvent('addressSet', null);
+    }
+  }, [targetChain, ctx.sendAddress, ctx.walletAddress]);
 
   useEffect(() => {
     if (largest && (!ctx.sourceToken || !isSourceAllowed)) {
