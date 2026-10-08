@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Banner,
@@ -42,12 +42,11 @@ import { SlippageScreen } from './SlippageScreen';
 
 /**
  * Like the widget: swap from the account's intents balance or, for a wallet
- * account, from the wallet; into either of them. "Send to another address"
- * targets any chain with a recipient instead.
+ * account, from the wallet. Buy anything on any chain: into the account, the
+ * wallet when it's on that chain, or else an address ("Send to another
+ * address", forced on for those).
  */
 const filters = (hasWallet: boolean, sendsOut: boolean) => {
-  const wallet = hasWallet ? ('wallet-supported' as const) : ('none' as const);
-
   return {
     // Only what can be sold: held in the account or in the wallet.
     source: {
@@ -56,7 +55,7 @@ const filters = (hasWallet: boolean, sendsOut: boolean) => {
     } as ChainsFilter,
     target: (sendsOut
       ? { intents: 'none', external: 'all' }
-      : { intents: 'all', external: wallet }) as ChainsFilter,
+      : { intents: 'all', external: 'all' }) as ChainsFilter,
   };
 };
 
@@ -116,6 +115,24 @@ export const SwapScreen = ({ account }: { account: Account }) => {
       ? walletName
       : shortAddress(summary.recipient);
   })();
+
+  // A token on a chain the account has no address on can only go to one
+  // typed in: the toggle turns on and stays on until such a token is picked.
+  const isSendOutRequired =
+    !!ctx.targetToken &&
+    !ctx.targetToken.isIntent &&
+    !ownAddress(account, ctx.targetToken.blockchain);
+
+  const targetNetwork = ctx.targetToken?.chainName ?? '';
+  const requiredHint = hasWallet
+    ? `${walletName} isn’t on ${targetNetwork}. Enter a ${targetNetwork} address.`
+    : `Enter a ${targetNetwork} address to receive it.`;
+
+  useEffect(() => {
+    if (isSendOutRequired) {
+      setSendsOut(true);
+    }
+  }, [isSendOutRequired]);
 
   const toggleSendsOut = (isOn: boolean) => {
     setSendsOut(isOn);
@@ -387,10 +404,16 @@ export const SwapScreen = ({ account }: { account: Account }) => {
             Send to another address
           </span>
           <span className="text-sw-label-sm text-sw-gray-300">
-            Swap and withdraw to a wallet outside this account
+            {isSendOutRequired
+              ? requiredHint
+              : 'Swap and withdraw to a wallet outside this account'}
           </span>
         </div>
-        <Toggle isOn={sendsOut} onToggle={toggleSendsOut} />
+        <Toggle
+          isOn={sendsOut}
+          isDisabled={isSendOutRequired}
+          onToggle={toggleSendsOut}
+        />
       </div>
 
       {sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
