@@ -120,6 +120,22 @@ export const recipientOptions = (
     ];
   });
 
+/**
+ * Where an on-chain token can arrive without typing an address: the
+ * account's wallets on `chain`, the spending wallet first.
+ */
+export const receiveOptions = (
+  account: Account,
+  secondaries: SecondaryWallet[],
+  chain: Chains,
+  spending?: string,
+) =>
+  recipientOptions(account, secondaries, chain).sort(
+    (a, b) =>
+      Number(sameAddress(b.address, spending)) -
+      Number(sameAddress(a.address, spending)),
+  );
+
 /** The name of the account's wallet at `address`, if it is one. */
 export const walletNameAt = (
   account: Account,

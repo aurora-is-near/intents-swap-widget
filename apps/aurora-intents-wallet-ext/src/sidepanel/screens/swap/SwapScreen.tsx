@@ -42,32 +42,26 @@ import { EmptyAccount } from '../transfer/EmptyAccount';
 import { TransferTabs } from '../transfer/TransferTabs';
 import { useTransferForm } from '../transfer/useTransferForm';
 import { useTransferOutcome } from '../transfer/useTransferOutcome';
-import { recipientOptions, walletNameAt } from '../transfer/walletOptions';
+import {
+  receiveOptions,
+  recipientOptions,
+  walletNameAt,
+} from '../transfer/walletOptions';
+import { WalletPicker } from '../transfer/WalletPicker';
+import { WalletSelector } from '../transfer/WalletSelector';
 import { SlippageScreen } from './SlippageScreen';
 
 /**
  * Like the widget: swap from the primary wallet (with the account's intents
  * balance) or a secondary wallet ("From"). Buy anything on any chain: into
- * the account — from a secondary wallet too, as a deposit — the spending
- * wallet when it's on that chain, or else an address ("Send to another
- * address", forced on for those). Only a send-out the user turned on leaves
- * the account's tokens out; a forced one doesn't, so they stay pickable.
+ * the account — from a secondary wallet too, as a deposit — one of the
+ * account's wallets on that chain ("To"), or else an address ("Send to
+ * another address", forced on when no wallet is on that chain). Picking an
+ * account token turns sending out off.
  */
-const targetFilter = (excludesAccount: boolean): ChainsFilter =>
-  excludesAccount
-    ? { intents: 'none', external: 'all' }
-    : { intents: 'all', external: 'all' };
+const TARGET_FILTER: ChainsFilter = { intents: 'all', external: 'all' };
 
 const ALL_CHAINS = CHAINS.map((chain) => chain.id);
-
-/** The same asset inside the account (intents) or on its chain (external). */
-const counterpart = (tokens: Token[], token: Token, isIntent: boolean) =>
-  tokens.find(
-    (item) =>
-      item.isIntent === isIntent &&
-      item.assetId === token.assetId &&
-      item.blockchain === token.blockchain,
-  );
 
 const SettingsButton = ({ onClick }: { onClick: () => void }) => (
   <button
@@ -90,7 +84,7 @@ export const SwapScreen = ({
   const { back, reset } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { secondaries } = useAccounts();
-  const { tokens, status: tokensStatus, refetch } = useTokens();
+  const { status: tokensStatus, refetch } = useTokens();
   const {
     onChangeAmount,
     onChangeToken,
@@ -136,18 +130,58 @@ export const SwapScreen = ({
     );
   })();
 
-  // A token on a chain the spending wallet has no address on can only go to
-  // one typed in: the toggle turns on and stays on until such a token is
+  const onChainTarget =
+    ctx.targetToken && !ctx.targetToken.isIntent ? ctx.targetToken : undefined;
+
+  // "To": the account's wallets on the target chain, the spending one first.
+  const receivers = onChainTarget
+    ? receiveOptions(
+        account,
+        secondaries,
+        onChainTarget.blockchain,
+        wallet?.address,
+      )
+    : [];
+
+  const receiversKey = receivers.map((option) => option.address).join();
+
+  // A token on a chain none of the account's wallets is on can only go to an
+  // address typed in: the toggle turns on and stays on until such a token is
   // picked.
-  const isSendOutRequired =
-    !!ctx.targetToken &&
-    !ctx.targetToken.isIntent &&
-    !ownAddress(wallet, ctx.targetToken.blockchain);
+  const isSendOutRequired = !!onChainTarget && receivers.length === 0;
 
   const targetNetwork = ctx.targetToken?.chainName ?? '';
-  const requiredHint = wallet
-    ? `${wallet.name} doesn’t support ${targetNetwork} chain. Enter external ${targetNetwork} address.`
-    : `Enter a ${targetNetwork} address to receive it.`;
+  const walletNames = [
+    ...(account.kind === 'wallet' ? [account.name] : []),
+    ...secondaries.map((item) => item.name),
+  ];
+
+  const requiredHint = (() => {
+    if (walletNames.length === 0) {
+      return `Enter a ${targetNetwork} address to receive it.`;
+    }
+
+    const who =
+      walletNames.length === 1
+        ? `${walletNames[0] ?? ''} doesn’t`
+        : 'None of your wallets';
+
+    return `${who} support ${targetNetwork} chain. Enter external ${targetNetwork} address.`;
+  })();
+
+  // Not sending out: the token arrives in one of the account's wallets ("To").
+  // A wallet that isn't on the new target chain hands over to one that is.
+  useEffect(() => {
+    const first = receivers[0];
+
+    if (
+      !sendsOut &&
+      first &&
+      !receivers.some((option) => sameAddress(option.address, ctx.sendAddress))
+    ) {
+      fireEvent('addressSet', first.address);
+    }
+  }, [sendsOut, receiversKey, ctx.sendAddress]);
 
   useEffect(() => {
     if (isSendOutRequired) {
@@ -208,31 +242,15 @@ export const SwapScreen = ({
     }
   };
 
-  const toggleSendsOut = (isOn: boolean) => {
-    setSendsOut(isOn);
+  // On: the address starts as the "To" wallet's, to edit. Off: back to a
+  // wallet (the effect above picks one when the typed address isn't).
+  const toggleSendsOut = (isOn: boolean) => setSendsOut(isOn);
 
-    const target = ctx.targetToken;
+  const receiver =
+    receivers.find((option) => sameAddress(option.address, ctx.sendAddress)) ??
+    receivers[0];
 
-    if (!target) {
-      return;
-    }
-
-    // Off: back into the account, or the spending wallet when it's on its
-    // chain.
-    const own = ownAddress(wallet, target.blockchain);
-    const keepsTarget = isOn ? !target.isIntent : target.isIntent || !!own;
-    const next = keepsTarget ? target : counterpart(tokens, target, !isOn);
-
-    if (!next) {
-      fireEvent('tokenSelect', { variant: 'target', token: undefined });
-    } else if (next !== target) {
-      onChangeToken('target', next);
-    }
-
-    if (!isOn) {
-      fireEvent('addressSet', next && !next.isIntent ? (own ?? null) : null);
-    }
-  };
+  const [isPickingReceiver, setIsPickingReceiver] = useState(false);
 
   const noteRows = summary ? (
     <>
@@ -425,11 +443,7 @@ export const SwapScreen = ({
     return (
       <TokenPicker
         variant={picker}
-        chainsFilter={
-          picker === 'source'
-            ? sourceFilter
-            : targetFilter(sendsOut && !isSendOutRequired)
-        }
+        chainsFilter={picker === 'source' ? sourceFilter : TARGET_FILTER}
         onSelect={(token) => {
           selectToken(picker, token);
           setPicker('none');
@@ -514,24 +528,51 @@ export const SwapScreen = ({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center justify-between gap-sw-md rounded-sw-md bg-sw-gray-900 px-sw-xl py-sw-lg">
-        <div className="flex flex-col gap-sw-xs">
-          <span className="text-sw-label-md text-sw-gray-50">
-            Send to another address
-          </span>
-          <span className="text-sw-label-sm text-sw-gray-300">
-            {isSendOutRequired
-              ? requiredHint
-              : 'Swap and withdraw to a wallet outside this account'}
-          </span>
+      {onChainTarget ? (
+        <div className="flex shrink-0 items-center justify-between gap-sw-md rounded-sw-md bg-sw-gray-900 px-sw-xl py-sw-lg">
+          <div className="flex flex-col gap-sw-xs">
+            <span className="text-sw-label-md text-sw-gray-50">
+              Send to another address
+            </span>
+            <span className="text-sw-label-sm text-sw-gray-300">
+              {isSendOutRequired
+                ? requiredHint
+                : 'Swap and withdraw to a wallet outside this account'}
+            </span>
+          </div>
+          <Toggle
+            className="shrink-0"
+            isOn={sendsOut}
+            isDisabled={isSendOutRequired}
+            onToggle={toggleSendsOut}
+          />
         </div>
-        <Toggle
-          className="shrink-0"
-          isOn={sendsOut}
-          isDisabled={isSendOutRequired}
-          onToggle={toggleSendsOut}
+      ) : null}
+
+      {!sendsOut && onChainTarget && receiver ? (
+        <WalletSelector
+          label="To"
+          ariaLabel="Receive to wallet"
+          option={receiver}
+          onClick={
+            receivers.length > 1 ? () => setIsPickingReceiver(true) : undefined
+          }
         />
-      </div>
+      ) : null}
+
+      {isPickingReceiver && !sendsOut && onChainTarget ? (
+        <WalletPicker
+          title="Receive to wallet"
+          description={`Your wallets on ${onChainTarget.chainName}.`}
+          options={receivers}
+          selectedId={receiver?.id}
+          onSelect={(option) => {
+            fireEvent('addressSet', option.address);
+            setIsPickingReceiver(false);
+          }}
+          onClose={() => setIsPickingReceiver(false)}
+        />
+      ) : null}
 
       {sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
         <RecipientField
@@ -553,13 +594,6 @@ export const SwapScreen = ({
             `Pick a token on ${network} or paste a ${ctx.targetToken?.chainName ?? ''} address.`
           }
         />
-      ) : null}
-
-      {!sendsOut && ctx.targetToken && !ctx.targetToken.isIntent ? (
-        <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
-          {ctx.targetToken.symbol} arrives in {sourceName}
-          {ctx.sendAddress ? ` (${shortAddress(ctx.sendAddress)})` : ''}.
-        </p>
       ) : null}
 
       {isInsufficient && ctx.sourceToken ? (
