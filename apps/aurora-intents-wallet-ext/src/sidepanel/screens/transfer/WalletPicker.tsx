@@ -75,7 +75,7 @@ export const WalletPicker = <T extends WalletOption>({
                         {option.name}
                       </span>
                       {option.badge ? (
-                        <span className="shrink-0 rounded-full bg-sw-accent-500 px-sw-sm py-[2px] text-sw-label-sm text-sw-gray-950">
+                        <span className="shrink-0 rounded-full bg-sw-accent-700 px-sw-sm py-[1px] text-sw-label-sm text-sw-accent-900">
                           {option.badge}
                         </span>
                       ) : null}
