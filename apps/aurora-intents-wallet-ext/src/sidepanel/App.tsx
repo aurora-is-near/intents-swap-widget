@@ -12,6 +12,8 @@ import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
 import { NavigationProvider, useNavigation } from './navigation';
 import { isAccountVerified } from './wallet/walletVerification';
+import { ActivityDetailScreen } from './screens/activity/ActivityDetailScreen';
+import { ActivityScreen } from './screens/activity/ActivityScreen';
 import { AssetScreen } from './screens/asset/AssetScreen';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
@@ -67,6 +69,12 @@ const Screens = ({ account }: { account: Account | null }) => {
     case 'send':
       return account ? (
         <SendScreen account={account} source={screen.source} />
+      ) : null;
+    case 'activity':
+      return account ? <ActivityScreen /> : null;
+    case 'activityDetail':
+      return account ? (
+        <ActivityDetailScreen transaction={screen.transaction} />
       ) : null;
     case 'asset':
       return account ? (

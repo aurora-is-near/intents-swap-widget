@@ -255,6 +255,14 @@ export const HomeScreen = ({ account }: { account: Account }) => {
         <div className="grow" />
         <button
           type="button"
+          aria-label="Activity"
+          title="Activity"
+          onClick={() => push({ name: 'activity' })}
+          className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-sw-md text-sw-gray-200 hover:bg-sw-gray-900">
+          <Icon name="activity" />
+        </button>
+        <button
+          type="button"
           aria-label="Settings"
           title="Settings"
           onClick={openSettings}

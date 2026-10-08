@@ -99,6 +99,13 @@ VITE_COINGECKO_API_PLAN=pro
 The key ships in the bundle. Tokens CoinGecko doesn't list show their price
 without a chart or market data.
 
+## Activity
+
+Activity (the clock in Home's header, and "Your activity" on an asset) lists
+the account's swaps, deposits and sends: the widget's 1Click history from the
+fee service for the account's address, limited to what was made with this
+app's key, refreshed while anything is pending. App deposits come with Apps.
+
 ## Fee service
 
 Point the app (deposit addresses, and the widget's quotes and intents) at

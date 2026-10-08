@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import {
+  Button,
   CopyButton,
   getTokenBalanceKey,
   Notes,
@@ -8,6 +9,9 @@ import {
 import type { Token } from '@aurora-is-near/intents-swap-widget';
 import { cn, formatUsdAmount } from '@aurora-is-near/intents-swap-widget/utils';
 
+import { involvesToken } from '../../activity/activity';
+import { ActivityList } from '../../activity/ActivityCard';
+import { useActivity } from '../../activity/useActivity';
 import type { Account } from '../../accounts/types';
 import { ActionButton } from '../../components/ActionButton';
 import { Screen } from '../../components/Screen';
@@ -29,6 +33,9 @@ import { shortAddress } from '../../utils';
 import { InlineChain } from '../transfer/InlineAsset';
 import { chainLabel, formatTokenAmount } from '../transfer/summary';
 import { NotesCard } from '../transfer/TransferStatus';
+
+/** Latest items in "Your activity"; the rest is on the Activity screen. */
+const ACTIVITY_PREVIEW = 5;
 
 const RANGES = [
   ['1D', '1D'],
@@ -108,6 +115,11 @@ export const AssetScreen = ({
   const assets = useAccountAssets();
   const [range, setRange] = useState<ChartRange>('1D');
   const [hovered, setHovered] = useState<PricePoint | null>(null);
+
+  const activity = useActivity();
+  const tokenActivity = activity.items.filter((item) =>
+    involvesToken(item, token),
+  );
 
   const coin = useCoin(token);
   const chart = usePriceChart(coin.data?.id, range);
@@ -292,6 +304,37 @@ export const AssetScreen = ({
             </NotesCard>
           </Section>
         ) : null}
+
+        {activity.isLoading ? null : (
+          <Section title="Your activity">
+            {tokenActivity.length ? (
+              <>
+                <ActivityList
+                  items={tokenActivity.slice(0, ACTIVITY_PREVIEW)}
+                  onOpen={(item) =>
+                    push({
+                      name: 'activityDetail',
+                      transaction: item.transaction,
+                    })
+                  }
+                />
+                {tokenActivity.length > ACTIVITY_PREVIEW ? (
+                  <Button
+                    variant="outlined"
+                    size="md"
+                    fluid
+                    onClick={() => push({ name: 'activity' })}>
+                    See all activity
+                  </Button>
+                ) : null}
+              </>
+            ) : (
+              <p className="px-sw-xs text-sw-body-sm text-sw-gray-300">
+                No {token.symbol} activity yet.
+              </p>
+            )}
+          </Section>
+        )}
       </div>
     </Screen>
   );

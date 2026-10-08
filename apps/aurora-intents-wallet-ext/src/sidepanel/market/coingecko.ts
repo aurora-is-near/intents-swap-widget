@@ -92,6 +92,14 @@ const COIN_IDS: Record<string, string> = {
   DAI: 'dai',
 };
 
+/**
+ * Wrapped natives shown as the native coin (the widget shows wNEAR as NEAR):
+ * the native's market data, not the wrapper's.
+ */
+const WRAPPED_NATIVES: Record<string, string> = {
+  'wrap.near': 'near',
+};
+
 type Coin = {
   id: string;
   name: string;
@@ -125,6 +133,13 @@ const byId = (id: string) => get<Coin>(`/coins/${id}`, COIN_PARAMS);
  */
 export const fetchCoin = async (token: Token): Promise<Coin | null> => {
   const platform = PLATFORMS[token.blockchain];
+  const wrapped = token.contractAddress
+    ? WRAPPED_NATIVES[token.contractAddress]
+    : undefined;
+
+  if (wrapped) {
+    return byId(wrapped);
+  }
 
   if (platform && token.contractAddress) {
     try {
