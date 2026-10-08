@@ -56,6 +56,16 @@ const useDescribe = () => {
   };
 };
 
+/**
+ * The hash support can trace: the deposit's own transaction, else the failed
+ * payout's (1Click reports none for most failures).
+ */
+const supportHash = (
+  progress: Extract<DepositProgress, { status: 'failed' }>,
+): string | undefined =>
+  // Empty strings count as missing.
+  [progress.received?.tx_hash, progress.failed.tx_hash].find(Boolean);
+
 const Step = ({
   state,
   children,
@@ -144,9 +154,10 @@ const StatusCard = ({ progress }: { progress: DepositProgress }) => {
             <p className="m-0 text-sw-body-sm text-sw-gray-300">
               {progress.received
                 ? `We received ${describe(progress.received)}, but converting it failed. `
-                : ''}
-              The funds weren’t lost: contact support with the transaction hash{' '}
-              {progress.failed.tx_hash}.
+                : 'Converting your deposit failed. '}
+              {supportHash(progress)
+                ? `The funds weren’t lost: contact support with the transaction ${supportHash(progress)}.`
+                : 'The funds weren’t lost: contact support with this deposit address.'}
             </p>
           </div>
         </div>

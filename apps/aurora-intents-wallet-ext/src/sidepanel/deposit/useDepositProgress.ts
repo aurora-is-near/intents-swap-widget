@@ -25,8 +25,19 @@ const fetchSnapshot = async (address: string): Promise<Snapshot> => {
   return { received, success, failed };
 };
 
-const hashes = (records: DepositRecord[]) =>
-  new Set(records.map((record) => record.tx_hash));
+/**
+ * A record's identity. Failed payouts carry no tx hash, so the hash alone
+ * would make every failure look like the same record.
+ */
+const recordKey = (record: DepositRecord) =>
+  `${record.tx_hash}|${record.created_at}|${record.amount}`;
+
+const keys = (records: DepositRecord[]) => new Set(records.map(recordKey));
+
+const time = (record: DepositRecord) => Date.parse(record.created_at) || 0;
+
+/** Payouts are timed by 1Click, deposits by POA: allow for clock skew. */
+const CLOCK_SKEW_MS = 60_000;
 
 /**
  * What happened at a persistent deposit address since the screen opened.
@@ -34,12 +45,16 @@ const hashes = (records: DepositRecord[]) =>
  */
 export const useDepositProgress = (address: string | undefined) => {
   const baseline = useRef<Record<keyof Snapshot, Set<string>> | null>(null);
+  const openedAt = useRef(Date.now());
 
   const query = useQuery({
     queryKey: ['depositProgress', address],
     queryFn: () => fetchSnapshot(address!),
     enabled: !!address,
     refetchInterval: POLL_MS,
+    // Keep watching while the panel is hidden, e.g. the browser is minimised
+    // while the user sends from their phone.
+    refetchIntervalInBackground: true,
     // Always start from fresh data: the baseline must not come from a cache.
     gcTime: 0,
   });
@@ -49,25 +64,40 @@ export const useDepositProgress = (address: string | undefined) => {
   }
 
   baseline.current ??= {
-    received: hashes(query.data.received),
-    success: hashes(query.data.success),
-    failed: hashes(query.data.failed),
+    received: keys(query.data.received),
+    success: keys(query.data.success),
+    failed: keys(query.data.failed),
   };
 
   const isNew = (type: keyof Snapshot) => (record: DepositRecord) =>
-    !baseline.current?.[type].has(record.tx_hash);
+    !baseline.current?.[type].has(recordKey(record));
 
   // Newest first, per the fee service.
   const received = query.data.received.find(isNew('received'));
-  const credited = query.data.success.find(isNew('success'));
-  const failed = query.data.failed.find(isNew('failed'));
 
+  // Payouts are reported for the whole underlying account (every address and
+  // chain), so only those since this deposit — or since the screen opened, if
+  // the deposit isn't indexed yet — belong to it.
+  const since = (received ? time(received) : openedAt.current) - CLOCK_SKEW_MS;
+  const outcomes = [
+    ...query.data.success
+      .filter(isNew('success'))
+      .map((record) => ({ status: 'success' as const, record })),
+    ...query.data.failed
+      .filter(isNew('failed'))
+      .map((record) => ({ status: 'failed' as const, record })),
+  ]
+    .filter(({ record }) => time(record) >= since)
+    // The newest outcome wins: a failed attempt may be retried and succeed.
+    .sort((a, b) => time(b.record) - time(a.record));
+
+  const [latest] = outcomes;
   let progress: DepositProgress = { status: 'waiting' };
 
-  if (failed) {
-    progress = { status: 'failed', received, failed };
-  } else if (credited) {
-    progress = { status: 'success', received, credited };
+  if (latest?.status === 'success') {
+    progress = { status: 'success', received, credited: latest.record };
+  } else if (latest?.status === 'failed') {
+    progress = { status: 'failed', received, failed: latest.record };
   } else if (received) {
     progress = { status: 'pending', received };
   }
