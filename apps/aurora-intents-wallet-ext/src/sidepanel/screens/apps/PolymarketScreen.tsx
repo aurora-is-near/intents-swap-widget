@@ -163,7 +163,7 @@ const PayWithTile = ({
 
 const Deposit = () => {
   const runtime = useAppsRuntime()!;
-  const { exec, account } = runtime;
+  const { exec, account, isOutcomeDismissed, dismissOutcome } = runtime;
   const { back, push, popTo } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { tokens } = useTokens();
@@ -178,8 +178,6 @@ const Deposit = () => {
   const [payWith, setPayWith] = useState<'wallet' | 'qr'>('wallet');
   const [isPicking, setIsPicking] = useState(false);
   const [submitted, setSubmitted] = useState<Submitted>();
-  // A terminal result the user moved on from: back to the form.
-  const [acknowledged, setAcknowledged] = useState<string>();
   const [dismissedError, setDismissedError] = useState<Error>();
 
   const depositViaWallet = payWith === 'wallet';
@@ -347,11 +345,8 @@ const Deposit = () => {
       depositViaWallet,
       startedAt: Date.now(),
     });
-    setAcknowledged(undefined);
     await deposit.deposit();
   };
-
-  const terminalKey = `${exec.executionId ?? 'none'}:${exec.phase}`;
 
   const view = (() => {
     if (exec.recovery?.kind === 'resume-or-cancel') {
@@ -378,7 +373,7 @@ const Deposit = () => {
         return 'settling';
       case 'success':
       case 'failed':
-        return acknowledged === terminalKey ? 'form' : exec.phase;
+        return isOutcomeDismissed ? 'form' : exec.phase;
       default:
         return 'form';
     }
@@ -578,7 +573,10 @@ const Deposit = () => {
     return (
       <Screen
         title={TITLE}
-        onBack={() => setAcknowledged(terminalKey)}
+        onBack={() => {
+          dismissOutcome();
+          back();
+        }}
         footer={
           <>
             <Button
@@ -589,7 +587,13 @@ const Deposit = () => {
               }}>
               Open Polymarket
             </Button>
-            <Button variant="outlined" size="lg" onClick={() => popTo('apps')}>
+            <Button
+              variant="outlined"
+              size="lg"
+              onClick={() => {
+                dismissOutcome();
+                popTo('apps');
+              }}>
               Done
             </Button>
           </>
@@ -622,16 +626,22 @@ const Deposit = () => {
     return (
       <Screen
         title={TITLE}
-        onBack={() => setAcknowledged(terminalKey)}
+        onBack={() => {
+          dismissOutcome();
+          back();
+        }}
         footer={
           <>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => setAcknowledged(terminalKey)}>
+            <Button variant="primary" size="lg" onClick={dismissOutcome}>
               Try again
             </Button>
-            <Button variant="outlined" size="lg" onClick={() => popTo('home')}>
+            <Button
+              variant="outlined"
+              size="lg"
+              onClick={() => {
+                dismissOutcome();
+                popTo('home');
+              }}>
               Back to wallet
             </Button>
           </>

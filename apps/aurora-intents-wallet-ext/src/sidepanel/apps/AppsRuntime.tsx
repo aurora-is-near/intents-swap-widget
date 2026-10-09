@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
@@ -16,7 +16,18 @@ type AppsRuntime = {
   exec: UseExecutionResult;
   connector: WalletConnector;
   account: WalletAccount;
+  /**
+   * The runner's current outcome (success or failure) was seen and left:
+   * screens show their form again instead of it. Lives with the runner, so
+   * it survives leaving the screen.
+   */
+  isOutcomeDismissed: boolean;
+  dismissOutcome: () => void;
 };
+
+/** Identifies one outcome of the runner: a new attempt changes it. */
+const outcomeKey = (exec: UseExecutionResult) =>
+  `${exec.executionId ?? 'none'}:${exec.phase}:${exec.error?.message ?? ''}`;
 
 const AppsRuntimeContext = createContext<AppsRuntime | null>(null);
 
@@ -29,9 +40,18 @@ const Runner = ({
   connector: WalletConnector;
 }>) => {
   const exec = useExecution();
+  const [dismissed, setDismissed] = useState<string>();
+  const key = outcomeKey(exec);
+
   const value = useMemo(
-    () => ({ exec, connector, account }),
-    [exec, connector, account],
+    () => ({
+      exec,
+      connector,
+      account,
+      isOutcomeDismissed: dismissed === key,
+      dismissOutcome: () => setDismissed(key),
+    }),
+    [exec, connector, account, dismissed, key],
   );
 
   return (
