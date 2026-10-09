@@ -123,7 +123,42 @@ without a chart or market data.
 Activity (the clock in Home's header, and "Your activity" on an asset) lists
 the account's swaps, deposits and sends: the widget's 1Click history from the
 fee service for the account's address, limited to what was made with this
-app's key, refreshed while anything is pending. App deposits come with Apps.
+app's key, refreshed while anything is pending. Its Apps tab (and All) adds
+the wallet's Intents Connect executions — deposits into apps — with a detail
+screen per deposit; executions from other Intents Connect clients are listed
+by their own label.
+
+## Apps
+
+Apps (Home → Apps) deposit into other apps through **Intents Connect**: the
+account's wallet signs one execution, its tokens (or a one-time deposit
+address, "Another wallet") fund it, and the wallet's Intents Connect account
+on the destination chain runs the steps. Wallet accounts only — Intents
+Connect has no passkey signing yet, named NEAR accounts can't be resolved,
+and secondary wallets never sign for apps. One runner lives above the
+screens (`apps/AppsRuntime.tsx`), so a deposit keeps being followed while the
+user moves around, and one left running from an earlier session is picked up
+again (without re-sending its transfer). The service runs one execution per
+wallet at a time; a stuck one (this app's or another's) can be cancelled with
+one signature.
+
+**Polymarket** bridges to Polygon USDC and swaps it to pUSD into the
+Polymarket account (recipe from `apps/intents-chrome-ext`; its
+`amountOutMinimum` is still 0 — set one before a public release). The account
+is found from the wallet with Polymarket's public profile API
+(`gamma-api.polymarket.com`, the manifest's only host permission), else from
+the wallet signed in on an open polymarket.com tab, else entered by hand; it's
+saved per account (`chrome.storage.local` `polymarketAccounts`). The form
+shows a dry-run preview (no signature, no lock) of what arrives, the fee and
+the time.
+
+Intents Connect defaults to the alpha service and key (they ship in the
+bundle; use the SDK's `apiKeyProxyUrl` before release). Override with:
+
+```bash
+VITE_INTENTS_CONNECT_API_URL=https://…
+VITE_INTENTS_CONNECT_API_KEY=<key>
+```
 
 ## Fee service
 
@@ -141,7 +176,7 @@ VITE_PDA_API_KEY=<an app key known to that fee service>
 Packages must be built first (the app consumes their `dist`):
 
 ```bash
-yarn turbo run build --filter=@aurora-is-near/intents-swap-widget
+yarn turbo run build --filter=@aurora-is-near/intents-swap-widget --filter=@aurora-is-near/intents-connect --filter=@aurora-is-near/intents-connect-wallet
 yarn workspace aurora-intents-wallet-ext build
 ```
 
