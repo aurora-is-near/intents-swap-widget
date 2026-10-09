@@ -130,6 +130,28 @@ export type PanelEvent = {
   data: unknown;
 };
 
+/**
+ * A site's "Deposit with Aurora" button → background: open the side panel on
+ * that app's deposit form. `account` is the app account the page shows, when
+ * it shows one.
+ */
+export type OpenAppMessage = {
+  channel: typeof CHANNEL;
+  type: 'open-app';
+  app: 'polymarket';
+  account?: string;
+};
+
+/** What the background leaves for the side panel (`storage.session`). */
+export type AppLaunch = {
+  app: 'polymarket';
+  tabId: number;
+  account?: string;
+  at: number;
+};
+
+export const APP_LAUNCH_KEY = 'appLaunch';
+
 /** Relay → page bridge (over the private port). */
 export type PortRequest =
   | { id: string; type: 'ping' }

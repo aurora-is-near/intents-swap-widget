@@ -157,7 +157,9 @@ const PayWithTile = ({
   </button>
 );
 
-const Deposit = () => {
+type Launch = { tabId: number; account?: string };
+
+const Deposit = ({ launch }: { launch?: Launch }) => {
   const runtime = useAppsRuntime()!;
   const { exec, account, isOutcomeDismissed, dismissOutcome, setPayer } =
     runtime;
@@ -169,7 +171,7 @@ const Deposit = () => {
   const assets = useAccountAssets();
   const { source, select } = useTransferSource();
   const { secondaries: allSecondaries } = useAccounts();
-  const pmAccount = usePolymarketAccount(account);
+  const pmAccount = usePolymarketAccount(account, launch);
   const balance = usePolymarketBalance(pmAccount.address, exec.phase);
   const intermediary = useIntermediaryBalances(exec.phase);
   const history = useAppExecutions();
@@ -1181,7 +1183,7 @@ const Deposit = () => {
 };
 
 /** Top up a Polymarket account from the account's wallet, or any wallet. */
-export const PolymarketScreen = () => {
+export const PolymarketScreen = ({ launch }: { launch?: Launch }) => {
   const runtime = useAppsRuntime();
   const { back } = useNavigation();
 
@@ -1199,5 +1201,5 @@ export const PolymarketScreen = () => {
     );
   }
 
-  return <Deposit />;
+  return <Deposit launch={launch} />;
 };

@@ -34,7 +34,9 @@ type Screen =
   | { name: 'asset'; token: Token }
   | { name: 'activity'; filter?: ActivityFilter }
   | { name: 'apps' }
-  | { name: 'polymarket' }
+  // `launch`: opened from the site's "Deposit with Aurora" (its tab and the
+  // account the page showed), so that account is used.
+  | { name: 'polymarket'; launch?: { tabId: number; account?: string } }
   | { name: 'appExecution'; executionId: string }
   | { name: 'activityDetail'; transaction: ActivityTransaction }
   | { name: 'settings' }

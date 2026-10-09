@@ -156,6 +156,15 @@ saved per account (`chrome.storage.local` `polymarketAccounts`). The form
 shows a dry-run preview (no signature, no lock) of what arrives, the fee and
 the time.
 
+On polymarket.com a content script (`src/content/polymarketButtons.ts`)
+adds **Deposit with Aurora** next to the site's Deposit button and, on
+/portfolio, as a full-width row under Deposit | Withdraw. A click asks the
+background to open the side panel on that tab (`sidePanel.open`, within the
+click's gesture) and leaves `appLaunch` in `storage.session`; the panel opens
+the Polymarket form with the account signed in on the site (its profile
+link, else the proxy behind the site's wallet) taking precedence over a
+saved one, and switches from a passkey to the matching wallet account.
+
 Intents Connect defaults to the alpha service and key (they ship in the
 bundle; use the SDK's `apiKeyProxyUrl` before release). Override with:
 

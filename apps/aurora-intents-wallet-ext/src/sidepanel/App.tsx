@@ -12,6 +12,7 @@ import {
   useTransferSource,
 } from './accounts/useTransferSource';
 import { buildWidgetConfig } from './accounts/widgetConfig';
+import { AppLaunchHandler } from './apps/AppLaunchHandler';
 import { AppsRuntimeProvider } from './apps/AppsRuntime';
 import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
@@ -86,7 +87,7 @@ const Screens = ({ account }: { account: Account | null }) => {
     case 'apps':
       return account ? <AppsScreen account={account} /> : null;
     case 'polymarket':
-      return account ? <PolymarketScreen /> : null;
+      return account ? <PolymarketScreen launch={screen.launch} /> : null;
     case 'appExecution':
       return account ? (
         <AppExecutionScreen executionId={screen.executionId} />
@@ -164,6 +165,7 @@ const Wallet = () => {
       <WidgetSync />
       <AppsRuntimeProvider account={active}>
         <NavigationProvider initial={{ name: active ? 'home' : 'welcome' }}>
+          <AppLaunchHandler />
           <Router account={active} />
         </NavigationProvider>
       </AppsRuntimeProvider>

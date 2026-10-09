@@ -34,6 +34,36 @@ const local = {
 
 const noopEvent = { addListener: () => {}, removeListener: () => {} };
 
+function createSession() {
+  const items: Record<string, unknown> = {};
+
+  return {
+    get: (key: string) => Promise.resolve({ [key]: items[key] }),
+    set: (values: Record<string, unknown>) => {
+      const changes: Record<string, chrome.storage.StorageChange> = {};
+
+      Object.entries(values).forEach(([key, newValue]) => {
+        changes[key] = { oldValue: items[key], newValue };
+        items[key] = newValue;
+      });
+
+      listeners.forEach((listener) => listener(changes, 'session'));
+
+      return Promise.resolve();
+    },
+    remove: (key: string) => {
+      const oldValue = items[key];
+
+      delete items[key];
+      listeners.forEach((listener) =>
+        listener({ [key]: { oldValue } }, 'session'),
+      );
+
+      return Promise.resolve();
+    },
+  };
+}
+
 Object.assign(globalThis, {
   chrome: {
     runtime: { id: 'dev', onMessage: noopEvent },
@@ -45,6 +75,8 @@ Object.assign(globalThis, {
     },
     storage: {
       local,
+      // In memory, like the real one; lets a test leave an app launch.
+      session: createSession(),
       onChanged: {
         addListener: (listener: Listener) => listeners.add(listener),
         removeListener: (listener: Listener) => listeners.delete(listener),

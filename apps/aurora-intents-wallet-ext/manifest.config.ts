@@ -61,6 +61,12 @@ export const createManifest = (connectorUrl: string) => {
         js: ['src/content/relay.ts'],
         run_at: 'document_start',
       },
+      {
+        // "Deposit with Aurora" on Polymarket's own pages.
+        matches: ['https://polymarket.com/*'],
+        js: ['src/content/polymarketButtons.ts'],
+        run_at: 'document_idle',
+      },
     ],
   });
 };

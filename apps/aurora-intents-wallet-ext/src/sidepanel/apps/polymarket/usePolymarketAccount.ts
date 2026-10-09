@@ -112,18 +112,40 @@ type PolymarketAccountSource = 'saved' | 'wallet' | 'site' | 'none';
  * Where the pUSD lands: the account saved for this wallet account, else
  * Polymarket's account for the wallet itself (EVM), else for the wallet
  * signed in on an open polymarket.com tab. Saving one by hand overrides it.
+ *
+ * Opened from polymarket.com (`fromSite`), the account signed in there wins:
+ * the one its page shows, else the one behind the wallet signed in on it.
  */
-export const usePolymarketAccount = (account: WalletAccount) => {
+export const usePolymarketAccount = (
+  account: WalletAccount,
+  fromSite?: { tabId: number; account?: string },
+) => {
   const { saved, isLoaded, write } = useSaved();
   const stored = saved[account.id];
 
+  // Saved in this session, after opening from the site: the user's choice.
+  const [savedHere, setSavedHere] = useState(false);
+  const pageAccount =
+    fromSite?.account && isPolygonAddress(fromSite.account)
+      ? fromSite.account
+      : undefined;
+
+  const prefersSite = !!fromSite && !savedHere;
+
   const own = useProxyWallet(
-    !stored && account.family === 'evm' ? account.address : undefined,
+    !stored && !prefersSite && account.family === 'evm'
+      ? account.address
+      : undefined,
   );
 
-  // The site's wallet only matters when the account's own has no profile.
-  const needsSite = !stored && !own.isLoading && !own.data;
-  const tabId = usePolymarketTab();
+  // The site's wallet: when launched from it (and its page showed no
+  // account), or when the account's own wallet has no profile.
+  const needsSite = prefersSite
+    ? !pageAccount
+    : !stored && !own.isLoading && !own.data;
+
+  const openTab = usePolymarketTab();
+  const tabId = fromSite?.tabId ?? openTab;
   const page = usePageWallets(needsSite ? tabId : undefined);
   const siteEoa =
     page.status === 'ready'
@@ -134,6 +156,10 @@ export const usePolymarketAccount = (account: WalletAccount) => {
   const site = useProxyWallet(needsSite ? siteEoa : undefined);
 
   const [address, source]: [string, PolymarketAccountSource] = (() => {
+    if (prefersSite && (pageAccount ?? site.data)) {
+      return [pageAccount ?? site.data ?? '', 'site'];
+    }
+
     if (stored) {
       return [stored, 'saved'];
     }
@@ -149,13 +175,21 @@ export const usePolymarketAccount = (account: WalletAccount) => {
     return ['', 'none'];
   })();
 
+  const isSiteLoading =
+    prefersSite &&
+    !pageAccount &&
+    (page.status === 'loading' || site.isLoading);
+
   return {
     address,
     source,
     isValid: isPolygonAddress(address),
-    isLoading: !isLoaded || own.isLoading || site.isLoading,
-    save: (value: string) =>
-      write((current) => ({ ...current, [account.id]: value })),
+    isLoading: !isLoaded || own.isLoading || site.isLoading || isSiteLoading,
+    save: (value: string) => {
+      setSavedHere(true);
+
+      return write((current) => ({ ...current, [account.id]: value }));
+    },
     /** Back to the looked-up account. */
     reset: () =>
       write((current) => {
