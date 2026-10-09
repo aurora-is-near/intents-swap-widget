@@ -55,7 +55,8 @@
         "manifest.config.ts"
       ],
       "ignoreDependencies": [
-        "@fontsource/figtree"
+        "@fontsource/figtree",
+        "@solana/spl-token"
       ]
     }
   }

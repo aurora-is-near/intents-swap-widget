@@ -45,6 +45,9 @@ export const createManifest = (connectorUrl: string) => {
     // `storage` keeps the accounts (passkeys and connected wallets); `tabs`
     // finds the connector page's tab and the open site's URL and icon.
     permissions: ['sidePanel', 'storage', 'tabs'],
+    // Polymarket's public profile API (finds the account behind a wallet) has
+    // no CORS headers for extensions.
+    host_permissions: ['https://gamma-api.polymarket.com/*'],
     content_scripts: [
       {
         // MAIN world: the only place a page's injected wallets are visible.

@@ -12,6 +12,7 @@ import {
   useTransferSource,
 } from './accounts/useTransferSource';
 import { buildWidgetConfig } from './accounts/widgetConfig';
+import { AppsRuntimeProvider } from './apps/AppsRuntime';
 import { ALCHEMY_API_KEY } from './config';
 import { ScreenErrorBoundary } from './components/ScreenErrorBoundary';
 import { NavigationProvider, useNavigation } from './navigation';
@@ -153,9 +154,11 @@ const Wallet = () => {
       balanceViaRpc={wallet?.family === 'near'}
       theme={{ colorScheme: 'dark' }}>
       <WidgetSync />
-      <NavigationProvider initial={{ name: active ? 'home' : 'welcome' }}>
-        <Router account={active} />
-      </NavigationProvider>
+      <AppsRuntimeProvider account={active}>
+        <NavigationProvider initial={{ name: active ? 'home' : 'welcome' }}>
+          <Router account={active} />
+        </NavigationProvider>
+      </AppsRuntimeProvider>
     </WidgetConfigProvider>
   );
 };

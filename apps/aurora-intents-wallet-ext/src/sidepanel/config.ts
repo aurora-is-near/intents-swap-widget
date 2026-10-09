@@ -30,3 +30,19 @@ export const FEE_SERVICE_API_KEY =
  * (USDC on NEAR, the same mapping the swap widget uses for deposits).
  */
 export const DEPOSIT_SYMBOL = 'USDC';
+
+/**
+ * Intents Connect, which runs app deposits (Polymarket). Alpha service and key
+ * as in apps/intents-chrome-ext; the key ships in the bundle, so move it behind
+ * the SDK's `apiKeyProxyUrl` before a public release.
+ */
+export const INTENTS_CONNECT_API_URL =
+  (import.meta.env.VITE_INTENTS_CONNECT_API_URL as string | undefined) ??
+  'https://intents-connect-alpha-api.aurora.dev';
+
+export const INTENTS_CONNECT_API_KEY =
+  (import.meta.env.VITE_INTENTS_CONNECT_API_KEY as string | undefined) ??
+  API_KEY;
+
+/** Where a Solana deposit transfer fetches a blockhash and submits. */
+export const SOLANA_RPC_URL = `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
