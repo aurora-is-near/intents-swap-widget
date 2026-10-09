@@ -98,17 +98,28 @@ const isPainted = (element: Element) => {
   );
 };
 
+const area = (element: Element) => {
+  const { width, height } = element.getBoundingClientRect();
+
+  return width * height;
+};
+
 /**
  * The corner radius the reference button actually shows: that of the
- * element painting its background (a link may wrap the visible button, with
- * a radius of its own that nobody sees).
+ * largest element painting a background inside it. The first painted one
+ * may be a small rounded icon chip, and a wrapping link may carry a radius
+ * nobody sees.
  */
 const visibleRadius = (reference: HTMLElement) => {
-  const painted = [reference, ...reference.querySelectorAll('*')].find(
-    isPainted,
-  );
+  const painted = [reference, ...reference.querySelectorAll('*')]
+    .filter(isPainted)
+    .sort((a, b) => area(b) - area(a))[0];
 
-  return getComputedStyle(painted ?? reference).borderRadius || '8px';
+  const radius = getComputedStyle(painted ?? reference).borderRadius;
+  const { height } = reference.getBoundingClientRect();
+
+  // Never rounder than the reference's own shape allows.
+  return radius && parseFloat(radius) < height / 2 ? radius : '12px';
 };
 
 /** Our button, sized like the site's `reference` button. */
@@ -199,6 +210,18 @@ const commonParent = (a: Element, b: Element) => {
   return node;
 };
 
+const depthOf = (element: Element | null) => {
+  let depth = 0;
+  let node = element;
+
+  while (node) {
+    depth += 1;
+    node = node.parentElement;
+  }
+
+  return depth;
+};
+
 /** A full-width row under the portfolio card's Deposit | Withdraw. */
 const placePortfolioButton = () => {
   const existing = document.querySelector(`[${ATTR}="portfolio"]`);
@@ -215,8 +238,22 @@ const placePortfolioButton = () => {
 
   const header = topBar();
   const outsideHeader = (element: Element) => !header?.contains(element);
-  const deposit = findByText(document, 'Deposit').find(outsideHeader);
-  const withdraw = findByText(document, 'Withdraw').find(outsideHeader);
+  const isShown = (element: Element) => area(element) > 0;
+  const withdraw = findByText(document, 'Withdraw').find(
+    (element) => outsideHeader(element) && isShown(element),
+  );
+
+  // The visible Deposit closest to it: the page may hold hidden copies.
+  const deposit = withdraw
+    ? findByText(document, 'Deposit')
+        .filter((element) => outsideHeader(element) && isShown(element))
+        .sort(
+          (a, b) =>
+            depthOf(commonParent(a, withdraw)) -
+            depthOf(commonParent(b, withdraw)),
+        )
+        .reverse()[0]
+    : undefined;
 
   if (!(deposit instanceof HTMLElement) || !withdraw) {
     return;
