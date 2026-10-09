@@ -45,6 +45,8 @@ import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
 import { chainLabel, formatTokenAmount } from '../transfer/summary';
 import { TokenPicker } from '../transfer/TokenPicker';
+import { sourceOptions } from '../transfer/walletOptions';
+import { WalletPicker } from '../transfer/WalletPicker';
 import { NotesCard } from '../transfer/TransferStatus';
 import { DepositSteps, stepStates } from './DepositSteps';
 import { PolymarketAccountCard } from './PolymarketAccountCard';
@@ -103,6 +105,18 @@ type Submitted = {
   startedAt: number;
 };
 
+/** A "Pay with" option's radio mark. */
+const Radio = ({ isSelected }: { isSelected: boolean }) => (
+  <span
+    className={cn(
+      'block h-[16px] w-[16px] shrink-0 rounded-full',
+      isSelected
+        ? 'shadow-[inset_0_0_0_5px_var(--c-sw-accent-300)]'
+        : 'shadow-[inset_0_0_0_2px_var(--c-sw-gray-600)]',
+    )}
+  />
+);
+
 const PayWithTile = ({
   isSelected,
   icon,
@@ -132,14 +146,7 @@ const PayWithTile = ({
     )}>
     <span className="flex items-center justify-between text-sw-gray-200">
       <Icon name={icon} size={18} />
-      <span
-        className={cn(
-          'block h-[16px] w-[16px] rounded-full',
-          isSelected
-            ? 'shadow-[inset_0_0_0_5px_var(--c-sw-accent-300)]'
-            : 'shadow-[inset_0_0_0_2px_var(--c-sw-gray-600)]',
-        )}
-      />
+      <Radio isSelected={isSelected} />
     </span>
     <span className="flex flex-col gap-sw-xxs">
       <span className="text-sw-label-md text-sw-gray-50">{title}</span>
@@ -176,6 +183,10 @@ const Deposit = () => {
 
   // The account's wallet, one of its secondary wallets (by id), or a QR code.
   const [payWith, setPayWith] = useState<string>('wallet');
+  // The secondary wallet shown in its row, kept when another option is picked.
+  const [chosenSecondaryId, setChosenSecondaryId] = useState<string>();
+  const [isPickingPayer, setIsPickingPayer] = useState(false);
+  const [dismissedCancel, setDismissedCancel] = useState<string>();
   const [isPicking, setIsPicking] = useState(false);
   const [submitted, setSubmitted] = useState<Submitted>();
   const [dismissedError, setDismissedError] = useState<Error>();
@@ -861,6 +872,7 @@ const Deposit = () => {
 
   const lastError = deposit.preparationError ?? exec.error;
   // A cancelled deposit gets its own note, not an error.
+  const cancelKey = `${exec.executionId ?? 'none'}:${exec.phase}:${lastError?.message ?? ''}`;
   const wasCancelled =
     exec.phase === 'cancelled' || (!!lastError && isStopped(lastError));
 
@@ -914,6 +926,18 @@ const Deposit = () => {
 
   const helper = intermediary.data;
 
+  // The secondary wallets as picker rows; the row shows the chosen one.
+  const secondaryOptions = sourceOptions(account, secondaries).filter(
+    (option) => option.source.kind === 'secondary',
+  );
+
+  const shownSecondaryOption =
+    secondaryOptions.find(
+      (option) =>
+        option.source.kind === 'secondary' &&
+        option.source.id === (payerSecondary?.id ?? chosenSecondaryId),
+    ) ?? secondaryOptions[0];
+
   return (
     <Screen title={TITLE} onBack={back} footer={footer}>
       <PolymarketAccountCard
@@ -963,19 +987,6 @@ const Deposit = () => {
             isDisabled={deposit.isBusy}
             onSelect={() => choosePayWith('wallet')}
           />
-          {secondaries.map((wallet) => (
-            <PayWithTile
-              key={wallet.id}
-              icon="browser"
-              title={wallet.name}
-              detail={
-                payWith === wallet.id ? walletBalance : 'Secondary wallet'
-              }
-              isSelected={payWith === wallet.id}
-              isDisabled={deposit.isBusy}
-              onSelect={() => choosePayWith(wallet.id)}
-            />
-          ))}
           <PayWithTile
             icon="qr"
             title="Another wallet"
@@ -984,15 +995,36 @@ const Deposit = () => {
             isDisabled={deposit.isBusy}
             onSelect={() => choosePayWith('qr')}
           />
+          {shownSecondaryOption ? (
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!!payerSecondary}
+              aria-label={`Pay from ${shownSecondaryOption.name}`}
+              disabled={deposit.isBusy}
+              onClick={() => setIsPickingPayer(true)}
+              className={cn(
+                'col-span-2 flex w-full items-center gap-sw-md rounded-sw-md px-sw-lg py-sw-md text-left transition-colors disabled:opacity-60',
+                payerSecondary
+                  ? 'bg-sw-gray-800 shadow-[inset_0_0_0_1px_var(--c-sw-accent-300)]'
+                  : 'bg-sw-gray-900 hover:bg-sw-gray-800',
+              )}>
+              {shownSecondaryOption.icon(24)}
+              <span className="flex min-w-[0px] grow items-baseline gap-sw-sm">
+                <span className="truncate text-sw-label-md text-sw-gray-50">
+                  {shownSecondaryOption.name}
+                </span>
+                {shownSecondaryOption.address ? (
+                  <span className="shrink-0 text-sw-label-sm text-sw-gray-400">
+                    {shortAddress(shownSecondaryOption.address)}
+                  </span>
+                ) : null}
+              </span>
+              <Radio isSelected={!!payerSecondary} />
+            </button>
+          ) : null}
         </div>
       </div>
-
-      {payerSecondary ? (
-        <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
-          Approve in {account.name}, then {payerSecondary.name} sends the funds.
-          Refunds, if any, go back to {account.name}.
-        </p>
-      ) : null}
 
       {!depositViaWallet ? (
         <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
@@ -1079,13 +1111,14 @@ const Deposit = () => {
         />
       ) : null}
 
-      {wasCancelled && !deposit.isBusy ? (
+      {wasCancelled && !deposit.isBusy && dismissedCancel !== cancelKey ? (
         <Banner
           className="wrap-banner"
           variant="info"
           hasBg
           multiline
           message="The deposit was cancelled. Nothing was sent."
+          onDismiss={() => setDismissedCancel(cancelKey)}
         />
       ) : null}
 
@@ -1119,6 +1152,30 @@ const Deposit = () => {
           </Notes>
         </div>
       </Accordion>
+
+      {payerSecondary ? (
+        <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
+          Approve in {account.name}, then {payerSecondary.name} sends the funds.
+          Refunds, if any, go back to {account.name}.
+        </p>
+      ) : null}
+      {isPickingPayer ? (
+        <WalletPicker
+          title="Pay from wallet"
+          description="Your secondary wallets. Your account approves; the wallet sends the funds."
+          options={secondaryOptions}
+          selectedId={shownSecondaryOption?.id}
+          onSelect={(option) => {
+            setIsPickingPayer(false);
+
+            if (option.source.kind === 'secondary') {
+              setChosenSecondaryId(option.source.id);
+              choosePayWith(option.source.id);
+            }
+          }}
+          onClose={() => setIsPickingPayer(false)}
+        />
+      ) : null}
     </Screen>
   );
 };
