@@ -1,9 +1,11 @@
 import {
   DepositTransferError,
+  ExecutionCancelledError,
   ExecutionPollTimeoutError,
   GuardError,
   IntentsConnectApiError,
   isUserRejection,
+  RunnerDisposedError,
 } from '@aurora-is-near/intents-connect';
 import type { Chains, Token } from '@aurora-is-near/intents-swap-widget';
 
@@ -46,6 +48,17 @@ const messagesOf = (error: unknown): string => {
 
   return parts.join(' ').toLowerCase();
 };
+
+/**
+ * The deposit stopped because it was asked to: cancelled (and the cancel
+ * approved), or its runner replaced on an account switch. Not an error.
+ */
+export const isStopped = (error: Error) =>
+  [error, error.cause].some(
+    (value) =>
+      value instanceof ExecutionCancelledError ||
+      value instanceof RunnerDisposedError,
+  ) || /^execution \S+ was cancelled$/.test(error.message);
 
 /** The user declined a wallet prompt (signature or transfer). */
 export const isDeclined = (error: Error) =>

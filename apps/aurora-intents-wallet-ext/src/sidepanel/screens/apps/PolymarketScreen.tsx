@@ -31,7 +31,7 @@ import { usePolymarketAccount } from '../../apps/polymarket/usePolymarketAccount
 import { usePolymarketBalance } from '../../apps/polymarket/usePolymarketBalance';
 import { usePreview } from '../../apps/polymarket/usePreview';
 import { findIntegrationByIntent, INTEGRATIONS } from '../../apps/registry';
-import { friendlyError, isDeclined } from '../../apps/errorMessages';
+import { friendlyError, isDeclined, isStopped } from '../../apps/errorMessages';
 import { isInFlight, useAppExecutions } from '../../apps/useAppExecutions';
 import { useCloseConnectorWhenIdle } from '../../apps/useCloseConnectorWhenIdle';
 import { Icon } from '../../components/Icon';
@@ -786,9 +786,15 @@ const Deposit = () => {
     !isInsufficient &&
     !deposit.isBusy;
 
-  const visibleError = !deposit.isBusy
-    ? (deposit.preparationError ?? exec.error)
-    : undefined;
+  const lastError = deposit.preparationError ?? exec.error;
+  // A cancelled deposit gets its own note, not an error.
+  const wasCancelled =
+    exec.phase === 'cancelled' || (!!lastError && isStopped(lastError));
+
+  const visibleError =
+    !deposit.isBusy && lastError && !isStopped(lastError)
+      ? lastError
+      : undefined;
 
   const footer = (() => {
     if (deposit.state === 'FAILED') {
@@ -971,7 +977,7 @@ const Deposit = () => {
         />
       ) : null}
 
-      {exec.phase === 'cancelled' ? (
+      {wasCancelled && !deposit.isBusy ? (
         <Banner
           className="wrap-banner"
           variant="info"
