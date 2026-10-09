@@ -141,7 +141,8 @@ const createButton = (
     gap: '8px',
     boxSizing: 'border-box',
     height: style.height && style.height !== 'auto' ? style.height : '36px',
-    padding: place === 'portfolio' ? '0 16px' : style.padding || '0 14px',
+    // The height is fixed, so only the horizontal padding matters.
+    padding: place === 'portfolio' ? '0 16px' : '0 10px',
     borderRadius: visibleRadius(reference),
     border: 'none',
     background: GRADIENT,
