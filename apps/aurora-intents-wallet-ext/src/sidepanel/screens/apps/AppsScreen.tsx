@@ -1,4 +1,5 @@
 import { Button, CHAIN_ICONS } from '@aurora-is-near/intents-swap-widget';
+import type { Chains } from '@aurora-is-near/intents-swap-widget';
 
 import type { Account, WalletAccount } from '../../accounts/types';
 import { useAccounts } from '../../accounts/useAccounts';
@@ -83,6 +84,32 @@ const PolymarketCard = ({
     </button>
   );
 };
+
+/** Chains a deposit can start from, for the intro's icon row. */
+const INTRO_CHAINS: Chains[] = ['eth', 'sol', 'near', 'btc'];
+
+/** What Apps do, styled like the coming-soon card but more compact. */
+const IntroCard = ({ accountName }: { accountName: string }) => (
+  <div className="flex shrink-0 flex-col items-center gap-sw-sm rounded-sw-lg bg-sw-gray-900 px-sw-2xl py-sw-xl text-center">
+    <div className="flex">
+      {INTRO_CHAINS.map((chain, index) => (
+        <span
+          key={chain}
+          className="block h-[24px] w-[24px] overflow-hidden rounded-full shadow-[0_0_0_2px_var(--c-sw-gray-900)] [&>svg]:h-full [&>svg]:w-full"
+          style={{ marginLeft: index === 0 ? 0 : -5 }}>
+          {CHAIN_ICONS[chain]}
+        </span>
+      ))}
+    </div>
+    <span className="mt-sw-xs text-sw-label-md text-sw-gray-50">
+      Use your funds in apps
+    </span>
+    <p className="m-0 max-w-[300px] text-sw-body-sm text-sw-gray-300">
+      Bridged, swapped and delivered for you — one approval in {accountName}, no
+      gas or bridges to handle.
+    </p>
+  </div>
+);
 
 /** Kinds of apps on the way, as the card's icon row. */
 const COMING_SOON_ICONS: IconName[] = ['swap', 'deposit', 'link', 'apps'];
@@ -186,11 +213,7 @@ export const AppsScreen = ({ account }: { account: Account }) => {
 
   return (
     <Screen title="Apps" onBack={back}>
-      <p className="m-0 text-sw-body-md text-sw-gray-200">
-        Use your funds in other apps. Each deposit is bridged, swapped and
-        delivered for you — one approval in {account.name}, no gas or bridges to
-        handle.
-      </p>
+      <IntroCard accountName={account.name} />
       <PolymarketCard
         account={account}
         onOpen={() => push({ name: 'polymarket' })}
