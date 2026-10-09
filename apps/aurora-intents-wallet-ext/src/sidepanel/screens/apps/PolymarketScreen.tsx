@@ -20,6 +20,8 @@ import {
   isNotEmptyAmount,
 } from '@aurora-is-near/intents-swap-widget/utils';
 
+import { useAccounts } from '../../accounts/useAccounts';
+import { FAMILY_NETWORKS } from '../../wallet/families';
 import { useTransferSource } from '../../accounts/useTransferSource';
 import type { TransferSource } from '../../accounts/useTransferSource';
 import { useAppsRuntime } from '../../apps/AppsRuntime';
@@ -96,6 +98,8 @@ type Submitted = {
   /** Atomic. */
   amount: string;
   depositViaWallet: boolean;
+  /** The wallet that sends the transfer (the account signs). */
+  payerName?: string;
   startedAt: number;
 };
 
@@ -148,24 +152,55 @@ const PayWithTile = ({
 
 const Deposit = () => {
   const runtime = useAppsRuntime()!;
-  const { exec, account, isOutcomeDismissed, dismissOutcome } = runtime;
+  const { exec, account, isOutcomeDismissed, dismissOutcome, setPayer } =
+    runtime;
+
   const { back, push, popTo } = useNavigation();
   const { ctx } = useUnsafeSnapshot();
   const { tokens } = useTokens();
   const { onChangeAmount, onChangeToken } = useTokenInputPair();
   const assets = useAccountAssets();
   const { source, select } = useTransferSource();
+  const { secondaries: allSecondaries } = useAccounts();
   const pmAccount = usePolymarketAccount(account);
   const balance = usePolymarketBalance(pmAccount.address, exec.phase);
   const intermediary = useIntermediaryBalances(exec.phase);
   const history = useAppExecutions();
 
-  const [payWith, setPayWith] = useState<'wallet' | 'qr'>('wallet');
+  // Intents Connect refunds to the signing account's address on the origin
+  // chain, so a deposit must start on the account's own networks: only
+  // secondary wallets of the same family can pay.
+  const secondaries = allSecondaries.filter(
+    (wallet) => wallet.family === account.family,
+  );
+
+  // The account's wallet, one of its secondary wallets (by id), or a QR code.
+  const [payWith, setPayWith] = useState<string>('wallet');
   const [isPicking, setIsPicking] = useState(false);
   const [submitted, setSubmitted] = useState<Submitted>();
   const [dismissedError, setDismissedError] = useState<Error>();
 
-  const depositViaWallet = payWith === 'wallet';
+  const depositViaWallet = payWith !== 'qr';
+  const payerSecondary = secondaries.find((wallet) => wallet.id === payWith);
+  // The wallet that sends the deposit (the account always signs).
+  const payer = payerSecondary ?? account;
+
+  const needsToken = useRef(false);
+
+  // The widget's balances and token list follow the paying wallet.
+  const choosePayWith = (next: string) => {
+    setPayWith(next);
+    const secondary = secondaries.find((wallet) => wallet.id === next);
+
+    select(
+      secondary ? { kind: 'secondary', id: secondary.id } : { kind: 'primary' },
+    );
+
+    // That wallet's own largest holding, once its balances are in.
+    if (next !== 'qr') {
+      needsToken.current = true;
+    }
+  };
 
   // The accordion animates to a fixed height: its content's, measured.
   const helperRef = useRef<HTMLDivElement>(null);
@@ -187,7 +222,8 @@ const Deposit = () => {
     return () => observer.disconnect();
   });
 
-  // Apps spend the account's own wallet: the widget's balances must be its.
+  // Paying starts from the account's own wallet: the widget's balances must
+  // be its. The previous choice comes back on leaving.
   const previousSource = useRef<TransferSource>(source);
 
   useEffect(() => {
@@ -198,11 +234,36 @@ const Deposit = () => {
     const restore = previousSource.current;
 
     return () => {
-      if (restore.kind === 'secondary') {
-        select(restore);
-      }
+      setPayer(null);
+      select(restore);
     };
   }, []);
+
+  // After switching the paying wallet: its largest holding.
+  useEffect(() => {
+    if (!needsToken.current || assets.isLoading) {
+      return;
+    }
+
+    const isPayerSource = payerSecondary
+      ? source.kind === 'secondary' && source.id === payerSecondary.id
+      : source.kind === 'primary';
+
+    if (!isPayerSource) {
+      return;
+    }
+
+    // Only a token the paying wallet can send: right after the switch the
+    // list may still hold the previous wallet's balances.
+    const largest = assets.wallet.find(
+      (asset) => familyOf(asset.token) === payer.family,
+    )?.token;
+
+    if (largest) {
+      needsToken.current = false;
+      fireEvent('tokenSelect', { variant: 'source', token: largest });
+    }
+  }, [assets.isLoading, assets.wallet, source, payerSecondary]);
 
   // A clean form on the wallet's largest holding, as Swap and Send start.
   const isPrimaryReady = source.kind === 'primary' && !assets.isLoading;
@@ -236,9 +297,12 @@ const Deposit = () => {
     depositViaWallet,
   });
 
+  const isOffNetwork =
+    !!ctx.sourceToken && familyOf(ctx.sourceToken) !== account.family;
+
   const preview = usePreview({
     exec,
-    token: ctx.sourceToken,
+    token: isOffNetwork ? undefined : ctx.sourceToken,
     amount: ctx.sourceTokenAmount,
     account: pmAccount.address,
     isAccountValid: pmAccount.isValid,
@@ -328,8 +392,11 @@ const Deposit = () => {
       token: ctx.sourceToken,
       amount: ctx.sourceTokenAmount,
       depositViaWallet,
+      payerName: payer.name,
       startedAt: Date.now(),
     });
+    // Read by the account's connector when the runner sends the deposit.
+    setPayer(payerSecondary ?? null);
     await deposit.deposit();
   };
 
@@ -400,13 +467,14 @@ const Deposit = () => {
   );
 
   const bridgeLabel = `Bridge ${sent?.token.symbol ?? 'funds'} to Polygon`;
+  const sentPayer = submitted?.payerName ?? account.name;
 
   if (view === 'preparing' || view === 'signing' || view === 'sending') {
     const active = view === 'preparing' ? 0 : 1;
     const labels = [
       received ? `Quote ready · ≈ ${received} pUSD` : 'Preparing the quote',
       view === 'sending'
-        ? `Confirm the transfer in ${account.name}`
+        ? `Confirm the transfer in ${sentPayer}`
         : `Approve with ${account.name}`,
       bridgeLabel,
       'Swap to pUSD and credit your account',
@@ -426,14 +494,18 @@ const Deposit = () => {
         }>
         <StatusHero
           tone="pending"
-          title={
-            view === 'preparing'
-              ? 'Preparing your deposit'
-              : `Approve in ${account.name}`
-          }
+          title={(() => {
+            if (view === 'preparing') {
+              return 'Preparing your deposit';
+            }
+
+            return view === 'sending'
+              ? `Confirm in ${sentPayer}`
+              : `Approve in ${account.name}`;
+          })()}
           description={
             view === 'sending'
-              ? `Confirm the transfer of ${sentLabel} in ${account.name}.`
+              ? `Confirm the transfer of ${sentLabel} in ${sentPayer}.`
               : 'Confirm the wallet prompt to sign this deposit. Nothing moves until you approve. Declining asks for one more signature to release it.'
           }
         />
@@ -769,8 +841,9 @@ const Deposit = () => {
   }
 
   const token = ctx.sourceToken;
+  // Off the account's networks nothing can be refunded to it (see above).
   const cannotSend =
-    depositViaWallet && !!token && familyOf(token) !== account.family;
+    !!token && (isOffNetwork || familyOf(token) !== payer.family);
 
   const isInsufficient =
     depositViaWallet &&
@@ -849,52 +922,77 @@ const Deposit = () => {
         isLocked={deposit.isBusy}
       />
 
-      <TokenInput.Source
-        heading="You send"
-        state={(() => {
-          if (deposit.isBusy) {
-            return 'disabled';
-          }
+      <div className="shrink-0">
+        <TokenInput.Source
+          heading="You send"
+          state={(() => {
+            if (deposit.isBusy) {
+              return 'disabled';
+            }
 
-          return isInsufficient ? 'error-balance' : 'default';
-        })()}
-        onMsg={(msg) => {
-          switch (msg.type) {
-            case 'on_change_amount':
-              onChangeAmount('source', msg.amount);
-              break;
-            case 'on_select_token':
-              onChangeToken('source', msg.token);
-              break;
-            default:
-              setIsPicking(true);
-          }
-        }}
-      />
+            return isInsufficient ? 'error-balance' : 'default';
+          })()}
+          onMsg={(msg) => {
+            switch (msg.type) {
+              case 'on_change_amount':
+                onChangeAmount('source', msg.amount);
+                break;
+              case 'on_select_token':
+                onChangeToken('source', msg.token);
+                break;
+              default:
+                setIsPicking(true);
+            }
+          }}
+        />
+      </div>
 
       <div className="flex shrink-0 flex-col gap-sw-md">
         <span className="px-sw-xs text-sw-label-sm text-sw-gray-200">
           Pay with
         </span>
-        <div role="radiogroup" aria-label="Pay with" className="flex gap-sw-md">
+        <div
+          role="radiogroup"
+          aria-label="Pay with"
+          className="grid grid-cols-2 gap-sw-md">
           <PayWithTile
             icon="browser"
             title={account.name}
-            detail={walletBalance}
+            detail={payWith === 'wallet' ? walletBalance : 'Your wallet'}
             isSelected={payWith === 'wallet'}
             isDisabled={deposit.isBusy}
-            onSelect={() => setPayWith('wallet')}
+            onSelect={() => choosePayWith('wallet')}
           />
+          {secondaries.map((wallet) => (
+            <PayWithTile
+              key={wallet.id}
+              icon="browser"
+              title={wallet.name}
+              detail={
+                payWith === wallet.id ? walletBalance : 'Secondary wallet'
+              }
+              isSelected={payWith === wallet.id}
+              isDisabled={deposit.isBusy}
+              onSelect={() => choosePayWith(wallet.id)}
+            />
+          ))}
           <PayWithTile
             icon="qr"
             title="Another wallet"
             detail="Send via QR code"
             isSelected={payWith === 'qr'}
             isDisabled={deposit.isBusy}
-            onSelect={() => setPayWith('qr')}
+            onSelect={() => choosePayWith('qr')}
           />
         </div>
       </div>
+
+      {payerSecondary ? (
+        <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
+          Approve in {account.name}, then {payerSecondary.name} sends the funds.
+          Refunds, if any, go back to {account.name}.
+        </p>
+      ) : null}
 
       {!depositViaWallet ? (
         <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
@@ -913,7 +1011,11 @@ const Deposit = () => {
           variant="info"
           hasBg
           multiline
-          message={`${account.name} can’t send ${token.symbol} on ${token.chainName}. Pick a token on its own network, or pay from another wallet.`}
+          message={
+            isOffNetwork
+              ? `Deposits from ${account.name} start on ${FAMILY_NETWORKS[account.family]}, where refunds go back to it. Pick a token there.`
+              : `${payer.name} can’t send ${token.symbol} on ${token.chainName}. Pick a token on its own network, or pay from another wallet.`
+          }
         />
       ) : null}
 
@@ -988,6 +1090,7 @@ const Deposit = () => {
       ) : null}
 
       <Accordion
+        className="shrink-0"
         title="Intents Connect account"
         badge={helper ? `${usd6(helper.usdc)} USDC` : undefined}
         isBadgeLoading={intermediary.isLoading}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
@@ -8,9 +8,18 @@ import {
 } from '@aurora-is-near/intents-connect/react';
 import type { UseExecutionResult } from '@aurora-is-near/intents-connect/react';
 
-import type { Account, WalletAccount } from '../accounts/types';
+import type {
+  Account,
+  ConnectedWallet,
+  WalletAccount,
+} from '../accounts/types';
 import { intentsConnectApi } from './api';
-import { createConnector, unsupportedReason } from './connectors';
+import {
+  createConnector,
+  createWalletTransfer,
+  unsupportedReason,
+} from './connectors';
+import type { PayerRef } from './connectors';
 
 type AppsRuntime = {
   exec: UseExecutionResult;
@@ -23,6 +32,11 @@ type AppsRuntime = {
    */
   isOutcomeDismissed: boolean;
   dismissOutcome: () => void;
+  /**
+   * Who sends the next deposit transfer: another of the account's wallets,
+   * or null for the account's own. The account always signs.
+   */
+  setPayer: (wallet: ConnectedWallet | null) => void;
 };
 
 /** Identifies one outcome of the runner: a new attempt changes it. */
@@ -34,10 +48,12 @@ const AppsRuntimeContext = createContext<AppsRuntime | null>(null);
 const Runner = ({
   account,
   connector,
+  payer,
   children,
 }: PropsWithChildren<{
   account: WalletAccount;
   connector: WalletConnector;
+  payer: PayerRef;
 }>) => {
   const exec = useExecution();
   const [dismissed, setDismissed] = useState<string>();
@@ -50,8 +66,12 @@ const Runner = ({
       account,
       isOutcomeDismissed: dismissed === key,
       dismissOutcome: () => setDismissed(key),
+      setPayer: (wallet: ConnectedWallet | null) => {
+        // eslint-disable-next-line no-param-reassign
+        payer.current = wallet ? createWalletTransfer(wallet) : null;
+      },
     }),
-    [exec, connector, account, dismissed, key],
+    [exec, connector, account, dismissed, key, payer],
   );
 
   return (
@@ -74,9 +94,13 @@ export const AppsRuntimeProvider = ({
   const walletAccount =
     account?.kind === 'wallet' && !unsupportedReason(account) ? account : null;
 
+  // Read by the connector at transfer time, so switching it needs no new
+  // runner.
+  const payer = useRef<PayerRef['current']>(null);
+
   // Per account: the runner rebuilds only when the signer changes.
   const connector = useMemo(
-    () => (walletAccount ? createConnector(walletAccount) : null),
+    () => (walletAccount ? createConnector(walletAccount, payer) : null),
     [walletAccount?.id, walletAccount?.address],
   );
 
@@ -86,7 +110,7 @@ export const AppsRuntimeProvider = ({
 
   return (
     <IntentsConnectProvider api={intentsConnectApi} wallet={connector}>
-      <Runner account={walletAccount} connector={connector}>
+      <Runner account={walletAccount} connector={connector} payer={payer}>
         {children}
       </Runner>
     </IntentsConnectProvider>

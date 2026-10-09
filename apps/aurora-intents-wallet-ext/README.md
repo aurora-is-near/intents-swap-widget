@@ -135,7 +135,11 @@ account's wallet signs one execution, its tokens (or a one-time deposit
 address, "Another wallet") fund it, and the wallet's Intents Connect account
 on the destination chain runs the steps. Wallet accounts only — Intents
 Connect has no passkey signing yet, named NEAR accounts can't be resolved,
-and secondary wallets never sign for apps. One runner lives above the
+and secondary wallets never sign for apps — but one of the same family as
+the account (e.g. another EVM wallet) can pay: the account signs, and the
+connector hands the deposit transfer to that wallet. Deposits must start on
+the account's own networks because the service refunds to the signer's
+address on the origin chain. One runner lives above the
 screens (`apps/AppsRuntime.tsx`), so a deposit keeps being followed while the
 user moves around, and one left running from an earlier session is picked up
 again (without re-sending its transfer). The service runs one execution per
