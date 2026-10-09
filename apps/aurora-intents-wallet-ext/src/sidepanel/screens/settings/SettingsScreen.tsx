@@ -10,16 +10,53 @@ import {
 } from '../../components/AccountSummary';
 import { ConfirmRemoveView } from '../../components/ConfirmRemoveView';
 import { Icon } from '../../components/Icon';
+import { WalletIcon } from '../../components/WalletIcon';
 import { RenameView } from '../../components/RenameView';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { disconnectWalletConnect } from '../../wallet/walletConnect';
 
-/** What removing an account loses, in the confirmation step. */
+/** What removing an account means, in the confirmation step. */
 const removalWarning = (account: Account) =>
   account.kind === 'passkey'
-    ? `Removing ${account.name} deletes this extension's record of its passkey. Funds stay in the account, but you won't be able to reach them from here until passkey sign-in is available. Withdraw first if you're unsure.`
-    : `${account.name} is disconnected from the extension. Its funds stay in the wallet and you can connect it again any time.`;
+    ? 'This deletes the extension’s record of its passkey. Withdraw first if you’re unsure.'
+    : 'It’s disconnected from the extension. Nothing happens to the wallet itself.';
+
+const removalPoints = (account: Account) =>
+  account.kind === 'passkey'
+    ? [
+        {
+          kind: 'keep' as const,
+          text: 'Funds stay in the account on NEAR Intents',
+        },
+        {
+          kind: 'lose' as const,
+          text: 'You can’t reach them from here until passkey sign-in is available',
+        },
+      ]
+    : [
+        { kind: 'keep' as const, text: 'Funds stay in the wallet' },
+        {
+          kind: 'keep' as const,
+          text: 'Its account on NEAR Intents stays as it is',
+        },
+        { kind: 'keep' as const, text: 'You can connect it again any time' },
+      ];
+
+/** The account's icon, large, for the removal screen. */
+const LargeAccountIcon = ({ account }: { account: Account }) =>
+  account.kind === 'passkey' ? (
+    <span className="flex h-[64px] w-[64px] items-center justify-center rounded-sw-lg bg-sw-accent-500 text-sw-gray-950">
+      <Icon name="key" size={30} />
+    </span>
+  ) : (
+    <WalletIcon
+      name={account.walletName}
+      icon={account.walletIcon}
+      size={64}
+      className="rounded-sw-lg"
+    />
+  );
 
 const AccountRow = ({
   account,
@@ -106,9 +143,12 @@ export const SettingsScreen = () => {
   if (removing) {
     return (
       <ConfirmRemoveView
-        title={`Remove ${removing.name}?`}
+        title="Remove account"
+        name={removing.name}
+        icon={<LargeAccountIcon account={removing} />}
         variant={removing.kind === 'passkey' ? 'error' : 'warn'}
         warning={removalWarning(removing)}
+        points={removalPoints(removing)}
         confirmLabel="Remove account"
         onKeep={() => setRemoving(null)}
         onRemove={confirmRemove}

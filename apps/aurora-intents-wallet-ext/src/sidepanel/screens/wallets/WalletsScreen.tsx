@@ -11,6 +11,7 @@ import {
 } from '../../components/AccountSummary';
 import { ConfirmRemoveView } from '../../components/ConfirmRemoveView';
 import { Icon } from '../../components/Icon';
+import { WalletIcon } from '../../components/WalletIcon';
 import { RenameView } from '../../components/RenameView';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
@@ -73,9 +74,23 @@ export const WalletsScreen = ({ account }: { account: Account }) => {
   if (removing) {
     return (
       <ConfirmRemoveView
-        title={`Remove ${removing.name}?`}
+        title="Remove wallet"
+        name={removing.name}
+        icon={
+          <WalletIcon
+            name={removing.walletName}
+            icon={removing.walletIcon}
+            size={64}
+            className="rounded-sw-lg"
+          />
+        }
         variant="warn"
-        warning={`${removing.name} is disconnected from ${account.name}. Its funds stay in the wallet and you can connect it again any time.`}
+        warning={`It’s disconnected from ${account.name}. Nothing happens to the wallet itself.`}
+        points={[
+          { kind: 'keep', text: 'Funds stay in the wallet' },
+          { kind: 'keep', text: `${account.name} isn’t affected` },
+          { kind: 'keep', text: 'You can connect it again any time' },
+        ]}
         confirmLabel="Remove wallet"
         onKeep={() => setRemoving(null)}
         onRemove={async () => {
