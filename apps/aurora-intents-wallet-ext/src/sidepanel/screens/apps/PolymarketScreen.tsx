@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { EVM_CHAINS } from '@aurora-is-near/intents-connect';
+import { EVM_CHAINS, isUserRejection } from '@aurora-is-near/intents-connect';
 import {
   Accordion,
   Banner,
@@ -70,6 +70,15 @@ const describeError = (error: Error, account: WalletAccount) => {
 
   return `${described.message}${cause ? ` — ${cause}` : ''}`;
 };
+
+/** The user declined a wallet prompt (signature or transfer). */
+const isDeclined = (error: Error) =>
+  isUserRejection(error) ||
+  [error, error.cause].some(
+    (value) =>
+      value instanceof Error &&
+      /reject|declin|denied|cancell?ed by (the )?user/i.test(value.message),
+  );
 
 /** The family a token's chain belongs to, to tell whether a wallet can send it. */
 const familyOf = (token: Token) => {
@@ -371,9 +380,14 @@ const Deposit = () => {
         return 'external';
       case 'settling':
         return 'settling';
-      case 'success':
       case 'failed':
-        return isOutcomeDismissed ? 'form' : exec.phase;
+        // Declining in the wallet isn't a failure: back to the form, with a
+        // note there.
+        return isOutcomeDismissed || (exec.error && isDeclined(exec.error))
+          ? 'form'
+          : 'failed';
+      case 'success':
+        return isOutcomeDismissed ? 'form' : 'success';
       default:
         return 'form';
     }
@@ -962,10 +976,18 @@ const Deposit = () => {
 
       {visibleError && visibleError !== dismissedError ? (
         <Banner
-          variant="error"
+          variant={isDeclined(visibleError) ? 'warn' : 'error'}
           hasBg
           multiline
-          message={describeError(visibleError, account)}
+          message={(() => {
+            if (!isDeclined(visibleError)) {
+              return describeError(visibleError, account);
+            }
+
+            return deposit.state === 'FAILED'
+              ? `You declined the transfer in ${account.name}. Retry to send it, or cancel the deposit.`
+              : `You declined the request in ${account.name}. Nothing was sent.`;
+          })()}
           onDismiss={() => setDismissedError(visibleError)}
         />
       ) : null}
