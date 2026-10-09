@@ -1,6 +1,6 @@
 import type { Chains } from '@aurora-is-near/intents-swap-widget';
 
-export type IntegrationId = 'polymarket';
+type IntegrationId = 'polymarket';
 
 export type Integration = {
   id: IntegrationId;

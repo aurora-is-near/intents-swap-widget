@@ -320,10 +320,12 @@ export const AssetScreen = ({ token }: { token: Token }) => {
                   grouped={false}
                   items={tokenActivity.slice(0, ACTIVITY_PREVIEW)}
                   onOpen={(item) =>
-                    push({
-                      name: 'activityDetail',
-                      transaction: item.transaction,
-                    })
+                    item.kind === 'app'
+                      ? push({ name: 'appExecution', executionId: item.id })
+                      : push({
+                          name: 'activityDetail',
+                          transaction: item.transaction,
+                        })
                   }
                 />
                 {tokenActivity.length > ACTIVITY_PREVIEW ? (

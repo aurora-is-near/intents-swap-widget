@@ -1,23 +1,30 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { BlockingError, Button } from '@aurora-is-near/intents-swap-widget';
+import {
+  BlockingError,
+  Button,
+  useTokens,
+} from '@aurora-is-near/intents-swap-widget';
 import { cn } from '@aurora-is-near/intents-swap-widget/utils';
 
-import type { ActivityKind } from '../../activity/activity';
+import type { ActivityFilter } from '../../activity/activity';
 import { ActivityList, ActivitySkeleton } from '../../activity/ActivityCard';
+import { toAppActivityItem } from '../../activity/appActivity';
 import { useActivity } from '../../activity/useActivity';
+import { useAppsRuntime } from '../../apps/AppsRuntime';
+import { useAppExecutions } from '../../apps/useAppExecutions';
 import { Icon } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 
-type Filter = 'all' | ActivityKind;
+type Filter = ActivityFilter;
 
-// Apps (Polymarket, Gauntlet deposits) arrive with the Apps phase.
 const FILTERS: Array<[Filter, string]> = [
   ['all', 'All'],
   ['swap', 'Swaps'],
   ['deposit', 'Deposits'],
   ['send', 'Sends'],
+  ['apps', 'Apps'],
 ];
 
 const Empty = ({
@@ -37,9 +44,16 @@ const Empty = ({
           {filter === 'all' ? 'No activity yet' : 'Nothing here yet'}
         </h2>
         <p className="max-w-[300px] text-sw-body-md text-sw-gray-200">
-          {filter === 'all'
-            ? 'Swaps, deposits and sends will show up here.'
-            : `Your ${FILTERS.find(([key]) => key === filter)?.[1].toLowerCase() ?? 'activity'} will show up here.`}
+          {(() => {
+            switch (filter) {
+              case 'all':
+                return 'Swaps, deposits, sends and app deposits will show up here.';
+              case 'apps':
+                return 'Deposits into apps like Polymarket will show up here.';
+              default:
+                return `Your ${FILTERS.find(([key]) => key === filter)?.[1].toLowerCase() ?? 'activity'} will show up here.`;
+            }
+          })()}
         </p>
       </div>
     </div>
@@ -51,19 +65,50 @@ const Empty = ({
   </>
 );
 
-/** Everything the account swapped, deposited and sent. */
-export const ActivityScreen = () => {
+/** Everything the account swapped, deposited and sent, and its app deposits. */
+export const ActivityScreen = ({
+  initialFilter = 'all',
+}: {
+  initialFilter?: Filter;
+}) => {
   const { back, push } = useNavigation();
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter] = useState<Filter>(initialFilter);
   const activity = useActivity();
+  const { tokens } = useTokens();
+  const hasApps = !!useAppsRuntime();
+  const apps = useAppExecutions();
 
-  const items =
-    filter === 'all'
-      ? activity.items
-      : activity.items.filter((item) => item.kind === filter);
+  const appItems = useMemo(
+    () =>
+      apps.executions.map((execution) => toAppActivityItem(tokens, execution)),
+    [apps.executions, tokens],
+  );
+
+  const items = (() => {
+    switch (filter) {
+      case 'all':
+        return [...activity.items, ...appItems].sort(
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+        );
+      case 'apps':
+        return appItems;
+      default:
+        return activity.items.filter((item) => item.kind === filter);
+    }
+  })();
+
+  const isLoading = filter === 'apps' ? apps.isLoading : activity.isLoading;
 
   const content = (() => {
-    if (activity.isLoading) {
+    if (filter === 'apps' && !hasApps) {
+      return (
+        <p className="m-0 px-sw-xs py-sw-lg text-sw-body-md text-sw-gray-300">
+          App deposits need a wallet account Intents Connect can sign with.
+        </p>
+      );
+    }
+
+    if (isLoading) {
       return <ActivitySkeleton />;
     }
 
@@ -89,7 +134,9 @@ export const ActivityScreen = () => {
         <ActivityList
           items={items}
           onOpen={(item) =>
-            push({ name: 'activityDetail', transaction: item.transaction })
+            item.kind === 'app'
+              ? push({ name: 'appExecution', executionId: item.id })
+              : push({ name: 'activityDetail', transaction: item.transaction })
           }
         />
       </>
@@ -102,7 +149,7 @@ export const ActivityScreen = () => {
       onBack={back}
       footer={
         // Pinned to the bottom like the other screens' main actions.
-        activity.hasNextPage && items.length ? (
+        activity.hasNextPage && items.length && filter !== 'apps' ? (
           <Button
             variant="outlined"
             size="lg"

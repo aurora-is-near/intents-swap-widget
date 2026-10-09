@@ -19,6 +19,7 @@ import { NavigationProvider, useNavigation } from './navigation';
 import { isAccountVerified } from './wallet/walletVerification';
 import { ActivityDetailScreen } from './screens/activity/ActivityDetailScreen';
 import { ActivityScreen } from './screens/activity/ActivityScreen';
+import { AppExecutionScreen } from './screens/activity/AppExecutionScreen';
 import { AppsScreen } from './screens/apps/AppsScreen';
 import { PolymarketScreen } from './screens/apps/PolymarketScreen';
 import { AssetScreen } from './screens/asset/AssetScreen';
@@ -86,8 +87,12 @@ const Screens = ({ account }: { account: Account | null }) => {
       return account ? <AppsScreen account={account} /> : null;
     case 'polymarket':
       return account ? <PolymarketScreen /> : null;
+    case 'appExecution':
+      return account ? (
+        <AppExecutionScreen executionId={screen.executionId} />
+      ) : null;
     case 'activity':
-      return account ? <ActivityScreen /> : null;
+      return account ? <ActivityScreen initialFilter={screen.filter} /> : null;
     case 'activityDetail':
       return account ? (
         <ActivityDetailScreen transaction={screen.transaction} />

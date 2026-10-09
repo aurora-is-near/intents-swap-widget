@@ -9,7 +9,7 @@ import { formatAmount } from '../utils';
 
 export type ActivityTransaction = Transaction | FakeTransaction;
 
-export type ActivityKind = 'swap' | 'deposit' | 'send';
+type ActivityKind = 'swap' | 'deposit' | 'send';
 
 /** Activity's tabs: everything, a 1Click kind, or app deposits. */
 export type ActivityFilter = 'all' | ActivityKind | 'apps';
@@ -161,22 +161,19 @@ export const dateTimeLabel = (date: Date, now = new Date()) =>
     : `${dayLabel(date, now)}, ${timeLabel(date, now)}`;
 
 /** Items in day groups, newest first. */
-export const groupByDay = (items: ActivityItem[]) =>
-  items.reduce<Array<{ label: string; items: ActivityItem[] }>>(
-    (groups, item) => {
-      const label = dayLabel(item.createdAt);
-      const last = groups[groups.length - 1];
+export const groupByDay = <T extends { createdAt: Date }>(items: T[]) =>
+  items.reduce<Array<{ label: string; items: T[] }>>((groups, item) => {
+    const label = dayLabel(item.createdAt);
+    const last = groups[groups.length - 1];
 
-      if (last?.label === label) {
-        last.items.push(item);
-      } else {
-        groups.push({ label, items: [item] });
-      }
+    if (last?.label === label) {
+      last.items.push(item);
+    } else {
+      groups.push({ label, items: [item] });
+    }
 
-      return groups;
-    },
-    [],
-  );
+    return groups;
+  }, []);
 
 export const explorerLink = (tx: ActivityTransaction) =>
   tx.depositAddress
