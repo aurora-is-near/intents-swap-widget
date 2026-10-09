@@ -176,7 +176,8 @@ const AssetSection = ({
   isRefreshing,
 }: {
   assets: Asset[];
-  emptyMessage: string;
+  /** Shown instead of the list: a line, or the account's "add funds" card. */
+  emptyMessage: React.ReactNode;
   onRefresh: () => void;
   onOpen: (token: Asset['token']) => void;
   isRefreshing?: boolean;
@@ -210,9 +211,7 @@ const AssetSection = ({
         ))}
       </ul>
     ) : (
-      <p className="m-0 px-sw-xs py-sw-lg text-sw-body-md text-sw-gray-300">
-        {emptyMessage}
-      </p>
+      emptyMessage
     )}
   </section>
 );
@@ -390,9 +389,13 @@ export const HomeScreen = ({ account }: { account: Account }) => {
                 <AssetSection
                   assets={tab === 'account' ? assets.account : assets.wallet}
                   emptyMessage={
-                    tab === 'account'
-                      ? 'Nothing in your account yet. Receive funds from any chain to start.'
-                      : `No tokens found in ${wallet?.name ?? 'your wallet'}.`
+                    tab === 'account' ? (
+                      <EmptyCard onDeposit={openDeposit} />
+                    ) : (
+                      <p className="m-0 px-sw-xs py-sw-lg text-sw-body-md text-sw-gray-300">
+                        No tokens found in {wallet?.name ?? 'your wallet'}.
+                      </p>
+                    )
                   }
                   onRefresh={refresh}
                   isRefreshing={assets.isRefreshing}

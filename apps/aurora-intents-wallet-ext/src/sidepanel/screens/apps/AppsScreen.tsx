@@ -9,6 +9,7 @@ import { usePolymarketBalance } from '../../apps/polymarket/usePolymarketBalance
 import { INTEGRATIONS } from '../../apps/registry';
 import { AppMark } from '../../components/AppMark';
 import { Icon } from '../../components/Icon';
+import type { IconName } from '../../components/Icon';
 import { Screen } from '../../components/Screen';
 import { useNavigation } from '../../navigation';
 import { formatAmount, shortAddress } from '../../utils';
@@ -82,6 +83,32 @@ const PolymarketCard = ({
     </button>
   );
 };
+
+/** Kinds of apps on the way, as the card's icon row. */
+const COMING_SOON_ICONS: IconName[] = ['swap', 'deposit', 'link', 'apps'];
+
+/** Pinned to the bottom of Apps, styled like Home's "add funds" card. */
+const ComingSoonCard = () => (
+  <div className="mt-auto flex shrink-0 flex-col items-center gap-sw-md rounded-sw-lg bg-sw-gray-900 px-sw-2xl py-sw-3xl text-center">
+    <div className="flex">
+      {COMING_SOON_ICONS.map((icon, index) => (
+        <span
+          key={icon}
+          className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-sw-gray-800 text-sw-gray-200 shadow-[0_0_0_2px_var(--c-sw-gray-900)]"
+          style={{ marginLeft: index === 0 ? 0 : -6 }}>
+          <Icon name={icon} size={16} />
+        </span>
+      ))}
+    </div>
+    <span className="mt-sw-md text-sw-label-md text-sw-gray-50">
+      More apps coming soon
+    </span>
+    <p className="m-0 max-w-[280px] text-sw-body-md text-sw-gray-300">
+      Vaults, lending and more, each funded from any chain with one approval.
+      Built on Intents Connect.
+    </p>
+  </div>
+);
 
 const Placeholder = ({
   title,
@@ -168,14 +195,7 @@ export const AppsScreen = ({ account }: { account: Account }) => {
         account={account}
         onOpen={() => push({ name: 'polymarket' })}
       />
-      <div className="flex shrink-0 flex-col gap-sw-xs rounded-sw-lg p-sw-xl shadow-[inset_0_0_0_1px_var(--color-sw-gray-800)]">
-        <span className="text-sw-label-md text-sw-gray-200">
-          More apps coming soon
-        </span>
-        <span className="text-sw-label-sm text-sw-gray-400">
-          Built on Intents Connect
-        </span>
-      </div>
+      <ComingSoonCard />
     </Screen>
   );
 };
