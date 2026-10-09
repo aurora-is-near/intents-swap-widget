@@ -20,6 +20,7 @@ import { isAccountVerified } from './wallet/walletVerification';
 import { ActivityDetailScreen } from './screens/activity/ActivityDetailScreen';
 import { ActivityScreen } from './screens/activity/ActivityScreen';
 import { AppsScreen } from './screens/apps/AppsScreen';
+import { PolymarketScreen } from './screens/apps/PolymarketScreen';
 import { AssetScreen } from './screens/asset/AssetScreen';
 import { BrowserWalletsScreen } from './screens/connect/BrowserWalletsScreen';
 import { ConnectBrowserWalletScreen } from './screens/connect/ConnectBrowserWalletScreen';
@@ -83,6 +84,8 @@ const Screens = ({ account }: { account: Account | null }) => {
       ) : null;
     case 'apps':
       return account ? <AppsScreen account={account} /> : null;
+    case 'polymarket':
+      return account ? <PolymarketScreen /> : null;
     case 'activity':
       return account ? <ActivityScreen /> : null;
     case 'activityDetail':

@@ -21,12 +21,6 @@ export const POL_USDC_ASSET =
 export const USDC = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
 export const PUSD = '0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB';
 
-/**
- * The service's `networkFee` is charged in the DESTINATION asset (Polygon
- * USDC), so it is formatted with these decimals, never the origin token's.
- */
-export const DEST_TOKEN = { symbol: 'USDC', decimals: 6 };
-
 /** pUSD is 6-decimal, same as USDC — the pool sits at tick 0, ≈1:1. */
 export const PUSD_DECIMALS = 6;
 export const USDC_DECIMALS = 6;

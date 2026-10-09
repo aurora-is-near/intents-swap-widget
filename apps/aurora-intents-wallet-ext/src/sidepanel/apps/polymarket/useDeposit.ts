@@ -16,7 +16,7 @@ type Args = {
   depositViaWallet: boolean;
 };
 
-export type DepositState =
+type DepositState =
   | { state: 'IDLE' }
   /** `run()` hit this wallet's in-flight lock: resume it or cancel it. */
   | { state: 'IN_FLIGHT'; id: string }

@@ -3,7 +3,7 @@ import type { PropsWithChildren } from 'react';
 
 import type { Token } from '@aurora-is-near/intents-swap-widget';
 
-import type { ActivityTransaction } from './activity/activity';
+import type { ActivityFilter, ActivityTransaction } from './activity/activity';
 import type { DepositNetwork } from './deposit/networks';
 import type { DetectedWallet } from './wallet/types';
 
@@ -32,8 +32,10 @@ type Screen =
   | { name: 'swap'; source?: Token }
   | { name: 'send'; source?: Token }
   | { name: 'asset'; token: Token }
-  | { name: 'activity' }
+  | { name: 'activity'; filter?: ActivityFilter }
   | { name: 'apps' }
+  | { name: 'polymarket' }
+  | { name: 'appExecution'; executionId: string }
   | { name: 'activityDetail'; transaction: ActivityTransaction }
   | { name: 'settings' }
   | { name: 'wallets' };

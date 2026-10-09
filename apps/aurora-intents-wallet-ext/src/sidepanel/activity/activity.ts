@@ -11,6 +11,9 @@ export type ActivityTransaction = Transaction | FakeTransaction;
 
 export type ActivityKind = 'swap' | 'deposit' | 'send';
 
+/** Activity's tabs: everything, a 1Click kind, or app deposits. */
+export type ActivityFilter = 'all' | ActivityKind | 'apps';
+
 export type ActivityStatus = 'pending' | 'success' | 'failed' | 'refunded';
 
 export type ActivityItem = {
