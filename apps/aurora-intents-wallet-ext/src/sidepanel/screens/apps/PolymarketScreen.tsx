@@ -831,7 +831,7 @@ const Deposit = () => {
         onClick={() => {
           void startDeposit();
         }}>
-        Deposit to Polymarket
+        {depositViaWallet ? 'Deposit to Polymarket' : 'Get deposit address'}
       </Button>
     );
   })();
@@ -897,6 +897,17 @@ const Deposit = () => {
           />
         </div>
       </div>
+
+      {!depositViaWallet ? (
+        <p className="m-0 px-sw-xs text-sw-body-sm text-sw-gray-300">
+          Approve once in {account.name}, then a one-time address and QR code
+          appear here. Send{' '}
+          {token
+            ? `exactly that ${token.symbol} on ${chainLabel(token.blockchain)}`
+            : 'the amount'}{' '}
+          from any wallet or exchange.
+        </p>
+      ) : null}
 
       {cannotSend && token ? (
         <Banner
