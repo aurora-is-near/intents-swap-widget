@@ -990,10 +990,6 @@ const Deposit = () => {
         <div
           ref={helperRef}
           className="flex flex-col gap-sw-md px-sw-md pb-sw-xs">
-          <p className="m-0 text-sw-body-sm text-sw-gray-300">
-            A helper account on Polygon that belongs to you. It runs the deposit
-            and is usually empty between deposits.
-          </p>
           <Notes>
             <Notes.Item
               label="Address"
