@@ -14,8 +14,8 @@ import type { OpenAppMessage } from '../shared/bridge';
 const ATTR = 'data-aurora-deposit';
 const LABEL = 'Deposit with Aurora';
 
-/** The theme's accent-500 → accent-700. */
-const GRADIENT = 'linear-gradient(135deg, #D5B7FF 0%, #A528FF 100%)';
+/** The theme's accent-600 → accent-800: dark enough for a white label. */
+const GRADIENT = 'linear-gradient(135deg, #BA7AFF 0%, #7300B7 100%)';
 
 const MARK = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 3.5 20h3.6L12 10.2 16.9 20h3.6L12 3Z" fill="currentColor"/></svg>`;
 
@@ -89,6 +89,28 @@ const openPanel = (button: HTMLElement) => {
     });
 };
 
+const isPainted = (element: Element) => {
+  const { backgroundColor } = getComputedStyle(element);
+
+  return (
+    backgroundColor !== 'transparent' &&
+    !/rgba\(.*,\s*0\)$/.test(backgroundColor)
+  );
+};
+
+/**
+ * The corner radius the reference button actually shows: that of the
+ * element painting its background (a link may wrap the visible button, with
+ * a radius of its own that nobody sees).
+ */
+const visibleRadius = (reference: HTMLElement) => {
+  const painted = [reference, ...reference.querySelectorAll('*')].find(
+    isPainted,
+  );
+
+  return getComputedStyle(painted ?? reference).borderRadius || '8px';
+};
+
 /** Our button, sized like the site's `reference` button. */
 const createButton = (
   place: 'header' | 'portfolio',
@@ -109,10 +131,10 @@ const createButton = (
     boxSizing: 'border-box',
     height: style.height && style.height !== 'auto' ? style.height : '36px',
     padding: place === 'portfolio' ? '0 16px' : style.padding || '0 14px',
-    borderRadius: style.borderRadius || '8px',
+    borderRadius: visibleRadius(reference),
     border: 'none',
     background: GRADIENT,
-    color: '#1b1b1f',
+    color: '#ffffff',
     font: `600 ${style.fontSize || '14px'}/1 ${style.fontFamily || 'inherit'}`,
     whiteSpace: 'nowrap',
     cursor: 'pointer',
@@ -154,7 +176,15 @@ const placeHeaderButton = () => {
   const deposit = findByText(header, 'Deposit')[0];
 
   if (deposit instanceof HTMLElement) {
-    deposit.after(createButton('header', deposit));
+    const button = createButton('header', deposit);
+    // Its wrapper may lay the buttons out without a gap of its own.
+    const gap =
+      parseFloat(
+        getComputedStyle(deposit.parentElement ?? deposit).columnGap,
+      ) || 0;
+
+    button.style.marginLeft = gap > 0 ? '0' : '8px';
+    deposit.after(button);
   }
 };
 
