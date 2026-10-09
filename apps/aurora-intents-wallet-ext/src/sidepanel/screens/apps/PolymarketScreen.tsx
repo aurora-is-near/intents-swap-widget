@@ -184,6 +184,26 @@ const Deposit = () => {
 
   const depositViaWallet = payWith === 'wallet';
 
+  // The accordion animates to a fixed height: its content's, measured.
+  const helperRef = useRef<HTMLDivElement>(null);
+  const [helperHeight, setHelperHeight] = useState(120);
+
+  useEffect(() => {
+    const node = helperRef.current;
+
+    if (!node) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() =>
+      setHelperHeight(node.offsetHeight),
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  });
+
   // Apps spend the account's own wallet: the widget's balances must be its.
   const previousSource = useRef<TransferSource>(source);
 
@@ -942,8 +962,11 @@ const Deposit = () => {
         title="Intents Connect account"
         badge={helper ? `${usd6(helper.usdc)} USDC` : undefined}
         isBadgeLoading={intermediary.isLoading}
-        expandedHeightPx={150}>
-        <div className="flex flex-col gap-sw-md px-sw-md pt-sw-md">
+        // The widget's 16px spacer above the content, plus the content.
+        expandedHeightPx={16 + helperHeight}>
+        <div
+          ref={helperRef}
+          className="flex flex-col gap-sw-md px-sw-md pb-sw-xs">
           <p className="m-0 text-sw-body-sm text-sw-gray-300">
             A helper account on Polygon that belongs to you. It runs the deposit
             and is usually empty between deposits.
