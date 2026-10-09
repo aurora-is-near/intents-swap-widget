@@ -169,7 +169,13 @@ export const ConnectBrowserWalletScreen = ({
           title="Connection rejected"
           description={`${walletName} declined the request, so no ${role ? 'wallet' : 'account'} was connected. You can try again or pick another wallet.`}
         />
-        <Banner variant="error" message={step.message} hasBg multiline />
+        <Banner
+          className="wrap-banner"
+          variant="error"
+          message={step.message}
+          hasBg
+          multiline
+        />
       </Screen>
     );
   }

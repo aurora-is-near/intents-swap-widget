@@ -193,6 +193,7 @@ export const WalletConnectScreen = () => {
             </div>
           </QrPlaceholder>
           <Banner
+            className="wrap-banner"
             variant="warn"
             message="The code expired after 5 minutes. Generate a new one to continue."
             hasBg
@@ -202,7 +203,13 @@ export const WalletConnectScreen = () => {
       )}
 
       {step.name === 'failed' && (
-        <Banner variant="error" message={step.message} hasBg multiline />
+        <Banner
+          className="wrap-banner"
+          variant="error"
+          message={step.message}
+          hasBg
+          multiline
+        />
       )}
     </Screen>
   );

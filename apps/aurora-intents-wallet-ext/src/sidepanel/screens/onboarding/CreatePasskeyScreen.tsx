@@ -178,6 +178,7 @@ export const CreatePasskeyScreen = () => {
             }
           />
           <Banner
+            className="wrap-banner"
             variant="info"
             message="Keep this panel open until the passkey is saved."
             hasBg
@@ -200,7 +201,13 @@ export const CreatePasskeyScreen = () => {
             title="Passkey wasn’t created"
             description="The request was cancelled or timed out. Nothing was saved and no account was created."
           />
-          <Banner variant="error" message={step.message} hasBg multiline />
+          <Banner
+            className="wrap-banner"
+            variant="error"
+            message={step.message}
+            hasBg
+            multiline
+          />
         </>
       );
       footer = (

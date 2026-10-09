@@ -50,7 +50,13 @@ export class ScreenErrorBoundary extends Component<Props, State> {
           title="This screen couldn’t be shown"
           description="Your funds are not affected. Going back to the wallet usually fixes it."
         />
-        <Banner variant="error" message={error.message} hasBg multiline />
+        <Banner
+          className="wrap-banner"
+          variant="error"
+          message={error.message}
+          hasBg
+          multiline
+        />
       </Screen>
     );
   }

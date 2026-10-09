@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { EVM_CHAINS, isUserRejection } from '@aurora-is-near/intents-connect';
+import { EVM_CHAINS } from '@aurora-is-near/intents-connect';
 import {
   Accordion,
   Banner,
@@ -20,7 +20,6 @@ import {
   isNotEmptyAmount,
 } from '@aurora-is-near/intents-swap-widget/utils';
 
-import type { WalletAccount } from '../../accounts/types';
 import { useTransferSource } from '../../accounts/useTransferSource';
 import type { TransferSource } from '../../accounts/useTransferSource';
 import { useAppsRuntime } from '../../apps/AppsRuntime';
@@ -32,7 +31,7 @@ import { usePolymarketAccount } from '../../apps/polymarket/usePolymarketAccount
 import { usePolymarketBalance } from '../../apps/polymarket/usePolymarketBalance';
 import { usePreview } from '../../apps/polymarket/usePreview';
 import { findIntegrationByIntent, INTEGRATIONS } from '../../apps/registry';
-import { describeServiceError } from '../../apps/serviceErrors';
+import { friendlyError, isDeclined } from '../../apps/errorMessages';
 import { isInFlight, useAppExecutions } from '../../apps/useAppExecutions';
 import { useCloseConnectorWhenIdle } from '../../apps/useCloseConnectorWhenIdle';
 import { Icon } from '../../components/Icon';
@@ -56,29 +55,6 @@ const usd6 = (atomic: string | bigint | undefined, decimals = USDC_DECIMALS) =>
   atomic === undefined || atomic === ''
     ? ''
     : formatAmount(Number(atomic) / 10 ** decimals);
-
-const describeError = (error: Error, account: WalletAccount) => {
-  const described = describeServiceError(error, account);
-
-  // A bare fetch TypeError says nothing the message doesn't.
-  if (described.cause instanceof TypeError) {
-    return described.message;
-  }
-
-  const cause =
-    described.cause instanceof Error ? described.cause.message : undefined;
-
-  return `${described.message}${cause ? ` — ${cause}` : ''}`;
-};
-
-/** The user declined a wallet prompt (signature or transfer). */
-const isDeclined = (error: Error) =>
-  isUserRejection(error) ||
-  [error, error.cause].some(
-    (value) =>
-      value instanceof Error &&
-      /reject|declin|denied|cancell?ed by (the )?user/i.test(value.message),
-  );
 
 /** The family a token's chain belongs to, to tell whether a wallet can send it. */
 const familyOf = (token: Token) => {
@@ -525,6 +501,7 @@ const Deposit = () => {
           </span>
         </div>
         <Banner
+          className="wrap-banner"
           variant="warn"
           hasBg
           multiline
@@ -666,7 +643,8 @@ const Deposit = () => {
           description={
             isHeld
               ? `The ${usd6(held)} USDC that reached Polygon is safe in your Intents Connect account.`
-              : ((exec.error && describeError(exec.error, account)) ??
+              : ((exec.error &&
+                  friendlyError(exec.error, { account, token: sent?.token })) ??
                 'The deposit couldn’t be completed.')
           }
         />
@@ -925,6 +903,7 @@ const Deposit = () => {
 
       {cannotSend && token ? (
         <Banner
+          className="wrap-banner"
           variant="info"
           hasBg
           multiline
@@ -967,33 +946,34 @@ const Deposit = () => {
 
       {preview.error && !visibleError ? (
         <Banner
+          className="wrap-banner"
           variant="error"
           hasBg
           multiline
-          message={describeError(preview.error, account)}
+          message={friendlyError(preview.error, {
+            account,
+            token: ctx.sourceToken,
+          })}
         />
       ) : null}
 
       {visibleError && visibleError !== dismissedError ? (
         <Banner
+          className="wrap-banner"
           variant={isDeclined(visibleError) ? 'warn' : 'error'}
           hasBg
           multiline
-          message={(() => {
-            if (!isDeclined(visibleError)) {
-              return describeError(visibleError, account);
-            }
-
-            return deposit.state === 'FAILED'
-              ? `You declined the transfer in ${account.name}. Retry to send it, or cancel the deposit.`
-              : `You declined the request in ${account.name}. Nothing was sent.`;
-          })()}
+          message={friendlyError(visibleError, {
+            account,
+            token: sent?.token ?? ctx.sourceToken,
+          })}
           onDismiss={() => setDismissedError(visibleError)}
         />
       ) : null}
 
       {exec.phase === 'cancelled' ? (
         <Banner
+          className="wrap-banner"
           variant="info"
           hasBg
           multiline
@@ -1047,6 +1027,7 @@ export const PolymarketScreen = () => {
     return (
       <Screen title={TITLE} onBack={back}>
         <Banner
+          className="wrap-banner"
           variant="info"
           hasBg
           multiline

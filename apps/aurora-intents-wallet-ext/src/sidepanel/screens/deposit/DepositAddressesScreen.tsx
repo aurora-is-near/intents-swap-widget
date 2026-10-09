@@ -94,6 +94,7 @@ export const DepositAddressesScreen = ({ account }: { account: Account }) => {
       </p>
       {evm.isError ? (
         <Banner
+          className="wrap-banner"
           variant="error"
           message={`Couldn’t get your deposit addresses: ${evm.error.message}`}
           hasBg

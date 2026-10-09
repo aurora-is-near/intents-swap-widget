@@ -98,6 +98,7 @@ const WalletList = ({ tabId, role }: { tabId: number; role?: ConnectRole }) => {
   if (detected.status === 'no-bridge') {
     return (
       <Banner
+        className="wrap-banner"
         variant="error"
         message="The wallet window stopped responding. Rescan to open it again."
         hasBg
@@ -215,6 +216,7 @@ export const BrowserWalletsScreen = ({ role }: { role?: ConnectRole }) => {
         )}
         {tab.status === 'failed' && (
           <Banner
+            className="wrap-banner"
             variant="error"
             message={`${tab.message}. Wallets are connected through ${CONNECTOR_URL}, which must be reachable.`}
             hasBg

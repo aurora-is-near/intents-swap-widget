@@ -237,6 +237,7 @@ export const DepositDetailScreen = ({
         {deposit.isError ? (
           <>
             <Banner
+              className="wrap-banner"
               variant="error"
               message={`Couldn’t get this deposit address: ${deposit.error.message}`}
               hasBg
@@ -303,6 +304,7 @@ export const DepositDetailScreen = ({
             <CopyButton value={memo} />
           </div>
           <Banner
+            className="wrap-banner"
             variant="warn"
             message="Include this memo with your transfer. Deposits without it can’t be credited."
             hasBg
@@ -313,6 +315,7 @@ export const DepositDetailScreen = ({
       <StatusCard progress={progress} />
       <Networks network={network} />
       <Banner
+        className="wrap-banner"
         variant="warn"
         message={`Only send from ${network.id === 'evm' ? 'EVM networks' : network.title}. Tokens sent from other chains to this address can’t be recovered.`}
         hasBg

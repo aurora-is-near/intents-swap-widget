@@ -34,6 +34,12 @@ export const ConfirmRemoveView = ({
         </Button>
       </>
     }>
-    <Banner variant={variant} message={warning} hasBg multiline />
+    <Banner
+      className="wrap-banner"
+      variant={variant}
+      message={warning}
+      hasBg
+      multiline
+    />
   </Screen>
 );

@@ -52,7 +52,13 @@ export const VerifyWalletScreen = ({ account }: { account: WalletAccount }) => {
         <AccountSummary account={account} />
       </div>
       {failure ? (
-        <Banner variant="error" message={failure} hasBg multiline />
+        <Banner
+          className="wrap-banner"
+          variant="error"
+          message={failure}
+          hasBg
+          multiline
+        />
       ) : null}
       <WalletCompatibilityCheck
         hideCloseButton

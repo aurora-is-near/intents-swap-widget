@@ -598,6 +598,7 @@ export const SwapScreen = ({
 
       {isInsufficient && ctx.sourceToken ? (
         <Banner
+          className="wrap-banner"
           variant="error"
           hasBg
           multiline

@@ -223,3 +223,12 @@
     min-height: 0;
     height: auto !important;
 }
+
+/*
+ * Banner messages wrap anywhere: an address or hash in an error would
+ * otherwise push the banner past the panel's edge.
+ */
+.wrap-banner > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
