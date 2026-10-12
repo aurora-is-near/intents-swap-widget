@@ -5,6 +5,7 @@ import type { IMaskMixinProps } from 'react-imask';
 import { Input as UIInput } from '@headlessui/react';
 
 import { cn } from '@/utils/cn';
+import { useDisplayAmount } from '@/hooks/useDisplayAmount';
 import type { Props as InputProps } from './Input';
 
 type InputElement = HTMLTextAreaElement | HTMLInputElement;
@@ -61,14 +62,19 @@ export const InputAmount = ({
   value: string;
   setValue: (v: string) => void;
 }) => {
+  const [displayValue, setDisplayValue] = useDisplayAmount(value);
+
   return (
     // @ts-expect-error Use Number instead of MaskedNumber
     <MaskedInputAmount
       scale={18}
-      value={value}
-      rawValue={value}
+      value={displayValue}
+      rawValue={displayValue}
       mask={Number}
-      onAccept={setValue}
+      onAccept={(v: string) => {
+        setDisplayValue(v);
+        setValue(v);
+      }}
       padFractionalZeros={false}
       normalizeZeros
       thousandsSeparator=""
