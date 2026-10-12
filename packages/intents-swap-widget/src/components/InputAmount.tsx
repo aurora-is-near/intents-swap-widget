@@ -71,6 +71,7 @@ export const InputAmount = ({
       value={displayValue}
       rawValue={displayValue}
       mask={Number}
+      max={Infinity}
       onAccept={(v: string) => {
         setDisplayValue(v);
         setValue(v);
