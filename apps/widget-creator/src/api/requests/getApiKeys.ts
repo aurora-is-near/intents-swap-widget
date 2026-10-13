@@ -16,6 +16,9 @@ export const getApiKeys = async (authToken: string) => {
 
     res = response.data;
   } catch (error) {
+    // eslint-disable-next-line
+    console.error(error);
+
     if (error instanceof AxiosError) {
       if (error.response?.status === 401) {
         throw new FeeServiceGetApiKeysError('INVALID_AUTHORIZATION');
@@ -30,6 +33,9 @@ export const getApiKeys = async (authToken: string) => {
   try {
     data = z.array(apiKeySchema).parse(res);
   } catch (error) {
+    // eslint-disable-next-line
+    console.error(error);
+
     throw new FeeServiceGetApiKeysError('INVALID_API_KEY_CONFIGURATION');
   }
 
