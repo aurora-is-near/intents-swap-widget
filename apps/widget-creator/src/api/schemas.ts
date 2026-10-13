@@ -31,12 +31,9 @@ export const FeeConfigSchema = z.any().superRefine((data, ctx) => {
   }
 
   try {
-    // Allow empty recipient address if default fee is set to 0
-    if (
-      (!data.rules || data.rules.length === 0) &&
-      !data.default_fee?.recipient &&
-      data.default_fee?.bps === 0
-    ) {
+    // The portal allows saving a fee before a collection address is set (it is
+    // not charged until one is), so allow an empty default fee recipient
+    if (!data.default_fee?.recipient) {
       // eslint-disable-next-line no-new
       new RuleEngine({
         ...data,
