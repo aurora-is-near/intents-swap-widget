@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { RuleEngine } from 'intents-1click-rule-engine';
-import type { FeeConfig } from 'intents-1click-rule-engine';
+import type { Fee, FeeConfig, Rule } from 'intents-1click-rule-engine';
 import { CHAINS } from '@aurora-is-near/intents-swap-widget';
 
 import type {
@@ -10,6 +10,8 @@ import type {
   TosAcceptance,
   WidgetConfigRecord,
 } from './types';
+
+const PLACEHOLDER_RECIPIENT_ADDRESS = 'placeholder-recipient-address';
 
 export const FeeConfigSchema = z.any().superRefine((data, ctx) => {
   if (data == null) {
@@ -30,22 +32,28 @@ export const FeeConfigSchema = z.any().superRefine((data, ctx) => {
     return;
   }
 
+  // The portal allows saving fees before a collection address is set (they are
+  // not charged until one is), so allow empty recipients
+  const withRecipient = (fee: Fee | Fee[]): Fee | Fee[] =>
+    Array.isArray(fee)
+      ? fee.map((f) => ({
+          ...f,
+          recipient: f.recipient || PLACEHOLDER_RECIPIENT_ADDRESS,
+        }))
+      : { ...fee, recipient: fee?.recipient || PLACEHOLDER_RECIPIENT_ADDRESS };
+
   try {
-    // The portal allows saving a fee before a collection address is set (it is
-    // not charged until one is), so allow an empty default fee recipient
-    if (!data.default_fee?.recipient) {
-      // eslint-disable-next-line no-new
-      new RuleEngine({
-        ...data,
-        default_fee: {
-          ...data.default_fee,
-          recipient: 'placeholder-recipient-address',
-        },
-      } as FeeConfig);
-    } else {
-      // eslint-disable-next-line no-new
-      new RuleEngine(data as FeeConfig);
-    }
+    // eslint-disable-next-line no-new
+    new RuleEngine({
+      ...data,
+      default_fee: withRecipient(data.default_fee),
+      rules: Array.isArray(data.rules)
+        ? data.rules.map((rule: Rule) => ({
+            ...rule,
+            fee: withRecipient(rule.fee),
+          }))
+        : data.rules,
+    } as FeeConfig);
   } catch (error: unknown) {
     ctx.addIssue({
       code: 'custom',
