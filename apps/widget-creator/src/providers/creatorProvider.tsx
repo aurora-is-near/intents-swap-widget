@@ -83,8 +83,10 @@ const getCreatorStateFromRemoteWidgetConfig = (
     confidentialMode: config.confidentialMode ?? 'public',
     accountAbstractionMode:
       config.enableAccountAbstraction === false ? 'disabled' : 'enabled',
+    // No allowed list means every chain is allowed (`chainsOrder` only sorts),
+    // so select them all — including chains added after the config was saved.
     selectedNetworks:
-      config.allowedChainsList ?? config.chainsOrder ?? state.selectedNetworks,
+      config.allowedChainsList ?? CHAINS.map((chain) => chain.id),
     selectedTokenSymbols: config.allowedTokensList
       ? normalizeSelectedTokenSymbols(config.allowedTokensList)
       : null,

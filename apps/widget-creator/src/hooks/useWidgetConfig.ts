@@ -4,9 +4,10 @@ import '@aurora-is-near/intents-swap-widget/styles.css';
 
 import type { SerializableWidgetConfig } from '@/api/types';
 import { getAllowedTokensList } from '@/utils/tokenSelection';
+import { getAllowedChainsList } from '@/utils/networkSelection';
 import { getConfigOverridesFromUrl } from '@/utils/get-url-param';
 import { getWidgetApiKey } from '@/utils/get-widget-api-key';
-import { useTokensGroupedBySymbol } from './useTokens';
+import { useAvailableChains, useTokensGroupedBySymbol } from './useTokens';
 import { useCreator } from './useCreatorConfig';
 
 const configOverrides = getConfigOverridesFromUrl();
@@ -14,6 +15,7 @@ const configOverrides = getConfigOverridesFromUrl();
 export const useWidgetConfig = () => {
   const { state } = useCreator();
   const allTokens = useTokensGroupedBySymbol();
+  const availableChains = useAvailableChains();
   const widgetConfig = useMemo((): SerializableWidgetConfig &
     Partial<WidgetConfig> => {
     const allTokenSymbols = allTokens.map((token) => token.symbol);
@@ -42,7 +44,10 @@ export const useWidgetConfig = () => {
       enableAccountAbstraction: state.accountAbstractionMode === 'enabled',
       enableAutoTokensSwitching: state.widgetMode !== 'deposit',
       chainsOrder: state.selectedNetworks,
-      allowedChainsList: state.selectedNetworks,
+      allowedChainsList: getAllowedChainsList(
+        state.selectedNetworks,
+        availableChains.map((chain) => chain.id),
+      ),
       attachWalletAddressToQuote: true,
       allowedTokensList,
       defaultSourceToken,
@@ -60,7 +65,7 @@ export const useWidgetConfig = () => {
         customRecipientMsg: 'test',
       },
     };
-  }, [allTokens, state]);
+  }, [allTokens, availableChains, state]);
 
   return { widgetConfig };
 };
