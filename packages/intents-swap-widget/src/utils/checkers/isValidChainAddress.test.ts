@@ -1,4 +1,4 @@
-import { CHAINS } from '@/constants/chains';
+import { CHAINS, EVM_CHAINS } from '@/constants/chains';
 import { isValidChainAddress } from './isValidChainAddress';
 
 const EVM = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
@@ -8,11 +8,13 @@ describe('isValidChainAddress', () => {
     expect(isValidChainAddress(chain, 'not-an-address')).not.toBeNull();
   });
 
-  it('validates EVM addresses for every EVM chain, including adi', () => {
-    expect(isValidChainAddress('adi', EVM)).toBe(true);
-    expect(isValidChainAddress('eth', EVM)).toBe(true);
+  it.each(EVM_CHAINS)('validates EVM addresses for EVM chain %s', (chain) => {
+    expect(isValidChainAddress(chain, EVM)).toBe(true);
+    expect(isValidChainAddress(chain, 'vitalik.eth')).toBe(false);
+  });
+
+  it('validates EVM addresses for EVM-addressed hypercore', () => {
     expect(isValidChainAddress('hypercore', EVM)).toBe(true);
-    expect(isValidChainAddress('eth', 'vitalik.eth')).toBe(false);
   });
 
   it('trims surrounding whitespace', () => {

@@ -27,6 +27,7 @@ export const EVM_CHAIN_IDS: Readonly<Record<string, number>> = {
   monad: 143,
   plasma: 9745,
   adi: 36900,
+  hood: 4663,
   aurora: 1313161554,
 };
 

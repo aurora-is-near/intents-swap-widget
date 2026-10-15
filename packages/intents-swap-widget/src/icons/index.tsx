@@ -62,6 +62,7 @@ import ScrollIcon from './scroll.svg';
 import { StarknetIcon } from './StarknetIcon';
 import XlayerIcon from './xlayer.svg';
 import HypercoreIcon from './hypercore.svg';
+import HoodIcon from './hood.svg';
 import NearIntentsIcon from './intents.svg';
 
 export { MaskPrivacy } from './MaskPrivacy';
@@ -104,6 +105,7 @@ export const CHAIN_ICONS: Record<
   scroll: <ScrollIcon />,
   starknet: <StarknetIcon />,
   xlayer: <XlayerIcon />,
+  hood: <HoodIcon />,
   aurora: <AuroraIcon />,
   hypercore: <HypercoreIcon />,
   qtc: <QtcIcon />,

@@ -245,8 +245,8 @@ Everything goes through the `config` prop of `WidgetConfigProvider`. Other props
 
 | Family | IDs |
 |---|---|
-| EVM | `eth` `base` `arb` `bsc` `pol` `op` `avax` `gnosis` `bera` `monad` `adi` `plasma` `scroll` `xlayer` `aurora` |
-| Non-EVM | `near` `sol` `stellar` `ton` `btc` `sui` `xrp` `doge` `tron` `zec` `ltc` `cardano` `aleo` `bch` `dash` `starknet` `hypercore` |
+| EVM | `eth` `base` `arb` `bsc` `pol` `op` `avax` `gnosis` `bera` `monad` `adi` `plasma` `scroll` `xlayer` `hood` `aurora` |
+| Non-EVM | `near` `sol` `stellar` `ton` `btc` `sui` `xrp` `doge` `tron` `zec` `ltc` `cardano` `aleo` `bch` `dash` `starknet` `hypercore` `qtc` |
 
 Source: [`src/constants/chains.ts`](https://github.com/aurora-is-near/intents-swap-widget/blob/main/packages/intents-swap-widget/src/constants/chains.ts).
 

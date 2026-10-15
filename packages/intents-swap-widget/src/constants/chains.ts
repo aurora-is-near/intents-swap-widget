@@ -18,6 +18,7 @@ export const EVM_CHAINS = [
   'plasma',
   'scroll',
   'xlayer',
+  'hood',
   'aurora',
 ] as const;
 
@@ -36,6 +37,7 @@ export const EVM_CHAIN_IDS_MAP: Record<EvmChains, number> = {
   plasma: 9745,
   scroll: 534352,
   xlayer: 196,
+  hood: 4663,
   aurora: 1313161554,
 };
 
@@ -89,6 +91,7 @@ export const EVM_CHAIN_BASE_TOKENS: Record<EvmChains, string> = {
   plasma: 'XPL',
   scroll: 'ETH',
   xlayer: 'OKB',
+  hood: 'ETH',
   aurora: 'ETH',
 };
 
@@ -225,6 +228,10 @@ export const CHAINS_LIST: Record<Chains, Chain> = {
     id: 'xlayer',
     label: 'X Layer',
   },
+  hood: {
+    id: 'hood',
+    label: 'Robinhood Chain',
+  },
   aurora: {
     id: 'aurora',
     label: 'Aurora',
@@ -268,6 +275,7 @@ export const DEFAULT_CHAINS_ORDER: Chains[] = [
   'bch',
   'dash',
   'adi',
+  'hood',
   'aurora',
   'hypercore',
   'qtc',
