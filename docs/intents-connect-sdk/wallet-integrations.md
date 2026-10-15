@@ -71,7 +71,7 @@ export const App = () => (
 | `themeMode` | `'dark'` / `'light'` |
 | `rpcOverrides` | publicnode RPCs per EVM chain id |
 
-EVM networks: Ethereum, Arbitrum, Base, BSC, Polygon, Optimism, Avalanche, Gnosis, Berachain, Monad, Plasma, Scroll, X Layer, ADI, Aurora, plus Solana.
+EVM networks: Ethereum, Arbitrum, Base, BSC, Polygon, Optimism, Avalanche, Gnosis, Berachain, Monad, Plasma, Scroll, X Layer, ADI, Robinhood Chain, Aurora, plus Solana.
 
 ## Multi-chain path: EVM, Solana, NEAR, Stellar
 

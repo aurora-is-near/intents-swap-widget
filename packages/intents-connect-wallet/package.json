@@ -61,7 +61,7 @@
     "@solana/web3.js": "^1.98.4",
     "@stellar/stellar-sdk": "^14.6.1",
     "react": ">=18.2.0",
-    "viem": "^2.38.4"
+    "viem": "^2.55.0"
   },
   "peerDependenciesMeta": {
     "@creit.tech/stellar-wallets-kit": {
@@ -118,7 +118,7 @@
     "@solana/web3.js": "^1.98.4",
     "@stellar/stellar-sdk": "^14.6.1",
     "react": "^18.2.0",
-    "viem": "^2.38.4",
+    "viem": "2.55.19",
     "react-dom": "^18.2.0"
   }
 }

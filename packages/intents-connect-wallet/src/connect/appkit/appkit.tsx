@@ -32,6 +32,7 @@ import {
   solana as solanaMainnet,
   xLayer,
 } from '@reown/appkit/networks';
+import { robinhood as viemRobinhood } from 'viem/chains';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 
@@ -140,6 +141,19 @@ const aurora = defineChain({
   },
 });
 
+// Reown's networks come from its own bundled viem, which predates Robinhood
+// Chain (added in viem 2.55), and its network type is tied to that viem. So the
+// values come from our viem and only the fields Reown needs are passed on.
+const robinhood = defineChain({
+  id: viemRobinhood.id,
+  caipNetworkId: `eip155:${viemRobinhood.id}`,
+  chainNamespace: 'eip155',
+  name: viemRobinhood.name,
+  nativeCurrency: viemRobinhood.nativeCurrency,
+  rpcUrls: viemRobinhood.rpcUrls,
+  blockExplorers: viemRobinhood.blockExplorers,
+});
+
 const appKitNetworks = [
   mainnet,
   arbitrum,
@@ -156,6 +170,7 @@ const appKitNetworks = [
   scroll,
   xLayer,
   adi,
+  robinhood,
   aurora,
 ] satisfies CreateAppKit['networks'];
 

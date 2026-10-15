@@ -21654,6 +21654,20 @@ viem@2.38.4, viem@>=2.37.9, viem@^2.1.1, viem@^2.27.2, viem@^2.31.7:
     ox "0.9.6"
     ws "8.18.3"
 
+viem@2.55.19:
+  version "2.55.19"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.55.19.tgz#c5ccd1e54755b2361911283204fb564611543590"
+  integrity sha512-4QPIX0eYPLsOBk53NKswVMkQoxuP7GlOBnB4wM6dkDokREO4QENNc3bmyPKK1PBTViXh0TPJCHLjIuU20Qi3fg==
+  dependencies:
+    "@noble/curves" "1.9.1"
+    "@noble/hashes" "1.8.0"
+    "@scure/bip32" "1.7.0"
+    "@scure/bip39" "1.6.0"
+    abitype "1.2.3"
+    isows "1.0.7"
+    ox "0.14.34"
+    ws "8.21.0"
+
 viem@>=2.45.0:
   version "2.48.4"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.48.4.tgz#4de30b8564d26a7409559d812e9367213b2ec769"
@@ -21709,20 +21723,6 @@ viem@^2.21.9:
     isows "1.0.7"
     ox "0.11.3"
     ws "8.18.3"
-
-viem@^2.38.4:
-  version "2.55.19"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.55.19.tgz#c5ccd1e54755b2361911283204fb564611543590"
-  integrity sha512-4QPIX0eYPLsOBk53NKswVMkQoxuP7GlOBnB4wM6dkDokREO4QENNc3bmyPKK1PBTViXh0TPJCHLjIuU20Qi3fg==
-  dependencies:
-    "@noble/curves" "1.9.1"
-    "@noble/hashes" "1.8.0"
-    "@scure/bip32" "1.7.0"
-    "@scure/bip39" "1.6.0"
-    abitype "1.2.3"
-    isows "1.0.7"
-    ox "0.14.34"
-    ws "8.21.0"
 
 viem@^2.40.3:
   version "2.43.2"
