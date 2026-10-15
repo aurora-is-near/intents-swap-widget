@@ -45,3 +45,4 @@ spec.json
 .codex/
 .claude/
 AGENTS.md
+.mcp.json
