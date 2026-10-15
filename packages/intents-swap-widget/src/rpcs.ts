@@ -22,6 +22,7 @@ export const DEFAULT_RPCS: ChainRpcUrls = {
   plasma: ['https://rpc.plasma.to'],
   scroll: ['https://rpc.scroll.io'],
   xlayer: ['https://rpc.xlayer.tech'],
+  hood: ['https://rpc.mainnet.chain.robinhood.com'],
   aurora: ['https://mainnet.aurora.dev'],
 
   // The fee-service RPC proxy (keyed by the widget API key) is prepended at

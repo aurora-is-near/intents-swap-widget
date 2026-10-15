@@ -1,5 +1,6 @@
 import type { Chains, EvmChains } from '@/types/chain';
-import { DRY_QUOTE_ZERO_ADDRESSES, EVM_CHAINS } from '../constants/chains';
+import { DRY_QUOTE_ZERO_ADDRESSES } from '../constants/chains';
+import { isEvmChain } from './evm/isEvmChain';
 
 export function getDryQuoteAddress(
   tokenBlockchain: Chains | EvmChains,
@@ -9,9 +10,7 @@ export function getDryQuoteAddress(
     return DRY_QUOTE_ZERO_ADDRESSES.near;
   }
 
-  const sourceTokenEngineType = Object.keys(EVM_CHAINS).includes(
-    tokenBlockchain,
-  )
+  const sourceTokenEngineType = isEvmChain(tokenBlockchain)
     ? 'evm'
     : tokenBlockchain;
 

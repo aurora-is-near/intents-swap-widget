@@ -48,7 +48,7 @@ The widget now renders its own **Connect wallet** button and a profile button fo
 | **NEAR** | [NEAR Connect](https://www.npmjs.com/package/@hot-labs/near-connect) | HOT, Meteor, MyNearWallet, NEAR Mobile, … |
 | **Stellar** | [Stellar Wallets Kit](https://stellarwalletskit.dev/) | Freighter, xBull, … |
 
-**EVM networks in the wallet modal:** Ethereum, Arbitrum, Base, BSC, Polygon, Optimism, Avalanche, Gnosis, Berachain, Monad, Plasma, Scroll, X Layer, ADI, Aurora.
+**EVM networks in the wallet modal:** Ethereum, Arbitrum, Base, BSC, Polygon, Optimism, Avalanche, Gnosis, Berachain, Monad, Plasma, Scroll, X Layer, ADI, Robinhood Chain, Aurora.
 
 Users can still swap **to** any [supported chain](https://docs.intents.aurora.dev/intents-swap/supported-chains), including chains they have no wallet for.
 

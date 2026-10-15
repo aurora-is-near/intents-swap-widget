@@ -71,7 +71,7 @@ const { address, connect, disconnect } = useYourEvmWallet(); // wagmi, AppKit, P
 
 ## Supported source chains
 
-Ethereum `eth` · Base `base` · Arbitrum `arb` · BNB Chain `bsc` · Polygon `pol` · Optimism `op` · Avalanche `avax` · Gnosis `gnosis` · Berachain `bera` · Monad `monad` · ADI `adi` · Plasma `plasma` · Scroll `scroll` · X Layer `xlayer` · Aurora `aurora`
+Ethereum `eth` · Base `base` · Arbitrum `arb` · BNB Chain `bsc` · Polygon `pol` · Optimism `op` · Avalanche `avax` · Gnosis `gnosis` · Berachain `bera` · Monad `monad` · ADI `adi` · Plasma `plasma` · Scroll `scroll` · X Layer `xlayer` · Robinhood Chain `hood` · Aurora `aurora`
 
 Live list with source/destination support: 📖 [Supported chains](https://docs.intents.aurora.dev/intents-swap/supported-chains)
 
