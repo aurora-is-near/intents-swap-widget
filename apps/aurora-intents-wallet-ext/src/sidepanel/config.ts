@@ -6,9 +6,12 @@ const API_KEY = '5a6c4f98-f174-4bd2-aa19-3d53e3abe87d';
 // Wallet balances (EVM, Solana). Same key as apps/intents-chrome-ext.
 export const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
 
-const FEE_SERVICE_OVERRIDE = import.meta.env.VITE_FEE_SERVICE_URL as
-  | string
-  | undefined;
+// Empty counts as unset, so `VITE_FEE_SERVICE_URL= yarn build` targets
+// production even with a local override in `.env.local`.
+const envValue = (value: unknown) =>
+  typeof value === 'string' && value !== '' ? value : undefined;
+
+const FEE_SERVICE_OVERRIDE = envValue(import.meta.env.VITE_FEE_SERVICE_URL);
 
 /**
  * Fee service for everything: deposit addresses here, quotes and intents in
@@ -23,7 +26,7 @@ export const WIDGET_INTENTS_API_URL = FEE_SERVICE_OVERRIDE;
 
 /** An app key known to that fee service (a local one has its own keys). */
 export const FEE_SERVICE_API_KEY =
-  (import.meta.env.VITE_PDA_API_KEY as string | undefined) ?? API_KEY;
+  envValue(import.meta.env.VITE_PDA_API_KEY) ?? API_KEY;
 
 /**
  * Every deposit is converted to this asset, as its intents representation

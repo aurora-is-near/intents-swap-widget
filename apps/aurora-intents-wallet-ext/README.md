@@ -184,6 +184,14 @@ VITE_FEE_SERVICE_URL=http://localhost:3005
 VITE_PDA_API_KEY=<an app key known to that fee service>
 ```
 
+The override is baked into `build` too: with the local service stopped the
+token list never loads and every wallet looks empty. Build for production
+without editing `.env.local` by blanking both:
+
+```bash
+VITE_FEE_SERVICE_URL= VITE_PDA_API_KEY= yarn workspace aurora-intents-wallet-ext build
+```
+
 ## Develop
 
 Packages must be built first (the app consumes their `dist`):
