@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import type { WidgetConfig } from '@aurora-is-near/intents-swap-widget';
 import '@aurora-is-near/intents-swap-widget/styles.css';
 
 import type { SerializableWidgetConfig } from '@/api/types';
@@ -16,8 +15,7 @@ export const useWidgetConfig = () => {
   const { state } = useCreator();
   const allTokens = useTokensGroupedBySymbol();
   const availableChains = useAvailableChains();
-  const widgetConfig = useMemo((): SerializableWidgetConfig &
-    Partial<WidgetConfig> => {
+  const widgetConfig = useMemo((): SerializableWidgetConfig => {
     const allTokenSymbols = allTokens.map((token) => token.symbol);
 
     const defaultSourceToken = state.enableSellToken
@@ -48,7 +46,6 @@ export const useWidgetConfig = () => {
         state.selectedNetworks,
         availableChains.map((chain) => chain.id),
       ),
-      attachWalletAddressToQuote: true,
       allowedTokensList,
       defaultSourceToken,
       sendAddress:
@@ -62,7 +59,6 @@ export const useWidgetConfig = () => {
       extraQuoteParameters: {
         ...state.extraQuoteParameters,
         ...configOverrides?.extraQuoteParameters,
-        customRecipientMsg: 'test',
       },
     };
   }, [allTokens, availableChains, state]);
