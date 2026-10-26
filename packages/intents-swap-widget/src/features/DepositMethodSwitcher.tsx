@@ -12,7 +12,7 @@ import { Tooltip } from '@/components/Tooltip';
 import { ExternalDeposit, QRCodeSkeleton } from '@/features/ExternalDeposit';
 import { RefundAddressStep } from '@/features/RefundAddressStep';
 import { TokenSelectButton } from '@/components/TokenSelectButton';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { formatMinDepositAmount } from '@/utils/formatters/formatMinDepositAmount';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useWalletAddressForToken } from '@/hooks/useWalletAddressForToken';
 import { useConfig } from '@/config';
@@ -75,10 +75,36 @@ const ExtendedContent = ({ mode, onMsg }: Props) => {
     return null;
   }
 
-  // limit minimum deposit amount to 1 USD to avoid FLEX_INPUT quote failure
-  const minDepositAmount = ctx.sourceToken
-    ? formatBigToHuman(minDepositTokenAmount, ctx.sourceToken.decimals)
-    : 0;
+  // 1Click's minimum comes with the quote (minAmountIn) or with a too-low error.
+  // Until either arrives, show the floor the quote is requested with
+  // (1 USD to avoid FLEX_INPUT failure).
+  const getMinDepositAmount = () => {
+    if (!ctx.sourceToken) {
+      return 0;
+    }
+
+    if (
+      ctx.error?.code === 'QUOTE_AMOUNT_IS_TOO_LOW' &&
+      ctx.error.meta.minAmount
+    ) {
+      return ctx.error.meta.minAmount;
+    }
+
+    const quoteMinAmount =
+      ctx.quote?.type === 'QUOTE_DEPOSIT_ANY_AMOUNT'
+        ? formatMinDepositAmount(
+            ctx.quote.minAmountIn,
+            ctx.sourceToken.decimals,
+          )
+        : '';
+
+    return (
+      quoteMinAmount ||
+      formatMinDepositAmount(minDepositTokenAmount, ctx.sourceToken.decimals)
+    );
+  };
+
+  const minDepositAmount = getMinDepositAmount();
 
   if (
     ctx.walletAddress &&

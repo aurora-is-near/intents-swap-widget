@@ -43,6 +43,8 @@ export type QuoteReal = QuoteResponseShort &
 
 export type QuoteDepositAnyAmount = WithAppFees & {
   type: 'QUOTE_DEPOSIT_ANY_AMOUNT';
+  // deposits below it are refunded
+  minAmountIn: string;
   depositAddress: string;
   deadline?: string;
   timeEstimate: number;

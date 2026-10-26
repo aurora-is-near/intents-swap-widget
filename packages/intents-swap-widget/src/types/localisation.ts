@@ -63,6 +63,7 @@ export type LocalisationKeys =
   | 'deposit.method.switcher.tooltip.intents'
   | 'deposit.method.switcher.tooltip.virtualChain'
   | 'deposit.external.anyAmount.message'
+  | 'deposit.external.minAmount.message'
   | 'deposit.summary.youWillDeposit.label'
   | 'deposit.summary.title'
   | 'deposit.external.stepSelectToken.title'

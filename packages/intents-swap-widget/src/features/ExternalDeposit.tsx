@@ -13,6 +13,7 @@ import { useMergedBalance } from '@/hooks/useMergedBalance';
 import { useBalancesUpdate } from '@/context/BalancesUpdateContext';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
 import { formatAddressTruncate } from '@/utils/formatters/formatAddressTruncate';
+import { formatMinDepositAmount } from '@/utils/formatters/formatMinDepositAmount';
 import { getTransactionLink } from '@/utils/formatters/getTransactionLink';
 import type { TransferResult } from '@/types';
 
@@ -102,6 +103,11 @@ const QrCode = ({ address }: { address: string }) => {
     return null;
   }
 
+  const minDepositAmount =
+    ctx.quote.type === 'QUOTE_DEPOSIT_ANY_AMOUNT' && ctx.sourceToken
+      ? formatMinDepositAmount(ctx.quote.minAmountIn, ctx.sourceToken.decimals)
+      : '';
+
   return (
     <div className="flex flex-col gap-y-sw-sm">
       <div className="mx-auto w-fit p-sw-lg mb-sw-xl rounded-[32px] bg-[#fff]">
@@ -138,10 +144,19 @@ const QrCode = ({ address }: { address: string }) => {
       <Banner
         hasBg={false}
         variant="success"
-        message={t(
-          'deposit.external.anyAmount.message',
-          'You can deposit any amount with this address',
-        )}
+        message={
+          minDepositAmount && ctx.sourceToken
+            ? t('deposit.external.minAmount.message', {
+                defaultValue:
+                  'You can deposit any amount from {{amount}} {{symbol}} with this address',
+                amount: minDepositAmount,
+                symbol: ctx.sourceToken.symbol,
+              })
+            : t(
+                'deposit.external.anyAmount.message',
+                'You can deposit any amount with this address',
+              )
+        }
       />
     </div>
   );

@@ -20,11 +20,13 @@ import { getDepositType } from '@/utils/intents/getDepositType';
 import { getQuoteRecipient } from '@/utils/intents/getQuoteRecipient';
 import { getQuoteRefundTo } from '@/utils/intents/getQuoteRefundTo';
 import { getQuoteRefundType } from '@/utils/intents/getQuoteRefundType';
+import { getFlexInputRetryAmount } from '@/utils/intents/getFlexInputRetryAmount';
 import { isAuroraRecipient } from '@/utils/intents/isAuroraRecipient';
 import { isAuroraSourceRefund } from '@/utils/intents/isAuroraSourceRefund';
 import { isAuroraToken } from '@/utils/intents/isAuroraToken';
 import { supportsAuroraVcRefund } from '@/utils/intents/supportsAuroraVcRefund';
-import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
+import { formatMinDepositAmount } from '@/utils/formatters/formatMinDepositAmount';
+import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
@@ -441,38 +443,61 @@ export const useMakeQuote = () => {
           });
         }
 
-        request.current = requestQuote(
-          {
-            ...commonQuoteParams,
-            ...filteredExtraQuoteParameters,
-            recipient,
-            recipientType: ctx.targetToken.isIntent
-              ? QuoteRequest.recipientType.INTENTS
-              : QuoteRequest.recipientType.DESTINATION_CHAIN,
-            depositType: getDepositType(
-              ctx.sourceToken,
-            ) as QuoteRequest.depositType,
+        const externalQuoteParams: QuoteRequest = {
+          ...commonQuoteParams,
+          ...filteredExtraQuoteParameters,
+          recipient,
+          recipientType: ctx.targetToken.isIntent
+            ? QuoteRequest.recipientType.INTENTS
+            : QuoteRequest.recipientType.DESTINATION_CHAIN,
+          depositType: getDepositType(
+            ctx.sourceToken,
+          ) as QuoteRequest.depositType,
 
-            // Refund. For Aurora-VC deposits, 1Click requires refundType
-            // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
-            // is the literal 'aurora' account, otherwise it's the user's
-            // address on the origin chain.
-            refundTo: isUserDefinedRefundAddress
-              ? (ctx.refundToAddress ?? '')
-              : getRefundTo(),
-            refundType: isUserDefinedRefundAddress
-              ? QuoteRequest.refundType.ORIGIN_CHAIN
-              : getRefundType(),
+          // Refund. For Aurora-VC deposits, 1Click requires refundType
+          // ORIGIN_CHAIN; if the source is Intents/NEAR the refund target
+          // is the literal 'aurora' account, otherwise it's the user's
+          // address on the origin chain.
+          refundTo: isUserDefinedRefundAddress
+            ? (ctx.refundToAddress ?? '')
+            : getRefundTo(),
+          refundType: isUserDefinedRefundAddress
+            ? QuoteRequest.refundType.ORIGIN_CHAIN
+            : getRefundType(),
 
-            depositMode:
-              ctx.sourceToken.blockchain === 'stellar'
-                ? QuoteRequest.depositMode.MEMO
-                : QuoteRequest.depositMode.SIMPLE,
-          },
-          options,
-        );
+          depositMode:
+            ctx.sourceToken.blockchain === 'stellar'
+              ? QuoteRequest.depositMode.MEMO
+              : QuoteRequest.depositMode.SIMPLE,
+        };
 
-        quoteResult = await request.current;
+        request.current = requestQuote(externalQuoteParams, options);
+
+        try {
+          quoteResult = await request.current;
+        } catch (error: unknown) {
+          // FLEX_INPUT accepts any deposit amount, so a bridge minimum above the
+          // USD floor is not the user's to fix - retry once at that minimum.
+          const retryAmount =
+            externalQuoteParams.swapType === QuoteRequest.swapType.FLEX_INPUT &&
+            error instanceof AxiosError
+              ? getFlexInputRetryAmount(
+                  getResponseErrorMessage(error) ?? '',
+                  ctx.maxSlippage,
+                )
+              : undefined;
+
+          if (!retryAmount) {
+            throw error;
+          }
+
+          request.current = requestQuote(
+            { ...externalQuoteParams, amount: retryAmount },
+            options,
+          );
+
+          quoteResult = await request.current;
+        }
       }
     } catch (error: unknown) {
       if (error instanceof CanceledError) {
@@ -483,7 +508,7 @@ export const useMakeQuote = () => {
       let errorMessage = error instanceof Error ? error.message : '';
 
       if (error instanceof AxiosError) {
-        errorMessage = error.response?.data.message || errorMessage;
+        errorMessage = getResponseErrorMessage(error) ?? errorMessage;
 
         if (errorMessage.includes('Amount is too low')) {
           const match = errorMessage.match(/\d+/);
@@ -494,7 +519,10 @@ export const useMakeQuote = () => {
             meta: {
               minAmount:
                 (minAmount &&
-                  formatBigToHuman(minAmount, ctx.sourceToken.decimals)) ??
+                  formatMinDepositAmount(
+                    minAmount,
+                    ctx.sourceToken.decimals,
+                  )) ??
                 '0',
             },
           });
