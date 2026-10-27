@@ -53,6 +53,7 @@
     * [Native SOL scenario](intents-connect/developer-guides/solana/native-sol-scenario.md)
     * [Transfer USDC scenario](intents-connect/developer-guides/solana/transfer-usdc-scenario.md)
     * [Using Solana as destination](intents-connect/developer-guides/solana/using-solana-as-destination.md)
+    * [Reference frontend of Jupiter](intents-connect/developer-guides/solana/reference-frontend-of-jupiter.md)
   * [Sui](intents-connect/developer-guides/sui/README.md)
     * [Staking Sui](intents-connect/developer-guides/sui/staking-sui.md)
     * [Staking USDC](intents-connect/developer-guides/sui/staking-usdc.md)
