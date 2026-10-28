@@ -137,7 +137,7 @@ export const createLoader = ({ alchemyApiKey }: CreateLoaderArgs) => {
           includeNativeTokens: true,
           addresses: walletAddresses.map((address) => ({
             address,
-            networks: portfolioNetworks,
+            networks: [...portfolioNetworks, 'solana-mainnet'],
           })),
           pageKey: portfolioPageKey,
         },
