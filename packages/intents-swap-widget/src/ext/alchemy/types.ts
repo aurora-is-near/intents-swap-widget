@@ -14,6 +14,7 @@ export const CHAINS_MAP = {
   sol: 'solana-mainnet',
   monad: 'monad-mainnet',
   scroll: 'scroll-mainnet',
+  sol: 'solana-mainnet',
   hood: 'robinhood-mainnet',
 } as const satisfies Partial<Record<Chains, string>>;
 
