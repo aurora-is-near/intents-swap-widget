@@ -19,4 +19,10 @@ export const getWalletAddressForToken = (
   if (walletAddress.default) {
     return walletAddress.default;
   }
+
+  // Without a token there is no chain to pick by, so fall back to the first
+  // chain-keyed wallet (e.g. `{ sol }`) to keep it treated as connected
+  if (!token) {
+    return Object.values(walletAddress).find(Boolean) ?? undefined;
+  }
 };
