@@ -15,11 +15,14 @@ export {
   FT_TRANSFER_GAS,
   DEFAULT_RPC_URLS,
 } from '@/near/config';
+export { getMinStorageBalance, getStorageBalance } from '@/near/storage';
+// Re-exported for existing importers; the implementation lives in core.
 export {
-  getMinStorageBalance,
-  getStorageBalance,
   viewCall,
-} from '@/near/viewCall';
+  NearContractError,
+  NearRpcError,
+  NearUnknownAccountError,
+} from '@aurora-is-near/intents-connect';
 export type {
   NearAction,
   NearTransaction,

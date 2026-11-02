@@ -12,7 +12,7 @@ import type {
   NearTransferOptions,
   NearTransferWallet,
 } from '@/near/types';
-import { getMinStorageBalance, getStorageBalance } from '@/near/viewCall';
+import { getMinStorageBalance, getStorageBalance } from '@/near/storage';
 
 const resolveWallet = (
   wallet: NearTransferOptions['wallet'],

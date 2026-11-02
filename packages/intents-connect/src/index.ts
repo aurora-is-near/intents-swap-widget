@@ -33,6 +33,19 @@ export type {
 
 export type { OwnershipProof, OwnershipStandard } from '@/ownership/types';
 
+export {
+  DEFAULT_NEAR_RPC_URLS,
+  NearContractError,
+  NearRpcError,
+  NearUnknownAccountError,
+  balanceRpcUrls,
+  getNativeNearBalance,
+  nearRpc,
+  proofRpcUrls,
+  viewCall,
+  type NearRpcOptions,
+} from '@/near';
+
 export { createExecutionRunner } from '@/runner';
 export type {
   ExecutionPlan,

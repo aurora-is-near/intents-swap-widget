@@ -8,11 +8,13 @@ const TOKEN = 'usdc.tether-token.near';
 
 const viewResult = (value: unknown) => ({
   ok: true,
-  json: async () => ({
-    result: {
-      result: Array.from(new TextEncoder().encode(JSON.stringify(value))),
-    },
-  }),
+  status: 200,
+  text: async () =>
+    JSON.stringify({
+      result: {
+        result: Array.from(new TextEncoder().encode(JSON.stringify(value))),
+      },
+    }),
 });
 
 const stubWallet = () => {
