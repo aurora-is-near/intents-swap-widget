@@ -70,6 +70,17 @@ export {
 } from '@/ownership';
 
 export {
+  assertPreparedIntent,
+  assertSwapTransferPayload,
+  FundingError,
+  signPreparedIntent,
+  type FundingErrorCode,
+  type FundingErrorMeta,
+  type SignPreparedIntentOptions,
+  type SwapTransferExpectation,
+} from '@/funding';
+
+export {
   createIntentsSession,
   SESSION_STORAGE_KEY_PREFIX,
   SessionError,

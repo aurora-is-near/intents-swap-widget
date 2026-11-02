@@ -8,7 +8,7 @@ import type {
   OwnershipVerdict,
 } from '@/ownership/types';
 
-const IMPLICIT_NEAR_ACCOUNT = /^[0-9a-f]{64}$/;
+export const IMPLICIT_NEAR_ACCOUNT = /^[0-9a-f]{64}$/;
 
 /**
  * `PUBLIC_KEY_NOT_REGISTERED` is a NEAR-only state (a named account must
@@ -39,7 +39,7 @@ const classify = (
  * Returns `undefined` when the contract has no such view — the simulation
  * that follows still decides.
  */
-const isNearKeyRegistered = async (
+export const isNearKeyRegistered = async (
   accountId: string,
   publicKey: string,
   rpc: NearRpcOptions,

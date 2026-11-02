@@ -1,5 +1,4 @@
 import { getFamilyForStandard, getIntentsAccountId } from '@/account';
-import { isUserRejection, toError } from '@/errors';
 import type { NearRpcOptions } from '@/near/rpc';
 import { OwnershipError } from '@/ownership/errors';
 import { createTimestampedNonceBytes, encodeNonce } from '@/ownership/nonce';
@@ -9,26 +8,13 @@ import {
   OWNERSHIP_PROOF_TTL_MS,
 } from '@/ownership/payload';
 import { getCurrentSalt, INTENTS_CONTRACT } from '@/ownership/salt';
+import { signMultiPayload } from '@/ownership/signMultiPayload';
 import type { OwnershipProof } from '@/ownership/types';
-import { signErc191 } from '@/signers/standards/erc191';
-import { signNep413 } from '@/signers/standards/nep413';
-import { signRawEd25519 } from '@/signers/standards/rawEd25519';
 import type { WalletConnector } from '@/types/wallet';
 
 export type SignOwnershipProofOptions = NearRpcOptions & {
   /** Clock, for tests. */
   now?: () => number;
-};
-
-const requireProvider = <T>(provider: T | null | undefined, family: string) => {
-  if (!provider) {
-    throw new OwnershipError(
-      'WALLET_NOT_CONNECTED',
-      `the wallet exposes no ${family} provider`,
-    );
-  }
-
-  return provider;
 };
 
 /**
@@ -84,77 +70,29 @@ export const signOwnershipProof = async (
   const start = new Date(now());
   const deadline = new Date(start.getTime() + OWNERSHIP_PROOF_TTL_MS);
   const nonce = encodeNonce(salt, deadline, createTimestampedNonceBytes(start));
-  const providers = wallet.getProviders();
 
-  try {
-    switch (signingStandard) {
-      case 'erc191': {
-        const payload = buildIntentPayload({ signerId, deadline, nonce });
-        const envelope = await signErc191({
-          message: payload,
-          provider: requireProvider(providers.evm, 'EVM'),
-          expectedAddress: address,
-        });
-
-        return {
-          standard: 'erc191',
-          payload,
-          signature: envelope.signature,
-        };
-      }
-
-      case 'raw_ed25519': {
-        const payload = buildIntentPayload({ signerId, deadline, nonce });
-        const envelope = await signRawEd25519({
-          bytes: new TextEncoder().encode(payload),
-          provider: requireProvider(providers.sol, 'Solana'),
-          expectedAddress: address,
-        });
-
-        return {
-          standard: 'raw_ed25519',
-          payload,
-          public_key: envelope.publicKey!,
-          signature: envelope.signature,
-        };
-      }
-
-      case 'nep413': {
-        const message = buildNep413Message({ signerId, deadline });
-        const payload = { message, nonce, recipient: INTENTS_CONTRACT };
-        const envelope = await signNep413({
-          payload,
-          getProvider: requireProvider(providers.near, 'NEAR'),
-          expectedAccountId: address,
-        });
-
-        return {
-          standard: 'nep413',
-          payload,
-          public_key: envelope.publicKey!,
-          signature: envelope.signature,
-        };
-      }
-
-      default:
-        throw new OwnershipError(
-          'UNSUPPORTED_STANDARD',
-          `ownership proofs are not supported for ${signingStandard}`,
-        );
-    }
-  } catch (error) {
-    if (error instanceof OwnershipError) {
-      throw error;
-    }
-
-    if (isUserRejection(error)) {
-      throw new OwnershipError('USER_REJECTED', 'the signature was declined', {
-        cause: error,
+  switch (signingStandard) {
+    case 'erc191':
+    case 'raw_ed25519':
+      return signMultiPayload(wallet, {
+        standard: signingStandard,
+        payload: buildIntentPayload({ signerId, deadline, nonce }),
       });
-    }
 
-    throw new OwnershipError('SIGNING_FAILED', toError(error).message, {
-      cause: error,
-    });
+    case 'nep413':
+      return signMultiPayload(wallet, {
+        standard: 'nep413',
+        payload: {
+          message: buildNep413Message({ signerId, deadline }),
+          nonce,
+          recipient: INTENTS_CONTRACT,
+        },
+      });
+
+    default:
+      throw new OwnershipError(
+        'UNSUPPORTED_STANDARD',
+        `ownership proofs are not supported for ${signingStandard}`,
+      );
   }
 };
