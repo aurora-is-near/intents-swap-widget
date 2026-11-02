@@ -16,6 +16,23 @@ export type {
   SupportedTokensResult,
 } from '@/api';
 
+export { createIntentsApi, DEFAULT_INTENTS_API_URL } from '@/intentsApi';
+export type {
+  AuthenticateResult,
+  ConfidentialBalance,
+  GetConfidentialBalancesResult,
+  GetIntentsAccountBalancesResult,
+  GetTokensResult,
+  IntentsAccountBalance,
+  IntentsApi,
+  IntentsApiAssetStat,
+  IntentsApiOptions,
+  IntentsApiToken,
+  RefreshAccessTokenResult,
+} from '@/intentsApi';
+
+export type { OwnershipProof, OwnershipStandard } from '@/ownership/types';
+
 export { createExecutionRunner } from '@/runner';
 export type {
   ExecutionPlan,
@@ -68,6 +85,7 @@ export {
   ExecutionCancelledError,
   ExecutionPollTimeoutError,
   GuardError,
+  IntentsApiError,
   IntentsConnectApiError,
   IntentsConnectError,
   RunnerDisposedError,

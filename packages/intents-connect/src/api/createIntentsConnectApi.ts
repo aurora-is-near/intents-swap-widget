@@ -1,4 +1,5 @@
-import { IntentsConnectApiError, IntentsConnectError } from '@/errors';
+import { IntentsConnectApiError } from '@/errors';
+import { bodySnippet, createJsonRequest, type FetchLike } from '@/http';
 import type { Execution, Intermediary, SubmitStatus } from '@/types/execution';
 import type { DeleteSignatureEnvelope } from '@/types/signing';
 import type {
@@ -12,19 +13,7 @@ import type {
   SupportedTokensResult,
 } from '@/api/types';
 
-export type FetchLike = (
-  input: string,
-  init?: {
-    method?: string;
-    headers?: Record<string, string>;
-    body?: string;
-    signal?: AbortSignal;
-  },
-) => Promise<{
-  ok: boolean;
-  status: number;
-  text: () => Promise<string>;
-}>;
+export type { FetchLike };
 
 export type IntentsConnectApiOptions = {
   baseUrl: string;
@@ -57,8 +46,6 @@ const unwrap = <T>(payload: unknown): T => {
   return payload as T;
 };
 
-const BODY_SNIPPET_LENGTH = 200;
-
 const errorMessage = (
   payload: unknown,
   status: number,
@@ -75,7 +62,7 @@ const errorMessage = (
   // A non-JSON body is usually a proxy or CDN error page rather than the API.
   // Including a snippet is the difference between a debuggable failure and an
   // opaque status code.
-  const snippet = raw.trim().slice(0, BODY_SNIPPET_LENGTH);
+  const snippet = bodySnippet(raw);
 
   return snippet
     ? `Intents Connect API responded ${status}: ${snippet}`
@@ -93,30 +80,31 @@ export const createIntentsConnectApi = (
     timeout = DEFAULT_TIMEOUT,
   } = options;
 
-  const doFetch: FetchLike =
-    fetchImpl ?? ((input, init) => globalThis.fetch(input, init));
+  const send = createJsonRequest({
+    baseUrl,
+    fetch: fetchImpl,
+    timeout,
+    label: 'Intents Connect API',
+    // A non-JSON error body must still surface its status, or
+    // `isExecutionInFlight` becomes unreachable behind a proxy's HTML 502.
+    toHttpError: ({ payload, raw, status, parsed }) =>
+      new IntentsConnectApiError(
+        errorMessage(payload, status, raw),
+        status,
+        parsed ? payload : raw,
+      ),
+    unwrap,
+  });
 
-  const request = async <T>(args: {
+  const request = <T>(args: {
     path: string;
     method?: 'GET' | 'POST' | 'DELETE';
     query?: Record<string, string | undefined>;
     body?: unknown;
     withApiKey?: boolean;
   }): Promise<T> => {
-    const { path, method = 'GET', query, body, withApiKey = false } = args;
-
-    const origin = withApiKey && apiKeyProxyUrl ? apiKeyProxyUrl : baseUrl;
-    const url = new URL(path, origin.endsWith('/') ? origin : `${origin}/`);
-
-    Object.entries(query ?? {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') {
-        url.searchParams.set(key, value);
-      }
-    });
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const { withApiKey = false, ...rest } = args;
+    const headers: Record<string, string> = {};
 
     // Only create calls are priced per key. Sending it elsewhere is harmless
     // but misleading, so it is scoped deliberately.
@@ -124,68 +112,11 @@ export const createIntentsConnectApi = (
       headers['x-api-key'] = apiKey;
     }
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    let response: Awaited<ReturnType<FetchLike>>;
-    let raw: string;
-
-    try {
-      response = await doFetch(url.toString(), {
-        method,
-        headers,
-        body: body === undefined ? undefined : JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      // Inside the try, and before the timer is cleared: `doFetch` resolves as
-      // soon as headers arrive, so reading the body here is what keeps a server
-      // that sends headers then stalls from hanging the call forever.
-      raw = await response.text();
-    } catch (error) {
-      if (controller.signal.aborted) {
-        throw new IntentsConnectError(
-          `request to ${path} timed out after ${timeout}ms`,
-          { cause: error },
-        );
-      }
-
-      throw error;
-    } finally {
-      clearTimeout(timer);
-    }
-
-    // Parsed defensively and AFTER the status check below can see it: an error
-    // response is frequently not JSON at all (an HTML 502 from a proxy), and
-    // throwing SyntaxError here would hide the status code and make
-    // `isExecutionInFlight` unreachable.
-    let payload: unknown;
-    let parsed = true;
-
-    try {
-      payload = raw ? JSON.parse(raw) : undefined;
-    } catch {
-      payload = undefined;
-      parsed = false;
-    }
-
-    if (!response.ok) {
-      throw new IntentsConnectApiError(
-        errorMessage(payload, response.status, raw),
-        response.status,
-        parsed ? payload : raw,
-      );
-    }
-
-    if (!parsed) {
-      throw new IntentsConnectError(
-        `Intents Connect API returned a non-JSON body for ${path}: ${raw
-          .trim()
-          .slice(0, BODY_SNIPPET_LENGTH)}`,
-      );
-    }
-
-    return unwrap<T>(payload);
+    return send<T>({
+      ...rest,
+      headers,
+      baseUrl: withApiKey && apiKeyProxyUrl ? apiKeyProxyUrl : undefined,
+    });
   };
 
   return {

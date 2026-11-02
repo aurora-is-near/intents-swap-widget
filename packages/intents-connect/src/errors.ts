@@ -139,6 +139,33 @@ export class IntentsConnectApiError extends IntentsConnectError {
   }
 }
 
+/** A non-2xx response from the Aurora intents API (`intents-api.aurora.dev`). */
+export class IntentsApiError extends IntentsConnectError {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body?: unknown,
+  ) {
+    super(message);
+    this.name = 'IntentsApiError';
+  }
+
+  /** The user session token is missing, invalid or expired. */
+  get isUnauthorized(): boolean {
+    return this.status === 401;
+  }
+
+  /** The API key in the path is unknown to the service. */
+  get isBadApiKey(): boolean {
+    return this.status === 404;
+  }
+
+  /** The per-API-key rate limit was hit. */
+  get isRateLimited(): boolean {
+    return this.status === 429;
+  }
+}
+
 /**
  * The execution was cancelled through `runner.cancel()`. Distinct from a guard
  * violation: nothing went wrong, the caller asked to stop.
