@@ -102,3 +102,34 @@ export const createResource = <T>(
     },
   };
 };
+
+export type ResourceCache<T> = {
+  /** The resource for `key`, created on first use and shared afterwards. */
+  get: (key: string) => Resource<T>;
+  clear: () => void;
+};
+
+/**
+ * One `Resource` per key, so readers of different keys (two accounts, two
+ * token filters) never take turns clearing each other's data.
+ */
+export const createResourceCache = <T>(
+  fetcher: (key: string) => Promise<T>,
+  options?: { now?: () => number },
+): ResourceCache<T> => {
+  const resources = new Map<string, Resource<T>>();
+
+  return {
+    get: (key) => {
+      let resource = resources.get(key);
+
+      if (!resource) {
+        resource = createResource(fetcher, options);
+        resources.set(key, resource);
+      }
+
+      return resource;
+    },
+    clear: () => resources.clear(),
+  };
+};

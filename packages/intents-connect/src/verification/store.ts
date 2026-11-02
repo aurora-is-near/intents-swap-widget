@@ -23,11 +23,16 @@ export type VerificationStore = {
   readonly state: VerificationState;
   /** Loads persisted records. Idempotent; call it from an effect. */
   hydrate: () => Promise<void>;
+  /**
+   * Pass a snapshot's `verified` record to make a React render subscribe to
+   * it; defaults to the live state.
+   */
   isVerified: (
     wallet:
       | Pick<WalletConnector, 'signingStandard' | 'getAddress' | 'getPublicKey'>
       | null
       | undefined,
+    verified?: Readonly<Record<string, true>>,
   ) => boolean;
   /** Records the account a passing proof was signed for. */
   markVerified: (proof: OwnershipProof) => Promise<void>;
@@ -108,7 +113,7 @@ export const createVerificationStore = ({
     state,
     hydrate,
 
-    isVerified: (wallet) => {
+    isVerified: (wallet, verified = state.verified) => {
       if (!wallet) {
         return false;
       }
@@ -128,9 +133,7 @@ export const createVerificationStore = ({
         return false;
       }
 
-      return (
-        recordKey(wallet.signingStandard, signerId, publicKey) in state.verified
-      );
+      return recordKey(wallet.signingStandard, signerId, publicKey) in verified;
     },
 
     markVerified: async (proof) => {

@@ -1,0 +1,185 @@
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+
+import { getWalletIntentsAccountId } from '@/account';
+import { getTokens, getWalletBalances } from '@/balances';
+import type { BalanceToken } from '@/balances';
+import { IntentsConnectError } from '@/errors';
+import type { IntentsApi } from '@/intentsApi/types';
+import { proofRpcUrls } from '@/near/rpcUrls';
+import { createResource, createResourceCache } from '@/resource';
+import { createIntentsSession } from '@/session';
+import { createVerificationStore } from '@/verification';
+import {
+  type IntentsAccountConfig,
+  IntentsAccountContext,
+  type IntentsAccountContextValue,
+  type IntentsAccountProps,
+} from '@/react/accountContext';
+import { useIntentsConnect } from '@/react/context';
+
+/** The token list changes rarely; refetched when older than this. */
+const TOKENS_MAX_AGE_MS = 10 * 60_000;
+
+const missingApi = () =>
+  Promise.reject(new IntentsConnectError('intentsApi is required'));
+
+/**
+ * Stands in for an absent `intentsApi` so the stores can exist unconditionally.
+ * Never reached in practice: account hooks refuse to run without the prop.
+ */
+const NO_INTENTS_API: IntentsApi = {
+  apiKey: '',
+  baseUrl: '',
+  nearRpcUrl: '',
+  getTokens: missingApi,
+  getIntentsAccountBalances: missingApi,
+  authenticate: missingApi,
+  refreshAccessToken: missingApi,
+  getConfidentialBalances: missingApi,
+};
+
+const requireApi = (config: IntentsAccountConfig) => {
+  if (!config.intentsApi) {
+    throw new IntentsConnectError('intentsApi is required');
+  }
+
+  return config.intentsApi;
+};
+
+const createStores = (
+  config: { current: IntentsAccountConfig },
+  props: IntentsAccountProps,
+): IntentsAccountContextValue => {
+  const api = props.intentsApi;
+  const session = createIntentsSession({
+    intentsApi: api ?? NO_INTENTS_API,
+    storage: props.sessionStorage,
+    rpc: { rpcUrls: proofRpcUrls(api) },
+  });
+
+  const tokens = createResource<BalanceToken[]>(() =>
+    getTokens(requireApi(config.current)),
+  );
+
+  const loadTokens = async (): Promise<BalanceToken[]> => {
+    const { state } = tokens;
+    const fresh =
+      state.status === 'success' &&
+      state.data &&
+      Date.now() - (state.updatedAt ?? 0) < TOKENS_MAX_AGE_MS;
+
+    if (fresh) {
+      return state.data!;
+    }
+
+    const loaded = await tokens.refresh('tokens');
+
+    if (!loaded) {
+      throw tokens.state.error ?? new Error('token list unavailable');
+    }
+
+    return loaded;
+  };
+
+  return {
+    config,
+    session,
+    verification: createVerificationStore({
+      storage: props.verificationStorage,
+    }),
+    tokens,
+
+    // key: `${family}:${address}#${source}` — the source only splits caches.
+    walletBalances: createResourceCache(async (key) => {
+      const [account = ''] = key.split('#');
+      const separator = account.indexOf(':');
+      const family = account.slice(0, separator) as 'evm' | 'sol' | 'near';
+      const address = account.slice(separator + 1);
+      const { alchemyApiKey, rpcs, intentsApi } = config.current;
+
+      return getWalletBalances({
+        family,
+        address,
+        tokens: await loadTokens(),
+        alchemyApiKey,
+        rpcs,
+        intentsApi,
+      });
+    }),
+
+    // key: intents account id
+    intentsBalances: createResourceCache((intentsAccountId) =>
+      requireApi(config.current).getIntentsAccountBalances(intentsAccountId),
+    ),
+
+    // key: `${intentsAccountId}|${sorted token ids}`
+    confidentialBalances: createResourceCache((key) => {
+      const tokenIds = key.slice(key.indexOf('|') + 1);
+
+      return session.getConfidentialBalances(
+        tokenIds ? tokenIds.split(',') : undefined,
+      );
+    }),
+  };
+};
+
+/**
+ * Account stores shared by the account hooks. Rendered by
+ * `IntentsConnectProvider`; use that instead.
+ *
+ * Stores are created once per intents-api identity (`apiKey` + `baseUrl`),
+ * not per client object: a client created inline in a render must not reset
+ * the session or refetch everything on every render.
+ */
+export const IntentsAccountProvider = ({
+  children,
+  ...props
+}: IntentsAccountProps & { children: ReactNode }) => {
+  const { intentsApi, alchemyApiKey, rpcs } = props;
+  const { wallet } = useIntentsConnect();
+
+  const config = useRef<IntentsAccountConfig>({
+    intentsApi,
+    alchemyApiKey,
+    rpcs,
+  });
+
+  config.current = { intentsApi, alchemyApiKey, rpcs };
+
+  const identity = intentsApi
+    ? `${intentsApi.apiKey}|${intentsApi.baseUrl}`
+    : '';
+
+  const [entry, setEntry] = useState(() => ({
+    identity,
+    stores: createStores(config, props),
+  }));
+
+  // A different API identity is a different backend: start over.
+  const stale = entry.identity !== identity;
+
+  useEffect(() => {
+    if (stale) {
+      setEntry({ identity, stores: createStores(config, props) });
+    }
+    // Only the identity decides; props are read when it changes.
+  }, [stale, identity]);
+
+  const { stores } = entry;
+  const intentsAccountId = getWalletIntentsAccountId(wallet);
+
+  useEffect(() => {
+    void stores.verification.hydrate();
+  }, [stores]);
+
+  // Picks up a stored session when the wallet (account) changes.
+  useEffect(() => {
+    void stores.session.restore(intentsAccountId);
+  }, [stores, intentsAccountId]);
+
+  return (
+    <IntentsAccountContext.Provider value={stores}>
+      {children}
+    </IntentsAccountContext.Provider>
+  );
+};

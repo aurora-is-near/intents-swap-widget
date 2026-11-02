@@ -97,7 +97,9 @@ export {
 
 export {
   createResource,
+  createResourceCache,
   type Resource,
+  type ResourceCache,
   type ResourceState,
   type ResourceStatus,
 } from '@/resource';

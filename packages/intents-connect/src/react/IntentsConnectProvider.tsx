@@ -1,23 +1,32 @@
 import { type ReactNode, useMemo, useRef } from 'react';
 
+import type { IntentsAccountProps } from '@/react/accountContext';
 import {
   IntentsConnectContext,
   type IntentsConnectContextValue,
 } from '@/react/context';
+import { IntentsAccountProvider } from '@/react/IntentsAccountProvider';
 import { deriveWalletKey } from '@/react/useExecution';
 
-export type IntentsConnectProviderProps = IntentsConnectContextValue & {
-  children: ReactNode;
-};
+export type IntentsConnectProviderProps = IntentsConnectContextValue &
+  IntentsAccountProps & {
+    children: ReactNode;
+  };
 
 /**
- * Supplies the API client and connected wallet to `useExecution`.
+ * Supplies the API client and connected wallet to `useExecution`, and — with
+ * `intentsApi` — the account hooks (balances, verification, authorization).
  *
  * Deliberately holds no execution state of its own: a runner is created per
  * `useExecution` call so two concurrent executions never share a machine.
  */
 export const IntentsConnectProvider = ({
   children,
+  intentsApi,
+  alchemyApiKey,
+  rpcs,
+  sessionStorage,
+  verificationStorage,
   ...value
 }: IntentsConnectProviderProps) => {
   // Every ExecutionRunnerOptions field must appear in all three lists below
@@ -78,9 +87,18 @@ export const IntentsConnectProvider = ({
     ],
   );
 
+  // Account props are kept OUT of the execution context: `useExecution`
+  // spreads that context into the runner's options.
   return (
     <IntentsConnectContext.Provider value={memoised}>
-      {children}
+      <IntentsAccountProvider
+        intentsApi={intentsApi}
+        alchemyApiKey={alchemyApiKey}
+        rpcs={rpcs}
+        sessionStorage={sessionStorage}
+        verificationStorage={verificationStorage}>
+        {children}
+      </IntentsAccountProvider>
     </IntentsConnectContext.Provider>
   );
 };
