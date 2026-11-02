@@ -78,7 +78,10 @@ const QUOTE_MARGIN_MS = 60_000;
 const ABANDON_AFTER_MS = 5 * 60_000;
 
 /** Fundings being signed (`sign:`) or watched (`watch:`) in this page. */
-const running = new Map<string, Promise<FundingRecord>>();
+const running = new Map<
+  string,
+  { promise: Promise<FundingRecord>; signal?: AbortSignal }
+>();
 
 const sleep = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
@@ -313,24 +316,37 @@ export const quoteFunding = async (
   );
 };
 
-/** One run per key at a time; a second caller shares the first's result. */
+/**
+ * One run per key at a time; a second caller shares the first's result —
+ * unless the first was aborted (a remount): that run is winding down, and
+ * sharing it would hand its abort to a caller that never asked for one.
+ */
 const exclusive = (
   key: string,
+  signal: AbortSignal | undefined,
   run: () => Promise<FundingRecord>,
 ): Promise<FundingRecord> => {
   const existing = running.get(key);
 
-  if (existing) {
-    return existing;
+  if (existing && !existing.signal?.aborted) {
+    return existing.promise;
   }
 
-  const promise = run().finally(() => {
-    running.delete(key);
+  const promise: Promise<FundingRecord> = run().finally(() => {
+    if (running.get(key)?.promise === promise) {
+      running.delete(key);
+    }
   });
 
-  running.set(key, promise);
+  running.set(key, { promise, signal });
 
   return promise;
+};
+
+const isRunning = (key: string) => {
+  const entry = running.get(key);
+
+  return !!entry && !entry.signal?.aborted;
 };
 
 /**
@@ -352,13 +368,13 @@ export const signAndSubmitFunding = (
     );
   }
 
-  if (running.has(`sign:${record.id}`) || running.has(`watch:${record.id}`)) {
+  if (isRunning(`sign:${record.id}`) || isRunning(`watch:${record.id}`)) {
     return Promise.reject(
       new FundingError('FUNDING_IN_FLIGHT', 'this funding is in progress'),
     );
   }
 
-  return exclusive(`sign:${record.id}`, async () => {
+  return exclusive(`sign:${record.id}`, options.signal, async () => {
     const ctx = createContext(options);
     const expiry = expiryOf(record);
 
@@ -615,7 +631,7 @@ export const watchFunding = (
   record: FundingRecord,
   options: FundIntermediaryOptions,
 ): Promise<FundingRecord> =>
-  exclusive(`watch:${record.id}`, async () => {
+  exclusive(`watch:${record.id}`, options.signal, async () => {
     const ctx = createContext(options);
     let current = record;
 

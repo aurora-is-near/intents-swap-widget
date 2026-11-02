@@ -1,7 +1,9 @@
 import { createContext, type MutableRefObject, useContext } from 'react';
 
+import type { IntentsConnectApi } from '@/api/types';
 import type { BalanceToken, ChainRpcUrls, WalletBalances } from '@/balances';
 import { IntentsConnectError } from '@/errors';
+import type { FundingStore } from '@/funding/store';
 import type {
   GetConfidentialBalancesResult,
   GetIntentsAccountBalancesResult,
@@ -30,12 +32,28 @@ export type IntentsAccountProps = {
   sessionStorage?: KeyValueStorage;
   /** Where verified wallets are remembered. `localStorage` by default. */
   verificationStorage?: KeyValueStorage;
+  /**
+   * Where fundings from intents balances are tracked, so a signed transfer
+   * is followed to the end after a reload. `localStorage` by default.
+   */
+  fundingStorage?: KeyValueStorage;
 };
 
 export type IntentsAccountConfig = Pick<
   IntentsAccountProps,
   'intentsApi' | 'alchemyApiKey' | 'rpcs'
->;
+> & {
+  /** The Intents Connect API of the surrounding provider. */
+  connectApi?: IntentsConnectApi;
+};
+
+/** The intermediary of a wallet and what it holds of one token. */
+export type IntermediaryBalance = {
+  /** The intermediary's EVM address. */
+  intermediary: string;
+  /** Smallest unit. */
+  balance: string;
+};
 
 /** Provider-level stores: every hook reading the same data shares one fetch. */
 export type IntentsAccountContextValue = {
@@ -47,6 +65,9 @@ export type IntentsAccountContextValue = {
   walletBalances: ResourceCache<WalletBalances>;
   intentsBalances: ResourceCache<GetIntentsAccountBalancesResult>;
   confidentialBalances: ResourceCache<GetConfidentialBalancesResult>;
+  funding: FundingStore;
+  /** key: `JSON.stringify([address, publicKey, destination])` */
+  intermediaryBalances: ResourceCache<IntermediaryBalance>;
 };
 
 export const IntentsAccountContext =

@@ -27,6 +27,7 @@ export const IntentsConnectProvider = ({
   rpcs,
   sessionStorage,
   verificationStorage,
+  fundingStorage,
   ...value
 }: IntentsConnectProviderProps) => {
   // Every ExecutionRunnerOptions field must appear in all three lists below
@@ -96,7 +97,8 @@ export const IntentsConnectProvider = ({
         alchemyApiKey={alchemyApiKey}
         rpcs={rpcs}
         sessionStorage={sessionStorage}
-        verificationStorage={verificationStorage}>
+        verificationStorage={verificationStorage}
+        fundingStorage={fundingStorage}>
         {children}
       </IntentsAccountProvider>
     </IntentsConnectContext.Provider>

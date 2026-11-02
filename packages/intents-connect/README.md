@@ -340,3 +340,49 @@ Steps-only and bridge-in executions share the per-wallet in-flight lock: a live
 one of either kind blocks the other until it settles or is cancelled. A `503`
 from the steps endpoint means no Solana durable-nonce account was free — retry
 shortly. `retryDeposit()` does not apply; there is nothing to deposit.
+
+## Funding from intents balances
+
+An Intents Connect quote's deposit address is on the origin chain, so it can
+only be funded by an on-chain transfer. To spend **intents** (or
+**confidential**) balances instead, `funding/` runs a deposit in two legs:
+
+1. **Leg A** — a 1Click swap from the user's intents account to their
+   intermediary, paid out as the recipe's destination token. One signature:
+   the transfer intent 1Click prepares (`generateIntent` → `signPreparedIntent`
+   → `submitIntent`). Refunds go back to the intents account.
+2. **Leg B** — a `steps-only` execution that spends what arrived at the
+   intermediary (the recipe with `flow: 'steps-only'`). A second signature.
+
+```ts
+const record = await fundIntermediaryFromIntents(
+  {
+    source: 'intents', // or 'confidential' (needs `withAccessToken`)
+    originAsset: 'nep141:base-0x8335…omft.near', // intents token id
+    amount: '1000000',
+    destination: recipe.destination, // EVM chains only
+  },
+  { intentsApi, connectApi, wallet, store: createFundingStore() },
+);
+// record.stage === 'arrived' — now spend it:
+const amount = await getIntermediaryBalance({ intermediary: { evm: record.recipient }, destination: recipe.destination });
+await runner.runSteps({ recipe: stepsRecipe, params, amount, feeFromAmount: true });
+```
+
+In React, `useIntentsFundedFlow({ exec, buildFunding, buildStepsPlan })` runs
+both legs. `useIntermediaryBalance({ destination })` shows funds still waiting
+at the intermediary, for a "supply what's waiting" button.
+
+Safety:
+
+- The quote must echo what was asked: recipient, refund and assets.
+- The intent must be exactly one transfer of the amount to the quote's deposit
+  address.
+- Both are checked before the wallet prompts.
+- `submitting` is persisted before submitting. After a reload, a signed
+  transfer is only watched, never signed again (`resumeFunding`).
+- The funding store is per account and lives in `localStorage` by default.
+
+Leg B is a public transaction on the destination chain, from an intermediary
+that is deterministic per wallet. Confidential funding hides where the funds
+came from, not where they went.

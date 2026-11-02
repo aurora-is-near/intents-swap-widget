@@ -142,6 +142,17 @@ The session refreshes its access token before it expires and retries a read once
 
 Errors are `SessionError`s with a `code`: `SIGNATURE_REJECTED`, `CLOCK_SKEW` (the device clock is more than 5 minutes off), `UNSUPPORTED_STANDARD`, `NOT_AUTHORIZED`, `SESSION_EXPIRED`, `WALLET_NOT_CONNECTED`, and `SUPERSEDED` (the account changed before the call finished; its result was discarded). A declined wallet prompt is an `OwnershipError` with code `USER_REJECTED`.
 
+## Funding a deposit from intents balances
+
+A deposit can also be paid from public or confidential intents balances. It runs in two legs:
+
+1. A 1Click swap from the intents account to the wallet's intermediary. The user signs the transfer intent 1Click prepares.
+2. A steps-only execution that spends what arrived.
+
+`fundIntermediaryFromIntents` runs the first leg. `useIntentsFundedFlow` runs both, and `useIntermediaryBalance` shows funds still waiting at the intermediary.
+
+The quote and the intent are checked before the wallet prompts. A signed transfer is persisted and only watched after a reload, never signed again. Confidential funding needs an authorized session (`withAccessToken`). Leg B is still public on the destination chain.
+
 ## Rate limits
 
 The intents API's NEAR RPC proxy (`/rpc/:apiKey`) is limited per API key — shared by every user of your integration. The SDK only uses it first for rare proof calls (salt, simulation); balance reads go to public NEAR RPCs first.

@@ -4,10 +4,14 @@ import { getWalletIntentsAccountId } from '@/account';
 import { getTokens, getWalletBalances } from '@/balances';
 import type { BalanceToken } from '@/balances';
 import { IntentsConnectError } from '@/errors';
+import { getIntermediaryBalance } from '@/funding/intermediaryBalance';
+import { createFundingStore } from '@/funding/store';
 import type { IntentsApi } from '@/intentsApi/types';
 import { proofRpcUrls } from '@/near/rpcUrls';
 import { createResource, createResourceCache } from '@/resource';
 import { createIntentsSession } from '@/session';
+import type { Intermediary } from '@/types/execution';
+import type { RecipeDestination } from '@/types/recipe';
 import { createVerificationStore } from '@/verification';
 import {
   type IntentsAccountConfig,
@@ -85,6 +89,30 @@ const createStores = (
     return loaded;
   };
 
+  // The intermediary is deterministic per wallet: resolved once per address.
+  const intermediaries = new Map<string, Promise<Intermediary>>();
+
+  const resolveIntermediary = (address: string, publicKey?: string) => {
+    const key = `${address}|${publicKey ?? ''}`;
+    let pending = intermediaries.get(key);
+
+    if (!pending) {
+      const { connectApi } = config.current;
+
+      if (!connectApi) {
+        return Promise.reject(
+          new IntentsConnectError('the Intents Connect API is required'),
+        );
+      }
+
+      pending = connectApi.getIntermediary(address, { publicKey });
+      pending.catch(() => intermediaries.delete(key));
+      intermediaries.set(key, pending);
+    }
+
+    return pending;
+  };
+
   return {
     config,
     session,
@@ -124,6 +152,30 @@ const createStores = (
         tokenIds ? tokenIds.split(',') : undefined,
       );
     }),
+
+    funding: createFundingStore({ storage: props.fundingStorage }),
+
+    intermediaryBalances: createResourceCache(async (key) => {
+      const [address, publicKey, destination] = JSON.parse(key) as [
+        string,
+        string | null,
+        RecipeDestination,
+      ];
+
+      const intermediary = await resolveIntermediary(
+        address,
+        publicKey ?? undefined,
+      );
+
+      return {
+        intermediary: intermediary.evm,
+        balance: await getIntermediaryBalance({
+          intermediary,
+          destination,
+          rpcs: config.current.rpcs,
+        }),
+      };
+    }),
   };
 };
 
@@ -140,15 +192,16 @@ export const IntentsAccountProvider = ({
   ...props
 }: IntentsAccountProps & { children: ReactNode }) => {
   const { intentsApi, alchemyApiKey, rpcs } = props;
-  const { wallet } = useIntentsConnect();
+  const { wallet, api: connectApi } = useIntentsConnect();
 
   const config = useRef<IntentsAccountConfig>({
     intentsApi,
     alchemyApiKey,
     rpcs,
+    connectApi,
   });
 
-  config.current = { intentsApi, alchemyApiKey, rpcs };
+  config.current = { intentsApi, alchemyApiKey, rpcs, connectApi };
 
   const identity = intentsApi
     ? `${intentsApi.apiKey}|${intentsApi.baseUrl}`

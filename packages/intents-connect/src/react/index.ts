@@ -51,3 +51,13 @@ export {
   type UseIntentsConnectFlowOptions,
   type UseIntentsConnectFlowResult,
 } from '@/react/useIntentsConnectFlow';
+export {
+  useIntentsFundedFlow,
+  type FundedFlowStage,
+  type UseIntentsFundedFlowOptions,
+  type UseIntentsFundedFlowResult,
+} from '@/react/useIntentsFundedFlow';
+export {
+  useIntermediaryBalance,
+  type UseIntermediaryBalanceResult,
+} from '@/react/useIntermediaryBalance';
