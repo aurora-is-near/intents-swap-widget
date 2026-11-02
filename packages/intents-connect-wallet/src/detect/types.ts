@@ -46,6 +46,9 @@ export type InjectedNearWallet = {
     transactions: unknown[];
     network?: string;
   }) => Promise<unknown>;
+  /** Prompts the user to share an account. */
+  signIn?: (data?: { network?: string }) => Promise<unknown>;
+  signOut?: (data?: { network?: string }) => Promise<unknown>;
 };
 
 type DetectedBase = {
@@ -92,13 +95,6 @@ export type WalletDetectorOptions = {
   families?: readonly DetectedFamily[];
   /** Per-wallet budget for silent reads. One stuck wallet must not stall the rest. */
   readTimeoutMs?: number;
-  /**
-   * Ask Wallet Standard wallets with no shared account to reconnect silently
-   * (a wallet that already trusts the site does so without a prompt). Off by
-   * default: `silent` is only a hint some wallets ignore, and reconnecting
-   * changes `accounts` under the page's own wallet adapter.
-   */
-  silentSolanaConnect?: boolean;
 };
 
 export type WalletDetector = {

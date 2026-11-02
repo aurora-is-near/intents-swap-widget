@@ -186,7 +186,12 @@ const { connector, unsupportedReason } =
 
 - The adapters wire each chain's `makeTransfer`, so the connector runs executions as-is. `unsupportedReason` is `NOT_CONNECTED` (no shared account) or `MISSING_PUBLIC_KEY` (NEAR).
 - `toEvmWalletConnector` omits `getChainId` unless you pass `networkGuard: true`: the network guard runs before the deposit transfer gets a chance to switch the wallet's chain.
-- Solana wallets are not reconnected during detection unless you pass `silentSolanaConnect: true`; the adapter reconnects silently when it needs to sign.
+- Detection never prompts.
+  - It calls a Solana or NEAR wallet only if the user connected it on this site with `connectDetectedWallet` (the one call that prompts; run it from a click).
+  - Such a wallet is then restored silently, once per page.
+  - Other wallets are listed without an account: some, like HOT and the Solflare Snap, open their UI even when asked to stay silent.
+  - The Solana adapter still reconnects silently when it needs to sign.
+- `disconnectDetectedWallet` forgets a wallet and asks it to revoke the connection, where it can. `pickConnectedWallet` then skips it.
 - NEAR detection only sees injected extension wallets. For sandboxed or in-app wallets use `/connect/near` — `toNearWalletConnector` also accepts `useNearConnector()` state.
 - Outside React, `createWalletDetector()` gives `getSnapshot`, `subscribe`, `refresh` and `destroy`. It is SSR-safe.
 

@@ -1,5 +1,6 @@
 import { createEvmSource } from '@/detect/evm';
 import { createNearSource } from '@/detect/near';
+import { getRememberedConnection } from '@/detect/remembered';
 import { createSolanaSource } from '@/detect/solana';
 import type {
   DetectedFamily,
@@ -48,8 +49,13 @@ const sameWallets = (
  *
  * - EVM: EIP-6963 announcements (the legacy `window.ethereum` only when none
  *   announce), read with `eth_accounts` / `eth_chainId`.
- * - Solana: the Wallet Standard (`solana:mainnet` wallets that can sign).
- * - NEAR: near-connect's injected extension wallets, read with `getAccounts`.
+ * - Solana: the Wallet Standard (`solana:mainnet` wallets that can sign),
+ *   read from `wallet.accounts`.
+ * - NEAR: near-connect's injected extension wallets.
+ *
+ * A Solana or NEAR wallet the user connected on this site
+ * (`connectDetectedWallet`) is also restored silently; no other wallet is
+ * ever called, since some open their UI even when asked not to.
  *
  * SSR-safe: without `window` it reports no wallets and attaches nothing.
  * Call `destroy()` when done — every listener it attached is removed.
@@ -66,11 +72,7 @@ export const createWalletDetector = (
     };
   }
 
-  const {
-    families = DEFAULT_FAMILIES,
-    readTimeoutMs = 2000,
-    silentSolanaConnect = false,
-  } = options;
+  const { families = DEFAULT_FAMILIES, readTimeoutMs = 2000 } = options;
 
   let snapshot = EMPTY;
   let destroyed = false;
@@ -158,10 +160,7 @@ export const createWalletDetector = (
 
   if (families.includes('sol')) {
     sources.push(
-      createSolanaSource(scheduleRefresh, {
-        timeout: readTimeoutMs,
-        silent: silentSolanaConnect,
-      }),
+      createSolanaSource(scheduleRefresh, { timeout: readTimeoutMs }),
     );
   }
 
@@ -193,7 +192,8 @@ export const createWalletDetector = (
 
 /**
  * The first wallet that shares an account with the site, preferring families
- * in `prefer` order.
+ * in `prefer` order. A wallet the user disconnected here
+ * (`disconnectDetectedWallet`) is skipped, even if it still shares one.
  */
 export const pickConnectedWallet = (
   wallets: readonly DetectedWallet[],
@@ -201,6 +201,11 @@ export const pickConnectedWallet = (
 ): DetectedWallet | undefined =>
   prefer
     .map((family) =>
-      wallets.find((wallet) => wallet.family === family && wallet.address),
+      wallets.find(
+        (wallet) =>
+          wallet.family === family &&
+          wallet.address &&
+          getRememberedConnection(wallet.id) !== 'disconnected',
+      ),
     )
     .find(Boolean);

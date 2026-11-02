@@ -30,7 +30,6 @@ const keyOf = (options: WalletDetectorOptions) =>
   JSON.stringify({
     families: options.families ? [...options.families].sort() : undefined,
     readTimeoutMs: options.readTimeoutMs,
-    silentSolanaConnect: options.silentSolanaConnect,
   });
 
 const acquire = (key: string, options: WalletDetectorOptions): Entry => {

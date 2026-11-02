@@ -148,6 +148,23 @@ detector.subscribe(() => {
 });
 ```
 
+Detection never prompts, and only calls a wallet when that is safe:
+
+- **EVM** is read with `eth_accounts`, which never prompts.
+- **Solana** is read from `wallet.accounts`.
+- **NEAR and Solana wallets the user connected here** are restored silently:
+  `getAccounts`, or `connect({ silent: true })` once per page.
+- **No other wallet is called.** Some open their UI even when asked to stay
+  silent (HOT, the Solflare Snap), or answer an account read with a sign-in.
+
+`connectDetectedWallet(wallet)` is the one call that prompts. Run it from a
+user gesture, then `refresh()`. It records the wallet in localStorage
+(`intents-connect.connectedWallets`).
+
+`disconnectDetectedWallet(wallet)` forgets it again and asks the wallet to
+revoke the connection, where it can. `pickConnectedWallet` skips a wallet the
+user disconnected, even one that still shares an account.
+
 Each chain subpath has the adapter for its family — `toEvmWalletConnector`,
 `toSolanaWalletConnector` (plus `standardWalletToSolanaProvider`) and
 `toNearWalletConnector`, which also accepts `./connect/near` state for the

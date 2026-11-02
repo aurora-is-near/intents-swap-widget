@@ -3,6 +3,7 @@ import type {
   InjectedNearWallet,
   NearInjectedAccount,
 } from '@/detect/types';
+import { getRememberedConnection } from '@/detect/remembered';
 import { callWallet, withTimeout } from '@/detect/withTimeout';
 
 export const NEAR_NETWORK = 'mainnet';
@@ -12,8 +13,12 @@ const announce = () => window.dispatchEvent(new Event('near-selector-ready'));
 /**
  * NEAR browser-extension wallets via near-connect's injection protocol: the
  * page announces `near-selector-ready`, each wallet answers with
- * `near-wallet-injected` carrying its API. Accounts are read with
- * `getAccounts`, which does not prompt once the site is trusted.
+ * `near-wallet-injected` carrying its API.
+ *
+ * Accounts are read with `getAccounts` only from a wallet the user connected
+ * on this site (`connectDetectedWallet`), as near-connect itself only reads
+ * the wallet the user picked: some wallets answer `getAccounts` with a
+ * sign-in prompt. Every other wallet is listed with no account.
  *
  * Only injected extension wallets are visible this way. Sandboxed (iframe)
  * and in-app-browser wallets need near-connect itself — use `./connect/near`.
@@ -61,10 +66,14 @@ export const createNearSource = (onChange: () => void, timeout: number) => {
 
     return Promise.all(
       [...wallets.values()].map(async (wallet) => {
-        const account = await readAccount(wallet);
+        const id = `near:${wallet.manifest.id}`;
+        const account =
+          getRememberedConnection(id) === 'connected'
+            ? await readAccount(wallet)
+            : undefined;
 
         return {
-          id: `near:${wallet.manifest.id}`,
+          id,
           family: 'near' as const,
           name: wallet.manifest.name,
           icon: wallet.manifest.icon,

@@ -3,6 +3,7 @@ import type {
   StandardWalletAccount,
   StandardWalletLike,
 } from '@/detect/types';
+import { getRememberedConnection } from '@/detect/remembered';
 import { callWallet, withTimeout } from '@/detect/withTimeout';
 
 export const SOLANA_MAINNET = 'solana:mainnet';
@@ -27,6 +28,13 @@ export const isSolanaWallet = (wallet: StandardWalletLike) =>
   wallet.chains.includes(SOLANA_MAINNET) &&
   REQUIRED_FEATURES.every((feature) => feature in wallet.features);
 
+/**
+ * Wallets already asked to reconnect silently, for the life of the page — not
+ * of one detector, which every remount recreates. A wallet that ignores
+ * `silent` would otherwise reopen its prompt on every visit.
+ */
+const silentlyAsked = new WeakSet<StandardWalletLike>();
+
 /** Reconnects without a prompt, when the wallet already trusts the site. */
 export const silentConnect = async (
   wallet: StandardWalletLike,
@@ -38,14 +46,19 @@ export const silentConnect = async (
   return accounts.length ? accounts : wallet.accounts;
 };
 
+const walletId = (wallet: StandardWalletLike) => `sol:${wallet.name}`;
+
 /**
  * Solana wallets via the Wallet Standard registration protocol, both
  * directions: wallets that load after us register on our event, wallets that
  * loaded before answer `app-ready`. Ported from the extensions' bridge.
+ *
+ * Accounts are read from `wallet.accounts`. Only a wallet the user connected
+ * on this site (`connectDetectedWallet`) is asked to reconnect silently.
  */
 export const createSolanaSource = (
   onChange: () => void,
-  { timeout, silent }: { timeout: number; silent: boolean },
+  { timeout }: { timeout: number },
 ) => {
   const wallets = new Map<string, StandardWalletLike>();
   const unsubscribers = new Map<string, () => void>();
@@ -91,17 +104,17 @@ export const createSolanaSource = (
     }
   };
 
-  // Wallets already asked to reconnect silently. Asked once each: a wallet
-  // that ignores `silent` would otherwise stack a prompt on every pass.
-  const silentlyAsked = new Set<StandardWalletLike>();
-
   const readAddress = async (
     wallet: StandardWalletLike,
   ): Promise<string | null> => {
     try {
       let { accounts } = wallet;
 
-      if (!accounts.length && silent && !silentlyAsked.has(wallet)) {
+      if (
+        !accounts.length &&
+        !silentlyAsked.has(wallet) &&
+        getRememberedConnection(walletId(wallet)) === 'connected'
+      ) {
         silentlyAsked.add(wallet);
         accounts = await withTimeout(
           callWallet(() => silentConnect(wallet)),
@@ -126,7 +139,7 @@ export const createSolanaSource = (
   const read = async (): Promise<DetectedSolanaWallet[]> =>
     Promise.all(
       [...wallets.values()].map(async (wallet) => ({
-        id: `sol:${wallet.name}`,
+        id: walletId(wallet),
         family: 'sol' as const,
         name: wallet.name,
         icon: wallet.icon,
