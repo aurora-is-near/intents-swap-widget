@@ -75,6 +75,27 @@ export {
 } from '@/verification';
 
 export {
+  ALCHEMY_NETWORKS,
+  BalanceRpcError,
+  DEFAULT_RPCS,
+  getBalanceFamily,
+  getBalanceSource,
+  getTokens,
+  getWalletBalances,
+  isAlchemyChain,
+  isNativeToken,
+  NATIVE_NEAR_ASSET_ID,
+  normalizeTokens,
+  resolveRpcs,
+  type BalanceSource,
+  type BalanceToken,
+  type BalanceTransportOptions,
+  type ChainRpcUrls,
+  type GetWalletBalancesArgs,
+  type WalletBalances,
+} from '@/balances';
+
+export {
   getLocalStorage,
   memoryStorage,
   webStorage,
