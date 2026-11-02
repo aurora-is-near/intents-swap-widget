@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { proxy } from 'valtio/vanilla';
 import { useSnapshot } from 'valtio';
 
@@ -20,16 +20,15 @@ export const useResourceKey = <T>(
   const resource = key ? cache.get(key) : undefined;
   const snapshot = useSnapshot(resource?.state ?? IDLE);
 
-  const resourceRef = useRef(resource);
-
-  resourceRef.current = resource;
-
+  // `resource` is a dependency, not just `key`: when the provider rebuilds
+  // its stores (a different intents-api identity) the same key maps to a
+  // fresh, idle resource that must be loaded.
   useEffect(() => {
-    if (!key) {
+    if (!key || !resource) {
       return undefined;
     }
 
-    const load = () => resourceRef.current?.refresh(key);
+    const load = () => resource.refresh(key);
 
     void load();
 
@@ -44,7 +43,7 @@ export const useResourceKey = <T>(
     }, refreshIntervalMs);
 
     return () => clearInterval(interval);
-  }, [key, refreshIntervalMs]);
+  }, [key, resource, refreshIntervalMs]);
 
   return {
     snapshot,

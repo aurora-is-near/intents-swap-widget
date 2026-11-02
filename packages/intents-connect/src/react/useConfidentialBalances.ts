@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import type { ConfidentialBalance } from '@/intentsApi/types';
@@ -51,11 +52,17 @@ export const useConfidentialBalances = ({
   );
 
   const entries = snapshot.data?.balances ?? EMPTY_ENTRIES;
+  // Stable while the data is: callers put it in effect dependencies.
+  const balances = useMemo(
+    () =>
+      Object.fromEntries(
+        entries.map((entry) => [entry.tokenId, entry.available]),
+      ),
+    [entries],
+  );
 
   return {
-    balances: Object.fromEntries(
-      entries.map((entry) => [entry.tokenId, entry.available]),
-    ),
+    balances,
     entries,
     status: snapshot.status,
     error: snapshot.error,

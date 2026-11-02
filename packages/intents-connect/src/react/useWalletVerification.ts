@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
+import { getWalletIntentsAccountId } from '@/account';
 import { proofRpcUrls } from '@/near/rpcUrls';
 import type { OwnershipVerdict } from '@/ownership/types';
 import { SessionError } from '@/session';
@@ -35,9 +36,15 @@ export const useWalletVerification = (): UseWalletVerificationResult => {
   const { wallet } = useIntentsConnect();
   const snapshot = useSnapshot(verification.state);
 
-  const [status, setStatus] = useState<WalletVerificationStatus>('idle');
-  const [verdict, setVerdict] = useState<OwnershipVerdict>();
-  const [error, setError] = useState<Error>();
+  // Each attempt is recorded with the account it ran for, so switching
+  // wallets mid-prompt (or after) never shows one account's result as the
+  // other's.
+  const [attempt, setAttempt] = useState<{
+    intentsAccountId?: string;
+    status: WalletVerificationStatus;
+    verdict?: OwnershipVerdict;
+    error?: Error;
+  }>({ status: 'idle' });
 
   const walletRef = useRef(wallet);
 
@@ -50,8 +57,9 @@ export const useWalletVerification = (): UseWalletVerificationResult => {
       throw new SessionError('WALLET_NOT_CONNECTED', 'no wallet connected');
     }
 
-    setStatus('verifying');
-    setError(undefined);
+    const intentsAccountId = getWalletIntentsAccountId(current);
+
+    setAttempt({ intentsAccountId, status: 'verifying' });
 
     try {
       const result = await verifyWallet(current, {
@@ -59,25 +67,32 @@ export const useWalletVerification = (): UseWalletVerificationResult => {
         rpcUrls: proofRpcUrls(intentsApi),
       });
 
-      setVerdict(result.verdict);
-      setStatus(result.verdict.ok ? 'verified' : 'rejected');
+      setAttempt({
+        intentsAccountId,
+        status: result.verdict.ok ? 'verified' : 'rejected',
+        verdict: result.verdict,
+      });
 
       return result;
     } catch (caught) {
       const failure =
         caught instanceof Error ? caught : new Error(String(caught));
 
-      setError(failure);
-      setStatus('error');
+      setAttempt({ intentsAccountId, status: 'error', error: failure });
       throw failure;
     }
   }, [verification, intentsApi]);
 
+  const current =
+    attempt.intentsAccountId === getWalletIntentsAccountId(wallet)
+      ? attempt
+      : { status: 'idle' as const };
+
   return {
     isVerified: verification.isVerified(wallet, snapshot.verified),
-    status,
-    verdict,
-    error,
+    status: current.status,
+    verdict: current.verdict,
+    error: current.error,
     verify,
   };
 };

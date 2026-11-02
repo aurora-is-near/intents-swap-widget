@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { IntentsAccountBalance } from '@/intentsApi/types';
 import type { ResourceStatus } from '@/resource';
 import { useIntentsAccountContext } from '@/react/accountContext';
@@ -34,11 +35,15 @@ export const useIntentsBalances = ({
   );
 
   const entries = snapshot.data?.balances ?? EMPTY_ENTRIES;
+  // Stable while the data is: callers put it in effect dependencies.
+  const balances = useMemo(
+    () =>
+      Object.fromEntries(entries.map((entry) => [entry.tokenId, entry.amount])),
+    [entries],
+  );
 
   return {
-    balances: Object.fromEntries(
-      entries.map((entry) => [entry.tokenId, entry.amount]),
-    ),
+    balances,
     entries,
     blockHeight: snapshot.data?.blockHeight,
     status: snapshot.status,

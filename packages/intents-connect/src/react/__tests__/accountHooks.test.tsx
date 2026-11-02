@@ -74,18 +74,18 @@ const intentsApi = (overrides: Partial<IntentsApi> = {}): IntentsApi => ({
   ...overrides,
 });
 
-const wallet = (): WalletConnector => ({
+const wallet = (address = ADDRESS): WalletConnector => ({
   id: 'evm',
   name: 'Test',
   chains: ['base'],
   signingStandard: 'erc191',
   connect: vi.fn(),
   disconnect: vi.fn(),
-  getAddress: () => ADDRESS,
+  getAddress: () => address,
   getProviders: () => ({
     evm: {
       request: async ({ method }: { method: string }) =>
-        method === 'eth_requestAccounts' ? [ADDRESS] : `0x${'11'.repeat(65)}`,
+        method === 'eth_requestAccounts' ? [address] : `0x${'11'.repeat(65)}`,
     },
   }),
 });
@@ -333,5 +333,74 @@ describe('account hooks', () => {
     rerender();
 
     expect(result.current.status).toBe('authorized');
+  });
+
+  it('reload data hooks when the intents-api identity changes', async () => {
+    const first = intentsApi();
+    const second = intentsApi({
+      apiKey: 'other-key',
+      getIntentsAccountBalances: vi.fn(async () => ({
+        blockHeight: 9,
+        balances: [],
+      })),
+    });
+
+    let props: Partial<IntentsConnectProviderProps> = { intentsApi: first };
+    const { result, rerender } = renderHook(
+      () => useIntentsBalances({ refreshIntervalMs: 0 }),
+      {
+        wrapper: ({ children }: { children: ReactNode }) =>
+          wrapperFor(props)({ children }),
+      },
+    );
+
+    await waitFor(() => expect(result.current.blockHeight).toBe(7));
+
+    props = { intentsApi: second };
+    rerender();
+
+    // No polling: only the store rebuild can trigger this load.
+    await waitFor(() => expect(result.current.blockHeight).toBe(9));
+
+    expect(second.getIntentsAccountBalances).toHaveBeenCalledWith(ACCOUNT);
+  });
+
+  it('keep a verification result with the account it ran for', async () => {
+    stubNetwork();
+
+    let current = wallet();
+    const { result, rerender } = renderHook(() => useWalletVerification(), {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        wrapperFor({ intentsApi: intentsApi(), wallet: current })({
+          children,
+        }),
+    });
+
+    await act(async () => {
+      await result.current.verify();
+    });
+
+    expect(result.current.status).toBe('verified');
+
+    current = wallet('0x1111111111111111111111111111111111111111');
+    rerender();
+
+    expect(result.current.status).toBe('idle');
+    expect(result.current.isVerified).toBe(false);
+  });
+
+  it('return the same balances object while the data is unchanged', async () => {
+    const { result, rerender } = renderHook(
+      () => useIntentsBalances({ refreshIntervalMs: 0 }),
+      { wrapper: wrapperFor({ intentsApi: intentsApi() }) },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe('success'));
+
+    const { balances } = result.current;
+
+    rerender();
+
+    expect(result.current.balances).toBe(balances);
   });
 });
