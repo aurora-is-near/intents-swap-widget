@@ -96,6 +96,13 @@ export {
 } from '@/balances';
 
 export {
+  createResource,
+  type Resource,
+  type ResourceState,
+  type ResourceStatus,
+} from '@/resource';
+
+export {
   getLocalStorage,
   memoryStorage,
   webStorage,
