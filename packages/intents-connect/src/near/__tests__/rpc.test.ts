@@ -179,6 +179,56 @@ describe('viewCall', () => {
     expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([A, B, B]);
   });
 
+  it('tries every endpoint again when all were marked dead', async () => {
+    const fetchImpl = fetchFor({
+      [A]: { status: 404, body: 'not found' },
+    });
+
+    const call = () =>
+      viewCall({
+        contractId: 'x.near',
+        methodName: 'm',
+        args: {},
+        rpcUrls: [A],
+        fetch: fetchImpl,
+      }).catch((e: unknown) => e);
+
+    await call();
+    const error = await call();
+
+    // Not "no endpoint configured": the dead URL was tried again.
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect((error as Error).message).toContain('responded 404');
+  });
+
+  it('forgets a dead endpoint after a while', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const fetchImpl = fetchFor({
+        [A]: { status: 404, body: 'not found' },
+        [B]: { body: { result: { result: bytes(1) } } },
+      });
+
+      const call = () =>
+        viewCall({
+          contractId: 'x.near',
+          methodName: 'm',
+          args: {},
+          rpcUrls: [A, B],
+          fetch: fetchImpl,
+        });
+
+      await call();
+      vi.setSystemTime(Date.now() + 5 * 60_000 + 1);
+      await call();
+
+      expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([A, B, A, B]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('times out a stalled endpoint and moves on', async () => {
     const fetchImpl = vi.fn<FetchLike>((url, init) =>
       url === A

@@ -398,6 +398,16 @@ describe('verifyOwnership', () => {
     });
   });
 
+  it('treats a public-key complaint on an EVM proof as a rejected signature', async () => {
+    const fetchImpl = rpcFor(() => ({
+      error: "public key 'secp256k1:abc' doesn't exist for account '0xabc'",
+    }));
+
+    await expect(
+      verifyOwnership(erc191Proof, { rpcUrls: [RPC], fetch: fetchImpl }),
+    ).resolves.toMatchObject({ ok: false, reason: 'SIGNATURE_REJECTED' });
+  });
+
   it('reports a stale nonce and drops the cached salt', async () => {
     const salts = rpcFor((method) =>
       method === 'current_salt' ? { result: SALT } : { result: null },

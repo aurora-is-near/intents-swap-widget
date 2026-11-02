@@ -10,8 +10,17 @@ import type {
 
 const IMPLICIT_NEAR_ACCOUNT = /^[0-9a-f]{64}$/;
 
-const classify = (message: string): OwnershipRejection => {
-  if (/public.?key/i.test(message)) {
+/**
+ * `PUBLIC_KEY_NOT_REGISTERED` is a NEAR-only state (a named account must
+ * register its key). For erc191 / raw_ed25519 the signer IS the key, so a
+ * contract complaining about a public key means the proof was signed by the
+ * wrong key — a rejected signature.
+ */
+const classify = (
+  message: string,
+  standard: OwnershipProof['standard'],
+): OwnershipRejection => {
+  if (standard === 'nep413' && /public.?key/i.test(message)) {
     return 'PUBLIC_KEY_NOT_REGISTERED';
   }
 
@@ -94,7 +103,7 @@ export const verifyOwnership = async (
       throw error;
     }
 
-    const reason = classify(error.message);
+    const reason = classify(error.message, proof.standard);
 
     if (reason === 'NONCE_REJECTED') {
       invalidateSalt();

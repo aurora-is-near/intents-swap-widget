@@ -18,13 +18,22 @@ const DEFAULT_TIMEOUT = 10_000;
 
 /**
  * Endpoints that answered 404 — an unknown key on the intents-api RPC proxy,
- * or a URL that is not an RPC at all. Skipped for the rest of the session so a
- * bad key does not double the latency of every call.
+ * or a URL that is not an RPC at all — and until when to skip them. Bounded
+ * so one stray 404 cannot retire an endpoint for the life of the page.
  */
-const deadUrls = new Set<string>();
+const DEAD_URL_TTL_MS = 5 * 60_000;
+const deadUrls = new Map<string, number>();
 
 /** @internal Test isolation only. */
 export const resetDeadNearRpcUrls = () => deadUrls.clear();
+
+/** The endpoints worth trying now: every one, if all are marked dead. */
+const liveUrls = (rpcUrls: readonly string[]): readonly string[] => {
+  const now = Date.now();
+  const live = rpcUrls.filter((url) => (deadUrls.get(url) ?? 0) <= now);
+
+  return live.length ? live : rpcUrls;
+};
 
 export type NearRpcOptions = {
   /** Tried in order; transport failures fall through to the next one. */
@@ -101,7 +110,7 @@ const attempt = async (
 
   if (!response.ok) {
     if (response.status === 404) {
-      deadUrls.add(url);
+      deadUrls.set(url, Date.now() + DEAD_URL_TTL_MS);
     }
 
     return {
@@ -209,7 +218,7 @@ export const nearRpc = async <T>(
     params,
   });
 
-  const urls = rpcUrls.filter((url) => !deadUrls.has(url));
+  const urls = liveUrls(rpcUrls);
   let lastError: Error = new NearRpcError('no NEAR RPC endpoint configured');
 
   // eslint-disable-next-line no-restricted-syntax
