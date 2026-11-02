@@ -48,9 +48,11 @@ export type UseIntentsConnectFlowResult<TArgs> = {
   /** `buildPlan` (or `executePlan`) threw — the execution never started. */
   preparationError?: Error;
   /**
-   * Reattaches to the live execution. `depositViaWallet` defaults to what the
-   * last submitted plan used; `true` lets a cross-session resume prompt the
-   * wallet transfer, which is only safe when no deposit was made.
+   * Reattaches to the live execution. Pass `depositViaWallet: true` only when
+   * you know no deposit was made: it lets a resume the runner did not drive
+   * itself (a reload, a wallet switch) prompt the wallet transfer again.
+   * Left unset, such a resume only surfaces the deposit address, so funds
+   * are never sent twice. `false` never prompts.
    */
   resume: (options?: { depositViaWallet?: boolean }) => Promise<void>;
   /** Re-prompts the rejected or failed deposit transfer. */
@@ -152,9 +154,11 @@ export const useIntentsConnectFlow = <TArgs, TParams = unknown>({
       }
 
       await current
-        .resume(executionId, {
-          depositViaWallet: depositViaWallet ?? lastDepositViaWallet.current,
-        })
+        // Deliberately NOT defaulted from the last submit: `true` turns off
+        // the runner's "may already be sent" guard for any runner that did
+        // not broadcast the deposit itself, so a rebuilt runner would
+        // re-prompt a transfer that already went out.
+        .resume(executionId, { depositViaWallet })
         .catch(ignore);
     },
     [],
