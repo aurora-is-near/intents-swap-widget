@@ -18,11 +18,35 @@ import { Button, Card, CloseButton } from '@/components';
 type Msg = { type: 'on_close' | 'on_check_compatibility' | 'on_sign_out' };
 type MsgError = { type: 'on_close' | 'on_try_again' | 'on_sign_out' };
 
-interface Props {
+/** Layout options for hosts that show the check as a full screen. */
+export interface LayoutProps {
+  /** Hides the close button and disables closing with Escape. */
+  hideCloseButton?: boolean;
+  /**
+   * Fills the parent's height, or the height left by siblings in a flex
+   * column, with the actions pinned to the bottom.
+   */
+  isFullHeight?: boolean;
+}
+
+interface Props extends LayoutProps {
   isSigned: boolean;
   isSigning: boolean;
   onMsg: (msg: Msg) => void;
 }
+
+const cardClassName = (isFullHeight?: boolean) =>
+  cn('relative w-full gap-sw-2xl flex flex-col', {
+    // In a flex column the 0% basis wins over h-full: siblings keep their space.
+    'h-full flex-1': isFullHeight,
+  });
+
+// Either margin, not both: cn doesn't resolve mt-sw-lg against mt-auto.
+const actionsClassName = (isFullHeight?: boolean) =>
+  cn(
+    'flex flex-col gap-sw-xl w-full',
+    isFullHeight ? 'mt-auto pt-sw-lg' : 'mt-sw-lg',
+  );
 
 const ListItem = ({
   text,
@@ -56,11 +80,17 @@ const FakeButton = ({
   </div>
 );
 
-export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
+export const Initial = ({
+  isSigned,
+  isSigning,
+  onMsg,
+  hideCloseButton,
+  isFullHeight,
+}: Props) => {
   const { t } = useTypedTranslation();
   const handleClose = () => onMsg({ type: 'on_close' });
 
-  useHandleKeyDown('Escape', handleClose);
+  useHandleKeyDown('Escape', handleClose, [], { enabled: !hideCloseButton });
 
   const showTimer = useTimer({
     endTime: 0,
@@ -79,11 +109,13 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
   }, [isSigned]);
 
   return (
-    <Card className="relative w-full gap-sw-2xl flex flex-col">
-      <CloseButton
-        onClick={handleClose}
-        className="absolute top-sw-2xl right-sw-2xl"
-      />
+    <Card className={cardClassName(isFullHeight)}>
+      {!hideCloseButton && (
+        <CloseButton
+          onClick={handleClose}
+          className="absolute top-sw-2xl right-sw-2xl"
+        />
+      )}
       <ArmingCountdownFill size={48} className="text-sw-status-warning" />
 
       <header className="flex flex-col gap-sw-lg">
@@ -126,7 +158,7 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
       </ul>
 
       {isSigned ? (
-        <div className="flex flex-col gap-sw-xl mt-sw-lg w-full">
+        <div className={actionsClassName(isFullHeight)}>
           <FakeButton
             label={t(
               'walletCompatibility.modal.button.verified',
@@ -146,7 +178,7 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-sw-xl mt-sw-lg">
+        <div className={actionsClassName(isFullHeight)}>
           <Button
             size="lg"
             variant="primary"
@@ -171,22 +203,28 @@ export const Initial = ({ isSigned, isSigning, onMsg }: Props) => {
   );
 };
 
-interface ErrorProps {
+interface ErrorProps extends LayoutProps {
   onMsg: (msg: MsgError) => void;
 }
 
-export const ErrorView = ({ onMsg }: ErrorProps) => {
+export const ErrorView = ({
+  onMsg,
+  hideCloseButton,
+  isFullHeight,
+}: ErrorProps) => {
   const { t } = useTypedTranslation();
   const handleClose = () => onMsg({ type: 'on_close' });
 
-  useHandleKeyDown('Escape', handleClose);
+  useHandleKeyDown('Escape', handleClose, [], { enabled: !hideCloseButton });
 
   return (
-    <Card className="relative w-full gap-sw-2xl flex flex-col">
-      <CloseButton
-        onClick={handleClose}
-        className="absolute top-sw-2xl right-sw-2xl"
-      />
+    <Card className={cardClassName(isFullHeight)}>
+      {!hideCloseButton && (
+        <CloseButton
+          onClick={handleClose}
+          className="absolute top-sw-2xl right-sw-2xl"
+        />
+      )}
       <GppBadFill size={48} className="text-sw-status-error" />
 
       <header className="flex flex-col gap-sw-lg">
@@ -210,7 +248,7 @@ export const ErrorView = ({ onMsg }: ErrorProps) => {
         </p>
       </header>
 
-      <div className="flex flex-col gap-sw-xl mt-sw-lg">
+      <div className={actionsClassName(isFullHeight)}>
         <Button
           size="lg"
           variant="primary"

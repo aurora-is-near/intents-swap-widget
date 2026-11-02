@@ -9,7 +9,10 @@ type Args = {
   sendAddress?: string | null;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
+  /** The intents account to credit, when not derived from `walletAddress`. */
+  intentsAccountId?: string;
   defaultRecipient: string | undefined;
+  isDry?: boolean;
 };
 
 export const getQuoteRecipient = ({
@@ -17,7 +20,9 @@ export const getQuoteRecipient = ({
   sendAddress,
   targetToken,
   intentsAccountType,
+  intentsAccountId,
   defaultRecipient,
+  isDry = false,
 }: Args): string | undefined => {
   if (isAuroraRecipient(targetToken)) {
     return 'aurora';
@@ -29,14 +34,23 @@ export const getQuoteRecipient = ({
   // Solana or Stellar placeholder to an Intents account ID produces a hex
   // address that 1Click correctly rejects as an invalid destination address.
   if (!targetToken.isIntent) {
+    // A passkey account has no address on any chain, so a real quote to an
+    // external chain needs an explicit send address. Its `0x` intents ID
+    // must never become an on-chain recipient.
+    if (intentsAccountType === 'webauthn' && !isDry) {
+      return sendAddress ?? undefined;
+    }
+
     return sendAddress ?? walletAddress;
   }
 
   return (
+    intentsAccountId ??
     getIntentsAccountId({
       addressType:
         getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
       walletAddress,
-    }) ?? defaultRecipient
+    }) ??
+    defaultRecipient
   );
 };

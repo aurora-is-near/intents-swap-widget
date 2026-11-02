@@ -14,7 +14,7 @@ const CONFIG_TYPE_FILE = path.resolve(
   'config.ts',
 );
 
-const IGNORED_KEYS = ['environment'];
+const IGNORED_KEYS = ['environment', 'intentsApiUrl'];
 
 const MARKDOWN_FILE = path.resolve(__dirname, '..', 'docs', 'configuration.md');
 

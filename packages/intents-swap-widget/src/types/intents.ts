@@ -4,7 +4,8 @@ export type IntentSigningStandard =
   | 'nep413'
   | 'erc191'
   | 'raw_ed25519'
-  | 'sep53';
+  | 'sep53'
+  | 'webauthn';
 
 export type Nep413IntentPayload = {
   message: string;
@@ -17,7 +18,8 @@ export type PreparedIntent =
   | { standard: 'nep413'; payload: Nep413IntentPayload }
   | { standard: 'erc191'; payload: string }
   | { standard: 'raw_ed25519'; payload: string }
-  | { standard: 'sep53'; payload: string };
+  | { standard: 'sep53'; payload: string }
+  | { standard: 'webauthn'; payload: string };
 
 export type SignedIntent = Extract<
   MultiPayload,

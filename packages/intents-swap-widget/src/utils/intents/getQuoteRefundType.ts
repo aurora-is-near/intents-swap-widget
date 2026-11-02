@@ -13,6 +13,8 @@ type Args = {
   sourceToken: Pick<Token, 'isIntent' | 'blockchain'>;
   targetToken: Pick<Token, 'isIntent' | 'blockchain'>;
   intentsAccountType: IntentsAccountType | undefined;
+  /** The intents account refunds go to, when not derived from `walletAddress`. */
+  intentsAccountId?: string;
   supportedChains: ReadonlyArray<Chains>;
 };
 
@@ -21,8 +23,14 @@ export const getQuoteRefundType = ({
   sourceToken,
   targetToken,
   intentsAccountType,
+  intentsAccountId,
   supportedChains,
 }: Args): NonNullable<Transaction['refundType']> => {
+  // See getQuoteRefundTo: passkey refunds always go to the intents account.
+  if (intentsAccountType === 'webauthn') {
+    return 'INTENTS';
+  }
+
   if (
     isAuroraRecipient(targetToken) ||
     isAuroraSourceRefund({ sourceToken, targetToken })
@@ -30,11 +38,13 @@ export const getQuoteRefundType = ({
     return 'ORIGIN_CHAIN';
   }
 
-  const recipientIntentsAccountId = getIntentsAccountId({
-    addressType:
-      getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
-    walletAddress,
-  });
+  const recipientIntentsAccountId =
+    intentsAccountId ??
+    getIntentsAccountId({
+      addressType:
+        getIntentsAccountTypeFromAddress(walletAddress) ?? intentsAccountType,
+      walletAddress,
+    });
 
   const isRefundToIntentAccount =
     !!recipientIntentsAccountId &&

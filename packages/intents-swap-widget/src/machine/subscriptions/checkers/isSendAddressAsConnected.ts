@@ -10,11 +10,12 @@ export const isSendAddressAsConnected = (
   changes: ContextChange[],
 ) => {
   const { config } = snapshot(configStore);
-  const { walletSupportedChains } = config;
+  const { walletSupportedChains, intentsAccountType } = config;
   const { walletAddress } = ctx;
   const supportedChains = getSupportedChains({
     walletAddress,
     walletSupportedChains,
+    intentsAccountType,
   });
 
   return (

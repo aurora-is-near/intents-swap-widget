@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurora Intents — wallet bridge</title>
+    <!--
+      The Aurora Intents extension's own wallet origin. Browser wallets only
+      inject into web pages, so the extension opens this page to connect,
+      sign and send with wallets that are not connected to the current site.
+      It needs no script: the extension's content scripts do the work.
+    -->
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #24262d;
+        color: #f3f3f5;
+        font: 500 14px/1.45 system-ui, -apple-system, sans-serif;
+        text-align: center;
+      }
+      main { max-width: 280px; padding: 24px; }
+      h1 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+      p { margin: 0; color: #979baa; }
+      .dot {
+        width: 10px; height: 10px; margin: 0 auto 16px; border-radius: 50%;
+        background: #d5b7ff; box-shadow: 0 0 0 6px rgba(213, 183, 255, 0.15);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="dot"></div>
+      <h1>Aurora Intents wallet bridge</h1>
+      <p>
+        Keep this window open while you use the wallet. Prompts from wallets
+        you connected in the extension appear from here.
+      </p>
+    </main>
+  </body>
+</html>

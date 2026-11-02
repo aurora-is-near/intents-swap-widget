@@ -32,6 +32,8 @@
     "@commitlint/config-conventional": "^19.2.2",
     "@jest/globals": "^30.2.0",
     "@near-js/types": "^2.2.6",
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
     "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/exec": "^7.0.3",
     "@semantic-release/git": "^10.0.1",

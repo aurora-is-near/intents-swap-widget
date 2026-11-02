@@ -6,14 +6,17 @@ import { notReachable } from '@/utils/notReachable';
 import { localStorageTyped } from '@/utils/localstorage';
 import { useCompatibilityCheck } from '@/hooks/useCompatibilityCheck';
 import { WalletCompatibilityModal } from './WalletCompatibilityModal';
+import type { LayoutProps } from './WalletCompatibilityModal';
 
 type Msg = { type: 'on_sign_out' | 'on_close' };
 
-type Props = {
+type Props = LayoutProps & {
   onMsg: (msg: Msg) => void;
+  /** Called with the reason when a verification attempt fails. */
+  onError?: (error: unknown) => void;
 };
 
-export function WalletCompatibilityCheck({ onMsg }: Props) {
+export function WalletCompatibilityCheck({ onMsg, onError, ...layout }: Props) {
   const { providers } = useConfig();
   const [hasError, setHasError] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
@@ -25,6 +28,7 @@ export function WalletCompatibilityCheck({ onMsg }: Props) {
   const { handleSign, isSigning } = useCompatibilityCheck({
     providers,
     walletAddress,
+    onError,
   });
 
   async function handleCompatibilityCheck() {
@@ -50,6 +54,7 @@ export function WalletCompatibilityCheck({ onMsg }: Props) {
 
   return hasError ? (
     <WalletCompatibilityModal.Error
+      {...layout}
       onMsg={async (msg) => {
         switch (msg.type) {
           case 'on_close':
@@ -66,6 +71,7 @@ export function WalletCompatibilityCheck({ onMsg }: Props) {
     />
   ) : (
     <WalletCompatibilityModal
+      {...layout}
       isSigned={isSigned}
       isSigning={isSigning}
       onMsg={async (msg) => {

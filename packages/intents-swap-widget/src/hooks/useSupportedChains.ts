@@ -9,7 +9,9 @@ export const useSupportedChains = () => {
     ctx: { sourceToken, walletAddress: machineWalletAddress },
   } = useUnsafeSnapshot();
 
-  const { connectedWallets, walletSupportedChains } = useConfig();
+  const { connectedWallets, walletSupportedChains, intentsAccountType } =
+    useConfig();
+
   const { walletAddress: configuredWalletAddress } = useWalletAddressForToken(
     connectedWallets,
     sourceToken,
@@ -19,8 +21,14 @@ export const useSupportedChains = () => {
     return getSupportedChains({
       walletAddress: configuredWalletAddress ?? machineWalletAddress,
       walletSupportedChains,
+      intentsAccountType,
     });
-  }, [configuredWalletAddress, machineWalletAddress, walletSupportedChains]);
+  }, [
+    configuredWalletAddress,
+    machineWalletAddress,
+    walletSupportedChains,
+    intentsAccountType,
+  ]);
 
   return { supportedChains };
 };

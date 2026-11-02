@@ -123,6 +123,32 @@ A list of blockchain networks supported by the connected wallet(s).
 If this is not provided we will attempt to establish the supported chains based
 on the format of the wallet address.
 
+### `intentsAccountType`
+
+The type of the connected intents account: `evm`, `near`, `sol`, `stellar` or
+`webauthn`. If this is not provided it is detected from the format of the wallet
+address.
+
+It is required for passkey accounts (`webauthn`): their intents account ID looks
+like an EVM address but has no wallet on any chain. Pass the account ID as
+`connectedWallets.default`, the passkey as `providers.webauthn` and enable
+`enableAccountAbstraction`. The widget then only offers intents balances as the
+source, refunds to the intents account and requires a `sendAddress` for
+withdrawals.
+
+### `intentsAccountId`
+
+The intents account the widget acts for, when it isn't the one derived from
+the connected wallet. Use it to let one wallet fund another account: set
+`connectedWallets.default`, `providers` and `intentsAccountType` for the wallet
+that holds the tokens, and `intentsAccountId` to the account that should
+receive swaps into intents and intents refunds, and whose intents balance is
+shown.
+
+That wallet only signs on-chain transactions and takes origin-chain refunds; it
+cannot spend the account's intents balance (restrict the source to external
+tokens with `chainsFilter`, or the transfer is rejected).
+
 ### `sendAddress`
 
 Optional fixed destination wallet. If not specified the widget will use the
@@ -279,6 +305,12 @@ are driven by the `enableAccountAbstraction` option and whether or not there
 are any `connectedWallets`. However, this option exists for the case where you
 want more fine-grained control, for example, when building your own custom
 widget using our components.
+
+- `intents`: `none`, `all`, or `with-balance` (only the intents tokens the
+  account holds).
+- `external`: `none`, `all`, `wallet-supported` (tokens on the connected
+  wallet's chains), or `with-balance` (only the tokens the wallet holds on
+  them).
 
 #### Example
 

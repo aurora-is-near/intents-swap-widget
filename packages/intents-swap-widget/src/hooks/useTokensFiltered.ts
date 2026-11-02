@@ -60,6 +60,7 @@ export const useTokensFiltered = ({
         chainsFilter,
         supportedChains,
         intentBalances,
+        walletBalances: mergedBalance,
         uniqueIntentTokenIds: uniqueIntentsTokens.map((t) => t.assetId),
       }),
     )

@@ -18,6 +18,10 @@ export { formatUsdAmount } from './formatters/formatUsdAmount';
 export { getTransactionLink } from './formatters/getTransactionLink';
 export { formatAddressTruncate } from './formatters/formatAddressTruncate';
 
+export { getWebAuthnIntentsAccountId } from './intents/getWebAuthnIntentsAccountId';
+export { getIntentsTargetToken } from './tokens/getIntentsTargetToken';
+export { findTransactionToken } from './transactions/findTransactionToken';
+
 export { cn } from './cn';
 export { noop } from './noop';
 export { notReachable } from './notReachable';

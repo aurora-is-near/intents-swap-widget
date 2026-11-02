@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import type { walletMessage } from '@defuse-protocol/internal-utils';
+import type {
+  AuthMethod,
+  walletMessage,
+} from '@defuse-protocol/internal-utils';
 import { Buffer } from 'buffer';
 import { TransferError } from '@/errors';
 import { notReachable } from '@/utils/notReachable';
@@ -9,13 +12,15 @@ import {
   verifyWalletSignature,
   walletVerificationMessageFactory,
 } from '../utils/intents/walletCompatibilityVerification';
-import { Providers } from '../types';
+import { IntentsAccountType, Providers } from '../types';
 import { logger } from '../logger';
 import { useIntentsAccountType } from './useIntentsAccountType';
 
 type Props = {
   providers?: Providers;
   walletAddress?: string;
+  /** Why a check failed: the wallet's error, or a rejected signature. */
+  onError?: (error: unknown) => void;
 };
 
 function assertDefined<T>(
@@ -31,7 +36,14 @@ function assertDefined<T>(
   }
 }
 
-export function useCompatibilityCheck({ providers, walletAddress }: Props) {
+const getAuthMethod = (accountType: IntentsAccountType): AuthMethod =>
+  accountType === 'sol' ? 'solana' : accountType;
+
+export function useCompatibilityCheck({
+  providers,
+  walletAddress,
+  onError,
+}: Props) {
   const [isSigning, setIsSigning] = useState(false);
   const { intentsAccountType } = useIntentsAccountType();
   const intentsAccountId = getIntentsAccountId({
@@ -39,15 +51,21 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
     addressType: intentsAccountType,
   });
 
+  // A passkey signs as its public key; every other account as its address.
+  const getCredential = (address: string) =>
+    intentsAccountType === 'webauthn'
+      ? (providers?.webauthn?.publicKey ?? address)
+      : address;
+
   async function handleSignInternal(): Promise<walletMessage.WalletSignatureResult> {
     assertDefined(walletAddress, 'No wallet connected');
     assertDefined(intentsAccountType, 'Intents account type is not defined');
     assertDefined(intentsAccountId, 'Intents account ID is not defined');
 
-    const authType =
-      intentsAccountType === 'sol' ? 'solana' : intentsAccountType;
-
-    const msg = walletVerificationMessageFactory(walletAddress, authType);
+    const msg = walletVerificationMessageFactory(
+      getCredential(walletAddress),
+      getAuthMethod(intentsAccountType),
+    );
 
     switch (intentsAccountType) {
       case 'evm': {
@@ -124,6 +142,20 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
         };
       }
 
+      case 'webauthn': {
+        assertDefined(providers?.webauthn, 'No passkey provider configured');
+
+        const signatureData = await providers.webauthn.signChallenge(
+          msg.WEBAUTHN.challenge,
+        );
+
+        return {
+          type: 'WEBAUTHN',
+          signatureData,
+          signedData: msg.WEBAUTHN,
+        };
+      }
+
       default:
         notReachable(intentsAccountType);
     }
@@ -141,8 +173,8 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
 
       const isValid = await verifyWalletSignature(
         signature,
-        walletAddress!,
-        intentsAccountType === 'sol' ? 'solana' : intentsAccountType,
+        getCredential(walletAddress!),
+        getAuthMethod(intentsAccountType),
       );
 
       // Handle NEAR public key storage
@@ -158,8 +190,17 @@ export function useCompatibilityCheck({ providers, walletAddress }: Props) {
         }
       }
 
+      if (!isValid) {
+        onError?.(
+          new Error('NEAR Intents did not accept the wallet’s signature'),
+        );
+      }
+
       return isValid;
     } catch (error) {
+      logger.warn('[WIDGET] Wallet compatibility check failed', error);
+      onError?.(error);
+
       return false;
     } finally {
       setIsSigning(false);

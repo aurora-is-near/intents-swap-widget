@@ -13,7 +13,12 @@ export type WalletAddresses = Partial<
   Record<Chains | 'default', string | null>
 >;
 
-export type IntentsAccountType = 'evm' | 'near' | 'sol' | 'stellar';
+export type IntentsAccountType =
+  | 'evm'
+  | 'near'
+  | 'sol'
+  | 'stellar'
+  | 'webauthn';
 
 export type WidgetEnvironment = 'production' | 'staging';
 
@@ -30,6 +35,8 @@ export type WidgetConfig = {
 
   // Backend environment for the widget
   environment?: WidgetEnvironment;
+  // Fee service base URL, overriding `environment` (e.g. a local instance)
+  intentsApiUrl?: string;
 
   // Account abstraction
   enableAccountAbstraction?: boolean;
@@ -41,6 +48,14 @@ export type WidgetConfig = {
   plugins?: Plugins;
 
   // Connected wallet
+  // Explicit account type; required for passkey (`webauthn`) accounts, whose
+  // intents account ID looks like an EVM address.
+  intentsAccountType?: IntentsAccountType;
+  // The intents account the widget acts for when it isn't the one derived
+  // from the connected wallet: e.g. a secondary wallet funding a primary
+  // account. Balances, intents-side recipients and intents refunds use it;
+  // the connected wallet still signs on-chain and takes origin-chain refunds.
+  intentsAccountId?: string;
   allowSwapWithExternalWallet?: boolean;
   walletSupportedChains?: ReadonlyArray<Chains>;
   connectedWallets: WalletAddresses;

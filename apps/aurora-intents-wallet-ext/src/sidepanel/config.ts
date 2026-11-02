@@ -1,0 +1,51 @@
+// Aurora fee service app key (same alpha key as apps/intents-chrome-ext). It
+// ships in the bundle; persistent deposit addresses also need the key's
+// organisation to be approved for them.
+const API_KEY = '5a6c4f98-f174-4bd2-aa19-3d53e3abe87d';
+
+// Wallet balances (EVM, Solana). Same key as apps/intents-chrome-ext.
+export const ALCHEMY_API_KEY = 'CiIIxly0Hi8oQYcQvzgsI';
+
+// Empty counts as unset, so `VITE_FEE_SERVICE_URL= yarn build` targets
+// production even with a local override in `.env.local`.
+const envValue = (value: unknown) =>
+  typeof value === 'string' && value !== '' ? value : undefined;
+
+const FEE_SERVICE_OVERRIDE = envValue(import.meta.env.VITE_FEE_SERVICE_URL);
+
+/**
+ * Fee service for everything: deposit addresses here, quotes and intents in
+ * the widget. Overridable to point at a local instance
+ * (`VITE_FEE_SERVICE_URL=http://localhost:3005`).
+ */
+export const FEE_SERVICE_URL =
+  FEE_SERVICE_OVERRIDE ?? 'https://intents-api.aurora.dev';
+
+/** The widget's `intentsApiUrl`: only set to override production. */
+export const WIDGET_INTENTS_API_URL = FEE_SERVICE_OVERRIDE;
+
+/** An app key known to that fee service (a local one has its own keys). */
+export const FEE_SERVICE_API_KEY =
+  envValue(import.meta.env.VITE_PDA_API_KEY) ?? API_KEY;
+
+/**
+ * Every deposit is converted to this asset, as its intents representation
+ * (USDC on NEAR, the same mapping the swap widget uses for deposits).
+ */
+export const DEPOSIT_SYMBOL = 'USDC';
+
+/**
+ * Intents Connect, which runs app deposits (Polymarket). Alpha service and key
+ * as in apps/intents-chrome-ext; the key ships in the bundle, so move it behind
+ * the SDK's `apiKeyProxyUrl` before a public release.
+ */
+export const INTENTS_CONNECT_API_URL =
+  (import.meta.env.VITE_INTENTS_CONNECT_API_URL as string | undefined) ??
+  'https://intents-connect-alpha-api.aurora.dev';
+
+export const INTENTS_CONNECT_API_KEY =
+  (import.meta.env.VITE_INTENTS_CONNECT_API_KEY as string | undefined) ??
+  API_KEY;
+
+/** Where a Solana deposit transfer fetches a blockhash and submits. */
+export const SOLANA_RPC_URL = `https://solana-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;

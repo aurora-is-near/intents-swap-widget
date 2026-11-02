@@ -9,6 +9,8 @@ type Options = {
   chainsFilter: ChainsFilter;
   supportedChains: ReadonlyArray<Chains>;
   intentBalances: TokenBalances;
+  /** Wallet (and intents) balances, by `getTokenBalanceKey`. */
+  walletBalances: TokenBalances;
   uniqueIntentTokenIds: string[];
 };
 
@@ -17,6 +19,7 @@ export const createFilterBySelectedChain = (options: Options) => {
     chainsFilter,
     selectedChain,
     intentBalances,
+    walletBalances,
     supportedChains,
     uniqueIntentTokenIds,
   } = options;
@@ -35,6 +38,18 @@ export const createFilterBySelectedChain = (options: Options) => {
 
     if (!token.isIntent && chainsFilter.external === 'none') {
       return false;
+    }
+
+    if (!token.isIntent && chainsFilter.external === 'with-balance') {
+      const balance = walletBalances[getTokenBalanceKey(token)];
+
+      if (
+        !supportedChains.includes(token.blockchain) ||
+        !balance ||
+        balance === '0'
+      ) {
+        return false;
+      }
     }
 
     if (token.isIntent && chainsFilter.intents === 'with-balance') {

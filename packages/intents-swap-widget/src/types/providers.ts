@@ -28,9 +28,19 @@ export type StellarProvider = {
   >;
 };
 
+export type WebAuthnProvider = {
+  /** Passkey public key as `p256:<base58 x‖y>` or `ed25519:<base58>`. */
+  publicKey: string;
+  /** Signs the challenge with the passkey (`navigator.credentials.get`). */
+  signChallenge: (
+    challenge: Uint8Array,
+  ) => Promise<AuthenticatorAssertionResponse>;
+};
+
 export type Providers = {
   evm?: undefined | null | EvmProvider;
   sol?: undefined | null | SolanaProvider;
   stellar?: undefined | null | StellarProvider;
   near?: undefined | null | (() => NearWalletBase);
+  webauthn?: undefined | null | WebAuthnProvider;
 };

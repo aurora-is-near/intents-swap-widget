@@ -10,7 +10,8 @@ export type Chain = {
 
 export type ChainsFilter = {
   intents: 'none' | 'all' | 'with-balance';
-  external: 'none' | 'all' | 'wallet-supported';
+  // `with-balance`: tokens on the wallet's chains that it holds
+  external: 'none' | 'all' | 'wallet-supported' | 'with-balance';
 };
 
 export type ChainsFilters = {

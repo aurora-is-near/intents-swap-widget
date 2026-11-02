@@ -1,0 +1,68 @@
+import { Icon } from '../../components/Icon';
+import { PrimaryBadge } from '../../components/PrimaryBadge';
+import { shortAddress } from '../../utils';
+import type { WalletOption } from './walletOptions';
+
+type Props = {
+  /** Before the wallet, e.g. "From". */
+  label?: string;
+  option: WalletOption;
+  ariaLabel: string;
+  /** Opens the picker; without it the card is static (nothing to pick). */
+  onClick?: () => void;
+};
+
+const CARD =
+  'flex w-full shrink-0 items-center gap-sw-md rounded-sw-md bg-sw-gray-900 px-sw-lg py-sw-md text-left';
+
+/**
+ * The selected wallet (or the account) as a full-width card that opens the
+ * wallet picker: Home's wallets tab, "From" and "To" on Swap and Send.
+ */
+export const WalletSelector = ({
+  label,
+  option,
+  ariaLabel,
+  onClick,
+}: Props) => {
+  const content = (
+    <>
+      {label ? (
+        <span className="shrink-0 text-sw-label-sm text-sw-gray-300">
+          {label}
+        </span>
+      ) : null}
+      {option.icon(24)}
+      <span className="flex min-w-[0px] grow items-baseline gap-sw-sm">
+        <span className="truncate text-sw-label-md text-sw-gray-50">
+          {option.name}
+        </span>
+        {option.address ? (
+          <span className="shrink-0 text-sw-label-sm text-sw-gray-400">
+            {shortAddress(option.address)}
+          </span>
+        ) : null}
+      </span>
+      {option.badge ? <PrimaryBadge label={option.badge} /> : null}
+      {onClick ? (
+        <span className="shrink-0 text-sw-gray-300">
+          <Icon name="chevronDown" size={16} />
+        </span>
+      ) : null}
+    </>
+  );
+
+  return onClick ? (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onClick}
+      className={`${CARD} hover:bg-sw-gray-800`}>
+      {content}
+    </button>
+  ) : (
+    <div aria-label={ariaLabel} className={CARD}>
+      {content}
+    </div>
+  );
+};

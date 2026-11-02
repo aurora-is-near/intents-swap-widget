@@ -29,11 +29,18 @@ type Cursor = {
   lastDepositMemo?: string;
 };
 
-export const useTransactions = () => {
+type Args = {
+  /** Whose history, when not the default connected wallet's. */
+  walletAddress?: string;
+};
+
+export const useTransactions = ({ walletAddress: address }: Args = {}) => {
   const {
     apiKey,
-    connectedWallets: { default: walletAddress },
+    connectedWallets: { default: defaultAddress },
   } = useConfig();
+
+  const walletAddress = address ?? defaultAddress;
 
   const {
     data,

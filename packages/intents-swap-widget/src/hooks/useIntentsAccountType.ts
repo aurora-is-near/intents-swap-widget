@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useConfig } from '../config';
 import { useUnsafeSnapshot } from '../machine';
 import { getIntentsAccountTypeFromAddress } from '../utils/chains/getIntentsAccountTypeFromAddress';
 
@@ -14,13 +15,17 @@ export const useIntentsAccountType = () => {
     ctx: { walletAddress },
   } = useUnsafeSnapshot();
 
+  const { intentsAccountType: configuredAccountType } = useConfig();
+
   const intentsAccountType = useMemo(() => {
     if (!walletAddress) {
       return;
     }
 
-    return getIntentsAccountTypeFromAddress(walletAddress);
-  }, [walletAddress]);
+    return (
+      configuredAccountType ?? getIntentsAccountTypeFromAddress(walletAddress)
+    );
+  }, [walletAddress, configuredAccountType]);
 
   return { intentsAccountType };
 };

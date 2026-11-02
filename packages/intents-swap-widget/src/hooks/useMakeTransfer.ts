@@ -1,13 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { formatBigToHuman } from '@/utils/formatters/formatBigToHuman';
 import { logger } from '@/logger';
+import { useConfig } from '@/config';
 import { TransferError } from '@/errors';
 import { fireEvent, moveTo } from '@/machine';
 import { useComputedSnapshot, useUnsafeSnapshot } from '@/machine/snap';
 import type { MakeTransfer, TransferResult } from '@/types/transfer';
 
 import { INTENTS_CONTRACT } from '@/constants';
-import { INTENT_DEPOSIT_TOKENS_MAP } from '@/machine/effects/useSetTokenIntentsTargetEffect';
+import { INTENT_DEPOSIT_TOKENS_MAP } from '@/utils/tokens/getIntentsTargetToken';
 import { useMakeQuoteTransfer } from '@/hooks/useMakeQuoteTransfer';
 import { useMakeIntentsTransfer } from '@/hooks/useMakeIntentsTransfer';
 import { getTokenBalanceKey } from '@/utils/intents/getTokenBalanceKey';
@@ -21,6 +22,7 @@ import { getQuoteRefundType } from '@/utils/intents/getQuoteRefundType';
 import { getTransactionHistoryQueryKey } from '../utils/transactions/getTransactionHistoryQueryKey';
 import { addOptimisticTransaction } from '../utils/transactions/addOptimisticTransaction';
 import { Plugins, Providers } from '../types';
+import { useIntentsAccountId } from './useIntentsAccountId';
 import { useIntentsAccountType } from './useIntentsAccountType';
 import { useMakeNEARFtTransferCall } from './useMakeNEARFtTransferCall';
 import { useSupportedChains } from './useSupportedChains';
@@ -62,7 +64,14 @@ export const useMakeTransfer = ({
   const { mergedBalance } = useMergedBalance();
   const { addPendingTokens } = useBalancesUpdate();
   const { intentsAccountType } = useIntentsAccountType();
+  const intentsAccountId = useIntentsAccountId();
   const { supportedChains } = useSupportedChains();
+  const { intentsAccountId: configuredAccountId } = useConfig();
+
+  // A direct NEAR deposit credits whoever `msg` names, else the sender; with
+  // the account configured apart from the wallet it must name the account.
+  const depositMessage =
+    message ?? (configuredAccountId ? intentsAccountId : undefined);
 
   const make = async () => {
     if (!ctx.targetToken) {
@@ -88,7 +97,7 @@ export const useMakeTransfer = ({
           // sendAddress can be used to deposit into another intents account here
           transferResult = await makeNEARFtTransferCall(
             ctx.sendAddress ?? INTENTS_CONTRACT,
-            message,
+            depositMessage,
           );
         } else if (isDirectTokenOnNearTransfer) {
           if (!ctx.sendAddress) {
@@ -214,6 +223,7 @@ export const useMakeTransfer = ({
           sendAddress: ctx.sendAddress,
           targetToken: ctx.targetToken,
           intentsAccountType,
+          intentsAccountId,
           defaultRecipient: ctx.walletAddress,
         });
 
@@ -222,6 +232,7 @@ export const useMakeTransfer = ({
           sourceToken: ctx.sourceToken,
           targetToken: ctx.targetToken,
           intentsAccountType,
+          intentsAccountId,
           supportedChains,
           defaultRefundTo: ctx.walletAddress,
         });
@@ -231,8 +242,15 @@ export const useMakeTransfer = ({
           sourceToken: ctx.sourceToken,
           targetToken: ctx.targetToken,
           intentsAccountType,
+          intentsAccountId,
           supportedChains,
         });
+
+        // The account too, so its history (filtered by sender or recipient)
+        // lists a transfer sent from another wallet on its behalf.
+        const senders = [
+          ...new Set([ctx.walletAddress, intentsAccountId].filter(Boolean)),
+        ] as string[];
 
         addOptimisticTransaction(optimisticKey, {
           status: 'PENDING',
@@ -249,7 +267,7 @@ export const useMakeTransfer = ({
           amountInUsd: ctx.quote.amountInUsd,
           amountOutUsd: ctx.quote.amountOutUsd,
           createdAt: new Date().toISOString(),
-          senders: [ctx.walletAddress],
+          senders,
           refundTo,
           refundType,
           recipient: recipient ?? '',
