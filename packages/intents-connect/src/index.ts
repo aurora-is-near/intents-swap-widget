@@ -31,7 +31,28 @@ export type {
   RefreshAccessTokenResult,
 } from '@/intentsApi';
 
-export type { OwnershipProof, OwnershipStandard } from '@/ownership/types';
+export {
+  buildIntentPayload,
+  buildNep413Message,
+  createTimestampedNonceBytes,
+  decodeNonce,
+  encodeNonce,
+  getCurrentSalt,
+  getProofSignerId,
+  INTENTS_CONTRACT,
+  invalidateSalt,
+  OWNERSHIP_PROOF_TTL_MS,
+  OwnershipError,
+  signOwnershipProof,
+  verifyOwnership,
+  type DecodedNonce,
+  type OwnershipErrorCode,
+  type OwnershipProof,
+  type OwnershipRejection,
+  type OwnershipStandard,
+  type OwnershipVerdict,
+  type SignOwnershipProofOptions,
+} from '@/ownership';
 
 export {
   getFamilyForStandard,

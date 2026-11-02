@@ -39,3 +39,23 @@ export type OwnershipProof =
     };
 
 export type OwnershipStandard = OwnershipProof['standard'];
+
+export type OwnershipRejection =
+  /** The contract rejected the signature (wrong signer, tampered payload). */
+  | 'SIGNATURE_REJECTED'
+  /**
+   * A named NEAR account has not registered this key with `intents.near`
+   * (`add_public_key`), so it cannot sign for the account yet.
+   */
+  | 'PUBLIC_KEY_NOT_REGISTERED'
+  /** The nonce was stale, reused or salted with a rotated-out salt. */
+  | 'NONCE_REJECTED';
+
+export type OwnershipVerdict =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: OwnershipRejection;
+      /** The contract's own message, for logs. */
+      detail?: string;
+    };
