@@ -15,3 +15,5 @@ export {
   prepareSolanaSteps,
   createSolanaRecipientAta,
 } from '@/solana/prepareSteps';
+export { standardWalletToSolanaProvider } from '@/solana/standardProvider';
+export { toSolanaWalletConnector } from '@/solana/toWalletConnector';

@@ -30,3 +30,4 @@ export type {
   NearTransferOptions,
   NearTransferWallet,
 } from '@/near/types';
+export { toNearWalletConnector } from '@/near/toWalletConnector';
