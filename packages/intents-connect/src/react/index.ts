@@ -45,3 +45,9 @@ export {
   useConfidentialBalances,
   type UseConfidentialBalancesResult,
 } from '@/react/useConfidentialBalances';
+export {
+  useIntentsConnectFlow,
+  type IntentsConnectFlowState,
+  type UseIntentsConnectFlowOptions,
+  type UseIntentsConnectFlowResult,
+} from '@/react/useIntentsConnectFlow';
