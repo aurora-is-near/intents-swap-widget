@@ -3,7 +3,7 @@ import type {
   StandardWalletAccount,
   StandardWalletLike,
 } from '@/detect/types';
-import { withTimeout } from '@/detect/withTimeout';
+import { callWallet, withTimeout } from '@/detect/withTimeout';
 
 export const SOLANA_MAINNET = 'solana:mainnet';
 
@@ -91,26 +91,48 @@ export const createSolanaSource = (
     }
   };
 
+  // Wallets already asked to reconnect silently. Asked once each: a wallet
+  // that ignores `silent` would otherwise stack a prompt on every pass.
+  const silentlyAsked = new Set<StandardWalletLike>();
+
+  const readAddress = async (
+    wallet: StandardWalletLike,
+  ): Promise<string | null> => {
+    try {
+      let { accounts } = wallet;
+
+      if (!accounts.length && silent && !silentlyAsked.has(wallet)) {
+        silentlyAsked.add(wallet);
+        accounts = await withTimeout(
+          callWallet(() => silentConnect(wallet)),
+          timeout,
+        ).catch(() => wallet.accounts);
+      }
+
+      // An account may be scoped to chains; skip one that excludes mainnet.
+      const account = accounts.find(
+        (candidate) =>
+          !candidate.chains?.length ||
+          candidate.chains.includes(SOLANA_MAINNET),
+      );
+
+      return typeof account?.address === 'string' ? account.address : null;
+    } catch {
+      // A wallet whose accounts cannot be read is listed, with nothing shared.
+      return null;
+    }
+  };
+
   const read = async (): Promise<DetectedSolanaWallet[]> =>
     Promise.all(
-      [...wallets.values()].map(async (wallet) => {
-        let { accounts } = wallet;
-
-        if (!accounts.length && silent) {
-          accounts = await withTimeout(silentConnect(wallet), timeout).catch(
-            () => wallet.accounts,
-          );
-        }
-
-        return {
-          id: `sol:${wallet.name}`,
-          family: 'sol' as const,
-          name: wallet.name,
-          icon: wallet.icon,
-          address: accounts[0]?.address ?? null,
-          wallet,
-        };
-      }),
+      [...wallets.values()].map(async (wallet) => ({
+        id: `sol:${wallet.name}`,
+        family: 'sol' as const,
+        name: wallet.name,
+        icon: wallet.icon,
+        address: await readAddress(wallet),
+        wallet,
+      })),
     );
 
   return {

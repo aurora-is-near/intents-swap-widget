@@ -1,5 +1,5 @@
 import type { DetectedEvmWallet, Eip1193Like } from '@/detect/types';
-import { withTimeout } from '@/detect/withTimeout';
+import { callWallet, withTimeout } from '@/detect/withTimeout';
 
 type AnnouncedProvider = {
   info: { uuid: string; name: string; icon?: string; rdns?: string };
@@ -40,10 +40,23 @@ export const createEvmSource = (onChange: () => void, timeout: number) => {
 
     const listener = () => onChange();
 
-    EVENTS.forEach((event) => provider.on?.(event, listener));
+    // Recorded first, so a provider whose `on` throws is not retried (and
+    // re-thrown) on every pass.
     subscribed.set(provider, () =>
-      EVENTS.forEach((event) => provider.removeListener?.(event, listener)),
+      EVENTS.forEach((event) => {
+        try {
+          provider.removeListener?.(event, listener);
+        } catch {
+          // Nothing left to clean up.
+        }
+      }),
     );
+
+    try {
+      EVENTS.forEach((event) => provider.on?.(event, listener));
+    } catch {
+      // Without events the wallet is still read on every refresh.
+    }
   };
 
   const wallets = (): Omit<DetectedEvmWallet, 'address' | 'chainId'>[] => {
@@ -90,7 +103,9 @@ export const createEvmSource = (onChange: () => void, timeout: number) => {
 
         try {
           const accounts = await withTimeout(
-            wallet.provider.request({ method: 'eth_accounts' }),
+            callWallet(() =>
+              wallet.provider.request({ method: 'eth_accounts' }),
+            ),
             timeout,
           );
 
@@ -105,7 +120,9 @@ export const createEvmSource = (onChange: () => void, timeout: number) => {
           }
 
           const chainId = await withTimeout(
-            wallet.provider.request({ method: 'eth_chainId' }),
+            callWallet(() =>
+              wallet.provider.request({ method: 'eth_chainId' }),
+            ),
             timeout,
           ).catch(() => undefined);
 

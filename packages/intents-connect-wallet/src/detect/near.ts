@@ -1,5 +1,9 @@
-import type { DetectedNearWallet, InjectedNearWallet } from '@/detect/types';
-import { withTimeout } from '@/detect/withTimeout';
+import type {
+  DetectedNearWallet,
+  InjectedNearWallet,
+  NearInjectedAccount,
+} from '@/detect/types';
+import { callWallet, withTimeout } from '@/detect/withTimeout';
 
 export const NEAR_NETWORK = 'mainnet';
 
@@ -28,13 +32,36 @@ export const createNearSource = (onChange: () => void, timeout: number) => {
     }
   };
 
-  const read = async (): Promise<DetectedNearWallet[]> =>
-    Promise.all(
+  const readAccount = async (
+    wallet: InjectedNearWallet,
+  ): Promise<{ accountId: string; publicKey?: string } | undefined> => {
+    const accounts: unknown = await withTimeout(
+      callWallet(() => wallet.getAccounts({ network: NEAR_NETWORK })),
+      timeout,
+    ).catch(() => undefined);
+
+    const [account] = Array.isArray(accounts) ? (accounts as unknown[]) : [];
+    const { accountId, publicKey } = (account ?? {}) as Partial<
+      Record<keyof NearInjectedAccount, unknown>
+    >;
+
+    return typeof accountId === 'string' && accountId
+      ? {
+          accountId,
+          publicKey:
+            typeof publicKey === 'string' && publicKey ? publicKey : undefined,
+        }
+      : undefined;
+  };
+
+  const read = async (): Promise<DetectedNearWallet[]> => {
+    // Re-announced on every pass: a wallet that loaded after `start()`
+    // answers this one. Known wallets re-injecting are not a change.
+    announce();
+
+    return Promise.all(
       [...wallets.values()].map(async (wallet) => {
-        const [account] = await withTimeout(
-          wallet.getAccounts({ network: NEAR_NETWORK }),
-          timeout,
-        ).catch(() => []);
+        const account = await readAccount(wallet);
 
         return {
           id: `near:${wallet.manifest.id}`,
@@ -47,6 +74,7 @@ export const createNearSource = (onChange: () => void, timeout: number) => {
         };
       }),
     );
+  };
 
   return {
     start: () => {

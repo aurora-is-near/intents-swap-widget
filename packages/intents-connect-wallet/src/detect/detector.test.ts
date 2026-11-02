@@ -333,6 +333,118 @@ describe('createWalletDetector', () => {
   });
 });
 
+describe('createWalletDetector resilience', () => {
+  it('keeps detecting when a wallet misbehaves', async () => {
+    const throwsOn = evmProvider();
+
+    throwsOn.on = () => {
+      throw new Error('on() not supported');
+    };
+
+    announceEvm(throwsOn);
+
+    const syncThrow = nearWallet();
+
+    syncThrow.getAccounts = () => {
+      throw new Error('boom');
+    };
+
+    injectNear(syncThrow);
+    injectNear({
+      ...nearWallet(),
+      manifest: { id: 'odd', name: 'Odd' },
+      getAccounts: vi.fn(async () => ({ not: 'an array' }) as never),
+    });
+    preloadSolana(solanaWallet());
+
+    const detector = detect();
+
+    await detector.refresh();
+
+    const snapshot = detector.getSnapshot();
+
+    expect(snapshot.ready).toBe(true);
+    expect(
+      snapshot.wallets.map((wallet) => [wallet.id, wallet.address]),
+    ).toEqual([
+      ['evm:io.metamask', EVM_ADDRESS],
+      ['sol:Phantom', SOL_ADDRESS],
+      ['near:hot-wallet', null],
+      ['near:odd', null],
+    ]);
+  });
+
+  it('finds a NEAR wallet that injects only after detection started', async () => {
+    const detector = detect({ families: ['near'] });
+
+    await detector.refresh();
+
+    expect(detector.getSnapshot().wallets).toEqual([]);
+
+    // The extension loads late and answers the next announcement.
+    injectNear(nearWallet());
+    await detector.refresh();
+
+    expect(detector.getSnapshot().wallets.map((w) => w.id)).toEqual([
+      'near:hot-wallet',
+    ]);
+  });
+
+  it('settles refresh() on a pass that started after the call', async () => {
+    let accounts: string[] = [];
+    const provider = evmProvider();
+
+    (provider.request as ReturnType<typeof vi.fn>).mockImplementation(
+      async ({ method }: { method: string }) =>
+        method === 'eth_accounts' ? accounts : '0x1',
+    );
+    announceEvm(provider);
+
+    const detector = detect({ families: ['evm'] });
+    const first = detector.refresh();
+
+    accounts = [EVM_ADDRESS];
+
+    const second = detector.refresh();
+
+    await Promise.all([first, second]);
+
+    expect(detector.getSnapshot().wallets[0]?.address).toBe(EVM_ADDRESS);
+  });
+
+  it('asks each Solana wallet to reconnect silently only once', async () => {
+    const quiet = solanaWallet([]);
+
+    quiet.connect.mockResolvedValue({ accounts: [] });
+    preloadSolana(quiet);
+
+    const detector = detect({ families: ['sol'], silentSolanaConnect: true });
+
+    await detector.refresh();
+    await detector.refresh();
+    await detector.refresh();
+
+    expect(quiet.connect).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips a Solana account scoped away from mainnet', async () => {
+    preloadSolana(
+      solanaWallet([
+        { address: 'Devnet111', chains: ['solana:devnet'] } as {
+          address: string;
+        },
+        { address: SOL_ADDRESS },
+      ]),
+    );
+
+    const detector = detect({ families: ['sol'] });
+
+    await detector.refresh();
+
+    expect(detector.getSnapshot().wallets[0]?.address).toBe(SOL_ADDRESS);
+  });
+});
+
 describe('pickConnectedWallet', () => {
   it('returns the first connected wallet in preference order', async () => {
     announceEvm(evmProvider([]));

@@ -75,7 +75,6 @@ export const createWalletDetector = (
   let snapshot = EMPTY;
   let destroyed = false;
   let running: Promise<void> | undefined;
-  let rerun = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
 
@@ -91,13 +90,19 @@ export const createWalletDetector = (
   const sources: Source[] = [];
 
   const pass = async () => {
-    const results = await Promise.all(sources.map((source) => source.read()));
+    // One family failing (a wallet's code throwing where we did not expect
+    // it) must not hide the others or keep `ready` from flipping.
+    const results = await Promise.allSettled(
+      sources.map((source) => source.read()),
+    );
 
     if (destroyed) {
       return;
     }
 
-    const wallets = results.flat();
+    const wallets = results.flatMap((result) =>
+      result.status === 'fulfilled' ? result.value : [],
+    );
 
     if (!snapshot.ready || !sameWallets(snapshot.wallets, wallets)) {
       snapshot = Object.freeze({
@@ -108,24 +113,29 @@ export const createWalletDetector = (
     }
   };
 
+  let queued: Promise<void> | undefined;
+
+  /**
+   * A pass, or — while one is running — the pass queued after it, so the
+   * returned promise always settles on a read that started after the call.
+   */
   const refresh = (): Promise<void> => {
     if (destroyed) {
       return Promise.resolve();
     }
 
     if (running) {
-      rerun = true;
+      queued ??= running.then(() => {
+        queued = undefined;
 
-      return running;
+        return refresh();
+      });
+
+      return queued;
     }
 
     running = pass().finally(() => {
       running = undefined;
-
-      if (rerun && !destroyed) {
-        rerun = false;
-        void refresh();
-      }
     });
 
     return running;
