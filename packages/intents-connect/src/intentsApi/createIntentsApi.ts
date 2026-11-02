@@ -120,11 +120,12 @@ export const createIntentsApi = (options: IntentsApiOptions): IntentsApi => {
         headers: bearer(accessToken),
       }),
 
-    getQuote: (body) =>
+    getQuote: (body, { accessToken } = {}) =>
       request<SwapQuoteResponse>({
         path: `api/quote/${key}`,
         method: 'POST',
         body,
+        headers: bearer(accessToken),
       }),
 
     generateIntent: (body, { accessToken } = {}) =>

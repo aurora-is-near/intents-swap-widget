@@ -34,6 +34,29 @@ const isNep413Payload = (
   );
 };
 
+/** The standards this package signs 1Click-prepared intents with. */
+export type SignableIntentStandard = 'erc191' | 'raw_ed25519' | 'nep413';
+
+/** The wallet's standard, or `UNSUPPORTED_STANDARD` before anything is quoted. */
+export const requireSignableStandard = (
+  wallet: Pick<WalletConnector, 'signingStandard'>,
+): SignableIntentStandard => {
+  const { signingStandard } = wallet;
+
+  if (
+    signingStandard === 'erc191' ||
+    signingStandard === 'raw_ed25519' ||
+    signingStandard === 'nep413'
+  ) {
+    return signingStandard;
+  }
+
+  throw new FundingError(
+    'UNSUPPORTED_STANDARD',
+    `funding from intents is not supported for ${signingStandard} wallets yet`,
+  );
+};
+
 /** Throws unless 1Click returned a payload of the wallet's standard. */
 export function assertPreparedIntent(
   intent: unknown,

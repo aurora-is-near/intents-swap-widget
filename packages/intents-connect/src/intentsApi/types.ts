@@ -259,7 +259,10 @@ export type IntentsApi = {
     tokenIds?: readonly string[],
   ) => Promise<GetConfidentialBalancesResult>;
   /** A 1Click quote, with the integration's fees applied. */
-  getQuote: (body: SwapQuoteRequest) => Promise<SwapQuoteResponse>;
+  getQuote: (
+    body: SwapQuoteRequest,
+    options?: UserTokenOptions,
+  ) => Promise<SwapQuoteResponse>;
   /** The transfer intent that funds an `INTENTS` / `CONFIDENTIAL_INTENTS` quote. */
   generateIntent: (
     body: GenerateIntentRequest,
