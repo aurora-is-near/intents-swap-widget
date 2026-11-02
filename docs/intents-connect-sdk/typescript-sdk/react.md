@@ -87,16 +87,17 @@ const flow = useIntentsConnectFlow({
   buildPlan: ({ token, amount }) => buildMyPlan(token, amount),
 });
 
-flow.submit({ token, amount }); // single-flight; failures land in flow.preparationError
+flow.submit({ token, amount }); // single-flight
+// buildPlan failures land in flow.preparationError; run failures in flow.exec.error
 ```
 
 | Field | Meaning |
 |---|---|
 | `state` | `IDLE`, `IN_FLIGHT` (resume or cancel) or `FAILED` (retry the transfer or cancel) |
-| `isBusy`, `preparationError` | Building, running or cancelling; `buildPlan` threw |
+| `isBusy`, `preparationError` | Building, running or cancelling; `buildPlan` (or `executePlan`) threw — run failures are on `exec.error` |
 | `needsExternalDeposit` | Show `exec.depositAddress` / `depositMemo` / `deadline` for a QR or exchange deposit |
 | `canCancel` | A dead end the user can back out of |
-| `resume()`, `retryDeposit()`, `cancel()` | Recovery actions |
+| `resume()`, `retryDeposit()`, `cancel()` | Recovery actions. `resume({ depositViaWallet: true })` lets a resume this runner did not drive re-prompt the wallet transfer — pass it only when you know no deposit was made |
 | `exec` | The underlying `useExecution()` result |
 
 ## Account hooks

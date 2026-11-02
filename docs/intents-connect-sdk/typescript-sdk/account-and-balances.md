@@ -119,7 +119,7 @@ const { verdict, proof } = await verifyWallet(wallet, {
 
 RPC failures **throw**; they are never reported as "not verified".
 
-**Named NEAR accounts** (`alice.near`) can only sign for their intents account with a key registered on `intents.near` (`add_public_key`). Until then verification and authorization report `PUBLIC_KEY_NOT_REGISTERED`. Implicit accounts (64-hex) need nothing.
+**Named NEAR accounts** (`alice.near`) can only sign for their intents account with a key registered on `intents.near` (`add_public_key`). Until then `verifyWallet` reports `PUBLIC_KEY_NOT_REGISTERED`, and authorization fails with `SIGNATURE_REJECTED` — authorize with `verify: true` to get the named reason first. Implicit accounts (64-hex) need nothing.
 
 ## Confidential balances
 
@@ -140,7 +140,7 @@ The session refreshes its access token before it expires and retries a read once
 **Sessions are kept in memory by default**, so a reload asks for a new signature. You can pass `storage` (`webStorage(localStorage)`, or your own `KeyValueStorage`), but the refresh token mints access tokens for its whole lifetime: anything that can read that storage can read the user's confidential balances.
 {% endhint %}
 
-Errors are `SessionError`s with a `code`: `SIGNATURE_REJECTED`, `CLOCK_SKEW` (the device clock is more than 5 minutes off), `UNSUPPORTED_STANDARD`, `NOT_AUTHORIZED`, `SESSION_EXPIRED`, `WALLET_NOT_CONNECTED`. A declined wallet prompt is an `OwnershipError` with code `USER_REJECTED`.
+Errors are `SessionError`s with a `code`: `SIGNATURE_REJECTED`, `CLOCK_SKEW` (the device clock is more than 5 minutes off), `UNSUPPORTED_STANDARD`, `NOT_AUTHORIZED`, `SESSION_EXPIRED`, `WALLET_NOT_CONNECTED`, and `SUPERSEDED` (the account changed before the call finished; its result was discarded). A declined wallet prompt is an `OwnershipError` with code `USER_REJECTED`.
 
 ## Rate limits
 
