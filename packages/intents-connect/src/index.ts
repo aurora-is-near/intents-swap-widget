@@ -66,6 +66,15 @@ export {
 } from '@/session';
 
 export {
+  createVerificationStore,
+  VERIFIED_WALLETS_STORAGE_KEY,
+  verifyWallet,
+  type VerificationState,
+  type VerificationStore,
+  type VerifyWalletResult,
+} from '@/verification';
+
+export {
   getLocalStorage,
   memoryStorage,
   webStorage,
