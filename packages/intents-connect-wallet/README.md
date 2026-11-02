@@ -27,6 +27,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
 | `./connect/near` | NEAR connector | `@hot-labs/near-connect` |
 | `./connect/stellar` | Stellar connector | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
+| `./connect/walletconnect` | headless WalletConnect (EVM mobile, QR) | `@walletconnect/universal-provider` |
 | `./detect` | wallets already connected to the page | — |
 | `./detect/react` | `useDetectedWallets` | `react` |
 
@@ -123,6 +124,33 @@ const toWalletConnector = (selector: WalletSelectorState) => {
 Connections are **mutually exclusive**: an execution is bound to one origin
 wallet, since both the signing standard and the intermediary address follow from
 it. `select()` disconnects the others first.
+
+### Mobile wallets by QR, headless
+
+`./connect/walletconnect` pairs an EVM mobile wallet over WalletConnect v2
+without any modal. You render the pairing URI as a QR yourself. The session
+persists in the browser, so `getPeer()` restores it after a reload without UI.
+
+```ts
+import {
+  createWalletConnectClient,
+  PAIRING_TTL_MS,
+  toWalletConnectConnector,
+} from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
+
+const walletConnect = createWalletConnectClient({
+  projectId, // your WalletConnect Cloud project; defaults to Aurora's
+  metadata: { name: 'My app', url: location.origin },
+});
+
+// On "Connect with phone": render `uri` as a QR; abortPairing() after PAIRING_TTL_MS.
+const peer = await walletConnect.pair((uri) => showQr(uri));
+const connector = toWalletConnectConnector(walletConnect, peer);
+```
+
+Chain switches stay local to the provider (the session covers every EVM chain
+the engine routes). A transfer on a chain the phone wallet did not approve fails
+in the wallet. `onSessionEnd` reports a session the wallet ended from its side.
 
 ## Detection
 

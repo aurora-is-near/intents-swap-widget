@@ -36,6 +36,8 @@ import { robinhood as viemRobinhood } from 'viem/chains';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 
+import { AURORA_WALLETCONNECT_PROJECT_ID } from '@/connect/projectId';
+
 /** Reown's own theme mode. The widget passed its whole Theme and read only this. */
 export type AppKitThemeMode = 'light' | 'dark';
 
@@ -191,8 +193,6 @@ const buildCustomRpcUrls = (
         ],
       ]),
   );
-
-const AURORA_WALLETCONNECT_PROJECT_ID = '76f61d4322c80976d1a24a1263a9d082';
 
 /**
  * Default per-chain RPC overrides (publicnode).

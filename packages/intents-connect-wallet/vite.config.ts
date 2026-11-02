@@ -32,6 +32,7 @@ const entries = [
   'connect/appkit',
   'connect/near',
   'connect/stellar',
+  'connect/walletconnect',
   'detect',
   'detect/react',
 ];
