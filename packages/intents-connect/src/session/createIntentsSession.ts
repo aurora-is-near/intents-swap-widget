@@ -29,7 +29,12 @@ export type SessionErrorCode =
   /** The auth service does not accept this wallet's signing standard yet. */
   | 'UNSUPPORTED_STANDARD'
   /** The wallet has no address to authorize. */
-  | 'WALLET_NOT_CONNECTED';
+  | 'WALLET_NOT_CONNECTED'
+  /**
+   * The account changed (`restore`, `logout`, another `authorize`) before
+   * this call finished; its result was discarded.
+   */
+  | 'SUPERSEDED';
 
 export class SessionError extends IntentsConnectError {
   constructor(
@@ -212,9 +217,29 @@ export const createIntentsSession = (
     });
   };
 
-  const expire = async (intentsAccountId: string, cause?: unknown) => {
+  const superseded = () =>
+    new SessionError(
+      'SUPERSEDED',
+      'the account changed before this call finished',
+    );
+
+  /**
+   * Forgets the account's session. `startedAt` pins it to the operation that
+   * decided to expire: if the account changed while storage was being
+   * cleared, the newer state is left alone.
+   */
+  const expire = async (
+    intentsAccountId: string,
+    startedAt: number,
+    cause?: unknown,
+  ) => {
     tokens = undefined;
     await storage.remove(storageKey(intentsAccountId));
+
+    if (startedAt !== epoch) {
+      return;
+    }
+
     setState({
       status: 'expired',
       intentsAccountId,
@@ -249,7 +274,7 @@ export const createIntentsSession = (
     const startedAt = epoch;
 
     if (current.refreshTokenExpiresAt <= now()) {
-      return expire(intentsAccountId).then(() => {
+      return expire(intentsAccountId, startedAt).then(() => {
         throw notAuthorized();
       });
     }
@@ -268,10 +293,17 @@ export const createIntentsSession = (
             accessTokenExpiresAt: now() + expiresIn * 1000,
           };
 
+          // Persisted under its own account either way; only applied while
+          // that account is still the current one.
           await storage.set(
             storageKey(intentsAccountId),
             JSON.stringify(stored),
           );
+
+          if (startedAt !== epoch) {
+            throw superseded();
+          }
+
           applyTokens(intentsAccountId, stored);
 
           return accessToken;
@@ -282,7 +314,7 @@ export const createIntentsSession = (
             error instanceof IntentsApiError &&
             error.isUnauthorized
           ) {
-            await expire(intentsAccountId, error);
+            await expire(intentsAccountId, startedAt, error);
             throw notAuthorized();
           }
 
@@ -339,7 +371,7 @@ export const createIntentsSession = (
         const result = await intentsApi.authenticate(signed);
 
         if (startedAt !== epoch) {
-          return;
+          throw superseded();
         }
 
         const at = now();
@@ -352,9 +384,11 @@ export const createIntentsSession = (
 
         await storage.set(storageKey(intentsAccountId), JSON.stringify(stored));
 
-        if (startedAt === epoch) {
-          applyTokens(intentsAccountId, stored);
+        if (startedAt !== epoch) {
+          throw superseded();
         }
+
+        applyTokens(intentsAccountId, stored);
       } catch (error) {
         const mapped = toAuthError(error, signed);
 
@@ -392,7 +426,7 @@ export const createIntentsSession = (
       }
 
       if (stored.refreshTokenExpiresAt <= now()) {
-        await expire(intentsAccountId);
+        await expire(intentsAccountId, startedAt);
 
         return;
       }
@@ -430,12 +464,13 @@ export const createIntentsSession = (
 
       tokens = undefined;
       refreshing = undefined;
+      // State first and synchronously: nothing after the await may touch it,
+      // since another account can become current meanwhile.
+      setState({ status: 'anonymous', intentsAccountId });
 
       if (intentsAccountId) {
         await storage.remove(storageKey(intentsAccountId));
       }
-
-      setState({ status: 'anonymous', intentsAccountId });
     },
   };
 };

@@ -1,7 +1,9 @@
 import { useCallback, useRef } from 'react';
 import { useSnapshot } from 'valtio';
 
+import { getWalletIntentsAccountId } from '@/account';
 import { proofRpcUrls } from '@/near/rpcUrls';
+import { getProofSignerId } from '@/ownership/payload';
 import type { OwnershipVerdict } from '@/ownership/types';
 import { type IntentsSessionStatus, SessionError } from '@/session';
 import { verifyWallet } from '@/verification';
@@ -24,6 +26,9 @@ export type UseIntentsAuthResult = {
    * Opens a session for the provider wallet (one wallet prompt). With
    * `verify: true` the same signature is first simulated on `intents.near`
    * and recorded as verified — still one prompt.
+   *
+   * Rejects with a `SessionError` `SUPERSEDED` when the wallet's account
+   * changed before it finished.
    */
   authorize: (options?: { verify?: boolean }) => Promise<AuthorizeResult>;
   logout: () => Promise<void>;
@@ -63,6 +68,17 @@ export const useIntentsAuth = (): UseIntentsAuthResult => {
 
       if (!verdict.ok) {
         return { authorized: false, verdict };
+      }
+
+      // The wallet may have switched accounts during the prompt; a proof for
+      // the previous account must not open a session under the new one.
+      if (
+        getProofSignerId(proof) !== getWalletIntentsAccountId(walletRef.current)
+      ) {
+        throw new SessionError(
+          'SUPERSEDED',
+          'the wallet changed accounts while signing',
+        );
       }
 
       await session.authorize(current, { proof });

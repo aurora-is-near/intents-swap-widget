@@ -170,7 +170,7 @@ describe('authorize', () => {
     expect((error as SessionError).code).toBe('WALLET_NOT_CONNECTED');
   });
 
-  it('drops a result that lands after the account changed', async () => {
+  it('rejects as SUPERSEDED and drops a result that lands after the account changed', async () => {
     let finish: () => void = () => {};
     const api = fakeApi({
       authenticate: vi.fn(
@@ -194,13 +194,137 @@ describe('authorize', () => {
     await Promise.resolve();
     await session.restore(OTHER);
     finish();
-    await pending;
 
+    await expect(pending).rejects.toMatchObject({ code: 'SUPERSEDED' });
     expect(session.state).toMatchObject({
       status: 'anonymous',
       intentsAccountId: OTHER,
     });
     await expect(session.getAccessToken()).rejects.toBeInstanceOf(SessionError);
+  });
+});
+
+/**
+ * Async storage whose writes and removals wait for `flush()`, like
+ * `chrome.storage` — the case where an account switch can interleave.
+ */
+const slowStorage = () => {
+  const values = new Map<string, string>();
+  const pending: (() => void)[] = [];
+  const later = (apply: () => void) =>
+    new Promise<void>((resolve) => {
+      pending.push(() => {
+        apply();
+        resolve();
+      });
+    });
+
+  return {
+    storage: {
+      get: async (key: string) => values.get(key),
+      set: (key: string, value: string) =>
+        later(() => {
+          values.set(key, value);
+        }),
+      remove: (key: string) =>
+        later(() => {
+          values.delete(key);
+        }),
+    },
+    values,
+    /** Completes queued writes, including ones queued while draining. */
+    flush: async () => {
+      for (let round = 0; round < 20; round += 1) {
+        while (pending.length) {
+          pending.shift()!();
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        });
+      }
+    },
+  };
+};
+
+describe('account switches with async storage', () => {
+  it('does not apply a refresh that finishes after the account changed', async () => {
+    const slow = slowStorage();
+    const time = clock();
+    const api = fakeApi();
+    const session = createIntentsSession({
+      intentsApi: api,
+      storage: slow.storage,
+      now: time.now,
+    });
+
+    const authorizing = session.authorize(wallet(), {
+      proof: proofFor(ACCOUNT),
+    });
+
+    await slow.flush();
+    await authorizing;
+    time.advance(900_000);
+
+    const refreshing = session.getAccessToken();
+    const settled = refreshing.catch((error: unknown) => error);
+
+    // The refresh is now waiting on its storage write.
+    await vi.waitFor(() => expect(api.refreshAccessToken).toHaveBeenCalled());
+    await session.restore(OTHER);
+    await slow.flush();
+
+    expect(await settled).toMatchObject({ code: 'SUPERSEDED' });
+    expect(session.state).toMatchObject({
+      status: 'anonymous',
+      intentsAccountId: OTHER,
+    });
+    await expect(session.getConfidentialBalances()).rejects.toMatchObject({
+      code: 'NOT_AUTHORIZED',
+    });
+    expect(api.getConfidentialBalances).not.toHaveBeenCalled();
+    // A's refreshed session is still saved under A, for when A returns.
+    expect(
+      JSON.parse(slow.values.get(`${SESSION_STORAGE_KEY_PREFIX}${ACCOUNT}`)!),
+    ).toMatchObject({ accessToken: 'access-2' });
+  });
+
+  it('does not let an expiry overwrite the account switched to meanwhile', async () => {
+    const slow = slowStorage();
+    const time = clock();
+    const api = fakeApi({
+      refreshAccessToken: vi.fn(async () => {
+        throw new IntentsApiError('Invalid or expired refresh token', 401);
+      }),
+    });
+
+    const session = createIntentsSession({
+      intentsApi: api,
+      storage: slow.storage,
+      now: time.now,
+    });
+
+    const authorizing = session.authorize(wallet(), {
+      proof: proofFor(ACCOUNT),
+    });
+
+    await slow.flush();
+    await authorizing;
+    time.advance(900_000);
+
+    const settled = session.getAccessToken().catch((error: unknown) => error);
+
+    await vi.waitFor(() => expect(api.refreshAccessToken).toHaveBeenCalled());
+    await Promise.resolve();
+    await session.restore(OTHER);
+    await slow.flush();
+    await settled;
+
+    expect(session.state).toMatchObject({
+      status: 'anonymous',
+      intentsAccountId: OTHER,
+    });
   });
 });
 
