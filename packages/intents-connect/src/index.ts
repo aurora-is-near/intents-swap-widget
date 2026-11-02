@@ -55,6 +55,24 @@ export {
 } from '@/ownership';
 
 export {
+  createIntentsSession,
+  SESSION_STORAGE_KEY_PREFIX,
+  SessionError,
+  type CreateIntentsSessionOptions,
+  type IntentsSession,
+  type IntentsSessionState,
+  type IntentsSessionStatus,
+  type SessionErrorCode,
+} from '@/session';
+
+export {
+  getLocalStorage,
+  memoryStorage,
+  webStorage,
+  type KeyValueStorage,
+} from '@/storage';
+
+export {
   getFamilyForStandard,
   getIntentsAccountId,
   getWalletIntentsAccountId,
