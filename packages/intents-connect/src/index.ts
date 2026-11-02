@@ -34,6 +34,13 @@ export type {
 export type { OwnershipProof, OwnershipStandard } from '@/ownership/types';
 
 export {
+  getFamilyForStandard,
+  getIntentsAccountId,
+  getWalletIntentsAccountId,
+  type IntentsAccountFamily,
+} from '@/account';
+
+export {
   DEFAULT_NEAR_RPC_URLS,
   NearContractError,
   NearRpcError,
