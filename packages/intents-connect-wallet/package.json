@@ -33,7 +33,8 @@
     "solana",
     "stellar",
     "near",
-    "connect"
+    "connect",
+    "detect"
   ],
   "exports": {
     ".": "./dist/index.js",
@@ -45,7 +46,9 @@
     "./connect": "./dist/connect/index.js",
     "./connect/appkit": "./dist/connect/appkit/index.js",
     "./connect/near": "./dist/connect/near/index.js",
-    "./connect/stellar": "./dist/connect/stellar/index.js"
+    "./connect/stellar": "./dist/connect/stellar/index.js",
+    "./detect": "./dist/detect/index.js",
+    "./detect/react": "./dist/detect/react/index.js"
   },
   "peerDependencies": {
     "@aurora-is-near/intents-connect": "^7.28.0",

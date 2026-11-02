@@ -32,6 +32,8 @@ const entries = [
   'connect/appkit',
   'connect/near',
   'connect/stellar',
+  'detect',
+  'detect/react',
 ];
 
 export default defineConfig({
