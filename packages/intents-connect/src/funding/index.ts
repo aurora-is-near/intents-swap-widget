@@ -4,6 +4,10 @@ export {
   type FundingErrorMeta,
 } from '@/funding/errors';
 export {
+  getIntermediaryBalance,
+  type GetIntermediaryBalanceArgs,
+} from '@/funding/intermediaryBalance';
+export {
   assertPreparedIntent,
   assertSwapTransferPayload,
   type SignPreparedIntentOptions,

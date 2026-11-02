@@ -8,6 +8,7 @@ export {
 export { DEFAULT_RPCS, resolveRpcs } from '@/balances/rpcs';
 export { ALCHEMY_NETWORKS, isAlchemyChain } from '@/balances/alchemy';
 export { BalanceRpcError } from '@/balances/jsonRpc';
+export { readEvmTokenBalance } from '@/balances/evm';
 export {
   getBalanceSource,
   getWalletBalances,

@@ -192,6 +192,7 @@ export const buildStepsBody = <TParams>(
     ? { addressLookupTables: prepared.addressLookupTables }
     : {}),
   metadata: {
+    ...plan.metadata,
     title: plan.recipe.title,
     intent: plan.recipe.intent,
     intentsConnectFlow: 'steps-only',

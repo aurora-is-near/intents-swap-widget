@@ -8,9 +8,11 @@ import {
   getWalletBalances,
   NATIVE_NEAR_ASSET_ID,
   normalizeTokens,
+  readEvmTokenBalance,
   resolveRpcs,
 } from '@/balances';
 import { encodeBalanceOf } from '@/balances/evm';
+import { getIntermediaryBalance } from '@/funding';
 import type { FetchLike } from '@/http';
 import { resetDeadNearRpcUrls } from '@/near/rpc';
 
@@ -574,5 +576,112 @@ describe('getWalletBalances', () => {
 
     expect(balances).toEqual({});
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe('readEvmTokenBalance', () => {
+  it('reads an ERC-20 with balanceOf and the native asset with eth_getBalance', async () => {
+    const requests: RpcRequest[] = [];
+    const fetchImpl = fetchWith(
+      batch((request) => {
+        requests.push(request);
+
+        return { result: request.method === 'eth_call' ? '0x64' : '0x10' };
+      }),
+    );
+
+    await expect(
+      readEvmTokenBalance({
+        owner: EVM,
+        tokenAddress: USDC_BASE,
+        rpcUrls: ['https://base.test'],
+        fetch: fetchImpl,
+      }),
+    ).resolves.toBe('100');
+    await expect(
+      readEvmTokenBalance({
+        owner: EVM,
+        rpcUrls: ['https://base.test'],
+        fetch: fetchImpl,
+      }),
+    ).resolves.toBe('16');
+
+    expect(requests[0]).toMatchObject({
+      method: 'eth_call',
+      params: [{ to: USDC_BASE, data: encodeBalanceOf(EVM) }, 'latest'],
+    });
+    expect(requests[1]).toMatchObject({ method: 'eth_getBalance' });
+  });
+
+  it('reads `0x` (no contract) as zero', async () => {
+    const fetchImpl = fetchWith(batch(() => ({ result: '0x' })));
+
+    await expect(
+      readEvmTokenBalance({
+        owner: EVM,
+        tokenAddress: USDC_BASE,
+        rpcUrls: ['https://base.test'],
+        fetch: fetchImpl,
+      }),
+    ).resolves.toBe('0');
+  });
+
+  it('throws instead of reading a failure as zero', async () => {
+    const reverted = fetchWith(
+      batch(() => ({ error: { code: 3, message: 'execution reverted' } })),
+    );
+
+    const down = fetchWith(() => new Error('offline'));
+
+    await expect(
+      readEvmTokenBalance({
+        owner: EVM,
+        tokenAddress: USDC_BASE,
+        rpcUrls: ['https://base.test'],
+        fetch: reverted,
+      }),
+    ).rejects.toBeInstanceOf(BalanceRpcError);
+    await expect(
+      readEvmTokenBalance({
+        owner: EVM,
+        tokenAddress: USDC_BASE,
+        rpcUrls: ['https://base.test'],
+        fetch: down,
+      }),
+    ).rejects.toBeInstanceOf(BalanceRpcError);
+  });
+});
+
+describe('getIntermediaryBalance', () => {
+  it("reads the destination token on the destination chain's RPC", async () => {
+    const urls: string[] = [];
+    const fetchImpl = fetchWith((url, body) => {
+      urls.push(url);
+
+      return batch(() => ({ result: '0x2a' }))(url, body);
+    });
+
+    await expect(
+      getIntermediaryBalance({
+        intermediary: { evm: EVM },
+        destination: {
+          chain: 'monad',
+          assetId: 'nep245:monad-usdc',
+          tokenAddress: USDC_BASE,
+        },
+        rpcs: { monad: ['https://monad.test'] },
+        fetch: fetchImpl,
+      }),
+    ).resolves.toBe('42');
+    expect(urls).toEqual(['https://monad.test']);
+  });
+
+  it('refuses a non-EVM destination', async () => {
+    await expect(
+      getIntermediaryBalance({
+        intermediary: { evm: EVM },
+        destination: { chain: 'sol', assetId: 'nep141:sol-usdc' },
+      }),
+    ).rejects.toThrow(/EVM chains only/);
   });
 });

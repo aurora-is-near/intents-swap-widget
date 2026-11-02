@@ -240,6 +240,27 @@ describe('runSteps — happy path', () => {
     );
   });
 
+  it("merges the plan's metadata, keeping the runner's own keys", async () => {
+    const h = setup();
+
+    await h.runner.runSteps({
+      ...h.plan,
+      metadata: {
+        intentsConnectFunding: { source: 'intents' },
+        intent: 'spoofed',
+        intentsConnectFlow: 'bridge-in',
+      },
+    });
+
+    const [, body] = vi.mocked(h.api.createStepsExecution).mock.calls[1]!;
+
+    expect(body.metadata).toMatchObject({
+      intentsConnectFunding: { source: 'intents' },
+      intent: 'solana_spend',
+      intentsConnectFlow: 'steps-only',
+    });
+  });
+
   it('still settles when /submit says a deposit is pending', async () => {
     const h = setup({ submitStatus: 'SIGNED_PENDING_DEPOSIT' });
 

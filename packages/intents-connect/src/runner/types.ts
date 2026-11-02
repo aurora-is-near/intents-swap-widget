@@ -108,6 +108,12 @@ export type StepsPlan<TParams = void> = {
   maxNetworkFee?: string;
   /** How long a `previewSteps()` result stays committable. Defaults to 30 000 ms. */
   previewTtlMs?: number;
+  /**
+   * Extra execution metadata, e.g. where the funds came from. Stored with the
+   * execution and readable by anyone listing the wallet's executions; the
+   * runner's own keys (`title`, `intent`, `intentsConnect*`) take precedence.
+   */
+  metadata?: Record<string, unknown>;
   /** Additional acceptance checks after real create, before requesting a signature. */
   validateExecution?: (execution: Execution) => void | Promise<void>;
   /** Produced by previewSteps(). Reused verbatim by runSteps(); do not edit it. */

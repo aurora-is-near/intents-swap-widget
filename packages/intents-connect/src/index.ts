@@ -73,9 +73,11 @@ export {
   assertPreparedIntent,
   assertSwapTransferPayload,
   FundingError,
+  getIntermediaryBalance,
   signPreparedIntent,
   type FundingErrorCode,
   type FundingErrorMeta,
+  type GetIntermediaryBalanceArgs,
   type SignPreparedIntentOptions,
   type SwapTransferExpectation,
 } from '@/funding';
@@ -112,6 +114,7 @@ export {
   isNativeToken,
   NATIVE_NEAR_ASSET_ID,
   normalizeTokens,
+  readEvmTokenBalance,
   resolveRpcs,
   type BalanceSource,
   type BalanceToken,
@@ -157,7 +160,7 @@ export {
   type NearRpcOptions,
 } from '@/near';
 
-export { createExecutionRunner } from '@/runner';
+export { createExecutionRunner, isStepsOnlyExecution } from '@/runner';
 export type {
   ExecutionPlan,
   ExecutionPreview,

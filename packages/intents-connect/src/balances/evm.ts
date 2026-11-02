@@ -1,4 +1,4 @@
-import { jsonRpcBatch } from '@/balances/jsonRpc';
+import { BalanceRpcError, jsonRpcBatch } from '@/balances/jsonRpc';
 import { isNativeToken } from '@/balances/tokens';
 import type { BalanceToken, BalanceTransportOptions } from '@/balances/types';
 
@@ -73,4 +73,54 @@ export const readEvmBalances = async ({
   });
 
   return balances;
+};
+
+/**
+ * One EVM balance: `balanceOf` for an ERC-20, `eth_getBalance` without
+ * `tokenAddress`. Throws `BalanceRpcError` rather than reading a failure as
+ * zero — a caller deciding whether funds arrived must not mistake an outage
+ * for an empty account.
+ */
+export const readEvmTokenBalance = async ({
+  owner,
+  tokenAddress,
+  rpcUrls,
+  ...transport
+}: {
+  owner: string;
+  /** Undefined reads the chain's native asset. */
+  tokenAddress?: string;
+  rpcUrls: readonly string[];
+} & BalanceTransportOptions): Promise<string> => {
+  const [outcome] = await jsonRpcBatch(
+    rpcUrls,
+    [
+      tokenAddress
+        ? {
+            method: 'eth_call',
+            params: [
+              { to: tokenAddress, data: encodeBalanceOf(owner) },
+              'latest',
+            ],
+          }
+        : { method: 'eth_getBalance', params: [owner, 'latest'] },
+    ],
+    transport,
+  );
+
+  if (!outcome?.ok) {
+    throw new BalanceRpcError(
+      `balance read failed: ${outcome?.error ?? 'no response'}`,
+    );
+  }
+
+  const value = hexToDecimal(outcome.result);
+
+  if (value === undefined) {
+    throw new BalanceRpcError(
+      `balance read failed: unexpected result ${String(outcome.result)}`,
+    );
+  }
+
+  return value;
 };
