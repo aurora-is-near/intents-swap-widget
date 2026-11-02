@@ -26,6 +26,8 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/connect/appkit` | EVM + Solana connectors (Reown AppKit) | `react viem @reown/appkit @reown/appkit-adapter-ethers @reown/appkit-adapter-solana @solana/wallet-adapter-phantom @solana/wallet-adapter-solflare @solana/web3.js @solana/spl-token` |
 | `/connect/near` | NEAR connector (HOT, Meteor, MyNearWallet…) | `react @hot-labs/near-connect` |
 | `/connect/stellar` | Stellar connector (Freighter, xBull) | `react @creit.tech/stellar-wallets-kit @stellar/stellar-sdk` |
+| `/detect` | Wallets already connected to the page (EVM, Solana, NEAR), no prompts | none |
+| `/detect/react` | `useDetectedWallets()` | `react` |
 
 Always install `@aurora-is-near/intents-connect` and `@aurora-is-near/intents-connect-wallet`.
 
@@ -152,6 +154,41 @@ createExecutionRunner({ api, wallet, plugins: { stellar }, pluginOptions: { prov
 ```
 - Sends XLM, USDC or `CODE:ISSUER` assets, **mainnet only**.
 - The deposit **memo is required** (the runner passes it). A deposit without a memo is lost.
+
+## Detected wallets
+
+When your page (or the user's browser) already has a wallet connected, there is no need to show a connect modal: `/detect` finds injected wallets and the accounts they **already share with your site**, without ever prompting.
+
+| Family | How it's found | How the account is read |
+|---|---|---|
+| EVM | EIP-6963 (`window.ethereum` only if nothing announces) | `eth_accounts`, `eth_chainId` |
+| Solana | Wallet Standard (mainnet wallets that can sign) | the wallet's `accounts` |
+| NEAR | near-connect injected extension wallets | `getAccounts()` (account and public key) |
+
+```tsx
+import { pickConnectedWallet } from '@aurora-is-near/intents-connect-wallet/detect';
+import { useDetectedWallets } from '@aurora-is-near/intents-connect-wallet/detect/react';
+import { toEvmWalletConnector } from '@aurora-is-near/intents-connect-wallet/evm';
+import { toSolanaWalletConnector } from '@aurora-is-near/intents-connect-wallet/solana';
+import { toNearWalletConnector } from '@aurora-is-near/intents-connect-wallet/near';
+
+const { ready, wallets } = useDetectedWallets();
+const detected = pickConnectedWallet(wallets, ['evm', 'sol', 'near']);
+
+const { connector, unsupportedReason } =
+  detected?.family === 'evm' ? toEvmWalletConnector(detected)
+  : detected?.family === 'sol' ? toSolanaWalletConnector(detected, { rpcUrl })
+  : detected?.family === 'near' ? toNearWalletConnector(detected)
+  : { connector: null };
+
+<IntentsConnectProvider api={api} wallet={connector} intentsApi={intentsApi}>…</IntentsConnectProvider>;
+```
+
+- The adapters wire each chain's `makeTransfer`, so the connector runs executions as-is. `unsupportedReason` is `NOT_CONNECTED` (no shared account) or `MISSING_PUBLIC_KEY` (NEAR).
+- `toEvmWalletConnector` omits `getChainId` unless you pass `networkGuard: true`: the network guard runs before the deposit transfer gets a chance to switch the wallet's chain.
+- Solana wallets are not reconnected during detection unless you pass `silentSolanaConnect: true`; the adapter reconnects silently when it needs to sign.
+- NEAR detection only sees injected extension wallets. For sandboxed or in-app wallets use `/connect/near` — `toNearWalletConnector` also accepts `useNearConnector()` state.
+- Outside React, `createWalletDetector()` gives `getSnapshot`, `subscribe`, `refresh` and `destroy`. It is SSR-safe.
 
 ## Solana step helpers
 

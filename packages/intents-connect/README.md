@@ -174,6 +174,49 @@ Notes:
   synchronously, so `run(plan).catch(…)` behaves.
 
 
+### Account hooks
+
+With `intentsApi` on the provider, the same bindings read an account screen:
+`useWalletBalances`, `useIntentsBalances`, `useWalletVerification`,
+`useIntentsAuth` and `useConfidentialBalances`, plus `useIntentsConnectFlow`
+for the submit / recovery glue around `useExecution`. Stores live at provider
+level, so hooks reading the same data share one request. See below.
+
+## Account & balances
+
+Everything an account screen needs, for EVM, Solana and NEAR wallets, through
+the Aurora intents API (`createIntentsApi({ apiKey })`):
+
+- **Intents account** — `getWalletIntentsAccountId(wallet)`.
+- **Wallet balances** — `getWalletBalances({ family, address, tokens })`:
+  Alchemy for the chains it indexes when `alchemyApiKey` is set, JSON-RPC
+  otherwise (`DEFAULT_RPCS`, overridden per chain by `rpcs`). Chains fail
+  independently into `errors`. Free Solana RPCs refuse token-account queries,
+  so SPL balances need Alchemy or a keyed RPC.
+- **Public intents balances** — `intentsApi.getIntentsAccountBalances(id)`.
+
+### Verification & authorization
+
+Both rest on an **ownership proof**: an empty intent (`"intents": []`) the
+wallet signs with a versioned, salted nonce. It moves nothing.
+
+- `verifyWallet` has `intents.near` simulate the proof and remembers a pass
+  (`localStorage` by default). RPC failures throw rather than reading as
+  "not verified". Named NEAR accounts need their key registered on
+  `intents.near` (`add_public_key`), reported as `PUBLIC_KEY_NOT_REGISTERED`.
+- `createIntentsSession` exchanges a proof for a 1Click user session and
+  reads confidential balances with it, refreshing the access token as needed.
+  Pass the proof `verifyWallet` returned to verify and authorize with **one**
+  signature.
+
+Sessions live **in memory by default**. A persisted refresh token can mint
+access tokens until it expires — anything that can read the storage can read
+the user's confidential balances — so persist only deliberately
+(`createIntentsSession({ storage: webStorage(sessionStorage) })`).
+
+The intents API's NEAR RPC proxy is rate-limited per API key, shared by all
+of an integration's users; the SDK uses it first only for proof calls.
+
 ## Solana bridge-in previews
 
 Use `SolanaRecipe<TParams>` for a Solana destination. Its asynchronous

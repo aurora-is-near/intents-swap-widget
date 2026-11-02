@@ -132,10 +132,22 @@ Every call maps to an endpoint in the [Intents Connect API Reference](https://do
 
 🔑 = sends `x-api-key`, or goes through `apiKeyProxyUrl`.
 
+The account features use the Aurora intents API (`createIntentsApi`), with the API key in the path:
+
+| `intentsApi.` method | Endpoint |
+|---|---|
+| `getTokens()` | `GET /api/tokens/{apiKey}` |
+| `getIntentsAccountBalances(id)` | `GET /api/intents-account/balances/{apiKey}?intentsAccountId=` |
+| `authenticate(proof)` | `POST /api/auth/authenticate/{apiKey}` |
+| `refreshAccessToken(token)` | `POST /api/auth/refresh/{apiKey}` |
+| `getConfidentialBalances(token, ids?)` | `GET /api/account/balances/{apiKey}` with `Authorization: Bearer` |
+| `nearRpcUrl` | `POST /rpc/{apiKey}` (NEAR JSON-RPC proxy) |
+
 ## Next
 
 - [Recipes & fees](recipes-and-fees.md): step shape, placeholders, fee strategies
 - [Lifecycle & errors](lifecycle-and-errors.md): phases, events, recovery
 - [React](react.md): `IntentsConnectProvider` and `useExecution`
+- [Account & balances](account-and-balances.md): balances, verification, confidential balances
 - [Examples](../examples/README.md): real integrations, end to end
 - [Package README](https://github.com/aurora-is-near/intents-swap-widget/tree/main/packages/intents-connect) · [npm](https://www.npmjs.com/package/@aurora-is-near/intents-connect)

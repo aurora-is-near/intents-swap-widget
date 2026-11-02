@@ -56,6 +56,11 @@ function Deposit() {
 | `wallet` | `WalletConnector \| null` | `null` while disconnected. See [Wallet integrations](../wallet-integrations.md) |
 | `plugins`, `pluginOptions`, `makeTransfer` | optional | Deposit transfer, if the wallet has no `makeTransfer` |
 | `pollIntervalMs`, `maxPollAttempts`, `logger`, `autoCancelOnSignatureRejection` | optional | Same as the `createExecutionRunner` options |
+| `intentsApi` | `IntentsApi` | From `createIntentsApi`. Required by the account hooks below. Safe to create inline |
+| `alchemyApiKey` | `string` | Read EVM and Solana wallet balances through Alchemy |
+| `rpcs` | `ChainRpcUrls` | Per-chain RPC endpoints, merged over `DEFAULT_RPCS` |
+| `sessionStorage` | `KeyValueStorage` | Where user sessions live. Memory by default |
+| `verificationStorage` | `KeyValueStorage` | Where verified wallets are remembered. `localStorage` by default |
 
 ## `useExecution()`
 
@@ -73,6 +78,40 @@ function Deposit() {
 
 **Methods:** `preview`, `run`, `previewSteps`, `runSteps`, `resume`, `retryDeposit`, `cancel`. All are async. Without a connected wallet they reject with `WALLET_NOT_CONNECTED` and don't throw.
 
+## `useIntentsConnectFlow()`
+
+The glue around `useExecution` that every integration otherwise writes: build a plan from your own input, run it, and expose the recovery states.
+
+```tsx
+const flow = useIntentsConnectFlow({
+  buildPlan: ({ token, amount }) => buildMyPlan(token, amount),
+});
+
+flow.submit({ token, amount }); // single-flight; failures land in flow.preparationError
+```
+
+| Field | Meaning |
+|---|---|
+| `state` | `IDLE`, `IN_FLIGHT` (resume or cancel) or `FAILED` (retry the transfer or cancel) |
+| `isBusy`, `preparationError` | Building, running or cancelling; `buildPlan` threw |
+| `needsExternalDeposit` | Show `exec.depositAddress` / `depositMemo` / `deadline` for a QR or exchange deposit |
+| `canCancel` | A dead end the user can back out of |
+| `resume()`, `retryDeposit()`, `cancel()` | Recovery actions |
+| `exec` | The underlying `useExecution()` result |
+
+## Account hooks
+
+Need `intentsApi` on the provider. See [Account & balances](account-and-balances.md).
+
+| Hook | Returns |
+|---|---|
+| `useIntentsAccount()` | `intentsAccountId`, `family`, `address` of the provider wallet |
+| `useWalletBalances({ refreshIntervalMs?, address?, family? })` | `balances`, `errors`, `tokens`, `status`, `refresh` |
+| `useIntentsBalances({ refreshIntervalMs? })` | `balances`, `entries`, `blockHeight`, `status`, `refresh` |
+| `useWalletVerification()` | `isVerified`, `verify()`, `status`, `verdict`, `error` |
+| `useIntentsAuth()` | `status`, `authorize({ verify? })`, `logout()`, `error` |
+| `useConfidentialBalances({ tokenIds?, refreshIntervalMs? })` | `balances`, `entries`, `status`, `refresh` — idle until authorized |
+
 ## Notes
 
 - **One runner per hook call.** Two `useExecution()` calls give two independent runners.
@@ -83,3 +122,4 @@ function Deposit() {
 
 - [Examples](../examples/README.md): full React integrations
 - [Wallet integrations](../wallet-integrations.md): where `wallet` comes from
+- [Account & balances](account-and-balances.md): what the account hooks read

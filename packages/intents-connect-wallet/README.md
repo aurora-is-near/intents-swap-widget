@@ -27,6 +27,8 @@ copies), so an EVM-only integration must not be made to install it.
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
 | `./connect/near` | NEAR connector | `@hot-labs/near-connect` |
 | `./connect/stellar` | Stellar connector | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
+| `./detect` | wallets already connected to the page | — |
+| `./detect/react` | `useDetectedWallets` | `react` |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -121,6 +123,36 @@ const toWalletConnector = (selector: WalletSelectorState) => {
 Connections are **mutually exclusive**: an execution is bound to one origin
 wallet, since both the signing standard and the intermediary address follow from
 it. `select()` disconnects the others first.
+
+## Detection
+
+`./detect` finds wallets injected into the page — EVM over EIP-6963, Solana
+over the Wallet Standard, NEAR over near-connect's injection protocol — and the
+accounts they already share with the site, without prompting. Ported from the
+Chrome extensions' page bridge, minus the extension plumbing; unlike it, every
+listener is removed on `destroy()`.
+
+```ts
+import {
+  createWalletDetector,
+  pickConnectedWallet,
+} from '@aurora-is-near/intents-connect-wallet/detect';
+import { toEvmWalletConnector } from '@aurora-is-near/intents-connect-wallet/evm';
+
+const detector = createWalletDetector();
+detector.subscribe(() => {
+  const detected = pickConnectedWallet(detector.getSnapshot().wallets, ['evm']);
+  const { connector } = detected?.family === 'evm'
+    ? toEvmWalletConnector(detected)
+    : { connector: null };
+});
+```
+
+Each chain subpath has the adapter for its family — `toEvmWalletConnector`,
+`toSolanaWalletConnector` (plus `standardWalletToSolanaProvider`) and
+`toNearWalletConnector`, which also accepts `./connect/near` state for the
+sandboxed wallets detection cannot see. They return
+`{ connector, unsupportedReason? }` rather than throwing.
 
 ## Deviations from the widget
 
