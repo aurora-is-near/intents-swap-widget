@@ -36,6 +36,10 @@ const NO_INTENTS_API: IntentsApi = {
   authenticate: missingApi,
   refreshAccessToken: missingApi,
   getConfidentialBalances: missingApi,
+  getQuote: missingApi,
+  generateIntent: missingApi,
+  submitIntent: missingApi,
+  getSwapStatus: missingApi,
 };
 
 const requireApi = (config: IntentsAccountConfig) => {

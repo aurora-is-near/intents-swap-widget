@@ -84,6 +84,11 @@ export type IntentsSession = {
   restore: (intentsAccountId: string | undefined) => Promise<void>;
   /** A valid access token, refreshed when it is about to expire. */
   getAccessToken: () => Promise<string>;
+  /**
+   * Runs `call` with a valid access token. On a 401 the token is refreshed
+   * and `call` retried, once.
+   */
+  withAccessToken: <T>(call: (accessToken: string) => Promise<T>) => Promise<T>;
   /** Confidential balances of the session's user. Retries once after a 401. */
   getConfidentialBalances: (
     tokenIds?: readonly string[],
@@ -340,6 +345,27 @@ export const createIntentsSession = (
     return refresh();
   };
 
+  const withAccessToken = async <T>(
+    call: (accessToken: string) => Promise<T>,
+  ): Promise<T> => {
+    const accessToken = await getAccessToken();
+
+    try {
+      return await call(accessToken);
+    } catch (error) {
+      if (!(error instanceof IntentsApiError) || !error.isUnauthorized) {
+        throw error;
+      }
+
+      // Revoked or clock-skewed early: force one refresh and retry once.
+      if (tokens) {
+        tokens = { ...tokens, accessTokenExpiresAt: 0 };
+      }
+
+      return call(await refresh());
+    }
+  };
+
   return {
     state,
 
@@ -436,26 +462,12 @@ export const createIntentsSession = (
 
     getAccessToken,
 
-    getConfidentialBalances: async (tokenIds) => {
-      const accessToken = await getAccessToken();
+    withAccessToken,
 
-      try {
-        return await intentsApi.getConfidentialBalances(accessToken, tokenIds);
-      } catch (error) {
-        if (!(error instanceof IntentsApiError) || !error.isUnauthorized) {
-          throw error;
-        }
-
-        // Revoked or clock-skewed early: force one refresh and retry once.
-        if (tokens) {
-          tokens = { ...tokens, accessTokenExpiresAt: 0 };
-        }
-
-        const fresh = await refresh();
-
-        return intentsApi.getConfidentialBalances(fresh, tokenIds);
-      }
-    },
+    getConfidentialBalances: (tokenIds) =>
+      withAccessToken((accessToken) =>
+        intentsApi.getConfidentialBalances(accessToken, tokenIds),
+      ),
 
     logout: async () => {
       epoch += 1;

@@ -175,6 +175,94 @@ describe('errors', () => {
     expect(b.isRateLimited).toBe(true);
   });
 
+  it('posts a quote request as-is', async () => {
+    const { api, call } = setup({ quote: { depositAddress: 'dep' } });
+    const body = {
+      dry: false,
+      swapType: 'EXACT_INPUT' as const,
+      slippageTolerance: 100,
+      originAsset: 'nep141:usdc.near',
+      depositType: 'INTENTS' as const,
+      destinationAsset: 'nep245:monad-usdc',
+      amount: '1000000',
+      refundTo: '0xabc',
+      refundType: 'INTENTS' as const,
+      recipient: '0xintermediary',
+      recipientType: 'DESTINATION_CHAIN' as const,
+      deadline: '2026-11-02T12:00:00.000Z',
+    };
+
+    await api.getQuote(body);
+
+    expect(call().url).toBe('https://intents.example.test/api/quote/key%2F1');
+    expect(call().method).toBe('POST');
+    expect(JSON.parse(call().body!)).toEqual(body);
+  });
+
+  it('generates and submits a swap transfer intent, with a token only when given', async () => {
+    const { api, call } = setup({ intentHash: 'h', correlationId: 'c' });
+    const generate = {
+      type: 'swap_transfer' as const,
+      standard: 'erc191' as const,
+      signerId: '0xabc',
+      depositAddress: 'dep',
+    };
+
+    await api.generateIntent(generate);
+    await api.submitIntent(
+      { type: 'swap_transfer', signedData: PROOF },
+      { accessToken: 'tok' },
+    );
+
+    expect(call(0).url).toBe(
+      'https://intents.example.test/api/generate-intent/key%2F1',
+    );
+    expect(JSON.parse(call(0).body!)).toEqual(generate);
+    expect(call(0).headers).not.toHaveProperty('Authorization');
+    expect(call(1).url).toBe(
+      'https://intents.example.test/api/submit-intent/key%2F1',
+    );
+    expect(JSON.parse(call(1).body!)).toEqual({
+      type: 'swap_transfer',
+      signedData: PROOF,
+    });
+    expect(call(1).headers).toMatchObject({ Authorization: 'Bearer tok' });
+  });
+
+  it('reads swap status by deposit address and memo', async () => {
+    const { api, call } = setup({ status: 'PROCESSING' });
+
+    await expect(
+      api.getSwapStatus({ depositAddress: 'dep 1', depositMemo: 'm' }),
+    ).resolves.toEqual({ status: 'PROCESSING' });
+
+    await api.getSwapStatus({ depositAddress: 'dep' }, { accessToken: 'tok' });
+
+    expect(call(0).url).toBe(
+      'https://intents.example.test/api/status/key%2F1?depositAddress=dep+1&depositMemo=m',
+    );
+    expect(call(1).url).toBe(
+      'https://intents.example.test/api/status/key%2F1?depositAddress=dep',
+    );
+    expect(call(1).headers).toMatchObject({ Authorization: 'Bearer tok' });
+  });
+
+  it("surfaces 1Click's message on a rejected intent", async () => {
+    const { api } = setup(
+      { message: 'Quote expired', correlationId: 'c' },
+      { ok: false, status: 400 },
+    );
+
+    await expect(
+      api.generateIntent({
+        type: 'swap_transfer',
+        standard: 'erc191',
+        signerId: '0xabc',
+        depositAddress: 'dep',
+      }),
+    ).rejects.toMatchObject({ message: 'Quote expired', status: 400 });
+  });
+
   it('reports the status for a non-JSON error body', async () => {
     const { api } = setup('<html>502</html>', { ok: false, status: 502 });
 

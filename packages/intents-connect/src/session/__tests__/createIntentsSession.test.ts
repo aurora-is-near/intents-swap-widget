@@ -60,6 +60,10 @@ const fakeApi = (overrides: Partial<IntentsApi> = {}) => {
       return { accessToken: `access-${issued}`, expiresIn: 900 };
     }),
     getConfidentialBalances: vi.fn(async () => ({ balances: [] })),
+    getQuote: vi.fn(),
+    generateIntent: vi.fn(),
+    submitIntent: vi.fn(),
+    getSwapStatus: vi.fn(),
     ...overrides,
   };
 
@@ -428,6 +432,37 @@ describe('confidential balances', () => {
     await expect(session.getConfidentialBalances()).rejects.toMatchObject({
       code: 'NOT_AUTHORIZED',
     });
+  });
+
+  it('runs any call with a token, retrying exactly once after a 401', async () => {
+    const session = createIntentsSession({ intentsApi: fakeApi() });
+
+    await session.authorize(wallet(), { proof: proofFor(ACCOUNT) });
+
+    const call = vi.fn(async (token: string) => {
+      throw new IntentsApiError(`rejected ${token}`, 401);
+    });
+
+    await expect(session.withAccessToken(call)).rejects.toThrow(
+      'rejected access-2',
+    );
+    expect(call.mock.calls.map(([token]) => token)).toEqual([
+      'access-1',
+      'access-2',
+    ]);
+  });
+
+  it('does not retry a call that failed for another reason', async () => {
+    const session = createIntentsSession({ intentsApi: fakeApi() });
+
+    await session.authorize(wallet(), { proof: proofFor(ACCOUNT) });
+
+    const call = vi.fn(async () => {
+      throw new IntentsApiError('bad request', 400);
+    });
+
+    await expect(session.withAccessToken(call)).rejects.toThrow('bad request');
+    expect(call).toHaveBeenCalledTimes(1);
   });
 });
 

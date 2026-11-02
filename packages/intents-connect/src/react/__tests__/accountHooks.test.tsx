@@ -71,6 +71,10 @@ const intentsApi = (overrides: Partial<IntentsApi> = {}): IntentsApi => ({
   getConfidentialBalances: vi.fn(async () => ({
     balances: [{ tokenId: 'nep141:usdc', available: '9', source: 'private' }],
   })),
+  getQuote: vi.fn(),
+  generateIntent: vi.fn(),
+  submitIntent: vi.fn(),
+  getSwapStatus: vi.fn(),
   ...overrides,
 });
 

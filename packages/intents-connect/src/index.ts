@@ -20,6 +20,8 @@ export { createIntentsApi, DEFAULT_INTENTS_API_URL } from '@/intentsApi';
 export type {
   AuthenticateResult,
   ConfidentialBalance,
+  GenerateIntentRequest,
+  GenerateIntentResult,
   GetConfidentialBalancesResult,
   GetIntentsAccountBalancesResult,
   GetTokensResult,
@@ -28,7 +30,20 @@ export type {
   IntentsApiAssetStat,
   IntentsApiOptions,
   IntentsApiToken,
+  IntentsRail,
+  PreparedIntent,
+  PreparedIntentStandard,
   RefreshAccessTokenResult,
+  SignedIntent,
+  SubmitIntentRequest,
+  SubmitIntentResult,
+  SwapDetails,
+  SwapQuote,
+  SwapQuoteRequest,
+  SwapQuoteResponse,
+  SwapStatus,
+  SwapStatusResult,
+  UserTokenOptions,
 } from '@/intentsApi';
 
 export {
