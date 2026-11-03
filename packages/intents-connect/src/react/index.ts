@@ -58,6 +58,12 @@ export {
   type UseIntentsFundedFlowResult,
 } from '@/react/useIntentsFundedFlow';
 export {
+  useIntentsOutFlow,
+  type OutFlowStage,
+  type UseIntentsOutFlowOptions,
+  type UseIntentsOutFlowResult,
+} from '@/react/useIntentsOutFlow';
+export {
   useIntermediaryBalance,
   type UseIntermediaryBalanceResult,
 } from '@/react/useIntermediaryBalance';

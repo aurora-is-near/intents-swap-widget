@@ -76,7 +76,7 @@ function Deposit() {
 | `hasSubmittedSignature`, `isCancelling` | Progress flags |
 | `error`, `recovery` | Last error, and the suggested action (`resume-or-cancel` / `retry-transfer`) |
 
-**Methods:** `preview`, `run`, `previewSteps`, `runSteps`, `resume`, `retryDeposit`, `cancel`. All are async. Without a connected wallet they reject with `WALLET_NOT_CONNECTED` and don't throw.
+**Methods:** `preview`, `run`, `previewSteps`, `runSteps`, `runOut`, `resume`, `retryDeposit`, `cancel`. All are async. Without a connected wallet they reject with `WALLET_NOT_CONNECTED` and don't throw.
 
 ## `useIntentsConnectFlow()`
 
@@ -98,6 +98,28 @@ flow.submit({ token, amount }); // single-flight
 | `needsExternalDeposit` | Show `exec.depositAddress` / `depositMemo` / `deadline` for a QR or exchange deposit |
 | `canCancel` | A dead end the user can back out of |
 | `resume()`, `retryDeposit()`, `cancel()` | Recovery actions. `resume({ depositViaWallet: true })` lets a resume this runner did not drive re-prompt the wallet transfer — pass it only when you know no deposit was made |
+| `exec` | The underlying `useExecution()` result |
+
+## `useIntentsOutFlow()`
+
+The same glue for out-operations (`runOut`): steps release funds where the intermediary holds them, and 1Click pays them out. One signature, no deposit.
+
+```tsx
+const out = useIntentsOutFlow({
+  buildPlan: ({ amount, to }) => buildMyWithdrawPlan(amount, to),
+});
+
+const settled = await out.submit({ amount, to }); // single-flight
+// undefined when it did not succeed: the reason is on out.error
+```
+
+| Field | Meaning |
+|---|---|
+| `stage` | `idle`, `preparing`, `signing`, `paying-out`, `success`, `failed`, or `in-flight` (another execution holds the lock: resume or cancel) |
+| `isBusy`, `error` | Building, running or cancelling; `buildPlan` threw or the run failed |
+| `networkFee`, `payout`, `quote` | The measured fee, what 1Click receives, and its quote (`amountOut`, `minAmountOut` in the destination token) |
+| `canCancel` | A created execution, never signed, still holds the lock |
+| `resume()`, `cancel()` | Recovery actions. Both resolve, never reject |
 | `exec` | The underlying `useExecution()` result |
 
 ## Account hooks

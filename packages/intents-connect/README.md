@@ -179,7 +179,8 @@ Notes:
 With `intentsApi` on the provider, the same bindings read an account screen:
 `useWalletBalances`, `useIntentsBalances`, `useWalletVerification`,
 `useIntentsAuth` and `useConfidentialBalances`, plus `useIntentsConnectFlow`
-for the submit / recovery glue around `useExecution`. Stores live at provider
+(and `useIntentsOutFlow` for out-operations) for the submit / recovery glue
+around `useExecution`. Stores live at provider
 level, so hooks reading the same data share one request. See below.
 
 ## Account & balances
@@ -425,6 +426,22 @@ How the amounts work:
    (`QUOTE_MOVED`).
 4. **Small overpayment, refunded.** 1Click quotes the deposit at `sent − fee`
    and refunds the small excess.
+
+In React, `useIntentsOutFlow({ buildPlan })` wraps it. `submit(args)` builds
+the plan, runs it, and resolves the settled execution, or `undefined` with the
+reason on `error`. `stage` folds the phases into `preparing`, `signing`,
+`paying-out`, `success` and `failed`, plus `in-flight` when another execution
+holds the lock (`resume()` or `cancel()`). `networkFee`, `payout` and `quote`
+give the figures to show before and during the signature.
+
+```tsx
+const out = useIntentsOutFlow({
+  buildPlan: (amount: string) => ({ recipe: withdraw, params: { all: false }, amount, quote }),
+});
+
+const settled = await out.submit('5000000');
+if (settled) refreshPosition();
+```
 
 The API rejects the `{INTERMEDIARY}` placeholder in EVM address parameters, so
 use `ctx.intermediary`. `{AMOUNT_IN}` works only with `EXACT_OUTPUT`, which
