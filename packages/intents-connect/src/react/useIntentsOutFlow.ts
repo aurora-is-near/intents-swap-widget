@@ -74,8 +74,12 @@ export type UseIntentsOutFlowResult<TArgs> = {
   quote?: ExecutionQuote;
   /** The execution `resume()` / `cancel()` act on while `in-flight`. */
   recoveryExecutionId?: string;
-  /** Reattaches to the in-flight execution (or this flow's own). */
-  resume: () => Promise<Execution | undefined>;
+  /**
+   * Reattaches to `executionId` — e.g. a withdrawal listed after a reload —
+   * else to the in-flight execution, else to this flow's own. Resolves like
+   * `submit`.
+   */
+  resume: (executionId?: string) => Promise<Execution | undefined>;
   /** Signs the cancellation of the execution holding the lock. */
   cancel: () => Promise<void>;
   /** A created execution, never signed, still holds the lock. */
@@ -155,17 +159,18 @@ export const useIntentsOutFlow = <TArgs, TParams = unknown>({
     }
   }, []);
 
-  const resume = useCallback(async () => {
+  const resume = useCallback(async (executionId?: string) => {
     const current = latest.current.exec;
-    const executionId = current.recovery?.executionId ?? current.executionId;
+    const id =
+      executionId ?? current.recovery?.executionId ?? current.executionId;
 
-    if (!executionId) {
+    if (!id) {
       return undefined;
     }
 
     // No deposit options: an out-operation has none, and another flow's
     // execution resumed here only surfaces its deposit address.
-    return current.resume(executionId).catch(ignore);
+    return current.resume(id).catch(ignore);
   }, []);
 
   const cancel = useCallback(async () => {

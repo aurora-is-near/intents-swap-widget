@@ -115,6 +115,18 @@ describe('useIntentsOutFlow state', () => {
     expect(exec.current.cancel).toHaveBeenCalledWith('exec-9');
   });
 
+  it('resumes a named execution, such as one listed after a reload', async () => {
+    exec.current = fakeExec({ executionId: 'exec-1' });
+
+    const { result } = render();
+
+    await act(async () => {
+      await result.current.resume('exec-7');
+    });
+
+    expect(exec.current.resume).toHaveBeenCalledWith('exec-7');
+  });
+
   it('offers cancel for a created execution a guard refused before signing', () => {
     exec.current = fakeExec({
       phase: 'failed',

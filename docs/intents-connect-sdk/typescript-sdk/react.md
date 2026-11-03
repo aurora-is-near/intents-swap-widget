@@ -119,7 +119,7 @@ const settled = await out.submit({ amount, to }); // single-flight
 | `isBusy`, `error` | Building, running or cancelling; `buildPlan` threw or the run failed |
 | `networkFee`, `payout`, `quote` | The measured fee, what 1Click receives, and its quote (`amountOut`, `minAmountOut` in the destination token) |
 | `canCancel` | A created execution, never signed, still holds the lock |
-| `resume()`, `cancel()` | Recovery actions. Both resolve, never reject |
+| `resume(executionId?)`, `cancel()` | Recovery actions. `resume` takes an id from a list of executions (after a reload), else the in-flight one. Both resolve, never reject |
 | `exec` | The underlying `useExecution()` result |
 
 ## Account hooks
