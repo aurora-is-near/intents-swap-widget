@@ -184,13 +184,18 @@ export {
   type NearRpcOptions,
 } from '@/near';
 
-export { createExecutionRunner, isStepsOnlyExecution } from '@/runner';
+export {
+  createExecutionRunner,
+  isOutOperationExecution,
+  isStepsOnlyExecution,
+} from '@/runner';
 export type {
   ExecutionPlan,
   ExecutionPreview,
   ExecutionRunner,
   ExecutionRunnerOptions,
   OriginToken,
+  OutOperationPlan,
   ResumeDepositOptions,
   RunnerEvent,
   StepsPlan,

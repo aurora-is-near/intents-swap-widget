@@ -1,11 +1,15 @@
 export { createExecutionRunner } from '@/runner/createExecutionRunner';
-export { isStepsOnlyExecution } from '@/runner/flows/resume';
+export {
+  isOutOperationExecution,
+  isStepsOnlyExecution,
+} from '@/runner/flows/resume';
 export type {
   ExecutionPlan,
   ExecutionPreview,
   ExecutionRunner,
   ExecutionRunnerOptions,
   OriginToken,
+  OutOperationPlan,
   ResumeDepositOptions,
   RunnerEvent,
   StepsPlan,

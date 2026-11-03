@@ -386,3 +386,46 @@ Safety:
 Leg B is a public transaction on the destination chain, from an intermediary
 that is deterministic per wallet. Confidential funding hides where the funds
 came from, not where they went.
+
+## Out-operations
+
+An out-operation runs the steps where the intermediary holds funds (e.g.
+withdrawing a lending position on Monad). It then sends what they released to
+a 1Click deposit address, and 1Click pays it out to `quote.recipient`: an
+address on any chain, or an intents account with `recipientType: 'INTENTS'`.
+There is one signature and no deposit leg.
+
+```ts
+const withdraw: Recipe<{ all: boolean }> = {
+  id: 'aave-withdraw', intent: 'aave_withdraw', title: 'Withdraw from Aave',
+  flow: 'out-operation', type: 'evm',
+  destination: { chain: 'monad', assetId: MONAD_USDC_ASSET, tokenAddress: MONAD_USDC },
+  // Release only: the runner appends the transfer to the deposit address.
+  buildSteps: ({ amount, intermediary }, { all }) => [
+    { to: POOL, functionSignature: 'withdraw(address,uint256,address)',
+      parameters: [MONAD_USDC, all ? MAX_UINT256 : amount, intermediary], value: '0' },
+  ],
+};
+
+await runner.runOut({
+  recipe: withdraw, params: { all: false },
+  amount: '5000000', // released by the steps
+  quote: { destinationAsset: BASE_USDC_ASSET, recipient: walletAddress },
+});
+```
+
+How the amounts work:
+
+1. **Measure the fee.** One dry create prices the fee.
+2. **Send less than `amount`.** The runner sends `amount − budget` to 1Click.
+   The budget is the fee plus `feeReserveBps` of headroom (default 50%), so the
+   intermediary can pay a fee that moved by the real create.
+3. **Check before signing.** A real fee above the budget is refused
+   (`FEE_EXCEEDS_AMOUNT`), and so is a quote that does not echo the payout
+   (`QUOTE_MOVED`).
+4. **Small overpayment, refunded.** 1Click quotes the deposit at `sent − fee`
+   and refunds the small excess.
+
+The API rejects the `{INTERMEDIARY}` placeholder in EVM address parameters, so
+use `ctx.intermediary`. `{AMOUNT_IN}` works only with `EXACT_OUTPUT`, which
+`runOut` does not use.

@@ -8,8 +8,11 @@ export type Chain = string;
  * - `bridge-in`: a 1Click quote funds the intermediary, then the steps run.
  * - `steps-only`: no quote — the steps spend what the intermediary already
  *   holds (`POST /executions/{wallet}/steps`).
+ * - `out-operation`: the steps run where the intermediary holds funds, then
+ *   send what they released to a 1Click deposit address, which pays it out
+ *   to `quote.recipient` on another chain (or intents account).
  */
-export type FlowShape = 'bridge-in' | 'steps-only';
+export type FlowShape = 'bridge-in' | 'steps-only' | 'out-operation';
 
 /** How the service created an execution. Optional on the wire. */
 export type ExecutionMode = 'quote_with_steps' | 'steps_only';
@@ -180,6 +183,12 @@ export type QuoteRequest = {
   deadline?: string;
   /** Out-operation only. Sending it on a bridge-in is a 400. */
   recipient?: string;
+  /**
+   * Out-operation only: `INTENTS` pays out to `recipient`'s intents account
+   * instead of an address on the destination chain. Passed through to 1Click;
+   * not in the Intents Connect API spec yet.
+   */
+  recipientType?: 'DESTINATION_CHAIN' | 'INTENTS';
 };
 
 export type ExecutionQuote = {

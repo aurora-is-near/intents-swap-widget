@@ -24,6 +24,7 @@ const fakeExec = (
   run: vi.fn().mockResolvedValue(undefined),
   previewSteps: vi.fn(),
   runSteps: vi.fn(),
+  runOut: vi.fn(),
   resume: vi.fn().mockResolvedValue(undefined),
   retryDeposit: vi.fn().mockResolvedValue(undefined),
   cancel: vi.fn().mockResolvedValue(undefined),
