@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+/* Theme tokens, on the shadow host (`:root` never matches inside a shadow
+   root). The values are app.aave.com's light theme, sampled from its own
+   supply dialog, so the modal reads as part of the page. */
+:host {
+  /* Nothing inherited from the page; the declarations below set it all. */
+  all: initial;
+
+  --surface: #fafafa;
+  --surface-raised: #fcfcfc;
+  --surface-hover: #f0f0f0;
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-muted: #7d7d7d;
+  --ring: rgba(0, 0, 0, 0.06);
+  --cta: #000000;
+  --cta-hover: #262626;
+  --cta-disabled: #808080;
+  --cta-text: #fafafa;
+  --danger: #eb4200;
+
+  color-scheme: light;
+  color: var(--text-primary);
+  /* Spelled out: `@theme inline` emits no --font-sans variable to point at. */
+  font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-disabled: var(--cta-disabled);
+  --color-cta-text: var(--cta-text);
+  --color-danger: var(--danger);
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  /* Boxes and secondary buttons: a hairline ring plus a faint drop. */
+  --shadow-box: 0 2px 4px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--ring);
+  --shadow-dialog:
+    0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.05);
+}

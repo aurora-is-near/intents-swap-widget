@@ -58,6 +58,9 @@
         "@fontsource/figtree",
         "@solana/spl-token"
       ]
+    },
+    "apps/intents-connect-aave-ext": {
+      "entry": ["manifest.config.ts"]
     }
   }
 }
