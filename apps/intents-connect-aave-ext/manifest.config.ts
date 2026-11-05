@@ -15,6 +15,14 @@ export const manifest = {
     'Internal test build: supply to Aave from any wallet and chain with Intents Connect.',
   version: pkg.version,
   icons: ICONS,
+  // The toolbar button opens the modal on any site (src/background.ts):
+  // `activeTab` lends it the tab on click, so no site access is asked for.
+  action: {
+    default_icon: ICONS,
+    default_title: 'Supply with Aurora (a theme preview off app.aave.com)',
+  },
+  background: { service_worker: 'background.js' },
+  permissions: ['activeTab', 'scripting'],
   content_scripts: [
     {
       // MAIN world: the only place the page's wallets (EIP-6963, Wallet

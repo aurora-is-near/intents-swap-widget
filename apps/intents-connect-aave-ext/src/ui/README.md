@@ -28,6 +28,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   tonConnect={tonConnect}             // optional: TON phones in the QR code tab
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
   walletSources={walletSources}       // optional: e.g. [stellarWallets(), tronWallets()], created once
+  readOnly={notice}                   // optional: every screen, no supply (a preview)
   theme={{ auto: { pin: { cardRadius: 12 } } }} // optional: read from the page by default; keep it stable
 />
 ```
@@ -41,6 +42,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `walletConnect` | A client from `createWalletConnectClient`, with a `storagePrefix` when the page runs WalletConnect too. |
 | `tonConnect` | A client from `createTonConnectClient` for TON phones: not the one behind `tonWallets(…)` for extensions, since a TON Connect session holds one wallet. |
 | `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar` or `tronWallets()` from `…/detect/tron`. Create them once, at module scope. |
+| `readOnly` | A notice the Supply button shows instead of supplying: every screen and quote works, nothing runs. The extension sets it for its theme preview off app.aave.com. |
 | `theme` | `{ auto, seed, tokens }`. `auto` (on by default) reads a seed from the page; pass `false` to skip it, or hints: `selectors` (`primaryButton`, `button`, `card`) and `pin` (seed values the reading can't change). `seed` overrides the reading, and the whole is derived into tokens (below). Exact `tokens` win over everything. |
 
 Everything else is the modal's: wallet detection and choice, balances, the

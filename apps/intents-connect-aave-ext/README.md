@@ -11,6 +11,7 @@ everything it knows about the page and about Aave comes in through props
 
 ```
 src/content/   MAIN-world entry: the button and the modal host
+src/background.ts  the toolbar button: opens the modal on any site
 src/page/      app.aave.com adapter: the button, the account (wagmi.store), the market,
                and the theme hints (AAVE_THEME)
 src/aave/      Aave logic: markets, reserves (viem), the supply recipe
@@ -35,17 +36,38 @@ Then, in Chrome:
 2. Click **Load unpacked** and choose `apps/intents-connect-aave-ext/dist`.
 3. Open https://app.aave.com and connect a wallet. The button shows up in
    the "Assets to supply" header.
+4. Pin the extension (the puzzle icon in the toolbar): its icon opens the
+   modal on the current tab, on Aave or on any other site.
 
 After a rebuild, click the extension's reload icon in `chrome://extensions`,
-then reload the Aave tab.
+then reload the tab.
+
+### Previewing it on other sites
+
+Click the toolbar icon on any site to see the modal in that site's look.
+The extension only runs where you click (`activeTab`): it asks for no
+site access, and nothing runs on sites you don't. A reload removes it.
+
+Off app.aave.com it's a **theme preview**:
+- it reads the site's theme with no Aave hints (no MUI selectors, no
+  12 px card pin), as a new site's adapter would start;
+- Aave's default market, for a placeholder account (`0x…dEaD`), so every
+  screen shows: wallets, assets, the form with a live quote;
+- it never supplies: the Supply button shows a notice instead.
+
+Chrome's own pages (`chrome://`, the Web Store) can't be scripted; the
+icon shows "!" there. A site whose Content Security Policy blocks
+connections to the Intents Connect API (or inline styles) shows the modal
+without balances and quotes (or unstyled).
 
 ### Tuning the theme
 
 The modal takes its look from the page it runs on. In a `dev` build, the
-theme inspector shows how: add `?aurora-theme=inspect` to the page's URL,
-or run `auroraIntents.theme.inspect()` in the console. It lists where each
-value came from, lets you change them live, checks text contrast, and
-copies the result as a config for the site's adapter (`AAVE_THEME` in
+theme inspector shows how. The toolbar icon opens it along with the modal;
+so do `?aurora-theme=inspect` in the page's URL and
+`auroraIntents.theme.inspect()` in the console. It lists where each value
+came from, lets you change them live, checks text contrast, and copies the
+result as a config for the site's adapter (`AAVE_THEME` in
 `src/page/aave.ts`). `build` leaves it out.
 
 ## Wallets

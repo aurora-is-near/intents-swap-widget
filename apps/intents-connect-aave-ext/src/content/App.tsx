@@ -55,14 +55,25 @@ const noPlan = (): never => {
 };
 
 /**
- * The integration: reads what app.aave.com shows and hands it to the modal,
- * as a dApp would pass its own state to the UI package.
+ * Off app.aave.com there's no Aave account: the preview supplies "for" this
+ * one so every screen shows, and never supplies.
  */
-export const App = () => {
+const PREVIEW_OWNER = '0x000000000000000000000000000000000000dEaD';
+
+const PREVIEW_NOTICE =
+  "This is a theme preview: nothing is supplied off app.aave.com. Open Aave's site to supply.";
+
+/**
+ * The integration: reads what app.aave.com shows and hands it to the modal,
+ * as a dApp would pass its own state to the UI package. As a `preview` on
+ * another site, it shows the same screens in that site's look, from Aave's
+ * default market, without Aave's theme hints, and never supplies.
+ */
+export const App = ({ preview = false }: { preview?: boolean }) => {
   const open = useSyncExternalStore(modal.subscribe, modal.get);
-  const { account, market } = usePageState(open);
+  const { account, market } = usePageState(open && !preview);
   const aaveMarket = getAaveMarket(market);
-  const owner = account?.address ?? null;
+  const owner = preview ? PREVIEW_OWNER : (account?.address ?? null);
   const { reserves, error } = useAaveReserves(aaveMarket, evmRpcUrl, open);
 
   // Stable while the market and its reserves are: a new option list or plan
@@ -117,14 +128,15 @@ export const App = () => {
       onClose={modal.close}
       dappName="Aave"
       positionOwner={owner}
-      dappWalletName={account?.walletName}
+      dappWalletName={preview ? undefined : account?.walletName}
       destination={destination}
       sdk={SDK}
       walletConnect={walletConnect}
       tonConnect={tonConnect}
       connectorOptions={connectorOptions}
       walletSources={walletSources}
-      theme={AAVE_THEME}
+      theme={preview ? undefined : AAVE_THEME}
+      readOnly={preview ? PREVIEW_NOTICE : undefined}
     />
   );
 };

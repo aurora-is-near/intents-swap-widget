@@ -65,6 +65,11 @@ type SupplyModalProps = {
   walletSources?: readonly WalletSource[];
   /** The look: a seed to derive tokens from, and/or exact tokens. Keep it stable. */
   theme?: SupplyTheme;
+  /**
+   * Shows every screen but never supplies: the supply button shows this
+   * notice instead (e.g. a preview of the modal outside the dApp).
+   */
+  readOnly?: string;
 };
 
 /** Screens the user navigates to; otherwise the wallet decides. */
@@ -163,6 +168,7 @@ const SupplyFlow = ({
   destination,
   walletConnect,
   tonConnect,
+  readOnly,
   session,
 }: Omit<
   SupplyModalProps,
@@ -196,6 +202,8 @@ const SupplyFlow = ({
 
   // The supply submitted last, or found in flight; shown until left.
   const [run, setRun] = useState<SupplyRun | null>(null);
+  // `readOnly`: the supply button was pressed, so its notice shows.
+  const [readOnlyShown, setReadOnlyShown] = useState(false);
   // The wallet whose in-flight check settled: once per wallet.
   const [checkedWallet, setCheckedWallet] = useState<string>();
 
@@ -225,6 +233,7 @@ const SupplyFlow = ({
   const close = () => {
     setScreen(null);
     setPicked(null);
+    setReadOnlyShown(false);
     onClose();
   };
 
@@ -387,24 +396,39 @@ const SupplyFlow = ({
         );
       } else {
         body = asset ? (
-          <SupplyForm
-            key={asset.id}
-            asset={asset}
-            options={options ?? []}
-            loadingOptions={!optionsSettled}
-            buildPlan={destination.buildPlan}
-            dappName={dappName}
-            exec={flow.exec}
-            onSubmit={(preview, option) => {
-              setRun({
-                origin: asset.token,
-                option,
-                walletKey: active!.key,
-                quoted: preview.execution,
-              });
-              void flow.submit(preview);
-            }}
-          />
+          <>
+            <SupplyForm
+              key={asset.id}
+              asset={asset}
+              options={options ?? []}
+              loadingOptions={!optionsSettled}
+              buildPlan={destination.buildPlan}
+              dappName={dappName}
+              exec={flow.exec}
+              onSubmit={(preview, option) => {
+                if (readOnly) {
+                  setReadOnlyShown(true);
+
+                  return;
+                }
+
+                setRun({
+                  origin: asset.token,
+                  option,
+                  walletKey: active!.key,
+                  quoted: preview.execution,
+                });
+                void flow.submit(preview);
+              }}
+            />
+            {readOnly && readOnlyShown ? (
+              <div className="mt-3">
+                <Notice tone="info">
+                  <p className="text-text-secondary">{readOnly}</p>
+                </Notice>
+              </div>
+            ) : null}
+          </>
         ) : null;
       }
   }

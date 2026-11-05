@@ -1,17 +1,40 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, type Plugin, transformWithEsbuild } from 'vite';
 
 import { manifest } from './manifest.config';
 
+const BACKGROUND = fileURLToPath(
+  new URL('./src/background.ts', import.meta.url),
+);
+
+/**
+ * The manifest, and the toolbar button's service worker: one
+ * self-contained file (chrome.* only), compiled on its own since the
+ * library build has a single entry.
+ */
 const emitManifest = (): Plugin => ({
   name: 'emit-manifest',
-  generateBundle() {
+  buildStart() {
+    this.addWatchFile(BACKGROUND);
+  },
+  async generateBundle() {
     this.emitFile({
       type: 'asset',
       fileName: 'manifest.json',
       source: JSON.stringify(manifest, null, 2),
     });
+
+    const { code } = await transformWithEsbuild(
+      readFileSync(BACKGROUND, 'utf8'),
+      BACKGROUND,
+      { loader: 'ts', format: 'iife', target: 'chrome120' },
+    );
+
+    this.emitFile({ type: 'asset', fileName: 'background.js', source: code });
   },
 });
 
