@@ -16,7 +16,7 @@ export const ActiveWalletCard = ({
   const [disconnecting, setDisconnecting] = useState(false);
 
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-surface-raised p-3 shadow-box">
+    <div className="flex items-center gap-3 rounded-card bg-surface-raised p-3 shadow-box">
       <WalletIcon name={wallet.name} icon={wallet.icon} size={36} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

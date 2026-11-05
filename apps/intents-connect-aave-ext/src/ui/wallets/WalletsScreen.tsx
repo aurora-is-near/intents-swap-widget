@@ -75,16 +75,16 @@ const Segmented = <T extends string>({
   <div
     role="tablist"
     className={cx(
-      'relative grid grid-cols-2 bg-black/5',
-      size === 'sm' ? 'rounded-md p-0.5' : 'rounded-lg p-1',
+      'relative grid grid-cols-2 bg-track',
+      size === 'sm' ? 'rounded-chip p-0.5' : 'rounded-control p-1',
     )}>
     <span
       aria-hidden
       className={cx(
-        'absolute left-0 bg-white shadow-box transition-transform duration-200 ease-out',
+        'absolute left-0 bg-field shadow-box transition-transform duration-200 ease-out',
         size === 'sm'
-          ? 'inset-y-0.5 ml-0.5 w-[calc(50%-2px)] rounded-[5px]'
-          : 'inset-y-1 ml-1 w-[calc(50%-4px)] rounded-md',
+          ? 'inset-y-0.5 ml-0.5 w-[calc(50%-2px)] rounded-[calc(var(--r-chip)-1px)]'
+          : 'inset-y-1 ml-1 w-[calc(50%-4px)] rounded-chip',
         value === items[1].id && 'translate-x-full',
       )}
     />
@@ -98,8 +98,8 @@ const Segmented = <T extends string>({
         className={cx(
           'relative flex items-center justify-center font-medium transition-colors',
           size === 'sm'
-            ? 'h-6 gap-1 rounded-[5px] text-xs'
-            : 'h-8 gap-1.5 rounded-md',
+            ? 'h-6 gap-1 rounded-[calc(var(--r-chip)-1px)] text-xs'
+            : 'h-8 gap-1.5 rounded-chip',
           value === id
             ? 'text-text-primary'
             : 'text-text-muted hover:text-text-secondary',
@@ -123,7 +123,7 @@ const DappLine = ({
   icon?: string;
   address: string;
 }) => (
-  <div className="flex h-9 w-full items-center gap-2 rounded-lg bg-surface-raised px-2.5 shadow-box">
+  <div className="flex h-9 w-full items-center gap-2 rounded-control bg-surface-raised px-2.5 shadow-box">
     <span className="flex-none whitespace-nowrap text-text-muted">
       On {dappName}
     </span>
@@ -182,7 +182,7 @@ const Group = ({
             the room around the list keeps its shadow ring unclipped. */}
         <div className="-mx-1 min-h-0 overflow-hidden px-1">
           <div className="pt-px pb-1">
-            <ul className="overflow-hidden rounded-xl bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
+            <ul className="overflow-hidden rounded-card bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
               {children}
             </ul>
           </div>
@@ -244,7 +244,7 @@ const Status = ({
     return (
       <span className="inline-flex items-center gap-2">
         <span className="text-text-secondary">Check wallet…</span>
-        <span className="rounded-lg bg-white px-2.5 py-1 font-medium text-text-primary shadow-box">
+        <span className="rounded-control bg-field px-2.5 py-1 font-medium text-text-primary shadow-box">
           Cancel
         </span>
       </span>
@@ -262,7 +262,7 @@ const Status = ({
   return connected ? (
     <ChevronIcon />
   ) : (
-    <span className="rounded-lg bg-white px-2.5 py-1 font-medium text-text-primary shadow-box">
+    <span className="rounded-control bg-field px-2.5 py-1 font-medium text-text-primary shadow-box">
       Connect
     </span>
   );
@@ -308,7 +308,7 @@ const Phone = <TPeer extends PhonePeer>({
 
   return (
     <div className="flex flex-col gap-3">
-      <ul className="overflow-hidden rounded-xl bg-surface-raised shadow-box">
+      <ul className="overflow-hidden rounded-card bg-surface-raised shadow-box">
         <Row
           icon={<WalletIcon name={peer.name} icon={peer.icon} />}
           title={peer.name}

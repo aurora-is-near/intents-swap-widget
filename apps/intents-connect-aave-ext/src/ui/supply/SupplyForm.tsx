@@ -151,7 +151,7 @@ const OptionPicker = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-box">
+    <div className="overflow-hidden rounded-card bg-field shadow-box">
       <button
         type="button"
         aria-expanded={open}
@@ -465,7 +465,7 @@ export const SupplyForm = ({
           }>
           Amount
         </Label>
-        <div className="rounded-xl bg-white px-3 py-2.5 shadow-box focus-within:shadow-[0_0_0_1px_var(--text-primary)]">
+        <div className="rounded-card bg-field px-3 py-2.5 shadow-box focus-within:shadow-focus">
           <div className="flex items-center gap-3">
             <input
               inputMode="decimal"
@@ -476,7 +476,7 @@ export const SupplyForm = ({
               }
               placeholder="0.00"
               aria-label={`Amount of ${token.symbol}`}
-              className="min-w-0 flex-1 bg-transparent text-[21px] leading-7 font-medium outline-none placeholder:text-text-muted"
+              className="min-w-0 flex-1 bg-transparent text-amount leading-7 font-medium outline-none placeholder:text-text-muted"
             />
             <span className="flex flex-none items-center gap-2">
               <TokenLogo symbol={token.symbol} size={24} />
@@ -520,7 +520,7 @@ export const SupplyForm = ({
       ) : null}
 
       {plan && option ? (
-        <div className="flex flex-col gap-1.5 rounded-xl bg-surface-raised p-3 shadow-box">
+        <div className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
           <QuoteLines
             quote={quote}
             option={option}

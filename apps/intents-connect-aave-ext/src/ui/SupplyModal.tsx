@@ -34,6 +34,7 @@ import { ProgressScreen } from './progress/ProgressScreen';
 import type { SupplyRun } from './progress/types';
 import { deliverableOptions } from './supply/options';
 import { SupplyForm } from './supply/SupplyForm';
+import { type SupplyTheme, ThemeStyle } from './theme';
 import type { SupplyDestination } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
 import {
@@ -62,6 +63,8 @@ type SupplyModalProps = {
   connectorOptions?: WalletConnectorOptions;
   /** Detection sources for more families, e.g. `stellarWallets()`. Keep it stable. */
   walletSources?: readonly WalletSource[];
+  /** The look: token overrides over the defaults. Keep it stable. */
+  theme?: SupplyTheme;
 };
 
 /** Screens the user navigates to; otherwise the wallet decides. */
@@ -161,7 +164,10 @@ const SupplyFlow = ({
   walletConnect,
   tonConnect,
   session,
-}: Omit<SupplyModalProps, 'sdk' | 'connectorOptions' | 'walletSources'> & {
+}: Omit<
+  SupplyModalProps,
+  'sdk' | 'connectorOptions' | 'walletSources' | 'theme'
+> & {
   session: WalletSession;
 }) => {
   const supported = useSupportedTokens();
@@ -415,7 +421,7 @@ const SupplyFlow = ({
 
   return open ? (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black/32 px-4"
+      className="fixed inset-0 flex items-center justify-center bg-overlay px-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           close();
@@ -425,7 +431,7 @@ const SupplyFlow = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="aurora-supply-title"
-        className="w-full max-w-[420px] rounded-xl bg-surface p-6 text-text-primary shadow-dialog">
+        className="w-full max-w-[420px] rounded-dialog bg-surface p-6 text-text-primary shadow-dialog">
         <Header
           title={title}
           subtitle={subtitle}
@@ -447,6 +453,7 @@ const SupplySession = ({
   sdk,
   connectorOptions,
   walletSources,
+  theme,
   ...props
 }: SupplyModalProps) => {
   const session = useWalletSession({
@@ -458,6 +465,7 @@ const SupplySession = ({
 
   return (
     <IntentsConnectProvider {...sdk} wallet={session.active?.connector ?? null}>
+      <ThemeStyle tokens={theme?.tokens} />
       <SupplyFlow {...props} session={session} />
     </IntentsConnectProvider>
   );

@@ -28,6 +28,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   tonConnect={tonConnect}             // optional: TON phones in the QR code tab
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
   walletSources={walletSources}       // optional: e.g. [stellarWallets(), tronWallets()], created once
+  theme={{ tokens: { cta: '#6c3cff' } }} // optional: token overrides, keep it stable
 />
 ```
 
@@ -40,6 +41,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `walletConnect` | A client from `createWalletConnectClient`, with a `storagePrefix` when the page runs WalletConnect too. |
 | `tonConnect` | A client from `createTonConnectClient` for TON phones: not the one behind `tonWallets(…)` for extensions, since a TON Connect session holds one wallet. |
 | `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar` or `tronWallets()` from `…/detect/tron`. Create them once, at module scope. |
+| `theme` | `{ tokens }`: exact values for any of the theme tokens (below), over the defaults. |
 
 Everything else is the modal's: wallet detection and choice, balances, the
 quote, the run, recovery, and the in-flight check.
@@ -64,8 +66,21 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
 - It renders into a shadow root (`createShadowHost` in `mount.ts`), so the
   page's CSS can't reach it and its CSS can't leak out.
 - `styles.css` is Tailwind v4, imported as a string (`?inline`) into the root.
-- Theme tokens (`--surface`, `--text-primary`, `--cta`, `--danger`…) sit on
-  `:host`. They carry Aave's light theme; another dApp would override them.
+- **Theme tokens.** Every visual value is a token: colors, the font and its
+  sizes, radii, shadows' colors and the spacing unit. `ThemeTokens` in
+  `theme/tokens.ts` lists them, and `DEFAULT_TOKENS` carries Aave's light
+  theme. `ThemeStyle` writes them, with the `theme` prop's overrides, as
+  `:host` custom properties (`CSS_VARIABLES` names each one).
+  - `styles.css` maps them onto Tailwind (`@theme inline`): colors
+    (`bg-field`, `bg-overlay`, `text-text-muted`…), `text-xs/sm/base`,
+    `text-button` and `text-amount`, the radii (`rounded-dialog`, `-card`,
+    `-control`, `-chip`, `-cta`), and `--spacing`, which every `p-*`,
+    `gap-*`, `h-*` and `leading-*` multiplies.
+  - Tailwind's rem-based type scale and radii are switched off, and all
+    sizes are px, so the host page's `<html>` font size can't scale the
+    modal.
+  - Two whites stay literal on purpose: the QR code's tile (a QR scans dark
+    on light) and the tile behind wallet logos.
 - `all: initial` on `:host` cuts inheritance from the page. Only placement
   goes inline on the host, since an inline style beats `:host`.
 - Chrome ignores `@property` inside a shadow root, and Tailwind needs it for

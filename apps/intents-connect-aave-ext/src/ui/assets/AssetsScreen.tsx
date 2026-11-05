@@ -115,7 +115,7 @@ export const AssetsScreen = ({
     );
   } else {
     list = (
-      <ul className="max-h-[min(50vh,380px)] overflow-y-auto rounded-xl bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
+      <ul className="max-h-[min(50vh,380px)] overflow-y-auto rounded-card bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
         {shown.map((row) => (
           <Row key={row.id} row={row} onPick={() => onPick(row)} />
         ))}
@@ -126,7 +126,7 @@ export const AssetsScreen = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg bg-white px-3 text-text-muted shadow-box focus-within:shadow-[0_0_0_1px_var(--text-primary)]">
+        <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-control bg-field px-3 text-text-muted shadow-box focus-within:shadow-focus">
           <SearchIcon />
           <input
             type="search"

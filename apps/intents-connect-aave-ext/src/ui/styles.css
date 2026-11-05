@@ -1,31 +1,17 @@
 @import 'tailwindcss';
 
-/* Theme tokens, on the shadow host (`:root` never matches inside a shadow
-   root). The values are app.aave.com's light theme, sampled from its own
-   supply dialog, so the modal reads as part of the page. */
+/* The host's base styles. The tokens themselves (every color, size, radius
+   and the spacing unit) come from src/ui/theme: `ThemeStyle` writes them as
+   a `:host` rule after this sheet, from `DEFAULT_TOKENS` plus the theme. */
 :host {
   /* Nothing inherited from the page; the declarations below set it all. */
   all: initial;
 
-  --surface: #fafafa;
-  --surface-raised: #fcfcfc;
-  --surface-hover: #f0f0f0;
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --text-muted: #7d7d7d;
-  --ring: rgba(0, 0, 0, 0.06);
-  --cta: #000000;
-  --cta-hover: #262626;
-  --cta-disabled: #808080;
-  --cta-text: #fafafa;
-  --danger: #eb4200;
-
   color-scheme: light;
   color: var(--text-primary);
-  /* Spelled out: `@theme inline` emits no --font-sans variable to point at. */
-  font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
   /* Inter's contextual alternates draw "0x" as "0×" in addresses. */
   font-variant-ligatures: no-contextual;
   -webkit-font-smoothing: antialiased;
@@ -41,21 +27,60 @@
   }
 }
 
+/* No rem-based defaults: Tailwind's type scale and radii are in rem, which
+   the host page's <html> font size would scale. Ours are tokens, in px. */
+@theme {
+  --text-*: initial;
+  --radius-*: initial;
+}
+
+/* `inline`, so utilities resolve to the raw tokens (`var(--surface)`), and
+   a theme that changes a token restyles every utility built on it. */
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-hover: var(--surface-hover);
+  --color-field: var(--field);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-overlay: var(--overlay);
+  --color-track: var(--track);
+  --color-track-strong: var(--track-strong);
+  --color-link-line: var(--link-line);
   --color-cta: var(--cta);
   --color-cta-hover: var(--cta-hover);
   --color-cta-disabled: var(--cta-disabled);
   --color-cta-text: var(--cta-text);
   --color-danger: var(--danger);
-  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-danger-bg: var(--danger-bg);
+
+  --font-sans: var(--font);
+  --font-weight-medium: var(--weight-medium);
+
+  --text-xs: var(--fs-xs);
+  --text-xs--line-height: var(--lh-xs);
+  --text-sm: var(--fs-sm);
+  --text-sm--line-height: var(--lh-sm);
+  --text-base: var(--fs-base);
+  --text-base--line-height: var(--lh-base);
+  /* Not `text-cta`: that name is the CTA's color. */
+  --text-button: var(--fs-button);
+  --text-amount: var(--fs-amount);
+
+  --radius-dialog: var(--r-dialog);
+  --radius-card: var(--r-card);
+  --radius-control: var(--r-control);
+  --radius-chip: var(--r-chip);
+  --radius-cta: var(--r-cta);
+
+  /* Every p-*, gap-*, h-* and leading-* is a multiple of it. */
+  --spacing: var(--space);
+
   /* Boxes and secondary buttons: a hairline ring plus a faint drop. */
-  --shadow-box: 0 2px 4px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--ring);
-  --shadow-dialog:
-    0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-box: 0 2px 4px var(--shadow-drop), 0 0 0 1px var(--ring);
+  --shadow-dialog: 0 0 0 1px var(--ring-strong), 0 4px 16px var(--shadow-float);
+  --shadow-cta: 0 2px 4px var(--shadow-drop), 0 0 0 1px var(--cta);
+  --shadow-danger: 0 0 0 1px var(--danger-ring);
+  --shadow-focus: 0 0 0 1px var(--focus);
 }

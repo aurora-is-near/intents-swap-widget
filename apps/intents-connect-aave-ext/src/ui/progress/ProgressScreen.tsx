@@ -90,7 +90,7 @@ const Stepper = ({
                 done && 'bg-text-primary',
                 active && !halted && 'animate-pulse bg-text-primary/45',
                 active && halted && 'bg-danger',
-                !done && !active && 'bg-black/8',
+                !done && !active && 'bg-track-strong',
               )}
             />
             <span
@@ -141,7 +141,7 @@ const TxLink = ({
           target="_blank"
           rel="noreferrer"
           title={hash}
-          className="underline decoration-black/20 underline-offset-2 hover:decoration-black">
+          className="underline decoration-link-line underline-offset-2 hover:decoration-text-primary">
           {truncateMiddle(hash, 6, 4)}
         </a>
       ) : (
@@ -335,7 +335,7 @@ export const ProgressScreen = ({
 
       {headline}
 
-      <dl className="flex flex-col gap-1.5 rounded-xl bg-surface-raised p-3 shadow-box">
+      <dl className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
         {origin && quote.amountIn ? (
           <Detail label="You send">
             {amount(quote.amountIn, origin.decimals)} {origin.symbol}{' '}

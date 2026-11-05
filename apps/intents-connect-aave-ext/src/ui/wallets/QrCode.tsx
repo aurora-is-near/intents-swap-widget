@@ -65,7 +65,8 @@ export const QrCode = ({
     : size;
 
   return (
-    <div className="mx-auto w-fit rounded-xl bg-white p-3 shadow-box">
+    // White in every theme: a QR code scans as dark on light.
+    <div className="mx-auto w-fit rounded-card bg-white p-3 shadow-box">
       <div
         ref={containerRef}
         style={{ width: side, height: side }}
