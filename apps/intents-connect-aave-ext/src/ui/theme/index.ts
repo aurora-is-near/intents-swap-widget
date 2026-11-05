@@ -1,2 +1,3 @@
 export { ThemeStyle } from './ThemeStyle';
-export type { SupplyTheme } from './resolve';
+export { pageHints, resolveTheme, type SupplyTheme } from './resolve';
+export { safeReadPageTheme } from './usePageTheme';

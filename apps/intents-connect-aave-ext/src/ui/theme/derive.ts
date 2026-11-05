@@ -24,7 +24,10 @@ export type ThemeSeed = {
   font: string;
   /** Base text size in px (kept to 13–16). */
   fontSize: number;
-  /** The emphasis weight (kept to 400–700). */
+  /**
+   * The emphasis weight (kept to 500–700): titles and amounts set in it
+   * stand out from 400 body text, even on a site whose buttons are 400.
+   */
   fontWeight: number;
   /** The page's background: the dialog takes it. */
   page: string;
@@ -78,6 +81,11 @@ const MIN_CONTRAST = {
   /** Status color; Aave's own error red sits at 3.6. */
   danger: 3,
   cta: 4.5,
+  /**
+   * The CTA's text on its disabled fill: it still says what's missing
+   * ("Enter an amount"). Aave's gray sits at 3.8.
+   */
+  ctaDisabledText: 3,
 } as const;
 
 /** How far each shade moves, in OKLab. Tuned on Aave's sampled theme. */
@@ -250,7 +258,13 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     linkLine: formatColor(withAlpha(text, alpha.linkLine)),
     cta: formatColor(cta),
     ctaHover: formatColor(ctaHover),
-    ctaDisabled: formatColor(mix(cta, surface, MIX.ctaDisabled)),
+    ctaDisabled: formatColor(
+      ensureContrast(
+        mix(cta, surface, MIX.ctaDisabled),
+        [ctaText],
+        MIN_CONTRAST.ctaDisabledText,
+      ),
+    ),
     ctaText: formatColor(ctaText),
     danger: formatColor(danger),
     dangerBg: formatColor(
@@ -261,7 +275,7 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     scheme,
     font: seed.font.trim() || DEFAULT_TOKENS.font,
     weightMedium: String(
-      clamp(Math.round(seed.fontWeight / 100) * 100, 400, 700),
+      clamp(Math.round(seed.fontWeight / 100) * 100, 500, 700),
     ),
     textXs: px(base - 2),
     textXsLeading: px(base + 2),

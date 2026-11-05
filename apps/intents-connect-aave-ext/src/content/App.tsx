@@ -13,6 +13,7 @@ import {
   walletConnect,
   walletSources,
 } from '../config';
+import { AAVE_THEME } from '../page/aave';
 import { usePageState } from '../page/usePageState';
 import { SupplyModal } from '../ui/SupplyModal';
 import type { SupplyDestination, SupplyOption } from '../ui/supply/types';
@@ -123,6 +124,7 @@ export const App = () => {
       tonConnect={tonConnect}
       connectorOptions={connectorOptions}
       walletSources={walletSources}
+      theme={AAVE_THEME}
     />
   );
 };

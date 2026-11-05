@@ -8,6 +8,13 @@
  * kept by reference.
  */
 
+import {
+  pageHints,
+  resolveTheme,
+  safeReadPageTheme,
+  type SupplyTheme,
+} from '../ui/theme';
+
 const ATTR = 'data-aurora-supply';
 const LABEL = 'Supply with Aurora';
 const TITLE = /^assets to supply$/i;
@@ -16,6 +23,31 @@ const DEFAULT_MARKET = 'proto_mainnet_v3';
 const MARK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 3.5 20h3.6L12 10.2 16.9 20h3.6L12 3Z" fill="currentColor"/></svg>`;
 
 const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
+
+/**
+ * How the modal (and the button) take Aave's look: the reader finds MUI's
+ * papers and buttons, and the corners are pinned to Aave's own dialogs
+ * (12 px; its cards are 10).
+ */
+export const AAVE_THEME: SupplyTheme = {
+  auto: {
+    selectors: { card: '.MuiPaper-root', button: '.MuiButton-root' },
+    pin: { cardRadius: 12 },
+  },
+};
+
+type ButtonColors = { cta: string; ctaHover: string; ctaText: string };
+
+/** The CTA colors of the theme, read from the page as the modal will. */
+const buttonColors = (theme: SupplyTheme | undefined): ButtonColors => {
+  const hints = pageHints(theme);
+  const { cta, ctaHover, ctaText } = resolveTheme(
+    theme,
+    hints ? safeReadPageTheme(hints)?.seed : undefined,
+  );
+
+  return { cta, ctaHover, ctaText };
+};
 
 export type AaveAccount = {
   address: string;
@@ -37,12 +69,18 @@ const findTitle = () => {
   return null;
 };
 
-const createButton = (reference: HTMLElement, onClick: () => void) => {
+const createButton = (
+  reference: HTMLElement,
+  onClick: () => void,
+  colors: ButtonColors,
+) => {
   const style = getComputedStyle(reference);
   const button = document.createElement('button');
 
   button.type = 'button';
   button.setAttribute(ATTR, '');
+  // Ours: the page-theme reader skips it.
+  button.setAttribute('data-aurora-intents', '');
   button.innerHTML = `${MARK}<span>${LABEL}</span>`;
 
   Object.assign(button.style, {
@@ -56,9 +94,9 @@ const createButton = (reference: HTMLElement, onClick: () => void) => {
     margin: '0 8px 0 auto',
     borderRadius: style.borderRadius || '8px',
     border: 'none',
-    // Aave's own primary buttons: black, near-white label.
-    background: '#000000',
-    color: '#fafafa',
+    // The theme's CTA: on Aave, its own black primary with a near-white label.
+    background: colors.cta,
+    color: colors.ctaText,
     font: style.font || '500 14px/20px Inter, Arial, sans-serif',
     whiteSpace: 'nowrap',
     cursor: 'pointer',
@@ -67,10 +105,10 @@ const createButton = (reference: HTMLElement, onClick: () => void) => {
   });
 
   button.addEventListener('mouseenter', () => {
-    button.style.background = '#262626';
+    button.style.background = colors.ctaHover;
   });
   button.addEventListener('mouseleave', () => {
-    button.style.background = '#000000';
+    button.style.background = colors.cta;
   });
   button.addEventListener('click', (event) => {
     event.preventDefault();
@@ -82,7 +120,7 @@ const createButton = (reference: HTMLElement, onClick: () => void) => {
 };
 
 /** Before "All Categories", in the row it shares with the title. */
-const placeButton = (onClick: () => void) => {
+const placeButton = (onClick: () => void, theme: SupplyTheme | undefined) => {
   if (document.querySelector(`[${ATTR}]`)) {
     return;
   }
@@ -91,7 +129,7 @@ const placeButton = (onClick: () => void) => {
   const categories = title?.parentElement?.querySelector('button');
 
   if (title && categories) {
-    categories.before(createButton(categories, onClick));
+    categories.before(createButton(categories, onClick, buttonColors(theme)));
   }
 };
 
@@ -99,7 +137,7 @@ const placeButton = (onClick: () => void) => {
  * Keeps the button in place for the page's lifetime: Aave drops the whole
  * block when the wallet disconnects and re-renders it on navigation.
  */
-export const mountSupplyButton = (onClick: () => void) => {
+export const mountSupplyButton = (onClick: () => void, theme?: SupplyTheme) => {
   let scheduled = false;
 
   // A timer, not requestAnimationFrame: frames don't run in a background
@@ -109,7 +147,7 @@ export const mountSupplyButton = (onClick: () => void) => {
       scheduled = true;
       setTimeout(() => {
         scheduled = false;
-        placeButton(onClick);
+        placeButton(onClick, theme);
       }, 100);
     }
   };

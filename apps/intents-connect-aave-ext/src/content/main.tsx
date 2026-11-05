@@ -5,9 +5,9 @@
  */
 import { createRoot } from 'react-dom/client';
 
-import { mountSupplyButton } from '../page/aave';
+import { AAVE_THEME, mountSupplyButton } from '../page/aave';
 import { createShadowHost } from '../ui/mount';
 import { App, modal } from './App';
 
 createRoot(createShadowHost('aurora-intents-aave')).render(<App />);
-mountSupplyButton(modal.open);
+mountSupplyButton(modal.open, AAVE_THEME);

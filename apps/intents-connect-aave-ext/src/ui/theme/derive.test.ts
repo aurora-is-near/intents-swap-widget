@@ -114,6 +114,24 @@ describe('deriveTokens', () => {
     expect(color(tokens.ctaHover).r).toBeLessThan(color(tokens.cta).r);
   });
 
+  it('keeps the CTA text readable on its disabled fill', () => {
+    // Faded toward white, Bootstrap's blue would lose its white text.
+    const tokens = deriveTokens({
+      ...DEFAULT_SEED,
+      page: '#ffffff',
+      accent: '#0d6efd',
+      accentText: '#ffffff',
+    });
+
+    expect(
+      contrast(color(tokens.ctaText), color(tokens.ctaDisabled)),
+    ).toBeGreaterThanOrEqual(3);
+    // Still lighter than the live CTA.
+    expect(
+      contrast(color(tokens.ctaText), color(tokens.ctaDisabled)),
+    ).toBeLessThan(contrast(color(tokens.ctaText), color(tokens.cta)));
+  });
+
   it('keeps sizes in range, and falls back on colors it cannot read', () => {
     const tokens = deriveTokens({
       ...DEFAULT_SEED,
@@ -129,6 +147,9 @@ describe('deriveTokens', () => {
     expect(tokens.textSm).toBe('16px');
     expect(tokens.textAmount).toBe('24px');
     expect(tokens.weightMedium).toBe('700');
+    expect(
+      deriveTokens({ ...DEFAULT_SEED, fontWeight: 400 }).weightMedium,
+    ).toBe('500');
     expect(tokens.radiusControl).toBe('24px');
     expect(tokens.radiusCta).toBe('28px');
     expect(tokens.radiusCard).toBe('0px');

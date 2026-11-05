@@ -11,7 +11,8 @@ everything it knows about the page and about Aave comes in through props
 
 ```
 src/content/   MAIN-world entry: the button and the modal host
-src/page/      app.aave.com adapter: the button, the account (wagmi.store), the market
+src/page/      app.aave.com adapter: the button, the account (wagmi.store), the market,
+               and the theme hints (AAVE_THEME)
 src/aave/      Aave logic: markets, reserves (viem), the supply recipe
 src/config.ts  Intents Connect clients, the WalletConnect client, keys
 src/ui/        the modal, rendered in a shadow root
