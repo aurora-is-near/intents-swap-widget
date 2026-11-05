@@ -1,6 +1,6 @@
 import { createContext, type MutableRefObject, useContext } from 'react';
 
-import type { IntentsConnectApi } from '@/api/types';
+import type { IntentsConnectApi, SupportedTokensResult } from '@/api/types';
 import type { BalanceToken, ChainRpcUrls, WalletBalances } from '@/balances';
 import { IntentsConnectError } from '@/errors';
 import type { FundingStore } from '@/funding/store';
@@ -68,6 +68,8 @@ export type IntentsAccountContextValue = {
   funding: FundingStore;
   /** key: `JSON.stringify([address, publicKey, destination])` */
   intermediaryBalances: ResourceCache<IntermediaryBalance>;
+  /** key: the flow (`inOperation`, `outOperation`) */
+  supportedTokens: ResourceCache<SupportedTokensResult>;
 };
 
 export const IntentsAccountContext =

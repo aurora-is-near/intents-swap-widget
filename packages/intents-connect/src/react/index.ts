@@ -64,6 +64,16 @@ export {
   type UseIntentsOutFlowResult,
 } from '@/react/useIntentsOutFlow';
 export {
+  useQuotePreview,
+  type UseQuotePreviewOptions,
+  type UseQuotePreviewResult,
+} from '@/react/useQuotePreview';
+export {
+  useSupportedTokens,
+  type UseSupportedTokensOptions,
+  type UseSupportedTokensResult,
+} from '@/react/useSupportedTokens';
+export {
   useIntermediaryBalance,
   type UseIntermediaryBalanceResult,
 } from '@/react/useIntermediaryBalance';

@@ -183,6 +183,16 @@ With `intentsApi` on the provider, the same bindings read an account screen:
 around `useExecution`. Stores live at provider
 level, so hooks reading the same data share one request. See below.
 
+Two more need no `intentsApi`:
+
+- `useSupportedTokens({ flow? })` gives `origins` (what an execution can
+  start from) and `destinations` (what a recipe can receive), fetched once
+  per provider.
+- `useQuotePreview({ exec, plan })` keeps a live quote for a plan the user is
+  still editing: a debounced `preview`, refreshed every 30 s, with results
+  for an older plan dropped. Run `preview.plan` to commit to exactly the
+  quoted steps.
+
 ## Account & balances
 
 Everything an account screen needs, for EVM, Solana and NEAR wallets, through

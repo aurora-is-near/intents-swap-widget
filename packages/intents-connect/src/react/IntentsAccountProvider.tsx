@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { getWalletIntentsAccountId } from '@/account';
+import type { SupportedTokensFlow } from '@/api/types';
 import { getTokens, getWalletBalances } from '@/balances';
 import type { BalanceToken } from '@/balances';
 import { IntentsConnectError } from '@/errors';
@@ -175,6 +176,17 @@ const createStores = (
           rpcs: config.current.rpcs,
         }),
       };
+    }),
+
+    // key: the flow. Needs only the Intents Connect API.
+    supportedTokens: createResourceCache((flow) => {
+      const { connectApi } = config.current;
+
+      return connectApi
+        ? connectApi.listSupportedTokens(flow as SupportedTokensFlow)
+        : Promise.reject(
+            new IntentsConnectError('the Intents Connect API is required'),
+          );
     }),
   };
 };

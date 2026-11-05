@@ -122,6 +122,44 @@ const settled = await out.submit({ amount, to }); // single-flight
 | `resume(executionId?)`, `cancel()` | Recovery actions. `resume` takes an id from a list of executions (after a reload), else the in-flight one. Both resolve, never reject |
 | `exec` | The underlying `useExecution()` result |
 
+## `useQuotePreview()`
+
+A live quote while the user is still editing: a dry `preview` of the plan once the input settles, re-quoted while it stays the same.
+
+```tsx
+const flow = useIntentsConnectFlow({ buildPlan: (preview) => preview.plan });
+const plan = useMemo(
+  () => (amount ? buildMyPlan(token, amount) : null), // leave quote.deadline unset
+  [token, amount],
+);
+const quote = useQuotePreview({ exec: flow.exec, plan });
+
+// quote.preview.execution.quote.minAmountOut, .details.networkFee, .details.estimatedTime
+flow.submit(quote.preview); // runs exactly the previewed steps
+```
+
+| Field | Meaning |
+|---|---|
+| `preview` | The latest preview of the **current** plan. A result for an older plan is dropped. `preview.plan` carries the prepared steps for `run` |
+| `isLoading`, `error` | A preview is on its way (debounce included); why the last one failed |
+| `expiresAt` | Epoch ms when the previewed quote's deadline passes |
+| `refresh()` | Re-quotes now |
+
+Options: `debounceMs` (500), `refreshIntervalMs` (30 s while the page is visible, `0` never). A new plan object is a new quote, so memoize it.
+
+## `useSupportedTokens()`
+
+What Intents Connect routes, from `listSupportedTokens`. Fetched once per provider and flow, shared by every caller. Needs no wallet and no `intentsApi`.
+
+```tsx
+const { origins, destinations, status } = useSupportedTokens(); // { flow: 'outOperation' } swaps the lists
+const canDeliver = destinations.some(
+  (token) => token.blockchain === 'base' && token.contractAddress === usdc,
+);
+```
+
+`origins` are the tokens an execution can start from (`in`): what the user can pay with. `destinations` are the tokens it can deliver (`out`): a recipe's `destination`.
+
 ## Account hooks
 
 Need `intentsApi` on the provider. See [Account & balances](account-and-balances.md).
