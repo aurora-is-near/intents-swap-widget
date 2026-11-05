@@ -7,7 +7,7 @@
   /* Nothing inherited from the page; the declarations below set it all. */
   all: initial;
 
-  color-scheme: light;
+  color-scheme: var(--scheme);
   color: var(--text-primary);
   font-family: var(--font);
   font-size: var(--fs-sm);

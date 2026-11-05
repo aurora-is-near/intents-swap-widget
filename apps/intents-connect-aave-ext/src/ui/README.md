@@ -28,7 +28,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   tonConnect={tonConnect}             // optional: TON phones in the QR code tab
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
   walletSources={walletSources}       // optional: e.g. [stellarWallets(), tronWallets()], created once
-  theme={{ tokens: { cta: '#6c3cff' } }} // optional: token overrides, keep it stable
+  theme={{ seed: { accent: '#6c3cff' } }} // optional: derive a theme, or set `tokens`; keep it stable
 />
 ```
 
@@ -41,7 +41,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `walletConnect` | A client from `createWalletConnectClient`, with a `storagePrefix` when the page runs WalletConnect too. |
 | `tonConnect` | A client from `createTonConnectClient` for TON phones: not the one behind `tonWallets(…)` for extensions, since a TON Connect session holds one wallet. |
 | `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar` or `tronWallets()` from `…/detect/tron`. Create them once, at module scope. |
-| `theme` | `{ tokens }`: exact values for any of the theme tokens (below), over the defaults. |
+| `theme` | `{ seed, tokens }`: a few choices to derive every token from (below), and/or exact token values, which win. |
 
 Everything else is the modal's: wallet detection and choice, balances, the
 quote, the run, recovery, and the in-flight check.
@@ -81,6 +81,19 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     modal.
   - Two whites stay literal on purpose: the QR code's tile (a QR scans dark
     on light) and the tile behind wallet logos.
+- **Derived themes.** `deriveTokens(seed)` (`theme/derive.ts`) builds every
+  token from a `ThemeSeed`: the scheme, font, base size and weight, page and
+  card colors, text, the accent and its text, danger, the button and card
+  radii, and a density.
+  - Shades are OKLab mixes (`theme/color.ts`, no dependency); hairlines,
+    tracks and shadows are alphas.
+  - Every text color is held to a minimum WCAG contrast against the dialog
+    and its fields (primary 7, secondary 4.5, muted 3), moved in lightness
+    until it reads. A site's own text on its accent is kept from 3:1;
+    otherwise the CTA text is black or white.
+  - Sizes are clamped (radius 0–24, density 0.85–1.2, text 13–16 px).
+  - `DEFAULT_SEED` is Aave's, and a test pins that it derives
+    `DEFAULT_TOKENS` within ΔE 0.02.
 - `all: initial` on `:host` cuts inheritance from the page. Only placement
   goes inline on the host, since an inline style beats `:host`.
 - Chrome ignores `@property` inside a shadow root, and Tailwind needs it for
@@ -106,7 +119,6 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
   `/constants`. The gas left on MAX and the explorer URLs are local tables.
   Both should become package data or props.
 - **Missing pieces:**
-  - only the light theme;
   - no i18n;
-  - no tests yet: the extension was checked by hand on a local harness and
-    on app.aave.com.
+  - unit tests cover the theme (`yarn test`); the rest was checked by hand
+    on a local harness and on app.aave.com.

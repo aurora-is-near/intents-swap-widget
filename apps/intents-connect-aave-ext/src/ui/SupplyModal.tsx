@@ -63,7 +63,7 @@ type SupplyModalProps = {
   connectorOptions?: WalletConnectorOptions;
   /** Detection sources for more families, e.g. `stellarWallets()`. Keep it stable. */
   walletSources?: readonly WalletSource[];
-  /** The look: token overrides over the defaults. Keep it stable. */
+  /** The look: a seed to derive tokens from, and/or exact tokens. Keep it stable. */
   theme?: SupplyTheme;
 };
 
@@ -465,7 +465,7 @@ const SupplySession = ({
 
   return (
     <IntentsConnectProvider {...sdk} wallet={session.active?.connector ?? null}>
-      <ThemeStyle tokens={theme?.tokens} />
+      <ThemeStyle theme={theme} />
       <SupplyFlow {...props} session={session} />
     </IntentsConnectProvider>
   );

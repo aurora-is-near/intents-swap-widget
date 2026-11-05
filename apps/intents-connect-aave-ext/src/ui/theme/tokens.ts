@@ -44,6 +44,8 @@ export type ThemeTokens = {
   dangerBg: string;
   dangerRing: string;
 
+  /** `light` or `dark`: native controls and scrollbars follow it. */
+  scheme: string;
   /** The font stack. */
   font: string;
   /** The one weight used for emphasis. */
@@ -106,6 +108,7 @@ export const DEFAULT_TOKENS: ThemeTokens = {
   dangerBg: '#fff5f0',
   dangerRing: 'rgba(235, 66, 0, 0.18)',
 
+  scheme: 'light',
   font: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif",
   weightMedium: '500',
   textXs: '12px',
@@ -130,7 +133,7 @@ export const DEFAULT_TOKENS: ThemeTokens = {
  * Each token's custom property. Sizes and radii get short names of their
  * own: Tailwind's (`--text-xs`, `--radius-*`, `--spacing`) point at them.
  */
-export const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
+const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
   surface: '--surface',
   surfaceRaised: '--surface-raised',
   surfaceHover: '--surface-hover',
@@ -155,6 +158,7 @@ export const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
   dangerBg: '--danger-bg',
   dangerRing: '--danger-ring',
 
+  scheme: '--scheme',
   font: '--font',
   weightMedium: '--weight-medium',
   textXs: '--fs-xs',
