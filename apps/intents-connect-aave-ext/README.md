@@ -54,6 +54,8 @@ Off app.aave.com it's a **theme preview**:
 - Aave's default market, for a placeholder account (`0x…dEaD`), so every
   screen shows: wallets, assets, the form with a live quote;
 - it never supplies: the Supply button shows a notice instead.
+- no EVM phones in the QR code tab: the WalletConnect project allows
+  app.aave.com only, so its relay refuses other sites (TON's QR stays).
 
 Chrome's own pages (`chrome://`, the Web Store) can't be scripted; the
 icon shows "!" there. A site whose Content Security Policy blocks
@@ -62,13 +64,13 @@ without balances and quotes (or unstyled).
 
 ### Tuning the theme
 
-The modal takes its look from the page it runs on. In a `dev` build, the
-theme inspector shows how. The toolbar icon opens it along with the modal;
+The modal takes its look from the page it runs on, and the theme inspector
+shows how. The toolbar icon opens it along with the modal;
 so do `?aurora-theme=inspect` in the page's URL and
 `auroraIntents.theme.inspect()` in the console. It lists where each value
 came from, lets you change them live, checks text contrast, and copies the
 result as a config for the site's adapter (`AAVE_THEME` in
-`src/page/aave.ts`). `build` leaves it out.
+`src/page/aave.ts`). It's in every build (`build` and `dev`).
 
 ## Wallets
 

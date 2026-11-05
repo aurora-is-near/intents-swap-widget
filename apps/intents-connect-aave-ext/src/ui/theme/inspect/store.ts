@@ -4,11 +4,15 @@ import type { SupplyTheme } from '../resolve';
 import type { ThemeTokens } from '../tokens';
 
 /**
- * Dev builds only (`vite build --mode development`, the `dev` script). A
- * build-time constant: production builds drop the inspector, this store and
+ * Whether the inspector is built in, a build-time constant: on in dev
+ * builds (`--mode development`), and where the build sets
+ * `import.meta.env.VITE_THEME_INSPECTOR` to `'true'`, as this extension
+ * does in every build. Off, the build drops the inspector, this store and
  * the hooks that feed it.
  */
-export const THEME_INSPECTOR = import.meta.env.MODE === 'development';
+export const THEME_INSPECTOR =
+  import.meta.env.MODE === 'development' ||
+  import.meta.env.VITE_THEME_INSPECTOR === 'true';
 
 /** What the modal applies, as the inspector shows it. */
 export type InspectedTheme = {

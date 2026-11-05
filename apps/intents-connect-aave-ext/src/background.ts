@@ -1,6 +1,6 @@
 /**
  * The toolbar button: opens the modal on the current tab, and the theme
- * inspector in dev builds. On a site the content script doesn't run on
+ * inspector. On a site the content script doesn't run on
  * (anything but app.aave.com), it injects it first, as a theme preview.
  * `activeTab` grants the tab for that click only.
  *

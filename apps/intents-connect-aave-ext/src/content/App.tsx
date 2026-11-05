@@ -131,7 +131,9 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
       dappWalletName={preview ? undefined : account?.walletName}
       destination={destination}
       sdk={SDK}
-      walletConnect={walletConnect}
+      // Its Reown project allows app.aave.com only: elsewhere the relay
+      // refuses the connection.
+      walletConnect={preview ? undefined : walletConnect}
       tonConnect={tonConnect}
       connectorOptions={connectorOptions}
       walletSources={walletSources}

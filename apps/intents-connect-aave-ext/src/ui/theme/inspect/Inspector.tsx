@@ -344,7 +344,7 @@ const TokensSection = ({ tokens }: { tokens: ThemeTokens }) => {
 };
 
 /**
- * The theme inspector (dev builds): where each seed value came from, live
+ * The theme inspector (`THEME_INSPECTOR`): where each seed value came from, live
  * edits over them, the derived tokens' contrast, and the edits as a config
  * for the site adapter.
  */

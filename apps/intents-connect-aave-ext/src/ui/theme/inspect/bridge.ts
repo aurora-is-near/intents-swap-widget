@@ -11,12 +11,12 @@ import {
 
 const NO_EDITS: SeedEdits = {};
 
-/** The inspector's seed edits in dev builds; none in production. */
+/** The inspector's seed edits; none in builds without it. */
 export const useSeedEdits: () => SeedEdits = THEME_INSPECTOR
   ? () => useSyncExternalStore(inspectorStore.subscribe, inspectorStore.edits)
   : () => NO_EDITS;
 
-/** Shows the inspector what the modal applies, in dev builds. */
+/** Shows the inspector what the modal applies, in builds with it. */
 export const useInspected: (inspected: InspectedTheme) => void = THEME_INSPECTOR
   ? ({ theme, reading, tokens }) => {
       useEffect(() => {

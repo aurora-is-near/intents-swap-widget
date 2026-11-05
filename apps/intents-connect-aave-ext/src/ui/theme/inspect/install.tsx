@@ -9,8 +9,8 @@ const PARAM = 'aurora-theme';
 type AuroraGlobal = Window & { auroraIntents?: Record<string, unknown> };
 
 /**
- * The theme inspector's switches (call it in dev builds only, behind
- * `THEME_INSPECTOR`): `?aurora-theme=inspect` in the URL opens it, and so
+ * The theme inspector's switches (call it behind `THEME_INSPECTOR`, so
+ * builds without it drop it): `?aurora-theme=inspect` in the URL opens it, and so
  * does `auroraIntents.theme.inspect()` in the console (`.close()` closes
  * it). It renders in its own shadow root, above the modal.
  */

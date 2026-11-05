@@ -129,9 +129,11 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     flips, so a site's dark-mode toggle restyles the modal.
   - `safeReadPageTheme` gives adapters the same reading: Aave's in-page
     button takes the derived `cta`, `cta-hover` and `cta-text`.
-- **Theme inspector** (`theme/inspect/`, dev builds only). `THEME_INSPECTOR`
-  is a build-time constant (`vite build --mode development`), so production
-  builds drop the panel, its store and the hooks that feed it.
+- **Theme inspector** (`theme/inspect/`). `THEME_INSPECTOR` is a build-time
+  constant: on in dev builds and where the build defines
+  `import.meta.env.VITE_THEME_INSPECTOR` as `'true'` (this extension does,
+  in every build). Off, the build drops the panel, its store and the hooks
+  that feed it.
   `installThemeInspector({ open })` adds the switches: `?aurora-theme=inspect`
   in the URL, or `auroraIntents.theme.inspect()` / `.close()` in the console.
   - It renders in its own shadow root, above the modal, with fixed neutral

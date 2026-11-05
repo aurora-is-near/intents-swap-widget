@@ -34,8 +34,8 @@ if (typeof page.auroraIntents?.open !== 'function') {
 
   page.auroraIntents = { ...page.auroraIntents, open: modal.open };
 
-  // Dev builds: the toolbar button, `?aurora-theme=inspect`, or
-  // `auroraIntents.theme.inspect()`.
+  // In every build of this extension (vite.config.ts): the toolbar button,
+  // `?aurora-theme=inspect`, or `auroraIntents.theme.inspect()`.
   if (THEME_INSPECTOR) {
     installThemeInspector({ open: modal.open });
   }

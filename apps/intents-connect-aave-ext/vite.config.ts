@@ -74,8 +74,13 @@ const bufferForTon = (): Plugin => ({
  */
 export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), emitManifest(), bufferForTon()],
-  // Library mode leaves it in, and the page has no `process`.
-  define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
+  define: {
+    // Library mode leaves it in, and the page has no `process`.
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    // An internal tool: the theme inspector is in every build, not only
+    // `dev` ones (src/ui/theme/inspect/store.ts).
+    'import.meta.env.VITE_THEME_INSPECTOR': JSON.stringify('true'),
+  },
   build: {
     emptyOutDir: true,
     lib: {

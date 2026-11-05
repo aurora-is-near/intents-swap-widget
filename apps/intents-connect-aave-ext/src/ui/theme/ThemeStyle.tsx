@@ -9,8 +9,8 @@ import { usePageTheme } from './usePageTheme';
  * The theme, as a `:host` rule inside the shadow root: it comes after the
  * base sheet, and unlayered, so it beats both its `:host` rule and
  * Tailwind's `@layer theme` defaults. Unless `theme.auto` is `false`, it
- * starts from the host page's own look. In dev builds, the theme inspector
- * sees what it applies and edits it live.
+ * starts from the host page's own look. Where it's built in, the theme
+ * inspector sees what it applies and edits it live.
  */
 export const ThemeStyle = ({ theme }: { theme?: SupplyTheme }) => {
   const edits = useSeedEdits();
