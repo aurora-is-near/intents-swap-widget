@@ -295,8 +295,8 @@ describe('signOwnershipProof', () => {
   it('refuses a standard it cannot derive an account for', async () => {
     const error = await signOwnershipProof(
       {
-        signingStandard: 'tip191' as never,
-        getAddress: () => 'TABC',
+        signingStandard: 'ton_connect' as never,
+        getAddress: () => 'UQABC',
         getProviders: () => ({}),
       },
       { rpcUrls: [RPC], fetch: saltOnly },

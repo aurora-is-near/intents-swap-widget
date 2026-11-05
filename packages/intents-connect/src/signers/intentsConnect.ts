@@ -13,6 +13,7 @@ import {
   signNep413,
   signRawEd25519,
   signSep53,
+  signTip191,
   toBase64,
 } from '@/signers/standards';
 
@@ -56,7 +57,7 @@ const parseNep413Payload = (payloadJson: string): Nep413Payload => {
  * Which field to sign differs per standard, and getting it wrong produces a
  * signature the backend rejects with no useful diagnostic:
  *
- * - `erc191` / `sep53` — `payload_json`, verbatim as a string.
+ * - `erc191` / `tip191` / `sep53` — `payload_json`, verbatim as a string.
  * - `raw_ed25519` — the DECODED bytes of `payload_bytes_base64`.
  * - `nep413` — `payload_json` parsed into `{ message, recipient, nonce }`.
  */
@@ -72,6 +73,13 @@ export const signIntentsConnectPayload = async ({
       return signErc191({
         message: payload.payload_json,
         provider: requireProvider(providers.evm, standard),
+        expectedAddress: address,
+      });
+
+    case 'tip191':
+      return signTip191({
+        message: payload.payload_json,
+        provider: requireProvider(providers.tron, standard),
         expectedAddress: address,
       });
 
@@ -147,8 +155,9 @@ const randomNonce = (): Uint8Array => {
  * envelope — the backend needs both to rebuild the exact bytes the wallet
  * signed, and omitting the block is a 400.
  *
- * `sep53` signs the text like any SEP-53 message and sends its public key:
- * the delete endpoint accepts it (checked against the alpha service).
+ * `sep53` signs the text like any SEP-53 message and sends its public key,
+ * and `tip191` signs it like erc191, with none: the delete endpoint accepts
+ * both (checked against the alpha service).
  */
 export const signIntentsConnectText = async ({
   text,
@@ -162,6 +171,13 @@ export const signIntentsConnectText = async ({
       return signErc191({
         message: text,
         provider: requireProvider(providers.evm, standard),
+        expectedAddress: address,
+      });
+
+    case 'tip191':
+      return signTip191({
+        message: text,
+        provider: requireProvider(providers.tron, standard),
         expectedAddress: address,
       });
 

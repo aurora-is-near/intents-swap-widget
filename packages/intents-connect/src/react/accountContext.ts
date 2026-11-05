@@ -24,6 +24,8 @@ export type IntentsAccountProps = {
   intentsApi?: IntentsApi;
   /** Reads EVM and Solana wallet balances through Alchemy when set. */
   alchemyApiKey?: string;
+  /** TronGrid's API key, for TRON balances: without one, ~1 request/s. */
+  tronGridApiKey?: string;
   /** Per-chain RPC endpoints, merged over `DEFAULT_RPCS`. */
   rpcs?: ChainRpcUrls;
   /**
@@ -42,7 +44,7 @@ export type IntentsAccountProps = {
 
 export type IntentsAccountConfig = Pick<
   IntentsAccountProps,
-  'intentsApi' | 'alchemyApiKey' | 'rpcs'
+  'intentsApi' | 'alchemyApiKey' | 'tronGridApiKey' | 'rpcs'
 > & {
   /** The Intents Connect API of the surrounding provider. */
   connectApi?: IntentsConnectApi;

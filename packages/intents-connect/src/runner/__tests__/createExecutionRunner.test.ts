@@ -260,6 +260,76 @@ describe('createExecutionRunner — bridge-in happy path', () => {
   });
 });
 
+describe('createExecutionRunner — a TRON wallet', () => {
+  const TRON_ADDRESS = 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G';
+  const TRON_USDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+
+  it('signs tip191 without a public key and deposits with no memo', async () => {
+    const tronExecution = execution();
+
+    tronExecution.details = {
+      ...tronExecution.details,
+      signingStandard: 'tip191',
+      payload: { ...tronExecution.details.payload!, standard: 'tip191' },
+    };
+
+    const signMessage = vi.fn().mockResolvedValue(`0x${'ab'.repeat(64)}1c`);
+    const makeTransfer = vi.fn().mockResolvedValue({ hash: 'trontx' });
+    const api = makeApi({
+      createExecution: vi.fn().mockResolvedValue(tronExecution),
+      getIntermediary: vi.fn().mockResolvedValue({
+        originAccount: TRON_ADDRESS,
+        originType: 'tron',
+        evm: INTERMEDIARY,
+        solana: null,
+      }),
+    });
+
+    const result = await createExecutionRunner({
+      api,
+      wallet: {
+        id: 'tron:tronlink',
+        name: 'TronLink',
+        chains: ['tron'],
+        signingStandard: 'tip191',
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+        getAddress: () => TRON_ADDRESS,
+        getProviders: () => ({
+          tron: { address: TRON_ADDRESS, signMessage },
+        }),
+        makeTransfer,
+      },
+      logger: noopLogger,
+      pollIntervalMs: 0,
+    }).run({
+      ...basePlan,
+      quote: {
+        ...basePlan.quote,
+        originAsset:
+          'nep141:tron-d28a265909efecdcee7c5028585214ea0b96f015.omft.near',
+      },
+      originChain: 'tron',
+      originToken: { contractAddress: TRON_USDT, decimals: 6 },
+    });
+
+    expect(result.status).toBe('SUCCESS');
+    expect(signMessage).toHaveBeenCalledWith('{"intents":[]}');
+
+    const [, submitted] = vi.mocked(api.submitSignature).mock.calls[0]!;
+
+    expect(submitted).not.toHaveProperty('publicKey');
+    expect(String(submitted.signature)).toMatch(/^secp256k1:/);
+    expect(makeTransfer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chain: 'tron',
+        tokenAddress: TRON_USDT,
+        address: 'deposit-address',
+      }),
+    );
+  });
+});
+
 describe('createExecutionRunner — QR / exchange path', () => {
   it('exposes the deposit address but never transfers or records', async () => {
     const { events, onEvent } = collect();

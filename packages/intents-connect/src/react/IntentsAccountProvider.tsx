@@ -135,13 +135,15 @@ const createStores = (
       const separator = account.indexOf(':');
       const family = account.slice(0, separator) as IntentsAccountFamily;
       const address = account.slice(separator + 1);
-      const { alchemyApiKey, rpcs, intentsApi } = config.current;
+      const { alchemyApiKey, tronGridApiKey, rpcs, intentsApi } =
+        config.current;
 
       return getWalletBalances({
         family,
         address,
         tokens: await loadTokens(),
         alchemyApiKey,
+        tronGridApiKey,
         rpcs,
         intentsApi,
       });
@@ -235,17 +237,24 @@ export const IntentsAccountProvider = ({
   children,
   ...props
 }: IntentsAccountProps & { children: ReactNode }) => {
-  const { intentsApi, alchemyApiKey, rpcs } = props;
+  const { intentsApi, alchemyApiKey, tronGridApiKey, rpcs } = props;
   const { wallet, api: connectApi } = useIntentsConnect();
 
   const config = useRef<IntentsAccountConfig>({
     intentsApi,
     alchemyApiKey,
+    tronGridApiKey,
     rpcs,
     connectApi,
   });
 
-  config.current = { intentsApi, alchemyApiKey, rpcs, connectApi };
+  config.current = {
+    intentsApi,
+    alchemyApiKey,
+    tronGridApiKey,
+    rpcs,
+    connectApi,
+  };
 
   const identity = intentsApi
     ? `${intentsApi.apiKey}|${intentsApi.baseUrl}`

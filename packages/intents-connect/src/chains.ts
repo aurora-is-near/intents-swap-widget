@@ -66,6 +66,9 @@ export const MEMO_FREE_SIGNING_STANDARDS: ReadonlySet<string> = new Set([
   'erc191',
   'raw_ed25519',
   'nep413',
+  // TRON deposit addresses are per execution: no memo (checked on the alpha
+  // service).
+  'tip191',
 ]);
 
 /**
@@ -75,7 +78,7 @@ export const MEMO_FREE_SIGNING_STANDARDS: ReadonlySet<string> = new Set([
  */
 export const PUBLIC_KEY_REQUIRED_CHAINS = new Set(['ton']);
 
-export type ChainFamily = 'evm' | 'sol' | 'stellar' | 'near';
+export type ChainFamily = 'evm' | 'sol' | 'stellar' | 'near' | 'tron';
 
 const OMFT_SUFFIX = '.omft.near';
 
@@ -129,6 +132,10 @@ export const getChainFamily = (chain: string): ChainFamily | undefined => {
 
   if (chain === 'near') {
     return 'near';
+  }
+
+  if (chain === 'tron') {
+    return 'tron';
   }
 
   return undefined;

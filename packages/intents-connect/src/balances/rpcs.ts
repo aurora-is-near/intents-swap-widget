@@ -25,6 +25,8 @@ export const DEFAULT_RPCS: Readonly<Record<string, readonly string[]>> = {
   // publicnode answers 403 to some clients; the official endpoint backs it up.
   // Horizon, not Soroban RPC: balances read `/accounts/{G…}`.
   stellar: ['https://horizon.stellar.org'],
+  // TronGrid's account API (`/v1/accounts/{T…}`), not a full node's.
+  tron: ['https://api.trongrid.io'],
   sol: [
     'https://solana-rpc.publicnode.com',
     'https://api.mainnet-beta.solana.com',

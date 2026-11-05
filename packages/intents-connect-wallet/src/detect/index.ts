@@ -33,6 +33,7 @@ export type {
   DetectedNearWallet,
   DetectedSolanaWallet,
   DetectedStellarWallet,
+  DetectedTronWallet,
   DetectedWallet,
   Eip1193Like,
   InjectedNearWallet,

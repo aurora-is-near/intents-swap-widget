@@ -318,9 +318,9 @@ describe('memoPresentForStellar', () => {
   });
 
   it('allows an unknown origin for a standard that cannot be memo-mode', () => {
-    // erc191/raw_ed25519/nep413 provably never originate on a memo-mode
-    // chain, so an unresolved origin there is safe to pass.
-    ['erc191', 'raw_ed25519', 'nep413'].forEach((standard) => {
+    // erc191/raw_ed25519/nep413/tip191 provably never originate on a
+    // memo-mode chain, so an unresolved origin there is safe to pass.
+    ['erc191', 'raw_ed25519', 'nep413', 'tip191'].forEach((standard) => {
       expect(() =>
         guards.memoPresentForStellar(undefined, null, standard),
       ).not.toThrow();

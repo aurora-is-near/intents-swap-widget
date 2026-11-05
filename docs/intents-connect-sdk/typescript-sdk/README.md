@@ -113,7 +113,8 @@ The origin wallet signs, whatever the destination chain is.
 | `raw_ed25519` | Solana | ✅ |
 | `nep413` | NEAR | ✅ |
 | `sep53` | Stellar (Freighter, xBull, LOBSTR, Hana) | ✅ |
-| `tip191` / `ton_connect` | Tron / TON | ❌ not yet |
+| `tip191` | TRON (TronLink, `signMessageV2`); no public key, like erc191 | ✅ |
+| `ton_connect` | TON | ❌ not yet |
 
 ## SDK → HTTP API
 

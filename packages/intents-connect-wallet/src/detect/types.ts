@@ -1,7 +1,7 @@
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
 
 /** Wallet families that can be detected in a page. */
-export type DetectedFamily = 'evm' | 'sol' | 'near' | 'stellar';
+export type DetectedFamily = 'evm' | 'sol' | 'near' | 'stellar' | 'tron';
 
 /** An EIP-1193 provider as announced over EIP-6963. */
 export type Eip1193Like = {
@@ -91,11 +91,21 @@ export type DetectedStellarWallet = DetectedBase &
     family: 'stellar';
   };
 
+/**
+ * A TRON wallet, from `./detect/tron`'s source. A plug-in wallet, bound to
+ * its own `tronWeb`.
+ */
+export type DetectedTronWallet = DetectedBase &
+  PluggableWallet & {
+    family: 'tron';
+  };
+
 export type DetectedWallet =
   | DetectedEvmWallet
   | DetectedSolanaWallet
   | DetectedNearWallet
-  | DetectedStellarWallet;
+  | DetectedStellarWallet
+  | DetectedTronWallet;
 
 export type WalletDetectorSnapshot = {
   /** False until the first detection pass has settled. */

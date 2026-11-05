@@ -99,6 +99,40 @@ describe('erc191', () => {
   });
 });
 
+describe('tip191', () => {
+  const address = 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G';
+
+  it('signs payload_json verbatim, normalises v and omits publicKey', async () => {
+    const signMessage = vi.fn().mockResolvedValue(toHex(sig65(0x1b)));
+
+    const result = await signIntentsConnectPayload({
+      payload: payload('tip191'),
+      standard: 'tip191',
+      address,
+      providers: { tron: { address, signMessage } },
+    });
+
+    expect(signMessage).toHaveBeenCalledWith(PAYLOAD_JSON);
+    expect(result).toEqual({
+      signature: `secp256k1:${base58.encode(sig65(0))}`,
+    });
+  });
+
+  it('refuses a provider bound to another account before prompting', async () => {
+    const signMessage = vi.fn();
+
+    await expect(
+      signIntentsConnectPayload({
+        payload: payload('tip191'),
+        standard: 'tip191',
+        address,
+        providers: { tron: { address: 'TOTHER', signMessage } },
+      }),
+    ).rejects.toThrow(/does not match/);
+    expect(signMessage).not.toHaveBeenCalled();
+  });
+});
+
 describe('raw_ed25519', () => {
   const address = '7XSfQk6pYyBGZ3fT8Jd6mR2vNwUq9Lz1AaBbCcDdEeFf';
 
@@ -397,6 +431,22 @@ describe('signIntentsConnectText', () => {
       nonce: base64.encode(args.nonce),
     });
     expect(result.publicKey).toBe('ed25519:pub');
+  });
+
+  it('signs a tip191 delete like erc191, with no public key', async () => {
+    const signMessage = vi.fn().mockResolvedValue(toHex(sig65(0x1c)));
+
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'tip191',
+      address: 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G',
+      providers: { tron: { signMessage } },
+    });
+
+    expect(signMessage).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toEqual({
+      signature: `secp256k1:${base58.encode(sig65(1))}`,
+    });
   });
 
   it('signs a sep53 delete like any SEP-53 message, with its public key', async () => {

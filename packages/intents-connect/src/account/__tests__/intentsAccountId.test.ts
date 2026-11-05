@@ -73,7 +73,8 @@ describe('getWalletIntentsAccountId', () => {
     expect(getFamilyForStandard('raw_ed25519')).toBe('sol');
     expect(getFamilyForStandard('nep413')).toBe('near');
     expect(getFamilyForStandard('sep53')).toBe('stellar');
-    expect(getFamilyForStandard('tip191')).toBe(undefined);
+    expect(getFamilyForStandard('tip191')).toBe('tron');
+    expect(getFamilyForStandard('ton_connect')).toBe(undefined);
   });
 
   it('derives from a connected wallet', () => {
@@ -95,8 +96,8 @@ describe('getWalletIntentsAccountId', () => {
     expect(
       getWalletIntentsAccountId({
         // Not signable here yet: no family.
-        signingStandard: 'tip191' as never,
-        getAddress: () => 'TABC',
+        signingStandard: 'ton_connect' as never,
+        getAddress: () => 'UQABC',
       }),
     ).toBe(undefined);
     expect(getWalletIntentsAccountId(null)).toBe(undefined);
@@ -135,6 +136,42 @@ describe('Stellar', () => {
       getIntentsAccountId({
         family: 'stellar',
         address: 'SBCQUX3GUSB4ZKLTRWALQCEFSOXAX5R7IP2X3OUJ5D2CJWEO3S3YSULU',
+      }),
+    ).toBe(undefined);
+  });
+});
+
+describe('TRON', () => {
+  // TronGrid reports this account's address as 4189cbcb…89f3.
+  const ADDRESS = 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G';
+  const ID = '0x89cbcb2372e1c2fbc00f24895a406a0c722c89f3';
+
+  it('derives 0x and the 20 address bytes, as the MPC path names it', () => {
+    expect(getIntentsAccountId({ family: 'tron', address: ADDRESS })).toBe(ID);
+    expect(
+      getWalletIntentsAccountId({
+        signingStandard: 'tip191',
+        getAddress: () => ADDRESS,
+      }),
+    ).toBe(ID);
+  });
+
+  it('refuses what is not a mainnet base58 address', () => {
+    expect(getIntentsAccountId({ family: 'tron', address: 'TABC' })).toBe(
+      undefined,
+    );
+    // A hex address is not the base58 form wallets share.
+    expect(
+      getIntentsAccountId({
+        family: 'tron',
+        address: '4189cbcb2372e1c2fbc00f24895a406a0c722c89f3',
+      }),
+    ).toBe(undefined);
+    // A Solana address decodes to 32 bytes.
+    expect(
+      getIntentsAccountId({
+        family: 'tron',
+        address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
       }),
     ).toBe(undefined);
   });

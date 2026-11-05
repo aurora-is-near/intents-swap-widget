@@ -48,6 +48,21 @@ export type StellarProvider = {
   >;
 };
 
+/**
+ * A TRON wallet, as far as signing goes. Wallet packages adapt `tronWeb`
+ * onto it; nothing here depends on TronWeb.
+ */
+export type TronProvider = {
+  /** The base58 `T…` address it signs with, when known. */
+  address?: string;
+  /**
+   * TIP-191 (`tronWeb.trx.signMessageV2`): signs the UTF-8 text under the
+   * `"\x19TRON Signed Message:\n" + length` prefix, and returns `0x` + the
+   * 65-byte r‖s‖v signature in hex.
+   */
+  signMessage: (message: string) => Promise<string>;
+};
+
 export type NearSignedMessage = {
   accountId: string;
   publicKey: string;
@@ -67,5 +82,6 @@ export type Providers = {
   evm?: undefined | null | EvmProvider;
   sol?: undefined | null | SolanaProvider;
   stellar?: undefined | null | StellarProvider;
+  tron?: undefined | null | TronProvider;
   near?: undefined | null | (() => NearWalletBase);
 };

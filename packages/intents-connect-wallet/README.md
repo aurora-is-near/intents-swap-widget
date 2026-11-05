@@ -23,6 +23,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./solana` | Solana deposit transfer | `@solana/web3.js`, `@solana/spl-token` |
 | `./stellar` | Stellar transfer, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `./near` | NEAR deposit transfer | — (plain `fetch`) |
+| `./tron` | TRON deposit transfer, `toTronWalletConnector` | — (the wallet's own `tronWeb`) |
 | `./connect` | modal, presets, coordinator | `react`, `@headlessui/react` |
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
 | `./connect/near` | NEAR connector | `@hot-labs/near-connect` |
@@ -32,6 +33,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./detect/react` | `useDetectedWallets` | `react` |
 | `./detect/connector` | `toWalletConnector` for any detected wallet | `viem`, `@solana/web3.js`, `@solana/spl-token` |
 | `./detect/stellar` | Stellar wallets for detection (`stellarWallets`) | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
+| `./detect/tron` | TRON wallets for detection (`tronWallets`) | — |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -250,6 +252,27 @@ const { wallets } = useDetectedWallets({ sources });
 - **Its options** go under `stellar`: `{ stellar: { rpcEndpoints } }` for the
   transfer's Soroban RPC. Balances come from Horizon, through
   `intents-connect`'s `rpcs.stellar`.
+
+### TRON
+
+`./detect/tron`'s `tronWallets()` lists the wallets announced over TIP-6963
+(TronLink), or `window.tron` when none is. It needs no dependencies.
+
+- **Its own `tronWeb`.** Each wallet signs and sends with its provider's
+  `tronWeb`, never the global `window.tronWeb`, which other wallets
+  overwrite. That `tronWeb` exists only once the user connected the site, so
+  the account is read from it without a prompt.
+- **Connecting** calls `eth_requestAccounts`. TronLink can't revoke a site, so
+  disconnecting only forgets it here.
+- **Signing** is `tip191` (`signMessageV2`), checked against the account with
+  `verifyMessageV2` before it's submitted.
+- **The deposit** sends TRX with `sendTrx` or a TRC-20 with
+  `transfer(address,uint256)` (a 100 TRX fee limit), and follows it into a
+  block. It refuses a wallet on a test network, and a memo. A transfer
+  broadcast but not seen in time still returns its hash: failing would offer
+  a second one.
+- **Rejections.** TronLink rejects with the bare string "Confirmation declined
+  by user"; it's rethrown as an Error with code 4001.
 
 `./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near?, stellar? })`
 picks the adapter by family and hands it that family's options (e.g.

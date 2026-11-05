@@ -1,6 +1,6 @@
 ---
 icon: wallet
-description: "@aurora-is-near/intents-connect-wallet: wallet connection and deposit transfers for EVM, Solana, NEAR and Stellar."
+description: "@aurora-is-near/intents-connect-wallet: wallet connection and deposit transfers for EVM, Solana, NEAR, Stellar and TRON."
 ---
 
 # Wallet integrations
@@ -22,6 +22,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/solana` | `sol` transfer plugin, Solana step helpers | `@solana/web3.js @solana/spl-token` |
 | `/stellar` | `stellar` transfer plugin, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `/near` | `near` transfer plugin | none (uses `fetch`) |
+| `/tron` | `tron` transfer plugin, `toTronWalletConnector` | none (uses the wallet's own `tronWeb`) |
 | `/connect` | `WalletSelectorModal`, `useWalletSelector`, option presets | `react @headlessui/react` |
 | `/connect/appkit` | EVM + Solana connectors (Reown AppKit) | `react viem @reown/appkit @reown/appkit-adapter-ethers @reown/appkit-adapter-solana @solana/wallet-adapter-phantom @solana/wallet-adapter-solflare @solana/web3.js @solana/spl-token` |
 | `/connect/near` | NEAR connector (HOT, Meteor, MyNearWallet…) | `react @hot-labs/near-connect` |
@@ -31,6 +32,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/detect/react` | `useDetectedWallets()` | `react` |
 | `/detect/connector` | `toWalletConnector()` for a detected wallet of any family | `viem @solana/web3.js @solana/spl-token` |
 | `/detect/stellar` | `stellarWallets()`: Stellar wallets for detection (Freighter, xBull, LOBSTR, Hana) | `@creit.tech/stellar-wallets-kit @stellar/stellar-sdk` |
+| `/detect/tron` | `tronWallets()`: TRON wallets for detection (TronLink, others over TIP-6963) | none |
 
 Always install `@aurora-is-near/intents-connect` and `@aurora-is-near/intents-connect-wallet`.
 
@@ -207,6 +209,11 @@ const { connector, unsupportedReason } = detected
   - Only installed wallets are listed. Freighter is restored silently; xBull, LOBSTR and Hana ask on every read, so they're restored from the address remembered when the user connected them.
   - Before a signature is submitted, it's checked locally against the account (`isSep53Signature`). A wallet that signed with another account, or not as SEP-53 requires, fails with a named error.
   - Albedo and Rabet aren't included: they can't sign a message.
+- **TRON** comes from `/detect/tron`, the same way: `sources: [tronWallets()]`.
+  - Wallets announced over TIP-6963 (TronLink) are listed, or `window.tron` when none is.
+  - Each wallet is bound to its own `tronWeb`, never the global `window.tronWeb`, which other wallets overwrite. Its account is read from that `tronWeb`, which exists only once the user connected the site, so detection never prompts.
+  - TronLink can't revoke a site: disconnecting only forgets it here.
+  - Signatures are checked against the account (`verifyMessageV2`) before they're submitted. The deposit refuses a wallet on a test network, and a USDT transfer burns TRX for energy (about 13 TRX to a fresh address, unless the account has staked energy).
 
 ## Solana step helpers
 

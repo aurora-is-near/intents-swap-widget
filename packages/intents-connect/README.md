@@ -99,8 +99,8 @@ amount. Two ways out:
 subpath per chain). It supplies the address, signing standard, providers, and
 the deposit transfer.
 
-Signing standards implemented: `erc191`, `raw_ed25519`, `nep413`, `sep53`.
-`tip191` (Tron) and `ton_connect` (TON) are not yet covered.
+Signing standards implemented: `erc191`, `tip191`, `raw_ed25519`, `nep413`,
+`sep53`. `ton_connect` (TON) is not yet covered.
 
 ## Guards
 

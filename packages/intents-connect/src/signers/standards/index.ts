@@ -17,3 +17,4 @@ export {
   type Nep413SignArgs,
 } from '@/signers/standards/nep413';
 export { signSep53, type Sep53SignArgs } from '@/signers/standards/sep53';
+export { signTip191, type Tip191SignArgs } from '@/signers/standards/tip191';

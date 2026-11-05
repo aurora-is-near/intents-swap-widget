@@ -33,6 +33,7 @@
     "solana",
     "stellar",
     "near",
+    "tron",
     "connect",
     "detect"
   ],
@@ -43,6 +44,7 @@
     "./solana": "./dist/solana/index.js",
     "./stellar": "./dist/stellar/index.js",
     "./near": "./dist/near/index.js",
+    "./tron": "./dist/tron/index.js",
     "./connect": "./dist/connect/index.js",
     "./connect/appkit": "./dist/connect/appkit/index.js",
     "./connect/near": "./dist/connect/near/index.js",
@@ -51,7 +53,8 @@
     "./detect": "./dist/detect/index.js",
     "./detect/react": "./dist/detect/react/index.js",
     "./detect/connector": "./dist/detect/connector/index.js",
-    "./detect/stellar": "./dist/detect/stellar/index.js"
+    "./detect/stellar": "./dist/detect/stellar/index.js",
+    "./detect/tron": "./dist/detect/tron/index.js"
   },
   "peerDependencies": {
     "@aurora-is-near/intents-connect": "^7.28.0",

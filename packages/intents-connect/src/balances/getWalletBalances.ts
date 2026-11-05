@@ -5,6 +5,7 @@ import { readNearBalances } from '@/balances/near';
 import { resolveRpcs } from '@/balances/rpcs';
 import { readSolanaBalances } from '@/balances/solana';
 import { readStellarBalances } from '@/balances/stellar';
+import { readTronBalances } from '@/balances/tron';
 import { getBalanceFamily } from '@/balances/tokens';
 import type {
   BalanceToken,
@@ -41,6 +42,8 @@ export type GetWalletBalancesArgs = {
   tokens: readonly BalanceToken[];
   /** Reads EVM and Solana chains Alchemy indexes in one request. */
   alchemyApiKey?: string;
+  /** TronGrid's `TRON-PRO-API-KEY`: without one, ~1 request per second. */
+  tronGridApiKey?: string;
   /**
    * Per-chain endpoints, merged over `DEFAULT_RPCS` chain by chain. `near`
    * replaces the public NEAR endpoints.
@@ -64,9 +67,11 @@ const readChainByRpc = async (
     tokens: BalanceToken[];
     rpcs: ChainRpcUrls;
     intentsApi?: Pick<IntentsApi, 'nearRpcUrl'>;
+    tronGridApiKey?: string;
   } & BalanceTransportOptions,
 ): Promise<ChainRead> => {
-  const { address, tokens, rpcs, intentsApi, ...transport } = args;
+  const { address, tokens, rpcs, intentsApi, tronGridApiKey, ...transport } =
+    args;
 
   switch (family) {
     case 'evm':
@@ -91,6 +96,16 @@ const readChainByRpc = async (
           address,
           tokens,
           horizonUrls: rpcs.stellar ?? [],
+          ...transport,
+        }),
+      };
+    case 'tron':
+      return {
+        balances: await readTronBalances({
+          address,
+          tokens,
+          apiUrls: rpcs.tron ?? [],
+          apiKey: tronGridApiKey,
           ...transport,
         }),
       };
@@ -120,6 +135,7 @@ export const getWalletBalances = async ({
   address,
   tokens,
   alchemyApiKey,
+  tronGridApiKey,
   rpcs: customRpcs,
   intentsApi,
   ...transport
@@ -158,6 +174,7 @@ export const getWalletBalances = async ({
       tokens: chainTokens,
       rpcs,
       intentsApi,
+      tronGridApiKey,
       ...transport,
     }).then(
       ({ balances, partialError }) => {
