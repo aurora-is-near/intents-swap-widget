@@ -106,6 +106,9 @@ const DappLine = ({
 );
 
 /** A family's wallets, collapsible, open to start with. */
+/** The one wallet group shown open at first; the others start collapsed. */
+const OPEN_BY_DEFAULT: DetectedFamily = 'sol';
+
 const Group = ({
   family,
   children,
@@ -113,7 +116,7 @@ const Group = ({
   family: DetectedFamily;
   children: ReactNode;
 }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(family === OPEN_BY_DEFAULT);
 
   return (
     <section>
