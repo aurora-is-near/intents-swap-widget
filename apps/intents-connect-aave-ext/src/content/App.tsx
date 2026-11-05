@@ -9,6 +9,7 @@ import {
   evmRpcUrl,
   intentsApi,
   intentsConnectApi,
+  tonConnect,
   walletConnect,
   walletSources,
 } from '../config';
@@ -119,6 +120,7 @@ export const App = () => {
       destination={destination}
       sdk={SDK}
       walletConnect={walletConnect}
+      tonConnect={tonConnect}
       connectorOptions={connectorOptions}
       walletSources={walletSources}
     />

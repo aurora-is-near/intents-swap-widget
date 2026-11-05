@@ -15,6 +15,7 @@ import {
 } from '@aurora-is-near/intents-connect/react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 import type { WalletSource } from '@aurora-is-near/intents-connect-wallet/detect';
+import type { TonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 
 import {
@@ -53,8 +54,10 @@ type SupplyModalProps = {
   destination: SupplyDestination;
   /** Intents Connect: the API clients and options, minus the wallet. */
   sdk: Omit<IntentsConnectProviderProps, 'wallet' | 'children'>;
-  /** Offers phone wallets by QR when set. */
+  /** Offers EVM phone wallets by QR when set. */
   walletConnect?: WalletConnectClient;
+  /** Offers TON phone wallets by QR when set (extensions are detected). */
+  tonConnect?: TonConnectClient;
   /** Per-family adapter options, e.g. `{ sol: { rpcUrl } }`. Keep it stable. */
   connectorOptions?: WalletConnectorOptions;
   /** Detection sources for more families, e.g. `stellarWallets()`. Keep it stable. */
@@ -156,6 +159,7 @@ const SupplyFlow = ({
   dappWalletName,
   destination,
   walletConnect,
+  tonConnect,
   session,
 }: Omit<SupplyModalProps, 'sdk' | 'connectorOptions' | 'walletSources'> & {
   session: WalletSession;
@@ -336,6 +340,7 @@ const SupplyFlow = ({
           dappAccount={positionOwner}
           dappWalletName={dappWalletName}
           walletConnect={walletConnect}
+          tonConnect={tonConnect}
           onPicked={() => setScreen(null)}
         />
       );
@@ -446,6 +451,7 @@ const SupplySession = ({
 }: SupplyModalProps) => {
   const session = useWalletSession({
     walletConnect: props.walletConnect,
+    tonConnect: props.tonConnect,
     connectorOptions,
     walletSources,
   });

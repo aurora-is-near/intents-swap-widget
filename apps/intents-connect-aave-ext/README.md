@@ -44,7 +44,8 @@ The modal pays from any wallet the page can see: EVM wallets (EIP-6963),
 Solana wallets (Wallet Standard) and NEAR extension wallets, found by the
 SDK's `./detect` without prompting, Stellar wallets (Freighter, xBull, LOBSTR
 and Hana, from `./detect/stellar`), TRON wallets (TronLink, from
-`./detect/tron`), or a phone over WalletConnect.
+`./detect/tron`), TON wallet extensions (from `./detect/ton`), or a phone by
+QR code: EVM over WalletConnect, TON over TON Connect.
 
 - A wallet that already shares an account with app.aave.com (usually the one
   Aave uses) is picked without a prompt. Any other asks to connect first.
@@ -63,6 +64,18 @@ and Hana, from `./detect/stellar`), TRON wallets (TronLink, from
   2 TRX: the transfer's bandwidth and activating the fresh deposit address
   (1.1 TRX). A USDT deposit burns about 13 TRX for energy unless the account
   has staked energy; the form says so, and warns below 15 TRX.
+- TON pays from TON or USDT over TON Connect, with a session for extensions
+  and another for phones, so pairing a phone doesn't drop the extension. A
+  wallet has to share its public key and sign text (Tonkeeper and
+  MyTonWallet do). MAX keeps 0.1 TON; a USDT deposit attaches 0.05 TON for
+  fees, most of which comes back, and the form warns below 0.1 TON.
+- **The TON Connect manifest** is `tonconnect/tonconnect-manifest.json`,
+  served from GitHub at the pushed branch (`VITE_TONCONNECT_MANIFEST_URL`
+  overrides it). Wallets fetch it when connecting, so TON doesn't connect
+  until the branch is pushed; point it at `main` after merge.
+- `@ton/core` uses Node's global `Buffer`: the build gives each `@ton/*`
+  module the `buffer` package's (`vite.config.ts`), and Aave's page gets no
+  `window.Buffer`.
 - Phone pairing uses a dev Reown project with `app.aave.com` on its allowed
   domains (override with `VITE_WALLETCONNECT_PROJECT_ID`), so Aurora's
   shared project doesn't need it. The client runs under its own storage

@@ -26,6 +26,7 @@ const EXPLORER_TX: Record<string, string> = {
   near: 'https://nearblocks.io/txns/',
   stellar: 'https://stellar.expert/explorer/public/tx/',
   tron: 'https://tronscan.org/#/transaction/',
+  ton: 'https://tonviewer.com/transaction/',
 };
 
 /** A transaction on its chain's explorer, where one is known. */

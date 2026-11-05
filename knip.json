@@ -62,7 +62,8 @@
       ]
     },
     "apps/intents-connect-aave-ext": {
-      "entry": ["manifest.config.ts"]
+      "entry": ["manifest.config.ts"],
+      "ignoreDependencies": ["buffer"]
     }
   }
 }

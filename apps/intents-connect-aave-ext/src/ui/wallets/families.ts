@@ -7,4 +7,5 @@ export const FAMILY_LABEL: Record<DetectedFamily, string> = {
   near: 'NEAR',
   stellar: 'Stellar',
   tron: 'TRON',
+  ton: 'TON',
 };

@@ -1,15 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  PAIRING_TTL_MS,
-  type WalletConnectClient,
-  type WalletConnectPeer,
-} from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
+import { PAIRING_TTL_MS } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 
 import { Button, CopyButton, Skeleton } from '../ui';
 import { QrCode } from './QrCode';
 
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
+
+/** A phone pairing: WalletConnect's client and TON Connect's both fit. */
+export type Pairer<TPeer> = {
+  pair: (onUri: (uri: string) => void) => Promise<TPeer>;
+  abortPairing: () => Promise<void>;
+};
+
+/** What the screen says for one kind of phone wallet. */
+export type PairingCopy = {
+  /** Under the QR code: which wallets scan it. */
+  hint: string;
+  /** Names the copied link, e.g. "WalletConnect link". */
+  linkLabel: string;
+};
 
 type Step =
   | { name: 'pairing'; uri: string | null }
@@ -23,13 +33,15 @@ const countdown = (ms: number) =>
  * One pairing attempt: mounting starts it, unmounting abandons it, and a
  * new `key` retries.
  */
-const Pairing = ({
-  walletConnect,
+const Pairing = <TPeer,>({
+  pairer,
+  copy,
   onPaired,
   onRetry,
 }: {
-  walletConnect: WalletConnectClient;
-  onPaired: (peer: WalletConnectPeer) => void;
+  pairer: Pairer<TPeer>;
+  copy: PairingCopy;
+  onPaired: (peer: TPeer) => void;
   onRetry: () => void;
 }) => {
   const [step, setStep] = useState<Step>({ name: 'pairing', uri: null });
@@ -45,14 +57,14 @@ const Pairing = ({
     const expiry = setTimeout(() => {
       if (current) {
         current = false;
-        void walletConnect.abortPairing();
+        void pairer.abortPairing();
         setStep({ name: 'expired' });
       }
     }, PAIRING_TTL_MS);
 
     const tick = setInterval(() => setNow(Date.now()), 1000);
 
-    walletConnect
+    pairer
       .pair((uri) => {
         if (current) {
           setStep({ name: 'pairing', uri });
@@ -78,13 +90,13 @@ const Pairing = ({
     return () => {
       if (current) {
         current = false;
-        void walletConnect.abortPairing();
+        void pairer.abortPairing();
       }
 
       clearTimeout(expiry);
       clearInterval(tick);
     };
-  }, [walletConnect]);
+  }, [pairer]);
 
   if (step.name !== 'pairing') {
     return (
@@ -112,14 +124,13 @@ const Pairing = ({
         <Skeleton className="h-[256px] w-[256px]" />
       )}
       <p className="max-w-[320px] text-center text-text-secondary">
-        Scan with an EVM wallet on your phone (MetaMask, Rainbow, Trust,
-        Coinbase Wallet…), then approve the connection there.
+        {copy.hint}
       </p>
       <div className="flex h-6 items-center gap-3 text-text-muted">
         {step.uri ? (
           <span className="inline-flex items-center gap-1">
             Copy link
-            <CopyButton value={step.uri} label="WalletConnect link" />
+            <CopyButton value={step.uri} label={copy.linkLabel} />
           </span>
         ) : null}
         <span>Valid for {countdown(Math.max(0, deadline - now))}</span>
@@ -128,20 +139,23 @@ const Pairing = ({
   );
 };
 
-/** Pairs a phone wallet by QR code, over WalletConnect. */
-export const PairingScreen = ({
-  walletConnect,
+/** Pairs a phone wallet by QR code, over WalletConnect or TON Connect. */
+export const PairingScreen = <TPeer,>({
+  pairer,
+  copy,
   onPaired,
 }: {
-  walletConnect: WalletConnectClient;
-  onPaired: (peer: WalletConnectPeer) => void;
+  pairer: Pairer<TPeer>;
+  copy: PairingCopy;
+  onPaired: (peer: TPeer) => void;
 }) => {
   const [attempt, setAttempt] = useState(0);
 
   return (
     <Pairing
       key={attempt}
-      walletConnect={walletConnect}
+      pairer={pairer}
+      copy={copy}
       onPaired={onPaired}
       onRetry={() => setAttempt((value) => value + 1)}
     />

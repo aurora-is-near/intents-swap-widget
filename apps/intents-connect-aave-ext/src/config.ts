@@ -7,7 +7,9 @@ import { createWalletConnectClient } from '@aurora-is-near/intents-connect-walle
 import type { WalletSource } from '@aurora-is-near/intents-connect-wallet/detect';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 import { stellarWallets } from '@aurora-is-near/intents-connect-wallet/detect/stellar';
+import { tonWallets } from '@aurora-is-near/intents-connect-wallet/detect/ton';
 import { tronWallets } from '@aurora-is-near/intents-connect-wallet/detect/tron';
+import { createTonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 
 /** Empty counts as unset. */
 const env = (value: unknown) =>
@@ -58,13 +60,39 @@ export const intentsConnectApi = createIntentsConnectApi({
 export const intentsApi = createIntentsApi({ apiKey: INTENTS_API_KEY ?? '' });
 
 /**
+ * TON Connect's manifest, from this repo: wallets fetch it, phones included,
+ * so it must be public. It's on the pushed branch until merged, then `main`.
+ */
+const TON_MANIFEST_URL =
+  env(import.meta.env.VITE_TONCONNECT_MANIFEST_URL) ??
+  'https://raw.githubusercontent.com/aurora-is-near/intents-swap-widget/feat/aave-extension/apps/intents-connect-aave-ext/tonconnect/tonconnect-manifest.json';
+
+/**
+ * TON Connect holds one wallet per session, so extensions and phones get a
+ * session each: pairing a phone mustn't drop the extension in use. The
+ * prefixes keep their storage apart, and from any TON Connect app on the
+ * page. Nothing loads until the modal first uses them.
+ */
+const tonExtensions = createTonConnectClient({
+  manifestUrl: TON_MANIFEST_URL,
+  storagePrefix: 'aurora-intents.ton-extension',
+});
+
+/** TON phones, paired by QR code. */
+export const tonConnect = createTonConnectClient({
+  manifestUrl: TON_MANIFEST_URL,
+  storagePrefix: 'aurora-intents.ton-phone',
+});
+
+/**
  * Wallet families detection doesn't build in: Stellar (Freighter, xBull,
- * LOBSTR, Hana) and TRON (TronLink). Created once: the detector is keyed by
- * source ids.
+ * LOBSTR, Hana), TRON (TronLink) and TON extensions. Created once: the
+ * detector is keyed by source ids.
  */
 export const walletSources: readonly WalletSource[] = [
   stellarWallets(),
   tronWallets(),
+  tonWallets(tonExtensions),
 ];
 
 /** A module constant: the modal re-derives its connector when it changes. */

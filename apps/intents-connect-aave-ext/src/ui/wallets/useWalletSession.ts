@@ -19,6 +19,11 @@ import {
   type WalletConnectorOptions,
 } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 import { useDetectedWallets } from '@aurora-is-near/intents-connect-wallet/detect/react';
+import {
+  type TonConnectClient,
+  type TonPeer,
+  toTonWalletConnector,
+} from '@aurora-is-near/intents-connect-wallet/ton';
 
 /** The wallet the user pays from, remembered across reloads. */
 const CHOICE_KEY = 'aurora-intents.wallet';
@@ -28,7 +33,14 @@ const CHOICE_KEY = 'aurora-intents.wallet';
  */
 const PAIRED_KEY = 'aurora-intents.walletconnect.paired';
 
-type Choice = { kind: 'detected'; id: string } | { kind: 'walletconnect' };
+type Choice =
+  | { kind: 'detected'; id: string }
+  | { kind: 'walletconnect' }
+  | { kind: 'ton' };
+
+/** The TON session's wallet when it's a phone: extensions are detected. */
+const phoneOf = (peer: TonPeer | null) =>
+  peer && !peer.jsBridgeKey ? peer : null;
 
 const readItem = (key: string) => {
   try {
@@ -55,6 +67,7 @@ const readChoice = (): Choice | null => {
     const choice = JSON.parse(readItem(CHOICE_KEY) ?? 'null') as Choice | null;
 
     return choice?.kind === 'walletconnect' ||
+      choice?.kind === 'ton' ||
       (choice?.kind === 'detected' && typeof choice.id === 'string')
       ? choice
       : null;
@@ -80,30 +93,36 @@ export type WalletSession = {
   /** False until detection settled and a paired phone was restored. */
   ready: boolean;
   wallets: readonly DetectedWallet[];
-  /** The paired phone wallet, chosen or not. */
+  /** The paired EVM phone wallet, chosen or not. */
   peer: WalletConnectPeer | null;
+  /** The paired TON phone wallet, chosen or not. */
+  tonPeer: TonPeer | null;
   active: ActiveWallet | null;
   /** Why the chosen wallet can't be used, e.g. NEAR without a public key. */
   unsupportedReason?: UnsupportedReason;
   /** Picks a browser wallet, through its own prompt if it shares no account. */
   select: (wallet: DetectedWallet) => Promise<void>;
-  /** Picks the phone wallet: the one just paired, or the restored one. */
+  /** Picks the EVM phone wallet: the one just paired, or the restored one. */
   selectPhone: (peer: WalletConnectPeer) => void;
+  /** Picks the TON phone wallet. */
+  selectTonPhone: (peer: TonPeer) => void;
   /** Stops paying from the active wallet. */
   disconnect: () => Promise<void>;
 };
 
 /**
  * Which wallet pays: a browser wallet found by detection, or a phone paired
- * over WalletConnect. Nothing prompts until the user picks a wallet that
- * shares no account with the page yet.
+ * over WalletConnect (EVM) or TON Connect (TON). Nothing prompts until the
+ * user picks a wallet that shares no account with the page yet.
  */
 export const useWalletSession = ({
   walletConnect,
+  tonConnect,
   connectorOptions,
   walletSources,
 }: {
   walletConnect?: WalletConnectClient;
+  tonConnect?: TonConnectClient;
   connectorOptions?: WalletConnectorOptions;
   walletSources?: readonly WalletSource[];
 }): WalletSession => {
@@ -114,6 +133,9 @@ export const useWalletSession = ({
   const [peerReady, setPeerReady] = useState(
     () => !walletConnect || readItem(PAIRED_KEY) !== '1',
   );
+
+  const [tonPeer, setTonPeer] = useState<TonPeer | null>(null);
+  const [tonReady, setTonReady] = useState(!tonConnect);
 
   const setChoice = useCallback((next: Choice | null) => {
     setChoiceState(next);
@@ -147,6 +169,40 @@ export const useWalletSession = ({
     };
   }, [walletConnect]);
 
+  // The phones' TON Connect session, restored from storage: it reconnects
+  // to its bridge. Extensions have their own session, through detection.
+  useEffect(() => {
+    if (!tonConnect) {
+      return undefined;
+    }
+
+    let live = true;
+    const unsubscribe = tonConnect.onChange((next) =>
+      setTonPeer(phoneOf(next)),
+    );
+
+    tonConnect
+      .getPeer()
+      .then(
+        (restored) => {
+          if (live) {
+            setTonPeer(phoneOf(restored));
+          }
+        },
+        () => undefined,
+      )
+      .finally(() => {
+        if (live) {
+          setTonReady(true);
+        }
+      });
+
+    return () => {
+      live = false;
+      unsubscribe();
+    };
+  }, [tonConnect]);
+
   // The phone can end the session at any time.
   useEffect(
     () =>
@@ -166,6 +222,32 @@ export const useWalletSession = ({
     active: ActiveWallet | null;
     unsupportedReason?: UnsupportedReason;
   } => {
+    if (choice?.kind === 'ton') {
+      if (!tonPeer || !tonConnect) {
+        return { active: null };
+      }
+
+      const { connector, unsupportedReason } = toTonWalletConnector(
+        tonConnect,
+        tonPeer,
+        connectorOptions?.ton,
+      );
+
+      return connector
+        ? {
+            active: {
+              key: `ton-phone:${tonPeer.address}`,
+              name: tonPeer.name,
+              icon: tonPeer.icon,
+              family: 'ton',
+              address: tonPeer.address,
+              mobile: true,
+              connector,
+            },
+          }
+        : { active: null, unsupportedReason };
+    }
+
     if (choice?.kind === 'walletconnect') {
       return peer && walletConnect
         ? {
@@ -204,7 +286,15 @@ export const useWalletSession = ({
           },
         }
       : { active: null, unsupportedReason };
-  }, [choice?.kind, peer, walletConnect, chosen, connectorOptions]);
+  }, [
+    choice?.kind,
+    peer,
+    walletConnect,
+    tonPeer,
+    tonConnect,
+    chosen,
+    connectorOptions,
+  ]);
 
   const select = useCallback(
     async (wallet: DetectedWallet) => {
@@ -227,8 +317,19 @@ export const useWalletSession = ({
     [setChoice],
   );
 
+  const selectTonPhone = useCallback(
+    (paired: TonPeer) => {
+      setTonPeer(paired);
+      setChoice({ kind: 'ton' });
+    },
+    [setChoice],
+  );
+
   const disconnect = useCallback(async () => {
-    if (choice?.kind === 'walletconnect') {
+    if (choice?.kind === 'ton') {
+      await tonConnect?.disconnect().catch(() => undefined);
+      setTonPeer(null);
+    } else if (choice?.kind === 'walletconnect') {
       await walletConnect?.disconnect().catch(() => undefined);
       writeItem(PAIRED_KEY, null);
       setPeer(null);
@@ -245,15 +346,17 @@ export const useWalletSession = ({
     }
 
     setChoice(null);
-  }, [choice?.kind, chosen, walletConnect, refresh, setChoice]);
+  }, [choice?.kind, chosen, walletConnect, tonConnect, refresh, setChoice]);
 
   return {
-    ready: detection.ready && peerReady,
+    ready: detection.ready && peerReady && tonReady,
     wallets: detection.wallets,
     peer,
+    tonPeer,
     ...resolved,
     select,
     selectPhone,
+    selectTonPhone,
     disconnect,
   };
 };

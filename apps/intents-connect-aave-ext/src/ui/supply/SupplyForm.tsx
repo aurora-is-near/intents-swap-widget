@@ -43,15 +43,30 @@ const GAS_RESERVE: Record<string, string> = {
   stellar: '0.01',
   // Bandwidth, and 1.1 TRX to activate the fresh deposit address.
   tron: '2',
+  // A transfer costs well under 0.01 TON; storage fees keep accruing.
+  ton: '0.1',
 };
 
 /**
- * TRX a TRC-20 (USDT) deposit burns for energy without staked energy: about
- * 130k energy at 100 sun to a fresh deposit address.
+ * What a token (not gas-token) deposit costs in the chain's gas token, for
+ * chains where that's worth saying. `min`: below this the deposit may fail.
  */
-const TRC20_ENERGY_TRX = 13;
-/** Below this, a TRC-20 deposit is likely to run out of energy. */
-const TRC20_ENERGY_MIN_TRX = 15;
+const TOKEN_DEPOSIT_COST: Record<
+  string,
+  { min: number; says: (gas: string) => string }
+> = {
+  // About 130k energy at 100 sun to a fresh deposit address.
+  tron: {
+    min: 15,
+    says: (gas) =>
+      `burns about 13 ${gas} for energy, unless the account has staked energy`,
+  },
+  // A jetton transfer carries TON for its fees; the excess comes back.
+  ton: {
+    min: 0.1,
+    says: (gas) => `attaches 0.05 ${gas} for fees, most of which comes back`,
+  },
+};
 
 const maxSpend = ({ token, amount }: AssetRow): string => {
   if (token.contractAddress) {
@@ -339,20 +354,25 @@ export const SupplyForm = ({
 
   const refused = !preview && quote.error ? quote.error.message : '';
 
-  // A TRC-20 deposit pays its energy in TRX.
-  const trx =
-    token.blockchain === 'tron' && token.contractAddress
-      ? tokens.find(
-          (candidate) =>
-            candidate.blockchain === 'tron' && !candidate.contractAddress,
-        )
-      : undefined;
+  // A token deposit on some chains pays its fees in the gas token.
+  const depositCost = token.contractAddress
+    ? TOKEN_DEPOSIT_COST[token.blockchain]
+    : undefined;
 
-  const trxHeld = trx
-    ? fromAtomic(balances[trx.assetId] ?? '0', trx.decimals)
-    : '';
+  const gasToken = depositCost
+    ? tokens.find(
+        (candidate) =>
+          candidate.blockchain === token.blockchain &&
+          !candidate.contractAddress,
+      )
+    : undefined;
 
-  const lowOnEnergy = !!trx && Number(trxHeld) < TRC20_ENERGY_MIN_TRX;
+  const gasHeld = gasToken ? (balances[gasToken.assetId] ?? '0') : '0';
+  const lowOnGas =
+    !!depositCost &&
+    !!gasToken &&
+    Number(fromAtomic(gasHeld, gasToken.decimals)) < depositCost.min;
+
   const tooSmall = TOO_SMALL.test(refused);
   const noRoute = NO_ROUTE.test(refused);
 
@@ -487,13 +507,13 @@ export const SupplyForm = ({
         </p>
       ) : null}
 
-      {trx ? (
-        <Notice tone={lowOnEnergy ? 'warning' : 'info'}>
+      {depositCost && gasToken ? (
+        <Notice tone={lowOnGas ? 'warning' : 'info'}>
           <p className="text-text-secondary">
-            Sending {token.symbol} on TRON burns about {TRC20_ENERGY_TRX} TRX
-            for energy, unless the account has staked energy.
-            {lowOnEnergy
-              ? ` This wallet holds ${formatAmount(balances[trx.assetId] ?? '0', trx.decimals)} TRX, so the transfer may fail.`
+            Sending {token.symbol} on {chainLabel(token.blockchain)}{' '}
+            {depositCost.says(gasToken.symbol)}.
+            {lowOnGas
+              ? ` This wallet holds ${formatAmount(gasHeld, gasToken.decimals)} ${gasToken.symbol}, so the transfer may fail.`
               : null}
           </p>
         </Notice>

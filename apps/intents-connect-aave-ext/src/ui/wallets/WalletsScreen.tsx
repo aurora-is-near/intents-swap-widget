@@ -1,6 +1,10 @@
 import { type ReactNode, useState } from 'react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
-import type { DetectedFamily } from '@aurora-is-near/intents-connect-wallet/detect';
+import type {
+  DetectedFamily,
+  UnsupportedReason,
+} from '@aurora-is-near/intents-connect-wallet/detect';
+import type { TonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 
 import {
   BrowserIcon,
@@ -15,33 +19,55 @@ import {
 } from '../ui';
 import { FAMILY_LABEL } from './families';
 import { FamilyIcon } from './FamilyIcon';
-import { PairingScreen } from './PairingScreen';
+import { type Pairer, type PairingCopy, PairingScreen } from './PairingScreen';
 import type { WalletSession } from './useWalletSession';
 import { WalletIcon } from './WalletIcon';
 
-const UNSUPPORTED_COPY = {
+const UNSUPPORTED_COPY: Record<UnsupportedReason, string> = {
   NOT_CONNECTED: 'The wallet stopped sharing its account. Connect it again.',
   MISSING_PUBLIC_KEY:
-    "The NEAR wallet didn't share its public key. Connect it again.",
-} as const;
+    "The wallet didn't share its public key. Connect it again.",
+  NO_SIGN_DATA:
+    "This TON wallet can't sign messages, which a supply needs. Try Tonkeeper or MyTonWallet.",
+  WRONG_NETWORK: 'The TON wallet is on the testnet. Switch it to mainnet.',
+};
+
+const PHONE_COPY: Record<'evm' | 'ton', PairingCopy> = {
+  evm: {
+    hint: 'Scan with an EVM wallet on your phone (MetaMask, Rainbow, Trust, Coinbase Wallet…), then approve the connection there.',
+    linkLabel: 'WalletConnect link',
+  },
+  ton: {
+    hint: 'Scan with a TON wallet on your phone (Tonkeeper, MyTonWallet, Tonhub…), then approve the connection there.',
+    linkLabel: 'TON Connect link',
+  },
+};
 
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
 type Tab = 'browser' | 'qr';
 
-const TABS: { id: Tab; label: string; icon: ReactNode }[] = [
+const TABS: readonly [
+  { id: Tab; label: string; icon: ReactNode },
+  { id: Tab; label: string; icon: ReactNode },
+] = [
   { id: 'browser', label: 'Browser wallets', icon: <BrowserIcon /> },
   { id: 'qr', label: 'QR code', icon: <QrIcon /> },
 ];
 
-/** Two tabs over one sliding background. */
-const Tabs = ({
-  tab,
+/** Two choices over one sliding background. */
+const Segmented = <T extends string>({
+  items,
+  value,
   onChange,
 }: {
-  tab: Tab;
-  onChange: (tab: Tab) => void;
+  items: readonly [
+    { id: T; label: string; icon: ReactNode },
+    { id: T; label: string; icon: ReactNode },
+  ];
+  value: T;
+  onChange: (value: T) => void;
 }) => (
   <div
     role="tablist"
@@ -50,19 +76,19 @@ const Tabs = ({
       aria-hidden
       className={cx(
         'absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-md bg-white shadow-box transition-transform duration-200 ease-out',
-        tab === 'qr' && 'translate-x-full',
+        value === items[1].id && 'translate-x-full',
       )}
     />
-    {TABS.map(({ id, label, icon }) => (
+    {items.map(({ id, label, icon }) => (
       <button
         key={id}
         type="button"
         role="tab"
-        aria-selected={tab === id}
+        aria-selected={value === id}
         onClick={() => onChange(id)}
         className={cx(
           'relative flex h-8 items-center justify-center gap-1.5 rounded-md font-medium transition-colors',
-          tab === id
+          value === id
             ? 'text-text-primary'
             : 'text-text-muted hover:text-text-secondary',
         )}>
@@ -226,26 +252,32 @@ const Status = ({
  * A paired phone, or a new pairing. Pairing replaces the phone's session,
  * so it only starts on its own when there is none.
  */
-const PhoneTab = ({
-  session,
-  walletConnect,
-  onPicked,
+type PhonePeer = { address: string; name: string; icon?: string };
+
+/** One kind of phone wallet: its paired wallet, or a QR code to pair one. */
+const Phone = <TPeer extends PhonePeer>({
+  family,
+  peer,
+  pairer,
+  active,
+  onSelect,
 }: {
-  session: WalletSession;
-  walletConnect: WalletConnectClient;
-  onPicked: () => void;
+  family: 'evm' | 'ton';
+  /** The paired wallet, if any. */
+  peer: TPeer | null;
+  pairer: Pairer<TPeer>;
+  /** It's the wallet paying now. */
+  active: boolean;
+  onSelect: (peer: TPeer) => void;
 }) => {
-  const { peer, active } = session;
   const [pairing, setPairing] = useState(!peer);
 
   if (pairing || !peer) {
     return (
       <PairingScreen
-        walletConnect={walletConnect}
-        onPaired={(paired) => {
-          session.selectPhone(paired);
-          onPicked();
-        }}
+        pairer={pairer}
+        copy={PHONE_COPY[family]}
+        onPaired={onSelect}
       />
     );
   }
@@ -256,21 +288,86 @@ const PhoneTab = ({
         <Row
           icon={<WalletIcon name={peer.name} icon={peer.icon} />}
           title={peer.name}
-          tags={<Tag>EVM</Tag>}
+          tags={<Tag>{FAMILY_LABEL[family]}</Tag>}
           detail={truncateMiddle(peer.address)}
-          status={
-            <Status pending={false} active={!!active?.mobile} connected />
-          }
+          status={<Status pending={false} active={active} connected />}
           disabled={false}
-          onClick={() => {
-            session.selectPhone(peer);
-            onPicked();
-          }}
+          onClick={() => onSelect(peer)}
         />
       </ul>
       <Button variant="secondary" onClick={() => setPairing(true)}>
         <QrIcon /> Pair another phone
       </Button>
+    </div>
+  );
+};
+
+/** Phone wallets by QR code: EVM over WalletConnect, TON over TON Connect. */
+const PhoneTab = ({
+  session,
+  walletConnect,
+  tonConnect,
+  onPicked,
+}: {
+  session: WalletSession;
+  walletConnect?: WalletConnectClient;
+  tonConnect?: TonConnectClient;
+  onPicked: () => void;
+}) => {
+  const { peer, tonPeer, active } = session;
+  const [chain, setChain] = useState<'evm' | 'ton'>(() =>
+    !walletConnect || (active?.mobile && active.family === 'ton')
+      ? 'ton'
+      : 'evm',
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {walletConnect && tonConnect ? (
+        <Segmented
+          items={[
+            {
+              id: 'evm',
+              label: FAMILY_LABEL.evm,
+              icon: <FamilyIcon family="evm" />,
+            },
+            {
+              id: 'ton',
+              label: FAMILY_LABEL.ton,
+              icon: <FamilyIcon family="ton" />,
+            },
+          ]}
+          value={chain}
+          onChange={setChain}
+        />
+      ) : null}
+
+      {chain === 'ton' && tonConnect ? (
+        <Phone
+          key="ton"
+          family="ton"
+          peer={tonPeer}
+          pairer={tonConnect}
+          active={!!active?.mobile && active.family === 'ton'}
+          onSelect={(paired) => {
+            session.selectTonPhone(paired);
+            onPicked();
+          }}
+        />
+      ) : null}
+      {chain === 'evm' && walletConnect ? (
+        <Phone
+          key="evm"
+          family="evm"
+          peer={peer}
+          pairer={walletConnect}
+          active={!!active?.mobile && active.family === 'evm'}
+          onSelect={(paired) => {
+            session.selectPhone(paired);
+            onPicked();
+          }}
+        />
+      ) : null}
     </div>
   );
 };
@@ -286,6 +383,7 @@ export const WalletsScreen = ({
   dappAccount,
   dappWalletName,
   walletConnect,
+  tonConnect,
   onPicked,
 }: {
   session: WalletSession;
@@ -294,8 +392,10 @@ export const WalletsScreen = ({
   dappAccount: string | null;
   /** The dApp's name for its wallet, for when detection can't see it. */
   dappWalletName?: string;
-  /** Offers the QR code tab when set. */
+  /** Offers EVM phones in the QR code tab when set. */
   walletConnect?: WalletConnectClient;
+  /** Offers TON phones in the QR code tab when set. */
+  tonConnect?: TonConnectClient;
   onPicked: () => void;
 }) => {
   const { wallets, active, unsupportedReason } = session;
@@ -370,7 +470,7 @@ export const WalletsScreen = ({
       {wallets.length === 0 ? (
         <Notice tone="info">
           No browser wallet found. Install MetaMask, Phantom or HOT and reload
-          {walletConnect ? ', or use the QR code' : ''}.
+          {(walletConnect ?? tonConnect) ? ', or use the QR code' : ''}.
         </Notice>
       ) : null}
     </>
@@ -387,13 +487,16 @@ export const WalletsScreen = ({
         />
       ) : null}
 
-      {walletConnect ? <Tabs tab={tab} onChange={setTab} /> : null}
+      {(walletConnect ?? tonConnect) ? (
+        <Segmented items={TABS} value={tab} onChange={setTab} />
+      ) : null}
 
       <div className="-mx-1 flex max-h-[min(56vh,420px)] flex-col gap-4 overflow-y-auto px-1 pt-1 pb-1">
-        {tab === 'qr' && walletConnect ? (
+        {tab === 'qr' && (walletConnect ?? tonConnect) ? (
           <PhoneTab
             session={session}
             walletConnect={walletConnect}
+            tonConnect={tonConnect}
             onPicked={onPicked}
           />
         ) : (

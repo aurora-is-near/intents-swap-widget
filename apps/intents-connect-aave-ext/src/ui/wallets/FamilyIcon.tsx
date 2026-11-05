@@ -5,7 +5,8 @@ type Mark = string | { stroke: string };
 
 /**
  * Black and white marks: Ethereum's diamond, Solana's bars, NEAR's N,
- * Stellar's ring crossed by two stripes, TRON's faceted triangle.
+ * Stellar's ring crossed by two stripes, TRON's faceted triangle, TON's
+ * diamond.
  */
 const MARKS: Record<DetectedFamily, Mark> = {
   evm: 'M12 2 5.5 12.3 12 16l6.5-3.7L12 2Zm-6.5 11.6L12 22l6.5-8.4L12 17.3l-6.5-3.7Z',
@@ -19,6 +20,8 @@ const MARKS: Record<DetectedFamily, Mark> = {
   tron: {
     stroke: 'M3 3.5 21 8.5 11 21 3 3.5Zm0 0 13.5 6.8L11 21m5.5-10.7L21 8.5',
   },
+  // A triangle pointing down, split down the middle.
+  ton: { stroke: 'M4.5 4.5h15L12 20.5 4.5 4.5Zm7.5 0v16' },
 };
 
 export const FamilyIcon = ({
