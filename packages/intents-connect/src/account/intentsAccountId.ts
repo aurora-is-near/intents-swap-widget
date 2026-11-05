@@ -6,7 +6,13 @@ import type { SigningStandard } from '@/types/signing';
 import type { WalletConnector } from '@/types/wallet';
 
 /** The wallet families an intents account can be derived for. */
-export type IntentsAccountFamily = 'evm' | 'sol' | 'near' | 'stellar' | 'tron';
+export type IntentsAccountFamily =
+  | 'evm'
+  | 'sol'
+  | 'near'
+  | 'stellar'
+  | 'tron'
+  | 'ton';
 
 const EVM_ADDRESS = /^0x[0-9a-f]{40}$/i;
 // NEAR account ids: 2-64 chars of lowercase alphanumerics separated by single
@@ -31,6 +37,8 @@ const decodeSolanaAddress = (address: string): Uint8Array | undefined => {
  * - Stellar: the hex of the 32-byte public key the `G…` StrKey encodes.
  * - TRON: `0x` and the hex of the 20 address bytes the `T…` address encodes,
  *   which is how the MPC path names it.
+ * - TON: none from the address. It's the hex of the wallet's public key,
+ *   which a TON address doesn't carry.
  *
  * Returns `undefined` for an address that does not fit its family, rather than
  * deriving an id nobody can sign for.
@@ -91,6 +99,7 @@ const FAMILY_BY_STANDARD: Partial<
   nep413: 'near',
   sep53: 'stellar',
   tip191: 'tron',
+  ton_connect: 'ton',
 };
 
 /** The account family a signing standard proves ownership for. */

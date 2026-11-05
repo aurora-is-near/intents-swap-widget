@@ -92,7 +92,7 @@ Common guard codes:
 | `RECIPIENT_NOT_ALLOWED` | `quote.recipient` was set on a bridge-in |
 | `MEMO_REQUIRED` | Stellar deposit without a memo |
 | `NO_TRANSFER_IMPLEMENTATION` | `depositViaWallet: true`, but there's no transfer ([Wallet integrations](../wallet-integrations.md)) |
-| `UNSUPPORTED_SIGNING_STANDARD` | The wallet uses `ton_connect` |
+| `UNSUPPORTED_SIGNING_STANDARD` | The wallet signs with a standard this version can't (one the API added since) |
 | `FEE_EXCEEDS_AMOUNT` | Steps-only: the fee would eat the whole amount |
 
 ## Recovery

@@ -32,7 +32,7 @@ export const resolveIdentity = async (
 
 /**
  * The connector's standard must be signable BEFORE anything is created: a
- * real create for a standard we cannot sign (ton_connect) would
+ * real create for a standard we cannot sign (a new one the API adds) would
  * strand an execution holding the in-flight lock.
  */
 export const assertSignableStandard = (ctx: RunnerCtx) => {

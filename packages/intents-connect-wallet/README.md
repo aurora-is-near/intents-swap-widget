@@ -24,6 +24,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./stellar` | Stellar transfer, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `./near` | NEAR deposit transfer | — (plain `fetch`) |
 | `./tron` | TRON deposit transfer, `toTronWalletConnector` | — (the wallet's own `tronWeb`) |
+| `./ton` | TON Connect client (extensions and phone QR), TON deposit transfer, `toTonWalletConnector` | `@tonconnect/sdk`, `@ton/core`, `@ton/crypto` (and a global `Buffer`) |
 | `./connect` | modal, presets, coordinator | `react`, `@headlessui/react` |
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
 | `./connect/near` | NEAR connector | `@hot-labs/near-connect` |
@@ -34,6 +35,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./detect/connector` | `toWalletConnector` for any detected wallet | `viem`, `@solana/web3.js`, `@solana/spl-token` |
 | `./detect/stellar` | Stellar wallets for detection (`stellarWallets`) | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
 | `./detect/tron` | TRON wallets for detection (`tronWallets`) | — |
+| `./detect/ton` | TON wallet extensions for detection (`tonWallets(client)`) | as `./ton` |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -274,7 +276,48 @@ const { wallets } = useDetectedWallets({ sources });
 - **Rejections.** TronLink rejects with the bare string "Confirmation declined
   by user"; it's rethrown as an Error with code 4001.
 
-`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near?, stellar? })`
+### TON
+
+A client is one TON Connect session, which holds one wallet: give
+extensions and phones a client each, so pairing a phone doesn't drop the
+extension in use.
+
+```ts
+import { createTonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
+import { tonWallets } from '@aurora-is-near/intents-connect-wallet/detect/ton';
+
+// Wallets fetch the manifest (url, name, iconUrl): it must be public.
+const extensions = createTonConnectClient({ manifestUrl, storagePrefix: 'my-app.ton-extension' });
+const phones = createTonConnectClient({ manifestUrl, storagePrefix: 'my-app.ton-phone' });
+const sources = [tonWallets(extensions)]; // installed extensions
+
+// A phone: show `uri` as a QR code; resolves once the wallet approves.
+const peer = await phones.pair((uri) => showQr(uri));
+const { connector } = toTonWalletConnector(phones, peer);
+```
+
+- **The session** is restored from storage (`getPeer`), once. TON Connect's
+  storage keys are fixed, so `storagePrefix` keeps sessions apart from each
+  other and from another TON Connect app on the origin. A new connection on
+  a client replaces its old one.
+- **The account.** Addresses are user-friendly and non-bounceable (`UQ…`)
+  everywhere. A wallet is refused without its public key
+  (`MISSING_PUBLIC_KEY`: a TON address doesn't carry it), without text
+  signing (`NO_SIGN_DATA`) or on the testnet (`WRONG_NETWORK`).
+- **Signing** is `ton_connect`: TON Connect's `signData({ type: 'text' })`,
+  with the public key and the `tonConnect` envelope the wallet chose.
+- **The deposit** sends TON non-bounceable, so it can't bounce off a deposit
+  address that isn't deployed yet, or a jetton (USDT) through the sender's
+  jetton wallet (found on toncenter) with 0.05 TON attached for fees. It
+  returns the hash of the transaction the message landed in, found by its
+  normalized hash (TEP-467); if that doesn't show up in time, the message
+  hash, since failing would offer a second transfer.
+- **Rejections** come back with code 4001 (`UserRejectsError`).
+- **`Buffer`.** `@ton/core` calls `Buffer` when it loads: give the browser
+  one (the `buffer` package), scoped to your bundle if it's injected into
+  another page.
+
+`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near?, stellar?, ton? })`
 picks the adapter by family and hands it that family's options (e.g.
 `{ sol: { rpcUrl } }`). It pulls every family's transfer code, so it needs
 the peers of `./evm` and `./solana`.

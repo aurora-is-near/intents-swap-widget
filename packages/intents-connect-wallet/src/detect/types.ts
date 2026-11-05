@@ -1,7 +1,13 @@
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
 
 /** Wallet families that can be detected in a page. */
-export type DetectedFamily = 'evm' | 'sol' | 'near' | 'stellar' | 'tron';
+export type DetectedFamily =
+  | 'evm'
+  | 'sol'
+  | 'near'
+  | 'stellar'
+  | 'tron'
+  | 'ton';
 
 /** An EIP-1193 provider as announced over EIP-6963. */
 export type Eip1193Like = {
@@ -100,12 +106,22 @@ export type DetectedTronWallet = DetectedBase &
     family: 'tron';
   };
 
+/**
+ * A TON wallet extension, from `./detect/ton`'s source over a TON Connect
+ * client. A plug-in wallet.
+ */
+export type DetectedTonWallet = DetectedBase &
+  PluggableWallet & {
+    family: 'ton';
+  };
+
 export type DetectedWallet =
   | DetectedEvmWallet
   | DetectedSolanaWallet
   | DetectedNearWallet
   | DetectedStellarWallet
-  | DetectedTronWallet;
+  | DetectedTronWallet
+  | DetectedTonWallet;
 
 export type WalletDetectorSnapshot = {
   /** False until the first detection pass has settled. */
@@ -172,5 +188,9 @@ export type WalletDetector = {
 export type UnsupportedReason =
   /** No account is shared with this site. */
   | 'NOT_CONNECTED'
-  /** NEAR: the wallet did not report the account's public key. */
-  | 'MISSING_PUBLIC_KEY';
+  /** NEAR or TON: the wallet did not report the account's public key. */
+  | 'MISSING_PUBLIC_KEY'
+  /** TON: the wallet can't sign text (TON Connect's SignData). */
+  | 'NO_SIGN_DATA'
+  /** TON: the wallet is on the testnet. */
+  | 'WRONG_NETWORK';

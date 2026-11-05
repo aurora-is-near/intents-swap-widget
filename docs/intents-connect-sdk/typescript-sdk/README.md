@@ -114,7 +114,7 @@ The origin wallet signs, whatever the destination chain is.
 | `nep413` | NEAR | ✅ |
 | `sep53` | Stellar (Freighter, xBull, LOBSTR, Hana) | ✅ |
 | `tip191` | TRON (TronLink, `signMessageV2`); no public key, like erc191 | ✅ |
-| `ton_connect` | TON | ❌ not yet |
+| `ton_connect` | TON (TON Connect sign-data text); public key and the `tonConnect` envelope sent | ✅ |
 
 ## SDK → HTTP API
 

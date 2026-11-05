@@ -31,7 +31,7 @@ export const isNativeToken = (token: BalanceToken): boolean =>
   (token.blockchain !== 'near' && !token.contractAddress);
 
 /**
- * Keeps the tokens a supported wallet (EVM, Solana, NEAR, Stellar, TRON) can hold, with
+ * Keeps the tokens a supported wallet (EVM, Solana, NEAR, Stellar, TRON, TON) can hold, with
  * lower-cased chain slugs, and adds native NEAR next to wNEAR.
  */
 export const normalizeTokens = (

@@ -25,6 +25,7 @@ export const IntentsConnectProvider = ({
   intentsApi,
   alchemyApiKey,
   tronGridApiKey,
+  tonCenterApiKey,
   rpcs,
   sessionStorage,
   verificationStorage,
@@ -97,6 +98,7 @@ export const IntentsConnectProvider = ({
         intentsApi={intentsApi}
         alchemyApiKey={alchemyApiKey}
         tronGridApiKey={tronGridApiKey}
+        tonCenterApiKey={tonCenterApiKey}
         rpcs={rpcs}
         sessionStorage={sessionStorage}
         verificationStorage={verificationStorage}

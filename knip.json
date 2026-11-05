@@ -31,6 +31,8 @@
         "@solana/wallet-adapter-solflare",
         "@solana/web3.js",
         "@stellar/stellar-sdk",
+        "@ton/core",
+        "@tonconnect/sdk",
         "react",
         "viem"
       ]

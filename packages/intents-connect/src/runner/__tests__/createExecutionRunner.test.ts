@@ -330,6 +330,91 @@ describe('createExecutionRunner — a TRON wallet', () => {
   });
 });
 
+describe('createExecutionRunner — a TON wallet', () => {
+  const TON_ADDRESS = 'UQBNrjsFcpvNu5LZWuTuYQiQC0VeiBOmogFAzrP7AJOnWsaE';
+  const PUBLIC_KEY = 'ed25519:4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi';
+  const TON_USDT = 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs';
+
+  it('creates with the public key, submits the envelope and deposits with no memo', async () => {
+    const tonExecution = execution();
+
+    tonExecution.details = {
+      ...tonExecution.details,
+      signingStandard: 'ton_connect',
+      payload: { ...tonExecution.details.payload!, standard: 'ton_connect' },
+    };
+
+    const signText = vi.fn().mockResolvedValue({
+      signature: base64.encode(new Uint8Array(64).fill(7)),
+      address: TON_ADDRESS,
+      domain: 'app.aave.com',
+      timestamp: 1_793_900_000,
+    });
+
+    const makeTransfer = vi.fn().mockResolvedValue({ hash: 'tontx' });
+    const api = makeApi({
+      createExecution: vi.fn().mockResolvedValue(tonExecution),
+      getIntermediary: vi.fn().mockResolvedValue({
+        originAccount: TON_ADDRESS,
+        originType: 'ton',
+        evm: INTERMEDIARY,
+        solana: null,
+      }),
+    });
+
+    const result = await createExecutionRunner({
+      api,
+      wallet: {
+        id: 'ton:tonkeeper',
+        name: 'Tonkeeper',
+        chains: ['ton'],
+        signingStandard: 'ton_connect',
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+        getAddress: () => TON_ADDRESS,
+        getPublicKey: () => PUBLIC_KEY,
+        getProviders: () => ({
+          ton: { address: TON_ADDRESS, publicKey: PUBLIC_KEY, signText },
+        }),
+        makeTransfer,
+      },
+      logger: noopLogger,
+      pollIntervalMs: 0,
+    }).run({
+      ...basePlan,
+      quote: {
+        ...basePlan.quote,
+        // HOT-bridged: the asset id doesn't name its chain.
+        originAsset:
+          'nep245:v2_1.omni.hot.tg:1117_3tsdfyziyc7EJbP2aULWSKU4toBaAcN4FdTgfm5W1mC4ouR',
+      },
+      originChain: 'ton',
+      originToken: { contractAddress: TON_USDT, decimals: 6 },
+    });
+
+    expect(result.status).toBe('SUCCESS');
+
+    const [, created] = vi.mocked(api.createExecution).mock.calls[0]!;
+
+    expect(created.publicKey).toBe(PUBLIC_KEY);
+
+    const [, submitted] = vi.mocked(api.submitSignature).mock.calls[0]!;
+
+    expect(submitted).toMatchObject({
+      publicKey: PUBLIC_KEY,
+      tonConnect: {
+        address: TON_ADDRESS,
+        domain: 'app.aave.com',
+        timestamp: 1_793_900_000,
+      },
+    });
+    expect(makeTransfer).toHaveBeenCalledWith(
+      expect.objectContaining({ chain: 'ton', tokenAddress: TON_USDT }),
+    );
+    expect(makeTransfer.mock.calls[0]![0]).not.toHaveProperty('memo', 'x');
+  });
+});
+
 describe('createExecutionRunner — QR / exchange path', () => {
   it('exposes the deposit address but never transfers or records', async () => {
     const { events, onEvent } = collect();

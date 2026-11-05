@@ -14,6 +14,7 @@ import {
   signRawEd25519,
   signSep53,
   signTip191,
+  signTonConnect,
   toBase64,
 } from '@/signers/standards';
 
@@ -57,7 +58,8 @@ const parseNep413Payload = (payloadJson: string): Nep413Payload => {
  * Which field to sign differs per standard, and getting it wrong produces a
  * signature the backend rejects with no useful diagnostic:
  *
- * - `erc191` / `tip191` / `sep53` — `payload_json`, verbatim as a string.
+ * - `erc191` / `tip191` / `sep53` / `ton_connect` — `payload_json`, verbatim
+ *   as a string (sign-data `text` for TON).
  * - `raw_ed25519` — the DECODED bytes of `payload_bytes_base64`.
  * - `nep413` — `payload_json` parsed into `{ message, recipient, nonce }`.
  */
@@ -115,6 +117,13 @@ export const signIntentsConnectPayload = async ({
         decodePublicKey,
       });
 
+    case 'ton_connect':
+      return signTonConnect({
+        message: payload.payload_json,
+        provider: requireProvider(providers.ton, standard),
+        expectedAddress: address,
+      });
+
     default:
       return failGuard(
         'UNSUPPORTED_SIGNING_STANDARD',
@@ -156,8 +165,9 @@ const randomNonce = (): Uint8Array => {
  * signed, and omitting the block is a 400.
  *
  * `sep53` signs the text like any SEP-53 message and sends its public key,
- * and `tip191` signs it like erc191, with none: the delete endpoint accepts
- * both (checked against the alpha service).
+ * `tip191` signs it like erc191, with none, and `ton_connect` signs it as
+ * sign-data text, with its public key and envelope: the delete endpoint
+ * accepts all three (checked against the alpha service).
  */
 export const signIntentsConnectText = async ({
   text,
@@ -221,6 +231,13 @@ export const signIntentsConnectText = async ({
             'UNSUPPORTED_SIGNING_STANDARD',
             'sep53 needs the connector to decode its public key',
           ),
+      });
+
+    case 'ton_connect':
+      return signTonConnect({
+        message: text,
+        provider: requireProvider(providers.ton, standard),
+        expectedAddress: address,
       });
 
     default:

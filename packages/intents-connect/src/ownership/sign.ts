@@ -17,6 +17,13 @@ export type SignOwnershipProofOptions = NearRpcOptions & {
   now?: () => number;
 };
 
+/** The standards an ownership proof can be signed with. */
+const OWNERSHIP_STANDARDS: ReadonlySet<string> = new Set([
+  'erc191',
+  'raw_ed25519',
+  'nep413',
+]);
+
 /**
  * Signs an empty intent proving the wallet controls its intents account.
  *
@@ -50,7 +57,7 @@ export const signOwnershipProof = async (
 
   const family = getFamilyForStandard(signingStandard);
 
-  if (!family) {
+  if (!family || !OWNERSHIP_STANDARDS.has(signingStandard)) {
     throw new OwnershipError(
       'UNSUPPORTED_STANDARD',
       `ownership proofs are not supported for ${signingStandard}`,

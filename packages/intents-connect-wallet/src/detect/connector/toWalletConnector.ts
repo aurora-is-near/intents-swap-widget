@@ -27,6 +27,12 @@ export type WalletConnectorOptions = {
     /** Soroban RPCs for deposit transfers, tried in order. */
     rpcEndpoints?: readonly string[];
   };
+  ton?: {
+    /** toncenter-compatible endpoints, for jetton wallets and confirmation. */
+    toncenterUrls?: readonly string[];
+    /** toncenter's `X-API-Key`. */
+    toncenterApiKey?: string;
+  };
 };
 
 /**

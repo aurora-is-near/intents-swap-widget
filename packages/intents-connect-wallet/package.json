@@ -34,6 +34,7 @@
     "stellar",
     "near",
     "tron",
+    "ton",
     "connect",
     "detect"
   ],
@@ -45,6 +46,7 @@
     "./stellar": "./dist/stellar/index.js",
     "./near": "./dist/near/index.js",
     "./tron": "./dist/tron/index.js",
+    "./ton": "./dist/ton/index.js",
     "./connect": "./dist/connect/index.js",
     "./connect/appkit": "./dist/connect/appkit/index.js",
     "./connect/near": "./dist/connect/near/index.js",
@@ -54,7 +56,8 @@
     "./detect/react": "./dist/detect/react/index.js",
     "./detect/connector": "./dist/detect/connector/index.js",
     "./detect/stellar": "./dist/detect/stellar/index.js",
-    "./detect/tron": "./dist/detect/tron/index.js"
+    "./detect/tron": "./dist/detect/tron/index.js",
+    "./detect/ton": "./dist/detect/ton/index.js"
   },
   "peerDependencies": {
     "@aurora-is-near/intents-connect": "^7.28.0",
@@ -69,6 +72,8 @@
     "@solana/wallet-adapter-solflare": "^0.6.32",
     "@solana/web3.js": "^1.98.4",
     "@stellar/stellar-sdk": "^14.6.1",
+    "@ton/core": ">=0.60.0",
+    "@tonconnect/sdk": "^3.3.1",
     "@walletconnect/universal-provider": "^2.23.7",
     "react": ">=18.2.0",
     "viem": "^2.55.0"
@@ -107,6 +112,12 @@
     "@stellar/stellar-sdk": {
       "optional": true
     },
+    "@ton/core": {
+      "optional": true
+    },
+    "@tonconnect/sdk": {
+      "optional": true
+    },
     "@walletconnect/universal-provider": {
       "optional": true
     },
@@ -133,6 +144,8 @@
     "react": "^18.2.0",
     "viem": "2.55.19",
     "react-dom": "^18.2.0",
-    "@walletconnect/universal-provider": "2.23.7"
+    "@walletconnect/universal-provider": "2.23.7",
+    "@tonconnect/sdk": "3.3.1",
+    "@ton/core": "^0.62.0"
   }
 }

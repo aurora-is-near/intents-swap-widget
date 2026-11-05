@@ -27,6 +27,8 @@ export const DEFAULT_RPCS: Readonly<Record<string, readonly string[]>> = {
   stellar: ['https://horizon.stellar.org'],
   // TronGrid's account API (`/v1/accounts/{T…}`), not a full node's.
   tron: ['https://api.trongrid.io'],
+  // toncenter's v3 API (`walletInformation`, `jetton/wallets`).
+  ton: ['https://toncenter.com'],
   sol: [
     'https://solana-rpc.publicnode.com',
     'https://api.mainnet-beta.solana.com',

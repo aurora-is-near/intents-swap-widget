@@ -26,6 +26,8 @@ export type IntentsAccountProps = {
   alchemyApiKey?: string;
   /** TronGrid's API key, for TRON balances: without one, ~1 request/s. */
   tronGridApiKey?: string;
+  /** toncenter's API key, for TON balances: without one, ~1 request/s. */
+  tonCenterApiKey?: string;
   /** Per-chain RPC endpoints, merged over `DEFAULT_RPCS`. */
   rpcs?: ChainRpcUrls;
   /**
@@ -44,7 +46,7 @@ export type IntentsAccountProps = {
 
 export type IntentsAccountConfig = Pick<
   IntentsAccountProps,
-  'intentsApi' | 'alchemyApiKey' | 'tronGridApiKey' | 'rpcs'
+  'intentsApi' | 'alchemyApiKey' | 'tronGridApiKey' | 'tonCenterApiKey' | 'rpcs'
 > & {
   /** The Intents Connect API of the surrounding provider. */
   connectApi?: IntentsConnectApi;

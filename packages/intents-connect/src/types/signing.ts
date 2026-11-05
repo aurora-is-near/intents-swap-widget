@@ -18,11 +18,11 @@ export type SigningStandard =
   | 'raw_ed25519' // Solana   ed25519   — publicKey required; sign payload bytes
   | 'nep413' // NEAR     ed25519   — publicKey required; sign {message,recipient,nonce}
   | 'sep53' // Stellar  ed25519   — publicKey required (StrKey-decoded)
-  | 'ton_connect'; // TON      ed25519   — not implemented yet; needs the tonConnect envelope
+  | 'ton_connect'; // TON      ed25519   — publicKey required, plus the tonConnect envelope
 
 export type SupportedSigningStandard = Extract<
   SigningStandard,
-  'erc191' | 'tip191' | 'raw_ed25519' | 'nep413' | 'sep53'
+  'erc191' | 'tip191' | 'raw_ed25519' | 'nep413' | 'sep53' | 'ton_connect'
 >;
 
 const SUPPORTED_SIGNING_STANDARDS: readonly SupportedSigningStandard[] = [
@@ -31,13 +31,12 @@ const SUPPORTED_SIGNING_STANDARDS: readonly SupportedSigningStandard[] = [
   'raw_ed25519',
   'nep413',
   'sep53',
+  'ton_connect',
 ];
 
 /**
  * Standards whose `/submit` body must carry a `publicKey`: ed25519 cannot
- * recover a key from a signature. Includes `ton_connect` even though signing it
- * is unimplemented — the asymmetry is a property of the curve, not of our
- * coverage.
+ * recover a key from a signature.
  */
 export const ED25519_STANDARDS: readonly SigningStandard[] = [
   'raw_ed25519',

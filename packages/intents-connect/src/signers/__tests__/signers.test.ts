@@ -133,6 +133,73 @@ describe('tip191', () => {
   });
 });
 
+describe('ton_connect', () => {
+  const address = 'UQBNrjsFcpvNu5LZWuTuYQiQC0VeiBOmogFAzrP7AJOnWsaE';
+  const publicKey = base58.encode(Uint8Array.from({ length: 32 }, (_, i) => i));
+  const signed = {
+    signature: base64.encode(sig64),
+    address:
+      '0:4dae3b05729bcdbb92d95ae4ee6108900b455e8813a6a20140ceb3fb0093a75a',
+    domain: 'app.aave.com',
+    timestamp: 1_793_900_000,
+  };
+
+  it('signs payload_json as sign-data text, with its public key and envelope', async () => {
+    const signText = vi.fn().mockResolvedValue(signed);
+
+    const result = await signIntentsConnectPayload({
+      payload: payload('ton_connect'),
+      standard: 'ton_connect',
+      address,
+      providers: {
+        ton: { address, publicKey: `ed25519:${publicKey}`, signText },
+      },
+    });
+
+    expect(signText).toHaveBeenCalledWith(PAYLOAD_JSON);
+    expect(result).toEqual({
+      signature: `ed25519:${base58.encode(sig64)}`,
+      publicKey: `ed25519:${publicKey}`,
+      tonConnect: {
+        address: signed.address,
+        domain: 'app.aave.com',
+        timestamp: 1_793_900_000,
+      },
+    });
+  });
+
+  it('signs a delete the same way', async () => {
+    const signText = vi.fn().mockResolvedValue(signed);
+
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'ton_connect',
+      address,
+      providers: { ton: { publicKey, signText } },
+    });
+
+    expect(signText).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toMatchObject({
+      publicKey: `ed25519:${publicKey}`,
+      tonConnect: { domain: 'app.aave.com' },
+    });
+  });
+
+  it('refuses a provider bound to another account before prompting', async () => {
+    const signText = vi.fn();
+
+    await expect(
+      signIntentsConnectPayload({
+        payload: payload('ton_connect'),
+        standard: 'ton_connect',
+        address,
+        providers: { ton: { address: 'UQOTHER', publicKey, signText } },
+      }),
+    ).rejects.toThrow(/does not match/);
+    expect(signText).not.toHaveBeenCalled();
+  });
+});
+
 describe('raw_ed25519', () => {
   const address = '7XSfQk6pYyBGZ3fT8Jd6mR2vNwUq9Lz1AaBbCcDdEeFf';
 

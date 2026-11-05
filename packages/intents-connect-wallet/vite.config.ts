@@ -29,6 +29,7 @@ const entries = [
   'stellar',
   'near',
   'tron',
+  'ton',
   'connect',
   'connect/appkit',
   'connect/near',
@@ -39,6 +40,7 @@ const entries = [
   'detect/connector',
   'detect/stellar',
   'detect/tron',
+  'detect/ton',
 ];
 
 export default defineConfig({

@@ -5,6 +5,7 @@ import { readNearBalances } from '@/balances/near';
 import { resolveRpcs } from '@/balances/rpcs';
 import { readSolanaBalances } from '@/balances/solana';
 import { readStellarBalances } from '@/balances/stellar';
+import { readTonBalances } from '@/balances/ton';
 import { readTronBalances } from '@/balances/tron';
 import { getBalanceFamily } from '@/balances/tokens';
 import type {
@@ -44,6 +45,8 @@ export type GetWalletBalancesArgs = {
   alchemyApiKey?: string;
   /** TronGrid's `TRON-PRO-API-KEY`: without one, ~1 request per second. */
   tronGridApiKey?: string;
+  /** toncenter's `X-API-Key`: without one, ~1 request per second. */
+  tonCenterApiKey?: string;
   /**
    * Per-chain endpoints, merged over `DEFAULT_RPCS` chain by chain. `near`
    * replaces the public NEAR endpoints.
@@ -68,10 +71,18 @@ const readChainByRpc = async (
     rpcs: ChainRpcUrls;
     intentsApi?: Pick<IntentsApi, 'nearRpcUrl'>;
     tronGridApiKey?: string;
+    tonCenterApiKey?: string;
   } & BalanceTransportOptions,
 ): Promise<ChainRead> => {
-  const { address, tokens, rpcs, intentsApi, tronGridApiKey, ...transport } =
-    args;
+  const {
+    address,
+    tokens,
+    rpcs,
+    intentsApi,
+    tronGridApiKey,
+    tonCenterApiKey,
+    ...transport
+  } = args;
 
   switch (family) {
     case 'evm':
@@ -109,6 +120,16 @@ const readChainByRpc = async (
           ...transport,
         }),
       };
+    case 'ton':
+      return {
+        balances: await readTonBalances({
+          address,
+          tokens,
+          apiUrls: rpcs.ton ?? [],
+          apiKey: tonCenterApiKey,
+          ...transport,
+        }),
+      };
     case 'near':
       return {
         balances: await readNearBalances({
@@ -136,6 +157,7 @@ export const getWalletBalances = async ({
   tokens,
   alchemyApiKey,
   tronGridApiKey,
+  tonCenterApiKey,
   rpcs: customRpcs,
   intentsApi,
   ...transport
@@ -175,6 +197,7 @@ export const getWalletBalances = async ({
       rpcs,
       intentsApi,
       tronGridApiKey,
+      tonCenterApiKey,
       ...transport,
     }).then(
       ({ balances, partialError }) => {

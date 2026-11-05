@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { tonAddressKey } from '@/account/ton';
 import {
   getFamilyForStandard,
   getIntentsAccountId,
@@ -74,7 +75,7 @@ describe('getWalletIntentsAccountId', () => {
     expect(getFamilyForStandard('nep413')).toBe('near');
     expect(getFamilyForStandard('sep53')).toBe('stellar');
     expect(getFamilyForStandard('tip191')).toBe('tron');
-    expect(getFamilyForStandard('ton_connect')).toBe(undefined);
+    expect(getFamilyForStandard('ton_connect')).toBe('ton');
   });
 
   it('derives from a connected wallet', () => {
@@ -95,8 +96,8 @@ describe('getWalletIntentsAccountId', () => {
     ).toBe(undefined);
     expect(
       getWalletIntentsAccountId({
-        // Not signable here yet: no family.
-        signingStandard: 'ton_connect' as never,
+        // TON's account is its public key, which an address doesn't carry.
+        signingStandard: 'ton_connect',
         getAddress: () => 'UQABC',
       }),
     ).toBe(undefined);
@@ -174,5 +175,18 @@ describe('TRON', () => {
         address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
       }),
     ).toBe(undefined);
+  });
+});
+
+describe('TON addresses', () => {
+  // TON USDT's jetton master, in both forms.
+  const FRIENDLY = 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs';
+  const RAW =
+    '0:B113A994B5024A16719F69139328EB759596C38A25F59028B146FECDC3621DFE';
+
+  it('reads the raw and the user-friendly form as one account', () => {
+    expect(tonAddressKey(FRIENDLY)).toBe(RAW.toLowerCase());
+    expect(tonAddressKey(RAW)).toBe(RAW.toLowerCase());
+    expect(tonAddressKey('not an address')).toBe(undefined);
   });
 });

@@ -73,6 +73,7 @@ Hooks share provider-level stores: two components reading the same balances make
 - **NEAR** reads native NEAR (`native-near`) and every NEP-141 over public NEAR RPCs, with the intents API's NEAR proxy as the last fallback. 1Click has no native NEAR asset: quote it with `toQuoteAssetId(token)` (wNEAR), and the `/near` transfer wraps native NEAR on the way.
 - **Stellar** reads XLM and issued assets (matched by code and issuer) from Horizon, `rpcs.stellar` (default `https://horizon.stellar.org`). XLM is the **spendable** amount: the balance less the account's minimum reserve and open sell offers. An account that was never funded reads as `'0'`.
 - **TRON** reads TRX and every TRC-20 (matched by contract) in one TronGrid call, `rpcs.tron` (default `https://api.trongrid.io`). Frozen TRX isn't counted. Without `tronGridApiKey` (a provider prop too) TronGrid allows about one request per second per client.
+- **TON** reads TON and every jetton (matched by master, any address form) from toncenter's v3 API, `rpcs.ton` (default `https://toncenter.com`). Without `tonCenterApiKey` toncenter allows about one request per second, so its two calls are spaced. A TON wallet has no intents account id here: it's the public key, which an address doesn't carry.
 
 ```ts
 import { getTokens, getWalletBalances } from '@aurora-is-near/intents-connect';

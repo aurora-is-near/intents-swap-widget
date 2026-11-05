@@ -1,6 +1,6 @@
 ---
 icon: wallet
-description: "@aurora-is-near/intents-connect-wallet: wallet connection and deposit transfers for EVM, Solana, NEAR, Stellar and TRON."
+description: "@aurora-is-near/intents-connect-wallet: wallet connection and deposit transfers for EVM, Solana, NEAR, Stellar, TRON and TON."
 ---
 
 # Wallet integrations
@@ -23,6 +23,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/stellar` | `stellar` transfer plugin, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `/near` | `near` transfer plugin | none (uses `fetch`) |
 | `/tron` | `tron` transfer plugin, `toTronWalletConnector` | none (uses the wallet's own `tronWeb`) |
+| `/ton` | `createTonConnectClient` (extensions and phone QR), `ton` transfer plugin, `toTonWalletConnector` | `@tonconnect/sdk @ton/core @ton/crypto`, and a global `Buffer` |
 | `/connect` | `WalletSelectorModal`, `useWalletSelector`, option presets | `react @headlessui/react` |
 | `/connect/appkit` | EVM + Solana connectors (Reown AppKit) | `react viem @reown/appkit @reown/appkit-adapter-ethers @reown/appkit-adapter-solana @solana/wallet-adapter-phantom @solana/wallet-adapter-solflare @solana/web3.js @solana/spl-token` |
 | `/connect/near` | NEAR connector (HOT, Meteor, MyNearWallet…) | `react @hot-labs/near-connect` |
@@ -33,6 +34,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/detect/connector` | `toWalletConnector()` for a detected wallet of any family | `viem @solana/web3.js @solana/spl-token` |
 | `/detect/stellar` | `stellarWallets()`: Stellar wallets for detection (Freighter, xBull, LOBSTR, Hana) | `@creit.tech/stellar-wallets-kit @stellar/stellar-sdk` |
 | `/detect/tron` | `tronWallets()`: TRON wallets for detection (TronLink, others over TIP-6963) | none |
+| `/detect/ton` | `tonWallets(client)`: TON wallet extensions for detection, over a `/ton` client | as `/ton` |
 
 Always install `@aurora-is-near/intents-connect` and `@aurora-is-near/intents-connect-wallet`.
 
@@ -214,6 +216,12 @@ const { connector, unsupportedReason } = detected
   - Each wallet is bound to its own `tronWeb`, never the global `window.tronWeb`, which other wallets overwrite. Its account is read from that `tronWeb`, which exists only once the user connected the site, so detection never prompts.
   - TronLink can't revoke a site: disconnecting only forgets it here.
   - Signatures are checked against the account (`verifyMessageV2`) before they're submitted. The deposit refuses a wallet on a test network, and a USDT transfer burns TRX for energy (about 13 TRX to a fresh address, unless the account has staked energy).
+- **TON** goes through TON Connect, `createTonConnectClient({ manifestUrl, storagePrefix })` from `/ton`. A client is one session, which holds one wallet: give extensions and phones a client each (with different prefixes), so pairing a phone doesn't drop the extension in use.
+  - `tonWallets(client)` from `/detect/ton` lists installed extensions; the session's wallet carries its account. A phone pairs with `client.pair(onUri)`: render the `tc://` link as a QR. `toTonWalletConnector(client, client.currentPeer())` adapts either.
+  - The manifest (url, name, iconUrl) must be public: wallets, phones included, fetch it.
+  - A wallet is refused without its public key (`MISSING_PUBLIC_KEY`), without text signing (`NO_SIGN_DATA`) or on the testnet (`WRONG_NETWORK`).
+  - Addresses are user-friendly and non-bounceable everywhere; TON is sent non-bounceable, so it can't bounce off a deposit address that isn't deployed yet. A jetton (USDT) transfer attaches 0.05 TON for fees, most of which comes back.
+  - `@ton/core` needs a global `Buffer` when it loads: provide one in the browser.
 
 ## Solana step helpers
 
