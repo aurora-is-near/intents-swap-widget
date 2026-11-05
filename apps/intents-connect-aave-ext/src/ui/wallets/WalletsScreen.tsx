@@ -227,8 +227,16 @@ const Status = ({
   active: boolean;
   connected: boolean;
 }) => {
+  // The whole row cancels, while it waits: a button can't hold another.
   if (pending) {
-    return <span className="text-text-secondary">Check wallet…</span>;
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="text-text-secondary">Check wallet…</span>
+        <span className="rounded-lg bg-white px-2.5 py-1 font-medium text-text-primary shadow-box">
+          Cancel
+        </span>
+      </span>
+    );
   }
 
   if (active) {
@@ -400,7 +408,12 @@ export const WalletsScreen = ({
 }) => {
   const { wallets, active, unsupportedReason } = session;
   const [tab, setTab] = useState<Tab>('browser');
-  const [pending, setPending] = useState<string>();
+  /** The connection waiting on its wallet, which another pick calls off. */
+  const [pending, setPending] = useState<{
+    id: string;
+    controller: AbortController;
+  }>();
+
   const [error, setError] = useState<string>();
   const dapp = dappAccount?.toLowerCase();
   // The dApp's wallet, when it is one detection sees: its own icon and name.
@@ -409,18 +422,36 @@ export const WalletsScreen = ({
       wallet.family === 'evm' && wallet.address?.toLowerCase() === dapp,
   );
 
+  // A wallet may never answer (its popup closed): picking another one, or
+  // Cancel, calls the wait off instead of freezing the list.
   const pick = async (wallet: (typeof wallets)[number]) => {
-    setPending(wallet.id);
+    pending?.controller.abort();
+
+    const controller = new AbortController();
+
+    setPending({ id: wallet.id, controller });
     setError(undefined);
 
     try {
-      await session.select(wallet);
-      onPicked();
+      await session.select(wallet, { signal: controller.signal });
+
+      if (!controller.signal.aborted) {
+        onPicked();
+      }
     } catch (caught) {
-      setError(errorMessage(caught));
+      if (!controller.signal.aborted) {
+        setError(errorMessage(caught));
+      }
     } finally {
-      setPending(undefined);
+      setPending((current) =>
+        current?.controller === controller ? undefined : current,
+      );
     }
+  };
+
+  const cancel = () => {
+    pending?.controller.abort();
+    setPending(undefined);
   };
 
   const browser = (
@@ -449,7 +480,7 @@ export const WalletsScreen = ({
                 }
                 status={
                   <Status
-                    pending={pending === wallet.id}
+                    pending={pending?.id === wallet.id}
                     active={
                       !active?.mobile &&
                       active?.key === `${wallet.id}:${wallet.address}`
@@ -457,9 +488,13 @@ export const WalletsScreen = ({
                     connected={!!wallet.address}
                   />
                 }
-                disabled={pending !== undefined}
+                disabled={false}
                 onClick={() => {
-                  void pick(wallet);
+                  if (pending?.id === wallet.id) {
+                    cancel();
+                  } else {
+                    void pick(wallet);
+                  }
                 }}
               />
             ))}

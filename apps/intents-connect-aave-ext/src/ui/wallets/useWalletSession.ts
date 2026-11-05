@@ -100,8 +100,15 @@ export type WalletSession = {
   active: ActiveWallet | null;
   /** Why the chosen wallet can't be used, e.g. NEAR without a public key. */
   unsupportedReason?: UnsupportedReason;
-  /** Picks a browser wallet, through its own prompt if it shares no account. */
-  select: (wallet: DetectedWallet) => Promise<void>;
+  /**
+   * Picks a browser wallet, through its own prompt if it shares no account.
+   * `signal` calls the prompt off: nothing is picked, and a late answer is
+   * ignored.
+   */
+  select: (
+    wallet: DetectedWallet,
+    options?: { signal?: AbortSignal },
+  ) => Promise<void>;
   /** Picks the EVM phone wallet: the one just paired, or the restored one. */
   selectPhone: (peer: WalletConnectPeer) => void;
   /** Picks the TON phone wallet. */
@@ -297,13 +304,18 @@ export const useWalletSession = ({
   ]);
 
   const select = useCallback(
-    async (wallet: DetectedWallet) => {
+    async (
+      wallet: DetectedWallet,
+      { signal }: { signal?: AbortSignal } = {},
+    ) => {
       if (!wallet.address) {
-        await connectDetectedWallet(wallet);
+        await connectDetectedWallet(wallet, { signal });
         await refresh();
       }
 
-      setChoice({ kind: 'detected', id: wallet.id });
+      if (!signal?.aborted) {
+        setChoice({ kind: 'detected', id: wallet.id });
+      }
     },
     [refresh, setChoice],
   );
