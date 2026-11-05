@@ -74,7 +74,7 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
   theme. `ThemeStyle` writes them, with the `theme` prop's overrides, as
   `:host` custom properties (`CSS_VARIABLES` names each one).
   - `styles.css` maps them onto Tailwind (`@theme inline`): colors
-    (`bg-field`, `bg-overlay`, `text-text-muted`…), `text-xs/sm/base`,
+    (`bg-field`, `bg-control`, `bg-overlay`, `text-text-muted`…), `text-xs/sm/base`,
     `text-button` and `text-amount`, the radii (`rounded-dialog`, `-card`,
     `-control`, `-chip`, `-cta`), and `--spacing`, which every `p-*`,
     `gap-*`, `h-*` and `leading-*` multiplies.
@@ -93,9 +93,11 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     and its fields (primary 7, secondary 4.5, muted 3), moved in lightness
     until it reads. A site's own text on its accent is kept from 3:1;
     otherwise the CTA text is black or white.
-  - Fields keep to the dialog's side of light and dark: white cards on a
-    dark page can't share its text, so fields become a shade of the
-    dialog instead.
+  - Fields, lists and bars are a shade of the dialog (`field`), not the
+    page's cards, so a site with tinted cards doesn't tint the whole
+    dialog. The card tint goes to controls (`control`): secondary
+    buttons, the selected tab, "Connect" chips, unless the cards sit on
+    the other side of light and dark from the page.
   - The CTA's text keeps 3:1 on the disabled fill too: it still says
     what's missing ("Enter an amount").
   - Sizes are clamped (radius 0–24, density 0.85–1.2, text 13–16 px, the
@@ -106,8 +108,9 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
   from the page the modal runs on, so the modal blends into any dApp. Each
   field comes from the first source that has it, and `evidence` names it:
   1. the hints' `pin`;
-  2. the page background, text and font as rendered (html, body, then the
-     app root, `theme-color` last);
+  2. the page background, text and font family as rendered (html, body,
+     then the app root, `theme-color` last). Not the font size: the modal
+     keeps its own on every site;
   3. design-system variables, for surfaces, the accent and its text,
      secondary text and danger: MUI CssVars (its exact `*Channel` triples
      first), shadcn, Radix, Mantine, Bootstrap;

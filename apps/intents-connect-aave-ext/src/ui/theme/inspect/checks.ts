@@ -15,7 +15,12 @@ type ContrastCheck = {
 const GROUNDS = ['surface', 'field'] as const;
 
 const CHECKS = [
-  { label: 'Text', fg: 'textPrimary', on: GROUNDS, min: MIN_CONTRAST.text },
+  {
+    label: 'Text',
+    fg: 'textPrimary',
+    on: [...GROUNDS, 'control'],
+    min: MIN_CONTRAST.text,
+  },
   {
     label: 'Secondary',
     fg: 'textSecondary',

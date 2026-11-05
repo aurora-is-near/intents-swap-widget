@@ -31,7 +31,10 @@ export type ThemeSeed = {
   fontWeight: number;
   /** The page's background: the dialog takes it. */
   page: string;
-  /** Cards and inputs on the page: fields take it. */
+  /**
+   * Cards on the page: tabs and secondary buttons take it. Fields and
+   * lists don't, so a tinted site doesn't tint the whole dialog.
+   */
   surface: string;
   text: string;
   /** Mixed from `text` when unset. */
@@ -116,8 +119,8 @@ const MIX = {
   /** The warning notice: a tint of the danger color. */
   dangerBg: { light: 0.06, dark: 0.16 },
   /**
-   * A field that can't take the page's cards (below): the dialog toward
-   * white, as Aave's white on off-white or a dark site's lifted cards.
+   * Fields and lists: the dialog toward white, as Aave's white on
+   * off-white or a dark site's lifted cards.
    */
   fieldLift: { light: 0.6, dark: 0.05 },
 } as const;
@@ -210,18 +213,21 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
   const surface = opaque(colorOf(seed.page, DEFAULT_SEED.page), scheme);
   const cards = opaque(colorOf(seed.surface, DEFAULT_SEED.surface), scheme);
   const darkDialog = lightness(surface) < 0.5;
+  const field = mix(
+    surface,
+    WHITE,
+    MIX.fieldLift[darkDialog ? 'dark' : 'light'],
+  );
+
   // Cards on the other side of the page's lightness (white cards on a dark
-  // page) can't share its text: fields become a shade of the dialog.
-  const field =
-    lightness(cards) < 0.5 === darkDialog
-      ? cards
-      : mix(surface, WHITE, MIX.fieldLift[darkDialog ? 'dark' : 'light']);
+  // page) can't share its text: controls take the field's shade instead.
+  const control = lightness(cards) < 0.5 === darkDialog ? cards : field;
 
   const grounds = [surface, field];
 
   const text = ensureContrast(
     colorOf(seed.text, DEFAULT_SEED.text),
-    grounds,
+    [...grounds, control],
     MIN_CONTRAST.text,
   );
 
@@ -266,6 +272,7 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     surfaceRaised: formatColor(mix(surface, field, MIX.raised)),
     surfaceHover: formatColor(mix(surface, text, MIX.hover[scheme])),
     field: formatColor(field),
+    control: formatColor(control),
     textPrimary: formatColor(text),
     textSecondary: formatColor(secondary),
     textMuted: formatColor(muted),

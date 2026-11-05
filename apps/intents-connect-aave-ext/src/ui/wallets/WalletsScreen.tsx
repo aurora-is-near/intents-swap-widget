@@ -81,7 +81,7 @@ const Segmented = <T extends string>({
     <span
       aria-hidden
       className={cx(
-        'absolute left-0 bg-field shadow-box transition-transform duration-200 ease-out',
+        'absolute left-0 bg-control shadow-box transition-transform duration-200 ease-out',
         size === 'sm'
           ? 'inset-y-0.5 ml-0.5 w-[calc(50%-2px)] rounded-[calc(var(--r-chip)-1px)]'
           : 'inset-y-1 ml-1 w-[calc(50%-4px)] rounded-chip',
@@ -244,7 +244,7 @@ const Status = ({
     return (
       <span className="inline-flex items-center gap-2">
         <span className="text-text-secondary">Check wallet…</span>
-        <span className="rounded-control bg-field px-2.5 py-1 font-medium text-text-primary shadow-box">
+        <span className="rounded-control bg-control px-2.5 py-1 font-medium text-text-primary shadow-box">
           Cancel
         </span>
       </span>
@@ -262,7 +262,7 @@ const Status = ({
   return connected ? (
     <ChevronIcon />
   ) : (
-    <span className="rounded-control bg-field px-2.5 py-1 font-medium text-text-primary shadow-box">
+    <span className="rounded-control bg-control px-2.5 py-1 font-medium text-text-primary shadow-box">
       Connect
     </span>
   );
@@ -548,7 +548,7 @@ export const WalletsScreen = ({
         <Segmented items={TABS} value={tab} onChange={setTab} />
       ) : null}
 
-      <div className="-mx-1 flex max-h-[min(56vh,420px)] flex-col gap-4 overflow-y-auto px-1 pt-1 pb-1">
+      <div className="flex flex-col gap-4">
         {tab === 'qr' && (walletConnect ?? tonConnect) ? (
           <PhoneTab
             session={session}

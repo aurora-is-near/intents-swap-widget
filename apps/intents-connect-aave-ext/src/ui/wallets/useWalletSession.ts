@@ -33,6 +33,14 @@ const CHOICE_KEY = 'aurora-intents.wallet';
  */
 const PAIRED_KEY = 'aurora-intents.walletconnect.paired';
 
+/**
+ * How long a remembered browser wallet gets to come back before the modal
+ * shows the wallet list instead: detection's first pass can come before
+ * it (a Solana wallet reconnects silently after it, a TON extension
+ * restores its session).
+ */
+const RESTORE_GRACE_MS = 3000;
+
 type Choice =
   | { kind: 'detected'; id: string }
   | { kind: 'walletconnect' }
@@ -90,7 +98,11 @@ export type ActiveWallet = {
 };
 
 export type WalletSession = {
-  /** False until detection settled and a paired phone was restored. */
+  /**
+   * False until detection settled, a paired phone was restored, and the
+   * remembered wallet came back (or had its time to), so the modal opens
+   * on the right screen instead of passing through the list.
+   */
   ready: boolean;
   wallets: readonly DetectedWallet[];
   /** The paired EVM phone wallet, chosen or not. */
@@ -143,6 +155,13 @@ export const useWalletSession = ({
 
   const [tonPeer, setTonPeer] = useState<TonPeer | null>(null);
   const [tonReady, setTonReady] = useState(!tonConnect);
+  const [graceOver, setGraceOver] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setGraceOver(true), RESTORE_GRACE_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const setChoice = useCallback((next: Choice | null) => {
     setChoiceState(next);
@@ -224,6 +243,9 @@ export const useWalletSession = ({
     choice?.kind === 'detected'
       ? detection.wallets.find((wallet) => wallet.id === choice.id)
       : undefined;
+
+  const restoring =
+    choice?.kind === 'detected' && !chosen?.address && !graceOver;
 
   const resolved = useMemo((): {
     active: ActiveWallet | null;
@@ -361,7 +383,7 @@ export const useWalletSession = ({
   }, [choice?.kind, chosen, walletConnect, tonConnect, refresh, setChoice]);
 
   return {
-    ready: detection.ready && peerReady && tonReady,
+    ready: detection.ready && peerReady && tonReady && !restoring,
     wallets: detection.wallets,
     peer,
     tonPeer,

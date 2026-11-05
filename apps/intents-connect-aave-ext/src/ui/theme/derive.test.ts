@@ -133,6 +133,19 @@ describe('deriveTokens', () => {
     );
   });
 
+  it("tints tabs and buttons with the page's cards, not fields and lists", () => {
+    // A white page with lime cards: the dialog stays white.
+    const tokens = deriveTokens({
+      ...DEFAULT_SEED,
+      page: '#ffffff',
+      surface: '#eef6d8',
+    });
+
+    expect(tokens.control).toBe('#eef6d8');
+    expect(tokens.field).toBe('#ffffff');
+    expect(tokens.surfaceRaised).toBe('#ffffff');
+  });
+
   it('keeps the CTA text readable on its disabled fill', () => {
     // Faded toward white, Bootstrap's blue would lose its white text.
     const tokens = deriveTokens({

@@ -84,11 +84,7 @@ export const readPageTheme = (
         (GENERIC.test(family) ? family : `${family}, ${FALLBACK_FONTS}`),
       'computed:body',
     );
-    set(
-      'fontSize',
-      Number.parseFloat(body.fontSize) || undefined,
-      'computed:body',
-    );
+    // Not its size: the modal keeps its own on every site.
   }
 
   // The scheme follows the page's background.

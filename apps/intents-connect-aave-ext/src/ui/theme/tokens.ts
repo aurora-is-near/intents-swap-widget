@@ -11,8 +11,13 @@ export type ThemeTokens = {
   surfaceRaised: string;
   /** Hovered rows, skeletons, letter avatars. */
   surfaceHover: string;
-  /** Inputs, pickers, secondary buttons and pills. */
+  /** Inputs, pickers, lists and bars: a shade of the dialog. */
   field: string;
+  /**
+   * Secondary buttons, the selected tab, "Connect" chips: the page's card
+   * tint, where the page tints them.
+   */
+  control: string;
   textPrimary: string;
   textSecondary: string;
   textMuted: string;
@@ -88,6 +93,7 @@ export const DEFAULT_TOKENS: ThemeTokens = {
   surfaceRaised: '#fcfcfc',
   surfaceHover: '#f0f0f0',
   field: '#ffffff',
+  control: '#ffffff',
   textPrimary: '#000000',
   textSecondary: '#666666',
   textMuted: '#7d7d7d',
@@ -138,6 +144,7 @@ export const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
   surfaceRaised: '--surface-raised',
   surfaceHover: '--surface-hover',
   field: '--field',
+  control: '--control',
   textPrimary: '--text-primary',
   textSecondary: '--text-secondary',
   textMuted: '--text-muted',

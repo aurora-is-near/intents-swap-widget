@@ -1,8 +1,21 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import QRCodeStyling from 'qr-code-styling';
 
-/** SVG units per module: whole numbers, so modules tile without gaps. */
+/**
+ * Canvas px per module: drawn at whole pixels, so merged modules have no
+ * seams, then scaled as an image to one size for every code.
+ */
 const UNITS_PER_MODULE = 16;
+
+/** The code's side, in CSS px, whatever its module count. */
+const QR_SIZE = 232;
+const QR_PADDING = 12;
+
+/**
+ * The white tile's side: what a code takes on screen, and what stands in
+ * for one (loading, expired) so nothing moves.
+ */
+export const QR_TILE = QR_SIZE + 2 * QR_PADDING;
 
 /** The button's mark, white on black, for the middle of the code. */
 const LOGO = `data:image/svg+xml,${encodeURIComponent(
@@ -16,7 +29,7 @@ const LOGO = `data:image/svg+xml,${encodeURIComponent(
  */
 const qrCode = new QRCodeStyling({
   image: LOGO,
-  type: 'svg',
+  type: 'canvas',
   // H + a small logo: the centre image must not wipe data modules.
   qrOptions: { errorCorrectionLevel: 'H' },
   dotsOptions: { color: '#000000', type: 'extra-rounded' },
@@ -31,19 +44,10 @@ const qrCode = new QRCodeStyling({
 });
 
 /**
- * Drawn at exactly `modules × 16` units and shown at a whole number of CSS
- * px per module, so anti-aliasing draws no seams through merged modules.
+ * Drawn at `modules × 16` canvas px, shown at `QR_SIZE`: an EVM pairing
+ * link and a TON one (more modules) take the same space.
  */
-export const QrCode = ({
-  value,
-  size = 232,
-}: {
-  value: string;
-  /** Target width and height, in CSS px. */
-  size?: number;
-}) => {
-  const [modules, setModules] = useState(0);
-
+export const QrCode = ({ value }: { value: string }) => {
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       qrCode.append(node);
@@ -53,24 +57,21 @@ export const QrCode = ({
   useLayoutEffect(() => {
     qrCode.update({ data: value });
 
-    const count = qrCode._qr?.getModuleCount() ?? 0;
-    const units = count * UNITS_PER_MODULE;
+    const units = (qrCode._qr?.getModuleCount() ?? 0) * UNITS_PER_MODULE;
 
-    qrCode.update({ width: units, height: units });
-    setModules(count);
+    if (units) {
+      qrCode.update({ width: units, height: units });
+    }
   }, [value]);
-
-  const side = modules
-    ? Math.max(2, Math.round(size / modules)) * modules
-    : size;
 
   return (
     // White in every theme: a QR code scans as dark on light.
-    <div className="mx-auto w-fit rounded-card bg-white p-3 shadow-box">
+    <div
+      className="rounded-card bg-white shadow-box"
+      style={{ width: QR_TILE, height: QR_TILE, padding: QR_PADDING }}>
       <div
         ref={containerRef}
-        style={{ width: side, height: side }}
-        className="[&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+        className="h-full w-full [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full"
       />
     </div>
   );

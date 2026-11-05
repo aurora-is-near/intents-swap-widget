@@ -89,7 +89,7 @@ const Header = ({
   onClose: () => void;
   closeRef: Ref<HTMLButtonElement>;
 }) => (
-  <div className="mb-4 flex items-start gap-2">
+  <div className="flex items-start gap-2">
     {onBack ? (
       <Button
         variant="ghost"
@@ -445,26 +445,33 @@ const SupplyFlow = ({
 
   return open ? (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-overlay px-4"
+      className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           close();
         }
       }}>
+      {/* As tall as its content; past the window's height, the body scrolls
+          under the header. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="aurora-supply-title"
-        className="w-full max-w-[420px] rounded-dialog bg-surface p-6 text-text-primary shadow-dialog">
-        <Header
-          title={title}
-          subtitle={subtitle}
-          onBack={onBack}
-          onClose={close}
-          closeRef={closeRef}
-        />
-        {check}
-        <ErrorBoundary onReset={close}>{body}</ErrorBoundary>
+        className="flex max-h-full w-full max-w-[420px] flex-col rounded-dialog bg-surface text-text-primary shadow-dialog">
+        <div className="px-6 pt-6">
+          <Header
+            title={title}
+            subtitle={subtitle}
+            onBack={onBack}
+            onClose={close}
+            closeRef={closeRef}
+          />
+        </div>
+        {/* Padded inside the scroll area, so outline rings aren't clipped. */}
+        <div className="min-h-0 overflow-y-auto px-6 pt-4 pb-6">
+          {check}
+          <ErrorBoundary onReset={close}>{body}</ErrorBoundary>
+        </div>
       </div>
     </div>
   ) : (

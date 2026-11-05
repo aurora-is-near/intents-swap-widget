@@ -32,7 +32,11 @@ export type SeedField = { about: string } & (
 export const SEED_FIELDS: readonly SeedField[] = [
   { key: 'scheme', kind: 'scheme', about: 'Light or dark shades' },
   { key: 'page', kind: 'color', about: "The page's background: the dialog" },
-  { key: 'surface', kind: 'color', about: 'Cards on the page: our fields' },
+  {
+    key: 'surface',
+    kind: 'color',
+    about: 'Cards on the page: our tabs and secondary buttons',
+  },
   { key: 'text', kind: 'color', about: 'Body text' },
   {
     key: 'textSecondary',
@@ -54,7 +58,7 @@ export const SEED_FIELDS: readonly SeedField[] = [
     kind: 'range',
     step: 1,
     unit: 'px',
-    about: 'Base text size',
+    about: "Base text size: ours on every site, the page's isn't read",
   },
   {
     key: 'fontWeight',

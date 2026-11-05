@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { PAIRING_TTL_MS } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 
 import { Button, CopyButton, Skeleton } from '../ui';
-import { QrCode } from './QrCode';
+import { QR_TILE, QrCode } from './QrCode';
 
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
@@ -100,47 +100,54 @@ const Pairing = <TPeer,>({
     };
   }, [pairer]);
 
+  const tile = { width: QR_TILE, height: QR_TILE };
+  let code: ReactNode;
+
   if (step.name !== 'pairing') {
-    return (
-      <div className="flex flex-col items-center gap-3 py-8 text-center">
+    // Where the code was, at its size: nothing around it moves.
+    code = (
+      <div
+        className="flex flex-col items-center justify-center gap-3 rounded-card bg-surface-raised p-6 text-center shadow-box"
+        style={tile}>
         <p className="font-medium">
           {step.name === 'expired'
             ? 'The QR code expired'
             : "The wallet didn't connect"}
         </p>
         {step.name === 'failed' ? (
-          <p className="max-w-[320px] text-danger">{step.message}</p>
+          <p className="line-clamp-4 text-danger">{step.message}</p>
         ) : null}
         <Button variant="secondary" onClick={onRetry}>
           Show a new code
         </Button>
-        {below ? <div className="w-[280px]">{below}</div> : null}
       </div>
     );
+  } else if (step.uri) {
+    code = <QrCode value={step.uri} />;
+  } else {
+    code = <Skeleton style={tile} />;
   }
 
   return (
     <div className="flex flex-col items-center gap-3">
       {/* As wide as the QR tile: whatever sits below takes its width. */}
       <div className="flex w-fit flex-col gap-2">
-        {step.uri ? (
-          <QrCode value={step.uri} />
-        ) : (
-          <Skeleton className="h-[280px] w-[280px]" />
-        )}
+        {code}
         {below}
       </div>
       <p className="max-w-[320px] text-center text-text-secondary">
         {copy.hint}
       </p>
       <div className="flex h-6 items-center gap-3 text-text-muted">
-        {step.uri ? (
+        {step.name === 'pairing' && step.uri ? (
           <span className="inline-flex items-center gap-1">
             Copy link
             <CopyButton value={step.uri} label={copy.linkLabel} />
           </span>
         ) : null}
-        <span>Valid for {countdown(Math.max(0, deadline - now))}</span>
+        {step.name === 'pairing' ? (
+          <span>Valid for {countdown(Math.max(0, deadline - now))}</span>
+        ) : null}
       </div>
     </div>
   );

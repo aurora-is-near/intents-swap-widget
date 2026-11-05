@@ -1,5 +1,6 @@
 import {
   type ButtonHTMLAttributes,
+  type CSSProperties,
   forwardRef,
   type ReactNode,
   useEffect,
@@ -31,7 +32,7 @@ const BUTTON_VARIANTS = {
   primary:
     'h-12 rounded-cta bg-cta px-6 text-button font-medium text-cta-text shadow-cta hover:bg-cta-hover disabled:bg-cta-disabled disabled:shadow-none',
   secondary:
-    'h-9 rounded-control bg-field px-3.5 text-sm font-medium text-text-primary shadow-box hover:bg-surface-hover disabled:opacity-50',
+    'h-9 rounded-control bg-control px-3.5 text-sm font-medium text-text-primary shadow-box hover:bg-surface-hover disabled:opacity-50',
   /** Icon buttons. */
   ghost:
     'rounded-chip p-1 text-text-muted hover:text-text-primary disabled:opacity-40',
@@ -80,9 +81,16 @@ export const truncateMiddle = (value: string, head = 6, tail = 4) =>
     ? `${value.slice(0, head)}…${value.slice(-tail)}`
     : value;
 
-export const Skeleton = ({ className }: { className?: string }) => (
+export const Skeleton = ({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: CSSProperties;
+}) => (
   <div
     className={cx('animate-pulse rounded-card bg-surface-hover', className)}
+    style={style}
   />
 );
 
