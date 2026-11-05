@@ -395,7 +395,17 @@ export const ProgressScreen = ({
             <CopyButton value={exec.depositAddress} label="deposit address" />
           </p>
           {exec.depositMemo ? (
-            <p className="mt-1 text-text-secondary">Memo {exec.depositMemo}</p>
+            <>
+              <p className="mt-2 text-text-secondary">With this memo:</p>
+              <p className="mt-1 flex items-center gap-1 break-all font-medium">
+                {exec.depositMemo}
+                <CopyButton value={exec.depositMemo} label="memo" />
+              </p>
+              <p className="mt-1 text-danger">
+                The memo is required: a deposit without it can&apos;t be matched
+                to this supply.
+              </p>
+            </>
           ) : null}
         </Notice>
       ) : null}
