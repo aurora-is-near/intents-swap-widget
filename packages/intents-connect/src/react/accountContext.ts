@@ -10,6 +10,7 @@ import type {
   IntentsApi,
 } from '@/intentsApi/types';
 import type { Resource, ResourceCache } from '@/resource';
+import type { Execution } from '@/types/execution';
 import type { IntentsSession } from '@/session';
 import type { KeyValueStorage } from '@/storage';
 import type { VerificationStore } from '@/verification';
@@ -70,6 +71,8 @@ export type IntentsAccountContextValue = {
   intermediaryBalances: ResourceCache<IntermediaryBalance>;
   /** key: the flow (`inOperation`, `outOperation`) */
   supportedTokens: ResourceCache<SupportedTokensResult>;
+  /** key: `JSON.stringify([address, sorted statuses])` */
+  walletExecutions: ResourceCache<Execution[]>;
 };
 
 export const IntentsAccountContext =

@@ -11,7 +11,11 @@ import type { IntentsApi } from '@/intentsApi/types';
 import { proofRpcUrls } from '@/near/rpcUrls';
 import { createResource, createResourceCache } from '@/resource';
 import { createIntentsSession } from '@/session';
-import type { Intermediary } from '@/types/execution';
+import type {
+  Execution,
+  ExecutionStatus,
+  Intermediary,
+} from '@/types/execution';
 import type { RecipeDestination } from '@/types/recipe';
 import { createVerificationStore } from '@/verification';
 import {
@@ -176,6 +180,31 @@ const createStores = (
           rpcs: config.current.rpcs,
         }),
       };
+    }),
+
+    // key: `[address, statuses]`. Needs only the Intents Connect API.
+    walletExecutions: createResourceCache(async (key) => {
+      const [address, statuses] = JSON.parse(key) as [
+        string,
+        ExecutionStatus[],
+      ];
+
+      const { connectApi } = config.current;
+
+      if (!connectApi) {
+        throw new IntentsConnectError('the Intents Connect API is required');
+      }
+
+      const executions = await connectApi.listExecutions(
+        address,
+        statuses.length ? { status: statuses } : undefined,
+      );
+
+      // Newest first; one without a creation time goes last.
+      const time = ({ createdAt }: Execution) =>
+        Date.parse(createdAt ?? '') || 0;
+
+      return [...executions].sort((a, b) => time(b) - time(a));
     }),
 
     // key: the flow. Needs only the Intents Connect API.

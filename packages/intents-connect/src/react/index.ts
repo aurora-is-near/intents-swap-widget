@@ -69,6 +69,11 @@ export {
   type UseQuotePreviewResult,
 } from '@/react/useQuotePreview';
 export {
+  useWalletExecutions,
+  type UseWalletExecutionsOptions,
+  type UseWalletExecutionsResult,
+} from '@/react/useWalletExecutions';
+export {
   useSupportedTokens,
   type UseSupportedTokensOptions,
   type UseSupportedTokensResult,

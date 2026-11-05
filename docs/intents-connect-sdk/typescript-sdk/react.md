@@ -160,6 +160,21 @@ const canDeliver = destinations.some(
 
 `origins` are the tokens an execution can start from (`in`): what the user can pay with. `destinations` are the tokens it can deliver (`out`): a recipe's `destination`.
 
+## `useWalletExecutions()`
+
+The provider wallet's executions, newest first, from `listExecutions`. Shared at provider level and needs no `intentsApi`. With `IN_FLIGHT_STATUSES` it finds the execution holding the wallet's lock, so a page can pick it up after a reload:
+
+```tsx
+import { IN_FLIGHT_STATUSES } from '@aurora-is-near/intents-connect';
+
+const { executions, status } = useWalletExecutions({ status: IN_FLIGHT_STATUSES });
+const live = executions[0];
+
+if (live) await flow.exec.resume(live.id); // or flow.exec.cancel(live.id)
+```
+
+Options: `status` (one or several; all when unset), `refreshIntervalMs` (30 s, `0` never).
+
 ## Account hooks
 
 Need `intentsApi` on the provider. See [Account & balances](account-and-balances.md).

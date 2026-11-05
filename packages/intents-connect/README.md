@@ -183,7 +183,7 @@ With `intentsApi` on the provider, the same bindings read an account screen:
 around `useExecution`. Stores live at provider
 level, so hooks reading the same data share one request. See below.
 
-Two more need no `intentsApi`:
+Three more need no `intentsApi`:
 
 - `useSupportedTokens({ flow? })` gives `origins` (what an execution can
   start from) and `destinations` (what a recipe can receive), fetched once
@@ -192,6 +192,9 @@ Two more need no `intentsApi`:
   still editing: a debounced `preview`, refreshed every 30 s, with results
   for an older plan dropped. Run `preview.plan` to commit to exactly the
   quoted steps.
+- `useWalletExecutions({ status? })` lists the provider wallet's executions,
+  newest first. With `IN_FLIGHT_STATUSES` it finds the one holding the
+  wallet's lock, to resume or cancel after a reload.
 
 ## Account & balances
 
