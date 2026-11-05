@@ -26,6 +26,8 @@ import {
 } from './ui';
 import { AssetsScreen } from './assets/AssetsScreen';
 import type { AssetRow } from './assets/useWalletAssets';
+import { ProgressScreen } from './progress/ProgressScreen';
+import type { SupplyRun } from './progress/types';
 import { deliverableOptions } from './supply/options';
 import { SupplyForm } from './supply/SupplyForm';
 import type { SupplyDestination } from './supply/types';
@@ -135,7 +137,7 @@ const Blocker = ({
 
 /**
  * The dialog, inside the provider. Mounted from the first opening on, so
- * the runner (and, later, a running supply) outlives a close.
+ * the runner, and a supply running on it, outlive a close.
  */
 const SupplyFlow = ({
   open,
@@ -149,7 +151,7 @@ const SupplyFlow = ({
   session: WalletSession;
 }) => {
   const supported = useSupportedTokens();
-  // One runner: the form previews on it, and the supply will run on it.
+  // One runner: the form previews on it, and the supply runs on it.
   const flow = useIntentsConnectFlow<ExecutionPreview, void>({
     buildPlan: (preview) => preview.plan,
   });
@@ -172,11 +174,15 @@ const SupplyFlow = ({
     row: AssetRow;
   } | null>(null);
 
+  // The supply submitted last; shown until the user leaves it.
+  const [run, setRun] = useState<SupplyRun | null>(null);
+
   const closeRef = useRef<HTMLButtonElement>(null);
   const { active } = session;
   const asset = active && picked?.walletKey === active.key ? picked.row : null;
 
-  // Each opening starts over: the chosen wallet's assets, or the list.
+  // Each opening starts over: a running supply, else the chosen wallet's
+  // assets, else the list.
   const close = () => {
     setScreen(null);
     setPicked(null);
@@ -206,31 +212,58 @@ const SupplyFlow = ({
   }, [open]);
 
   const blocked = !positionOwner || !destination.supported || undeliverable;
-  const view: 'blocked' | 'loading' | Screen | 'assets' | 'form' = (() => {
-    if (blocked) {
-      return 'blocked';
-    }
+  const view: 'progress' | 'blocked' | 'loading' | Screen | 'assets' | 'form' =
+    (() => {
+      // Before anything else: the page may have changed under a running supply.
+      if (run) {
+        return 'progress';
+      }
 
-    if (!session.ready) {
-      return 'loading';
-    }
+      if (blocked) {
+        return 'blocked';
+      }
 
-    if (screen === 'pairing' && walletConnect) {
-      return 'pairing';
-    }
+      if (!session.ready) {
+        return 'loading';
+      }
 
-    if (screen === 'wallets' || !active) {
-      return 'wallets';
-    }
+      if (screen === 'pairing' && walletConnect) {
+        return 'pairing';
+      }
 
-    return asset ? 'form' : 'assets';
-  })();
+      if (screen === 'wallets' || !active) {
+        return 'wallets';
+      }
+
+      return asset ? 'form' : 'assets';
+    })();
 
   let title = 'Supply with Aurora';
   let onBack: (() => void) | undefined;
   let body: ReactNode;
 
   switch (view) {
+    case 'progress':
+      title = flow.exec.phase === 'success' ? 'Supplied' : 'Supplying';
+      body = run ? (
+        <ProgressScreen
+          flow={flow}
+          run={run}
+          dappName={dappName}
+          destinationTitle={destination.title}
+          onDone={() => {
+            const supplied = flow.exec.phase === 'success';
+
+            setRun(null);
+
+            if (supplied) {
+              close();
+            }
+          }}
+        />
+      ) : null;
+      break;
+
     case 'blocked':
       body = (
         <Blocker
@@ -316,6 +349,15 @@ const SupplyFlow = ({
             buildPlan={destination.buildPlan}
             dappName={dappName}
             exec={flow.exec}
+            onSubmit={(preview, option) => {
+              setRun({
+                origin: asset.token,
+                option,
+                walletKey: active!.key,
+                quoted: preview.execution,
+              });
+              void flow.submit(preview);
+            }}
           />
         ) : null;
       }

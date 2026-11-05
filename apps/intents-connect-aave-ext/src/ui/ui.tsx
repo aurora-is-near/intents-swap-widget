@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 
-const cx = (...parts: (string | false | null | undefined)[]) =>
+export const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(' ');
 
 const BUTTON_VARIANTS = {
@@ -85,7 +85,8 @@ const icon = (path: ReactNode, size = 14) => (
 export const CloseIcon = () => icon(<path d="M6 6l12 12M18 6 6 18" />);
 export const BackIcon = () => icon(<path d="m15 18-6-6 6-6" />, 16);
 export const ChevronIcon = () => icon(<path d="m9 18 6-6-6-6" />, 16);
-export const CheckIcon = () => icon(<path d="M20 6 9 17l-5-5" />);
+export const CheckIcon = ({ size = 14 }: { size?: number }) =>
+  icon(<path d="M20 6 9 17l-5-5" />, size);
 const CopyIcon = () =>
   icon(
     <>

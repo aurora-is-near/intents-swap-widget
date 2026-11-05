@@ -1,4 +1,5 @@
 import { type ReactNode, useMemo, useState } from 'react';
+import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
 import {
   type UseExecutionResult,
   useQuotePreview,
@@ -256,6 +257,7 @@ export const SupplyForm = ({
   buildPlan,
   dappName,
   exec,
+  onSubmit,
 }: {
   asset: AssetRow;
   options: readonly DeliverableOption[];
@@ -263,6 +265,8 @@ export const SupplyForm = ({
   buildPlan: SupplyDestination['buildPlan'];
   dappName: string;
   exec: UseExecutionResult;
+  /** Runs exactly the previewed plan. */
+  onSubmit: (preview: ExecutionPreview, option: DeliverableOption) => void;
 }) => {
   const { token } = asset;
   const [amount, setAmount] = useState('');
@@ -448,16 +452,17 @@ export const SupplyForm = ({
         </div>
       ) : null}
 
-      <div>
-        <Button variant="primary" className="w-full" disabled>
-          {cta}
-        </Button>
-        {ready ? (
-          <p className="mt-2 text-center text-text-muted">
-            Submitting comes in the next step.
-          </p>
-        ) : null}
-      </div>
+      <Button
+        variant="primary"
+        className="w-full"
+        disabled={!ready}
+        onClick={() => {
+          if (preview && option) {
+            onSubmit(preview, option);
+          }
+        }}>
+        {cta}
+      </Button>
     </div>
   );
 };

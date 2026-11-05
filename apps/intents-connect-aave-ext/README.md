@@ -72,3 +72,17 @@ SDK's `./detect` without prompting, or a phone over WalletConnect.
 - **Quote.** A live dry preview (`useQuotePreview`) of exactly what would
   run: the minimum supplied, the network fee and the time. It refreshes
   every 30 s.
+
+## Running a supply
+
+Supply runs exactly the previewed plan on the same runner: sign the
+execution, confirm the deposit transfer, then the bridge delivers and the
+intermediary supplies. The progress screen follows it: Prepare, Sign,
+Deposit, Supply, Done. It shows the amounts, the deposit and
+supply transactions (with explorer links) and the execution id.
+
+- Close the modal at any point: the supply carries on, and reopening shows it.
+- **Resume / Cancel** when another execution from the wallet holds the lock;
+  **Retry transfer / Cancel** when the deposit transfer was rejected or failed.
+- An EVM deposit switches the wallet to the asset's chain. When it's the
+  wallet Aave uses, Aave's network switches too.
