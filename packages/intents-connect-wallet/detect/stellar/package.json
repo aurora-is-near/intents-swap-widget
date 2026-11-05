@@ -1,0 +1,8 @@
+{
+  "//": "Resolution stub for moduleResolution: node, which ignores the exports map.",
+  "name": "@aurora-is-near/intents-connect-wallet-detect-stellar-subpath",
+  "private": true,
+  "main": "../../dist/detect/stellar/index.js",
+  "module": "../../dist/detect/stellar/index.js",
+  "types": "../../dist/detect/stellar/index.d.ts"
+}

@@ -399,20 +399,25 @@ describe('signIntentsConnectText', () => {
     expect(result.publicKey).toBe('ed25519:pub');
   });
 
-  it('refuses sep53 — the delete endpoint does not accept it', async () => {
-    const signMessage = vi.fn();
+  it('signs a sep53 delete like any SEP-53 message, with its public key', async () => {
+    const publicKeyBytes = Uint8Array.from({ length: 32 }, (_, i) => i);
+    const signMessage = vi.fn().mockResolvedValue({
+      signedMessage: base64.encode(sig64),
+      signerAddress: 'GABCDEF',
+    });
 
-    await expect(
-      signIntentsConnectText({
-        text: 'delete_execution:exec-1',
-        standard: 'sep53',
-        address: 'GABCDEF',
-        providers: { stellar: { signMessage } } as unknown as Providers,
-      }),
-    ).rejects.toMatchObject({ code: 'UNSUPPORTED_SIGNING_STANDARD' });
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'sep53',
+      address: 'GABCDEF',
+      providers: { stellar: { signMessage } } as unknown as Providers,
+      decodePublicKey: () => publicKeyBytes,
+    });
 
-    // Refused BEFORE the wallet prompt: the backend would reject the delete
-    // anyway, so the user must not be asked to sign it.
-    expect(signMessage).not.toHaveBeenCalled();
+    expect(signMessage).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toEqual({
+      signature: `ed25519:${base58.encode(sig64)}`,
+      publicKey: `ed25519:${base58.encode(publicKeyBytes)}`,
+    });
   });
 });

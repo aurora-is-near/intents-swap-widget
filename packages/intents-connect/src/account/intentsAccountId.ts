@@ -1,10 +1,11 @@
 import { base58, hex } from '@scure/base';
 
+import { decodeStellarAccount } from '@/account/stellar';
 import type { SigningStandard } from '@/types/signing';
 import type { WalletConnector } from '@/types/wallet';
 
 /** The wallet families an intents account can be derived for. */
-export type IntentsAccountFamily = 'evm' | 'sol' | 'near';
+export type IntentsAccountFamily = 'evm' | 'sol' | 'near' | 'stellar';
 
 const EVM_ADDRESS = /^0x[0-9a-f]{40}$/i;
 // NEAR account ids: 2-64 chars of lowercase alphanumerics separated by single
@@ -26,6 +27,7 @@ const decodeSolanaAddress = (address: string): Uint8Array | undefined => {
  *
  * - EVM and NEAR: the address, lower-cased.
  * - Solana: the hex of the 32-byte public key the base58 address encodes.
+ * - Stellar: the hex of the 32-byte public key the `G…` StrKey encodes.
  *
  * Returns `undefined` for an address that does not fit its family, rather than
  * deriving an id nobody can sign for.
@@ -60,6 +62,12 @@ export const getIntentsAccountId = ({
 
       return bytes ? hex.encode(bytes) : undefined;
     }
+
+    case 'stellar': {
+      const bytes = decodeStellarAccount(address);
+
+      return bytes ? hex.encode(bytes) : undefined;
+    }
     default:
       return undefined;
   }
@@ -71,6 +79,7 @@ const FAMILY_BY_STANDARD: Partial<
   erc191: 'evm',
   raw_ed25519: 'sol',
   nep413: 'near',
+  sep53: 'stellar',
 };
 
 /** The account family a signing standard proves ownership for. */

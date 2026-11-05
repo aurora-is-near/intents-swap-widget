@@ -71,6 +71,7 @@ Hooks share provider-level stores: two components reading the same balances make
 - **Alchemy first.** With `alchemyApiKey`, every EVM and Solana chain Alchemy indexes is read in as few as one request.
 - **Then RPCs.** Other chains, or all of them without a key, use JSON-RPC: `DEFAULT_RPCS` (the swap widget's public endpoints), overridden **per chain** by `rpcs`.
 - **NEAR** reads native NEAR (`native-near`) and every NEP-141 over public NEAR RPCs, with the intents API's NEAR proxy as the last fallback. 1Click has no native NEAR asset: quote it with `toQuoteAssetId(token)` (wNEAR), and the `/near` transfer wraps native NEAR on the way.
+- **Stellar** reads XLM and issued assets (matched by code and issuer) from Horizon, `rpcs.stellar` (default `https://horizon.stellar.org`). XLM is the **spendable** amount: the balance less the account's minimum reserve and open sell offers. An account that was never funded reads as `'0'`.
 
 ```ts
 import { getTokens, getWalletBalances } from '@aurora-is-near/intents-connect';

@@ -23,6 +23,8 @@ export const DEFAULT_RPCS: Readonly<Record<string, readonly string[]>> = {
   hood: ['https://rpc.mainnet.chain.robinhood.com'],
   aurora: ['https://mainnet.aurora.dev'],
   // publicnode answers 403 to some clients; the official endpoint backs it up.
+  // Horizon, not Soroban RPC: balances read `/accounts/{G…}`.
+  stellar: ['https://horizon.stellar.org'],
   sol: [
     'https://solana-rpc.publicnode.com',
     'https://api.mainnet-beta.solana.com',

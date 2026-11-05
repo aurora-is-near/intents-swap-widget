@@ -112,7 +112,7 @@ The origin wallet signs, whatever the destination chain is.
 | `erc191` | EVM (`personal_sign`) | ✅ |
 | `raw_ed25519` | Solana | ✅ |
 | `nep413` | NEAR | ✅ |
-| `sep53` | Stellar | ✅ (can't be cancelled client-side, clears on expiry) |
+| `sep53` | Stellar (Freighter, xBull, LOBSTR, Hana) | ✅ |
 | `tip191` / `ton_connect` | Tron / TON | ❌ not yet |
 
 ## SDK → HTTP API

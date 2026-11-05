@@ -115,10 +115,9 @@ if (recovery?.kind === 'retry-transfer') {
 
 | Situation | Action |
 |---|---|
-| Page reloaded mid-execution | `resume(savedExecutionId)`. For a non-EVM origin across sessions, pass `{ originToken }` |
+| Page reloaded mid-execution | `resume(savedExecutionId)`. For a non-EVM origin across sessions, pass `{ originToken }`, plus `originChain` for a Stellar asset (its asset id doesn't name the chain) |
 | User rejected the signature | The runner auto-cancels by default (`autoCancelOnSignatureRejection`) to free the lock |
 | Deposit sent after `EXPIRED` | Keep polling: the execution revives |
-| Stellar origin | Can't be cancelled client-side. It clears on expiry |
 
 ## Next
 

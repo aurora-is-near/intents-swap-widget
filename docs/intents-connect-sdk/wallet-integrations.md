@@ -20,7 +20,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 |---|---|---|
 | `/evm` | `evm` transfer plugin | `viem` |
 | `/solana` | `sol` transfer plugin, Solana step helpers | `@solana/web3.js @solana/spl-token` |
-| `/stellar` | `stellar` transfer plugin, `decodePublicKey` | `@stellar/stellar-sdk` |
+| `/stellar` | `stellar` transfer plugin, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `/near` | `near` transfer plugin | none (uses `fetch`) |
 | `/connect` | `WalletSelectorModal`, `useWalletSelector`, option presets | `react @headlessui/react` |
 | `/connect/appkit` | EVM + Solana connectors (Reown AppKit) | `react viem @reown/appkit @reown/appkit-adapter-ethers @reown/appkit-adapter-solana @solana/wallet-adapter-phantom @solana/wallet-adapter-solflare @solana/web3.js @solana/spl-token` |
@@ -30,6 +30,7 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/detect` | Wallets already connected to the page (EVM, Solana, NEAR), no prompts | none |
 | `/detect/react` | `useDetectedWallets()` | `react` |
 | `/detect/connector` | `toWalletConnector()` for a detected wallet of any family | `viem @solana/web3.js @solana/spl-token` |
+| `/detect/stellar` | `stellarWallets()`: Stellar wallets for detection (Freighter, xBull, LOBSTR, Hana) | `@creit.tech/stellar-wallets-kit @stellar/stellar-sdk` |
 
 Always install `@aurora-is-near/intents-connect` and `@aurora-is-near/intents-connect-wallet`.
 
@@ -183,7 +184,7 @@ const { connector, unsupportedReason } = detected
 ```
 
 - The adapters wire each chain's `makeTransfer`, so the connector runs executions as-is. `unsupportedReason` is `NOT_CONNECTED` (no shared account) or `MISSING_PUBLIC_KEY` (NEAR).
-- `toWalletConnector` dispatches to the family's adapter and passes it that family's options (`evm`, `sol`, `near`). It needs every family's peers. If you only handle some families, import their adapters directly: `toEvmWalletConnector` (`/evm`), `toSolanaWalletConnector` (`/solana`), `toNearWalletConnector` (`/near`).
+- `toWalletConnector` dispatches to the family's adapter and passes it that family's options (`evm`, `sol`, `near`, `stellar`). It needs every family's peers. If you only handle some families, import their adapters directly: `toEvmWalletConnector` (`/evm`), `toSolanaWalletConnector` (`/solana`), `toNearWalletConnector` (`/near`), `toStellarWalletConnector` (`/stellar`).
 - `toEvmWalletConnector` omits `getChainId` unless you pass `networkGuard: true`: the network guard runs before the deposit transfer gets a chance to switch the wallet's chain.
 - Detection never prompts.
   - It calls a Solana or NEAR wallet only if the user connected it on this site with `connectDetectedWallet` (the one call that prompts; run it from a click).
@@ -194,6 +195,18 @@ const { connector, unsupportedReason } = detected
 - NEAR detection only sees injected extension wallets. For sandboxed or in-app wallets use `/connect/near` — `toNearWalletConnector` also accepts `useNearConnector()` state.
 - Outside React, `createWalletDetector()` gives `getSnapshot`, `subscribe`, `refresh` and `destroy`. It is SSR-safe.
 - Other families plug in through `sources` (on `createWalletDetector` and `useDetectedWallets`), each shipped from its own subpath so `/detect` never pulls its chain SDK. Their wallets carry their own `connect`, `disconnect` and `toConnector`, which the functions above call.
+- **Stellar** comes from `/detect/stellar`. Create its source once and pass it in:
+
+  ```tsx
+  import { stellarWallets } from '@aurora-is-near/intents-connect-wallet/detect/stellar';
+
+  const sources = [stellarWallets()]; // module scope: the detector is keyed by source ids
+  const { wallets } = useDetectedWallets({ sources });
+  ```
+
+  - Only installed wallets are listed. Freighter is restored silently; xBull, LOBSTR and Hana ask on every read, so they're restored from the address remembered when the user connected them.
+  - Before a signature is submitted, it's checked locally against the account (`isSep53Signature`). A wallet that signed with another account, or not as SEP-53 requires, fails with a named error.
+  - Albedo and Rabet aren't included: they can't sign a message.
 
 ## Solana step helpers
 

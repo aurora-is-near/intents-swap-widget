@@ -206,6 +206,12 @@ export type ResumeDepositOptions = {
   originToken?: OriginToken;
   originChainId?: number | null;
   /**
+   * The origin chain, for an asset id that doesn't name it. HOT-bridged
+   * assets (`nep245:v2_1.omni.hot.tg:…`, used for Stellar and TON) don't, so
+   * without it a resume can't drive their wallet deposit again.
+   */
+  originChain?: string;
+  /**
    * `false` skips any wallet-transfer attempt (QR / exchange deposits).
    *
    * `true` additionally FORCES the transfer for a cross-session resume of a

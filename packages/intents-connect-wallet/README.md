@@ -21,7 +21,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `.` | shared transfer types, no deps | — |
 | `./evm` | EVM deposit transfer | `viem` |
 | `./solana` | Solana deposit transfer | `@solana/web3.js`, `@solana/spl-token` |
-| `./stellar` | Stellar transfer + `decodePublicKey` | `@stellar/stellar-sdk` |
+| `./stellar` | Stellar transfer, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `./near` | NEAR deposit transfer | — (plain `fetch`) |
 | `./connect` | modal, presets, coordinator | `react`, `@headlessui/react` |
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
@@ -31,6 +31,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./detect` | wallets already connected to the page | — |
 | `./detect/react` | `useDetectedWallets` | `react` |
 | `./detect/connector` | `toWalletConnector` for any detected wallet | `viem`, `@solana/web3.js`, `@solana/spl-token` |
+| `./detect/stellar` | Stellar wallets for detection (`stellarWallets`) | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -220,7 +221,37 @@ objects while nothing changed, since the detector compares them by identity.
 `rememberWalletAddress` / `getRememberedAddress` let a source restore a wallet
 that can't share its address silently; disconnecting clears it.
 
-`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near? })`
+### Stellar
+
+`./detect/stellar`'s `stellarWallets()` is such a source, over the
+stellar-wallets-kit modules for Freighter, xBull, LOBSTR and Hana. Albedo and
+Rabet are left out: they can't sign a message.
+
+```ts
+import { stellarWallets } from '@aurora-is-near/intents-connect-wallet/detect/stellar';
+
+// Create it once: the detector registry is keyed by source ids.
+const sources = [stellarWallets()];
+const { wallets } = useDetectedWallets({ sources });
+```
+
+- **Availability** is checked once per detector and cached. A wallet that
+  isn't installed is never listed; its check waits at least 2.5 s, since some
+  extensions answer late. xBull is listed only with its extension: its web
+  wallet opens a popup per request, which the browser blocks once the
+  payment's signature and transfer come seconds after the click.
+- **Freighter** is restored silently (`getAddress({ skipRequestAccess: true })`).
+  The others ask on every address read, so they are restored from the address
+  remembered when the user connected them.
+- **Signing** passes the account to the wallet (Hana needs it) and checks the
+  result locally (`isSep53Signature`) before it's submitted. A wallet that signed
+  with another account, or not as SEP-53 requires, fails with a named error and
+  nothing is sent.
+- **Its options** go under `stellar`: `{ stellar: { rpcEndpoints } }` for the
+  transfer's Soroban RPC. Balances come from Horizon, through
+  `intents-connect`'s `rpcs.stellar`.
+
+`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near?, stellar? })`
 picks the adapter by family and hands it that family's options (e.g.
 `{ sol: { rpcUrl } }`). It pulls every family's transfer code, so it needs
 the peers of `./evm` and `./solana`.

@@ -20,14 +20,10 @@ const WNEAR_ASSET_ID = 'nep141:wrap.near';
 export const toQuoteAssetId = ({ assetId }: Pick<BalanceToken, 'assetId'>) =>
   assetId === NATIVE_NEAR_ASSET_ID ? WNEAR_ASSET_ID : assetId;
 
-/** The wallet family whose balances can be read on a chain (phase 1). */
+/** The wallet family whose balances can be read on a chain. */
 export const getBalanceFamily = (
   chain: string,
-): IntentsAccountFamily | undefined => {
-  const family = getChainFamily(chain);
-
-  return family === 'stellar' ? undefined : family;
-};
+): IntentsAccountFamily | undefined => getChainFamily(chain);
 
 /** A chain's gas token: no contract address (native NEAR is synthesised). */
 export const isNativeToken = (token: BalanceToken): boolean =>
@@ -35,7 +31,7 @@ export const isNativeToken = (token: BalanceToken): boolean =>
   (token.blockchain !== 'near' && !token.contractAddress);
 
 /**
- * Keeps the tokens a phase-1 wallet (EVM, Solana, NEAR) can hold, with
+ * Keeps the tokens a supported wallet (EVM, Solana, NEAR, Stellar) can hold, with
  * lower-cased chain slugs, and adds native NEAR next to wNEAR.
  */
 export const normalizeTokens = (

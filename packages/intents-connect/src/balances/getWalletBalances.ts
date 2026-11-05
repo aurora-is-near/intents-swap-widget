@@ -4,6 +4,7 @@ import { readEvmBalances } from '@/balances/evm';
 import { readNearBalances } from '@/balances/near';
 import { resolveRpcs } from '@/balances/rpcs';
 import { readSolanaBalances } from '@/balances/solana';
+import { readStellarBalances } from '@/balances/stellar';
 import { getBalanceFamily } from '@/balances/tokens';
 import type {
   BalanceToken,
@@ -84,7 +85,16 @@ const readChainByRpc = async (
         rpcUrls: rpcs.sol ?? [],
         ...transport,
       });
-    default:
+    case 'stellar':
+      return {
+        balances: await readStellarBalances({
+          address,
+          tokens,
+          horizonUrls: rpcs.stellar ?? [],
+          ...transport,
+        }),
+      };
+    case 'near':
       return {
         balances: await readNearBalances({
           address,
@@ -93,6 +103,8 @@ const readChainByRpc = async (
           ...transport,
         }),
       };
+    default:
+      return { balances: {} };
   }
 };
 

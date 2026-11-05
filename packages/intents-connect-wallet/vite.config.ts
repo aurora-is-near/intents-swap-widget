@@ -36,6 +36,7 @@ const entries = [
   'detect',
   'detect/react',
   'detect/connector',
+  'detect/stellar',
 ];
 
 export default defineConfig({

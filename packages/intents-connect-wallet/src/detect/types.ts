@@ -1,7 +1,7 @@
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
 
 /** Wallet families that can be detected in a page. */
-export type DetectedFamily = 'evm' | 'sol' | 'near';
+export type DetectedFamily = 'evm' | 'sol' | 'near' | 'stellar';
 
 /** An EIP-1193 provider as announced over EIP-6963. */
 export type Eip1193Like = {
@@ -82,10 +82,20 @@ export type DetectedNearWallet = DetectedBase & {
   wallet: InjectedNearWallet;
 };
 
+/**
+ * A Stellar wallet, from `./detect/stellar`'s source. A plug-in wallet: it
+ * connects and adapts itself, so this type carries no kit types.
+ */
+export type DetectedStellarWallet = DetectedBase &
+  PluggableWallet & {
+    family: 'stellar';
+  };
+
 export type DetectedWallet =
   | DetectedEvmWallet
   | DetectedSolanaWallet
-  | DetectedNearWallet;
+  | DetectedNearWallet
+  | DetectedStellarWallet;
 
 export type WalletDetectorSnapshot = {
   /** False until the first detection pass has settled. */

@@ -72,7 +72,8 @@ describe('getWalletIntentsAccountId', () => {
     expect(getFamilyForStandard('erc191')).toBe('evm');
     expect(getFamilyForStandard('raw_ed25519')).toBe('sol');
     expect(getFamilyForStandard('nep413')).toBe('near');
-    expect(getFamilyForStandard('sep53')).toBe(undefined);
+    expect(getFamilyForStandard('sep53')).toBe('stellar');
+    expect(getFamilyForStandard('tip191')).toBe(undefined);
   });
 
   it('derives from a connected wallet', () => {
@@ -93,10 +94,48 @@ describe('getWalletIntentsAccountId', () => {
     ).toBe(undefined);
     expect(
       getWalletIntentsAccountId({
-        signingStandard: 'sep53',
-        getAddress: () => 'GABC',
+        // Not signable here yet: no family.
+        signingStandard: 'tip191' as never,
+        getAddress: () => 'TABC',
       }),
     ).toBe(undefined);
     expect(getWalletIntentsAccountId(null)).toBe(undefined);
+  });
+});
+
+describe('Stellar', () => {
+  const ADDRESS = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
+  const KEY =
+    '8a88e3dd7409f195fd52db2d3cba5d72ca6709bf1d94121bf3748801b40f6f5c';
+
+  it('derives the hex of the public key the G-address encodes', () => {
+    expect(getIntentsAccountId({ family: 'stellar', address: ADDRESS })).toBe(
+      KEY,
+    );
+    expect(
+      getWalletIntentsAccountId({
+        signingStandard: 'sep53',
+        getAddress: () => ADDRESS,
+      }),
+    ).toBe(KEY);
+  });
+
+  it('refuses a malformed address or a bad checksum', () => {
+    expect(getIntentsAccountId({ family: 'stellar', address: 'GABC' })).toBe(
+      undefined,
+    );
+    expect(
+      getIntentsAccountId({
+        family: 'stellar',
+        address: `${ADDRESS.slice(0, -1)}A`,
+      }),
+    ).toBe(undefined);
+    // A secret seed (S…) is not an account id.
+    expect(
+      getIntentsAccountId({
+        family: 'stellar',
+        address: 'SBCQUX3GUSB4ZKLTRWALQCEFSOXAX5R7IP2X3OUJ5D2CJWEO3S3YSULU',
+      }),
+    ).toBe(undefined);
   });
 });

@@ -147,16 +147,15 @@ const randomNonce = (): Uint8Array => {
  * envelope — the backend needs both to rebuild the exact bytes the wallet
  * signed, and omitting the block is a 400.
  *
- * `sep53` is refused: the delete endpoint accepts only raw_ed25519, nep413,
- * erc191, tip191 and ton_connect, so a Stellar-signed delete would be signed,
- * submitted, and rejected with a 400 anyway. Failing before the wallet prompt
- * is the honest version of that outcome.
+ * `sep53` signs the text like any SEP-53 message and sends its public key:
+ * the delete endpoint accepts it (checked against the alpha service).
  */
 export const signIntentsConnectText = async ({
   text,
   standard,
   address,
   providers,
+  decodePublicKey,
 }: SignTextArgs): Promise<DeleteSignatureEnvelope> => {
   switch (standard) {
     case 'erc191':
@@ -196,10 +195,17 @@ export const signIntentsConnectText = async ({
     }
 
     case 'sep53':
-      return failGuard(
-        'UNSUPPORTED_SIGNING_STANDARD',
-        'the delete_execution endpoint does not accept sep53 — a Stellar-origin execution cannot be cancelled client-side and clears on expiry',
-      );
+      return signSep53({
+        message: text,
+        provider: requireProvider(providers.stellar, standard),
+        expectedAddress: address,
+        decodePublicKey:
+          decodePublicKey ??
+          failGuard(
+            'UNSUPPORTED_SIGNING_STANDARD',
+            'sep53 needs the connector to decode its public key',
+          ),
+      });
 
     default:
       return failGuard(

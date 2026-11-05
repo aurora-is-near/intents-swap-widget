@@ -23,6 +23,10 @@ export type WalletConnectorOptions = {
     /** RPCs used for deposit transfers, tried in order. */
     rpcUrls?: readonly string[];
   };
+  stellar?: {
+    /** Soroban RPCs for deposit transfers, tried in order. */
+    rpcEndpoints?: readonly string[];
+  };
 };
 
 /**

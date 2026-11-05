@@ -37,7 +37,13 @@ export const buildResumeDepositPlan = (
   }
 
   const { originAsset } = execution.quote;
-  const origin = originAsset ? parseOriginAsset(originAsset) : undefined;
+  const parsed = originAsset ? parseOriginAsset(originAsset) : undefined;
+  // An asset id that doesn't name its chain (HOT's) takes it from the caller.
+  const origin =
+    parsed ??
+    (originAsset && depositOptions?.originChain
+      ? { chain: depositOptions.originChain, tokenAddress: undefined }
+      : undefined);
 
   if (!origin) {
     return undefined;

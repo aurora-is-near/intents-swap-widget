@@ -1,6 +1,9 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { getWalletIntentsAccountId } from '@/account';
+import {
+  getWalletIntentsAccountId,
+  type IntentsAccountFamily,
+} from '@/account';
 import type { SupportedTokensFlow } from '@/api/types';
 import { getTokens, getWalletBalances } from '@/balances';
 import type { BalanceToken } from '@/balances';
@@ -130,7 +133,7 @@ const createStores = (
     walletBalances: createResourceCache(async (key) => {
       const [account = ''] = key.split('#');
       const separator = account.indexOf(':');
-      const family = account.slice(0, separator) as 'evm' | 'sol' | 'near';
+      const family = account.slice(0, separator) as IntentsAccountFamily;
       const address = account.slice(separator + 1);
       const { alchemyApiKey, rpcs, intentsApi } = config.current;
 
