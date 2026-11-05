@@ -61,6 +61,7 @@ const Segmented = <T extends string>({
   items,
   value,
   onChange,
+  size = 'md',
 }: {
   items: readonly [
     { id: T; label: string; icon: ReactNode },
@@ -68,14 +69,22 @@ const Segmented = <T extends string>({
   ];
   value: T;
   onChange: (value: T) => void;
+  /** `sm`: 28 px tall, 12 px text, for a switch under content. */
+  size?: 'md' | 'sm';
 }) => (
   <div
     role="tablist"
-    className="relative grid grid-cols-2 rounded-lg bg-black/5 p-1">
+    className={cx(
+      'relative grid grid-cols-2 bg-black/5',
+      size === 'sm' ? 'rounded-md p-0.5' : 'rounded-lg p-1',
+    )}>
     <span
       aria-hidden
       className={cx(
-        'absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-md bg-white shadow-box transition-transform duration-200 ease-out',
+        'absolute left-0 bg-white shadow-box transition-transform duration-200 ease-out',
+        size === 'sm'
+          ? 'inset-y-0.5 ml-0.5 w-[calc(50%-2px)] rounded-[5px]'
+          : 'inset-y-1 ml-1 w-[calc(50%-4px)] rounded-md',
         value === items[1].id && 'translate-x-full',
       )}
     />
@@ -87,7 +96,10 @@ const Segmented = <T extends string>({
         aria-selected={value === id}
         onClick={() => onChange(id)}
         className={cx(
-          'relative flex h-8 items-center justify-center gap-1.5 rounded-md font-medium transition-colors',
+          'relative flex items-center justify-center font-medium transition-colors',
+          size === 'sm'
+            ? 'h-6 gap-1 rounded-[5px] text-xs'
+            : 'h-8 gap-1.5 rounded-md',
           value === id
             ? 'text-text-primary'
             : 'text-text-muted hover:text-text-secondary',
@@ -268,6 +280,7 @@ const Phone = <TPeer extends PhonePeer>({
   peer,
   pairer,
   active,
+  below,
   onSelect,
 }: {
   family: 'evm' | 'ton';
@@ -276,6 +289,8 @@ const Phone = <TPeer extends PhonePeer>({
   pairer: Pairer<TPeer>;
   /** It's the wallet paying now. */
   active: boolean;
+  /** Under the QR code (or the paired wallet), e.g. the chain switch. */
+  below?: ReactNode;
   onSelect: (peer: TPeer) => void;
 }) => {
   const [pairing, setPairing] = useState(!peer);
@@ -285,6 +300,7 @@ const Phone = <TPeer extends PhonePeer>({
       <PairingScreen
         pairer={pairer}
         copy={PHONE_COPY[family]}
+        below={below}
         onPaired={onSelect}
       />
     );
@@ -303,6 +319,7 @@ const Phone = <TPeer extends PhonePeer>({
           onClick={() => onSelect(peer)}
         />
       </ul>
+      {below ? <div className="mx-auto w-[280px]">{below}</div> : null}
       <Button variant="secondary" onClick={() => setPairing(true)}>
         <QrIcon /> Pair another phone
       </Button>
@@ -329,33 +346,37 @@ const PhoneTab = ({
       : 'evm',
   );
 
+  // Under the QR code, as wide as it, only when both kinds are offered.
+  const chainSwitch =
+    walletConnect && tonConnect ? (
+      <Segmented
+        size="sm"
+        items={[
+          {
+            id: 'evm',
+            label: FAMILY_LABEL.evm,
+            icon: <FamilyIcon family="evm" size={12} />,
+          },
+          {
+            id: 'ton',
+            label: FAMILY_LABEL.ton,
+            icon: <FamilyIcon family="ton" size={12} />,
+          },
+        ]}
+        value={chain}
+        onChange={setChain}
+      />
+    ) : null;
+
   return (
     <div className="flex flex-col gap-3">
-      {walletConnect && tonConnect ? (
-        <Segmented
-          items={[
-            {
-              id: 'evm',
-              label: FAMILY_LABEL.evm,
-              icon: <FamilyIcon family="evm" />,
-            },
-            {
-              id: 'ton',
-              label: FAMILY_LABEL.ton,
-              icon: <FamilyIcon family="ton" />,
-            },
-          ]}
-          value={chain}
-          onChange={setChain}
-        />
-      ) : null}
-
       {chain === 'ton' && tonConnect ? (
         <Phone
           key="ton"
           family="ton"
           peer={tonPeer}
           pairer={tonConnect}
+          below={chainSwitch}
           active={!!active?.mobile && active.family === 'ton'}
           onSelect={(paired) => {
             session.selectTonPhone(paired);
@@ -369,6 +390,7 @@ const PhoneTab = ({
           family="evm"
           peer={peer}
           pairer={walletConnect}
+          below={chainSwitch}
           active={!!active?.mobile && active.family === 'evm'}
           onSelect={(paired) => {
             session.selectPhone(paired);

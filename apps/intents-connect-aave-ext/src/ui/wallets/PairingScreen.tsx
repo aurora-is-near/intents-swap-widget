@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { PAIRING_TTL_MS } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 
 import { Button, CopyButton, Skeleton } from '../ui';
@@ -36,11 +36,13 @@ const countdown = (ms: number) =>
 const Pairing = <TPeer,>({
   pairer,
   copy,
+  below,
   onPaired,
   onRetry,
 }: {
   pairer: Pairer<TPeer>;
   copy: PairingCopy;
+  below?: ReactNode;
   onPaired: (peer: TPeer) => void;
   onRetry: () => void;
 }) => {
@@ -112,17 +114,22 @@ const Pairing = <TPeer,>({
         <Button variant="secondary" onClick={onRetry}>
           Show a new code
         </Button>
+        {below ? <div className="w-[280px]">{below}</div> : null}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {step.uri ? (
-        <QrCode value={step.uri} />
-      ) : (
-        <Skeleton className="h-[256px] w-[256px]" />
-      )}
+      {/* As wide as the QR tile: whatever sits below takes its width. */}
+      <div className="flex w-fit flex-col gap-2">
+        {step.uri ? (
+          <QrCode value={step.uri} />
+        ) : (
+          <Skeleton className="h-[280px] w-[280px]" />
+        )}
+        {below}
+      </div>
       <p className="max-w-[320px] text-center text-text-secondary">
         {copy.hint}
       </p>
@@ -143,10 +150,13 @@ const Pairing = <TPeer,>({
 export const PairingScreen = <TPeer,>({
   pairer,
   copy,
+  below,
   onPaired,
 }: {
   pairer: Pairer<TPeer>;
   copy: PairingCopy;
+  /** Right under the QR code, as wide as it, e.g. a chain switch. */
+  below?: ReactNode;
   onPaired: (peer: TPeer) => void;
 }) => {
   const [attempt, setAttempt] = useState(0);
@@ -156,6 +166,7 @@ export const PairingScreen = <TPeer,>({
       key={attempt}
       pairer={pairer}
       copy={copy}
+      below={below}
       onPaired={onPaired}
       onRetry={() => setAttempt((value) => value + 1)}
     />
