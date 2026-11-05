@@ -26,6 +26,8 @@ import {
 } from './ui';
 import { AssetsScreen } from './assets/AssetsScreen';
 import type { AssetRow } from './assets/useWalletAssets';
+import { ErrorBoundary } from './ErrorBoundary';
+import { InFlightCheck } from './progress/InFlightCheck';
 import { ProgressScreen } from './progress/ProgressScreen';
 import type { SupplyRun } from './progress/types';
 import { deliverableOptions } from './supply/options';
@@ -179,11 +181,30 @@ const SupplyFlow = ({
     row: AssetRow;
   } | null>(null);
 
-  // The supply submitted last; shown until the user leaves it.
+  // The supply submitted last, or found in flight; shown until left.
   const [run, setRun] = useState<SupplyRun | null>(null);
+  // The wallet whose in-flight check settled: once per wallet.
+  const [checkedWallet, setCheckedWallet] = useState<string>();
 
   const closeRef = useRef<HTMLButtonElement>(null);
   const { active } = session;
+  const checking = !!active && !run && checkedWallet !== active.key;
+
+  const onFound = (walletKey: string, found: SupplyRun | null) => {
+    setCheckedWallet(walletKey);
+
+    if (!found?.resumed) {
+      return;
+    }
+
+    setRun(found);
+
+    // Past the deposit, following it prompts nothing: reattach at once.
+    if (!found.resumed.waiting) {
+      flow.exec.resume(found.resumed.id).catch(() => undefined);
+    }
+  };
+
   const asset = active && picked?.walletKey === active.key ? picked.row : null;
 
   // Each opening starts over: a running supply, else the chosen wallet's
@@ -232,7 +253,7 @@ const SupplyFlow = ({
         return 'blocked';
       }
 
-      if (!session.ready) {
+      if (!session.ready || (checking && screen !== 'wallets')) {
         return 'loading';
       }
 
@@ -260,6 +281,20 @@ const SupplyFlow = ({
           run={run}
           dappName={dappName}
           destinationTitle={destination.title}
+          onSwitchWallet={() => {
+            setRun(null);
+            setScreen('wallets');
+          }}
+          onAttach={() =>
+            setRun((current) =>
+              current?.resumed
+                ? {
+                    ...current,
+                    resumed: { ...current.resumed, waiting: false },
+                  }
+                : current,
+            )
+          }
           onDone={() => {
             const supplied = flow.exec.phase === 'success';
 
@@ -360,6 +395,16 @@ const SupplyFlow = ({
       }
   }
 
+  const check =
+    checking && active ? (
+      <InFlightCheck
+        key={active.key}
+        walletKey={active.key}
+        options={options}
+        onDone={(found) => onFound(active.key, found)}
+      />
+    ) : null;
+
   return open ? (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black/32 px-4"
@@ -380,10 +425,13 @@ const SupplyFlow = ({
           onClose={close}
           closeRef={closeRef}
         />
-        {body}
+        {check}
+        <ErrorBoundary onReset={close}>{body}</ErrorBoundary>
       </div>
     </div>
-  ) : null;
+  ) : (
+    check
+  );
 };
 
 /** The wallet the user pays from, and the provider running on it. */

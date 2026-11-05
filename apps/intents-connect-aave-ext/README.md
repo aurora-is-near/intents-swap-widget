@@ -6,7 +6,8 @@ that lets a user pay from any wallet, on any chain, into the Aave position of
 the account connected on the page, through Intents Connect.
 
 It stands in for a real integration. `src/ui/` is the future UI package:
-everything it knows about the page and about Aave comes in through props.
+everything it knows about the page and about Aave comes in through props
+(see [src/ui/README.md](src/ui/README.md)).
 
 ```
 src/content/   MAIN-world entry: the button and the modal host
@@ -82,7 +83,30 @@ Deposit, Supply, Done. It shows the amounts, the deposit and
 supply transactions (with explorer links) and the execution id.
 
 - Close the modal at any point: the supply carries on, and reopening shows it.
+- **After a reload** (or for a wallet with a supply already going), opening
+  the modal finds the wallet's in-flight execution (`useWalletExecutions`):
+  - Past the deposit, it is followed at once; that prompts nothing.
+  - Still needing a signature or a deposit, it waits for **Resume** or
+    **Cancel**, so the wallet never pops up unasked. **Pay from another
+    wallet** leaves it for later.
 - **Resume / Cancel** when another execution from the wallet holds the lock;
   **Retry transfer / Cancel** when the deposit transfer was rejected or failed.
+- Failures read plainly: declined in the wallet, not enough funds, the price
+  moved, the network or service is unreachable. A supply the service is slow
+  on can be **kept following**.
 - An EVM deposit switches the wallet to the asset's chain. When it's the
   wallet Aave uses, Aave's network switches too.
+
+## Troubleshooting
+
+- **No button.** It only shows on the dashboard with a wallet connected (Aave
+  renders "Assets to supply" only then). Reload the extension, then the tab.
+- **Balances or quotes fail and the console says `VITE_INTENTS_API_KEY is not
+  set`.** The build had no `.env.local`: add it and rebuild (restart `dev`).
+- **The QR code doesn't load.** The WalletConnect project must list the page's
+  origin among its allowed domains.
+- **"Amount too small".** The destination chain's gas would eat it. Ethereum
+  markets need several dollars; the others, cents.
+- **A supply is stuck.** Its execution id is on the progress screen; the
+  service's status for it is at
+  `https://intents-connect-alpha-api.aurora.dev/api/v1/executions/<wallet>?id=<id>`.

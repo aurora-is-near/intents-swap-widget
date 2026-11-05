@@ -16,6 +16,7 @@ import {
   truncateMiddle,
   useNow,
 } from '../ui';
+import { describeFailure } from './describeFailure';
 import type { SupplyRun } from './types';
 
 const STEPS = ['Prepare', 'Sign', 'Deposit', 'Supply', 'Done'];
@@ -32,8 +33,15 @@ const PHASE_STEP: Partial<Record<Phase, number>> = {
 };
 
 /** The step a stopped execution got to, from what the server last said. */
-const stoppedAt = (exec: UseExecutionResult): number => {
-  switch (exec.status) {
+const stoppedAt = ({
+  status,
+  hasSubmittedSignature,
+  executionId,
+}: Pick<
+  UseExecutionResult,
+  'status' | 'hasSubmittedSignature' | 'executionId'
+>): number => {
+  switch (status) {
     case 'OPERATION_PENDING':
     case 'OPERATION_PROCESSING':
     case 'OPERATION_FAILED':
@@ -44,20 +52,29 @@ const stoppedAt = (exec: UseExecutionResult): number => {
     case 'EXPIRED':
       return 2;
     default:
-      if (exec.hasSubmittedSignature) {
+      if (hasSubmittedSignature) {
         return 2;
       }
 
-      return exec.executionId ? 1 : 0;
+      return executionId ? 1 : 0;
   }
 };
 
-/** Segmented progress; `halted` colours the step the run stopped at. */
-const Stepper = ({ exec }: { exec: UseExecutionResult }) => {
+/**
+ * Segmented progress; the step a run stopped at turns red. A found run not
+ * resumed yet (`waitingAt`) sits at its step, not halted.
+ */
+const Stepper = ({
+  exec,
+  waitingAt,
+}: {
+  exec: UseExecutionResult;
+  waitingAt?: number;
+}) => {
   const live = PHASE_STEP[exec.phase];
-  const current = live ?? stoppedAt(exec);
+  const current = waitingAt ?? live ?? stoppedAt(exec);
   const complete = exec.phase === 'success';
-  const halted = live === undefined;
+  const halted = waitingAt === undefined && live === undefined;
 
   return (
     <ol className="grid grid-cols-5 gap-1.5">
@@ -162,17 +179,34 @@ export const ProgressScreen = ({
   run,
   dappName,
   destinationTitle,
+  onAttach,
+  onSwitchWallet,
   onDone,
 }: {
   flow: UseIntentsConnectFlowResult<ExecutionPreview>;
   run: SupplyRun;
   dappName: string;
   destinationTitle: string;
+  /** The user resumed or cancelled a found run: it is no longer waiting. */
+  onAttach: () => void;
+  /** Leaves a found run waiting and goes to the wallet list. */
+  onSwitchWallet: () => void;
   /** Leaves a finished (or never-started) run. */
   onDone: () => void;
 }) => {
   const { exec } = flow;
-  const { origin, option } = run;
+  const { origin, option, resumed } = run;
+  // Older executions may leave quote fields out: show only what is there.
+  const amount = (value: string | undefined, decimals: number) =>
+    value ? formatAmount(value, decimals) : undefined;
+
+  const waiting = resumed?.waiting ? resumed : undefined;
+  const executionId = exec.executionId ?? resumed?.id;
+  const failure = flow.preparationError ?? exec.error;
+  const described = failure
+    ? describeFailure(failure, origin?.symbol ?? 'funds')
+    : undefined;
+
   const quote = exec.execution?.quote ?? run.quoted.quote;
   const fee =
     exec.networkFee ??
@@ -197,7 +231,22 @@ export const ProgressScreen = ({
 
   let headline: ReactNode;
 
-  if (exec.phase === 'success') {
+  if (waiting) {
+    headline = (
+      <Notice tone="warning">
+        <p className="font-medium">
+          {waiting.needs === 'signature'
+            ? 'A supply from this wallet was never signed'
+            : 'A supply from this wallet is waiting for its deposit'}
+        </p>
+        <p className="mt-1 text-text-secondary">
+          {waiting.needs === 'signature'
+            ? 'Resume to sign it in your wallet, or cancel it to start over.'
+            : 'Resume to follow it (and see where to send the deposit), or cancel it to start over.'}
+        </p>
+      </Notice>
+    );
+  } else if (exec.phase === 'success') {
     headline = (
       <Notice tone="info">
         <div className="flex flex-col items-center gap-2 py-2 text-center">
@@ -206,9 +255,10 @@ export const ProgressScreen = ({
           </span>
           <p className="font-medium">Supplied to {destinationTitle}</p>
           <p className="text-text-secondary">
-            At least {formatAmount(quote.minAmountOut, option.decimals)}{' '}
-            {option.symbol}. It shows up in Your supplies on {dappName} within a
-            minute.
+            {quote.minAmountOut
+              ? `At least ${amount(quote.minAmountOut, option.decimals)} ${option.symbol}. `
+              : null}
+            It shows up in Your supplies on {dappName} within a minute.
           </p>
         </div>
       </Notice>
@@ -230,20 +280,23 @@ export const ProgressScreen = ({
         <p className="font-medium">The transfer didn&apos;t go through</p>
         <p className="mt-1 text-text-secondary">
           {exec.recovery?.kind === 'retry-transfer' && exec.recovery.cause
-            ? exec.recovery.cause.message
+            ? describeFailure(exec.recovery.cause, origin?.symbol ?? 'funds')
+                .title
             : 'Retry it, or cancel the supply.'}
         </p>
       </Notice>
     );
-  } else if (flow.preparationError ?? exec.error) {
+  } else if (described) {
     headline = (
       <Notice tone="warning">
         <p className="font-medium">
-          {exec.phase === 'cancelled' ? 'Cancelled' : 'The supply stopped'}
+          {exec.phase === 'cancelled' ? 'Cancelled' : described.title}
         </p>
-        <p className="mt-1 break-words text-text-secondary">
-          {(flow.preparationError ?? exec.error)?.message}
-        </p>
+        {described.detail ? (
+          <p className="mt-1 break-words text-text-secondary">
+            {described.detail}
+          </p>
+        ) : null}
       </Notice>
     );
   } else if (exec.phase === 'cancelled') {
@@ -275,29 +328,38 @@ export const ProgressScreen = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper exec={exec} />
+      <Stepper
+        exec={exec}
+        waitingAt={waiting && (waiting.needs === 'signature' ? 1 : 2)}
+      />
 
       {headline}
 
       <dl className="flex flex-col gap-1.5 rounded-xl bg-surface-raised p-3 shadow-box">
-        <Detail label="You send">
-          {formatAmount(quote.amountIn, origin.decimals)} {origin.symbol}{' '}
-          <span className="text-text-muted">
-            on {chainLabel(origin.blockchain)}
-          </span>
-        </Detail>
-        <Detail label="You supply at least">
-          {formatAmount(quote.minAmountOut, option.decimals)} {option.symbol}
-        </Detail>
+        {origin && quote.amountIn ? (
+          <Detail label="You send">
+            {amount(quote.amountIn, origin.decimals)} {origin.symbol}{' '}
+            <span className="text-text-muted">
+              on {chainLabel(origin.blockchain)}
+            </span>
+          </Detail>
+        ) : null}
+        {quote.minAmountOut ? (
+          <Detail label="You supply at least">
+            {amount(quote.minAmountOut, option.decimals)} {option.symbol}
+          </Detail>
+        ) : (
+          <Detail label="Supplying">{option.symbol}</Detail>
+        )}
         {fee ? (
           <Detail label="Network fee">
-            {formatAmount(fee, option.decimals)} {option.symbol}
+            {amount(fee, option.decimals)} {option.symbol}
           </Detail>
         ) : null}
         {exec.depositTxHash ? (
           <Detail label="Deposit">
             <TxLink
-              chain={origin.blockchain}
+              chain={origin?.blockchain ?? ''}
               hash={exec.depositTxHash}
               label="deposit transaction"
             />
@@ -312,12 +374,10 @@ export const ProgressScreen = ({
             />
           </Detail>
         ) : null}
-        {exec.executionId ? (
+        {executionId ? (
           <Detail label="Execution">
-            <span title={exec.executionId}>
-              {truncateMiddle(exec.executionId, 6, 4)}
-            </span>
-            <CopyButton value={exec.executionId} label="execution id" />
+            <span title={executionId}>{truncateMiddle(executionId, 6, 4)}</span>
+            <CopyButton value={executionId} label="execution id" />
           </Detail>
         ) : null}
       </dl>
@@ -326,9 +386,9 @@ export const ProgressScreen = ({
         <Notice tone="info">
           <p className="font-medium">Send the deposit yourself</p>
           <p className="mt-1 text-text-secondary">
-            {quote
-              ? `Exactly ${formatAmount(quote.amountIn, origin.decimals)} ${origin.symbol} on ${chainLabel(origin.blockchain)} to:`
-              : 'To:'}
+            {origin && quote.amountIn
+              ? `Exactly ${amount(quote.amountIn, origin.decimals)} ${origin.symbol} on ${chainLabel(origin.blockchain)} to:`
+              : 'The amount you were quoted, to:'}
           </p>
           <p className="mt-1 flex items-center gap-1 break-all font-medium">
             {exec.depositAddress}
@@ -341,6 +401,43 @@ export const ProgressScreen = ({
       ) : null}
 
       <div className="flex flex-col gap-2">
+        {waiting ? (
+          <>
+            <Button
+              variant="primary"
+              onClick={() => {
+                onAttach();
+                flow.exec.resume(waiting.id).catch(() => undefined);
+              }}>
+              Resume
+            </Button>
+            <Button
+              variant="secondary"
+              className="h-12"
+              onClick={() => {
+                onAttach();
+                flow.exec.cancel(waiting.id).catch(() => undefined);
+              }}>
+              Cancel the supply
+            </Button>
+            <Button
+              variant="ghost"
+              className="self-center px-2 py-1"
+              onClick={onSwitchWallet}>
+              Pay from another wallet
+            </Button>
+          </>
+        ) : null}
+        {described?.stillLive ? (
+          <Button
+            variant="primary"
+            disabled={flow.isBusy}
+            onClick={() => {
+              flow.exec.resume(described.stillLive!).catch(() => undefined);
+            }}>
+            Keep following
+          </Button>
+        ) : null}
         {flow.state === 'IN_FLIGHT' ? (
           <Button
             variant="primary"
