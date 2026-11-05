@@ -14,6 +14,11 @@ import {
   Skeleton,
   truncateMiddle,
 } from './ui';
+import { formatAmount, formatUsd } from './assets/amounts';
+import { AssetsScreen } from './assets/AssetsScreen';
+import { TokenLogo } from './assets/TokenLogo';
+import { chainLabel } from './assets/tokens';
+import type { AssetRow } from './assets/useWalletAssets';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
 import { PairingScreen } from './wallets/PairingScreen';
 import {
@@ -138,12 +143,20 @@ const SupplySession = ({
   });
 
   const [screen, setScreen] = useState<Screen | null>(null);
+  // The asset to pay with, for the wallet it was picked from.
+  const [picked, setPicked] = useState<{
+    walletKey: string;
+    row: AssetRow;
+  } | null>(null);
+
   const closeRef = useRef<HTMLButtonElement>(null);
   const { active } = session;
+  const asset = active && picked?.walletKey === active.key ? picked.row : null;
 
-  // Each opening starts over: the chosen wallet, or the list.
+  // Each opening starts over: the chosen wallet's assets, or the list.
   const close = () => {
     setScreen(null);
+    setPicked(null);
     onClose();
   };
 
@@ -170,7 +183,7 @@ const SupplySession = ({
   }, [open]);
 
   const blocked = !positionOwner || !destination.supported;
-  const view: 'blocked' | 'loading' | Screen | 'wallet' = (() => {
+  const view: 'blocked' | 'loading' | Screen | 'assets' | 'form' = (() => {
     if (blocked) {
       return 'blocked';
     }
@@ -183,7 +196,11 @@ const SupplySession = ({
       return 'pairing';
     }
 
-    return screen === 'wallets' || !active ? 'wallets' : 'wallet';
+    if (screen === 'wallets' || !active) {
+      return 'wallets';
+    }
+
+    return asset ? 'form' : 'assets';
   })();
 
   let title = 'Supply with Aurora';
@@ -233,7 +250,8 @@ const SupplySession = ({
       );
       break;
 
-    default:
+    case 'assets':
+      title = 'Choose an asset';
       onBack = () => setScreen('wallets');
       body = active ? (
         <div className="flex flex-col gap-4">
@@ -244,10 +262,34 @@ const SupplySession = ({
               setScreen(null);
             }}
           />
+          <AssetsScreen
+            onPick={(row) => setPicked({ walletKey: active.key, row })}
+          />
+        </div>
+      ) : null;
+      break;
+
+    default:
+      title = 'Supply';
+      onBack = () => setPicked(null);
+      body = asset ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3 rounded-xl bg-surface-raised p-3 shadow-box">
+            <TokenLogo symbol={asset.token.symbol} />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">
+                {asset.token.symbol} on {chainLabel(asset.token.blockchain)}
+              </p>
+              <p className="text-text-muted">
+                Balance {formatAmount(asset.amount, asset.token.decimals)}
+                {asset.usd === undefined ? null : ` · ${formatUsd(asset.usd)}`}
+              </p>
+            </div>
+          </div>
           <Notice tone="info">
-            <p className="font-medium">Your assets show up here next</p>
+            <p className="font-medium">The supply form comes next</p>
             <p className="mt-1 text-text-secondary">
-              Pick one, choose what to supply, and Aurora bridges it in.
+              Amount, the {dappName} reserve to supply into, and a live quote.
             </p>
           </Notice>
         </div>
