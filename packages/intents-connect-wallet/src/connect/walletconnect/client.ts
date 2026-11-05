@@ -25,6 +25,13 @@ export type WalletConnectClientOptions = {
   metadata: WalletConnectMetadata;
   /** EVM chain ids to request. Defaults to every EVM chain the engine routes. */
   chainIds?: readonly number[];
+  /**
+   * Keeps this client apart from any other WalletConnect client on the page:
+   * its own storage keys and its own Core (WalletConnect shares one Core per
+   * prefix through `globalThis`). Set it when the host page may run
+   * WalletConnect itself, e.g. a script injected into a dapp.
+   */
+  storagePrefix?: string;
 };
 
 /** The mobile wallet on the other end of a session. */
@@ -81,6 +88,7 @@ export const createWalletConnectClient = ({
   projectId = AURORA_WALLETCONNECT_PROJECT_ID,
   metadata,
   chainIds = Object.values(EVM_CHAIN_IDS),
+  storagePrefix,
 }: WalletConnectClientOptions): WalletConnectClient => {
   const chains = [...new Set(chainIds)].map((id) => `eip155:${id}`);
 
@@ -90,6 +98,7 @@ export const createWalletConnectClient = ({
     providerPromise ??= UniversalProvider.init({
       projectId,
       metadata: { description: '', icons: [], ...metadata },
+      ...(storagePrefix && { customStoragePrefix: storagePrefix }),
     }).catch((error: unknown) => {
       // A failed init (offline, blocked relay) may succeed on a later call.
       providerPromise = null;

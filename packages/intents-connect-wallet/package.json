@@ -49,7 +49,8 @@
     "./connect/stellar": "./dist/connect/stellar/index.js",
     "./connect/walletconnect": "./dist/connect/walletconnect/index.js",
     "./detect": "./dist/detect/index.js",
-    "./detect/react": "./dist/detect/react/index.js"
+    "./detect/react": "./dist/detect/react/index.js",
+    "./detect/connector": "./dist/detect/connector/index.js"
   },
   "peerDependencies": {
     "@aurora-is-near/intents-connect": "^7.28.0",

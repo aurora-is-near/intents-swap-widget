@@ -30,6 +30,7 @@ copies), so an EVM-only integration must not be made to install it.
 | `./connect/walletconnect` | headless WalletConnect (EVM mobile, QR) | `@walletconnect/universal-provider` |
 | `./detect` | wallets already connected to the page | — |
 | `./detect/react` | `useDetectedWallets` | `react` |
+| `./detect/connector` | `toWalletConnector` for any detected wallet | `viem`, `@solana/web3.js`, `@solana/spl-token` |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -152,6 +153,11 @@ Chain switches stay local to the provider (the session covers every EVM chain
 the engine routes). A transfer on a chain the phone wallet did not approve fails
 in the wallet. `onSessionEnd` reports a session the wallet ended from its side.
 
+Pass `storagePrefix` when the page may run WalletConnect itself, as a script
+injected into a dapp does. WalletConnect shares one Core per prefix through
+`globalThis`, so without one the client would reuse the page's Core (its
+project and its sessions) and write to the same storage keys.
+
 ## Detection
 
 `./detect` finds wallets injected into the page — EVM over EIP-6963, Solana
@@ -198,6 +204,11 @@ Each chain subpath has the adapter for its family — `toEvmWalletConnector`,
 `toNearWalletConnector`, which also accepts `./connect/near` state for the
 sandboxed wallets detection cannot see. They return
 `{ connector, unsupportedReason? }` rather than throwing.
+
+`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near? })`
+picks the adapter by family and hands it that family's options (e.g.
+`{ sol: { rpcUrl } }`). It pulls every family's transfer code, so it needs
+the peers of `./evm` and `./solana`.
 
 ## Deviations from the widget
 

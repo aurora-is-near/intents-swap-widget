@@ -26,8 +26,10 @@ Every chain SDK is an **optional peer dependency** behind its own subpath, so an
 | `/connect/appkit` | EVM + Solana connectors (Reown AppKit) | `react viem @reown/appkit @reown/appkit-adapter-ethers @reown/appkit-adapter-solana @solana/wallet-adapter-phantom @solana/wallet-adapter-solflare @solana/web3.js @solana/spl-token` |
 | `/connect/near` | NEAR connector (HOT, Meteor, MyNearWallet…) | `react @hot-labs/near-connect` |
 | `/connect/stellar` | Stellar connector (Freighter, xBull) | `react @creit.tech/stellar-wallets-kit @stellar/stellar-sdk` |
+| `/connect/walletconnect` | Headless WalletConnect: pair an EVM mobile wallet by QR | `@walletconnect/universal-provider` |
 | `/detect` | Wallets already connected to the page (EVM, Solana, NEAR), no prompts | none |
 | `/detect/react` | `useDetectedWallets()` | `react` |
+| `/detect/connector` | `toWalletConnector()` for a detected wallet of any family | `viem @solana/web3.js @solana/spl-token` |
 
 Always install `@aurora-is-near/intents-connect` and `@aurora-is-near/intents-connect-wallet`.
 
@@ -168,23 +170,20 @@ When your page (or the user's browser) already has a wallet connected, there is 
 ```tsx
 import { pickConnectedWallet } from '@aurora-is-near/intents-connect-wallet/detect';
 import { useDetectedWallets } from '@aurora-is-near/intents-connect-wallet/detect/react';
-import { toEvmWalletConnector } from '@aurora-is-near/intents-connect-wallet/evm';
-import { toSolanaWalletConnector } from '@aurora-is-near/intents-connect-wallet/solana';
-import { toNearWalletConnector } from '@aurora-is-near/intents-connect-wallet/near';
+import { toWalletConnector } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 
 const { ready, wallets } = useDetectedWallets();
 const detected = pickConnectedWallet(wallets, ['evm', 'sol', 'near']);
 
-const { connector, unsupportedReason } =
-  detected?.family === 'evm' ? toEvmWalletConnector(detected)
-  : detected?.family === 'sol' ? toSolanaWalletConnector(detected, { rpcUrl })
-  : detected?.family === 'near' ? toNearWalletConnector(detected)
+const { connector, unsupportedReason } = detected
+  ? toWalletConnector(detected, { sol: { rpcUrl } })
   : { connector: null };
 
 <IntentsConnectProvider api={api} wallet={connector} intentsApi={intentsApi}>…</IntentsConnectProvider>;
 ```
 
 - The adapters wire each chain's `makeTransfer`, so the connector runs executions as-is. `unsupportedReason` is `NOT_CONNECTED` (no shared account) or `MISSING_PUBLIC_KEY` (NEAR).
+- `toWalletConnector` dispatches to the family's adapter and passes it that family's options (`evm`, `sol`, `near`). It needs every family's peers. If you only handle some families, import their adapters directly: `toEvmWalletConnector` (`/evm`), `toSolanaWalletConnector` (`/solana`), `toNearWalletConnector` (`/near`).
 - `toEvmWalletConnector` omits `getChainId` unless you pass `networkGuard: true`: the network guard runs before the deposit transfer gets a chance to switch the wallet's chain.
 - Detection never prompts.
   - It calls a Solana or NEAR wallet only if the user connected it on this site with `connectDetectedWallet` (the one call that prompts; run it from a click).

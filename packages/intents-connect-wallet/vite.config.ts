@@ -35,6 +35,7 @@ const entries = [
   'connect/walletconnect',
   'detect',
   'detect/react',
+  'detect/connector',
 ];
 
 export default defineConfig({

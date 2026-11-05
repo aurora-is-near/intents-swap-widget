@@ -85,6 +85,17 @@ describe('createWalletConnectClient', () => {
     });
   });
 
+  it('keeps its own storage and Core under a storage prefix', async () => {
+    await createWalletConnectClient({
+      metadata,
+      storagePrefix: 'my-ext',
+    }).getPeer();
+
+    expect(fake.init).toHaveBeenCalledWith(
+      expect.objectContaining({ customStoragePrefix: 'my-ext' }),
+    );
+  });
+
   it('pairs: hands out the URI and resolves with the peer', async () => {
     const client = createWalletConnectClient({ metadata, chainIds: [1, 8453] });
     const onUri = vi.fn();
