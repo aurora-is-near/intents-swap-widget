@@ -7,6 +7,7 @@ import { createWalletConnectClient } from '@aurora-is-near/intents-connect-walle
 import type { WalletSource } from '@aurora-is-near/intents-connect-wallet/detect';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 import { stellarWallets } from '@aurora-is-near/intents-connect-wallet/detect/stellar';
+import { tronWallets } from '@aurora-is-near/intents-connect-wallet/detect/tron';
 
 /** Empty counts as unset. */
 const env = (value: unknown) =>
@@ -57,10 +58,14 @@ export const intentsConnectApi = createIntentsConnectApi({
 export const intentsApi = createIntentsApi({ apiKey: INTENTS_API_KEY ?? '' });
 
 /**
- * Wallet families detection doesn't build in: Freighter, xBull, LOBSTR and
- * Hana. Created once: the detector is keyed by source ids.
+ * Wallet families detection doesn't build in: Stellar (Freighter, xBull,
+ * LOBSTR, Hana) and TRON (TronLink). Created once: the detector is keyed by
+ * source ids.
  */
-export const walletSources: readonly WalletSource[] = [stellarWallets()];
+export const walletSources: readonly WalletSource[] = [
+  stellarWallets(),
+  tronWallets(),
+];
 
 /** A module constant: the modal re-derives its connector when it changes. */
 export const connectorOptions: WalletConnectorOptions = {

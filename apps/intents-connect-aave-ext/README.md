@@ -43,7 +43,8 @@ then reload the Aave tab.
 The modal pays from any wallet the page can see: EVM wallets (EIP-6963),
 Solana wallets (Wallet Standard) and NEAR extension wallets, found by the
 SDK's `./detect` without prompting, Stellar wallets (Freighter, xBull, LOBSTR
-and Hana, from `./detect/stellar`), or a phone over WalletConnect.
+and Hana, from `./detect/stellar`), TRON wallets (TronLink, from
+`./detect/tron`), or a phone over WalletConnect.
 
 - A wallet that already shares an account with app.aave.com (usually the one
   Aave uses) is picked without a prompt. Any other asks to connect first.
@@ -57,6 +58,11 @@ and Hana, from `./detect/stellar`), or a phone over WalletConnect.
   be blocked mid-supply.
 - Stellar pays from XLM. Stellar USDC is listed but its supply fails until
   the service creates its executions in memo mode.
+- TRON pays from TRX or USDT, through the wallet's own `tronWeb`. TronLink
+  can't revoke a site, so **Disconnect** only stops using it here. MAX keeps
+  2 TRX: the transfer's bandwidth and activating the fresh deposit address
+  (1.1 TRX). A USDT deposit burns about 13 TRX for energy unless the account
+  has staked energy; the form says so, and warns below 15 TRX.
 - Phone pairing uses a dev Reown project with `app.aave.com` on its allowed
   domains (override with `VITE_WALLETCONNECT_PROJECT_ID`), so Aurora's
   shared project doesn't need it. The client runs under its own storage

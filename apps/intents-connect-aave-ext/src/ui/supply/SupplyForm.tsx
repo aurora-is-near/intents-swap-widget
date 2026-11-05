@@ -17,7 +17,7 @@ import {
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
 import type { AssetRow } from '../assets/useWalletAssets';
-import { Button, ChevronIcon, Skeleton, useNow } from '../ui';
+import { Button, ChevronIcon, Notice, Skeleton, useNow } from '../ui';
 import { type DeliverableOption, matchingOption } from './options';
 import type { SupplyDestination } from './types';
 
@@ -41,7 +41,17 @@ const GAS_RESERVE: Record<string, string> = {
   // The fee is 0.00001 XLM: the balance read is already spendable, less the
   // account's minimum reserve.
   stellar: '0.01',
+  // Bandwidth, and 1.1 TRX to activate the fresh deposit address.
+  tron: '2',
 };
+
+/**
+ * TRX a TRC-20 (USDT) deposit burns for energy without staked energy: about
+ * 130k energy at 100 sun to a fresh deposit address.
+ */
+const TRC20_ENERGY_TRX = 13;
+/** Below this, a TRC-20 deposit is likely to run out of energy. */
+const TRC20_ENERGY_MIN_TRX = 15;
 
 const maxSpend = ({ token, amount }: AssetRow): string => {
   if (token.contractAddress) {
@@ -287,7 +297,7 @@ export const SupplyForm = ({
   const { token } = asset;
   const [amount, setAmount] = useState('');
   const [chosen, setChosen] = useState<string>();
-  const { tokens } = useWalletBalances();
+  const { tokens, balances } = useWalletBalances();
 
   const option =
     options.find((candidate) => candidate.id === chosen) ??
@@ -328,6 +338,21 @@ export const SupplyForm = ({
     : undefined;
 
   const refused = !preview && quote.error ? quote.error.message : '';
+
+  // A TRC-20 deposit pays its energy in TRX.
+  const trx =
+    token.blockchain === 'tron' && token.contractAddress
+      ? tokens.find(
+          (candidate) =>
+            candidate.blockchain === 'tron' && !candidate.contractAddress,
+        )
+      : undefined;
+
+  const trxHeld = trx
+    ? fromAtomic(balances[trx.assetId] ?? '0', trx.decimals)
+    : '';
+
+  const lowOnEnergy = !!trx && Number(trxHeld) < TRC20_ENERGY_MIN_TRX;
   const tooSmall = TOO_SMALL.test(refused);
   const noRoute = NO_ROUTE.test(refused);
 
@@ -460,6 +485,18 @@ export const SupplyForm = ({
           You already hold {token.symbol} on {chainLabel(token.blockchain)}:
           supply it with {dappName}&apos;s own Supply button.
         </p>
+      ) : null}
+
+      {trx ? (
+        <Notice tone={lowOnEnergy ? 'warning' : 'info'}>
+          <p className="text-text-secondary">
+            Sending {token.symbol} on TRON burns about {TRC20_ENERGY_TRX} TRX
+            for energy, unless the account has staked energy.
+            {lowOnEnergy
+              ? ` This wallet holds ${formatAmount(balances[trx.assetId] ?? '0', trx.decimals)} TRX, so the transfer may fail.`
+              : null}
+          </p>
+        </Notice>
       ) : null}
 
       {plan && option ? (
