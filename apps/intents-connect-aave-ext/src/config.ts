@@ -1,6 +1,7 @@
 import {
   createIntentsApi,
   createIntentsConnectApi,
+  DEFAULT_RPCS,
 } from '@aurora-is-near/intents-connect';
 import { createWalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
@@ -19,6 +20,23 @@ if (!INTENTS_API_KEY) {
 }
 
 export const ALCHEMY_API_KEY = env(import.meta.env.VITE_ALCHEMY_API_KEY);
+
+const ALCHEMY_NETWORK: Record<string, string> = {
+  eth: 'eth-mainnet',
+  base: 'base-mainnet',
+  arb: 'arb-mainnet',
+  pol: 'polygon-mainnet',
+  monad: 'monad-mainnet',
+};
+
+/** Reads Aave's reserves: Alchemy with a key, a public RPC without. */
+export const evmRpcUrl = (chain: string): string => {
+  const network = ALCHEMY_NETWORK[chain];
+
+  return ALCHEMY_API_KEY && network
+    ? `https://${network}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+    : (DEFAULT_RPCS[chain]?.[0] ?? '');
+};
 
 /** Builds and submits Solana deposit transfers. */
 const SOLANA_RPC_URL = ALCHEMY_API_KEY

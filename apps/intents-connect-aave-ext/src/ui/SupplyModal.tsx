@@ -1,7 +1,17 @@
-import { type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type Ref,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
 import {
   IntentsConnectProvider,
   type IntentsConnectProviderProps,
+  useIntentsConnectFlow,
+  useSupportedTokens,
 } from '@aurora-is-near/intents-connect/react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
@@ -14,11 +24,11 @@ import {
   Skeleton,
   truncateMiddle,
 } from './ui';
-import { formatAmount, formatUsd } from './assets/amounts';
 import { AssetsScreen } from './assets/AssetsScreen';
-import { TokenLogo } from './assets/TokenLogo';
-import { chainLabel } from './assets/tokens';
 import type { AssetRow } from './assets/useWalletAssets';
+import { deliverableOptions } from './supply/options';
+import { SupplyForm } from './supply/SupplyForm';
+import type { SupplyDestination } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
 import { PairingScreen } from './wallets/PairingScreen';
 import {
@@ -26,15 +36,6 @@ import {
   type WalletSession,
 } from './wallets/useWalletSession';
 import { WalletsScreen } from './wallets/WalletsScreen';
-
-export type SupplyDestination = {
-  /** Where the supply lands, e.g. "Aave Core V3 · Ethereum". */
-  title: string;
-  /** False: the dApp is on a market Intents Connect can't supply to. */
-  supported: boolean;
-  /** Shown when unsupported: what the user can do instead. */
-  hint?: string;
-};
 
 type SupplyModalProps = {
   open: boolean;
@@ -100,7 +101,11 @@ const Blocker = ({
   dappName,
   positionOwner,
   destination,
-}: Pick<SupplyModalProps, 'dappName' | 'positionOwner' | 'destination'>) => {
+  undeliverable,
+}: Pick<SupplyModalProps, 'dappName' | 'positionOwner' | 'destination'> & {
+  /** Intents Connect can deliver into none of the destination's options. */
+  undeliverable: boolean;
+}) => {
   if (!positionOwner) {
     return (
       <Notice tone="warning">
@@ -116,6 +121,11 @@ const Blocker = ({
   return (
     <Notice tone="warning">
       <p className="font-medium">This market isn&apos;t supported yet</p>
+      {undeliverable ? (
+        <p className="mt-1 text-text-secondary">
+          Aurora can&apos;t deliver into any of its reserves yet.
+        </p>
+      ) : null}
       {destination.hint ? (
         <p className="mt-1 text-text-secondary">{destination.hint}</p>
       ) : null}
@@ -124,23 +134,36 @@ const Blocker = ({
 };
 
 /**
- * The dialog and the wallet behind it. Mounted from the first opening on,
- * so the chosen wallet (and, later, a running supply) outlives a close.
+ * The dialog, inside the provider. Mounted from the first opening on, so
+ * the runner (and, later, a running supply) outlives a close.
  */
-const SupplySession = ({
+const SupplyFlow = ({
   open,
   onClose,
   dappName,
   positionOwner,
   destination,
-  sdk,
   walletConnect,
-  connectorOptions,
-}: SupplyModalProps) => {
-  const session: WalletSession = useWalletSession({
-    walletConnect,
-    connectorOptions,
+  session,
+}: Omit<SupplyModalProps, 'sdk' | 'connectorOptions'> & {
+  session: WalletSession;
+}) => {
+  const supported = useSupportedTokens();
+  // One runner: the form previews on it, and the supply will run on it.
+  const flow = useIntentsConnectFlow<ExecutionPreview, void>({
+    buildPlan: (preview) => preview.plan,
   });
+
+  const options = useMemo(
+    () =>
+      destination.options &&
+      deliverableOptions(destination.options, supported.destinations),
+    [destination.options, supported.destinations],
+  );
+
+  const optionsSettled = !!options && supported.status === 'success';
+  const optionsError = destination.optionsError ?? supported.error;
+  const undeliverable = optionsSettled && options.length === 0;
 
   const [screen, setScreen] = useState<Screen | null>(null);
   // The asset to pay with, for the wallet it was picked from.
@@ -182,7 +205,7 @@ const SupplySession = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open]);
 
-  const blocked = !positionOwner || !destination.supported;
+  const blocked = !positionOwner || !destination.supported || undeliverable;
   const view: 'blocked' | 'loading' | Screen | 'assets' | 'form' = (() => {
     if (blocked) {
       return 'blocked';
@@ -214,6 +237,7 @@ const SupplySession = ({
           dappName={dappName}
           positionOwner={positionOwner}
           destination={destination}
+          undeliverable={undeliverable}
         />
       );
       break;
@@ -272,60 +296,75 @@ const SupplySession = ({
     default:
       title = 'Supply';
       onBack = () => setPicked(null);
-      body = asset ? (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 rounded-xl bg-surface-raised p-3 shadow-box">
-            <TokenLogo symbol={asset.token.symbol} />
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">
-                {asset.token.symbol} on {chainLabel(asset.token.blockchain)}
-              </p>
-              <p className="text-text-muted">
-                Balance {formatAmount(asset.amount, asset.token.decimals)}
-                {asset.usd === undefined ? null : ` · ${formatUsd(asset.usd)}`}
-              </p>
-            </div>
-          </div>
-          <Notice tone="info">
-            <p className="font-medium">The supply form comes next</p>
-            <p className="mt-1 text-text-secondary">
-              Amount, the {dappName} reserve to supply into, and a live quote.
+
+      if (optionsError) {
+        body = (
+          <Notice tone="warning">
+            <p className="font-medium">
+              Couldn&apos;t load what can be supplied
             </p>
+            <p className="mt-1 text-text-secondary">{optionsError.message}</p>
           </Notice>
-        </div>
-      ) : null;
+        );
+      } else {
+        body = asset ? (
+          <SupplyForm
+            key={asset.id}
+            asset={asset}
+            options={options ?? []}
+            loadingOptions={!optionsSettled}
+            buildPlan={destination.buildPlan}
+            dappName={dappName}
+            exec={flow.exec}
+          />
+        ) : null;
+      }
   }
 
+  return open ? (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/32 px-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          close();
+        }
+      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="aurora-supply-title"
+        className="w-full max-w-[420px] rounded-xl bg-surface p-6 text-text-primary shadow-dialog">
+        <Header
+          title={title}
+          subtitle={
+            positionOwner
+              ? `To ${truncateMiddle(positionOwner)} on ${destination.title}`
+              : destination.title
+          }
+          onBack={onBack}
+          onClose={close}
+          closeRef={closeRef}
+        />
+        {body}
+      </div>
+    </div>
+  ) : null;
+};
+
+/** The wallet the user pays from, and the provider running on it. */
+const SupplySession = ({
+  sdk,
+  connectorOptions,
+  ...props
+}: SupplyModalProps) => {
+  const session = useWalletSession({
+    walletConnect: props.walletConnect,
+    connectorOptions,
+  });
+
   return (
-    <IntentsConnectProvider {...sdk} wallet={active?.connector ?? null}>
-      {open ? (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black/32 px-4"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              close();
-            }
-          }}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="aurora-supply-title"
-            className="w-full max-w-[420px] rounded-xl bg-surface p-6 text-text-primary shadow-dialog">
-            <Header
-              title={title}
-              subtitle={
-                positionOwner
-                  ? `To ${truncateMiddle(positionOwner)} on ${destination.title}`
-                  : destination.title
-              }
-              onBack={onBack}
-              onClose={close}
-              closeRef={closeRef}
-            />
-            {body}
-          </div>
-        </div>
-      ) : null}
+    <IntentsConnectProvider {...sdk} wallet={session.active?.connector ?? null}>
+      <SupplyFlow {...props} session={session} />
     </IntentsConnectProvider>
   );
 };

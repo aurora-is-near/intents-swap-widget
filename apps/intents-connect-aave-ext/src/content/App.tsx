@@ -1,15 +1,19 @@
-import { useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
 import { getAaveMarket, marketTitle } from '../aave/markets';
+import { buildAaveSupplyPlan } from '../aave/recipe';
+import { useAaveReserves } from '../aave/useAaveReserves';
 import {
   ALCHEMY_API_KEY,
   connectorOptions,
+  evmRpcUrl,
   intentsApi,
   intentsConnectApi,
   walletConnect,
 } from '../config';
 import { usePageState } from '../page/usePageState';
-import { type SupplyDestination, SupplyModal } from '../ui/SupplyModal';
+import { SupplyModal } from '../ui/SupplyModal';
+import type { SupplyDestination, SupplyOption } from '../ui/supply/types';
 
 const listeners = new Set<() => void>();
 let isOpen = false;
@@ -34,12 +38,17 @@ export const modal = {
 };
 
 const UNSUPPORTED_HINT =
-  'Switch Aave to Core, Prime, Base, Arbitrum, OP, Polygon, Avalanche, BNB Chain, Gnosis, Plasma, Monad or X Layer.';
+  'Switch Aave to Core, Prime, Base, Arbitrum, Polygon or Monad.';
 
 const SDK = {
   api: intentsConnectApi,
   intentsApi,
   alchemyApiKey: ALCHEMY_API_KEY,
+};
+
+/** Never called: the modal only builds plans for a supported market. */
+const noPlan = (): never => {
+  throw new Error('This market is not supported');
 };
 
 /**
@@ -50,17 +59,61 @@ export const App = () => {
   const open = useSyncExternalStore(modal.subscribe, modal.get);
   const { account, market } = usePageState(open);
   const aaveMarket = getAaveMarket(market);
+  const owner = account?.address ?? null;
+  const { reserves, error } = useAaveReserves(aaveMarket, evmRpcUrl, open);
+
+  // Stable while the market and its reserves are: a new option list or plan
+  // builder re-quotes.
+  const options = useMemo(
+    () =>
+      aaveMarket &&
+      reserves?.map((reserve): SupplyOption => {
+        // The wrapped native reserve takes the native token, through the
+        // gateway: that is the route the bridge has liquidity for.
+        const native =
+          aaveMarket.native?.reserve.toLowerCase() ===
+          reserve.asset.toLowerCase();
+
+        return {
+          id: reserve.asset,
+          symbol: native ? aaveMarket.native!.symbol : reserve.symbol,
+          chain: aaveMarket.chain,
+          tokenAddress: native ? undefined : reserve.asset,
+          decimals: reserve.decimals,
+          apy: reserve.supplyApy,
+          unavailable: reserve.unavailable,
+        };
+      }),
+    [aaveMarket, reserves],
+  );
+
+  const buildPlan = useMemo(
+    () =>
+      aaveMarket && owner ? buildAaveSupplyPlan(aaveMarket, owner) : noPlan,
+    [aaveMarket, owner],
+  );
 
   const destination: SupplyDestination = aaveMarket
-    ? { title: `Aave ${marketTitle(aaveMarket)}`, supported: true }
-    : { title: 'Aave', supported: false, hint: UNSUPPORTED_HINT };
+    ? {
+        title: `Aave ${marketTitle(aaveMarket)}`,
+        supported: true,
+        options,
+        optionsError: error,
+        buildPlan,
+      }
+    : {
+        title: 'Aave',
+        supported: false,
+        hint: UNSUPPORTED_HINT,
+        buildPlan,
+      };
 
   return (
     <SupplyModal
       open={open}
       onClose={modal.close}
       dappName="Aave"
-      positionOwner={account?.address ?? null}
+      positionOwner={owner}
       destination={destination}
       sdk={SDK}
       walletConnect={walletConnect}

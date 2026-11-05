@@ -1,5 +1,26 @@
+/**
+ * Smallest-unit amount from a decimal input. `undefined` when the input is
+ * malformed, has more fraction digits than the token, or is zero.
+ */
+export const toAtomic = (
+  value: string,
+  decimals: number,
+): string | undefined => {
+  const match = /^(\d+)(?:\.(\d*))?$/.exec(value.trim());
+
+  if (!match || (match[2]?.length ?? 0) > decimals) {
+    return undefined;
+  }
+
+  const atomic = BigInt(
+    `${match[1]}${(match[2] ?? '').padEnd(decimals, '0')}`,
+  ).toString();
+
+  return atomic === '0' ? undefined : atomic;
+};
+
 /** Exact decimal string of a smallest-unit amount. */
-const fromAtomic = (value: string, decimals: number): string => {
+export const fromAtomic = (value: string, decimals: number): string => {
   const padded = value.padStart(decimals + 1, '0');
   const whole = padded.slice(0, -decimals || undefined) || '0';
   const fraction = decimals ? padded.slice(-decimals).replace(/0+$/, '') : '';

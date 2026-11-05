@@ -11,7 +11,7 @@ everything it knows about the page and about Aave comes in through props.
 ```
 src/content/   MAIN-world entry: the button and the modal host
 src/page/      app.aave.com adapter: the button, the account (wagmi.store), the market
-src/aave/      Aave logic: markets (and, later, reserves and the supply recipe)
+src/aave/      Aave logic: markets, reserves (viem), the supply recipe
 src/config.ts  Intents Connect clients, the WalletConnect client, keys
 src/ui/        the modal, rendered in a shadow root
 ```
@@ -53,3 +53,22 @@ SDK's `./detect` without prompting, or a phone over WalletConnect.
   domains (override with `VITE_WALLETCONNECT_PROJECT_ID`), so Aurora's
   shared project doesn't need it. The client runs under its own storage
   prefix (`aurora-intents`), apart from Aave's own WalletConnect.
+
+## Supplying
+
+- **Markets.** Core, Prime, Base, Arbitrum, Polygon and Monad: the Aave
+  markets on chains Intents Connect delivers to. Others get "isn't supported
+  yet". The modal also blocks a market none of whose reserves it can deliver.
+- **Reserves.** Read from each market's AaveProtocolDataProvider: active, not
+  paused or frozen, with the supply APY. A reserve at its supply cap is listed
+  but can't be chosen. The form offers those whose token Intents Connect can
+  deliver (`useSupportedTokens`).
+- **Recipe.** The intermediary approves the Pool and calls
+  `supply(asset, amount, onBehalfOf, 0)`, with `onBehalfOf` the account
+  connected on Aave. The wrapped native reserve (WETH, or WPOL on Polygon) is
+  supplied as the native token through Aave's WrappedTokenGatewayV3
+  (`depositETH`), because the bridge has liquidity for native ETH and none
+  for Base WETH.
+- **Quote.** A live dry preview (`useQuotePreview`) of exactly what would
+  run: the minimum supplied, the network fee and the time. It refreshes
+  every 30 s.
