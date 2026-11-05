@@ -191,6 +191,7 @@ const { connector, unsupportedReason } = detected
 - `toWalletConnector` dispatches to the family's adapter and passes it that family's options (`evm`, `sol`, `near`, `stellar`). It needs every family's peers. If you only handle some families, import their adapters directly: `toEvmWalletConnector` (`/evm`), `toSolanaWalletConnector` (`/solana`), `toNearWalletConnector` (`/near`), `toStellarWalletConnector` (`/stellar`).
 - `toEvmWalletConnector` omits `getChainId` unless you pass `networkGuard: true`: the network guard runs before the deposit transfer gets a chance to switch the wallet's chain.
 - Detection never prompts.
+  - `connectDetectedWallet(wallet, { signal })` can be called off: some wallets never answer a closed popup, so abort when the user picks another wallet or cancels. It rejects with an `AbortError`, and a late answer isn't remembered.
   - It calls a Solana or NEAR wallet only if the user connected it on this site with `connectDetectedWallet` (the one call that prompts; run it from a click).
   - Such a wallet is then restored silently, once per page.
   - Other wallets are listed without an account: some, like HOT and the Solflare Snap, open their UI even when asked to stay silent.

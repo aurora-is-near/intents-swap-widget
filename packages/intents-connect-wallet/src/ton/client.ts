@@ -14,6 +14,12 @@ import { callTonWallet, toTonWalletError } from '@/ton/errors';
 import { prefixedStorage } from '@/ton/storage';
 import type { TonConnectClient, TonExtension, TonPeer } from '@/ton/types';
 
+/**
+ * How long an extension gets to answer a connect: one whose popup was closed
+ * (or that failed to load the manifest) never answers at all.
+ */
+const EXTENSION_CONNECT_TIMEOUT_MS = 60_000;
+
 /** What the client needs of `TonConnect`; tests pass a stub. */
 export type TonConnectLike = Pick<
   TonConnect,
@@ -174,10 +180,24 @@ export const createTonConnectClient = ({
         () => listeners.delete(onPeer),
         () => errorListeners.delete(onError),
       );
-      signal?.addEventListener('abort', () => {
+
+      const onAbort = () => {
         done();
-        reject(new Error('The pairing was abandoned'));
-      });
+        reject(
+          signal?.reason instanceof Error
+            ? signal.reason
+            : new Error('The connection was abandoned'),
+        );
+      };
+
+      if (signal?.aborted) {
+        onAbort();
+
+        return;
+      }
+
+      signal?.addEventListener('abort', onAbort, { once: true });
+      cleanup.push(() => signal?.removeEventListener('abort', onAbort));
     });
 
   const getPeer = () => {
@@ -237,16 +257,50 @@ export const createTonConnectClient = ({
           icon: imageUrl,
           jsBridgeKey,
         })),
-    connectExtension: async (jsBridgeKey) => {
-      const ton = await replaceSession();
-      const connected = nextPeer();
+    connectExtension: async (
+      jsBridgeKey,
+      { signal, timeoutMs = EXTENSION_CONNECT_TIMEOUT_MS } = {},
+    ) => {
+      const controller = new AbortController();
+      const onAbort = () =>
+        controller.abort(
+          signal?.reason instanceof Error && signal.reason.name !== 'AbortError'
+            ? signal.reason
+            : Object.assign(new Error('The connection was cancelled'), {
+                name: 'AbortError',
+              }),
+        );
 
-      ton.connect({ jsBridgeKey });
+      const timer = setTimeout(
+        () =>
+          controller.abort(new Error("The wallet didn't answer. Try again.")),
+        timeoutMs,
+      );
 
-      return connected;
+      if (signal?.aborted) {
+        onAbort();
+      } else {
+        signal?.addEventListener('abort', onAbort, { once: true });
+      }
+
+      try {
+        const ton = await replaceSession();
+        const connected = nextPeer(controller.signal);
+
+        try {
+          ton.connect({ jsBridgeKey }, { signal: controller.signal });
+        } catch (error) {
+          controller.abort(toTonWalletError(error));
+        }
+
+        return await connected;
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+      }
     },
     pair: async (onUri) => {
-      pairing?.abort();
+      pairing?.abort(new Error('The pairing was abandoned'));
 
       const controller = new AbortController();
 
@@ -274,7 +328,7 @@ export const createTonConnectClient = ({
       }
     },
     abortPairing: async () => {
-      pairing?.abort();
+      pairing?.abort(new Error('The pairing was abandoned'));
       pairing = undefined;
     },
     disconnect: async () => {

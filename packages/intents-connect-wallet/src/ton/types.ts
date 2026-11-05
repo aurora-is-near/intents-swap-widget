@@ -49,8 +49,15 @@ export type TonConnectClient = {
   onSessionEnd: (listener: () => void) => () => void;
   /** TON wallet extensions installed in this browser. */
   listExtensions: () => Promise<TonExtension[]>;
-  /** Connects an installed extension, through its own prompt. */
-  connectExtension: (jsBridgeKey: string) => Promise<TonPeer>;
+  /**
+   * Connects an installed extension, through its own prompt. An extension
+   * whose popup is closed never answers, so it gives up after `timeoutMs`
+   * (60 s by default), or when `signal` aborts.
+   */
+  connectExtension: (
+    jsBridgeKey: string,
+    options?: { signal?: AbortSignal; timeoutMs?: number },
+  ) => Promise<TonPeer>;
   /**
    * Starts a phone pairing: `onUri` receives the QR payload (a universal
    * `tc://` link any TON Connect wallet scans), and the promise resolves

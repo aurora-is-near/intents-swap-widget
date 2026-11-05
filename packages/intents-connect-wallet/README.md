@@ -205,6 +205,11 @@ Detection never prompts, and only calls a wallet when that is safe:
 user gesture, then `refresh()`. It records the wallet in localStorage
 (`intents-connect.connectedWallets`).
 
+Some wallets never answer a closed popup, so pass `{ signal }` to call an
+attempt off (e.g. when the user picks another wallet): it rejects at once
+with an `AbortError`, and the wallet's late answer is ignored, not
+remembered. TON extensions also give up on their own after 60 s.
+
 `disconnectDetectedWallet(wallet)` forgets it again and asks the wallet to
 revoke the connection, where it can. `pickConnectedWallet` skips a wallet the
 user disconnected, even one that still shares an account.

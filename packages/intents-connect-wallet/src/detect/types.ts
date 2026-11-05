@@ -151,13 +151,25 @@ export type WalletSource = {
   create: (onChange: () => void, readTimeoutMs: number) => WalletSourceHandle;
 };
 
+/** How a connection attempt can be called off. */
+export type ConnectOptions = {
+  /**
+   * Aborting stops waiting on the wallet: a prompt that can't be withdrawn
+   * is left alone, and its late answer is ignored.
+   */
+  signal?: AbortSignal;
+};
+
 /**
  * What a plug-in source's wallets carry, so `connectDetectedWallet`,
  * `disconnectDetectedWallet` and `toWalletConnector` need no family code.
  */
 export type PluggableWallet = {
-  /** Asks the wallet to share an account, through its own prompt. */
-  connect: () => Promise<void>;
+  /**
+   * Asks the wallet to share an account, through its own prompt. `signal`
+   * gives up waiting, where the wallet lets that go further.
+   */
+  connect: (options?: ConnectOptions) => Promise<void>;
   /** Asks the wallet to revoke the connection, where it can. */
   disconnect: () => Promise<void>;
   /** This wallet as a `WalletConnector`, given the family's options. */

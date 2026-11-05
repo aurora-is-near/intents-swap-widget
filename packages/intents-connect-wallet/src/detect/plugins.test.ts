@@ -122,6 +122,28 @@ describe('plug-in sources', () => {
     expect(getRememberedAddress(wallet.id)).toBeUndefined();
   });
 
+  it('stops waiting on a cancelled connection, and forgets it', async () => {
+    const wallet = pluginWallet();
+    const controller = new AbortController();
+
+    // A wallet that never answers, e.g. its popup was closed.
+    wallet.connect.mockReturnValue(
+      new Promise<undefined>(() => {
+        // Never settles.
+      }),
+    );
+
+    const connecting = connectDetectedWallet(wallet, {
+      signal: controller.signal,
+    });
+
+    controller.abort();
+
+    await expect(connecting).rejects.toThrow(/cancelled/);
+    expect(wallet.connect).toHaveBeenCalledWith({ signal: controller.signal });
+    expect(getRememberedConnection(wallet.id)).toBeUndefined();
+  });
+
   it("adapts itself, given its family's options", () => {
     const wallet = pluginWallet('GABC');
     const options = { stellar: { horizonUrls: ['https://horizon.test'] } };

@@ -145,7 +145,10 @@ describe('the TON Connect client', () => {
     const connecting = client.connectExtension('tonkeeper');
 
     await vi.waitFor(() =>
-      expect(ton.connect).toHaveBeenCalledWith({ jsBridgeKey: 'tonkeeper' }),
+      expect(ton.connect).toHaveBeenCalledWith(
+        { jsBridgeKey: 'tonkeeper' },
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      ),
     );
     ton.approve(tonkeeper());
 
@@ -196,6 +199,26 @@ describe('the TON Connect client', () => {
     await client.abortPairing();
 
     await expect(pairing).rejects.toThrow(/abandoned/);
+  });
+
+  it("gives up on an extension that never answers, or when it's cancelled", async () => {
+    const ton = fakeTonConnect();
+    const client = clientWith(ton);
+
+    // Its popup was closed: no status change, no error, ever.
+    await expect(
+      client.connectExtension('tonkeeper', { timeoutMs: 20 }),
+    ).rejects.toThrow(/didn't answer/);
+
+    const controller = new AbortController();
+    const cancelled = client.connectExtension('tonkeeper', {
+      signal: controller.signal,
+    });
+
+    await vi.waitFor(() => expect(ton.connect).toHaveBeenCalledTimes(2));
+    controller.abort();
+
+    await expect(cancelled).rejects.toThrow(/cancelled/);
   });
 
   it('signs text as the connected account, on mainnet', async () => {

@@ -41,8 +41,8 @@ export const tonWallets = (client: TonConnectClient): WalletSource => ({
         name: extension.name,
         icon: extension.icon,
         address,
-        connect: async () => {
-          await client.connectExtension(extension.jsBridgeKey);
+        connect: async (options) => {
+          await client.connectExtension(extension.jsBridgeKey, options);
         },
         disconnect: async () => {
           if (client.currentPeer()?.jsBridgeKey === extension.jsBridgeKey) {

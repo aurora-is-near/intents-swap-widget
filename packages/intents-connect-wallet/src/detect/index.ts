@@ -40,6 +40,7 @@ export type {
   InjectedNearWallet,
   NearInjectedAccount,
   PluggableWallet,
+  ConnectOptions,
   StandardWalletAccount,
   StandardWalletLike,
   UnsupportedReason,

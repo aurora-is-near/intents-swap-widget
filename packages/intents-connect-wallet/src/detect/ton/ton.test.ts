@@ -121,7 +121,10 @@ describe('tonWallets', () => {
     await connectDetectedWallet(walletOf(detector, 'ton:tonkeeper'));
     await detector.refresh();
 
-    expect(client.connectExtension).toHaveBeenCalledWith('tonkeeper');
+    expect(client.connectExtension).toHaveBeenCalledWith(
+      'tonkeeper',
+      expect.anything(),
+    );
     expect(walletOf(detector, 'ton:tonkeeper').address).toBe(PEER.address);
 
     // Another extension doesn't hold the session: nothing to end.
