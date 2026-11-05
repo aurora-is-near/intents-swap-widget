@@ -60,12 +60,13 @@ export const intentsConnectApi = createIntentsConnectApi({
 export const intentsApi = createIntentsApi({ apiKey: INTENTS_API_KEY ?? '' });
 
 /**
- * TON Connect's manifest, from this repo: wallets fetch it, phones included,
- * so it must be public. It's on the pushed branch until merged, then `main`.
+ * TON Connect's manifest (name, icon, dApp url): wallets fetch it when asked
+ * to connect, phones included, so it's public, in its own repo
+ * (github.com/aurora-is-near/ton-connect-manifest).
  */
 const TON_MANIFEST_URL =
   env(import.meta.env.VITE_TONCONNECT_MANIFEST_URL) ??
-  'https://raw.githubusercontent.com/aurora-is-near/intents-swap-widget/feat/aave-extension/apps/intents-connect-aave-ext/tonconnect/tonconnect-manifest.json';
+  'https://raw.githubusercontent.com/aurora-is-near/ton-connect-manifest/main/tonconnect-manifest.json';
 
 /**
  * TON Connect holds one wallet per session, so extensions and phones get a

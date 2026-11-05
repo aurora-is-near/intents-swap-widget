@@ -69,10 +69,10 @@ QR code: EVM over WalletConnect, TON over TON Connect.
   wallet has to share its public key and sign text (Tonkeeper and
   MyTonWallet do). MAX keeps 0.1 TON; a USDT deposit attaches 0.05 TON for
   fees, most of which comes back, and the form warns below 0.1 TON.
-- **The TON Connect manifest** is `tonconnect/tonconnect-manifest.json`,
-  served from GitHub at the pushed branch (`VITE_TONCONNECT_MANIFEST_URL`
-  overrides it). Wallets fetch it when connecting, so TON doesn't connect
-  until the branch is pushed; point it at `main` after merge.
+- **The TON Connect manifest** (name, icon, dApp url) lives in its own public
+  repo, [aurora-is-near/ton-connect-manifest](https://github.com/aurora-is-near/ton-connect-manifest),
+  served from `raw.githubusercontent.com` (`VITE_TONCONNECT_MANIFEST_URL`
+  overrides it). Wallets fetch it when connecting, phones included.
 - `@ton/core` uses Node's global `Buffer`: the build gives each `@ton/*`
   module the `buffer` package's (`vite.config.ts`), and Aave's page gets no
   `window.Buffer`.
