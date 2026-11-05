@@ -1,7 +1,8 @@
-import type {
-  ExecutionPlan,
-  Recipe,
-  Step,
+import {
+  type ExecutionPlan,
+  type Recipe,
+  type Step,
+  toQuoteAssetId,
 } from '@aurora-is-near/intents-connect';
 
 import type { SupplyInput } from '../ui/supply/types';
@@ -93,7 +94,8 @@ export const buildAaveSupplyPlan =
       params: undefined,
       // No deadline: the quote preview stamps a fresh one on every refresh.
       quote: {
-        originAsset: origin.assetId,
+        // Native NEAR is quoted as wNEAR; its deposit wraps it.
+        originAsset: toQuoteAssetId(origin),
         destinationAsset,
         amount,
         swapType: 'EXACT_INPUT',

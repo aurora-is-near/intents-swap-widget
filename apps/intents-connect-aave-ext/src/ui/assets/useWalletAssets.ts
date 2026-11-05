@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import {
   type BalanceToken,
-  NATIVE_NEAR_ASSET_ID,
+  toQuoteAssetId,
 } from '@aurora-is-near/intents-connect';
 import {
   useSupportedTokens,
@@ -26,16 +26,14 @@ export type AssetRow = {
 const byValue = (a: AssetRow, b: AssetRow) =>
   (b.usd ?? -1) - (a.usd ?? -1) || a.token.symbol.localeCompare(b.token.symbol);
 
+// Native NEAR is quoted as wNEAR, and its deposit wraps it.
 const unavailableReason = (
   id: string,
   payable: ReadonlySet<string> | undefined,
-): string | undefined => {
-  if (id === NATIVE_NEAR_ASSET_ID) {
-    return 'Wrap to wNEAR first';
-  }
-
-  return payable && !payable.has(id) ? 'Not supported yet' : undefined;
-};
+): string | undefined =>
+  payable && !payable.has(toQuoteAssetId({ assetId: id }))
+    ? 'Not supported yet'
+    : undefined;
 
 /**
  * Non-zero balances of the provider's wallet, highest value first, with

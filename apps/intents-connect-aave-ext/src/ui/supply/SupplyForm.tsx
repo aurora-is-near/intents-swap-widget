@@ -36,6 +36,8 @@ const GAS_RESERVE: Record<string, string> = {
   avax: '0.01',
   gnosis: '0.01',
   sol: '0.01',
+  // Storage, the wNEAR registrations and gas for wrapping on the way.
+  near: '0.05',
 };
 
 const maxSpend = ({ token, amount }: AssetRow): string => {
