@@ -6,7 +6,7 @@ export type PageThemeHints = {
   selectors?: {
     /** Its primary button: the accent and the CTA's text. */
     primaryButton?: string;
-    /** Its buttons: corner radius and density. */
+    /** Its buttons: corner radius. */
     button?: string;
     /** Its cards: surface color and corner radius. */
     card?: string;

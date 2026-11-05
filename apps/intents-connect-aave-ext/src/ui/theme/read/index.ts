@@ -21,7 +21,9 @@ const PILL = 999;
  * - for surfaces, the accent, secondary text and danger: its design
  *   system's variables (MUI, shadcn, Radix, Mantine, Bootstrap), then
  *   measured components;
- * - radii and density: always measured buttons and cards.
+ * - radii: always measured buttons and cards.
+ *
+ * Never the font size or spacing (density): the modal keeps its own.
  *
  * Synchronous and read-only; it never throws for a page it can't read,
  * leaving those fields unset.
@@ -136,17 +138,13 @@ export const readPageTheme = (
   set('textSecondary', fromSystem.textSecondary, system?.id ?? '');
   set('danger', fromSystem.danger, system?.id ?? '');
 
-  // Shapes and density: measured.
+  // Button corners: measured. Not their height: the modal keeps its own
+  // spacing (density) on every site, as it keeps its font size.
   const shape = controlShape(buttons);
 
   set(
     'controlRadius',
     shape && (shape.radius === PILL ? 24 : Math.round(shape.radius)),
-    `computed:buttons(${shape?.count})`,
-  );
-  set(
-    'density',
-    shape && Math.round(shape.density * 100) / 100,
     `computed:buttons(${shape?.count})`,
   );
 

@@ -86,7 +86,8 @@ export const SEED_FIELDS: readonly SeedField[] = [
     kind: 'range',
     step: 0.01,
     unit: '×',
-    about: 'Spacing, against a 4 px unit',
+    about:
+      "Spacing, against a 4 px unit: ours on every site, the page's isn't read",
   },
 ];
 

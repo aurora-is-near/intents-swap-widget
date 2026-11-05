@@ -109,16 +109,16 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
   field comes from the first source that has it, and `evidence` names it:
   1. the hints' `pin`;
   2. the page background, text and font family as rendered (html, body,
-     then the app root, `theme-color` last). Not the font size: the modal
-     keeps its own on every site;
+     then the app root, `theme-color` last);
   3. design-system variables, for surfaces, the accent and its text,
      secondary text and danger: MUI CssVars (its exact `*Channel` triples
      first), shadcn, Radix, Mantine, Bootstrap;
   4. measured components: the page's primary button (filled buttons that
      stand out, scored by chroma, size, a primary-sounding class and the
      hint selector), cards (area-weighted fills that differ from the page,
-     from a viewport grid), and the buttons' median radius and height for
-     the control radius and density. Radii and density are always measured.
+     from a viewport grid), and the buttons' median radius for the control
+     radius. Radii are always measured. Spacing (density) and the font size
+     are never read: the modal keeps its own on every site.
   - The accent's text and the emphasis weight come from the page's buttons
     painted in the accent, whichever source named it: Bootstrap has no
     variable for the white on its primary.

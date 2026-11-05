@@ -158,7 +158,7 @@ describe('paintedIn', () => {
 });
 
 describe('controlShape', () => {
-  it('takes the median radius and height of real buttons', () => {
+  it('takes the median radius of real buttons', () => {
     expect(
       controlShape([
         button({ radius: 8, height: 36 }),
@@ -168,7 +168,7 @@ describe('controlShape', () => {
         button({ radius: 7, height: 14, width: 14 }),
         button({ radius: 0, height: 20, boxed: false }),
       ]),
-    ).toEqual({ radius: 8, density: 40 / 36, count: 3 });
+    ).toEqual({ radius: 8, count: 3 });
   });
 
   it('calls a page of pills round', () => {

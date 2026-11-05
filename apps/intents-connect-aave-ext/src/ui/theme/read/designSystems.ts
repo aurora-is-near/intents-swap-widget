@@ -23,7 +23,7 @@ type DesignSystem = {
 
 /**
  * Design systems whose CSS variables name a page's palette. Colors only:
- * radii and density come from measured components (Aave's MUI radius
+ * radii come from measured components (Aave's MUI radius
  * variable says 4 px while its buttons render at 8).
  */
 const SYSTEMS: readonly DesignSystem[] = [

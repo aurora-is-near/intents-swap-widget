@@ -131,13 +131,10 @@ const isControl = (button: ButtonSample) =>
   button.height <= 64 &&
   button.width >= 48;
 
-/**
- * How the page shapes its buttons: their median corner radius (999 for
- * pills) and a density from their median height, against our 36 px.
- */
+/** How the page shapes its buttons: their median corner radius (999 for pills). */
 export const controlShape = (
   buttons: readonly ButtonSample[],
-): { radius: number; density: number; count: number } | undefined => {
+): { radius: number; count: number } | undefined => {
   const controls = buttons.filter(isControl);
 
   if (!controls.length) {
@@ -153,11 +150,7 @@ export const controlShape = (
       ? 999
       : median(controls.map((button) => button.radius));
 
-  return {
-    radius,
-    density: median(controls.map((button) => button.height)) / 36,
-    count: controls.length,
-  };
+  return { radius, count: controls.length };
 };
 
 /**
