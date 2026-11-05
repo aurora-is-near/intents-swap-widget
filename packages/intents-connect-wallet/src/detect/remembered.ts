@@ -73,6 +73,64 @@ export const getRememberedConnection = (
   id: string,
 ): RememberedConnection | undefined => read()[id];
 
+/**
+ * Addresses of wallets that can't share theirs silently (most Stellar
+ * wallets), so a reload restores them without a prompt. Keyed like the
+ * connections; cleared when the wallet is disconnected here.
+ */
+export const REMEMBERED_ADDRESSES_STORAGE_KEY =
+  'intents-connect.walletAddresses';
+
+const readAddresses = (): Record<string, string> => {
+  try {
+    const raw = localStorageOrUndefined()?.getItem(
+      REMEMBERED_ADDRESSES_STORAGE_KEY,
+    );
+
+    const stored: unknown = raw ? JSON.parse(raw) : {};
+
+    return stored && typeof stored === 'object' && !Array.isArray(stored)
+      ? Object.fromEntries(
+          Object.entries(stored).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
+          ),
+        )
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeAddress = (id: string, address: string | undefined) => {
+  const addresses = readAddresses();
+
+  if (address === undefined) {
+    delete addresses[id];
+  } else {
+    addresses[id] = address;
+  }
+
+  try {
+    localStorageOrUndefined()?.setItem(
+      REMEMBERED_ADDRESSES_STORAGE_KEY,
+      JSON.stringify(addresses),
+    );
+  } catch {
+    // Not remembered: the next visit asks the wallet again.
+  }
+};
+
+/** The address a plug-in wallet last shared here, if it was remembered. */
+export const getRememberedAddress = (id: string): string | undefined =>
+  readAddresses()[id];
+
+/** Remembers the address a wallet shared, for a silent restore. */
+export const rememberWalletAddress = (id: string, address: string) =>
+  writeAddress(id, address);
+
 export const rememberWalletConnection = (id: string) => write(id, 'connected');
 
-export const forgetWalletConnection = (id: string) => write(id, 'disconnected');
+export const forgetWalletConnection = (id: string) => {
+  write(id, 'disconnected');
+  writeAddress(id, undefined);
+};

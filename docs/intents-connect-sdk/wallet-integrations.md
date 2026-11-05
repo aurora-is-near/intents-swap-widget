@@ -193,6 +193,7 @@ const { connector, unsupportedReason } = detected
 - `disconnectDetectedWallet` forgets a wallet and asks it to revoke the connection, where it can. `pickConnectedWallet` then skips it.
 - NEAR detection only sees injected extension wallets. For sandboxed or in-app wallets use `/connect/near` — `toNearWalletConnector` also accepts `useNearConnector()` state.
 - Outside React, `createWalletDetector()` gives `getSnapshot`, `subscribe`, `refresh` and `destroy`. It is SSR-safe.
+- Other families plug in through `sources` (on `createWalletDetector` and `useDetectedWallets`), each shipped from its own subpath so `/detect` never pulls its chain SDK. Their wallets carry their own `connect`, `disconnect` and `toConnector`, which the functions above call.
 
 ## Solana step helpers
 

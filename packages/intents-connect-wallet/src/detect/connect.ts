@@ -4,6 +4,7 @@ import {
   rememberWalletConnection,
 } from '@/detect/remembered';
 import type { DetectedWallet } from '@/detect/types';
+import { isPluggableWallet } from '@/detect/pluggable';
 import { callWallet } from '@/detect/withTimeout';
 
 type ConnectFeature = { connect: () => Promise<unknown> };
@@ -19,6 +20,13 @@ type DisconnectFeature = { disconnect: () => Promise<void> };
 export const connectDetectedWallet = async (
   wallet: DetectedWallet,
 ): Promise<void> => {
+  if (isPluggableWallet(wallet)) {
+    await wallet.connect();
+    rememberWalletConnection(wallet.id);
+
+    return;
+  }
+
   switch (wallet.family) {
     case 'evm':
       await wallet.provider.request({ method: 'eth_requestAccounts' });
@@ -58,6 +66,12 @@ export const disconnectDetectedWallet = async (
   wallet: DetectedWallet,
 ): Promise<void> => {
   forgetWalletConnection(wallet.id);
+
+  if (isPluggableWallet(wallet)) {
+    await callWallet(() => wallet.disconnect()).catch(() => undefined);
+
+    return;
+  }
 
   await callWallet(async () => {
     switch (wallet.family) {

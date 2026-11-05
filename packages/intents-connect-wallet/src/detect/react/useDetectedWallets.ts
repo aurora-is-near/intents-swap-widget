@@ -29,6 +29,7 @@ const registry = new Map<string, Entry>();
 const keyOf = (options: WalletDetectorOptions) =>
   JSON.stringify({
     families: options.families ? [...options.families].sort() : undefined,
+    sources: options.sources?.map((source) => source.id).sort(),
     readTimeoutMs: options.readTimeoutMs,
   });
 

@@ -8,6 +8,7 @@ import type {
   WalletDetector,
   WalletDetectorOptions,
   WalletDetectorSnapshot,
+  WalletSourceHandle,
 } from '@/detect/types';
 
 const EMPTY: WalletDetectorSnapshot = Object.freeze({
@@ -25,9 +26,21 @@ const describe = (wallet: DetectedWallet) =>
     wallet.id,
     wallet.name,
     wallet.address,
-    wallet.family === 'evm' ? wallet.chainId : '',
-    wallet.family === 'near' ? wallet.publicKey : '',
+    'chainId' in wallet ? wallet.chainId : '',
+    'publicKey' in wallet ? wallet.publicKey : '',
   ].join('|');
+
+/**
+ * What identifies the wallet's live object: a re-announced wallet can bring
+ * a new provider. A plug-in wallet is compared as a whole.
+ */
+const handleOf = (wallet: DetectedWallet): unknown => {
+  if ('provider' in wallet) {
+    return wallet.provider;
+  }
+
+  return 'wallet' in wallet ? wallet.wallet : wallet;
+};
 
 const sameWallets = (
   a: readonly DetectedWallet[],
@@ -37,10 +50,7 @@ const sameWallets = (
   a.every(
     (wallet, index) =>
       describe(wallet) === describe(b[index]) &&
-      // A re-announced wallet can bring a new provider object.
-      (wallet.family === 'evm'
-        ? wallet.provider === (b[index] as typeof wallet).provider
-        : wallet.wallet === (b[index] as typeof wallet).wallet),
+      handleOf(wallet) === handleOf(b[index]),
   );
 
 /**
@@ -52,6 +62,7 @@ const sameWallets = (
  * - Solana: the Wallet Standard (`solana:mainnet` wallets that can sign),
  *   read from `wallet.accounts`.
  * - NEAR: near-connect's injected extension wallets.
+ * - Any family a plug-in source covers (`sources`), from its own subpath.
  *
  * A Solana or NEAR wallet the user connected on this site
  * (`connectDetectedWallet`) is also restored silently; no other wallet is
@@ -72,7 +83,11 @@ export const createWalletDetector = (
     };
   }
 
-  const { families = DEFAULT_FAMILIES, readTimeoutMs = 2000 } = options;
+  const {
+    families = DEFAULT_FAMILIES,
+    sources: plugins = [],
+    readTimeoutMs = 2000,
+  } = options;
 
   let snapshot = EMPTY;
   let destroyed = false;
@@ -82,14 +97,8 @@ export const createWalletDetector = (
 
   const notify = () => listeners.forEach((listener) => listener());
 
-  type Source = {
-    start: () => void;
-    read: () => Promise<DetectedWallet[]>;
-    stop: () => void;
-  };
-
   // Filled below, once the refresh it triggers exists.
-  const sources: Source[] = [];
+  const sources: WalletSourceHandle[] = [];
 
   const pass = async () => {
     // One family failing (a wallet's code throwing where we did not expect
@@ -167,6 +176,10 @@ export const createWalletDetector = (
   if (families.includes('near')) {
     sources.push(createNearSource(scheduleRefresh, readTimeoutMs));
   }
+
+  plugins.forEach((plugin) => {
+    sources.push(plugin.create(scheduleRefresh, readTimeoutMs));
+  });
 
   sources.forEach((source) => source.start());
   scheduleRefresh();

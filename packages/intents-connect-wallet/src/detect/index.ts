@@ -14,10 +14,14 @@ export {
   disconnectDetectedWallet,
 } from '@/detect/connect';
 export { createWalletDetector, pickConnectedWallet } from '@/detect/detector';
+export { isPluggableWallet } from '@/detect/pluggable';
 export {
   forgetWalletConnection,
+  getRememberedAddress,
   getRememberedConnection,
+  REMEMBERED_ADDRESSES_STORAGE_KEY,
   REMEMBERED_WALLETS_STORAGE_KEY,
+  rememberWalletAddress,
   rememberWalletConnection,
   type RememberedConnection,
 } from '@/detect/remembered';
@@ -32,10 +36,13 @@ export type {
   Eip1193Like,
   InjectedNearWallet,
   NearInjectedAccount,
+  PluggableWallet,
   StandardWalletAccount,
   StandardWalletLike,
   UnsupportedReason,
   WalletDetector,
   WalletDetectorOptions,
   WalletDetectorSnapshot,
+  WalletSource,
+  WalletSourceHandle,
 } from '@/detect/types';

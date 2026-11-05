@@ -205,6 +205,16 @@ Each chain subpath has the adapter for its family — `toEvmWalletConnector`,
 sandboxed wallets detection cannot see. They return
 `{ connector, unsupportedReason? }` rather than throwing.
 
+Other families plug in from their own subpaths, so `./detect` never pulls
+their chain SDK: pass their sources to `createWalletDetector({ sources })` or
+`useDetectedWallets({ sources })`. A plug-in wallet carries its own
+`connect`, `disconnect` and `toConnector` (`PluggableWallet`), which
+`connectDetectedWallet`, `disconnectDetectedWallet` and `toWalletConnector`
+call; its options go under its family name. A source keeps the same wallet
+objects while nothing changed, since the detector compares them by identity.
+`rememberWalletAddress` / `getRememberedAddress` let a source restore a wallet
+that can't share its address silently; disconnecting clears it.
+
 `./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near? })`
 picks the adapter by family and hands it that family's options (e.g.
 `{ sol: { rpcUrl } }`). It pulls every family's transfer code, so it needs

@@ -1,5 +1,6 @@
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
 
+import { isPluggableWallet } from '@/detect/pluggable';
 import type { DetectedWallet, UnsupportedReason } from '@/detect/types';
 import {
   type EvmWalletConnectorOptions,
@@ -8,7 +9,10 @@ import {
 import { toNearWalletConnector } from '@/near/toWalletConnector';
 import { toSolanaWalletConnector } from '@/solana/toWalletConnector';
 
-/** Options per wallet family, handed to that family's adapter. */
+/**
+ * Options per wallet family, handed to that family's adapter. A plug-in
+ * family's options go under its family name too.
+ */
 export type WalletConnectorOptions = {
   evm?: EvmWalletConnectorOptions;
   sol?: {
@@ -34,6 +38,14 @@ export const toWalletConnector = (
   connector: WalletConnector | null;
   unsupportedReason?: UnsupportedReason;
 } => {
+  // A plug-in wallet adapts itself, with its family's options, so this
+  // entry never imports a plug-in's chain SDK.
+  if (isPluggableWallet(detected)) {
+    return detected.toConnector(
+      (options as Record<string, unknown>)[detected.family],
+    );
+  }
+
   switch (detected.family) {
     case 'evm':
       return toEvmWalletConnector(detected, options.evm);

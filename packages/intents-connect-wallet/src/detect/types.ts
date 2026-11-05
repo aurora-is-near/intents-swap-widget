@@ -1,3 +1,5 @@
+import type { WalletConnector } from '@aurora-is-near/intents-connect';
+
 /** Wallet families that can be detected in a page. */
 export type DetectedFamily = 'evm' | 'sol' | 'near';
 
@@ -91,8 +93,48 @@ export type WalletDetectorSnapshot = {
   wallets: readonly DetectedWallet[];
 };
 
+/** What a running source does; built-in families have one each too. */
+export type WalletSourceHandle = {
+  start: () => void;
+  read: () => Promise<DetectedWallet[]>;
+  stop: () => void;
+};
+
+/**
+ * Detection for a family outside the built-in ones, shipped from that
+ * family's own subpath (e.g. `./detect/stellar`), so `./detect` never pulls
+ * its chain SDK.
+ *
+ * `read` should return the same wallet objects while nothing changed: the
+ * detector compares a plug-in wallet by identity.
+ */
+export type WalletSource = {
+  /** Unique per source. Detectors with different sources are not shared. */
+  id: string;
+  /** `onChange` schedules a pass; `readTimeoutMs` is the per-wallet budget. */
+  create: (onChange: () => void, readTimeoutMs: number) => WalletSourceHandle;
+};
+
+/**
+ * What a plug-in source's wallets carry, so `connectDetectedWallet`,
+ * `disconnectDetectedWallet` and `toWalletConnector` need no family code.
+ */
+export type PluggableWallet = {
+  /** Asks the wallet to share an account, through its own prompt. */
+  connect: () => Promise<void>;
+  /** Asks the wallet to revoke the connection, where it can. */
+  disconnect: () => Promise<void>;
+  /** This wallet as a `WalletConnector`, given the family's options. */
+  toConnector: (options?: unknown) => {
+    connector: WalletConnector | null;
+    unsupportedReason?: UnsupportedReason;
+  };
+};
+
 export type WalletDetectorOptions = {
   families?: readonly DetectedFamily[];
+  /** Plug-in sources, detected alongside `families`. */
+  sources?: readonly WalletSource[];
   /** Per-wallet budget for silent reads. One stuck wallet must not stall the rest. */
   readTimeoutMs?: number;
 };
