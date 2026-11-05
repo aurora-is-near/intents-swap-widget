@@ -12,10 +12,15 @@ everything it knows about the page and about Aave comes in through props.
 src/content/   MAIN-world entry: the button and the modal host
 src/page/      app.aave.com adapter: the button, the account (wagmi.store), the market
 src/aave/      Aave logic: markets (and, later, reserves and the supply recipe)
+src/config.ts  Intents Connect clients, the WalletConnect client, keys
 src/ui/        the modal, rendered in a shadow root
 ```
 
 ## Run it
+
+Copy `.env.example` to `.env.local` and set `VITE_INTENTS_API_KEY` (and,
+optionally, `VITE_ALCHEMY_API_KEY`). Vite reads it when a build starts, so
+restart `dev` after changing it.
 
 ```bash
 # Node 22, from the repo root
@@ -31,3 +36,20 @@ Then, in Chrome:
 
 After a rebuild, click the extension's reload icon in `chrome://extensions`,
 then reload the Aave tab.
+
+## Wallets
+
+The modal pays from any wallet the page can see: EVM wallets (EIP-6963),
+Solana wallets (Wallet Standard) and NEAR extension wallets, found by the
+SDK's `./detect` without prompting, or a phone over WalletConnect.
+
+- A wallet that already shares an account with app.aave.com (usually the one
+  Aave uses) is picked without a prompt. Any other asks to connect first.
+- The choice is remembered (`aurora-intents.wallet` in localStorage).
+- **Disconnect** on an EVM wallet only stops using it here. Revoking its
+  permission would also disconnect Aave. Solana and NEAR wallets are asked
+  to disconnect.
+- Phone pairing uses a dev Reown project with `app.aave.com` on its allowed
+  domains (override with `VITE_WALLETCONNECT_PROJECT_ID`), so Aurora's
+  shared project doesn't need it. The client runs under its own storage
+  prefix (`aurora-intents`), apart from Aave's own WalletConnect.

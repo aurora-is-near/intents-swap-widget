@@ -26,6 +26,8 @@
   font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
   line-height: 20px;
+  /* Inter's contextual alternates draw "0x" as "0×" in addresses. */
+  font-variant-ligatures: no-contextual;
   -webkit-font-smoothing: antialiased;
 }
 

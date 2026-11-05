@@ -1,6 +1,13 @@
 import { useSyncExternalStore } from 'react';
 
 import { getAaveMarket, marketTitle } from '../aave/markets';
+import {
+  ALCHEMY_API_KEY,
+  connectorOptions,
+  intentsApi,
+  intentsConnectApi,
+  walletConnect,
+} from '../config';
 import { usePageState } from '../page/usePageState';
 import { type SupplyDestination, SupplyModal } from '../ui/SupplyModal';
 
@@ -29,6 +36,12 @@ export const modal = {
 const UNSUPPORTED_HINT =
   'Switch Aave to Core, Prime, Base, Arbitrum, OP, Polygon, Avalanche, BNB Chain, Gnosis, Plasma, Monad or X Layer.';
 
+const SDK = {
+  api: intentsConnectApi,
+  intentsApi,
+  alchemyApiKey: ALCHEMY_API_KEY,
+};
+
 /**
  * The integration: reads what app.aave.com shows and hands it to the modal,
  * as a dApp would pass its own state to the UI package.
@@ -46,8 +59,12 @@ export const App = () => {
     <SupplyModal
       open={open}
       onClose={modal.close}
+      dappName="Aave"
       positionOwner={account?.address ?? null}
       destination={destination}
+      sdk={SDK}
+      walletConnect={walletConnect}
+      connectorOptions={connectorOptions}
     />
   );
 };

@@ -38,8 +38,7 @@ export const createShadowHost = (id: string): HTMLElement => {
   host.id = id;
   // Out of the page's flow, and above anything the page renders. Only
   // placement goes inline: an inline style beats every `:host` rule.
-  host.style.cssText =
-    'position: fixed; top: 0; left: 0; z-index: 2147483647;';
+  host.style.cssText = 'position: fixed; top: 0; left: 0; z-index: 2147483647;';
 
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
