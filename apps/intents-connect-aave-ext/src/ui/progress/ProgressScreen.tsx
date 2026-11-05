@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { ExecutionPreview, Phase } from '@aurora-is-near/intents-connect';
 import type {
   UseExecutionResult,
@@ -14,6 +14,7 @@ import {
   cx,
   Notice,
   truncateMiddle,
+  useNow,
 } from '../ui';
 import type { SupplyRun } from './types';
 
@@ -49,22 +50,6 @@ const stoppedAt = (exec: UseExecutionResult): number => {
 
       return exec.executionId ? 1 : 0;
   }
-};
-
-const useNow = (enabled: boolean) => {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (!enabled) {
-      return undefined;
-    }
-
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-
-    return () => clearInterval(timer);
-  }, [enabled]);
-
-  return now;
 };
 
 /** Segmented progress; `halted` colours the step the run stopped at. */

@@ -6,6 +6,23 @@ import {
   useState,
 } from 'react';
 
+/** The current time, ticking every second while `enabled`. */
+export const useNow = (enabled: boolean) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => clearInterval(timer);
+  }, [enabled]);
+
+  return now;
+};
+
 export const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(' ');
 
@@ -87,6 +104,41 @@ export const BackIcon = () => icon(<path d="m15 18-6-6 6-6" />, 16);
 export const ChevronIcon = () => icon(<path d="m9 18 6-6-6-6" />, 16);
 export const CheckIcon = ({ size = 14 }: { size?: number }) =>
   icon(<path d="M20 6 9 17l-5-5" />, size);
+export const QrIcon = ({ size = 16 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+    </>,
+    size,
+  );
+export const BrowserIcon = ({ size = 16 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01" />
+    </>,
+    size,
+  );
+export const SearchIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </>,
+    size,
+  );
+export const WalletGlyph = ({ size = 18 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <path d="M3 10h18M16 15h2M7 6V4.5A1.5 1.5 0 0 1 8.5 3H17" />
+    </>,
+    size,
+  );
+
 const CopyIcon = () =>
   icon(
     <>

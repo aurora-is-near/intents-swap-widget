@@ -32,7 +32,6 @@ import { deliverableOptions } from './supply/options';
 import { SupplyForm } from './supply/SupplyForm';
 import type { SupplyDestination } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
-import { PairingScreen } from './wallets/PairingScreen';
 import {
   useWalletSession,
   type WalletSession,
@@ -46,6 +45,8 @@ type SupplyModalProps = {
   dappName: string;
   /** The account the supply is made for: the one connected on the dApp. */
   positionOwner: string | null;
+  /** The dApp's name for the wallet it is connected with, e.g. MetaMask. */
+  dappWalletName?: string;
   destination: SupplyDestination;
   /** Intents Connect: the API clients and options, minus the wallet. */
   sdk: Omit<IntentsConnectProviderProps, 'wallet' | 'children'>;
@@ -56,7 +57,7 @@ type SupplyModalProps = {
 };
 
 /** Screens the user navigates to; otherwise the wallet decides. */
-type Screen = 'wallets' | 'pairing';
+type Screen = 'wallets';
 
 const Header = ({
   title,
@@ -66,6 +67,7 @@ const Header = ({
   closeRef,
 }: {
   title: string;
+  /** Left out when empty. */
   subtitle: string;
   onBack?: () => void;
   onClose: () => void;
@@ -85,7 +87,9 @@ const Header = ({
       <h2 id="aurora-supply-title" className="text-base font-medium leading-6">
         {title}
       </h2>
-      <p className="mt-0.5 truncate text-text-secondary">{subtitle}</p>
+      {subtitle ? (
+        <p className="mt-0.5 text-text-secondary">{subtitle}</p>
+      ) : null}
     </div>
     <Button
       ref={closeRef}
@@ -144,6 +148,7 @@ const SupplyFlow = ({
   onClose,
   dappName,
   positionOwner,
+  dappWalletName,
   destination,
   walletConnect,
   session,
@@ -212,6 +217,10 @@ const SupplyFlow = ({
   }, [open]);
 
   const blocked = !positionOwner || !destination.supported || undeliverable;
+  const destinationLine = positionOwner
+    ? `To ${truncateMiddle(positionOwner)} on ${destination.title}`
+    : destination.title;
+
   const view: 'progress' | 'blocked' | 'loading' | Screen | 'assets' | 'form' =
     (() => {
       // Before anything else: the page may have changed under a running supply.
@@ -227,10 +236,6 @@ const SupplyFlow = ({
         return 'loading';
       }
 
-      if (screen === 'pairing' && walletConnect) {
-        return 'pairing';
-      }
-
       if (screen === 'wallets' || !active) {
         return 'wallets';
       }
@@ -239,12 +244,16 @@ const SupplyFlow = ({
     })();
 
   let title = 'Supply with Aurora';
+  // Choosing what to pay with says what this is for; a running supply and a
+  // blocked one say where it goes.
+  let subtitle = `To supply an asset to ${dappName} position from any wallet on any chain.`;
   let onBack: (() => void) | undefined;
   let body: ReactNode;
 
   switch (view) {
     case 'progress':
       title = flow.exec.phase === 'success' ? 'Supplied' : 'Supplying';
+      subtitle = destinationLine;
       body = run ? (
         <ProgressScreen
           flow={flow}
@@ -265,6 +274,7 @@ const SupplyFlow = ({
       break;
 
     case 'blocked':
+      subtitle = destinationLine;
       body = (
         <Blocker
           dappName={dappName}
@@ -279,20 +289,6 @@ const SupplyFlow = ({
       body = <Skeleton className="h-[220px]" />;
       break;
 
-    case 'pairing':
-      title = 'Connect your phone';
-      onBack = () => setScreen('wallets');
-      body = (
-        <PairingScreen
-          walletConnect={walletConnect!}
-          onPaired={(peer) => {
-            session.selectPhone(peer);
-            setScreen(null);
-          }}
-        />
-      );
-      break;
-
     case 'wallets':
       title = 'Choose a wallet';
       body = (
@@ -300,9 +296,9 @@ const SupplyFlow = ({
           session={session}
           dappName={dappName}
           dappAccount={positionOwner}
-          canPair={!!walletConnect}
+          dappWalletName={dappWalletName}
+          walletConnect={walletConnect}
           onPicked={() => setScreen(null)}
-          onPair={() => setScreen('pairing')}
         />
       );
       break;
@@ -328,6 +324,7 @@ const SupplyFlow = ({
 
     default:
       title = 'Supply';
+      subtitle = '';
       onBack = () => setPicked(null);
 
       if (optionsError) {
@@ -378,11 +375,7 @@ const SupplyFlow = ({
         className="w-full max-w-[420px] rounded-xl bg-surface p-6 text-text-primary shadow-dialog">
         <Header
           title={title}
-          subtitle={
-            positionOwner
-              ? `To ${truncateMiddle(positionOwner)} on ${destination.title}`
-              : destination.title
-          }
+          subtitle={subtitle}
           onBack={onBack}
           onClose={close}
           closeRef={closeRef}

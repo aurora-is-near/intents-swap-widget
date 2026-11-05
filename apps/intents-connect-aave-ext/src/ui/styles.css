@@ -31,6 +31,16 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Preflight leaves buttons on the default arrow. */
+@layer base {
+  button:not(:disabled),
+  [role='button'],
+  [role='tab'],
+  a[href] {
+    cursor: pointer;
+  }
+}
+
 @theme inline {
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);

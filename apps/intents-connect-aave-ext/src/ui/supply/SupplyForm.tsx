@@ -17,7 +17,7 @@ import {
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
 import type { AssetRow } from '../assets/useWalletAssets';
-import { Button, ChevronIcon, Skeleton } from '../ui';
+import { Button, ChevronIcon, Skeleton, useNow } from '../ui';
 import { type DeliverableOption, matchingOption } from './options';
 import type { SupplyDestination } from './types';
 
@@ -59,6 +59,8 @@ const TOO_SMALL = /gas fee exceeds/i;
 const NO_ROUTE = /no liquidity/i;
 /** Worth of the dry quote that measures a too-small amount's fee. */
 const PROBE_USD = 50;
+/** How often the live quote is refreshed. */
+const QUOTE_REFRESH_MS = 30_000;
 
 const formatApy = (apy: number) =>
   `${(apy * 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`;
@@ -192,6 +194,15 @@ const QuoteLines = ({
   problem?: string;
 }) => {
   const { preview } = quote;
+  // The refresh timer starts when a quote arrives: count down from there.
+  const [arrival, setArrival] = useState({ preview, at: Date.now() });
+
+  if (arrival.preview !== preview) {
+    setArrival({ preview, at: Date.now() });
+  }
+
+  const now = useNow(!!preview && !quote.isLoading);
+  const nextIn = Math.ceil((arrival.at + QUOTE_REFRESH_MS - now) / 1000);
 
   if (quote.error && !preview) {
     return (
@@ -237,9 +248,9 @@ const QuoteLines = ({
       ) : null}
       {time ? <Line label="Estimated time">{time}</Line> : null}
       <p className="mt-1 text-text-muted">
-        {quote.isLoading
+        {quote.isLoading || nextIn <= 0
           ? 'Updating the quote…'
-          : 'The quote updates every 30 s.'}
+          : `The quote will update in ${nextIn} sec.`}
       </p>
     </>
   );
@@ -295,7 +306,12 @@ export const SupplyForm = ({
     [atomic, option, tooMuch, sameToken, token, buildPlan],
   );
 
-  const quote = useQuotePreview<void>({ exec, plan });
+  const quote = useQuotePreview<void>({
+    exec,
+    plan,
+    refreshIntervalMs: QUOTE_REFRESH_MS,
+  });
+
   const { preview } = quote;
   const destinationPrice = option
     ? tokens.find((candidate) => candidate.assetId === option.destinationAsset)

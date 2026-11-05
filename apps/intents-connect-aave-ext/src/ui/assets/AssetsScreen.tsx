@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Button, ChevronIcon, Skeleton } from '../ui';
+import { Button, ChevronIcon, SearchIcon, Skeleton, WalletGlyph } from '../ui';
 import { formatAmount, formatUsd } from './amounts';
 import { TokenLogo } from './TokenLogo';
 import { chainLabel } from './tokens';
@@ -17,32 +17,17 @@ const matches = ({ token }: AssetRow, query: string) => {
   );
 };
 
-const SearchIcon = () => (
-  <svg
-    width={14}
-    height={14}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    aria-hidden>
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </svg>
-);
-
 const RefreshIcon = ({ spinning }: { spinning: boolean }) => (
   <svg
-    width={14}
-    height={14}
+    width={15}
+    height={15}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={spinning ? 'animate-spin' : undefined}
+    className={spinning ? 'shrink-0 animate-spin' : 'shrink-0'}
     aria-hidden>
     <path d="M21 12a9 9 0 1 1-2.64-6.36" />
     <path d="M21 3v6h-6" />
@@ -117,11 +102,16 @@ export const AssetsScreen = ({
     );
   } else if (shown.length === 0) {
     list = (
-      <p className="py-6 text-center text-text-muted">
-        {rows.length
-          ? `No assets match “${query.trim()}”`
-          : 'Nothing to supply from this wallet yet'}
-      </p>
+      <div className="flex flex-col items-center gap-2 py-6 text-center text-text-muted">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-text-secondary">
+          {rows.length ? <SearchIcon size={18} /> : <WalletGlyph />}
+        </span>
+        <p>
+          {rows.length
+            ? `No assets match “${query.trim()}”`
+            : 'Nothing to supply from this wallet yet'}
+        </p>
+      </div>
     );
   } else {
     list = (
@@ -149,7 +139,7 @@ export const AssetsScreen = ({
         </label>
         <Button
           variant="secondary"
-          className="w-9 px-0"
+          className="w-9 px-0!"
           aria-label="Refresh balances"
           title="Refresh balances"
           disabled={status === 'loading'}

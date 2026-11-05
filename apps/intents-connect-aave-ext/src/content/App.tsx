@@ -114,6 +114,7 @@ export const App = () => {
       onClose={modal.close}
       dappName="Aave"
       positionOwner={owner}
+      dappWalletName={account?.walletName}
       destination={destination}
       sdk={SDK}
       walletConnect={walletConnect}
