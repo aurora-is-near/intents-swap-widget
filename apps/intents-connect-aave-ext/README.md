@@ -42,14 +42,21 @@ then reload the Aave tab.
 
 The modal pays from any wallet the page can see: EVM wallets (EIP-6963),
 Solana wallets (Wallet Standard) and NEAR extension wallets, found by the
-SDK's `./detect` without prompting, or a phone over WalletConnect.
+SDK's `./detect` without prompting, Stellar wallets (Freighter, xBull, LOBSTR
+and Hana, from `./detect/stellar`), or a phone over WalletConnect.
 
 - A wallet that already shares an account with app.aave.com (usually the one
   Aave uses) is picked without a prompt. Any other asks to connect first.
 - The choice is remembered (`aurora-intents.wallet` in localStorage).
 - **Disconnect** on an EVM wallet only stops using it here. Revoking its
-  permission would also disconnect Aave. Solana and NEAR wallets are asked
-  to disconnect.
+  permission would also disconnect Aave. Solana, NEAR and Stellar wallets
+  are asked to disconnect.
+- Freighter shares its account silently. xBull, LOBSTR and Hana ask on every
+  read, so after the first connect the modal remembers their address. xBull
+  is listed only with its extension installed: its web wallet's popups would
+  be blocked mid-supply.
+- Stellar pays from XLM. Stellar USDC is listed but its supply fails until
+  the service creates its executions in memo mode.
 - Phone pairing uses a dev Reown project with `app.aave.com` on its allowed
   domains (override with `VITE_WALLETCONNECT_PROJECT_ID`), so Aurora's
   shared project doesn't need it. The client runs under its own storage

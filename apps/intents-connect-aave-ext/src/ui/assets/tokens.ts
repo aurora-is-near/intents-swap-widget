@@ -24,6 +24,7 @@ const EXPLORER_TX: Record<string, string> = {
   monad: 'https://monadscan.com/tx/',
   sol: 'https://solscan.io/tx/',
   near: 'https://nearblocks.io/txns/',
+  stellar: 'https://stellar.expert/explorer/public/tx/',
 };
 
 /** A transaction on its chain's explorer, where one is known. */

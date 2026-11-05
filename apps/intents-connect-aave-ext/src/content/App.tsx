@@ -10,6 +10,7 @@ import {
   intentsApi,
   intentsConnectApi,
   walletConnect,
+  walletSources,
 } from '../config';
 import { usePageState } from '../page/usePageState';
 import { SupplyModal } from '../ui/SupplyModal';
@@ -119,6 +120,7 @@ export const App = () => {
       sdk={SDK}
       walletConnect={walletConnect}
       connectorOptions={connectorOptions}
+      walletSources={walletSources}
     />
   );
 };

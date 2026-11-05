@@ -26,6 +26,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   sdk={{ api, intentsApi, alchemyApiKey }} // IntentsConnectProvider props, minus `wallet`
   walletConnect={walletConnect}       // optional: offers the QR code tab
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
+  walletSources={walletSources}       // optional: e.g. [stellarWallets()], created once
 />
 ```
 
@@ -36,6 +37,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `destination.buildPlan` | Turns `{ option, destinationAsset, origin, amount }` into the plan: the recipe (the dApp's own steps) and the quote. Leave `quote.deadline` unset, because the quote is refreshed. It must be stable (memoized), or the quote restarts. |
 | `sdk` | The API clients. The modal renders `IntentsConnectProvider` itself, with the wallet the user picks. |
 | `walletConnect` | A client from `createWalletConnectClient`, with a `storagePrefix` when the page runs WalletConnect too. |
+| `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar`. Create them once, at module scope. |
 
 Everything else is the modal's: wallet detection and choice, balances, the
 quote, the run, recovery, and the in-flight check.

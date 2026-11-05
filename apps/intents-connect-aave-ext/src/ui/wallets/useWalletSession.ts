@@ -12,6 +12,7 @@ import {
   disconnectDetectedWallet,
   forgetWalletConnection,
   type UnsupportedReason,
+  type WalletSource,
 } from '@aurora-is-near/intents-connect-wallet/detect';
 import {
   toWalletConnector,
@@ -100,11 +101,13 @@ export type WalletSession = {
 export const useWalletSession = ({
   walletConnect,
   connectorOptions,
+  walletSources,
 }: {
   walletConnect?: WalletConnectClient;
   connectorOptions?: WalletConnectorOptions;
+  walletSources?: readonly WalletSource[];
 }): WalletSession => {
-  const detection = useDetectedWallets();
+  const detection = useDetectedWallets({ sources: walletSources });
   const { refresh } = detection;
   const [choice, setChoiceState] = useState<Choice | null>(readChoice);
   const [peer, setPeer] = useState<WalletConnectPeer | null>(null);

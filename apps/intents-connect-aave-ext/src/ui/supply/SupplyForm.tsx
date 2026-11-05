@@ -38,6 +38,9 @@ const GAS_RESERVE: Record<string, string> = {
   sol: '0.01',
   // Storage, the wNEAR registrations and gas for wrapping on the way.
   near: '0.05',
+  // The fee is 0.00001 XLM: the balance read is already spendable, less the
+  // account's minimum reserve.
+  stellar: '0.01',
 };
 
 const maxSpend = ({ token, amount }: AssetRow): string => {

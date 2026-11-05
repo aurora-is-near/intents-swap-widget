@@ -14,6 +14,7 @@ import {
   useSupportedTokens,
 } from '@aurora-is-near/intents-connect/react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
+import type { WalletSource } from '@aurora-is-near/intents-connect-wallet/detect';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 
 import {
@@ -56,6 +57,8 @@ type SupplyModalProps = {
   walletConnect?: WalletConnectClient;
   /** Per-family adapter options, e.g. `{ sol: { rpcUrl } }`. Keep it stable. */
   connectorOptions?: WalletConnectorOptions;
+  /** Detection sources for more families, e.g. `stellarWallets()`. Keep it stable. */
+  walletSources?: readonly WalletSource[];
 };
 
 /** Screens the user navigates to; otherwise the wallet decides. */
@@ -154,7 +157,7 @@ const SupplyFlow = ({
   destination,
   walletConnect,
   session,
-}: Omit<SupplyModalProps, 'sdk' | 'connectorOptions'> & {
+}: Omit<SupplyModalProps, 'sdk' | 'connectorOptions' | 'walletSources'> & {
   session: WalletSession;
 }) => {
   const supported = useSupportedTokens();
@@ -438,11 +441,13 @@ const SupplyFlow = ({
 const SupplySession = ({
   sdk,
   connectorOptions,
+  walletSources,
   ...props
 }: SupplyModalProps) => {
   const session = useWalletSession({
     walletConnect: props.walletConnect,
     connectorOptions,
+    walletSources,
   });
 
   return (
