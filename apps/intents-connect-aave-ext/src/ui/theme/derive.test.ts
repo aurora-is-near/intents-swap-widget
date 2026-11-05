@@ -114,6 +114,25 @@ describe('deriveTokens', () => {
     expect(color(tokens.ctaHover).r).toBeLessThan(color(tokens.cta).r);
   });
 
+  it("keeps fields on the dialog's side of light and dark", () => {
+    // White cards on a dark page: no text reads on both.
+    const tokens = deriveTokens({
+      ...DEFAULT_SEED,
+      scheme: 'dark',
+      page: '#101014',
+      surface: '#ffffff',
+    });
+
+    expect(color(tokens.field).r).toBeLessThan(0.2);
+    expect(color(tokens.field).r).toBeGreaterThan(color(tokens.surface).r);
+
+    [tokens.surface, tokens.field].forEach((ground) =>
+      expect(
+        contrast(color(tokens.textPrimary), color(ground)),
+      ).toBeGreaterThanOrEqual(7),
+    );
+  });
+
   it('keeps the CTA text readable on its disabled fill', () => {
     // Faded toward white, Bootstrap's blue would lose its white text.
     const tokens = deriveTokens({

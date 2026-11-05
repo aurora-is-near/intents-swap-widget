@@ -15,7 +15,7 @@ export type PageThemeHints = {
   pin?: Partial<ThemeSeed>;
 };
 
-/** Where each seed value came from, e.g. `mui`, `computed:buttons`. */
+/** Where each seed value came from, e.g. `pin`, `mui`, `computed:buttons(3)`. */
 export type ThemeEvidence = Partial<Record<keyof ThemeSeed, string>>;
 
 /** A seed read from the page, with where each value came from. */

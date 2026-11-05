@@ -67,8 +67,17 @@ export const DEFAULT_SEED: ThemeSeed = {
   density: 1,
 };
 
+/** What each number in a seed is kept to: [min, max]. */
+export const SEED_RANGES = {
+  fontSize: [13, 16],
+  fontWeight: [500, 700],
+  controlRadius: [0, 24],
+  cardRadius: [0, 28],
+  density: [0.85, 1.2],
+} as const;
+
 /** Minimum WCAG contrast against the dialog and its fields. */
-const MIN_CONTRAST = {
+export const MIN_CONTRAST = {
   /**
    * The site's own text on its own accent, already on its page: kept from
    * 3:1, as white on a mid-tone brand color usually is.
@@ -106,6 +115,11 @@ const MIX = {
   ctaDisabled: 0.61,
   /** The warning notice: a tint of the danger color. */
   dangerBg: { light: 0.06, dark: 0.16 },
+  /**
+   * A field that can't take the page's cards (below): the dialog toward
+   * white, as Aave's white on off-white or a dark site's lifted cards.
+   */
+  fieldLift: { light: 0.6, dark: 0.05 },
 } as const;
 
 /** Hairlines, tracks and shadows: alphas of the text color (or black). */
@@ -194,7 +208,15 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
   const alpha = ALPHA[scheme];
 
   const surface = opaque(colorOf(seed.page, DEFAULT_SEED.page), scheme);
-  const field = opaque(colorOf(seed.surface, DEFAULT_SEED.surface), scheme);
+  const cards = opaque(colorOf(seed.surface, DEFAULT_SEED.surface), scheme);
+  const darkDialog = lightness(surface) < 0.5;
+  // Cards on the other side of the page's lightness (white cards on a dark
+  // page) can't share its text: fields become a shade of the dialog.
+  const field =
+    lightness(cards) < 0.5 === darkDialog
+      ? cards
+      : mix(surface, WHITE, MIX.fieldLift[darkDialog ? 'dark' : 'light']);
+
   const grounds = [surface, field];
 
   const text = ensureContrast(
@@ -235,9 +257,9 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     MIN_CONTRAST.danger,
   );
 
-  const controlRadius = clamp(seed.controlRadius, 0, 24);
-  const cardRadius = clamp(seed.cardRadius, 0, 28);
-  const base = Math.round(clamp(seed.fontSize, 13, 16));
+  const controlRadius = clamp(seed.controlRadius, ...SEED_RANGES.controlRadius);
+  const cardRadius = clamp(seed.cardRadius, ...SEED_RANGES.cardRadius);
+  const base = Math.round(clamp(seed.fontSize, ...SEED_RANGES.fontSize));
 
   return {
     surface: formatColor(surface),
@@ -275,7 +297,7 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     scheme,
     font: seed.font.trim() || DEFAULT_TOKENS.font,
     weightMedium: String(
-      clamp(Math.round(seed.fontWeight / 100) * 100, 500, 700),
+      clamp(Math.round(seed.fontWeight / 100) * 100, ...SEED_RANGES.fontWeight),
     ),
     textXs: px(base - 2),
     textXsLeading: px(base + 2),
@@ -292,6 +314,6 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     radiusChip: px(Math.round(controlRadius * 0.75)),
     radiusCta: px(Math.min(28, Math.round(controlRadius * 1.25))),
 
-    space: px(4 * clamp(seed.density, 0.85, 1.2)),
+    space: px(4 * clamp(seed.density, ...SEED_RANGES.density)),
   };
 };

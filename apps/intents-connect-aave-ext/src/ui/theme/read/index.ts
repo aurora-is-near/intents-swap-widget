@@ -45,7 +45,7 @@ export const readPageTheme = (
   };
 
   (Object.keys(hints.pin ?? {}) as (keyof ThemeSeed)[]).forEach((key) => {
-    set(key, hints.pin![key], 'hint');
+    set(key, hints.pin![key], 'pin');
   });
 
   const body = doc.body ? getComputedStyle(doc.body) : undefined;
@@ -97,7 +97,7 @@ export const readPageTheme = (
   set(
     'scheme',
     pageColor && (lightness(pageColor) < 0.5 ? 'dark' : 'light'),
-    `computed:${evidence.page ?? 'page'}`,
+    'computed:page',
   );
 
   // Surfaces: the design system's, else the cards on the page.

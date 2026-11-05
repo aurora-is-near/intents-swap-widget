@@ -71,24 +71,35 @@ const watchPageTheme = (
 
 /**
  * The host page's theme, read when the modal first renders (so it opens in
- * it, with no flash of the defaults) and again whenever the page changes
- * it. `hints` must be stable; `undefined` turns reading off.
+ * it, with no flash of the defaults), again when `hints` change (a new
+ * theme, or the inspector's pins), and whenever the page changes it.
+ * `hints` should be stable; `undefined` turns reading off.
  */
 export const usePageTheme = (
   hints: PageThemeHints | undefined,
 ): PageThemeReading | undefined => {
-  const [reading, setReading] = useState(() =>
-    hints ? safeReadPageTheme(hints) : undefined,
-  );
+  const [state, setState] = useState(() => ({
+    hints,
+    reading: hints ? safeReadPageTheme(hints) : undefined,
+  }));
+
+  let { reading } = state;
+
+  if (state.hints !== hints) {
+    reading = hints ? safeReadPageTheme(hints) : undefined;
+    setState({ hints, reading });
+  }
 
   useEffect(() => {
     if (!hints) {
-      setReading(undefined);
-
       return undefined;
     }
 
-    return watchPageTheme(hints, setReading, reading);
+    return watchPageTheme(
+      hints,
+      (next) => setState({ hints, reading: next }),
+      reading,
+    );
     // `reading` only seeds the comparison: watching restarts with `hints`.
   }, [hints]);
 

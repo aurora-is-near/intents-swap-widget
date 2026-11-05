@@ -133,7 +133,7 @@ export const DEFAULT_TOKENS: ThemeTokens = {
  * Each token's custom property. Sizes and radii get short names of their
  * own: Tailwind's (`--text-xs`, `--radius-*`, `--spacing`) point at them.
  */
-const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
+export const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
   surface: '--surface',
   surfaceRaised: '--surface-raised',
   surfaceHover: '--surface-hover',

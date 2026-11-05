@@ -7,7 +7,13 @@ import { createRoot } from 'react-dom/client';
 
 import { AAVE_THEME, mountSupplyButton } from '../page/aave';
 import { createShadowHost } from '../ui/mount';
+import { installThemeInspector, THEME_INSPECTOR } from '../ui/theme';
 import { App, modal } from './App';
 
 createRoot(createShadowHost('aurora-intents-aave')).render(<App />);
 mountSupplyButton(modal.open, AAVE_THEME);
+
+// Dev builds: `?aurora-theme=inspect`, or `auroraIntents.theme.inspect()`.
+if (THEME_INSPECTOR) {
+  installThemeInspector({ open: modal.open });
+}

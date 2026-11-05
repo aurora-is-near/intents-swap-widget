@@ -39,6 +39,15 @@ Then, in Chrome:
 After a rebuild, click the extension's reload icon in `chrome://extensions`,
 then reload the Aave tab.
 
+### Tuning the theme
+
+The modal takes its look from the page it runs on. In a `dev` build, the
+theme inspector shows how: add `?aurora-theme=inspect` to the page's URL,
+or run `auroraIntents.theme.inspect()` in the console. It lists where each
+value came from, lets you change them live, checks text contrast, and
+copies the result as a config for the site's adapter (`AAVE_THEME` in
+`src/page/aave.ts`). `build` leaves it out.
+
 ## Wallets
 
 The modal pays from any wallet the page can see: EVM wallets (EIP-6963),

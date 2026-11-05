@@ -23,22 +23,27 @@ const defined = <T extends object>(value: T | undefined): Partial<T> =>
     Object.entries(value ?? {}).filter(([, field]) => field !== undefined),
   ) as Partial<T>;
 
+/** The page's seed (`pageSeed`, from `readPageTheme`), the theme's over it. */
+export const combinedSeed = (
+  theme: SupplyTheme = {},
+  pageSeed?: Partial<ThemeSeed>,
+): Partial<ThemeSeed> => ({ ...defined(pageSeed), ...defined(theme.seed) });
+
 /**
- * The tokens to apply: the defaults, the page's seed (`pageSeed`, from
- * `readPageTheme`), the theme's own seed over it, derived; then exact
- * tokens over all of it.
+ * The tokens to apply: the defaults, the combined seed derived over them,
+ * then exact tokens over all of it.
  */
 export const resolveTheme = (
-  { seed, tokens }: SupplyTheme = {},
+  theme: SupplyTheme = {},
   pageSeed?: Partial<ThemeSeed>,
 ): ThemeTokens => {
-  const combined = { ...defined(pageSeed), ...defined(seed) };
+  const combined = combinedSeed(theme, pageSeed);
 
   return resolveTokens({
     ...(Object.keys(combined).length
       ? deriveTokens(completeSeed(combined))
       : {}),
-    ...tokens,
+    ...theme.tokens,
   });
 };
 

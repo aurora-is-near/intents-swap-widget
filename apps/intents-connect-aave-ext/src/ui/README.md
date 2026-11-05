@@ -91,6 +91,9 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     and its fields (primary 7, secondary 4.5, muted 3), moved in lightness
     until it reads. A site's own text on its accent is kept from 3:1;
     otherwise the CTA text is black or white.
+  - Fields keep to the dialog's side of light and dark: white cards on a
+    dark page can't share its text, so fields become a shade of the
+    dialog instead.
   - The CTA's text keeps 3:1 on the disabled fill too: it still says
     what's missing ("Enter an amount").
   - Sizes are clamped (radius 0–24, density 0.85–1.2, text 13–16 px, the
@@ -124,6 +127,23 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     flips, so a site's dark-mode toggle restyles the modal.
   - `safeReadPageTheme` gives adapters the same reading: Aave's in-page
     button takes the derived `cta`, `cta-hover` and `cta-text`.
+- **Theme inspector** (`theme/inspect/`, dev builds only). `THEME_INSPECTOR`
+  is a build-time constant (`vite build --mode development`), so production
+  builds drop the panel, its store and the hooks that feed it.
+  `installThemeInspector({ open })` adds the switches: `?aurora-theme=inspect`
+  in the URL, or `auroraIntents.theme.inspect()` / `.close()` in the console.
+  - It renders in its own shadow root, above the modal, with fixed neutral
+    styles, and keeps keys typed in it from the page and the modal.
+  - `ThemeStyle` publishes what it applies (the theme, the reading, the
+    tokens) to a small store, and applies the inspector's seed edits.
+  - It shows each seed value with its source (`pin`, `mui`, `body`,
+    `buttons(3)`, `edit`…), with pickers, sliders and text fields to edit
+    it; each text token's contrast against the minimum above; the token
+    table; and "Copy as config".
+  - The config is the theme with each edit pinned (`auto.pin`), or in
+    `seed` where the theme sets it there (`themeConfig`). The modal applies
+    edits as that same config, reading the page again with the pins, so
+    what it shows is what the copied config gives.
 - `all: initial` on `:host` cuts inheritance from the page. Only placement
   goes inline on the host, since an inline style beats `:host`.
 - Chrome ignores `@property` inside a shadow root, and Tailwind needs it for
