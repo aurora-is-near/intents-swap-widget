@@ -30,15 +30,53 @@ const firstHash = (
   return { hash };
 };
 
+/** 1Click takes NEAR as wNEAR: native NEAR is wrapped on the way. */
+const WNEAR_CONTRACT = 'wrap.near';
+
+const storageDeposit = (
+  args: Record<string, unknown>,
+  deposit: bigint,
+): NearAction => ({
+  type: 'FunctionCall',
+  params: {
+    methodName: 'storage_deposit',
+    args,
+    gas: FT_DEPOSIT_GAS,
+    deposit: deposit.toString(),
+  },
+});
+
+const fungibleTransfer = (
+  receiver: string,
+  amount: string,
+  msg: string | undefined,
+): NearAction => ({
+  type: 'FunctionCall',
+  params: {
+    methodName: msg === undefined ? 'ft_transfer' : 'ft_transfer_call',
+    args: {
+      receiver_id: receiver,
+      amount,
+      ...(msg === undefined ? {} : { msg }),
+    },
+    gas: FT_TRANSFER_GAS,
+    // 1 yocto is required by NEP-141.
+    deposit: '1',
+  },
+});
+
 /**
  * Sends the origin-chain deposit for a NEAR origin.
  *
  * Adapted from the widget's `useMakeNEARFtTransferCall`. Three deliberate
  * differences, because that hook served a different flow:
  *
- * 1. **No wNEAR wrapping.** The hook wraps native NEAR into wNEAR when the
- *    widget's target is wNEAR. An Intents Connect deposit just moves the origin
- *    asset to the 1Click deposit address, so that branch does not apply.
+ * 1. **Native NEAR is wrapped in full.** 1Click has no native NEAR asset:
+ *    the quote is in wNEAR, so native NEAR is wrapped and sent as wNEAR in
+ *    one transaction to `wrap.near`. Unlike the hook, the payer's wNEAR
+ *    registration is paid on top (`storage_deposit`, refunded when already
+ *    registered) rather than out of the amount, so exactly the quoted
+ *    amount arrives.
  * 2. **`ft_transfer` by default, not `ft_transfer_call`.** The deposit address is
  *    a plain account that does not implement `ft_on_transfer`, so a
  *    `ft_transfer_call` would be refunded. Pass `msg` to opt into
@@ -69,64 +107,50 @@ export const makeTransfer: MakeTransfer<NearTransferOptions> = async (
     throw new Error('No recipient address to transfer.');
   }
 
-  // Native NEAR: a plain Transfer of yoctoNEAR.
-  if (!args.tokenAddress) {
-    const outcomes = await wallet.signAndSendTransactions({
-      transactions: [
-        {
-          ...(accountId ? { signerId: accountId } : {}),
-          receiverId: args.address,
-          actions: [{ type: 'Transfer', params: { deposit: amount } }],
-        },
-      ],
-    });
-
-    return firstHash(outcomes);
-  }
+  const contract = args.tokenAddress ?? WNEAR_CONTRACT;
 
   // NEP-141: register the recipient first if it has no storage balance, else the
   // transfer fails on-chain.
-  const actions: NearAction[] = [];
-
   const [minStorageBalance, recipientStorageBalance] = await Promise.all([
-    getMinStorageBalance(args.tokenAddress, rpcUrls),
-    getStorageBalance(args.tokenAddress, args.address, rpcUrls),
+    getMinStorageBalance(contract, rpcUrls),
+    getStorageBalance(contract, args.address, rpcUrls),
   ]);
 
   const storageDelta = minStorageBalance - recipientStorageBalance;
+  const actions: NearAction[] = [];
+
+  if (!args.tokenAddress) {
+    // Registers the payer with wrap.near; refunded in full when it already
+    // is. Without it, near_deposit would take the registration out of the
+    // amount and less than quoted would arrive.
+    actions.push(
+      storageDeposit({ registration_only: true }, minStorageBalance),
+    );
+  }
 
   if (storageDelta > 0n) {
+    actions.push(storageDeposit({ account_id: args.address }, storageDelta));
+  }
+
+  if (!args.tokenAddress) {
     actions.push({
       type: 'FunctionCall',
       params: {
-        methodName: 'storage_deposit',
-        args: { account_id: args.address },
+        methodName: 'near_deposit',
+        args: {},
         gas: FT_DEPOSIT_GAS,
-        deposit: storageDelta.toString(),
+        deposit: amount,
       },
     });
   }
 
-  actions.push({
-    type: 'FunctionCall',
-    params: {
-      methodName: msg === undefined ? 'ft_transfer' : 'ft_transfer_call',
-      args: {
-        receiver_id: args.address,
-        amount,
-        ...(msg === undefined ? {} : { msg }),
-      },
-      gas: FT_TRANSFER_GAS,
-      // 1 yocto is required by NEP-141.
-      deposit: '1',
-    },
-  });
+  actions.push(fungibleTransfer(args.address, amount, msg));
 
   const outcomes = await wallet.signAndSendTransactions({
     transactions: [
       {
         ...(accountId ? { signerId: accountId } : {}),
-        receiverId: args.tokenAddress,
+        receiverId: contract,
         actions,
       },
     ],

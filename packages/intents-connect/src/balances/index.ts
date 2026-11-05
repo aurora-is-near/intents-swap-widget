@@ -4,6 +4,7 @@ export {
   isNativeToken,
   NATIVE_NEAR_ASSET_ID,
   normalizeTokens,
+  toQuoteAssetId,
 } from '@/balances/tokens';
 export { DEFAULT_RPCS, resolveRpcs } from '@/balances/rpcs';
 export { ALCHEMY_NETWORKS, isAlchemyChain } from '@/balances/alchemy';

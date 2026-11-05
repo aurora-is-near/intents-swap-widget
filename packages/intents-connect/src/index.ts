@@ -140,6 +140,7 @@ export {
   normalizeTokens,
   readEvmTokenBalance,
   resolveRpcs,
+  toQuoteAssetId,
   type BalanceSource,
   type BalanceToken,
   type BalanceTransportOptions,

@@ -41,6 +41,11 @@ yarn add @aurora-is-near/intents-connect @aurora-is-near/intents-connect-wallet 
 
 ## Transfers
 
+A NEAR deposit of native NEAR (no `tokenAddress`) is wrapped on the way: one
+transaction to `wrap.near` registers the payer if needed (refunded otherwise),
+wraps the amount and sends it as wNEAR, since 1Click only takes wNEAR. Quote
+it as wNEAR (`toQuoteAssetId` in core).
+
 ```ts
 import { evm } from '@aurora-is-near/intents-connect-wallet/evm';
 

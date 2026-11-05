@@ -59,13 +59,16 @@ beforeEach(() => {
 });
 
 describe('native NEAR', () => {
-  it('sends a plain Transfer of yoctoNEAR to the deposit address', async () => {
+  const ONE_NEAR = '1000000000000000000000000';
+
+  it('wraps it and sends wNEAR to the deposit address, in one transaction', async () => {
+    stubStorage(null);
     const wallet = stubWallet();
 
     const result = await makeTransfer(
       {
         address: DEPOSIT_ADDRESS,
-        amountAtomic: '1000000000000000000000000',
+        amountAtomic: ONE_NEAR,
         decimals: 24,
         chain: 'near',
       },
@@ -76,26 +79,61 @@ describe('native NEAR', () => {
 
     const tx = sentTx(wallet);
 
-    expect(tx.receiverId).toBe(DEPOSIT_ADDRESS);
+    expect(tx.receiverId).toBe('wrap.near');
+    expect(
+      tx.actions.map(
+        (action) => action.type === 'FunctionCall' && action.params.methodName,
+      ),
+    ).toEqual([
+      'storage_deposit',
+      'storage_deposit',
+      'near_deposit',
+      'ft_transfer',
+    ]);
     expect(tx.actions).toEqual([
-      { type: 'Transfer', params: { deposit: '1000000000000000000000000' } },
+      // The payer's registration, paid on top (refunded when registered).
+      expect.objectContaining({
+        params: expect.objectContaining({
+          args: { registration_only: true },
+          deposit: '1250',
+        }),
+      }),
+      // The deposit address's registration.
+      expect.objectContaining({
+        params: expect.objectContaining({
+          args: { account_id: DEPOSIT_ADDRESS },
+          deposit: '1250',
+        }),
+      }),
+      // The whole amount is wrapped…
+      expect.objectContaining({
+        params: expect.objectContaining({ deposit: ONE_NEAR }),
+      }),
+      // …and the whole amount arrives.
+      expect.objectContaining({
+        params: expect.objectContaining({
+          args: { receiver_id: DEPOSIT_ADDRESS, amount: ONE_NEAR },
+          deposit: '1',
+        }),
+      }),
     ]);
   });
 
-  it('makes no view calls for a native transfer', async () => {
-    const fetchMock = stubStorage('0');
+  it('skips registering a deposit address that already is', async () => {
+    stubStorage('1250');
+    const wallet = stubWallet();
 
     await makeTransfer(
       {
         address: DEPOSIT_ADDRESS,
-        amountAtomic: '1',
+        amountAtomic: ONE_NEAR,
         decimals: 24,
         chain: 'near',
       },
-      { wallet: stubWallet() },
+      { wallet },
     );
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(sentTx(wallet).actions).toHaveLength(3);
   });
 });
 

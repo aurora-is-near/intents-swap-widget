@@ -10,6 +10,7 @@ import {
   normalizeTokens,
   readEvmTokenBalance,
   resolveRpcs,
+  toQuoteAssetId,
 } from '@/balances';
 import { encodeBalanceOf } from '@/balances/evm';
 import { getIntermediaryBalance } from '@/funding';
@@ -683,5 +684,19 @@ describe('getIntermediaryBalance', () => {
         destination: { chain: 'sol', assetId: 'nep141:sol-usdc' },
       }),
     ).rejects.toThrow(/EVM chains only/);
+  });
+});
+
+describe('toQuoteAssetId', () => {
+  it('quotes native NEAR as wNEAR, and every other token as itself', () => {
+    expect(toQuoteAssetId({ assetId: NATIVE_NEAR_ASSET_ID })).toBe(
+      'nep141:wrap.near',
+    );
+    expect(toQuoteAssetId({ assetId: 'nep141:wrap.near' })).toBe(
+      'nep141:wrap.near',
+    );
+    expect(toQuoteAssetId({ assetId: 'nep141:usdc.near' })).toBe(
+      'nep141:usdc.near',
+    );
   });
 });

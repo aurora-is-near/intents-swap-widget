@@ -12,6 +12,14 @@ export const NATIVE_NEAR_ASSET_ID = 'native-near';
 
 const WNEAR_ASSET_ID = 'nep141:wrap.near';
 
+/**
+ * The asset id a quote takes for a balance token: native NEAR is quoted as
+ * wNEAR (1Click has no native NEAR asset), and its deposit wraps it on the
+ * way. Every other token is quoted as itself.
+ */
+export const toQuoteAssetId = ({ assetId }: Pick<BalanceToken, 'assetId'>) =>
+  assetId === NATIVE_NEAR_ASSET_ID ? WNEAR_ASSET_ID : assetId;
+
 /** The wallet family whose balances can be read on a chain (phase 1). */
 export const getBalanceFamily = (
   chain: string,
