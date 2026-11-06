@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 
+import { useAnnounce } from './a11y/Announcer';
+
 /** The current time, ticking every second while `enabled`. */
 export const useNow = (enabled: boolean) => {
   const [now, setNow] = useState(() => Date.now());
@@ -33,9 +35,9 @@ const BUTTON_VARIANTS = {
     'h-12 rounded-cta bg-cta px-6 text-button font-medium text-cta-text shadow-cta hover:bg-cta-hover disabled:bg-cta-disabled disabled:shadow-none',
   secondary:
     'h-9 rounded-control bg-control px-3.5 text-sm font-medium text-text-primary shadow-box hover:bg-surface-hover disabled:opacity-50',
-  /** Icon buttons. */
+  /** Icon buttons: at least 24 px square, the WCAG 2.2 minimum target. */
   ghost:
-    'rounded-chip p-1 text-text-muted hover:text-text-primary disabled:opacity-40',
+    'min-h-[24px] min-w-[24px] rounded-chip p-1 text-text-muted hover:text-text-primary disabled:opacity-40',
 } as const;
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -89,6 +91,7 @@ export const Skeleton = ({
   style?: CSSProperties;
 }) => (
   <div
+    aria-hidden="true"
     className={cx('animate-pulse rounded-card bg-surface-hover', className)}
     style={style}
   />
@@ -158,7 +161,10 @@ const CopyIcon = () =>
     12,
   );
 
-/** Copies `value`; the icon turns into a check for a moment. */
+/**
+ * Copies `value`: the icon turns into a check for a moment, and screen
+ * readers hear that it was copied (or that it couldn't be).
+ */
 export const CopyButton = ({
   value,
   label,
@@ -168,6 +174,7 @@ export const CopyButton = ({
   label: string;
 }) => {
   const [copied, setCopied] = useState(false);
+  const announce = useAnnounce();
 
   useEffect(() => {
     if (!copied) {
@@ -182,11 +189,14 @@ export const CopyButton = ({
   return (
     <Button
       variant="ghost"
-      aria-label={copied ? `${label} copied` : `Copy ${label}`}
+      aria-label={`Copy ${label}`}
       onClick={() => {
         navigator.clipboard.writeText(value).then(
-          () => setCopied(true),
-          () => undefined,
+          () => {
+            setCopied(true);
+            announce(`Copied the ${label}`);
+          },
+          () => announce(`Couldn't copy the ${label}`, 'assertive'),
         );
       }}>
       {copied ? <CheckIcon /> : <CopyIcon />}

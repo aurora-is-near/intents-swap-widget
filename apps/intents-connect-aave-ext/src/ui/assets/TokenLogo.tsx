@@ -25,7 +25,9 @@ export const TokenLogo = ({
       className="flex-none rounded-full bg-surface-hover object-cover"
     />
   ) : (
+    // Decorative: the symbol next to it is what's read.
     <span
+      aria-hidden="true"
       style={{ ...style, fontSize: Math.round(size * 0.42) }}
       className="flex flex-none items-center justify-center rounded-full bg-surface-hover font-medium text-text-secondary">
       {symbol.charAt(0)}

@@ -22,8 +22,59 @@
   button:not(:disabled),
   [role='button'],
   [role='tab'],
+  [role='option']:not([aria-disabled='true']),
   a[href] {
     cursor: pointer;
+  }
+
+  /* One focus ring for every control, in the theme's focus colour (the
+     text colour, so it reads on every surface). A layer below the
+     utilities: an input that draws its ring on its box (`outline-none` plus
+     `focus-within:shadow-focus`) keeps that instead. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Rows of lists that clip their overflow: the ring goes inside. */
+  li > button:focus-visible,
+  [role='option']:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* A list scrolled to its end doesn't scroll the page behind it. */
+  .overflow-y-auto {
+    overscroll-behavior: contain;
+  }
+}
+
+/* Motion off when the system asks for less: transitions and pulses end at
+   once, spinners stop. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Forced colours (Windows high contrast) paint no box-shadows: boxes drawn
+   with one get a system-colour outline instead, and focus always shows,
+   even on inputs that hide their outline. */
+@media (forced-colors: active) {
+  .shadow-box,
+  .shadow-dialog,
+  .shadow-cta,
+  .shadow-danger {
+    outline: 1px solid CanvasText;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
   }
 }
 
@@ -83,5 +134,6 @@
   --shadow-dialog: 0 0 0 1px var(--ring-strong), 0 4px 16px var(--shadow-float);
   --shadow-cta: 0 2px 4px var(--shadow-drop), 0 0 0 1px var(--cta);
   --shadow-danger: 0 0 0 1px var(--danger-ring);
-  --shadow-focus: 0 0 0 1px var(--focus);
+  /* 2 px: a focus indicator at least as thick as WCAG 2.4.13 asks. */
+  --shadow-focus: 0 0 0 2px var(--focus);
 }

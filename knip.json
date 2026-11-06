@@ -63,7 +63,7 @@
     },
     "apps/intents-connect-aave-ext": {
       "entry": ["manifest.config.ts", "src/background.ts"],
-      "ignoreDependencies": ["buffer"]
+      "ignoreDependencies": ["buffer", "jsdom"]
     }
   }
 }
