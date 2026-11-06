@@ -87,5 +87,15 @@ export const describeFailure = (error: Error, symbol: string): Failure => {
     };
   }
 
+  // The SDK's verdict for a failed last step: a plain `execution
+  // OPERATION_FAILED`. The funds stay at the intermediary.
+  if (/\bOPERATION_FAILED\b/.test(error.message)) {
+    return {
+      title: "The supply didn't go through",
+      detail:
+        "Its last step failed, so the funds stay with this wallet's Aurora account. Try again in a moment.",
+    };
+  }
+
   return { title: 'The supply stopped', detail: error.message };
 };

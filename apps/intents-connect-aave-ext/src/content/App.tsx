@@ -1,7 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
 import { getAaveMarket, marketTitle } from '../aave/markets';
-import { buildAaveSupplyPlan } from '../aave/recipe';
+import { buildAaveStepsPlan, buildAaveSupplyPlan } from '../aave/recipe';
 import { useAaveReserves } from '../aave/useAaveReserves';
 import {
   ALCHEMY_API_KEY,
@@ -13,7 +13,11 @@ import {
   walletConnect,
   walletSources,
 } from '../config';
-import { AAVE_THEME } from '../page/aave';
+import {
+  AAVE_THEME,
+  refreshAavePositions,
+  showSupplyStatus,
+} from '../page/aave';
 import { usePageState } from '../page/usePageState';
 import { SupplyModal } from '../ui/SupplyModal';
 import type { SupplyDestination, SupplyOption } from '../ui/supply/types';
@@ -107,6 +111,12 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
     [aaveMarket, owner],
   );
 
+  const buildStepsPlan = useMemo(
+    () =>
+      aaveMarket && owner ? buildAaveStepsPlan(aaveMarket, owner) : undefined,
+    [aaveMarket, owner],
+  );
+
   const destination: SupplyDestination = aaveMarket
     ? {
         title: `Aave ${marketTitle(aaveMarket)}`,
@@ -114,6 +124,7 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
         options,
         optionsError: error,
         buildPlan,
+        buildStepsPlan,
       }
     : {
         title: 'Aave',
@@ -139,6 +150,10 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
       walletSources={walletSources}
       theme={preview ? undefined : AAVE_THEME}
       readOnly={preview ? PREVIEW_NOTICE : undefined}
+      onOpen={modal.open}
+      // Aave's own button and data: not on another site's preview.
+      onStatus={preview ? undefined : showSupplyStatus}
+      onSupplied={preview ? undefined : refreshAavePositions}
     />
   );
 };

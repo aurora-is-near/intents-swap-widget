@@ -1,6 +1,7 @@
 import type {
   BalanceToken,
   ExecutionPlan,
+  StepsPlan,
 } from '@aurora-is-near/intents-connect';
 
 /** A position the dApp takes the funds into, e.g. an Aave reserve. */
@@ -33,6 +34,15 @@ export type SupplyInput = {
   amount: string;
 };
 
+/** Funds already waiting at the user's intermediary, to spend in place. */
+export type WaitingInput = {
+  option: SupplyOption;
+  /** The 1Click asset id of `option`'s token: the fee is charged in it. */
+  destinationAsset: string;
+  /** What waits, in the token's smallest unit. */
+  amount: string;
+};
+
 export type SupplyDestination = {
   /** Where the supply lands, e.g. "Aave Core V3 · Ethereum". */
   title: string;
@@ -52,4 +62,10 @@ export type SupplyDestination = {
    * refreshed, and each refresh stamps its own.
    */
   buildPlan: (input: SupplyInput) => ExecutionPlan;
+  /**
+   * The same supply as a steps-only plan, spending funds already waiting at
+   * the user's intermediary: a supply whose last step failed leaves them
+   * there. Optional: without it the modal only says where they are.
+   */
+  buildStepsPlan?: (input: WaitingInput) => StepsPlan;
 };

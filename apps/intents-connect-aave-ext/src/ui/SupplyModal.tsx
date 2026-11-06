@@ -6,7 +6,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
+import type {
+  ExecutionPreview,
+  StepsPlan,
+} from '@aurora-is-near/intents-connect';
 import {
   IntentsConnectProvider,
   type IntentsConnectProviderProps,
@@ -29,13 +32,23 @@ import {
 import { AssetsScreen } from './assets/AssetsScreen';
 import type { AssetRow } from './assets/useWalletAssets';
 import { ErrorBoundary } from './ErrorBoundary';
+import { DoneNotice } from './progress/DoneNotice';
 import { InFlightCheck } from './progress/InFlightCheck';
 import { ProgressScreen } from './progress/ProgressScreen';
 import type { SupplyRun } from './progress/types';
+import { RecoverScreen, type Recovery } from './recovery/RecoverScreen';
+import { FailedSupplies, type Waiting } from './recovery/WaitingFunds';
+import {
+  IDLE,
+  sameStatus,
+  type StatusInput,
+  type SupplyStatus,
+  supplyStatus,
+} from './status';
 import { deliverableOptions } from './supply/options';
 import { SupplyForm } from './supply/SupplyForm';
 import { type SupplyTheme, ThemeStyle } from './theme';
-import type { SupplyDestination } from './supply/types';
+import type { SupplyDestination, SupplyOption } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
 import {
   useWalletSession,
@@ -70,7 +83,22 @@ type SupplyModalProps = {
    * notice instead (e.g. a preview of the modal outside the dApp).
    */
   readOnly?: string;
+  /** Opens the modal: the completion notice's "View" calls it. */
+  onOpen?: () => void;
+  /**
+   * Every change in the supply's status, closed or open: e.g. to show it on
+   * the dApp's own button.
+   */
+  onStatus?: (status: SupplyStatus) => void;
+  /**
+   * A supply landed, once per execution: e.g. to refresh the dApp's
+   * position data.
+   */
+  onSupplied?: (supply: { executionId: string; option: SupplyOption }) => void;
 };
+
+/** How long the completion notice for a success stays up. */
+const SUCCESS_NOTICE_MS = 10_000;
 
 /** Screens the user navigates to; otherwise the wallet decides. */
 type Screen = 'wallets';
@@ -169,6 +197,9 @@ const SupplyFlow = ({
   walletConnect,
   tonConnect,
   readOnly,
+  onOpen,
+  onStatus,
+  onSupplied,
   session,
 }: Omit<
   SupplyModalProps,
@@ -202,6 +233,8 @@ const SupplyFlow = ({
 
   // The supply submitted last, or found in flight; shown until left.
   const [run, setRun] = useState<SupplyRun | null>(null);
+  // Funds a failed supply left, being supplied; kept across a close.
+  const [recovery, setRecovery] = useState<Recovery | null>(null);
   // `readOnly`: the supply button was pressed, so its notice shows.
   const [readOnlyShown, setReadOnlyShown] = useState(false);
   // The wallet whose in-flight check settled: once per wallet.
@@ -227,6 +260,135 @@ const SupplyFlow = ({
   };
 
   const asset = active && picked?.walletKey === active.key ? picked.row : null;
+
+  const recover = (waiting: Waiting) => {
+    setRun(null);
+    setRecovery({ waiting, state: 'idle' });
+  };
+
+  const startRecovery = (plan: StepsPlan) => {
+    setRecovery(
+      (current) =>
+        current && { ...current, state: 'running', error: undefined },
+    );
+    flow.exec.runSteps(plan).then(
+      (execution) =>
+        setRecovery(
+          (current) =>
+            current && {
+              ...current,
+              state: 'success',
+              executionId: execution.id,
+            },
+        ),
+      (error: unknown) =>
+        setRecovery(
+          (current) =>
+            current && {
+              ...current,
+              state: 'failed',
+              error: error instanceof Error ? error : new Error(String(error)),
+            },
+        ),
+    );
+  };
+
+  // A new run reports the runner's previous phase for a render: its own
+  // success or failure counts once it has been seen running.
+  const { phase } = flow.exec;
+  const terminal =
+    phase === 'success' || phase === 'failed' || phase === 'cancelled';
+
+  const seenLive = useRef<SupplyRun | null>(null);
+
+  if (run && !terminal) {
+    seenLive.current = run;
+  }
+
+  let statusInput: StatusInput = { kind: 'none' };
+
+  if (run) {
+    statusInput =
+      seenLive.current === run || run.resumed
+        ? {
+            kind: 'run',
+            phase,
+            waiting: !!run.resumed?.waiting,
+            transferFailed: flow.state === 'FAILED',
+            externalDeposit: flow.needsExternalDeposit,
+          }
+        : {
+            kind: 'run',
+            phase: 'planning',
+            waiting: false,
+            transferFailed: false,
+            externalDeposit: false,
+          };
+  } else if (recovery) {
+    statusInput = { kind: 'recovery', phase, state: recovery.state };
+  }
+
+  const status = supplyStatus(statusInput);
+  const lastStatus = useRef<SupplyStatus>(IDLE);
+  const report = useRef({ onStatus, onSupplied });
+
+  report.current = { onStatus, onSupplied };
+
+  useEffect(() => {
+    if (!sameStatus(lastStatus.current, status)) {
+      lastStatus.current = status;
+      report.current.onStatus?.(status);
+    }
+  });
+
+  // Once per execution: the dApp refreshes its positions.
+  const supplied = useRef(new Set<string>());
+  const landedId = run ? flow.exec.executionId : recovery?.executionId;
+  const landedOption = run?.option ?? recovery?.waiting.option;
+
+  useEffect(() => {
+    if (
+      status.state === 'success' &&
+      landedId &&
+      landedOption &&
+      !supplied.current.has(landedId)
+    ) {
+      supplied.current.add(landedId);
+      report.current.onSupplied?.({
+        executionId: landedId,
+        option: landedOption,
+      });
+    }
+  }, [status.state, landedId, landedOption]);
+
+  // Ended while the modal was closed: say so in a corner of the page.
+  const [notice, setNotice] = useState<'success' | 'failed' | null>(null);
+  const previousState = useRef(status.state);
+
+  useEffect(() => {
+    const before = previousState.current;
+
+    previousState.current = status.state;
+
+    if (open) {
+      setNotice(null);
+    } else if (
+      (before === 'running' || before === 'action') &&
+      (status.state === 'success' || status.state === 'failed')
+    ) {
+      setNotice(status.state);
+    }
+  }, [open, status.state]);
+
+  useEffect(() => {
+    if (notice !== 'success') {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setNotice(null), SUCCESS_NOTICE_MS);
+
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   // Each opening starts over: a running supply, else the chosen wallet's
   // assets, else the list.
@@ -264,27 +426,37 @@ const SupplyFlow = ({
     ? `To ${truncateMiddle(positionOwner)} on ${destination.title}`
     : destination.title;
 
-  const view: 'progress' | 'blocked' | 'loading' | Screen | 'assets' | 'form' =
-    (() => {
-      // Before anything else: the page may have changed under a running supply.
-      if (run) {
-        return 'progress';
-      }
+  const view:
+    | 'progress'
+    | 'recover'
+    | 'blocked'
+    | 'loading'
+    | Screen
+    | 'assets'
+    | 'form' = (() => {
+    // Before anything else: the page may have changed under a running supply.
+    if (run) {
+      return 'progress';
+    }
 
-      if (blocked) {
-        return 'blocked';
-      }
+    if (recovery && destination.buildStepsPlan) {
+      return 'recover';
+    }
 
-      if (!session.ready || (checking && screen !== 'wallets')) {
-        return 'loading';
-      }
+    if (blocked) {
+      return 'blocked';
+    }
 
-      if (screen === 'wallets' || !active) {
-        return 'wallets';
-      }
+    if (!session.ready || (checking && screen !== 'wallets')) {
+      return 'loading';
+    }
 
-      return asset ? 'form' : 'assets';
-    })();
+    if (screen === 'wallets' || !active) {
+      return 'wallets';
+    }
+
+    return asset ? 'form' : 'assets';
+  })();
 
   let title = 'Supply with Aurora';
   // Choosing what to pay with says what this is for; a running supply and a
@@ -317,17 +489,45 @@ const SupplyFlow = ({
                 : current,
             )
           }
+          onRecover={
+            !readOnly && destination.buildStepsPlan ? recover : undefined
+          }
           onDone={() => {
-            const supplied = flow.exec.phase === 'success';
+            const succeeded = flow.exec.phase === 'success';
 
             setRun(null);
 
-            if (supplied) {
+            if (succeeded) {
               close();
             }
           }}
         />
       ) : null;
+      break;
+
+    case 'recover':
+      title = "Supply what's waiting";
+      subtitle = destinationLine;
+      onBack =
+        recovery?.state === 'running' ? undefined : () => setRecovery(null);
+      body =
+        recovery && destination.buildStepsPlan ? (
+          <RecoverScreen
+            exec={flow.exec}
+            recovery={recovery}
+            buildStepsPlan={destination.buildStepsPlan}
+            dappName={dappName}
+            destinationTitle={destination.title}
+            onStart={startRecovery}
+            onRetry={() =>
+              setRecovery((current) => current && { ...current, state: 'idle' })
+            }
+            onDone={() => {
+              setRecovery(null);
+              close();
+            }}
+          />
+        ) : null;
       break;
 
     case 'blocked':
@@ -373,6 +573,16 @@ const SupplyFlow = ({
               setScreen(null);
             }}
           />
+          {options ? (
+            <FailedSupplies
+              key={active.key}
+              options={options}
+              dappName={dappName}
+              onSupply={
+                !readOnly && destination.buildStepsPlan ? recover : undefined
+              }
+            />
+          ) : null}
           <AssetsScreen
             onPick={(row) => setPicked({ walletKey: active.key, row })}
           />
@@ -475,7 +685,25 @@ const SupplyFlow = ({
       </div>
     </div>
   ) : (
-    check
+    <>
+      {check}
+      {notice ? (
+        <DoneNotice
+          success={notice === 'success'}
+          dappName={dappName}
+          destinationTitle={destination.title}
+          onView={
+            onOpen
+              ? () => {
+                  setNotice(null);
+                  onOpen();
+                }
+              : undefined
+          }
+          onDismiss={() => setNotice(null)}
+        />
+      ) : null}
+    </>
   );
 };
 

@@ -29,6 +29,9 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
   walletSources={walletSources}       // optional: e.g. [stellarWallets(), tronWallets()], created once
   readOnly={notice}                   // optional: every screen, no supply (a preview)
+  onOpen={open}                       // optional: the completion notice's "View"
+  onStatus={showStatus}               // optional: the supply's status, e.g. on the dApp's button
+  onSupplied={refreshPositions}       // optional: once per landed supply
   theme={{ auto: { pin: { cardRadius: 12 } } }} // optional: read from the page by default; keep it stable
 />
 ```
@@ -42,18 +45,49 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `walletConnect` | A client from `createWalletConnectClient`, with a `storagePrefix` when the page runs WalletConnect too. |
 | `tonConnect` | A client from `createTonConnectClient` for TON phones: not the one behind `tonWallets(…)` for extensions, since a TON Connect session holds one wallet. |
 | `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar` or `tronWallets()` from `…/detect/tron`. Create them once, at module scope. |
+| `destination.buildStepsPlan` | Optional. The same supply as a steps-only plan (`flow: 'steps-only'`, `feeFromAmount: true`) that spends `{ option, destinationAsset, amount }` already waiting at the user's intermediary. With it, funds a failed supply left can be supplied from the modal. |
+| `onOpen` | Opens the modal. The completion notice's **View** calls it. |
+| `onStatus` | Every change in the supply's status, open or closed: `idle`, `action` (sign, confirm, resume), `running`, `success`, `failed`, each with a short label. For the dApp's own button or a badge. |
+| `onSupplied` | `{ executionId, option }`, once per supply that landed (a recovery too): refresh the dApp's position data. |
 | `readOnly` | A notice the Supply button shows instead of supplying: every screen and quote works, nothing runs. The extension sets it for its theme preview off app.aave.com. |
 | `theme` | `{ auto, seed, tokens }`. `auto` (on by default) reads a seed from the page; pass `false` to skip it, or hints: `selectors` (`primaryButton`, `button`, `card`) and `pin` (seed values the reading can't change). `seed` overrides the reading, and the whole is derived into tokens (below). Exact `tokens` win over everything. |
 
 Everything else is the modal's: wallet detection and choice, balances, the
 quote, the run, recovery, and the in-flight check.
 
+## When a supply's last step fails
+
+The bridge delivers, then the intermediary's steps fail (a reserve at its
+supply cap, a price move): the service ends the execution in
+`OPERATION_FAILED`, with no refund, and the funds stay at the wallet's
+intermediary, which only that wallet can move.
+
+- The progress screen says so in plain words, and shows what waits
+  (`useIntermediaryBalance` for the reserve's token).
+- After a reload, the assets screen shows it too: the wallet's
+  `OPERATION_FAILED` executions name the tokens, and the balance decides,
+  so funds already supplied show nothing.
+- **Supply it** opens a recovery screen: `previewSteps` of the dApp's
+  `buildStepsPlan` (what lands, and the fee), re-priced every 25 s, then
+  `runSteps` on the same runner. It's kept by the modal, so it outlives a
+  close, and it reports through `onStatus` and `onSupplied` like a supply.
+
+## Outside the modal
+
+The run lives above the dialog, so it keeps going when the modal closes.
+- `onStatus` reports where it is, for the dApp to show on its own button.
+- When it ends while the modal is closed, a notice in a corner of the page
+  says so, with **View** (`onOpen`). A success hides after 10 s; a failure
+  stays until dismissed.
+- `onSupplied` fires once per execution that landed.
+
 ## What it uses from the SDK
 
 - **intents-connect/react:** `IntentsConnectProvider`, `useIntentsConnectFlow`
   (one runner, kept above the dialog so a run outlives a close),
-  `useQuotePreview`, `useSupportedTokens`, `useWalletBalances` and
-  `useWalletExecutions`.
+  `useQuotePreview`, `useSupportedTokens`, `useWalletBalances`,
+  `useWalletExecutions` and `useIntermediaryBalance`; the runner's
+  `previewSteps` / `runSteps` for funds a failed supply left.
 - **intents-connect-wallet:**
   - `./detect` and `./detect/react` for browser wallets;
   - `./detect/connector`'s `toWalletConnector`;

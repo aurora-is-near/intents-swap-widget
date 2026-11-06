@@ -156,6 +156,19 @@ supply transactions (with explorer links) and the execution id.
   on can be **kept following**.
 - An EVM deposit switches the wallet to the asset's chain. When it's the
   wallet Aave uses, Aave's network switches too.
+- **When the Aave step fails** (a reserve at its supply cap, a price move),
+  the funds stay with the paying wallet's Aurora account on the market's
+  chain. The progress screen says so and shows what waits, and so does the
+  assets screen after a reload: **Supply it** supplies it in place, without
+  a bridge, for the network fee.
+- **On the page:** while the modal is closed, the Supply with Aurora button
+  shows the supply's status ("Supplying…", "Sign in your wallet",
+  "Supplied", "Supply failed"). A notice in the corner says when it ended,
+  with **View** to reopen it.
+- **Aave refreshes** when a supply lands: the extension finds Aave's React
+  Query client (in React's fiber tree, as it exposes none) and invalidates
+  its active queries, then once more 6 s later, so Your supplies updates
+  without waiting for Aave's next poll.
 
 ## Troubleshooting
 

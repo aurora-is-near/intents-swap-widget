@@ -16,6 +16,7 @@ import {
   truncateMiddle,
   useNow,
 } from '../ui';
+import { type Waiting, WaitingNotice } from '../recovery/WaitingFunds';
 import { describeFailure } from './describeFailure';
 import type { SupplyRun } from './types';
 
@@ -181,6 +182,7 @@ export const ProgressScreen = ({
   destinationTitle,
   onAttach,
   onSwitchWallet,
+  onRecover,
   onDone,
 }: {
   flow: UseIntentsConnectFlowResult<ExecutionPreview>;
@@ -191,6 +193,8 @@ export const ProgressScreen = ({
   onAttach: () => void;
   /** Leaves a found run waiting and goes to the wallet list. */
   onSwitchWallet: () => void;
+  /** Supplies what a failed last step left at the intermediary. */
+  onRecover?: (waiting: Waiting) => void;
   /** Leaves a finished (or never-started) run. */
   onDone: () => void;
 }) => {
@@ -283,6 +287,19 @@ export const ProgressScreen = ({
             ? describeFailure(exec.recovery.cause, origin?.symbol ?? 'funds')
                 .title
             : 'Retry it, or cancel the supply.'}
+        </p>
+      </Notice>
+    );
+  } else if (exec.status === 'OPERATION_FAILED') {
+    headline = (
+      <Notice tone="warning">
+        <p className="font-medium">
+          The supply to {dappName} didn&apos;t go through
+        </p>
+        <p className="mt-1 text-text-secondary">
+          Your funds were bridged, but the last step failed: the reserve may
+          have reached its supply cap. What reached {chainLabel(option.chain)}{' '}
+          stays with this wallet&apos;s Aurora account.
         </p>
       </Notice>
     );
@@ -381,6 +398,14 @@ export const ProgressScreen = ({
           </Detail>
         ) : null}
       </dl>
+
+      {exec.status === 'OPERATION_FAILED' ? (
+        <WaitingNotice
+          option={option}
+          dappName={dappName}
+          onSupply={onRecover}
+        />
+      ) : null}
 
       {flow.needsExternalDeposit && exec.depositAddress ? (
         <Notice tone="info">
