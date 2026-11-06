@@ -10,8 +10,9 @@ import { useModalPage } from './useModalPage';
  * - focus starts on `initialFocus`, stays inside, falls back to
  *   `fallbackFocus` (e.g. the title, `tabIndex={-1}`) when its element goes,
  *   and returns to the opener, or `returnFocus()`, on close (useFocusTrap);
- * - Escape closes it, unless something inside claimed the key first with
- *   `event.preventDefault()` (an open list, a search field clearing);
+ * - Escape calls `onEscape` (else `onClose`), unless something inside
+ *   claimed the key first with `event.preventDefault()` (an open list, a
+ *   search field clearing);
  * - a mouse-down on the backdrop closes it;
  * - announcements (`useAnnounce`) are read from inside it.
  *
@@ -19,6 +20,7 @@ import { useModalPage } from './useModalPage';
  */
 export const Dialog = ({
   onClose,
+  onEscape,
   labelledBy,
   describedBy,
   initialFocus,
@@ -28,6 +30,8 @@ export const Dialog = ({
   children,
 }: {
   onClose: () => void;
+  /** What Escape does, when it isn't closing (e.g. going back a level). */
+  onEscape?: () => void;
   /** The id of the title. */
   labelledBy: string;
   /** The id of a short description, read after the title. */
@@ -43,7 +47,7 @@ export const Dialog = ({
 
   // First, so its cleanup (the page back from inert) runs before focus
   // returns to an opener on the page.
-  useModalPage(true);
+  useModalPage(true, dialog);
   useFocusTrap(dialog, {
     active: true,
     initialFocus,
@@ -79,7 +83,7 @@ export const Dialog = ({
             !event.nativeEvent.isComposing
           ) {
             event.preventDefault();
-            onClose();
+            (onEscape ?? onClose)();
           }
         }}>
         <Announcer>{children}</Announcer>

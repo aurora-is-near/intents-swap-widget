@@ -48,6 +48,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `walletSources` | Detection sources for families `./detect` doesn't build in, e.g. `stellarWallets()` from `intents-connect-wallet/detect/stellar` or `tronWallets()` from `…/detect/tron`. Create them once, at module scope. |
 | `destination.buildStepsPlan` | Optional. The same supply as a steps-only plan (`flow: 'steps-only'`, `feeFromAmount: true`) that spends `{ option, destinationAsset, amount }` already waiting at the user's intermediary. With it, funds a failed supply left can be supplied from the modal. |
 | `onOpen` | Opens the modal. The completion notice's **View** calls it. |
+| `returnFocus` | Where keyboard focus goes when the modal closes and what opened it is gone, or it was opened another way: the dApp's own button for it. |
 | `onStatus` | Every change in the supply's status, open or closed: `idle`, `action` (sign, confirm, resume), `running`, `success`, `failed`, each with a short label. For the dApp's own button or a badge. |
 | `onSupplied` | `{ executionId, option }`, once per supply that landed (a recovery too): refresh the dApp's position data. |
 | `intent` | The `intent` the dApp's recipes carry (echoed in every execution's `metadata`). History lists only those runs, and the in-flight check ignores other apps' runs. Without it there is no History. |
@@ -259,6 +260,59 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
   only register custom properties.
 - The default font is Inter with a system fallback (a page theme takes the
   page's), and contextual alternates are off (Inter draws "0x" as "0×").
+
+## Accessibility
+
+Keyboard, screen-reader and visual behaviour aims at WCAG 2.2 AA. The pieces
+live in `a11y/`, built for a dialog inside a shadow root, with component
+tests (jsdom, axe-core) in `a11y/*.test.tsx`.
+
+- **The dialog** (`Dialog`):
+  - The page behind is `inert` and doesn't scroll, but only what's on the
+    page at opening. A wallet's own prompt added later stays usable. The
+    top-level element holding the dialog is spared: mount the modal in its
+    own container on `<body>` (the extension's shadow host is one) so that's
+    nothing of the dApp's.
+  - Tab and Shift+Tab stay inside and wrap.
+  - Focus that falls off a screen (its button went, or turned disabled)
+    lands on the title. On close it returns to the opener, else to
+    `returnFocus()`.
+  - Escape goes back a level while History shows, else closes. An open list
+    or a search box with text claims it first.
+- **Screens.** A new screen's title gets focus when the old screen's
+  element went (so it's read), or is announced when focus stayed on
+  something that survived (Back, Close). The form focuses its amount.
+- **Widgets**:
+  - Browser · Phone · Transfer and EVM · TON are tabs (`useTabs`): arrow
+    keys, Home and End, one Tab stop, each with its panel.
+  - Wallet families are disclosures under headings (`useDisclosure`); a
+    closed one is out of the Tab order.
+  - "Supply as" is a listbox (`useListbox`): arrows, letters, Escape back
+    to its button, a check on the selection.
+  - Unavailable rows stay focusable (`aria-disabled`) with their reason.
+    Nothing is disabled while focused: busy buttons use `aria-busy`.
+- **Announcements** (`useAnnounce`, polite and assertive live regions inside
+  the dialog):
+  - the supply's headline on every change (failures assertively), and a
+    recovery's state;
+  - the form's state ("Not enough USDC", "Amount too small", "Supply
+    USDC") once typing settles;
+  - search result counts, a manual balance refresh, a copy (and a failed
+    one), a QR code expiring, a wallet waiting for approval;
+  - errors, as alerts.
+- **Visual**:
+  - A 2 px focus ring in the theme's focus colour (inset on list rows), plus
+    forced-colours outlines where box-shadows vanish.
+  - Motion off under `prefers-reduced-motion`.
+  - Icon buttons at least 24 px.
+  - The stepper marks done and stopped steps with icons and words, not
+    colour alone.
+- **The dApp's button** (`page/aave.ts`) has `aria-haspopup="dialog"` and
+  `aria-expanded`, a keyboard focus ring, and gets focus back on close.
+- **Lint:** jsx-a11y's recommended rules are errors for this package.
+- **Known gap:** muted text (3.6–4.1:1) and Aave's error red (3.7–4.0:1)
+  stay below 4.5:1 on Aave's theme, to keep Aave's sampled colours. Derived
+  themes keep their 3:1 floors for those two.
 
 ## What it stores
 

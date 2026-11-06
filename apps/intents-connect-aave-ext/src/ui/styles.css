@@ -36,9 +36,18 @@
     outline-offset: 2px;
   }
 
-  /* Rows of lists that clip their overflow: the ring goes inside. */
+  /* Focus moved there by script, not a control (the title on a new
+     screen, the dialog itself): nothing to point at. */
+  [tabindex='-1']:focus-visible {
+    outline: none;
+  }
+
+  /* Controls in boxes that clip their overflow (list rows, the reserve
+     picker's button, a scrolling row of chips): the ring goes inside. */
   li > button:focus-visible,
-  [role='option']:focus-visible {
+  [role='option']:focus-visible,
+  .overflow-hidden > :focus-visible,
+  .overflow-x-auto > :focus-visible {
     outline-offset: -2px;
   }
 

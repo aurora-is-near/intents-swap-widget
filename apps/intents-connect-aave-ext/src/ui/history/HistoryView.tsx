@@ -534,23 +534,25 @@ export const HistoryView = ({
     <div className="flex flex-col gap-3">
       {sources}
       {failed.length ? (
-        <Notice tone="warning">
-          <p className="font-medium">
-            {failed.length === wallets.length
-              ? "History didn't load"
-              : "Some wallets' history didn't load"}
-          </p>
-          <Button
-            variant="secondary"
-            className="mt-3"
-            onClick={() =>
-              failed.forEach((wallet) => {
-                void answers[wallet.address]?.refresh();
-              })
-            }>
-            Retry
-          </Button>
-        </Notice>
+        <div role="alert">
+          <Notice tone="warning">
+            <p className="font-medium">
+              {failed.length === wallets.length
+                ? "History didn't load"
+                : "Some wallets' history didn't load"}
+            </p>
+            <Button
+              variant="secondary"
+              className="mt-3"
+              onClick={() =>
+                failed.forEach((wallet) => {
+                  void answers[wallet.address]?.refresh();
+                })
+              }>
+              Retry
+            </Button>
+          </Notice>
+        </div>
       ) : null}
       {chains.length ? (
         <ChainChips

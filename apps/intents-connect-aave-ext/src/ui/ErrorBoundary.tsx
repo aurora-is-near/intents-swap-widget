@@ -32,8 +32,10 @@ export class ErrorBoundary extends Component<Props, { error?: Error }> {
       return children;
     }
 
+    // Announced as it appears; its button isn't "Close", which the header's
+    // close button is already called.
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3" role="alert">
         <Notice tone="warning">
           <p className="font-medium">Something went wrong here</p>
           <p className="mt-1 break-words text-text-secondary">
@@ -46,7 +48,7 @@ export class ErrorBoundary extends Component<Props, { error?: Error }> {
             this.setState({ error: undefined });
             onReset();
           }}>
-          Close
+          Start over
         </Button>
       </div>
     );

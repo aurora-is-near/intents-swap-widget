@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-type Politeness = 'polite' | 'assertive';
+export type Politeness = 'polite' | 'assertive';
 
 type Announce = (message: string, politeness?: Politeness) => void;
 
@@ -58,9 +58,64 @@ export const Announcer = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/** How long a changing message must hold still before it's read. */
+const SETTLE_MS = 700;
+
+/**
+ * Reads `message` once it stops changing (typing, a quote coming in), so a
+ * state shown only visually (a button's label, a result count) reaches
+ * screen-reader users without a word per keystroke. The first value isn't
+ * read (the screen's own content says it), nor `undefined`.
+ */
+export const useSettledAnnouncement = (
+  message: string | undefined,
+  politeness: Politeness = 'polite',
+) => {
+  const announce = useContext(AnnounceContext);
+  const first = useRef(true);
+
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+
+      return undefined;
+    }
+
+    if (!message) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => announce(message, politeness), SETTLE_MS);
+
+    return () => clearTimeout(timer);
+  }, [message, politeness, announce]);
+};
+
 /**
  * `announce(message, politeness)`: read `message` to screen-reader users
  * without moving focus. Polite waits for a pause; assertive (errors only)
  * interrupts. Outside an `Announcer`, it does nothing.
  */
 export const useAnnounce = () => useContext(AnnounceContext);
+
+/**
+ * Reads `text` whenever it changes, the first one included: a screen's
+ * status line (a supply's headline, a recovery's state). Renders nothing.
+ */
+export const Spoken = ({
+  text,
+  politeness = 'polite',
+}: {
+  text?: string;
+  politeness?: Politeness;
+}) => {
+  const announce = useContext(AnnounceContext);
+
+  useEffect(() => {
+    if (text) {
+      announce(text, politeness);
+    }
+  }, [text, politeness, announce]);
+
+  return null;
+};

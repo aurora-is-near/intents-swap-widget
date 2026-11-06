@@ -12,6 +12,7 @@ import {
   useAnnounce,
   useDisclosure,
   useListbox,
+  useSettledAnnouncement,
   useTabs,
 } from '.';
 import { axeViolations, renderInShadow, resetDom } from './testing';
@@ -383,5 +384,79 @@ describe('Announcer', () => {
         "Couldn't copy the deposit address",
       ),
     );
+  });
+});
+
+const Settling = ({ message }: { message?: string }) => {
+  useSettledAnnouncement(message);
+
+  return null;
+};
+
+describe('useSettledAnnouncement', () => {
+  it('skips the first value, and reads the last of quick changes', async () => {
+    const { shadow, rerender } = renderInShadow(
+      <Announcer>
+        <Settling message="Enter an amount" />
+      </Announcer>,
+    );
+
+    const polite = shadow.querySelector('[aria-live="polite"]')!;
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 800);
+    });
+
+    expect(polite).toHaveTextContent('');
+
+    rerender(
+      <Announcer>
+        <Settling message="Not enough USDC" />
+      </Announcer>,
+    );
+    rerender(
+      <Announcer>
+        <Settling message="Supply USDC" />
+      </Announcer>,
+    );
+    await waitFor(() => expect(polite).toHaveTextContent('Supply USDC'), {
+      timeout: 2000,
+    });
+  });
+});
+
+/** A switch inside what it switches, remounted with it (EVM/TON). */
+const RemountingTabs = () => {
+  const [chain, setChain] = useState<'evm' | 'ton'>('evm');
+  const tabs = useTabs({
+    items: ['evm', 'ton'] as const,
+    value: chain,
+    onChange: setChain,
+  });
+
+  return (
+    <div {...tabs.panelProps(chain)} key={chain}>
+      <div {...tabs.listProps('Network')}>
+        <button {...tabs.tabProps('evm')}>EVM</button>
+        <button {...tabs.tabProps('ton')}>TON</button>
+      </div>
+    </div>
+  );
+};
+
+describe('useTabs, remounting', () => {
+  it('keeps focus on the picked tab when the tablist remounts', async () => {
+    const user = userEvent.setup();
+    const { shadow } = renderInShadow(<RemountingTabs />);
+    const view = within(shadow as unknown as HTMLElement);
+
+    view.getByRole('tab', { name: 'EVM' }).focus();
+    await user.keyboard('{ArrowRight}');
+
+    expect(focusedName()).toBe('TON');
+
+    await user.keyboard('{Enter}');
+
+    expect(focusedName()).toBe('TON');
   });
 });

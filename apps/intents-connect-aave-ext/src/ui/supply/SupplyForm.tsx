@@ -1,4 +1,11 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
 import {
   type UseExecutionResult,
@@ -20,8 +27,10 @@ import { chainLabel } from '../assets/tokens';
 import type { AssetRow } from '../assets/useWalletAssets';
 import { exchangeNetwork } from '../transfer/networks';
 import { transferPreviewer } from '../transfer/preview';
+import { useListbox, useSettledAnnouncement } from '../a11y';
 import {
   Button,
+  CheckIcon,
   ChevronIcon,
   Notice,
   Skeleton,
@@ -125,40 +134,81 @@ const errorMessage = (error: Error) =>
     ? `${error.message.slice(0, 160)}…`
     : error.message;
 
+/** A field's visible name: a `<label>` for an input, else named by `id`. */
 const Label = ({
   children,
   aside,
+  id,
+  htmlFor,
 }: {
   children: ReactNode;
   aside?: ReactNode;
+  id?: string;
+  htmlFor?: string;
 }) => (
   <div className="mb-2 flex items-baseline justify-between gap-2">
-    <span className="text-text-secondary">{children}</span>
+    {htmlFor ? (
+      <label id={id} htmlFor={htmlFor} className="text-text-secondary">
+        {children}
+      </label>
+    ) : (
+      <span id={id} className="text-text-secondary">
+        {children}
+      </span>
+    )}
     {aside}
   </div>
 );
 
+/** One row of a `<dl>`: a term and its value. */
 const Line = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex items-center justify-between gap-3">
-    <span className="shrink-0 text-text-secondary">{label}</span>
-    <span className="flex min-w-0 items-center justify-end text-right tabular-nums">
+    <dt className="shrink-0 text-text-secondary">{label}</dt>
+    <dd className="flex min-w-0 items-center justify-end text-right tabular-nums">
       {children}
-    </span>
+    </dd>
   </div>
 );
 
+const pickable = (option: DeliverableOption) => ({
+  id: option.id,
+  label: option.symbol,
+  disabled: !!option.unavailable,
+});
+
+/**
+ * The reserve to supply into: a button that opens a listbox (arrow keys,
+ * letters, Escape back to the button), named by its visible label.
+ */
 const OptionPicker = ({
   options,
   selected,
   loading,
+  labelId,
   onSelect,
 }: {
   options: readonly DeliverableOption[];
   selected?: DeliverableOption;
   loading: boolean;
+  /** The visible label's id: "Supply as". */
+  labelId: string;
   onSelect: (option: DeliverableOption) => void;
 }) => {
-  const [open, setOpen] = useState(false);
+  const triggerId = useId();
+  const picker = useListbox({
+    options: options.map(pickable),
+    value: selected?.id,
+    onChange: (id) => {
+      const next = options.find((option) => option.id === id);
+
+      if (next) {
+        onSelect(next);
+      }
+    },
+    label: 'Reserve to supply',
+  });
+
+  const { open } = picker;
 
   if (loading) {
     return <Skeleton className="h-[52px]" />;
@@ -167,9 +217,9 @@ const OptionPicker = ({
   return (
     <div className="overflow-hidden rounded-card bg-field shadow-box">
       <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        {...picker.triggerProps}
+        id={triggerId}
+        aria-labelledby={`${labelId} ${triggerId}`}
         className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-surface-hover">
         {selected ? (
           <>
@@ -195,27 +245,29 @@ const OptionPicker = ({
       </button>
 
       {open ? (
-        <ul className="max-h-[220px] overflow-y-auto shadow-[0_-1px_0_var(--ring)] [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
+        <ul
+          {...picker.listProps}
+          className="max-h-[220px] overflow-y-auto shadow-[0_-1px_0_var(--ring)] [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
           {options.map((option) => (
-            <li key={option.id}>
-              <button
-                type="button"
-                disabled={!!option.unavailable}
-                aria-pressed={option.id === selected?.id}
-                onClick={() => {
-                  onSelect(option);
-                  setOpen(false);
-                }}
-                className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent aria-pressed:bg-surface-hover">
-                <TokenLogo symbol={option.symbol} size={24} />
-                <span className="min-w-0 flex-1 truncate font-medium">
-                  {option.symbol}
-                </span>
-                <span className="text-text-muted">
-                  {option.unavailable ??
-                    (option.apy === undefined ? '' : formatApy(option.apy))}
-                </span>
-              </button>
+            <li
+              key={option.id}
+              {...picker.optionProps(pickable(option))}
+              className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent aria-selected:bg-surface-hover">
+              <TokenLogo symbol={option.symbol} size={24} />
+              <span className="min-w-0 flex-1 truncate font-medium">
+                {option.symbol}
+              </span>
+              <span className="text-text-muted">
+                {option.unavailable ??
+                  (option.apy === undefined ? '' : formatApy(option.apy))}
+              </span>
+              {/* The selection, by more than its background. */}
+              <span
+                className={
+                  option.id === selected?.id ? 'text-text-primary' : 'invisible'
+                }>
+                <CheckIcon />
+              </span>
             </li>
           ))}
         </ul>
@@ -276,33 +328,35 @@ const QuoteLines = ({
 
   return (
     <>
-      <Line label="You supply at least">
-        <AssetAmount
-          symbol={option.symbol}
-          amount={formatAmount(minAmountOut, option.decimals)}
-        />
-        {minUsd === undefined ? null : (
-          <span className="whitespace-pre text-text-muted">
-            {' · '}
-            {formatUsd(minUsd)}
-          </span>
-        )}
-      </Line>
-      {networkFee ? (
-        <Line label="Network fee">
+      <dl className="flex flex-col gap-1.5">
+        <Line label="You supply at least">
           <AssetAmount
             symbol={option.symbol}
-            amount={formatAmount(networkFee, option.decimals)}
+            amount={formatAmount(minAmountOut, option.decimals)}
           />
-          {feeUsd === undefined ? null : (
+          {minUsd === undefined ? null : (
             <span className="whitespace-pre text-text-muted">
               {' · '}
-              {formatUsd(feeUsd)}
+              {formatUsd(minUsd)}
             </span>
           )}
         </Line>
-      ) : null}
-      {time ? <Line label="Estimated time">{time}</Line> : null}
+        {networkFee ? (
+          <Line label="Network fee">
+            <AssetAmount
+              symbol={option.symbol}
+              amount={formatAmount(networkFee, option.decimals)}
+            />
+            {feeUsd === undefined ? null : (
+              <span className="whitespace-pre text-text-muted">
+                {' · '}
+                {formatUsd(feeUsd)}
+              </span>
+            )}
+          </Line>
+        ) : null}
+        {time ? <Line label="Estimated time">{time}</Line> : null}
+      </dl>
       <p className="mt-1 text-text-muted">
         {quote.isLoading || nextIn <= 0
           ? 'Updating the quote…'
@@ -356,6 +410,17 @@ export const SupplyForm = ({
   const { token } = asset;
   const transfer = funding === 'transfer';
   const [amount, setAmount] = useState(draft?.amount ?? '');
+  const amountId = useId();
+  const amountLabelId = useId();
+  const symbolId = useId();
+  const problemId = useId();
+  const reserveLabelId = useId();
+  const amountRef = useRef<HTMLInputElement>(null);
+
+  // The form opens on its amount: what there is to do first.
+  useEffect(() => {
+    amountRef.current?.focus({ preventScroll: true });
+  }, []);
   const [chosen, setChosen] = useState<string | undefined>(draft?.chosen);
   const reportDraft = useRef(onDraft);
 
@@ -508,6 +573,19 @@ export const SupplyForm = ({
 
   const ready = !!plan && !!preview;
 
+  // A problem with the amount itself, shown under it and tied to it.
+  let fieldProblem: string | undefined;
+
+  if (amount && !atomic) {
+    fieldProblem = 'Enter a valid amount.';
+  } else if (tooMuch) {
+    fieldProblem = `Not enough ${token.symbol}: the balance is ${formatAmount(asset.amount, token.decimals)}.`;
+  }
+
+  // The button's label is the form's state ("Not enough USDC", "Amount too
+  // small", "Supply USDC"): read once it settles, not while a quote loads.
+  useSettledAnnouncement(cta === 'Getting a quote…' ? undefined : cta);
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -519,18 +597,23 @@ export const SupplyForm = ({
                 <button
                   type="button"
                   disabled={max === '0'}
+                  aria-label={`MAX: ${formatAmount(max, token.decimals)} ${token.symbol}`}
                   onClick={() => setAmount(fromAtomic(max, token.decimals))}
-                  className="ml-2 font-medium text-text-primary hover:underline disabled:opacity-40">
+                  className="ml-1 inline-flex min-h-[24px] items-center px-1 font-medium text-text-primary hover:underline disabled:opacity-40">
                   MAX
                 </button>
               </span>
             )
-          }>
+          }
+          id={amountLabelId}
+          htmlFor={amountId}>
           Amount
         </Label>
         <div className="rounded-card bg-field px-3 py-2.5 shadow-box focus-within:shadow-focus">
           <div className="flex items-center gap-3">
             <input
+              ref={amountRef}
+              id={amountId}
               inputMode="decimal"
               autoComplete="off"
               value={amount}
@@ -538,12 +621,16 @@ export const SupplyForm = ({
                 setAmount(event.target.value.replace(',', '.'))
               }
               placeholder="0.00"
-              aria-label={`Amount of ${token.symbol}`}
-              className="min-w-0 flex-1 bg-transparent text-amount leading-7 font-medium outline-none placeholder:text-text-muted"
+              aria-labelledby={`${amountLabelId} ${symbolId}`}
+              aria-invalid={fieldProblem ? true : undefined}
+              aria-describedby={fieldProblem ? problemId : undefined}
+              className="min-w-0 flex-1 bg-transparent text-amount leading-7 font-medium outline-hidden placeholder:text-text-muted"
             />
             <span className="flex flex-none items-center gap-2">
               <TokenLogo symbol={token.symbol} size={24} />
-              <span className="font-medium">{token.symbol}</span>
+              <span id={symbolId} className="font-medium">
+                {token.symbol}
+              </span>
             </span>
           </div>
           <div className="mt-0.5 flex justify-between text-text-muted">
@@ -551,14 +638,20 @@ export const SupplyForm = ({
             <span>on {chainLabel(token.blockchain)}</span>
           </div>
         </div>
+        {fieldProblem ? (
+          <p id={problemId} className="mt-1.5 text-danger">
+            {fieldProblem}
+          </p>
+        ) : null}
       </div>
 
       <div>
-        <Label>Supply as</Label>
+        <Label id={reserveLabelId}>Supply as</Label>
         <OptionPicker
           options={options}
           selected={option}
           loading={loadingOptions}
+          labelId={reserveLabelId}
           onSelect={(next) => setChosen(next.id)}
         />
       </div>

@@ -9,12 +9,15 @@ import { formatAmount, fromAtomic } from '../assets/amounts';
 import { AssetAmount, ChainName } from '../assets/AssetAmount';
 import { chainLabel, explorerTxUrl } from '../assets/tokens';
 import { exchangeNetwork } from '../transfer/networks';
+import { type Politeness, Spoken } from '../a11y';
 import {
+  AlertIcon,
   Button,
   CheckIcon,
   CloseIcon,
   CopyButton,
   cx,
+  ExternalIcon,
   Notice,
   truncateMiddle,
   useNow,
@@ -84,13 +87,23 @@ const Stepper = ({
   const halted = waitingAt === undefined && live === undefined;
 
   return (
-    <ol className="grid grid-cols-5 gap-1.5">
+    <ol aria-label="Supply progress" className="grid grid-cols-5 gap-1.5">
       {STEPS.map((label, index) => {
         const done = index < current || complete;
         const active = index === current && !done;
+        let state = 'not started';
+
+        if (done) {
+          state = 'done';
+        } else if (active) {
+          state = halted ? 'stopped' : 'in progress';
+        }
 
         return (
-          <li key={label} className="flex min-w-0 flex-col gap-1.5">
+          <li
+            key={label}
+            aria-current={active ? 'step' : undefined}
+            className="flex min-w-0 flex-col gap-1.5">
             <span
               className={cx(
                 'h-1 rounded-full',
@@ -100,12 +113,20 @@ const Stepper = ({
                 !done && !active && 'bg-track-strong',
               )}
             />
+            {/* Done and stopped show by a mark, not only the bar's colour. */}
             <span
               className={cx(
-                'truncate text-xs',
+                'flex min-w-0 items-center gap-0.5 text-xs',
                 done || active ? 'text-text-secondary' : 'text-text-muted',
               )}>
-              {label}
+              {done ? <CheckIcon size={10} /> : null}
+              {active && halted ? (
+                <span className="text-danger">
+                  <AlertIcon size={10} />
+                </span>
+              ) : null}
+              <span className="truncate">{label}</span>
+              <span className="sr-only">: {state}</span>
             </span>
           </li>
         );
@@ -148,8 +169,15 @@ export const TxLink = ({
           target="_blank"
           rel="noreferrer"
           title={hash}
-          className="underline decoration-link-line underline-offset-2 hover:decoration-text-primary">
+          className="inline-flex items-center gap-1 underline decoration-link-line underline-offset-2 hover:decoration-text-primary">
+          <span className="sr-only">
+            {label.charAt(0).toUpperCase() + label.slice(1)}{' '}
+          </span>
           {truncateMiddle(hash, 6, 4)}
+          <span className="sr-only"> (opens in a new tab)</span>
+          <span className="text-text-muted">
+            <ExternalIcon />
+          </span>
         </a>
       ) : (
         <span title={hash}>{truncateMiddle(hash, 6, 4)}</span>
@@ -284,8 +312,17 @@ export const ProgressScreen = ({
   const leave = finished && !expired;
 
   let headline: ReactNode;
+  // The headline in words, for screen readers: read when it changes.
+  let spoken: { text: string; politeness: Politeness } | undefined;
 
   if (waiting) {
+    spoken = {
+      text:
+        waiting.needs === 'signature'
+          ? 'A supply from this wallet was never signed'
+          : 'A supply from this wallet is waiting for its deposit',
+      politeness: 'polite',
+    };
     headline = (
       <Notice tone="warning">
         <p className="font-medium">
@@ -301,6 +338,7 @@ export const ProgressScreen = ({
       </Notice>
     );
   } else if (exec.phase === 'success') {
+    spoken = { text: `Supplied to ${destinationTitle}`, politeness: 'polite' };
     headline = (
       <Notice tone="info">
         <div className="flex flex-col items-center gap-2 py-2 text-center">
@@ -319,8 +357,13 @@ export const ProgressScreen = ({
     );
   } else if (expired) {
     // The deposit panel says it, over the SDK's "still processing".
+    spoken = { text: 'The time to send has passed', politeness: 'assertive' };
     headline = null;
   } else if (flow.state === 'IN_FLIGHT') {
+    spoken = {
+      text: 'A supply from this wallet is already running',
+      politeness: 'polite',
+    };
     headline = (
       <Notice tone="warning">
         <p className="font-medium">
@@ -332,6 +375,10 @@ export const ProgressScreen = ({
       </Notice>
     );
   } else if (flow.state === 'FAILED') {
+    spoken = {
+      text: "The transfer didn't go through",
+      politeness: 'assertive',
+    };
     headline = (
       <Notice tone="warning">
         <p className="font-medium">The transfer didn&apos;t go through</p>
@@ -344,6 +391,10 @@ export const ProgressScreen = ({
       </Notice>
     );
   } else if (exec.status === 'OPERATION_FAILED') {
+    spoken = {
+      text: `The supply to ${dappName} didn't go through`,
+      politeness: 'assertive',
+    };
     headline = (
       <Notice tone="warning">
         <p className="font-medium">
@@ -369,6 +420,7 @@ export const ProgressScreen = ({
         "Nothing was supplied. If you didn't send the deposit, your funds never left your wallet.";
     }
 
+    spoken = { text: 'Cancelled', politeness: 'polite' };
     headline = (
       <Notice tone="info">
         <div className="flex flex-col items-center gap-2 py-2 text-center">
@@ -383,6 +435,7 @@ export const ProgressScreen = ({
       </Notice>
     );
   } else if (described) {
+    spoken = { text: described.title, politeness: 'assertive' };
     headline = (
       <Notice tone="warning">
         <p className="font-medium">{described.title}</p>
@@ -397,6 +450,9 @@ export const ProgressScreen = ({
     const [baseTitle, detail] = (awaitingTransfer
       ? TRANSFER_DEPOSIT_COPY
       : LIVE_COPY[exec.phase]) ?? ['Working…'];
+
+    // The title without its ticking countdown: read once per phase.
+    spoken = { text: baseTitle, politeness: 'polite' };
 
     // A transfer's window counts down in its title.
     const title =
@@ -426,6 +482,7 @@ export const ProgressScreen = ({
 
   return (
     <div className="flex flex-col gap-4">
+      <Spoken text={spoken?.text} politeness={spoken?.politeness} />
       <Stepper
         exec={exec}
         waitingAt={waiting && (waiting.needs === 'signature' ? 1 : 2)}
@@ -590,7 +647,7 @@ export const ProgressScreen = ({
             Keep following
           </Button>
         ) : null}
-        {flow.state === 'IN_FLIGHT' ? (
+        {flow.state === 'IN_FLIGHT' && !waiting ? (
           <Button
             variant="primary"
             disabled={flow.isBusy}
@@ -610,7 +667,8 @@ export const ProgressScreen = ({
             Retry transfer
           </Button>
         ) : null}
-        {(flow.canCancel && !expired) || deposit?.kind === 'waiting' ? (
+        {!waiting &&
+        ((flow.canCancel && !expired) || deposit?.kind === 'waiting') ? (
           <Button
             variant="secondary"
             className="h-12"

@@ -44,6 +44,8 @@ const REFRESH_AGAIN_MS = 6000;
 
 /** The supply's status, as the button shows it (re-applied when it's re-inserted). */
 let buttonStatus: SupplyStatus = { state: 'idle' };
+// Whether the modal it opens is open: `aria-expanded`.
+let modalOpen = false;
 let calmTimer: ReturnType<typeof setTimeout> | undefined;
 
 const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
@@ -102,6 +104,18 @@ const renderStatus = (button: HTMLButtonElement) => {
   button.querySelector('span')!.textContent =
     status.state === 'idle' ? LABEL : status.label;
   button.title = idle ? '' : 'Open the supply';
+};
+
+/** The page's button, if it's on the page: focus returns to it on close. */
+export const supplyButton = () =>
+  document.querySelector<HTMLButtonElement>(`[${ATTR}]`);
+
+/** Tells screen readers whether the dialog the button opens is open. */
+export const showSupplyOpen = (open: boolean) => {
+  modalOpen = open;
+  document
+    .querySelectorAll<HTMLButtonElement>(`[${ATTR}]`)
+    .forEach((button) => button.setAttribute('aria-expanded', String(open)));
 };
 
 /**
@@ -199,6 +213,9 @@ const createButton = (
   button.setAttribute(ATTR, '');
   // Ours: the page-theme reader skips it.
   button.setAttribute('data-aurora-intents', '');
+  // It opens a dialog, and says whether that's open.
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', String(modalOpen));
   renderStatus(button);
 
   Object.assign(button.style, {
@@ -223,6 +240,20 @@ const createButton = (
     transition: 'background 120ms ease',
   });
 
+  // A focus ring by keyboard, in the page's text colour (it reads on the
+  // page): inline styles can't say `:focus-visible`, so the listeners do.
+  const ring = getComputedStyle(document.body).color || colors.cta;
+
+  button.addEventListener('focus', () => {
+    if (button.matches(':focus-visible')) {
+      button.style.outline = `2px solid ${ring}`;
+      button.style.outlineOffset = '2px';
+    }
+  });
+  button.addEventListener('blur', () => {
+    button.style.outline = '';
+    button.style.outlineOffset = '';
+  });
   button.addEventListener('mouseenter', () => {
     button.style.background = colors.ctaHover;
   });

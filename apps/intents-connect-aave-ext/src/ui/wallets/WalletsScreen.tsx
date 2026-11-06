@@ -6,6 +6,7 @@ import type {
 } from '@aurora-is-near/intents-connect-wallet/detect';
 import type { TonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 
+import { useAnnounce, useDisclosure, useTabs } from '../a11y';
 import {
   BrowserIcon,
   Button,
@@ -37,10 +38,12 @@ const PHONE_COPY: Record<'evm' | 'ton', PairingCopy> = {
   evm: {
     hint: 'Scan with an EVM wallet on your phone (MetaMask, Rainbow, Trust, Coinbase Wallet…), then approve the connection there.',
     linkLabel: 'WalletConnect link',
+    qrLabel: 'QR code to connect an EVM wallet on your phone',
   },
   ton: {
     hint: 'Scan with a TON wallet on your phone (Tonkeeper, MyTonWallet, Tonhub…), then approve the connection there.',
     linkLabel: 'TON Connect link',
+    qrLabel: 'QR code to connect a TON wallet on your phone',
   },
 };
 
@@ -58,16 +61,24 @@ const TAB_ITEMS: Record<
   transfer: { id: 'transfer', label: 'Transfer', icon: <TransferIcon /> },
 };
 
-/** A few choices over one sliding background. */
+type Tabs<T extends string> = ReturnType<typeof useTabs<T>>;
+
+/**
+ * A few choices over one sliding background: tabs (arrow keys, one Tab
+ * stop) from the parent's `useTabs`, whose panel the parent renders.
+ */
 const Segmented = <T extends string>({
   items,
   value,
-  onChange,
+  name,
+  tabs,
   size = 'md',
 }: {
   items: readonly { id: T; label: string; icon: ReactNode }[];
   value: T;
-  onChange: (value: T) => void;
+  /** What the tabs choose between, for screen readers. */
+  name: string;
+  tabs: Tabs<T>;
   /** `sm`: 28 px tall, 12 px text, for a switch under content. */
   size?: 'md' | 'sm';
 }) => {
@@ -81,7 +92,7 @@ const Segmented = <T extends string>({
 
   return (
     <div
-      role="tablist"
+      {...tabs.listProps(name)}
       className={cx(
         'relative grid bg-track',
         size === 'sm' ? 'rounded-chip p-0.5' : 'rounded-control p-1',
@@ -105,10 +116,7 @@ const Segmented = <T extends string>({
       {items.map(({ id, label, icon }) => (
         <button
           key={id}
-          type="button"
-          role="tab"
-          aria-selected={value === id}
-          onClick={() => onChange(id)}
+          {...tabs.tabProps(id)}
           className={cx(
             'relative flex items-center justify-center font-medium transition-colors',
             size === 'sm'
@@ -170,25 +178,29 @@ const Group = ({
   children: ReactNode;
 }) => {
   const [open, setOpen] = useState(family === OPEN_BY_DEFAULT);
+  const group = useDisclosure(open);
 
   return (
     <section>
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className="mb-2 flex w-full items-center gap-1.5 text-text-secondary hover:text-text-primary">
-        <FamilyIcon family={family} />
-        <span className="font-medium">{FAMILY_LABEL[family]}</span>
-        <span
-          className={cx(
-            'ml-auto transition-transform duration-200',
-            open ? 'rotate-90' : 'rotate-0',
-          )}>
-          <ChevronIcon />
-        </span>
-      </button>
+      <h3 className="mb-2">
+        <button
+          type="button"
+          {...group.triggerProps}
+          onClick={() => setOpen((value) => !value)}
+          className="flex w-full items-center gap-1.5 text-text-secondary hover:text-text-primary">
+          <FamilyIcon family={family} />
+          <span className="font-medium">{FAMILY_LABEL[family]}</span>
+          <span
+            className={cx(
+              'ml-auto transition-transform duration-200',
+              open ? 'rotate-90' : 'rotate-0',
+            )}>
+            <ChevronIcon />
+          </span>
+        </button>
+      </h3>
       <div
+        {...group.panelProps}
         className={cx(
           'grid transition-[grid-template-rows] duration-200 ease-out',
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
@@ -214,6 +226,7 @@ const Row = ({
   detail,
   status,
   disabled,
+  current = false,
   onClick,
 }: {
   icon: ReactNode;
@@ -222,12 +235,15 @@ const Row = ({
   detail: string;
   status: ReactNode;
   disabled: boolean;
+  /** The wallet paying now. */
+  current?: boolean;
   onClick: () => void;
 }) => (
   <li>
     <button
       type="button"
       disabled={disabled}
+      aria-current={current ? 'true' : undefined}
       onClick={onClick}
       className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent">
       {icon}
@@ -331,6 +347,7 @@ const Phone = <TPeer extends PhonePeer>({
           detail={truncateMiddle(peer.address)}
           status={<Status pending={false} active={active} connected />}
           disabled={false}
+          current={active}
           onClick={() => onSelect(peer)}
         />
       </ul>
@@ -361,30 +378,40 @@ const PhoneTab = ({
       : 'evm',
   );
 
+  const both = !!walletConnect && !!tonConnect;
+  // The switch remounts with the code it switches: useTabs keeps focus on it.
+  const chainTabs = useTabs({
+    items: ['evm', 'ton'] as const,
+    value: chain,
+    onChange: setChain,
+  });
+
   // Under the QR code, as wide as it, only when both kinds are offered.
-  const chainSwitch =
-    walletConnect && tonConnect ? (
-      <Segmented
-        size="sm"
-        items={[
-          {
-            id: 'evm',
-            label: FAMILY_LABEL.evm,
-            icon: <FamilyIcon family="evm" size={12} />,
-          },
-          {
-            id: 'ton',
-            label: FAMILY_LABEL.ton,
-            icon: <FamilyIcon family="ton" size={12} />,
-          },
-        ]}
-        value={chain}
-        onChange={setChain}
-      />
-    ) : null;
+  const chainSwitch = both ? (
+    <Segmented
+      size="sm"
+      name="Phone wallet's network"
+      tabs={chainTabs}
+      items={[
+        {
+          id: 'evm',
+          label: FAMILY_LABEL.evm,
+          icon: <FamilyIcon family="evm" size={12} />,
+        },
+        {
+          id: 'ton',
+          label: FAMILY_LABEL.ton,
+          icon: <FamilyIcon family="ton" size={12} />,
+        },
+      ]}
+      value={chain}
+    />
+  ) : null;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className="flex flex-col gap-3"
+      {...(both ? chainTabs.panelProps(chain) : {})}>
       {chain === 'ton' && tonConnect ? (
         <Phone
           key="ton"
@@ -465,6 +492,14 @@ export const WalletsScreen = ({
     tabs.some((item) => item.id === initialTab) ? initialTab : 'browser',
   );
 
+  const tabsA11y = useTabs({
+    items: tabs.map((item) => item.id),
+    value: tab,
+    onChange: setTab,
+  });
+
+  const announce = useAnnounce();
+
   /** The connection waiting on its wallet, which another pick calls off. */
   const [pending, setPending] = useState<{
     id: string;
@@ -488,6 +523,12 @@ export const WalletsScreen = ({
 
     setPending({ id: wallet.id, controller });
     setError(undefined);
+
+    if (!wallet.address) {
+      announce(
+        `Waiting for ${wallet.name}: approve in its window, or choose it again to cancel.`,
+      );
+    }
 
     try {
       await session.select(wallet, { signal: controller.signal });
@@ -546,6 +587,10 @@ export const WalletsScreen = ({
                   />
                 }
                 disabled={false}
+                current={
+                  !active?.mobile &&
+                  active?.key === `${wallet.id}:${wallet.address}`
+                }
                 onClick={() => {
                   if (pending?.id === wallet.id) {
                     cancel();
@@ -580,10 +625,12 @@ export const WalletsScreen = ({
       ) : null}
 
       {tabs.length > 1 ? (
-        <Segmented items={tabs} value={tab} onChange={setTab} />
+        <Segmented items={tabs} value={tab} name="Pay from" tabs={tabsA11y} />
       ) : null}
 
-      <div className="flex flex-col gap-4">
+      <div
+        className="flex flex-col gap-4"
+        {...(tabs.length > 1 ? tabsA11y.panelProps(tab) : {})}>
         {tab === 'phone' && phones ? (
           <PhoneTab
             session={session}
@@ -607,7 +654,7 @@ export const WalletsScreen = ({
         {tab === 'browser' ? browser : null}
 
         {(error ?? unsupportedReason) ? (
-          <p className="text-danger">
+          <p className="text-danger" role="alert">
             {error ??
               (unsupportedReason && UNSUPPORTED_COPY[unsupportedReason])}
           </p>

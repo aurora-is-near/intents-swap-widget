@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useAnnounce, useSettledAnnouncement } from '../a11y';
 import {
   Button,
   ChevronIcon,
   EmptyState,
+  SearchField,
   SearchIcon,
   Skeleton,
   WalletGlyph,
@@ -41,13 +43,19 @@ const RefreshIcon = ({ spinning }: { spinning: boolean }) => (
   </svg>
 );
 
+// An unavailable row stays focusable (`aria-disabled`), so its reason can be
+// found by keyboard and read.
 const Row = ({ row, onPick }: { row: AssetRow; onPick: () => void }) => (
   <li>
     <button
       type="button"
-      disabled={!!row.unavailable}
-      onClick={onPick}
-      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent">
+      aria-disabled={row.unavailable ? true : undefined}
+      onClick={() => {
+        if (!row.unavailable) {
+          onPick();
+        }
+      }}
+      className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent">
       <TokenLogo symbol={row.token.symbol} />
       <span className="min-w-0">
         <span className="block truncate font-medium">{row.token.symbol}</span>
@@ -91,6 +99,33 @@ export const AssetsScreen = ({
   }
 
   const shown = rows.filter((row) => matches(row, query));
+  const announce = useAnnounce();
+  const loading = status === 'loading';
+  // A refresh asked for (not a background poll) says when it's done.
+  const asked = useRef(false);
+
+  useEffect(() => {
+    if (asked.current && !loading) {
+      asked.current = false;
+      announce(
+        status === 'error'
+          ? "Couldn't refresh the balances"
+          : 'Balances updated',
+      );
+    }
+  }, [loading, status, announce]);
+
+  // What a search finds, once typing stops.
+  let found: string | undefined;
+
+  if (query.trim()) {
+    found = shown.length
+      ? `${shown.length} ${shown.length === 1 ? 'asset' : 'assets'} found`
+      : 'No assets match';
+  }
+
+  useSettledAnnouncement(found);
+
   let list;
 
   if (!settled && rows.length === 0) {
@@ -103,7 +138,7 @@ export const AssetsScreen = ({
     );
   } else if (status === 'error' && rows.length === 0) {
     list = (
-      <p className="py-6 text-center text-danger">
+      <p className="py-6 text-center text-danger" role="alert">
         Couldn&apos;t load balances: {error?.message ?? 'unknown error'}
       </p>
     );
@@ -129,27 +164,27 @@ export const AssetsScreen = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-control bg-field px-3 text-text-muted shadow-box focus-within:shadow-focus">
-          <SearchIcon />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search token or chain"
-            aria-label="Search assets"
-            className="min-w-0 flex-1 bg-transparent text-text-primary outline-none placeholder:text-text-muted"
-          />
-        </label>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          label="Search assets"
+          placeholder="Search token or chain"
+        />
+        {/* Never disabled (a background poll would take focus off it): busy
+            instead, and a press while busy does nothing. */}
         <Button
           variant="secondary"
           className="w-9 px-0!"
           aria-label="Refresh balances"
+          aria-busy={loading}
           title="Refresh balances"
-          disabled={status === 'loading'}
           onClick={() => {
-            void refresh();
+            if (!loading) {
+              asked.current = true;
+              void refresh();
+            }
           }}>
-          <RefreshIcon spinning={status === 'loading'} />
+          <RefreshIcon spinning={loading} />
         </Button>
       </div>
 

@@ -9,7 +9,7 @@
  */
 import { createRoot } from 'react-dom/client';
 
-import { AAVE_THEME, mountSupplyButton } from '../page/aave';
+import { AAVE_THEME, mountSupplyButton, showSupplyOpen } from '../page/aave';
 import { createShadowHost } from '../ui/mount';
 import { installThemeInspector, THEME_INSPECTOR } from '../ui/theme';
 import { App, modal } from './App';
@@ -30,6 +30,7 @@ if (typeof page.auroraIntents?.open !== 'function') {
 
   if (!preview) {
     mountSupplyButton(modal.open, AAVE_THEME);
+    modal.subscribe(() => showSupplyOpen(modal.get()));
   }
 
   page.auroraIntents = { ...page.auroraIntents, open: modal.open };

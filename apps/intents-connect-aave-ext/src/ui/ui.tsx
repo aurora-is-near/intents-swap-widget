@@ -168,6 +168,61 @@ export const SearchIcon = ({ size = 14 }: { size?: number }) =>
     </>,
     size,
   );
+
+/** A stopped or failed state, beside its words. */
+export const AlertIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5v5.5M12 16.5v.01" />
+    </>,
+    size,
+  );
+
+/** Next to a link that opens a new tab. */
+export const ExternalIcon = ({ size = 11 }: { size?: number }) =>
+  icon(
+    <>
+      <path d="M14 4h6v6" />
+      <path d="M10 14 20 4" />
+      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </>,
+    size,
+  );
+
+/**
+ * A search box: named by `label`, and Escape clears a query it holds
+ * (claimed, so the dialog stays open) before it closes anything.
+ */
+export const SearchField = ({
+  value,
+  onChange,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  placeholder: string;
+}) => (
+  <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-control bg-field px-3 text-text-muted shadow-box focus-within:shadow-focus">
+    <SearchIcon />
+    <input
+      type="search"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && value) {
+          event.preventDefault();
+          onChange('');
+        }
+      }}
+      placeholder={placeholder}
+      aria-label={label}
+      className="min-w-0 flex-1 bg-transparent text-text-primary outline-hidden placeholder:text-text-muted"
+    />
+  </label>
+);
 export const WalletGlyph = ({ size = 18 }: { size?: number }) =>
   icon(
     <>
@@ -193,10 +248,16 @@ const CopyIcon = () =>
 export const CopyButton = ({
   value,
   label,
+  text,
 }: {
   value: string;
   /** What is copied, for screen readers. */
   label: string;
+  /**
+   * Visible words next to the icon, e.g. "Copy link". Then they are its
+   * name, so what's read matches what's shown.
+   */
+  text?: string;
 }) => {
   const [copied, setCopied] = useState(false);
   const announce = useAnnounce();
@@ -214,7 +275,8 @@ export const CopyButton = ({
   return (
     <Button
       variant="ghost"
-      aria-label={`Copy ${label}`}
+      aria-label={text ? undefined : `Copy ${label}`}
+      className={text ? 'gap-1 px-1.5' : undefined}
       onClick={() => {
         navigator.clipboard.writeText(value).then(
           () => {
@@ -224,6 +286,7 @@ export const CopyButton = ({
           () => announce(`Couldn't copy the ${label}`, 'assertive'),
         );
       }}>
+      {text}
       {copied ? <CheckIcon /> : <CopyIcon />}
     </Button>
   );

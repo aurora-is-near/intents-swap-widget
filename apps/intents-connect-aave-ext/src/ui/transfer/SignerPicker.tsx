@@ -31,11 +31,17 @@ export const SignerPicker = ({
     <ul className="overflow-hidden rounded-card bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
       {wallets.map((wallet) => (
         <li key={wallet.id}>
+          {/* Not disabled while one connects (focus would drop): busy. */}
           <button
             type="button"
-            disabled={pending !== undefined}
-            onClick={() => onPick(wallet)}
-            className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover disabled:cursor-wait">
+            aria-disabled={pending !== undefined ? true : undefined}
+            aria-busy={pending === wallet.id ? true : undefined}
+            onClick={() => {
+              if (pending === undefined) {
+                onPick(wallet);
+              }
+            }}
+            className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover aria-disabled:cursor-wait">
             <WalletIcon name={wallet.name} icon={wallet.icon} />
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium">{wallet.name}</span>
@@ -50,6 +56,10 @@ export const SignerPicker = ({
         </li>
       ))}
     </ul>
-    {error ? <p className="text-danger">{error}</p> : null}
+    {error ? (
+      <p className="text-danger" role="alert">
+        {error}
+      </p>
+    ) : null}
   </div>
 );

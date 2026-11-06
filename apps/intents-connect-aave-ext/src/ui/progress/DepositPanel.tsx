@@ -89,7 +89,7 @@ export const DepositPanel = ({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <QrCode value={address} />
+      <QrCode value={address} label={`QR code of the deposit address`} />
       <dl className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] gap-4 rounded-card bg-surface-raised p-3 shadow-box">
         <Cell label="Send exactly">
           <TokenLogo symbol={symbol} size={16} />

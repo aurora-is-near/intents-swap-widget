@@ -47,7 +47,14 @@ const qrCode = new QRCodeStyling({
  * Drawn at `modules × 16` canvas px, shown at `QR_SIZE`: an EVM pairing
  * link and a TON one (more modules) take the same space.
  */
-export const QrCode = ({ value }: { value: string }) => {
+export const QrCode = ({
+  value,
+  label,
+}: {
+  value: string;
+  /** What it is, for screen readers: a canvas says nothing itself. */
+  label: string;
+}) => {
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       qrCode.append(node);
@@ -67,6 +74,8 @@ export const QrCode = ({ value }: { value: string }) => {
   return (
     // White in every theme: a QR code scans as dark on light.
     <div
+      role="img"
+      aria-label={label}
       className="rounded-card bg-white shadow-box"
       style={{ width: QR_TILE, height: QR_TILE, padding: QR_PADDING }}>
       <div

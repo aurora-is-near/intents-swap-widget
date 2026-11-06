@@ -7,6 +7,7 @@ import { AssetAmount } from '../assets/AssetAmount';
 import { chainLabel } from '../assets/tokens';
 import { describeFailure } from '../progress/describeFailure';
 import type { WaitingInput } from '../supply/types';
+import { Spoken } from '../a11y';
 import { Button, CheckIcon, Notice, Skeleton } from '../ui';
 import type { Waiting } from './WaitingFunds';
 
@@ -111,6 +112,7 @@ export const RecoverScreen = ({
   if (recovery.state === 'success') {
     return (
       <div className="flex flex-col gap-4">
+        <Spoken text={`Supplied to ${destinationTitle}`} />
         <Notice tone="info">
           <div className="flex flex-col items-center gap-2 py-2 text-center">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cta text-cta-text">
@@ -134,6 +136,7 @@ export const RecoverScreen = ({
 
     return (
       <div className="flex flex-col gap-4">
+        <Spoken text={signing ? 'Sign in your wallet' : 'Supplying…'} />
         <div>
           <p className="font-medium">
             {signing ? 'Sign in your wallet' : 'Supplying…'}
@@ -156,6 +159,7 @@ export const RecoverScreen = ({
 
   return (
     <div className="flex flex-col gap-4">
+      <Spoken text={described?.title} politeness="assertive" />
       <p className="text-text-secondary">
         {tokens(amount)} waits with this wallet&apos;s Aurora account on{' '}
         {chainLabel(option.chain)}, from a supply whose last step failed. Supply

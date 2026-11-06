@@ -21,6 +21,7 @@ import {
   AAVE_THEME,
   refreshAavePositions,
   showSupplyStatus,
+  supplyButton,
 } from '../page/aave';
 import { usePageState } from '../page/usePageState';
 import { SupplyModal } from '../ui/SupplyModal';
@@ -157,6 +158,7 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
       intent={AAVE_SUPPLY_INTENT}
       onOpen={modal.open}
       // Aave's own button and data: not on another site's preview.
+      returnFocus={preview ? undefined : supplyButton}
       onStatus={preview ? undefined : showSupplyStatus}
       onSupplied={preview ? undefined : refreshAavePositions}
     />

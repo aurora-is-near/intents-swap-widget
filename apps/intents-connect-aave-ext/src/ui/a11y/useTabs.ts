@@ -31,6 +31,9 @@ export const useTabs = <T extends string>({
 }) => {
   const base = useId();
   const tabs = useRef(new Map<T, HTMLElement>());
+  // A tab picked by key: focused once rendered, since a switch that
+  // remounts with its content has a new node for it.
+  const focusNext = useRef<T | undefined>(undefined);
   const tabId = (id: T) => `${base}tab-${id}`;
   const panelId = (id: T) => `${base}panel-${id}`;
 
@@ -40,6 +43,13 @@ export const useTabs = <T extends string>({
     }
     // Mount only.
   }, []);
+
+  useLayoutEffect(() => {
+    if (focusNext.current !== undefined) {
+      tabs.current.get(focusNext.current)?.focus();
+      focusNext.current = undefined;
+    }
+  });
 
   const onKeyDown = (event: KeyboardEvent) => {
     const index = items.indexOf(value);
@@ -59,8 +69,8 @@ export const useTabs = <T extends string>({
 
     const next = items[target]!;
 
+    focusNext.current = next;
     onChange(next);
-    tabs.current.get(next)?.focus();
   };
 
   const register = useCallback(
@@ -88,7 +98,11 @@ export const useTabs = <T extends string>({
       'aria-selected': id === value,
       'aria-controls': id === value ? panelId(id) : undefined,
       tabIndex: id === value ? 0 : -1,
-      onClick: () => onChange(id),
+      onClick: () => {
+        // Enter or Space on a switch that remounts keeps focus on it.
+        focusNext.current = id;
+        onChange(id);
+      },
     }),
     panelProps: (id: T) => ({
       id: panelId(id),

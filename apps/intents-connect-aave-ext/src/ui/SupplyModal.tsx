@@ -1,6 +1,7 @@
 import {
   type ReactNode,
   type Ref,
+  type RefObject,
   useEffect,
   useMemo,
   useRef,
@@ -25,6 +26,7 @@ import type {
 import type { TonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 
+import { deepActiveElement, Dialog, focusIsLost, useAnnounce } from './a11y';
 import {
   BackIcon,
   Button,
@@ -111,6 +113,11 @@ type SupplyModalProps = {
   /** Opens the modal: the completion notice's "View" calls it. */
   onOpen?: () => void;
   /**
+   * Where focus goes when the modal closes and what opened it is gone (or
+   * it was opened another way): e.g. the dApp's own button for it.
+   */
+  returnFocus?: () => HTMLElement | null | undefined;
+  /**
    * Every change in the supply's status, closed or open: e.g. to show it on
    * the dApp's own button.
    */
@@ -137,13 +144,16 @@ type Screen = 'wallets';
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
+const TITLE_ID = 'aurora-supply-title';
+const SUBTITLE_ID = 'aurora-supply-subtitle';
+
 const Header = ({
   title,
   subtitle,
   onBack,
   onHistory,
   onClose,
-  closeRef,
+  titleRef,
   backRef,
   historyRef,
 }: {
@@ -154,7 +164,7 @@ const Header = ({
   /** Opens History; left out while it shows. */
   onHistory?: () => void;
   onClose: () => void;
-  closeRef: Ref<HTMLButtonElement>;
+  titleRef: Ref<HTMLHeadingElement>;
   backRef: Ref<HTMLButtonElement>;
   historyRef: Ref<HTMLButtonElement>;
 }) => (
@@ -170,11 +180,18 @@ const Header = ({
       </Button>
     ) : null}
     <div className="min-w-0 flex-1">
-      <h2 id="aurora-supply-title" className="text-base font-medium leading-6">
+      {/* Focused by script on a new screen (tabIndex -1), so it's read. */}
+      <h2
+        ref={titleRef}
+        id={TITLE_ID}
+        tabIndex={-1}
+        className="text-base font-medium leading-6">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-0.5 text-text-secondary">{subtitle}</p>
+        <p id={SUBTITLE_ID} className="mt-0.5 text-text-secondary">
+          {subtitle}
+        </p>
       ) : null}
     </div>
     {onHistory ? (
@@ -189,7 +206,6 @@ const Header = ({
       </Button>
     ) : null}
     <Button
-      ref={closeRef}
       variant="ghost"
       aria-label="Close"
       className="-mr-1 mt-0.5"
@@ -198,6 +214,55 @@ const Header = ({
     </Button>
   </div>
 );
+
+/**
+ * A new screen gets read. Focus that fell off the old one (its button went)
+ * lands on the new title, which is read; focus still on something that
+ * stayed (Back, Close, the field a screen focuses) stays, and the title is
+ * announced instead. Render it after the screen's content, so the content
+ * has placed focus first.
+ */
+const ScreenChange = ({
+  screen,
+  title,
+  titleRef,
+}: {
+  /** Changes with the screen. */
+  screen: string;
+  title: string;
+  titleRef: RefObject<HTMLHeadingElement | null>;
+}) => {
+  const announce = useAnnounce();
+  const first = useRef(true);
+  const titleText = useRef(title);
+
+  titleText.current = title;
+
+  useEffect(() => {
+    if (first.current) {
+      // The dialog's opening focuses the title itself.
+      first.current = false;
+
+      return;
+    }
+
+    const heading = titleRef.current;
+    const dialog = heading?.closest('[role="dialog"]');
+    const active = deepActiveElement();
+
+    if (!heading || !dialog) {
+      return;
+    }
+
+    if (focusIsLost(active) || active === heading || active === dialog) {
+      heading.focus({ preventScroll: true });
+    } else {
+      announce(titleText.current);
+    }
+  }, [screen, titleRef, announce]);
+
+  return null;
+};
 
 /** What the dApp must sort out before anything can be supplied. */
 const Blocker = ({
@@ -254,6 +319,7 @@ const SupplyFlow = ({
   onStatus,
   onSupplied,
   intent,
+  returnFocus,
   session,
 }: Omit<
   SupplyModalProps,
@@ -338,7 +404,7 @@ const SupplyFlow = ({
     value: FormDraft;
   } | null>(null);
 
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
   const historyRef = useRef<HTMLButtonElement>(null);
   const { active } = session;
@@ -627,24 +693,6 @@ const SupplyFlow = ({
 
     return () => clearTimeout(timer);
   }, [pendingOpen]);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    closeRef.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        latestEscape.current();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open]);
 
   const blocked = !positionOwner || !destination.supported || undeliverable;
   const destinationLine = positionOwner
@@ -1112,7 +1160,7 @@ const SupplyFlow = ({
               }}
             />
             {readOnly && readOnlyShown ? (
-              <div className="mt-3">
+              <div className="mt-3" role="status">
                 <Notice tone="info">
                   <p className="text-text-secondary">{readOnly}</p>
                 </Notice>
@@ -1153,39 +1201,36 @@ const SupplyFlow = ({
   );
 
   return open ? (
-    <div
-      className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          close();
-        }
-      }}>
-      {/* As tall as its content; past the window's height, the body scrolls
-          under the header. */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="aurora-supply-title"
-        className="flex max-h-full w-full max-w-[420px] flex-col rounded-dialog bg-surface text-text-primary shadow-dialog">
-        <div className="px-6 pt-6">
-          <Header
-            title={title}
-            subtitle={subtitle}
-            onBack={onBack}
-            onHistory={intent && !history ? () => setHistory({}) : undefined}
-            onClose={close}
-            closeRef={closeRef}
-            backRef={backRef}
-            historyRef={historyRef}
-          />
-        </div>
-        {/* Padded inside the scroll area, so outline rings aren't clipped. */}
-        <div className="min-h-0 overflow-y-auto px-6 pt-4 pb-6">
-          {check}
-          <ErrorBoundary onReset={close}>{body}</ErrorBoundary>
-        </div>
+    // As tall as its content; past the window's height, the body scrolls
+    // under the header.
+    <Dialog
+      onClose={close}
+      onEscape={() => latestEscape.current()}
+      labelledBy={TITLE_ID}
+      describedBy={subtitle ? SUBTITLE_ID : undefined}
+      initialFocus={titleRef}
+      fallbackFocus={titleRef}
+      returnFocus={returnFocus}
+      className="flex max-h-full w-full max-w-[420px] flex-col rounded-dialog bg-surface text-text-primary shadow-dialog">
+      <div className="px-6 pt-6">
+        <Header
+          title={title}
+          subtitle={subtitle}
+          onBack={onBack}
+          onHistory={intent && !history ? () => setHistory({}) : undefined}
+          onClose={close}
+          titleRef={titleRef}
+          backRef={backRef}
+          historyRef={historyRef}
+        />
       </div>
-    </div>
+      {/* Padded inside the scroll area, so outline rings aren't clipped. */}
+      <div className="min-h-0 overflow-y-auto px-6 pt-4 pb-6">
+        {check}
+        <ErrorBoundary onReset={close}>{body}</ErrorBoundary>
+      </div>
+      <ScreenChange screen={view} title={title} titleRef={titleRef} />
+    </Dialog>
   ) : (
     <>
       {check}

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { type KeyboardEvent, useRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -195,4 +195,47 @@ describe('Dialog', () => {
 
     expect(await axeViolations(host)).toEqual([]);
   });
+
+  it('runs onEscape for Escape, and onClose for the backdrop', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const onEscape = vi.fn();
+    const { shadow } = renderInShadow(
+      <Dialog onClose={onClose} onEscape={onEscape} labelledBy="title">
+        <h2 id="title">History</h2>
+        <button type="button">Back</button>
+      </Dialog>,
+    );
+
+    shadow.querySelector('button')!.focus();
+    await user.keyboard('{Escape}');
+
+    expect(onEscape).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.mouseDown(
+      shadow.querySelector('[role="dialog"]')!.parentElement!,
+    );
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Not in a shadow root: the plain document case works too.
+it('traps focus in the document as well', async () => {
+  const user = userEvent.setup();
+
+  render(
+    <Dialog onClose={() => undefined} labelledBy="t">
+      <h2 id="t">Plain</h2>
+      <button type="button">Only</button>
+    </Dialog>,
+  );
+
+  await waitFor(() => expect(document.activeElement?.textContent).toBe('Only'));
+  await user.tab();
+
+  expect(document.activeElement?.textContent).toBe('Only');
+
+  resetDom();
 });

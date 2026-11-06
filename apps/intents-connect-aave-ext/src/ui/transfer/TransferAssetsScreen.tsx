@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react';
 
+import { useSettledAnnouncement } from '../a11y';
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
 import { ChainSelect, inChips } from '../ChainChips';
-import { Button, ChevronIcon, EmptyState, SearchIcon, Skeleton } from '../ui';
+import {
+  Button,
+  ChevronIcon,
+  EmptyState,
+  SearchField,
+  SearchIcon,
+  Skeleton,
+} from '../ui';
 import { exchangeNetwork } from './networks';
 import { filterOrigins, type TransferOrigin } from './origins';
 import { FAMILY_NAME, type TransferSigner } from './signer';
@@ -25,11 +33,16 @@ const Row = ({
 
   return (
     <li>
+      {/* Unavailable rows stay focusable, so their reason can be read. */}
       <button
         type="button"
-        disabled={!!missing}
-        onClick={onPick}
-        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent">
+        aria-disabled={missing ? true : undefined}
+        onClick={() => {
+          if (!missing) {
+            onPick();
+          }
+        }}
+        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent">
         <TokenLogo symbol={origin.token.symbol} />
         <span className="min-w-0">
           <span className="block truncate font-medium">
@@ -85,6 +98,17 @@ export const TransferAssetsScreen = ({
     inChips(chains, origin.token.blockchain),
   );
 
+  // What a search finds, once typing stops.
+  let found: string | undefined;
+
+  if (query.trim()) {
+    found = shown.length
+      ? `${shown.length} ${shown.length === 1 ? 'token' : 'tokens'} found`
+      : 'No tokens match';
+  }
+
+  useSettledAnnouncement(found);
+
   let list;
 
   if (origins.length === 0 && status !== 'error') {
@@ -98,7 +122,7 @@ export const TransferAssetsScreen = ({
   } else if (origins.length === 0) {
     list = (
       <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <p className="text-danger">
+        <p className="text-danger" role="alert">
           Couldn&apos;t load what can be sent:{' '}
           {error?.message ?? 'unknown error'}
         </p>
@@ -150,17 +174,12 @@ export const TransferAssetsScreen = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex h-9 min-w-0 items-center gap-2 rounded-control bg-field px-3 text-text-muted shadow-box focus-within:shadow-focus">
-        <SearchIcon />
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search token or network"
-          aria-label="Search what to send"
-          className="min-w-0 flex-1 bg-transparent text-text-primary outline-hidden placeholder:text-text-muted"
-        />
-      </label>
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        label="Search what to send"
+        placeholder="Search token or network"
+      />
       {networks.length > 1 ? (
         <ChainSelect
           label="Networks"
