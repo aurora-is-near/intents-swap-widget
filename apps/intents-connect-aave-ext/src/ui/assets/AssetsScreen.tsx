@@ -1,6 +1,13 @@
 import { useState } from 'react';
 
-import { Button, ChevronIcon, SearchIcon, Skeleton, WalletGlyph } from '../ui';
+import {
+  Button,
+  ChevronIcon,
+  EmptyState,
+  SearchIcon,
+  Skeleton,
+  WalletGlyph,
+} from '../ui';
 import { formatAmount, formatUsd } from './amounts';
 import { TokenLogo } from './TokenLogo';
 import { chainLabel } from './tokens';
@@ -102,16 +109,12 @@ export const AssetsScreen = ({
     );
   } else if (shown.length === 0) {
     list = (
-      <div className="flex flex-col items-center gap-2 py-6 text-center text-text-muted">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-text-secondary">
-          {rows.length ? <SearchIcon size={18} /> : <WalletGlyph />}
-        </span>
-        <p>
-          {rows.length
-            ? `No assets match “${query.trim()}”`
-            : 'Nothing to supply from this wallet yet'}
-        </p>
-      </div>
+      <EmptyState
+        icon={rows.length ? <SearchIcon size={18} /> : <WalletGlyph />}>
+        {rows.length
+          ? `No assets match “${query.trim()}”`
+          : 'Nothing to supply from this wallet yet'}
+      </EmptyState>
     );
   } else {
     list = (

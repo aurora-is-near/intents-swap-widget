@@ -30,6 +30,12 @@ const CHECKS = [
   { label: 'Muted', fg: 'textMuted', on: GROUNDS, min: MIN_CONTRAST.muted },
   { label: 'Danger', fg: 'danger', on: GROUNDS, min: MIN_CONTRAST.danger },
   {
+    label: 'Success',
+    fg: 'success',
+    on: [...GROUNDS, 'successBg'],
+    min: MIN_CONTRAST.success,
+  },
+  {
     label: 'CTA text',
     fg: 'ctaText',
     on: ['cta'],

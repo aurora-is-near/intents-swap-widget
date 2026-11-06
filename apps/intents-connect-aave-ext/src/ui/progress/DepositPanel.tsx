@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { ChainIcon } from '../assets/ChainIcon';
+import { TokenLogo } from '../assets/TokenLogo';
 import { Button, CopyButton, Notice, truncateMiddle } from '../ui';
 import { QrCode } from '../wallets/QrCode';
 import type { DepositView } from './depositState';
@@ -9,6 +11,16 @@ const countdown = (ms: number) => {
 
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 };
+
+/** One of the three: a small label over its value. */
+const Cell = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div className="min-w-0">
+    <dt className="text-xs text-text-muted">{label}</dt>
+    <dd className="mt-1 flex min-w-0 items-center gap-1 font-medium">
+      {children}
+    </dd>
+  </div>
+);
 
 const Line = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex items-start justify-between gap-3">
@@ -33,6 +45,7 @@ export const DepositPanel = ({
   memo,
   amount,
   symbol,
+  chain,
   network,
   contractAddress,
   onStartOver,
@@ -44,6 +57,9 @@ export const DepositPanel = ({
   /** Exact, in whole units: what to type into the exchange. */
   amount: string;
   symbol: string;
+  /** The chain id, for its icon. */
+  chain: string;
+  /** As exchanges name it, e.g. "Ethereum (ERC-20)". */
   network: string;
   contractAddress?: string;
   onStartOver?: () => void;
@@ -80,39 +96,49 @@ export const DepositPanel = ({
   return (
     <div className="flex flex-col items-center gap-3">
       <QrCode value={address} />
-      <dl className="flex w-full flex-col gap-2 rounded-card bg-surface-raised p-3 shadow-box">
-        <Line label="Send exactly">
-          <span className="break-all">
+      <dl className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] gap-4 rounded-card bg-surface-raised p-3 shadow-box">
+        <Cell label="Send exactly">
+          <TokenLogo symbol={symbol} size={16} />
+          <span className="min-w-0 break-all">
             {amount} {symbol}
           </span>
           <CopyButton value={amount} label="amount" />
-        </Line>
-        <Line label="Network">{network}</Line>
-        {contractAddress ? (
-          <Line label="Token contract">
-            <span title={contractAddress}>
-              {truncateMiddle(contractAddress, 6, 4)}
-            </span>
-            <CopyButton value={contractAddress} label="token contract" />
-          </Line>
-        ) : null}
-        <Line label="To">
-          <span title={address}>{truncateMiddle(address, 8, 6)}</span>
+        </Cell>
+        <Cell label="Network">
+          <ChainIcon chain={chain} />
+          <span className="min-w-0 break-words" title={network}>
+            {network}
+          </span>
+        </Cell>
+        <Cell label="To">
+          <span className="min-w-0 truncate" title={address}>
+            {truncateMiddle(address, 4, 4)}
+          </span>
           <CopyButton value={address} label="deposit address" />
-        </Line>
-        {memo ? (
-          <Line label="Memo (required)">
-            <span className="break-all">{memo}</span>
-            <CopyButton value={memo} label="memo" />
-          </Line>
-        ) : null}
+        </Cell>
       </dl>
+      {(contractAddress ?? memo) ? (
+        <dl className="flex w-full flex-col gap-2 rounded-card bg-surface-raised p-3 shadow-box">
+          {contractAddress ? (
+            <Line label="Token contract">
+              <span title={contractAddress}>
+                {truncateMiddle(contractAddress, 6, 4)}
+              </span>
+              <CopyButton value={contractAddress} label="token contract" />
+            </Line>
+          ) : null}
+          {memo ? (
+            <Line label="Memo (required)">
+              <span className="break-all">{memo}</span>
+              <CopyButton value={memo} label="memo" />
+            </Line>
+          ) : null}
+        </dl>
+      ) : null}
       <p className="w-full text-center text-text-secondary">
         {view.msLeft === undefined
           ? 'Send it soon: the address expires.'
-          : `Send within ${countdown(view.msLeft)}.`}{' '}
-        If your exchange takes its fee from the amount, add the fee. You can
-        close this: reopening brings it back.
+          : `Send within ${countdown(view.msLeft)}.`}
       </p>
     </div>
   );

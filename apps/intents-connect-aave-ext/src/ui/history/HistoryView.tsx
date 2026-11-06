@@ -18,8 +18,10 @@ import {
 } from '@aurora-is-near/intents-connect/react';
 
 import { formatAmount, formatUsd, formatWhen } from '../assets/amounts';
+import { AssetAmount } from '../assets/AssetAmount';
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
+import { ChainChips, inChips } from '../ChainChips';
 import { Detail, TxLink } from '../progress/ProgressScreen';
 import { needsOf } from '../progress/runOf';
 import {
@@ -27,10 +29,12 @@ import {
   ChevronIcon,
   CopyButton,
   cx,
+  EmptyState,
   Notice,
   Skeleton,
   truncateMiddle,
 } from '../ui';
+import { WalletIcon } from '../wallets/WalletIcon';
 import {
   historyEntries,
   type HistoryEntry,
@@ -106,10 +110,10 @@ const answered = (answer: Answer | undefined) =>
     answer.executions.length > 0);
 
 const LABELS: Record<HistoryLabel, { text: string; className: string }> = {
-  supplied: { text: 'Supplied', className: 'bg-track text-text-secondary' },
+  supplied: { text: 'Supplied', className: 'bg-success-bg text-success' },
   'supplied-waiting': {
     text: 'Supplied',
-    className: 'bg-track text-text-secondary',
+    className: 'bg-success-bg text-success',
   },
   'needs-you': { text: 'Needs you', className: 'bg-cta text-cta-text' },
   'in-progress': {
@@ -144,20 +148,22 @@ const describe = ({ execution, stepsOnly }: Entry, tokens: Tokens) => {
   const destination = tokens.get(quote?.destinationAsset ?? '');
   const title = titleOf(execution);
 
-  const paid =
+  const paidAmount =
     !stepsOnly &&
     quote?.amountIn &&
     origin?.symbol &&
     origin.decimals !== undefined
-      ? `${formatAmount(quote.amountIn, origin.decimals)} ${origin.symbol}`
+      ? formatAmount(quote.amountIn, origin.decimals)
       : undefined;
 
-  const supplies =
+  const paid = paidAmount ? `${paidAmount} ${origin!.symbol}` : undefined;
+
+  const suppliedAmount =
     !stepsOnly &&
     quote?.minAmountOut &&
     destination?.symbol &&
     destination.decimals !== undefined
-      ? `at least ${formatAmount(quote.minAmountOut, destination.decimals)} ${destination.symbol}`
+      ? formatAmount(quote.minAmountOut, destination.decimals)
       : undefined;
 
   let what = title ?? 'Supply';
@@ -175,10 +181,15 @@ const describe = ({ execution, stepsOnly }: Entry, tokens: Tokens) => {
 
   return {
     what,
-    title,
-    paid,
+    paid:
+      paidAmount && origin?.symbol
+        ? { amount: paidAmount, symbol: origin.symbol }
+        : undefined,
     paidUsd: quote?.amountInUsd ? Number(quote.amountInUsd) : undefined,
-    supplies,
+    supplies:
+      suppliedAmount && destination?.symbol
+        ? { amount: suppliedAmount, symbol: destination.symbol }
+        : undefined,
     // A run naming no token (an older steps-only one): a glyph stands in.
     logo: stepsOnly
       ? destination?.symbol
@@ -299,10 +310,7 @@ const EntryDetail = ({
   extra?: ReactNode;
 }) => {
   const { execution, wallet } = entry;
-  const { title, paid, paidUsd, supplies, destinationChain } = describe(
-    entry,
-    tokens,
-  );
+  const { paid, paidUsd, supplies, destinationChain } = describe(entry, tokens);
 
   const when = fullDate(execution.createdAt);
   const txHash = execution.transaction?.evmTxHash;
@@ -318,29 +326,33 @@ const EntryDetail = ({
       <dl className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
         {paid ? (
           <Detail label="Paid">
-            {paid}
+            <AssetAmount symbol={paid.symbol} amount={paid.amount} />
             {paidUsd === undefined ? null : (
-              <span className="text-text-muted"> · {formatUsd(paidUsd)}</span>
+              <span className="whitespace-pre text-text-muted">
+                {' · '}
+                {formatUsd(paidUsd)}
+              </span>
             )}
           </Detail>
         ) : null}
         {supplies ? (
           <Detail label={entry.label === 'supplied' ? 'Supplied' : 'To supply'}>
-            {supplies}
-          </Detail>
-        ) : null}
-        {title ? (
-          <Detail label="Where">
-            <span className="truncate" title={title}>
-              {title}
-            </span>
+            <AssetAmount
+              symbol={supplies.symbol}
+              amount={supplies.amount}
+              lead="at least"
+            />
           </Detail>
         ) : null}
         {when ? <Detail label="When">{when}</Detail> : null}
         <Detail label="Wallet">
-          <span className="truncate" title={wallet.address}>
-            {wallet.name} · {truncateMiddle(wallet.address)}
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <WalletIcon name={wallet.name} icon={wallet.icon} size={16} />
+            <span className="truncate" title={wallet.address}>
+              {wallet.name} · {truncateMiddle(wallet.address)}
+            </span>
           </span>
+          <CopyButton value={wallet.address} label="wallet address" />
         </Detail>
         {txHash ? (
           <Detail label="Supply transaction">
@@ -438,6 +450,31 @@ export const HistoryView = ({
     [wallets, answers, intent, live?.id, live?.status],
   );
 
+  // Where the funds were sent from: one chip per origin chain in the list.
+  const [chainFilter, setChainFilter] = useState<Set<string>>(() => new Set());
+  const originChains = useMemo(
+    () =>
+      new Map(
+        entries.map((entry) => [
+          entry.execution.id,
+          describe(entry, tokens).originChain,
+        ]),
+      ),
+    [entries, tokens],
+  );
+
+  const chains = useMemo(
+    () =>
+      [...new Set(originChains.values())].filter(
+        (chain): chain is string => !!chain,
+      ),
+    [originChains],
+  );
+
+  const shown = entries.filter((entry) =>
+    inChips(chainFilter, originChains.get(entry.execution.id)),
+  );
+
   const pending = wallets.some((wallet) => !answered(answers[wallet.address]));
   const failed = wallets.filter(
     (wallet) => answers[wallet.address]?.status === 'error',
@@ -515,9 +552,17 @@ export const HistoryView = ({
           </Button>
         </Notice>
       ) : null}
-      {entries.length ? (
+      {chains.length ? (
+        <ChainChips
+          label="Sent from"
+          chains={chains}
+          selected={chainFilter}
+          onChange={setChainFilter}
+        />
+      ) : null}
+      {shown.length ? (
         <ul className="max-h-[min(50vh,380px)] overflow-y-auto rounded-card bg-surface-raised shadow-box [&>li+li]:shadow-[0_-1px_0_var(--ring)]">
-          {entries.map((entry) => (
+          {shown.map((entry) => (
             <Row
               key={entry.execution.id}
               entry={entry}
@@ -526,6 +571,19 @@ export const HistoryView = ({
             />
           ))}
         </ul>
+      ) : null}
+      {entries.length && !shown.length ? (
+        <EmptyState
+          icon={<HistoryIcon />}
+          action={
+            <Button
+              variant="secondary"
+              onClick={() => setChainFilter(new Set())}>
+              Show all
+            </Button>
+          }>
+          No supplies sent from these networks
+        </EmptyState>
       ) : null}
       {!entries.length && pending ? (
         <div className="flex flex-col gap-2">

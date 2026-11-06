@@ -48,6 +48,9 @@ export type ThemeTokens = {
   /** The warning notice's background and outline. */
   dangerBg: string;
   dangerRing: string;
+  /** Something done: a supply that landed. Text-safe on its background. */
+  success: string;
+  successBg: string;
 
   /** `light` or `dark`: native controls and scrollbars follow it. */
   scheme: string;
@@ -113,6 +116,8 @@ export const DEFAULT_TOKENS: ThemeTokens = {
   danger: '#eb4200',
   dangerBg: '#fff5f0',
   dangerRing: 'rgba(235, 66, 0, 0.18)',
+  success: '#127f3c',
+  successBg: '#ecf3ed',
 
   scheme: 'light',
   font: "'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif",
@@ -164,6 +169,8 @@ export const CSS_VARIABLES: Readonly<Record<keyof ThemeTokens, string>> = {
   danger: '--danger',
   dangerBg: '--danger-bg',
   dangerRing: '--danger-ring',
+  success: '--success',
+  successBg: '--success-bg',
 
   scheme: '--scheme',
   font: '--font',

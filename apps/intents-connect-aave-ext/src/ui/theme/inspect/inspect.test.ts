@@ -56,6 +56,7 @@ describe('contrastChecks', () => {
       'Secondary',
       'Muted',
       'Danger',
+      'Success',
       'CTA text',
       'CTA, disabled',
     ]);

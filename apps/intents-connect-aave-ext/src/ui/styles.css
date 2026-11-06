@@ -106,6 +106,8 @@
   --color-cta-text: var(--cta-text);
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
 
   --font-sans: var(--font);
   --font-weight-medium: var(--weight-medium);

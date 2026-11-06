@@ -951,6 +951,7 @@ const SupplyFlow = ({
 
       body = (
         <TransferAssetsScreen
+          startChain={options?.[0]?.chain}
           signerOf={signerOf}
           onPick={(origin) => {
             setSignerError(undefined);
@@ -1062,7 +1063,11 @@ const SupplyFlow = ({
               funding={funding}
               signer={
                 funding === 'transfer' && active
-                  ? { name: active.name, address: active.address }
+                  ? {
+                      name: active.name,
+                      address: active.address,
+                      icon: active.icon,
+                    }
                   : undefined
               }
               options={options ?? []}

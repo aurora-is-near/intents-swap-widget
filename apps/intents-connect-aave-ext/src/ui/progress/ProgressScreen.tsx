@@ -6,6 +6,7 @@ import type {
 } from '@aurora-is-near/intents-connect/react';
 
 import { formatAmount, fromAtomic } from '../assets/amounts';
+import { AssetAmount, ChainName } from '../assets/AssetAmount';
 import { chainLabel, explorerTxUrl } from '../assets/tokens';
 import { exchangeNetwork } from '../transfer/networks';
 import {
@@ -406,25 +407,51 @@ export const ProgressScreen = ({
 
       {headline}
 
+      {/* Where to send comes first; what it does follows. */}
+      {panelView && origin ? (
+        <DepositPanel
+          view={panelView}
+          address={exec.depositAddress ?? ''}
+          memo={exec.depositMemo}
+          amount={fromAtomic(quote.amount || quote.amountIn, origin.decimals)}
+          symbol={origin.symbol}
+          chain={origin.blockchain}
+          network={exchangeNetwork(origin.blockchain, chainLabel)}
+          contractAddress={origin.contractAddress}
+          onStartOver={onStartOver}
+          startingOver={exec.isCancelling}
+        />
+      ) : null}
+
       <dl className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
         {origin && quote.amountIn ? (
           <Detail label="You send">
-            {amount(quote.amountIn, origin.decimals)} {origin.symbol}{' '}
-            <span className="text-text-muted">
-              on {chainLabel(origin.blockchain)}
-            </span>
+            <AssetAmount
+              symbol={origin.symbol}
+              amount={amount(quote.amountIn, origin.decimals)}
+            />
+            <span className="px-1 text-text-muted">on</span>
+            <ChainName chain={origin.blockchain} />
           </Detail>
         ) : null}
         {quote.minAmountOut ? (
           <Detail label="You supply at least">
-            {amount(quote.minAmountOut, option.decimals)} {option.symbol}
+            <AssetAmount
+              symbol={option.symbol}
+              amount={amount(quote.minAmountOut, option.decimals)}
+            />
           </Detail>
         ) : (
-          <Detail label="Supplying">{option.symbol}</Detail>
+          <Detail label="Supplying">
+            <AssetAmount symbol={option.symbol} />
+          </Detail>
         )}
         {fee ? (
           <Detail label="Network fee">
-            {amount(fee, option.decimals)} {option.symbol}
+            <AssetAmount
+              symbol={option.symbol}
+              amount={amount(fee, option.decimals)}
+            />
           </Detail>
         ) : null}
         {exec.depositTxHash ? (
@@ -458,20 +485,6 @@ export const ProgressScreen = ({
           option={option}
           dappName={dappName}
           onSupply={onRecover}
-        />
-      ) : null}
-
-      {panelView && origin ? (
-        <DepositPanel
-          view={panelView}
-          address={exec.depositAddress ?? ''}
-          memo={exec.depositMemo}
-          amount={fromAtomic(quote.amount || quote.amountIn, origin.decimals)}
-          symbol={origin.symbol}
-          network={exchangeNetwork(origin.blockchain, chainLabel)}
-          contractAddress={origin.contractAddress}
-          onStartOver={onStartOver}
-          startingOver={exec.isCancelling}
         />
       ) : null}
 

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import type { StepsPlan, StepsPreview } from '@aurora-is-near/intents-connect';
 import type { UseExecutionResult } from '@aurora-is-near/intents-connect/react';
 
 import { formatAmount } from '../assets/amounts';
+import { AssetAmount } from '../assets/AssetAmount';
 import { chainLabel } from '../assets/tokens';
 import { describeFailure } from '../progress/describeFailure';
 import type { WaitingInput } from '../supply/types';
@@ -23,10 +24,12 @@ export type Recovery = {
 const toError = (error: unknown) =>
   error instanceof Error ? error : new Error(String(error));
 
-const Line = ({ label, children }: { label: string; children: string }) => (
+const Line = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex items-center justify-between gap-3">
-    <dt className="text-text-secondary">{label}</dt>
-    <dd className="text-right font-medium">{children}</dd>
+    <dt className="shrink-0 text-text-secondary">{label}</dt>
+    <dd className="flex min-w-0 items-center justify-end font-medium">
+      {children}
+    </dd>
   </div>
 );
 
@@ -161,9 +164,19 @@ export const RecoverScreen = ({
 
       {preview ? (
         <dl className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
-          <Line label="You supply">{tokens(preview.spendable)}</Line>
+          <Line label="You supply">
+            <AssetAmount
+              symbol={option.symbol}
+              amount={formatAmount(preview.spendable, option.decimals)}
+            />
+          </Line>
           {preview.networkFee ? (
-            <Line label="Network fee">{tokens(preview.networkFee)}</Line>
+            <Line label="Network fee">
+              <AssetAmount
+                symbol={option.symbol}
+                amount={formatAmount(preview.networkFee, option.decimals)}
+              />
+            </Line>
           ) : null}
         </dl>
       ) : null}

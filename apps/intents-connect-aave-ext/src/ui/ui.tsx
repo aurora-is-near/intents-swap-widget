@@ -77,6 +77,30 @@ export const Notice = ({
   <div className={cx('rounded-card p-3', NOTICE_TONES[tone])}>{children}</div>
 );
 
+/**
+ * A list with nothing to show: an icon in a circle, a line saying why, and
+ * maybe a way out (`action`, e.g. "Clear search").
+ */
+export const EmptyState = ({
+  icon,
+  children,
+  action,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
+}) => (
+  <div className="flex flex-col items-center gap-2 py-6 text-center text-text-muted">
+    <span
+      aria-hidden="true"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-text-secondary">
+      {icon}
+    </span>
+    <p>{children}</p>
+    {action}
+  </div>
+);
+
 /** `0xd8dA…6045` */
 export const truncateMiddle = (value: string, head = 6, tail = 4) =>
   value.length > head + tail + 1

@@ -92,6 +92,8 @@ export const MIN_CONTRAST = {
   muted: 3,
   /** Status color; Aave's own error red sits at 3.6. */
   danger: 3,
+  /** Done, as a badge's text: on the dialog, fields and its own tint. */
+  success: 4.5,
   cta: 4.5,
   /**
    * The CTA's text on its disabled fill: it still says what's missing
@@ -118,6 +120,8 @@ const MIX = {
   ctaDisabled: 0.61,
   /** The warning notice: a tint of the danger color. */
   dangerBg: { light: 0.06, dark: 0.16 },
+  /** A success badge: a tint of the success color. */
+  successBg: { light: 0.08, dark: 0.18 },
   /**
    * Fields and lists: the dialog toward white, as Aave's white on
    * off-white or a dark site's lifted cards.
@@ -150,6 +154,9 @@ const ALPHA = {
     dangerRing: 0.35,
   },
 } as const;
+
+/** The success hue, before contrast moves it. */
+const SUCCESS = '#15803d';
 
 /** Below this OKLab lightness a CTA counts as dark. */
 const DARK_CTA = 0.3;
@@ -263,6 +270,21 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
     MIN_CONTRAST.danger,
   );
 
+  // Done is green on every site: not a brand color, so not read from the
+  // page. Its tint is taken first, then the text held to read on it too.
+  const tintBase = scheme === 'light' ? field : surface;
+  const successBg = mix(
+    tintBase,
+    colorOf(SUCCESS, SUCCESS),
+    MIX.successBg[scheme],
+  );
+
+  const success = ensureContrast(
+    colorOf(SUCCESS, SUCCESS),
+    [...grounds, successBg],
+    MIN_CONTRAST.success,
+  );
+
   const controlRadius = clamp(seed.controlRadius, ...SEED_RANGES.controlRadius);
   const cardRadius = clamp(seed.cardRadius, ...SEED_RANGES.cardRadius);
   const base = Math.round(clamp(seed.fontSize, ...SEED_RANGES.fontSize));
@@ -300,6 +322,8 @@ export const deriveTokens = (seed: ThemeSeed): ThemeTokens => {
       mix(scheme === 'light' ? field : surface, danger, MIX.dangerBg[scheme]),
     ),
     dangerRing: formatColor(withAlpha(danger, alpha.dangerRing)),
+    success: formatColor(success),
+    successBg: formatColor(successBg),
 
     scheme,
     font: seed.font.trim() || DEFAULT_TOKENS.font,

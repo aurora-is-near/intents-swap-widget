@@ -14,6 +14,7 @@ import {
   toAtomic,
   usdValue,
 } from '../assets/amounts';
+import { AssetAmount, ChainName } from '../assets/AssetAmount';
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
 import type { AssetRow } from '../assets/useWalletAssets';
@@ -27,6 +28,8 @@ import {
   truncateMiddle,
   useNow,
 } from '../ui';
+import { Steps } from '../Steps';
+import { WalletIcon } from '../wallets/WalletIcon';
 import { type DeliverableOption, matchingOption } from './options';
 import type { SupplyDestination } from './types';
 
@@ -136,9 +139,11 @@ const Label = ({
 );
 
 const Line = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex items-baseline justify-between gap-3">
-    <span className="text-text-secondary">{label}</span>
-    <span className="text-right tabular-nums">{children}</span>
+  <div className="flex items-center justify-between gap-3">
+    <span className="shrink-0 text-text-secondary">{label}</span>
+    <span className="flex min-w-0 items-center justify-end text-right tabular-nums">
+      {children}
+    </span>
   </div>
 );
 
@@ -272,16 +277,28 @@ const QuoteLines = ({
   return (
     <>
       <Line label="You supply at least">
-        {formatAmount(minAmountOut, option.decimals)} {option.symbol}
+        <AssetAmount
+          symbol={option.symbol}
+          amount={formatAmount(minAmountOut, option.decimals)}
+        />
         {minUsd === undefined ? null : (
-          <span className="text-text-muted"> · {formatUsd(minUsd)}</span>
+          <span className="whitespace-pre text-text-muted">
+            {' · '}
+            {formatUsd(minUsd)}
+          </span>
         )}
       </Line>
       {networkFee ? (
         <Line label="Network fee">
-          {formatAmount(networkFee, option.decimals)} {option.symbol}
+          <AssetAmount
+            symbol={option.symbol}
+            amount={formatAmount(networkFee, option.decimals)}
+          />
           {feeUsd === undefined ? null : (
-            <span className="text-text-muted"> · {formatUsd(feeUsd)}</span>
+            <span className="whitespace-pre text-text-muted">
+              {' · '}
+              {formatUsd(feeUsd)}
+            </span>
           )}
         </Line>
       ) : null}
@@ -334,7 +351,7 @@ export const SupplyForm = ({
    */
   funding?: 'wallet' | 'transfer';
   /** The wallet that signs a transfer, and gets a refund. */
-  signer?: { name: string; address: string };
+  signer?: { name: string; address: string; icon?: string };
 }) => {
   const { token } = asset;
   const transfer = funding === 'transfer';
@@ -562,19 +579,48 @@ export const SupplyForm = ({
       ) : null}
 
       {transfer && !sameToken ? (
-        <Notice tone="info">
-          <p className="text-text-secondary">
-            Send it on {exchangeNetwork(token.blockchain, chainLabel)} only. If
-            your exchange takes its fee from the amount, add the fee, and check
-            its minimum withdrawal.
-          </p>
-          {signer ? (
-            <p className="mt-1 text-text-secondary">
-              {signer.name} · {truncateMiddle(signer.address)} signs once, and a
-              refund would go back to it.
-            </p>
-          ) : null}
-        </Notice>
+        <div className="rounded-card bg-surface-raised p-3 shadow-box">
+          <Steps
+            label="How this transfer works"
+            steps={[
+              {
+                id: 'sign',
+                title: 'Sign to get the deposit address',
+                detail: signer ? (
+                  <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                    <span>Once, with</span>
+                    <span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-text-primary">
+                      <WalletIcon
+                        name={signer.name}
+                        icon={signer.icon}
+                        size={16}
+                      />
+                      {signer.name} · {truncateMiddle(signer.address)}
+                    </span>
+                    <span>A refund would go back to it.</span>
+                  </span>
+                ) : (
+                  'Once, with a wallet on that network.'
+                ),
+              },
+              {
+                id: 'send',
+                title: (
+                  <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                    Send it on
+                    <ChainName
+                      chain={token.blockchain}
+                      label={exchangeNetwork(token.blockchain, chainLabel)}
+                    />
+                    only
+                  </span>
+                ),
+                detail:
+                  'From an exchange or any wallet. If your exchange takes its fee from the amount, add the fee, and check its minimum withdrawal.',
+              },
+            ]}
+          />
+        </div>
       ) : null}
 
       {depositCost && gasToken ? (

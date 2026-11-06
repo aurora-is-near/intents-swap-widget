@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
-import { Button, ChevronIcon, SearchIcon, Skeleton } from '../ui';
+import { ChainChips, inChips } from '../ChainChips';
+import { Button, ChevronIcon, EmptyState, SearchIcon, Skeleton } from '../ui';
 import { exchangeNetwork } from './networks';
 import { filterOrigins, type TransferOrigin } from './origins';
 import { FAMILY_NAME, type TransferSigner } from './signer';
@@ -48,19 +49,41 @@ const Row = ({
 
 /**
  * Every token the user can send to a deposit address: from an exchange or
- * any wallet, on the networks a transfer supports. A network whose family
- * has no wallet here to sign is listed, but can't be picked.
+ * any wallet, on the networks a transfer supports, picked by network first
+ * (chips; the dApp's own network to start with, so the list isn't a wall
+ * of the same token on every network).
+ * A network whose family has no wallet here to sign is listed, but can't
+ * be picked.
  */
 export const TransferAssetsScreen = ({
+  startChain,
   signerOf,
   onPick,
 }: {
+  /** Selected first: the dApp's own network, when a transfer covers it. */
+  startChain?: string;
   signerOf: (family: TransferOrigin['family']) => TransferSigner;
   onPick: (origin: TransferOrigin) => void;
 }) => {
-  const { origins, status, error, refresh } = useTransferOrigins();
+  const { origins, networks, status, error, refresh } = useTransferOrigins();
   const [query, setQuery] = useState('');
-  const shown = filterOrigins(origins, query, chainLabel);
+
+  // The dApp's own network (else Ethereum) until the user picks.
+  const start = useMemo(() => {
+    const first = [startChain, 'eth'].find(
+      (chain) => !!chain && networks.includes(chain),
+    );
+
+    return new Set(first ? [first] : []);
+  }, [startChain, networks]);
+
+  const [picked, setPicked] = useState<Set<string>>();
+  const chains = picked ?? start;
+
+  const matching = filterOrigins(origins, query, chainLabel);
+  const shown = matching.filter((origin) =>
+    inChips(chains, origin.token.blockchain),
+  );
 
   let list;
 
@@ -89,10 +112,26 @@ export const TransferAssetsScreen = ({
       </div>
     );
   } else if (shown.length === 0) {
+    const elsewhere = matching.length > 0;
+
     list = (
-      <p className="py-6 text-center text-text-muted">
-        Nothing matches “{query.trim()}”
-      </p>
+      <EmptyState
+        icon={<SearchIcon size={18} />}
+        action={
+          elsewhere ? (
+            <Button variant="secondary" onClick={() => setPicked(new Set())}>
+              Search all networks
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={() => setQuery('')}>
+              Clear search
+            </Button>
+          )
+        }>
+        {elsewhere
+          ? `No “${query.trim()}” on the networks picked`
+          : `No tokens match “${query.trim()}”`}
+      </EmptyState>
     );
   } else {
     list = (
@@ -122,6 +161,14 @@ export const TransferAssetsScreen = ({
           className="min-w-0 flex-1 bg-transparent text-text-primary outline-hidden placeholder:text-text-muted"
         />
       </label>
+      {networks.length > 1 ? (
+        <ChainChips
+          label="Networks"
+          chains={networks}
+          selected={chains}
+          onChange={setPicked}
+        />
+      ) : null}
       {list}
     </div>
   );

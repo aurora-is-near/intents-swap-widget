@@ -447,6 +447,7 @@ export const WalletsScreen = ({
    * Offers paying by a transfer to a deposit address, from an exchange or
    * any wallet: the networks it covers, and what starts it.
    */
+  /** `networks`: chain ids, most used first. */
   transfer?: { networks: readonly string[]; onStart: () => void };
   /** The tab shown first, e.g. Transfer when coming back from it. */
   initialTab?: WalletsTab;

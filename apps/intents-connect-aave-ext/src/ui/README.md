@@ -198,6 +198,9 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
     the other side of light and dark from the page.
   - The CTA's text keeps 3:1 on the disabled fill too: it still says
     what's missing ("Enter an amount").
+  - Success (`success`, `success-bg`: a supply that landed) is green on
+    every site, not read from the page: its text keeps 4.5:1 on the dialog,
+    the fields and its own tint.
   - Sizes are clamped (radius 0–24, density 0.85–1.2, text 13–16 px, the
     emphasis weight 500–700 so titles stand out from 400 body text).
   - `DEFAULT_SEED` is Aave's, and a test pins that it derives
@@ -273,8 +276,10 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
 - **Aave wording:** some copy still names Aave's own screens ("Your
   supplies", "Supply button"). It should come through props.
 - **Data tables:** token icons and chain names come from the swap widget's
-  `/constants`. The gas left on MAX and the explorer URLs are local tables.
-  Both should become package data or props.
+  `/constants`. Chain icons are already the UI's own (`assets/chains/`,
+  copied from the widget's: importing its root pulls in all of it, Node
+  `crypto` included). The gas left on MAX and the explorer URLs are local
+  tables. All should become package data or props.
 - **Missing pieces:**
   - no i18n;
   - unit tests cover the theme (`yarn test`); the rest was checked by hand
