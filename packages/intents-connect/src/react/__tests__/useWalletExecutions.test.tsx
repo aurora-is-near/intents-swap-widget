@@ -82,6 +82,22 @@ describe('useWalletExecutions', () => {
     });
   });
 
+  it.each([
+    ['without a wallet', null],
+    ['beside the provider wallet', wallet],
+  ])("lists another address's executions %s", async (_, connected) => {
+    const api = connectApi();
+    const { result } = renderHook(
+      () => useWalletExecutions({ address: 'other.near' }),
+      { wrapper: wrapperFor(api, connected) },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe('success'));
+
+    expect(result.current.executions).toHaveLength(3);
+    expect(api.listExecutions).toHaveBeenCalledWith('other.near', undefined);
+  });
+
   it('shares one request between hooks asking for the same statuses', async () => {
     const api = connectApi();
     const { result } = renderHook(

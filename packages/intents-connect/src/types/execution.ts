@@ -208,6 +208,9 @@ export type ExecutionQuote = {
   originAsset?: string;
   destinationAsset?: string;
   swapType?: SwapType;
+  /** The amounts' USD value when quoted, as decimal strings. */
+  amountInUsd?: string;
+  amountOutUsd?: string;
 };
 
 export type ExecutionDetails = {

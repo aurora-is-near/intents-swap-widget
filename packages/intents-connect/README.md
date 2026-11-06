@@ -192,9 +192,11 @@ Three more need no `intentsApi`:
   still editing: a debounced `preview`, refreshed every 30 s, with results
   for an older plan dropped. Run `preview.plan` to commit to exactly the
   quoted steps.
-- `useWalletExecutions({ status? })` lists the provider wallet's executions,
-  newest first. With `IN_FLIGHT_STATUSES` it finds the one holding the
-  wallet's lock, to resume or cancel after a reload.
+- `useWalletExecutions({ status?, address? })` lists the provider wallet's
+  executions, newest first, or another wallet's by `address` (as its
+  connector reports it), e.g. a history across the wallets a user has.
+  With `IN_FLIGHT_STATUSES` it finds the one holding the wallet's lock, to
+  resume or cancel after a reload.
 
 ## Account & balances
 

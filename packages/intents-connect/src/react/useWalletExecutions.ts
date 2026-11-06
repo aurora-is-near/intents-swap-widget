@@ -8,6 +8,11 @@ import { useIntentsConnect } from '@/react/context';
 import { useResourceKey } from '@/react/useResourceKey';
 
 export type UseWalletExecutionsOptions = {
+  /**
+   * Another wallet's executions than the provider wallet's: its address, as
+   * its connector reports it (`getAddress()`), which runs are filed under.
+   */
+  address?: string;
   /** Only these statuses, e.g. `IN_FLIGHT_STATUSES`. All when unset. */
   status?: ExecutionStatus | readonly ExecutionStatus[];
   /** Milliseconds; `0` disables polling. Defaults to 30_000. */
@@ -25,14 +30,15 @@ export type UseWalletExecutionsResult = {
 const EMPTY: readonly Execution[] = Object.freeze([]);
 
 /**
- * The provider wallet's executions, from `listExecutions`: shared at
- * provider level, so hooks asking for the same statuses share one request.
- * Needs no `intentsApi`.
+ * The provider wallet's executions (or `address`'s), from `listExecutions`:
+ * shared at provider level, so hooks asking for the same wallet and
+ * statuses share one request. Needs no `intentsApi`.
  *
  * With `IN_FLIGHT_STATUSES` it finds the execution holding the wallet's
  * lock, to resume (`exec.resume(id)`) or cancel after a reload.
  */
 export const useWalletExecutions = ({
+  address: other,
   status,
   refreshIntervalMs = 30_000,
 }: UseWalletExecutionsOptions = {}): UseWalletExecutionsResult => {
@@ -45,7 +51,7 @@ export const useWalletExecutions = ({
     );
   }
 
-  const address = wallet?.getAddress();
+  const address = other ?? wallet?.getAddress();
   const statuses = status === undefined ? [] : [status].flat().sort();
   const key = address ? JSON.stringify([address, statuses]) : undefined;
 
