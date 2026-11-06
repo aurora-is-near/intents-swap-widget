@@ -136,7 +136,8 @@ const icon = (path: ReactNode, size = 14) => (
   </svg>
 );
 
-export const CloseIcon = () => icon(<path d="M6 6l12 12M18 6 6 18" />);
+export const CloseIcon = ({ size = 14 }: { size?: number }) =>
+  icon(<path d="M6 6l12 12M18 6 6 18" />, size);
 export const BackIcon = () => icon(<path d="m15 18-6-6 6-6" />, 16);
 export const ChevronIcon = () => icon(<path d="m9 18 6-6-6-6" />, 16);
 export const CheckIcon = ({ size = 14 }: { size?: number }) =>

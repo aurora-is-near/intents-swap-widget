@@ -616,7 +616,7 @@ export const SupplyForm = ({
                   </span>
                 ),
                 detail:
-                  'From an exchange or any wallet. If your exchange takes its fee from the amount, add the fee, and check its minimum withdrawal.',
+                  'From any wallet or exchange: add its withdrawal fee, and check its minimum.',
               },
             ]}
           />

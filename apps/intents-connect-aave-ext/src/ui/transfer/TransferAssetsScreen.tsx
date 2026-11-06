@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
-import { ChainChips, inChips } from '../ChainChips';
+import { ChainSelect, inChips } from '../ChainChips';
 import { Button, ChevronIcon, EmptyState, SearchIcon, Skeleton } from '../ui';
 import { exchangeNetwork } from './networks';
 import { filterOrigins, type TransferOrigin } from './origins';
@@ -162,7 +162,7 @@ export const TransferAssetsScreen = ({
         />
       </label>
       {networks.length > 1 ? (
-        <ChainChips
+        <ChainSelect
           label="Networks"
           chains={networks}
           selected={chains}

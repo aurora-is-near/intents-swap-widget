@@ -1,5 +1,3 @@
-import { getChainFamily } from '@aurora-is-near/intents-connect';
-
 import { ChainIcon } from '../assets/ChainIcon';
 import { chainLabel } from '../assets/tokens';
 import { Steps } from '../Steps';
@@ -72,8 +70,6 @@ export const TransferTab = ({
   dappWallet?: { name: string; address: string };
   onStart: () => void;
 }) => {
-  const evm = networks.filter((chain) => getChainFamily(chain) === 'evm');
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-4 rounded-card bg-surface-raised p-4 shadow-box">
@@ -96,16 +92,9 @@ export const TransferTab = ({
             {
               id: 'sign',
               title: 'Sign once',
-              detail: (
-                <div className="flex flex-col gap-1.5">
-                  {evm.length ? <NetworkIcons chains={evm} /> : null}
-                  <span>
-                    {dappWallet
-                      ? `On EVM networks (${named(evm)}), with ${dappWallet.name} · ${truncateMiddle(dappWallet.address)}, the wallet on ${dappName}. On others, with a wallet of that network in this browser.`
-                      : 'With a wallet of the network you send on, in this browser.'}
-                  </span>
-                </div>
-              ),
+              detail: dappWallet
+                ? `On EVM networks, ${dappWallet.name} · ${truncateMiddle(dappWallet.address)}. On others, their own wallet.`
+                : `On EVM networks, your ${dappName} wallet. On others, their own wallet.`,
             },
             {
               id: 'send',

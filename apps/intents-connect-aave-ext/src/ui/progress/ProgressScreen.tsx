@@ -12,6 +12,7 @@ import { exchangeNetwork } from '../transfer/networks';
 import {
   Button,
   CheckIcon,
+  CloseIcon,
   CopyButton,
   cx,
   Notice,
@@ -20,7 +21,7 @@ import {
 } from '../ui';
 import { type Waiting, WaitingNotice } from '../recovery/WaitingFunds';
 import { DepositPanel } from './DepositPanel';
-import { depositView } from './depositState';
+import { countdown, depositView } from './depositState';
 import { describeFailure } from './describeFailure';
 import { savedTransfer } from './transfers';
 import type { SupplyRun } from './types';
@@ -355,12 +356,36 @@ export const ProgressScreen = ({
         </p>
       </Notice>
     );
+  } else if (exec.phase === 'cancelled') {
+    // Whether funds moved: a deposit the wallet sent shows its transaction;
+    // a transfer's, the user may or may not have sent.
+    let moved = 'Nothing was supplied, and your funds never left your wallet.';
+
+    if (exec.depositTxHash) {
+      moved =
+        'Nothing was supplied, but the deposit above was already sent. Keep its transaction if you contact support.';
+    } else if (run.transfer) {
+      moved =
+        "Nothing was supplied. If you didn't send the deposit, your funds never left your wallet.";
+    }
+
+    headline = (
+      <Notice tone="info">
+        <div className="flex flex-col items-center gap-2 py-2 text-center">
+          <span
+            aria-hidden="true"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-track text-text-secondary">
+            <CloseIcon size={18} />
+          </span>
+          <p className="font-medium">Cancelled</p>
+          <p className="text-text-secondary">{moved}</p>
+        </div>
+      </Notice>
+    );
   } else if (described) {
     headline = (
       <Notice tone="warning">
-        <p className="font-medium">
-          {exec.phase === 'cancelled' ? 'Cancelled' : described.title}
-        </p>
+        <p className="font-medium">{described.title}</p>
         {described.detail ? (
           <p className="mt-1 break-words text-text-secondary">
             {described.detail}
@@ -368,17 +393,18 @@ export const ProgressScreen = ({
         ) : null}
       </Notice>
     );
-  } else if (exec.phase === 'cancelled') {
-    headline = (
-      <Notice tone="info">
-        <p className="font-medium">Cancelled</p>
-        <p className="mt-1 text-text-secondary">Nothing was supplied.</p>
-      </Notice>
-    );
   } else {
-    const [title, detail] = (awaitingTransfer
+    const [baseTitle, detail] = (awaitingTransfer
       ? TRANSFER_DEPOSIT_COPY
       : LIVE_COPY[exec.phase]) ?? ['Working…'];
+
+    // A transfer's window counts down in its title.
+    const title =
+      awaitingTransfer &&
+      deposit?.kind === 'waiting' &&
+      deposit.msLeft !== undefined
+        ? `${baseTitle} within ${countdown(deposit.msLeft)}`
+        : baseTitle;
 
     const left =
       settling && settlingSince !== undefined && Number.isFinite(estimated)
@@ -424,7 +450,8 @@ export const ProgressScreen = ({
       ) : null}
 
       <dl className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
-        {origin && quote.amountIn ? (
+        {/* Shown above already, in the panel's "Send exactly". */}
+        {origin && quote.amountIn && panelView?.kind !== 'waiting' ? (
           <Detail label="You send">
             <AssetAmount
               symbol={origin.symbol}

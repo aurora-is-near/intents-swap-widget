@@ -6,12 +6,6 @@ import { Button, CopyButton, Notice, truncateMiddle } from '../ui';
 import { QrCode } from '../wallets/QrCode';
 import type { DepositView } from './depositState';
 
-const countdown = (ms: number) => {
-  const seconds = Math.max(0, Math.floor(ms / 1000));
-
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
-};
-
 /** One of the three: a small label over its value. */
 const Cell = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="min-w-0">
@@ -135,11 +129,6 @@ export const DepositPanel = ({
           ) : null}
         </dl>
       ) : null}
-      <p className="w-full text-center text-text-secondary">
-        {view.msLeft === undefined
-          ? 'Send it soon: the address expires.'
-          : `Send within ${countdown(view.msLeft)}.`}
-      </p>
     </div>
   );
 };
