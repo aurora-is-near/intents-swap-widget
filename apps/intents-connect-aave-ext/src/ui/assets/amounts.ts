@@ -60,3 +60,50 @@ export const formatUsd = (value: number): string =>
         currency: 'USD',
         maximumFractionDigits: 2,
       });
+
+const sameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+/**
+ * When something happened, short: "Today, 14:32", "Yesterday, 09:10",
+ * "3 Nov, 14:32", with the year when it isn't this one. Empty for a time
+ * that doesn't parse.
+ */
+export const formatWhen = (
+  iso: string | undefined,
+  now: Date = new Date(),
+  locale = 'en-GB',
+): string => {
+  const date = new Date(iso ?? '');
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const time = date.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const yesterday = new Date(now);
+
+  yesterday.setDate(now.getDate() - 1);
+
+  if (sameDay(date, now)) {
+    return `Today, ${time}`;
+  }
+
+  if (sameDay(date, yesterday)) {
+    return `Yesterday, ${time}`;
+  }
+
+  const day = date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    ...(date.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }),
+  });
+
+  return `${day}, ${time}`;
+};

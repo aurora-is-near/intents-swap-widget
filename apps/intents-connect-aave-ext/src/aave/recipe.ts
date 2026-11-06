@@ -61,6 +61,12 @@ const nativeSupply = (
   ];
 };
 
+/**
+ * What every Aave supply this extension runs is filed as (`recipe.intent`,
+ * echoed in an execution's `metadata`): History lists only these.
+ */
+export const AAVE_SUPPLY_INTENT = 'aave_supply';
+
 /** Supplies `option`'s token on the market's chain for `owner`. */
 const aaveSupplyRecipe = (
   market: AaveMarket,
@@ -70,7 +76,7 @@ const aaveSupplyRecipe = (
   flow: 'bridge-in' | 'steps-only',
 ): Recipe => ({
   id: `aave-supply:${market.name}:${option.symbol}`,
-  intent: 'aave_supply',
+  intent: AAVE_SUPPLY_INTENT,
   title: `Supply ${option.symbol} to Aave ${marketTitle(market)}`,
   flow,
   type: 'evm',

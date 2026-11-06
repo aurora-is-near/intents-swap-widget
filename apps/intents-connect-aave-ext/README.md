@@ -170,6 +170,16 @@ supply transactions (with explorer links) and the execution id.
   its active queries, then once more 6 s later, so Your supplies updates
   without waiting for Aave's next poll.
 
+## History
+
+The clock in the modal's header lists past supplies to Aave from every
+wallet the page shows an account for, newest first: what was paid, into
+what, when, from which wallet, and how it ended. One opens with its
+amounts, the supply transaction and the execution id; an unfinished one
+opens on its progress screen (switching to its wallet first). Runs other
+apps made with the same wallets aren't listed: only those carrying the
+recipe's intent, `aave_supply`.
+
 ## Troubleshooting
 
 - **No button.** It only shows on the dashboard with a wallet connected (Aave

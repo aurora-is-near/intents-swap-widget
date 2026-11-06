@@ -32,6 +32,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
   onOpen={open}                       // optional: the completion notice's "View"
   onStatus={showStatus}               // optional: the supply's status, e.g. on the dApp's button
   onSupplied={refreshPositions}       // optional: once per landed supply
+  intent="aave_supply"                // optional: the recipe's intent; History lists those runs
   theme={{ auto: { pin: { cardRadius: 12 } } }} // optional: read from the page by default; keep it stable
 />
 ```
@@ -49,6 +50,7 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
 | `onOpen` | Opens the modal. The completion notice's **View** calls it. |
 | `onStatus` | Every change in the supply's status, open or closed: `idle`, `action` (sign, confirm, resume), `running`, `success`, `failed`, each with a short label. For the dApp's own button or a badge. |
 | `onSupplied` | `{ executionId, option }`, once per supply that landed (a recovery too): refresh the dApp's position data. |
+| `intent` | The `intent` the dApp's recipes carry (echoed in every execution's `metadata`). History lists only those runs, and the in-flight check ignores other apps' runs. Without it there is no History. |
 | `readOnly` | A notice the Supply button shows instead of supplying: every screen and quote works, nothing runs. The extension sets it for its theme preview off app.aave.com. |
 | `theme` | `{ auto, seed, tokens }`. `auto` (on by default) reads a seed from the page; pass `false` to skip it, or hints: `selectors` (`primaryButton`, `button`, `card`) and `pin` (seed values the reading can't change). `seed` overrides the reading, and the whole is derived into tokens (below). Exact `tokens` win over everything. |
 
@@ -80,6 +82,34 @@ The run lives above the dialog, so it keeps going when the modal closes.
   says so, with **View** (`onOpen`). A success hides after 10 s; a failure
   stays until dismissed.
 - `onSupplied` fires once per execution that landed.
+
+## History
+
+The clock in the header opens a list of past supplies, over any screen;
+Back (or Escape) returns to it as it was, a typed amount included.
+- **Which runs.** Every wallet the page shows an account for: detected
+  wallets sharing one, the paired EVM phone and the paired TON phone. Each
+  is read with `useWalletExecutions({ address })` while History is open
+  (every 30 s), under the spelling its connector reports, which is the
+  spelling the service files runs under (it matches EVM addresses
+  exactly).
+- **What's listed** (`history/entries.ts`): runs with the dApp's `intent`,
+  each once (the active wallet's copy when two wallets share an address),
+  newest first, the latest 50. Quotes nobody signed that then expired are
+  left out: nothing moved.
+- **A row:** what was paid and into what (`10 USDC → USDC`), the chain and
+  wallet, when, and a status: Supplied, Needs you, In progress, Failed or
+  Expired. A steps-only run (funds that waited) reads "Supplied … that was
+  waiting".
+- **One run:** the amounts ("at least" what the quote guaranteed), where,
+  when, the wallet, the supply transaction and the execution id. A failed
+  supply from the active wallet shows what it left, to supply.
+- **Open it:** an unfinished run opens on the progress screen, through the
+  same path as the reload check (`progress/runOf.ts`): Resume when it needs
+  the user, otherwise it's followed. A run from another wallet switches to
+  it first (it already shares an account, so nothing prompts). Never over a
+  live run or a running recovery, never in a `readOnly` preview; the run on
+  screen just says **Back to it**.
 
 ## What it uses from the SDK
 

@@ -108,7 +108,7 @@ const Stepper = ({
   );
 };
 
-const Detail = ({
+export const Detail = ({
   label,
   children,
 }: {
@@ -123,7 +123,7 @@ const Detail = ({
   </div>
 );
 
-const TxLink = ({
+export const TxLink = ({
   chain,
   hash,
   label,

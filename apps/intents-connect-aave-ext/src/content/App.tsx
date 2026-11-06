@@ -1,7 +1,11 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
 import { getAaveMarket, marketTitle } from '../aave/markets';
-import { buildAaveStepsPlan, buildAaveSupplyPlan } from '../aave/recipe';
+import {
+  AAVE_SUPPLY_INTENT,
+  buildAaveStepsPlan,
+  buildAaveSupplyPlan,
+} from '../aave/recipe';
 import { useAaveReserves } from '../aave/useAaveReserves';
 import {
   ALCHEMY_API_KEY,
@@ -150,6 +154,7 @@ export const App = ({ preview = false }: { preview?: boolean }) => {
       walletSources={walletSources}
       theme={preview ? undefined : AAVE_THEME}
       readOnly={preview ? PREVIEW_NOTICE : undefined}
+      intent={AAVE_SUPPLY_INTENT}
       onOpen={modal.open}
       // Aave's own button and data: not on another site's preview.
       onStatus={preview ? undefined : showSupplyStatus}

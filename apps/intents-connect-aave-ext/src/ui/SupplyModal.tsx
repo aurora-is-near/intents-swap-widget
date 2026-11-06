@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import type {
+  Execution,
   ExecutionPreview,
   StepsPlan,
 } from '@aurora-is-near/intents-connect';
@@ -32,12 +33,22 @@ import {
 import { AssetsScreen } from './assets/AssetsScreen';
 import type { AssetRow } from './assets/useWalletAssets';
 import { ErrorBoundary } from './ErrorBoundary';
+import type { HistoryEntry } from './history/entries';
+import {
+  type FollowableWallet,
+  historyWallets,
+} from './history/historyWallets';
+import { type Follow, HistoryIcon, HistoryView } from './history/HistoryView';
 import { DoneNotice } from './progress/DoneNotice';
-import { InFlightCheck } from './progress/InFlightCheck';
+import { InFlightCheck, ResolveRun } from './progress/InFlightCheck';
 import { ProgressScreen } from './progress/ProgressScreen';
 import type { SupplyRun } from './progress/types';
 import { RecoverScreen, type Recovery } from './recovery/RecoverScreen';
-import { FailedSupplies, type Waiting } from './recovery/WaitingFunds';
+import {
+  FailedSupplies,
+  type Waiting,
+  WaitingNotice,
+} from './recovery/WaitingFunds';
 import {
   IDLE,
   sameStatus,
@@ -46,7 +57,7 @@ import {
   supplyStatus,
 } from './status';
 import { deliverableOptions } from './supply/options';
-import { SupplyForm } from './supply/SupplyForm';
+import { type FormDraft, SupplyForm } from './supply/SupplyForm';
 import { type SupplyTheme, ThemeStyle } from './theme';
 import type { SupplyDestination, SupplyOption } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
@@ -95,6 +106,12 @@ type SupplyModalProps = {
    * position data.
    */
   onSupplied?: (supply: { executionId: string; option: SupplyOption }) => void;
+  /**
+   * The recipe's `intent`, which the dApp's executions carry: History lists
+   * only those, across every wallet on the page, and a run another app left
+   * in flight isn't shown as the dApp's. No History without it.
+   */
+  intent?: string;
 };
 
 /** How long the completion notice for a success stays up. */
@@ -107,19 +124,27 @@ const Header = ({
   title,
   subtitle,
   onBack,
+  onHistory,
   onClose,
   closeRef,
+  backRef,
+  historyRef,
 }: {
   title: string;
   /** Left out when empty. */
   subtitle: string;
   onBack?: () => void;
+  /** Opens History; left out while it shows. */
+  onHistory?: () => void;
   onClose: () => void;
   closeRef: Ref<HTMLButtonElement>;
+  backRef: Ref<HTMLButtonElement>;
+  historyRef: Ref<HTMLButtonElement>;
 }) => (
   <div className="flex items-start gap-2">
     {onBack ? (
       <Button
+        ref={backRef}
         variant="ghost"
         aria-label="Back"
         className="-ml-1 mt-0.5"
@@ -135,6 +160,17 @@ const Header = ({
         <p className="mt-0.5 text-text-secondary">{subtitle}</p>
       ) : null}
     </div>
+    {onHistory ? (
+      <Button
+        ref={historyRef}
+        variant="ghost"
+        aria-label="History"
+        title="History"
+        className="mt-0.5"
+        onClick={onHistory}>
+        <HistoryIcon />
+      </Button>
+    ) : null}
     <Button
       ref={closeRef}
       variant="ghost"
@@ -200,6 +236,7 @@ const SupplyFlow = ({
   onOpen,
   onStatus,
   onSupplied,
+  intent,
   session,
 }: Omit<
   SupplyModalProps,
@@ -239,10 +276,26 @@ const SupplyFlow = ({
   const [readOnlyShown, setReadOnlyShown] = useState(false);
   // The wallet whose in-flight check settled: once per wallet.
   const [checkedWallet, setCheckedWallet] = useState<string>();
+  // History, over any view: the list (`{}`) or one run (`{ id }`).
+  const [history, setHistory] = useState<{ id?: string } | null>(null);
+  // A run picked in History, shown once its wallet is the active one.
+  const [pendingOpen, setPendingOpen] = useState<{
+    address: string;
+    execution: Execution;
+  } | null>(null);
+
+  // What the form held, for the asset it was entered on.
+  const [draft, setDraft] = useState<{
+    assetId: string;
+    value: FormDraft;
+  } | null>(null);
 
   const closeRef = useRef<HTMLButtonElement>(null);
+  const backRef = useRef<HTMLButtonElement>(null);
+  const historyRef = useRef<HTMLButtonElement>(null);
   const { active } = session;
-  const checking = !!active && !run && checkedWallet !== active.key;
+  const checking =
+    !!active && !run && !pendingOpen && checkedWallet !== active.key;
 
   const onFound = (walletKey: string, found: SupplyRun | null) => {
     setCheckedWallet(walletKey);
@@ -396,12 +449,44 @@ const SupplyFlow = ({
     setScreen(null);
     setPicked(null);
     setReadOnlyShown(false);
+    setHistory(null);
+    setPendingOpen(null);
+    setDraft(null);
     onClose();
   };
 
-  const latestClose = useRef(close);
+  // Back out of History one level: a run, then the list, then the view.
+  const historyBack = () => setHistory(history?.id ? {} : null);
 
-  latestClose.current = close;
+  // Escape is Back while History shows, else it closes.
+  const latestEscape = useRef(close);
+
+  latestEscape.current = history ? historyBack : close;
+
+  // History takes focus to its Back, and gives it back to its button.
+  const historyOpen = history !== null;
+  const wasHistoryOpen = useRef(false);
+
+  useEffect(() => {
+    if (historyOpen) {
+      backRef.current?.focus();
+    } else if (wasHistoryOpen.current) {
+      historyRef.current?.focus();
+    }
+
+    wasHistoryOpen.current = historyOpen;
+  }, [historyOpen, history?.id]);
+
+  // A wallet that never comes back (removed, locked) gives up the run.
+  useEffect(() => {
+    if (!pendingOpen) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setPendingOpen(null), 8000);
+
+    return () => clearTimeout(timer);
+  }, [pendingOpen]);
 
   useEffect(() => {
     if (!open) {
@@ -412,7 +497,7 @@ const SupplyFlow = ({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        latestClose.current();
+        latestEscape.current();
       }
     };
 
@@ -427,6 +512,7 @@ const SupplyFlow = ({
     : destination.title;
 
   const view:
+    | 'history'
     | 'progress'
     | 'recover'
     | 'blocked'
@@ -434,9 +520,19 @@ const SupplyFlow = ({
     | Screen
     | 'assets'
     | 'form' = (() => {
+    // Over anything: asked for, and left with Back.
+    if (history && intent) {
+      return 'history';
+    }
+
     // Before anything else: the page may have changed under a running supply.
     if (run) {
       return 'progress';
+    }
+
+    // A run picked in History, while its wallet becomes the active one.
+    if (pendingOpen) {
+      return 'loading';
     }
 
     if (recovery && destination.buildStepsPlan) {
@@ -465,7 +561,115 @@ const SupplyFlow = ({
   let onBack: (() => void) | undefined;
   let body: ReactNode;
 
+  // Following a run from History: never over a live one (`resume` would
+  // refuse, and switching wallets would drop it), never in a preview.
+  const currentId = run
+    ? (flow.exec.executionId ?? run.resumed?.id)
+    : undefined;
+
+  const liveRun = !!run && !terminal && !run.resumed?.waiting;
+  const busy = flow.isBusy || recovery?.state === 'running';
+
+  const followOf = ({
+    execution,
+    wallet,
+    label,
+    stepsOnly,
+  }: HistoryEntry<FollowableWallet>): Follow | undefined => {
+    if (
+      !!readOnly ||
+      stepsOnly ||
+      (label !== 'needs-you' && label !== 'in-progress')
+    ) {
+      return undefined;
+    }
+
+    if (execution.id === currentId) {
+      return { label: 'Back to it', onClick: () => setHistory(null) };
+    }
+
+    if (busy || liveRun) {
+      return undefined;
+    }
+
+    return {
+      label: wallet.active ? 'Open it' : `Open it with ${wallet.name}`,
+      onClick: () => {
+        setHistory(null);
+        setScreen(null);
+        setPicked(null);
+        setRun(null);
+        setPendingOpen({ address: wallet.address, execution });
+
+        if (!wallet.active) {
+          Promise.resolve(wallet.select()).catch(() => setPendingOpen(null));
+        }
+      },
+    };
+  };
+
+  // A failed supply from the active wallet: what it left, to supply.
+  const extraOf = ({ execution, wallet }: HistoryEntry<FollowableWallet>) => {
+    const option = options?.find(
+      (candidate) =>
+        candidate.destinationAsset === execution.quote?.destinationAsset,
+    );
+
+    return execution.status === 'OPERATION_FAILED' &&
+      wallet.active &&
+      option ? (
+      <WaitingNotice
+        option={option}
+        dappName={dappName}
+        onSupply={
+          !readOnly && destination.buildStepsPlan
+            ? (waiting) => {
+                setHistory(null);
+                recover(waiting);
+              }
+            : undefined
+        }
+      />
+    ) : null;
+  };
+
+  const wallets = useMemo(
+    () => historyWallets(session),
+    // `session` is rebuilt every render; these are what it's made of.
+    [session.wallets, session.peer, session.tonPeer, session.active?.address],
+  );
+
   switch (view) {
+    case 'history':
+      title = 'History';
+      subtitle = history?.id
+        ? ''
+        : `Supplies to ${dappName} from the wallets on this page.`;
+      onBack = historyBack;
+      body = intent ? (
+        <ErrorBoundary onReset={() => setHistory(null)}>
+          <HistoryView
+            wallets={wallets}
+            intent={intent}
+            dappName={dappName}
+            selectedId={history?.id}
+            onSelect={(id) => setHistory(id ? { id } : {})}
+            onChooseWallet={() => {
+              setHistory(null);
+              setScreen('wallets');
+            }}
+            live={
+              currentId
+                ? { id: currentId, status: flow.exec.status }
+                : undefined
+            }
+            followOf={followOf}
+            extraOf={extraOf}
+          />
+        </ErrorBoundary>
+      ) : null;
+      break;
+
     case 'progress':
       title = flow.exec.phase === 'success' ? 'Supplied' : 'Supplying';
       subtitle = destinationLine;
@@ -615,6 +819,8 @@ const SupplyFlow = ({
               buildPlan={destination.buildPlan}
               dappName={dappName}
               exec={flow.exec}
+              draft={draft?.assetId === asset.id ? draft.value : undefined}
+              onDraft={(value) => setDraft({ assetId: asset.id, value })}
               onSubmit={(preview, option) => {
                 if (readOnly) {
                   setReadOnlyShown(true);
@@ -643,15 +849,34 @@ const SupplyFlow = ({
       }
   }
 
-  const check =
-    checking && active ? (
-      <InFlightCheck
-        key={active.key}
+  const opening =
+    pendingOpen && active?.address === pendingOpen.address ? (
+      <ResolveRun
+        key={pendingOpen.execution.id}
+        execution={pendingOpen.execution}
         walletKey={active.key}
         options={options}
-        onDone={(found) => onFound(active.key, found)}
+        onDone={(found) => {
+          setPendingOpen(null);
+          onFound(active.key, found);
+        }}
       />
     ) : null;
+
+  const check = (
+    <>
+      {checking && active ? (
+        <InFlightCheck
+          key={active.key}
+          intent={intent}
+          walletKey={active.key}
+          options={options}
+          onDone={(found) => onFound(active.key, found)}
+        />
+      ) : null}
+      {opening}
+    </>
+  );
 
   return open ? (
     <div
@@ -673,8 +898,11 @@ const SupplyFlow = ({
             title={title}
             subtitle={subtitle}
             onBack={onBack}
+            onHistory={intent && !history ? () => setHistory({}) : undefined}
             onClose={close}
             closeRef={closeRef}
+            backRef={backRef}
+            historyRef={historyRef}
           />
         </div>
         {/* Padded inside the scroll area, so outline rings aren't clipped. */}

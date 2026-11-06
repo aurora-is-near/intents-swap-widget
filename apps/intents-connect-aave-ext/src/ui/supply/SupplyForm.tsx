@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
 import {
   type UseExecutionResult,
@@ -286,6 +286,9 @@ const QuoteLines = ({
   );
 };
 
+/** What the form holds: kept by the modal while the form isn't shown. */
+export type FormDraft = { amount: string; chosen?: string };
+
 /**
  * How much of the chosen asset, into which of the dApp's options, at what
  * quote. The quote is live: a dry preview, refreshed as the input changes
@@ -299,6 +302,8 @@ export const SupplyForm = ({
   dappName,
   exec,
   onSubmit,
+  draft,
+  onDraft,
 }: {
   asset: AssetRow;
   options: readonly DeliverableOption[];
@@ -308,10 +313,21 @@ export const SupplyForm = ({
   exec: UseExecutionResult;
   /** Runs exactly the previewed plan. */
   onSubmit: (preview: ExecutionPreview, option: DeliverableOption) => void;
+  /** What was entered before the form was left (for History, say). */
+  draft?: FormDraft;
+  /** Every change to what is entered, to hand back as `draft`. */
+  onDraft?: (draft: FormDraft) => void;
 }) => {
   const { token } = asset;
-  const [amount, setAmount] = useState('');
-  const [chosen, setChosen] = useState<string>();
+  const [amount, setAmount] = useState(draft?.amount ?? '');
+  const [chosen, setChosen] = useState<string | undefined>(draft?.chosen);
+  const reportDraft = useRef(onDraft);
+
+  reportDraft.current = onDraft;
+
+  useEffect(() => {
+    reportDraft.current?.({ amount, chosen });
+  }, [amount, chosen]);
   const { tokens, balances } = useWalletBalances();
 
   const option =
