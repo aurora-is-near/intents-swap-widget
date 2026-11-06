@@ -17,6 +17,7 @@ import {
   Tag,
   truncateMiddle,
 } from '../ui';
+import { TransferIcon, TransferTab } from '../transfer/TransferTab';
 import { FAMILY_LABEL } from './families';
 import { FamilyIcon } from './FamilyIcon';
 import { type Pairer, type PairingCopy, PairingScreen } from './PairingScreen';
@@ -46,70 +47,84 @@ const PHONE_COPY: Record<'evm' | 'ton', PairingCopy> = {
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
-type Tab = 'browser' | 'qr';
+export type WalletsTab = 'browser' | 'phone' | 'transfer';
 
-const TABS: readonly [
-  { id: Tab; label: string; icon: ReactNode },
-  { id: Tab; label: string; icon: ReactNode },
-] = [
-  { id: 'browser', label: 'Browser wallets', icon: <BrowserIcon /> },
-  { id: 'qr', label: 'QR code', icon: <QrIcon /> },
-];
+const TAB_ITEMS: Record<
+  WalletsTab,
+  { id: WalletsTab; label: string; icon: ReactNode }
+> = {
+  browser: { id: 'browser', label: 'Browser', icon: <BrowserIcon /> },
+  phone: { id: 'phone', label: 'Phone', icon: <QrIcon /> },
+  transfer: { id: 'transfer', label: 'Transfer', icon: <TransferIcon /> },
+};
 
-/** Two choices over one sliding background. */
+/** A few choices over one sliding background. */
 const Segmented = <T extends string>({
   items,
   value,
   onChange,
   size = 'md',
 }: {
-  items: readonly [
-    { id: T; label: string; icon: ReactNode },
-    { id: T; label: string; icon: ReactNode },
-  ];
+  items: readonly { id: T; label: string; icon: ReactNode }[];
   value: T;
   onChange: (value: T) => void;
   /** `sm`: 28 px tall, 12 px text, for a switch under content. */
   size?: 'md' | 'sm';
-}) => (
-  <div
-    role="tablist"
-    className={cx(
-      'relative grid grid-cols-2 bg-track',
-      size === 'sm' ? 'rounded-chip p-0.5' : 'rounded-control p-1',
-    )}>
-    <span
-      aria-hidden
+}) => {
+  const index = Math.max(
+    0,
+    items.findIndex((item) => item.id === value),
+  );
+
+  // The background's inset on each side: the list's own padding.
+  const inset = size === 'sm' ? 'calc(var(--spacing) * 0.5)' : 'var(--spacing)';
+
+  return (
+    <div
+      role="tablist"
       className={cx(
-        'absolute left-0 bg-control shadow-box transition-transform duration-200 ease-out',
-        size === 'sm'
-          ? 'inset-y-0.5 ml-0.5 w-[calc(50%-2px)] rounded-[calc(var(--r-chip)-1px)]'
-          : 'inset-y-1 ml-1 w-[calc(50%-4px)] rounded-chip',
-        value === items[1].id && 'translate-x-full',
+        'relative grid bg-track',
+        size === 'sm' ? 'rounded-chip p-0.5' : 'rounded-control p-1',
       )}
-    />
-    {items.map(({ id, label, icon }) => (
-      <button
-        key={id}
-        type="button"
-        role="tab"
-        aria-selected={value === id}
-        onClick={() => onChange(id)}
+      style={{
+        gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
+      }}>
+      <span
+        aria-hidden
         className={cx(
-          'relative flex items-center justify-center font-medium transition-colors',
+          'absolute left-0 bg-control shadow-box transition-transform duration-200 ease-out',
           size === 'sm'
-            ? 'h-6 gap-1 rounded-[calc(var(--r-chip)-1px)] text-xs'
-            : 'h-8 gap-1.5 rounded-chip',
-          value === id
-            ? 'text-text-primary'
-            : 'text-text-muted hover:text-text-secondary',
-        )}>
-        {icon}
-        {label}
-      </button>
-    ))}
-  </div>
-);
+            ? 'inset-y-0.5 ml-0.5 rounded-[calc(var(--r-chip)-1px)]'
+            : 'inset-y-1 ml-1 rounded-chip',
+        )}
+        style={{
+          width: `calc((100% - 2 * ${inset}) / ${items.length})`,
+          transform: `translateX(${index * 100}%)`,
+        }}
+      />
+      {items.map(({ id, label, icon }) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={value === id}
+          onClick={() => onChange(id)}
+          className={cx(
+            'relative flex items-center justify-center font-medium transition-colors',
+            size === 'sm'
+              ? 'h-6 gap-1 rounded-[calc(var(--r-chip)-1px)] text-xs'
+              : 'h-8 gap-1.5 rounded-chip',
+            value === id
+              ? 'text-text-primary'
+              : 'text-text-muted hover:text-text-secondary',
+          )}>
+          {icon}
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 /** The wallet the dApp is connected with: one slim line, to tell it apart. */
 const DappLine = ({
@@ -414,6 +429,8 @@ export const WalletsScreen = ({
   dappWalletName,
   walletConnect,
   tonConnect,
+  transfer,
+  initialTab = 'browser',
   onPicked,
 }: {
   session: WalletSession;
@@ -426,10 +443,27 @@ export const WalletsScreen = ({
   walletConnect?: WalletConnectClient;
   /** Offers TON phones in the QR code tab when set. */
   tonConnect?: TonConnectClient;
+  /**
+   * Offers paying by a transfer to a deposit address, from an exchange or
+   * any wallet: the networks it covers, and what starts it.
+   */
+  transfer?: { networks: readonly string[]; onStart: () => void };
+  /** The tab shown first, e.g. Transfer when coming back from it. */
+  initialTab?: WalletsTab;
   onPicked: () => void;
 }) => {
   const { wallets, active, unsupportedReason } = session;
-  const [tab, setTab] = useState<Tab>('browser');
+  const phones = !!(walletConnect ?? tonConnect);
+  const tabs = [
+    TAB_ITEMS.browser,
+    ...(phones ? [TAB_ITEMS.phone] : []),
+    ...(transfer ? [TAB_ITEMS.transfer] : []),
+  ];
+
+  const [tab, setTab] = useState<WalletsTab>(
+    tabs.some((item) => item.id === initialTab) ? initialTab : 'browser',
+  );
+
   /** The connection waiting on its wallet, which another pick calls off. */
   const [pending, setPending] = useState<{
     id: string;
@@ -527,7 +561,7 @@ export const WalletsScreen = ({
       {wallets.length === 0 ? (
         <Notice tone="info">
           No browser wallet found. Install MetaMask, Phantom or HOT and reload
-          {(walletConnect ?? tonConnect) ? ', or use the QR code' : ''}.
+          {phones ? ', or pair your phone' : ''}.
         </Notice>
       ) : null}
     </>
@@ -544,21 +578,32 @@ export const WalletsScreen = ({
         />
       ) : null}
 
-      {(walletConnect ?? tonConnect) ? (
-        <Segmented items={TABS} value={tab} onChange={setTab} />
+      {tabs.length > 1 ? (
+        <Segmented items={tabs} value={tab} onChange={setTab} />
       ) : null}
 
       <div className="flex flex-col gap-4">
-        {tab === 'qr' && (walletConnect ?? tonConnect) ? (
+        {tab === 'phone' && phones ? (
           <PhoneTab
             session={session}
             walletConnect={walletConnect}
             tonConnect={tonConnect}
             onPicked={onPicked}
           />
-        ) : (
-          browser
-        )}
+        ) : null}
+        {tab === 'transfer' && transfer ? (
+          <TransferTab
+            networks={transfer.networks}
+            dappName={dappName}
+            dappWallet={
+              dappWallet?.address
+                ? { name: dappWallet.name, address: dappWallet.address }
+                : undefined
+            }
+            onStart={transfer.onStart}
+          />
+        ) : null}
+        {tab === 'browser' ? browser : null}
 
         {(error ?? unsupportedReason) ? (
           <p className="text-danger">

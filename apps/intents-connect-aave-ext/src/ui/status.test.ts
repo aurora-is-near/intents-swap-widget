@@ -48,6 +48,18 @@ describe('supplyStatus', () => {
     });
   });
 
+  it("says a transfer's time ran out, even once the SDK stops polling", () => {
+    const expired = {
+      state: 'action',
+      label: 'Time to send ran out',
+    };
+
+    expect(
+      run({ phase: 'expired', externalDeposit: true, depositExpired: true }),
+    ).toEqual(expired);
+    expect(run({ phase: 'failed', depositExpired: true })).toEqual(expired);
+  });
+
   it('ends in success or failure; a cancel is no news', () => {
     expect(run({ phase: 'success' }).state).toBe('success');
     expect(run({ phase: 'failed' }).state).toBe('failed');

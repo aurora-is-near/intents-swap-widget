@@ -28,6 +28,8 @@ export type StatusInput =
       transferFailed: boolean;
       /** The user sends the deposit themselves. */
       externalDeposit: boolean;
+      /** A transfer's time to send ran out (a late deposit still counts). */
+      depositExpired?: boolean;
     }
   | {
       kind: 'recovery';
@@ -65,6 +67,10 @@ export const supplyStatus = (input: StatusInput): SupplyStatus => {
 
   if (input.transferFailed) {
     return { state: 'action', label: 'Retry the transfer' };
+  }
+
+  if (input.depositExpired) {
+    return { state: 'action', label: 'Time to send ran out' };
   }
 
   switch (input.phase) {

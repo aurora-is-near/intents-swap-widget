@@ -18,7 +18,10 @@ import {
   useSupportedTokens,
 } from '@aurora-is-near/intents-connect/react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
-import type { WalletSource } from '@aurora-is-near/intents-connect-wallet/detect';
+import type {
+  DetectedWallet,
+  WalletSource,
+} from '@aurora-is-near/intents-connect-wallet/detect';
 import type { TonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
 import type { WalletConnectorOptions } from '@aurora-is-near/intents-connect-wallet/detect/connector';
 
@@ -42,6 +45,12 @@ import { type Follow, HistoryIcon, HistoryView } from './history/HistoryView';
 import { DoneNotice } from './progress/DoneNotice';
 import { InFlightCheck, ResolveRun } from './progress/InFlightCheck';
 import { ProgressScreen } from './progress/ProgressScreen';
+import {
+  forgetTransfer,
+  rememberTransfer,
+  type SavedTransfer,
+  savedTransfer,
+} from './progress/transfers';
 import type { SupplyRun } from './progress/types';
 import { RecoverScreen, type Recovery } from './recovery/RecoverScreen';
 import {
@@ -59,13 +68,18 @@ import {
 import { deliverableOptions } from './supply/options';
 import { type FormDraft, SupplyForm } from './supply/SupplyForm';
 import { type SupplyTheme, ThemeStyle } from './theme';
+import type { TransferOrigin } from './transfer/origins';
+import { transferSigner } from './transfer/signer';
+import { SignerPicker } from './transfer/SignerPicker';
+import { TransferAssetsScreen } from './transfer/TransferAssetsScreen';
+import { useTransferOrigins } from './transfer/useTransferOrigins';
 import type { SupplyDestination, SupplyOption } from './supply/types';
 import { ActiveWalletCard } from './wallets/ActiveWalletCard';
 import {
   useWalletSession,
   type WalletSession,
 } from './wallets/useWalletSession';
-import { WalletsScreen } from './wallets/WalletsScreen';
+import { WalletsScreen, type WalletsTab } from './wallets/WalletsScreen';
 
 type SupplyModalProps = {
   open: boolean;
@@ -119,6 +133,9 @@ const SUCCESS_NOTICE_MS = 10_000;
 
 /** Screens the user navigates to; otherwise the wallet decides. */
 type Screen = 'wallets';
+
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
 
 const Header = ({
   title,
@@ -245,9 +262,25 @@ const SupplyFlow = ({
   session: WalletSession;
 }) => {
   const supported = useSupportedTokens();
+  // A transfer just submitted: saved once the service creates its run, so
+  // even an unsigned one is resumed as a transfer.
+  const submittedTransfer = useRef<Omit<
+    SavedTransfer,
+    'id' | 'savedAt'
+  > | null>(null);
+
   // One runner: the form previews on it, and the supply runs on it.
   const flow = useIntentsConnectFlow<ExecutionPreview, void>({
     buildPlan: (preview) => preview.plan,
+    onEvent: (event) => {
+      if (event.type === 'created' && submittedTransfer.current) {
+        rememberTransfer({
+          id: event.executionId,
+          ...submittedTransfer.current,
+        });
+        submittedTransfer.current = null;
+      }
+    },
   });
 
   const options = useMemo(
@@ -284,6 +317,21 @@ const SupplyFlow = ({
     execution: Execution;
   } | null>(null);
 
+  // How the next supply is paid: the wallet's own deposit, or a transfer to
+  // a deposit address from anywhere.
+  const [funding, setFunding] = useState<'wallet' | 'transfer'>('wallet');
+  // What a transfer sends, from the service's list.
+  const [transferOrigin, setTransferOrigin] = useState<TransferOrigin | null>(
+    null,
+  );
+
+  // A transfer's signer being connected, or why it couldn't be.
+  const [signerPending, setSignerPending] = useState<string>();
+  const [signerError, setSignerError] = useState<string>();
+  // The wallet screen's first tab: Transfer when coming back from it.
+  const [walletsTab, setWalletsTab] = useState<WalletsTab>('browser');
+  const transferNetworks = useTransferOrigins().networks;
+
   // What the form held, for the asset it was entered on.
   const [draft, setDraft] = useState<{
     assetId: string;
@@ -304,15 +352,47 @@ const SupplyFlow = ({
       return;
     }
 
-    setRun(found);
+    // A transfer saved here: following it never asks the wallet for the
+    // deposit, so only an unsigned one waits for the user.
+    const saved = savedTransfer(found.resumed.id);
+    const shown: SupplyRun = saved
+      ? {
+          ...found,
+          transfer: true,
+          resumed: {
+            ...found.resumed,
+            waiting: found.resumed.needs === 'signature',
+          },
+        }
+      : found;
+
+    setRun(shown);
 
     // Past the deposit, following it prompts nothing: reattach at once.
-    if (!found.resumed.waiting) {
-      flow.exec.resume(found.resumed.id).catch(() => undefined);
+    if (!shown.resumed?.waiting) {
+      flow.exec
+        .resume(
+          found.resumed.id,
+          saved
+            ? { depositViaWallet: false, originChain: saved.originChain }
+            : undefined,
+        )
+        .catch(() => undefined);
     }
   };
 
-  const asset = active && picked?.walletKey === active.key ? picked.row : null;
+  const walletAsset =
+    active && picked?.walletKey === active.key ? picked.row : null;
+
+  // A transfer has no balance: the form only needs the token.
+  const asset: AssetRow | null =
+    funding === 'transfer'
+      ? transferOrigin && {
+          id: transferOrigin.id,
+          token: transferOrigin.token,
+          amount: '0',
+        }
+      : walletAsset;
 
   const recover = (waiting: Waiting) => {
     setRun(null);
@@ -368,7 +448,13 @@ const SupplyFlow = ({
             phase,
             waiting: !!run.resumed?.waiting,
             transferFailed: flow.state === 'FAILED',
-            externalDeposit: flow.needsExternalDeposit,
+            externalDeposit:
+              flow.needsExternalDeposit ||
+              (!!run.transfer &&
+                (phase === 'awaiting-deposit' || phase === 'expired')),
+            depositExpired:
+              !!run.transfer &&
+              (phase === 'expired' || flow.exec.status === 'EXPIRED'),
           }
         : {
             kind: 'run',
@@ -443,11 +529,65 @@ const SupplyFlow = ({
     return () => clearTimeout(timer);
   }, [notice]);
 
+  // A transfer signs with a wallet on the network it's sent on: the
+  // service refunds to it there.
+  const signerOf = (family: TransferOrigin['family']) =>
+    transferSigner(family, {
+      wallets: session.wallets,
+      active,
+      dappAccount: positionOwner,
+    });
+
+  const signer = transferOrigin ? signerOf(transferOrigin.family) : undefined;
+  const readySigner = signer?.kind === 'ready' ? signer.wallet : undefined;
+
+  // One that already shares an account becomes the active wallet, with no
+  // prompt.
+  useEffect(() => {
+    if (!readySigner) {
+      return;
+    }
+
+    setSignerError(undefined);
+    session
+      .select(readySigner)
+      .catch((error: unknown) => setSignerError(errorMessage(error)));
+    // `session` is rebuilt every render; the wallet decides.
+  }, [readySigner?.id]);
+
+  // The wallets to pick from: the family's, or the one that couldn't be
+  // picked silently.
+  let signerChoices: readonly DetectedWallet[] = [];
+
+  if (signer?.kind === 'choose') {
+    signerChoices = signer.wallets;
+  } else if (readySigner) {
+    signerChoices = [readySigner];
+  }
+
+  // Any other is connected when picked, which prompts.
+  const pickSigner = (wallet: DetectedWallet) => {
+    setSignerPending(wallet.id);
+    setSignerError(undefined);
+    session.select(wallet).then(
+      () => setSignerPending(undefined),
+      (error: unknown) => {
+        setSignerPending(undefined);
+        setSignerError(errorMessage(error));
+      },
+    );
+  };
+
   // Each opening starts over: a running supply, else the chosen wallet's
   // assets, else the list.
   const close = () => {
     setScreen(null);
     setPicked(null);
+    setFunding('wallet');
+    setTransferOrigin(null);
+    setSignerPending(undefined);
+    setSignerError(undefined);
+    setWalletsTab('browser');
     setReadOnlyShown(false);
     setHistory(null);
     setPendingOpen(null);
@@ -518,6 +658,8 @@ const SupplyFlow = ({
     | 'blocked'
     | 'loading'
     | Screen
+    | 'transfer-assets'
+    | 'transfer-signer'
     | 'assets'
     | 'form' = (() => {
     // Over anything: asked for, and left with Back.
@@ -547,6 +689,21 @@ const SupplyFlow = ({
       return 'loading';
     }
 
+    // A transfer: what to send, then its signer, then the form.
+    if (funding === 'transfer' && screen !== 'wallets') {
+      if (!transferOrigin) {
+        return 'transfer-assets';
+      }
+
+      if (signer?.kind === 'active') {
+        return 'form';
+      }
+
+      return signer?.kind === 'choose' || signerError
+        ? 'transfer-signer'
+        : 'loading';
+    }
+
     if (screen === 'wallets' || !active) {
       return 'wallets';
     }
@@ -568,6 +725,17 @@ const SupplyFlow = ({
     : undefined;
 
   const liveRun = !!run && !terminal && !run.resumed?.waiting;
+
+  // A saved transfer that ended needs no finding again.
+  useEffect(() => {
+    if (
+      currentId &&
+      (phase === 'success' || phase === 'cancelled') &&
+      savedTransfer(currentId)
+    ) {
+      forgetTransfer(currentId);
+    }
+  }, [currentId, phase]);
   const busy = flow.isBusy || recovery?.state === 'running';
 
   const followOf = ({
@@ -696,6 +864,26 @@ const SupplyFlow = ({
           onRecover={
             !readOnly && destination.buildStepsPlan ? recover : undefined
           }
+          onStartOver={() => {
+            const restart = () => {
+              if (currentId) {
+                forgetTransfer(currentId);
+              }
+
+              setRun(null);
+              setFunding('transfer');
+              setTransferOrigin(null);
+              setScreen(null);
+            };
+
+            // Still followed, it holds the runner: cancelling it (one
+            // signature) frees it for the next transfer.
+            if (currentId && flow.isBusy) {
+              flow.exec.cancel(currentId).then(restart, () => undefined);
+            } else {
+              restart();
+            }
+          }}
           onDone={() => {
             const succeeded = flow.exec.phase === 'success';
 
@@ -750,6 +938,48 @@ const SupplyFlow = ({
       body = <Skeleton className="h-[220px]" />;
       break;
 
+    case 'transfer-assets':
+      title = 'Choose what to send';
+      subtitle =
+        'From an exchange or any wallet: you get an address and a QR code to send to.';
+
+      onBack = () => {
+        setFunding('wallet');
+        setWalletsTab('transfer');
+        setScreen('wallets');
+      };
+
+      body = (
+        <TransferAssetsScreen
+          signerOf={signerOf}
+          onPick={(origin) => {
+            setSignerError(undefined);
+            setTransferOrigin(origin);
+          }}
+        />
+      );
+      break;
+
+    case 'transfer-signer':
+      title = 'Choose a wallet to sign';
+      subtitle = '';
+
+      onBack = () => {
+        setTransferOrigin(null);
+        setSignerError(undefined);
+      };
+
+      body = transferOrigin ? (
+        <SignerPicker
+          family={transferOrigin.family}
+          wallets={signerChoices}
+          pending={signerPending}
+          error={signerError}
+          onPick={pickSigner}
+        />
+      ) : null;
+      break;
+
     case 'wallets':
       title = 'Choose a wallet';
       body = (
@@ -760,7 +990,19 @@ const SupplyFlow = ({
           dappWalletName={dappWalletName}
           walletConnect={walletConnect}
           tonConnect={tonConnect}
-          onPicked={() => setScreen(null)}
+          initialTab={walletsTab}
+          transfer={{
+            networks: transferNetworks,
+            onStart: () => {
+              setFunding('transfer');
+              setTransferOrigin(null);
+              setScreen(null);
+            },
+          }}
+          onPicked={() => {
+            setFunding('wallet');
+            setScreen(null);
+          }}
         />
       );
       break;
@@ -797,7 +1039,10 @@ const SupplyFlow = ({
     default:
       title = 'Supply';
       subtitle = '';
-      onBack = () => setPicked(null);
+      onBack =
+        funding === 'transfer'
+          ? () => setTransferOrigin(null)
+          : () => setPicked(null);
 
       if (optionsError) {
         body = (
@@ -812,15 +1057,27 @@ const SupplyFlow = ({
         body = asset ? (
           <>
             <SupplyForm
-              key={asset.id}
+              key={`${funding}:${asset.id}`}
               asset={asset}
+              funding={funding}
+              signer={
+                funding === 'transfer' && active
+                  ? { name: active.name, address: active.address }
+                  : undefined
+              }
               options={options ?? []}
               loadingOptions={!optionsSettled}
               buildPlan={destination.buildPlan}
               dappName={dappName}
               exec={flow.exec}
-              draft={draft?.assetId === asset.id ? draft.value : undefined}
-              onDraft={(value) => setDraft({ assetId: asset.id, value })}
+              draft={
+                draft?.assetId === `${funding}:${asset.id}`
+                  ? draft.value
+                  : undefined
+              }
+              onDraft={(value) =>
+                setDraft({ assetId: `${funding}:${asset.id}`, value })
+              }
               onSubmit={(preview, option) => {
                 if (readOnly) {
                   setReadOnlyShown(true);
@@ -828,11 +1085,23 @@ const SupplyFlow = ({
                   return;
                 }
 
+                const transferring = funding === 'transfer';
+
+                if (transferring) {
+                  submittedTransfer.current = {
+                    address: active!.address,
+                    originAssetId: asset.id,
+                    originChain: asset.token.blockchain,
+                    deadline: preview.plan.quote.deadline,
+                  };
+                }
+
                 setRun({
                   origin: asset.token,
                   option,
                   walletKey: active!.key,
                   quoted: preview.execution,
+                  transfer: transferring || undefined,
                 });
                 void flow.submit(preview);
               }}

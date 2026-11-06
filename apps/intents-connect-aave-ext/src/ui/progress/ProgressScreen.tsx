@@ -5,8 +5,9 @@ import type {
   UseIntentsConnectFlowResult,
 } from '@aurora-is-near/intents-connect/react';
 
-import { formatAmount } from '../assets/amounts';
+import { formatAmount, fromAtomic } from '../assets/amounts';
 import { chainLabel, explorerTxUrl } from '../assets/tokens';
+import { exchangeNetwork } from '../transfer/networks';
 import {
   Button,
   CheckIcon,
@@ -17,7 +18,10 @@ import {
   useNow,
 } from '../ui';
 import { type Waiting, WaitingNotice } from '../recovery/WaitingFunds';
+import { DepositPanel } from './DepositPanel';
+import { depositView } from './depositState';
 import { describeFailure } from './describeFailure';
+import { savedTransfer } from './transfers';
 import type { SupplyRun } from './types';
 
 const STEPS = ['Prepare', 'Sign', 'Deposit', 'Supply', 'Done'];
@@ -171,6 +175,24 @@ const LIVE_COPY: Partial<Record<Phase, [string, string?]>> = {
   settling: ['Bridging and supplying…', 'You can close this: it carries on.'],
 };
 
+/** A transfer's deposit step: the user sends it, not the wallet. */
+const TRANSFER_DEPOSIT_COPY: [string, string] = [
+  'Send your deposit',
+  'From an exchange or any wallet, to the address below.',
+];
+
+/**
+ * How to resume a run: a saved transfer never makes the wallet send the
+ * deposit (an unsigned one would, after signing), and names its chain.
+ */
+const resumeOptions = (id: string | undefined) => {
+  const saved = savedTransfer(id);
+
+  return saved
+    ? { depositViaWallet: false, originChain: saved.originChain }
+    : undefined;
+};
+
 /**
  * A running (or finished) supply: where it is, what it moves, and the way
  * out of every state that needs the user.
@@ -183,6 +205,7 @@ export const ProgressScreen = ({
   onAttach,
   onSwitchWallet,
   onRecover,
+  onStartOver,
   onDone,
 }: {
   flow: UseIntentsConnectFlowResult<ExecutionPreview>;
@@ -195,6 +218,8 @@ export const ProgressScreen = ({
   onSwitchWallet: () => void;
   /** Supplies what a failed last step left at the intermediary. */
   onRecover?: (waiting: Waiting) => void;
+  /** A transfer whose time ran out: pick what to send again. */
+  onStartOver?: () => void;
   /** Leaves a finished (or never-started) run. */
   onDone: () => void;
 }) => {
@@ -220,7 +245,27 @@ export const ProgressScreen = ({
   const supplyTx = exec.execution?.transaction?.evmTxHash;
   const estimated = Number(exec.execution?.details.estimatedTime);
   const settling = exec.phase === 'settling';
-  const now = useNow(settling);
+  const awaitingTransfer = !!run.transfer && exec.phase === 'awaiting-deposit';
+  const now = useNow(settling || awaitingTransfer);
+
+  // A transfer: where to send it, until the deposit is seen or time is up.
+  const deposit = run.transfer
+    ? depositView({
+        phase: exec.phase,
+        status: exec.status,
+        depositAddress: exec.depositAddress,
+        deadline: exec.deadline ?? quote.deadline,
+        now,
+      })
+    : undefined;
+
+  const expired = deposit?.kind === 'expired';
+  // The panel: the address while it waits for one, or the expired notice.
+  const panelView =
+    expired || (deposit?.kind === 'waiting' && exec.depositAddress)
+      ? deposit
+      : undefined;
+
   const [settlingSince, setSettlingSince] = useState<number>();
 
   if (settling && settlingSince === undefined) {
@@ -232,6 +277,9 @@ export const ProgressScreen = ({
     exec.phase === 'cancelled' ||
     (exec.phase === 'failed' && flow.state === 'IDLE' && !flow.canCancel) ||
     (!!flow.preparationError && !exec.executionId);
+
+  // An expired transfer offers Start over instead.
+  const leave = finished && !expired;
 
   let headline: ReactNode;
 
@@ -267,6 +315,9 @@ export const ProgressScreen = ({
         </div>
       </Notice>
     );
+  } else if (expired) {
+    // The deposit panel says it, over the SDK's "still processing".
+    headline = null;
   } else if (flow.state === 'IN_FLIGHT') {
     headline = (
       <Notice tone="warning">
@@ -324,7 +375,10 @@ export const ProgressScreen = ({
       </Notice>
     );
   } else {
-    const [title, detail] = LIVE_COPY[exec.phase] ?? ['Working…'];
+    const [title, detail] = (awaitingTransfer
+      ? TRANSFER_DEPOSIT_COPY
+      : LIVE_COPY[exec.phase]) ?? ['Working…'];
+
     const left =
       settling && settlingSince !== undefined && Number.isFinite(estimated)
         ? Math.max(0, Math.round(estimated - (now - settlingSince) / 1000))
@@ -407,7 +461,23 @@ export const ProgressScreen = ({
         />
       ) : null}
 
-      {flow.needsExternalDeposit && exec.depositAddress ? (
+      {panelView && origin ? (
+        <DepositPanel
+          view={panelView}
+          address={exec.depositAddress ?? ''}
+          memo={exec.depositMemo}
+          amount={fromAtomic(quote.amount || quote.amountIn, origin.decimals)}
+          symbol={origin.symbol}
+          network={exchangeNetwork(origin.blockchain, chainLabel)}
+          contractAddress={origin.contractAddress}
+          onStartOver={onStartOver}
+          startingOver={exec.isCancelling}
+        />
+      ) : null}
+
+      {!(panelView && origin) &&
+      (flow.needsExternalDeposit || deposit?.kind === 'waiting') &&
+      exec.depositAddress ? (
         <Notice tone="info">
           <p className="font-medium">Send the deposit yourself</p>
           <p className="mt-1 text-text-secondary">
@@ -442,7 +512,9 @@ export const ProgressScreen = ({
               variant="primary"
               onClick={() => {
                 onAttach();
-                flow.exec.resume(waiting.id).catch(() => undefined);
+                flow.exec
+                  .resume(waiting.id, resumeOptions(waiting.id))
+                  .catch(() => undefined);
               }}>
               Resume
             </Button>
@@ -468,7 +540,12 @@ export const ProgressScreen = ({
             variant="primary"
             disabled={flow.isBusy}
             onClick={() => {
-              flow.exec.resume(described.stillLive!).catch(() => undefined);
+              flow.exec
+                .resume(
+                  described.stillLive!,
+                  resumeOptions(described.stillLive),
+                )
+                .catch(() => undefined);
             }}>
             Keep following
           </Button>
@@ -478,7 +555,7 @@ export const ProgressScreen = ({
             variant="primary"
             disabled={flow.isBusy}
             onClick={() => {
-              void flow.resume();
+              void flow.resume(resumeOptions(flow.recoveryExecutionId));
             }}>
             Resume
           </Button>
@@ -493,18 +570,29 @@ export const ProgressScreen = ({
             Retry transfer
           </Button>
         ) : null}
-        {flow.canCancel ? (
+        {(flow.canCancel && !expired) || deposit?.kind === 'waiting' ? (
           <Button
             variant="secondary"
             className="h-12"
             disabled={exec.isCancelling}
             onClick={() => {
-              void flow.cancel();
+              if (flow.canCancel) {
+                void flow.cancel();
+              } else if (executionId) {
+                // A transfer resumed in this session: the flow's own cancel
+                // doesn't see it.
+                exec.cancel(executionId).catch(() => undefined);
+              }
             }}>
             {exec.isCancelling ? 'Sign to cancel…' : 'Cancel the supply'}
           </Button>
         ) : null}
-        {finished ? (
+        {deposit?.kind === 'waiting' ? (
+          <p className="text-center text-text-muted">
+            Cancel only if you haven&apos;t sent anything.
+          </p>
+        ) : null}
+        {leave ? (
           <Button variant="primary" onClick={onDone}>
             {exec.phase === 'success' ? 'Done' : 'Back to the form'}
           </Button>

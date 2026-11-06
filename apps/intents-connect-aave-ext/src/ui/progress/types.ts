@@ -13,6 +13,11 @@ export type SupplyRun = {
   option: DeliverableOption;
   /** The wallet the run belongs to (`ActiveWallet.key`). */
   walletKey: string;
+  /**
+   * Paid by a transfer to a deposit address (from an exchange or any
+   * wallet), not by the wallet's own deposit.
+   */
+  transfer?: boolean;
   /** What was quoted: shown until the real execution reports its own. */
   quoted: ExecutionPreview['execution'];
   /**

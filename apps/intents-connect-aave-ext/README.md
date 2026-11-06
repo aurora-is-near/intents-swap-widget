@@ -54,7 +54,7 @@ Off app.aave.com it's a **theme preview**:
 - Aave's default market, for a placeholder account (`0x…dEaD`), so every
   screen shows: wallets, assets, the form with a live quote;
 - it never supplies: the Supply button shows a notice instead.
-- no EVM phones in the QR code tab: the WalletConnect project allows
+- no EVM phones in the Phone tab: the WalletConnect project allows
   app.aave.com only, so its relay refuses other sites (TON's QR stays).
 
 Chrome's own pages (`chrome://`, the Web Store) can't be scripted; the
@@ -79,7 +79,8 @@ Solana wallets (Wallet Standard) and NEAR extension wallets, found by the
 SDK's `./detect` without prompting, Stellar wallets (Freighter, xBull, LOBSTR
 and Hana, from `./detect/stellar`), TRON wallets (TronLink, from
 `./detect/tron`), TON wallet extensions (from `./detect/ton`), or a phone by
-QR code: EVM over WalletConnect, TON over TON Connect.
+QR code: EVM over WalletConnect, TON over TON Connect. The wallet screen's
+tabs are **Browser · Phone · Transfer**.
 
 - A wallet that already shares an account with app.aave.com (usually the one
   Aave uses) is picked without a prompt. Any other asks to connect first.
@@ -169,6 +170,35 @@ supply transactions (with explorer links) and the execution id.
   Query client (in React's fiber tree, as it exposes none) and invalidates
   its active queries, then once more 6 s later, so Your supplies updates
   without waiting for Aave's next poll.
+
+## Paying from anywhere (Transfer)
+
+The **Transfer** tab supplies from funds the page can't see: on an exchange,
+or in a wallet outside this browser. The user picks what to send, a wallet
+signs once, and the modal shows an address and a QR code to send to.
+
+- **What can be sent:** the service's own list of origins (164 tokens on 18
+  networks today), less TON and Stellar, which it refuses in this mode: 157
+  tokens on 16 networks, named as exchanges name them (ERC-20, BEP-20,
+  TRC-20, Arbitrum One…). Bitcoin, XRP and the like aren't origins yet; the
+  list picks them up when the service does.
+- **Who signs:** a wallet on the network the funds are sent on, since the
+  service refunds to its address there, never to the exchange. Aave's own
+  wallet signs for EVM networks; Solana, TRON and NEAR need a browser wallet
+  of that family (picked silently when it shares an account, else
+  connected). A network with none here is listed but can't be picked.
+- **The form:** no balance or MAX; a note on the network, exchange fees and
+  minimum withdrawals, and who signs. "Sign to get the deposit address".
+- **The deposit:** a QR code of the plain address, the exact amount, the
+  network, the token's contract, the memo when there is one, and 30 minutes
+  to send it. The modal (and Aave's button) follows it: closing it is fine,
+  and reopening, even after a reload, lands back on it with no prompt.
+- **Running late:** past the deadline it says so ("Don't send now"); a
+  deposit sent late is still picked up. **Start over** cancels it (one
+  signature): only if nothing was sent.
+- **Cancel** while waiting, likewise only if nothing was sent.
+- What happens to a wrong amount, or funds sent after a cancel, isn't
+  documented by the service yet.
 
 ## History
 

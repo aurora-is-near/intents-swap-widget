@@ -17,7 +17,16 @@ import {
 import { TokenLogo } from '../assets/TokenLogo';
 import { chainLabel } from '../assets/tokens';
 import type { AssetRow } from '../assets/useWalletAssets';
-import { Button, ChevronIcon, Notice, Skeleton, useNow } from '../ui';
+import { exchangeNetwork } from '../transfer/networks';
+import { transferPreviewer } from '../transfer/preview';
+import {
+  Button,
+  ChevronIcon,
+  Notice,
+  Skeleton,
+  truncateMiddle,
+  useNow,
+} from '../ui';
 import { type DeliverableOption, matchingOption } from './options';
 import type { SupplyDestination } from './types';
 
@@ -304,6 +313,8 @@ export const SupplyForm = ({
   onSubmit,
   draft,
   onDraft,
+  funding = 'wallet',
+  signer,
 }: {
   asset: AssetRow;
   options: readonly DeliverableOption[];
@@ -317,8 +328,16 @@ export const SupplyForm = ({
   draft?: FormDraft;
   /** Every change to what is entered, to hand back as `draft`. */
   onDraft?: (draft: FormDraft) => void;
+  /**
+   * `transfer`: paid by sending to a deposit address, from an exchange or
+   * any wallet. No balance applies, and every quote is a transfer's.
+   */
+  funding?: 'wallet' | 'transfer';
+  /** The wallet that signs a transfer, and gets a refund. */
+  signer?: { name: string; address: string };
 }) => {
   const { token } = asset;
+  const transfer = funding === 'transfer';
   const [amount, setAmount] = useState(draft?.amount ?? '');
   const [chosen, setChosen] = useState<string | undefined>(draft?.chosen);
   const reportDraft = useRef(onDraft);
@@ -336,7 +355,9 @@ export const SupplyForm = ({
 
   const atomic = toAtomic(amount, token.decimals);
   const max = maxSpend(asset);
-  const tooMuch = !!atomic && BigInt(atomic) > BigInt(asset.amount);
+  const tooMuch =
+    !transfer && !!atomic && BigInt(atomic) > BigInt(asset.amount);
+
   const sameToken = option?.destinationAsset === token.assetId;
 
   const plan = useMemo(
@@ -352,8 +373,12 @@ export const SupplyForm = ({
     [atomic, option, tooMuch, sameToken, token, buildPlan],
   );
 
+  // A transfer previews the same plan with its own funding and window, so
+  // the previewed plan that runs is a transfer's.
+  const previewer = transfer ? transferPreviewer(exec) : exec;
+
   const quote = useQuotePreview<void>({
-    exec,
+    exec: previewer,
     plan,
     refreshIntervalMs: QUOTE_REFRESH_MS,
   });
@@ -371,9 +396,10 @@ export const SupplyForm = ({
   const refused = !preview && quote.error ? quote.error.message : '';
 
   // A token deposit on some chains pays its fees in the gas token.
-  const depositCost = token.contractAddress
-    ? TOKEN_DEPOSIT_COST[token.blockchain]
-    : undefined;
+  const depositCost =
+    !transfer && token.contractAddress
+      ? TOKEN_DEPOSIT_COST[token.blockchain]
+      : undefined;
 
   const gasToken = depositCost
     ? tokens.find(
@@ -414,7 +440,7 @@ export const SupplyForm = ({
   }, [option, token, buildPlan]);
 
   const probe = useQuotePreview<void>({
-    exec,
+    exec: previewer,
     plan: tooSmall ? probePlan : null,
     debounceMs: 0,
     refreshIntervalMs: 0,
@@ -439,7 +465,9 @@ export const SupplyForm = ({
     problem = `No route from ${token.symbol} on ${chainLabel(token.blockchain)} into ${option.symbol} right now. Try another reserve or asset.`;
   }
 
-  let cta = `Supply ${option?.symbol ?? ''}`.trim();
+  let cta = transfer
+    ? 'Sign to get the deposit address'
+    : `Supply ${option?.symbol ?? ''}`.trim();
 
   if (!amount) {
     cta = 'Enter an amount';
@@ -468,16 +496,18 @@ export const SupplyForm = ({
       <div>
         <Label
           aside={
-            <span className="text-text-muted">
-              Balance {formatAmount(asset.amount, token.decimals)}
-              <button
-                type="button"
-                disabled={max === '0'}
-                onClick={() => setAmount(fromAtomic(max, token.decimals))}
-                className="ml-2 font-medium text-text-primary hover:underline disabled:opacity-40">
-                MAX
-              </button>
-            </span>
+            transfer ? undefined : (
+              <span className="text-text-muted">
+                Balance {formatAmount(asset.amount, token.decimals)}
+                <button
+                  type="button"
+                  disabled={max === '0'}
+                  onClick={() => setAmount(fromAtomic(max, token.decimals))}
+                  className="ml-2 font-medium text-text-primary hover:underline disabled:opacity-40">
+                  MAX
+                </button>
+              </span>
+            )
           }>
           Amount
         </Label>
@@ -516,11 +546,35 @@ export const SupplyForm = ({
         />
       </div>
 
-      {sameToken ? (
+      {sameToken && transfer ? (
+        <p className="text-text-secondary">
+          This is the token {dappName} takes on {chainLabel(token.blockchain)}:
+          send it to your own wallet there and supply it with {dappName}&apos;s
+          own Supply button.
+        </p>
+      ) : null}
+
+      {sameToken && !transfer ? (
         <p className="text-text-secondary">
           You already hold {token.symbol} on {chainLabel(token.blockchain)}:
           supply it with {dappName}&apos;s own Supply button.
         </p>
+      ) : null}
+
+      {transfer && !sameToken ? (
+        <Notice tone="info">
+          <p className="text-text-secondary">
+            Send it on {exchangeNetwork(token.blockchain, chainLabel)} only. If
+            your exchange takes its fee from the amount, add the fee, and check
+            its minimum withdrawal.
+          </p>
+          {signer ? (
+            <p className="mt-1 text-text-secondary">
+              {signer.name} · {truncateMiddle(signer.address)} signs once, and a
+              refund would go back to it.
+            </p>
+          ) : null}
+        </Notice>
       ) : null}
 
       {depositCost && gasToken ? (

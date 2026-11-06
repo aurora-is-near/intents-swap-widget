@@ -24,8 +24,8 @@ app.aave.com. Nothing in here imports `src/page`, `src/aave` or
     buildPlan,                        // (input) => ExecutionPlan<void>
   }}
   sdk={{ api, intentsApi, alchemyApiKey }} // IntentsConnectProvider props, minus `wallet`
-  walletConnect={walletConnect}       // optional: EVM phones in the QR code tab
-  tonConnect={tonConnect}             // optional: TON phones in the QR code tab
+  walletConnect={walletConnect}       // optional: EVM phones in the Phone tab
+  tonConnect={tonConnect}             // optional: TON phones in the Phone tab
   connectorOptions={{ sol: { rpcUrl } }}  // optional, keep it stable
   walletSources={walletSources}       // optional: e.g. [stellarWallets(), tronWallets()], created once
   readOnly={notice}                   // optional: every screen, no supply (a preview)
@@ -82,6 +82,40 @@ The run lives above the dialog, so it keeps going when the modal closes.
   says so, with **View** (`onOpen`). A success hides after 10 s; a failure
   stays until dismissed.
 - `onSupplied` fires once per execution that landed.
+
+## Transfer: paying from anywhere
+
+The wallet screen's **Transfer** tab supplies by a transfer to a deposit
+address, from an exchange or any wallet. Nothing in the dApp's props
+changes: the modal runs the dApp's plan with `depositViaWallet: false`.
+
+- **Origins** (`transfer/origins.ts`): `useSupportedTokens().origins` on the
+  `evm`, `sol`, `tron` and `near` families, as `BalanceToken`s, most asked
+  for first; deprecated and test tokens left out. TON signers and Stellar
+  origins are refused by the service in this mode (checked by dry create).
+- **The signer** (`transfer/signer.ts`) is a wallet of the origin's family:
+  the service refunds to the signer's address on the origin chain, and
+  refuses a signer of another family ("refundTo is not valid"). EVM origins
+  sign with the dApp's own wallet; others with the family's active wallet,
+  else one that shares an account (no prompt), else one the user connects
+  (`SignerPicker`).
+- **Quotes** (`transfer/preview.ts`): the form hands `useQuotePreview` a
+  runner whose `preview` stamps `depositViaWallet: false` and a 30 min
+  deadline on the dApp's plan, so the shown quote is the run's, refreshes
+  don't flash, and `run()` runs exactly it.
+- **The run is saved on the runner's `created` event**
+  (`progress/transfers.ts`): the service doesn't say how a run is funded,
+  and a found transfer must resume with `depositViaWallet: false` (an
+  unsigned one would otherwise make the wallet send after signing). Saved
+  runs resume at once, with no Resume step unless unsigned; the in-flight
+  check also looks for saved runs that are `EXPIRED` (which frees the
+  wallet's lock, so the in-flight list misses them).
+- **The deposit panel** (`progress/DepositPanel.tsx`, state in
+  `depositState.ts`): QR of the plain address, the exact amount (never
+  rounded), the network as exchanges name it, the token contract, memo,
+  countdown; then the expired notice, whatever the SDK's phase says.
+  **Start over** cancels a run the SDK still follows (it holds the runner),
+  then starts over.
 
 ## History
 
@@ -229,6 +263,8 @@ subpaths above (`viem`, `@solana/web3.js`, `@solana/spl-token`,
 - `aurora-intents.wallet`: the wallet chosen to pay with;
 - `aurora-intents.walletconnect.paired`: a phone was paired, so restoring
   the session is worth a relay connection;
+- `aurora-intents.transfers`: supplies paid by a transfer (execution id,
+  signer, origin, deadline), kept a day, so they resume as transfers;
 - the SDK's own keys (`intents-connect.connectedWallets`, verification);
 - WalletConnect's IndexedDB under its prefix.
 

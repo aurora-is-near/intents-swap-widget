@@ -10,6 +10,7 @@ import {
 
 import type { DeliverableOption } from '../supply/options';
 import { hasIntent, runOf } from './runOf';
+import { readTransfers, savedTransfer } from './transfers';
 import type { SupplyRun } from './types';
 
 type ResolveProps = {
@@ -52,9 +53,43 @@ export const ResolveRun = ({
 };
 
 /**
+ * A transfer whose deadline passed, among the ones saved here: `EXPIRED`
+ * frees the wallet, so the in-flight list misses it, yet a deposit sent
+ * late is still picked up. Renders nothing.
+ */
+const ExpiredTransferCheck = (props: ResolveProps) => {
+  const expired = useWalletExecutions({
+    status: ['EXPIRED'],
+    refreshIntervalMs: 0,
+  });
+
+  const done = useRef(props.onDone);
+
+  done.current = props.onDone;
+
+  const execution = expired.executions.find((candidate) =>
+    savedTransfer(candidate.id),
+  );
+
+  useEffect(() => {
+    if (
+      expired.status === 'error' ||
+      (expired.status === 'success' && !execution)
+    ) {
+      done.current(null);
+    }
+  }, [expired.status, execution]);
+
+  return expired.status === 'success' && execution ? (
+    <ResolveRun execution={execution} {...props} />
+  ) : null;
+};
+
+/**
  * Looks once for an execution holding the wallet's lock (a supply still
  * running after a reload, say), among the dApp's own (`intent`), and
- * reports it as a run to show, or `null`. Renders nothing.
+ * reports it as a run to show, or `null`. With none, a transfer saved here
+ * that expired is looked for too. Renders nothing.
  */
 export const InFlightCheck = ({
   intent,
@@ -73,17 +108,21 @@ export const InFlightCheck = ({
   done.current = props.onDone;
 
   const [execution] = found.executions.filter(hasIntent(intent));
+  const lookForExpired =
+    found.status === 'success' && !execution && readTransfers().length > 0;
 
   useEffect(() => {
     if (
       found.status === 'error' ||
-      (found.status === 'success' && !execution)
+      (found.status === 'success' && !execution && !lookForExpired)
     ) {
       done.current(null);
     }
-  }, [found.status, execution]);
+  }, [found.status, execution, lookForExpired]);
 
-  return found.status === 'success' && execution ? (
-    <ResolveRun execution={execution} {...props} />
-  ) : null;
+  if (found.status === 'success' && execution) {
+    return <ResolveRun execution={execution} {...props} />;
+  }
+
+  return lookForExpired ? <ExpiredTransferCheck {...props} /> : null;
 };
