@@ -104,4 +104,4 @@ const res = await fetchWithRetry(
 
 #### Need a higher limit?
 
-If your integration needs more than the default quota, reach out through [contact](emailto:contact@aurora.dev) with your API key and expected request volume.
+If your integration needs more than the default quota, reach out through [contact](mailto:contact@aurora.dev) with your API key and expected request volume.

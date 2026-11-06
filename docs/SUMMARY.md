@@ -17,7 +17,7 @@
 
 ## Intents Connect
 
-* [What is Intents Connect?](<README (1).md>)
+* [What is Intents Connect?](intents-connect/readme-1.md)
 * [Supported Chains](intents-connect/supported-chains.md)
 * [Deep dive](intents-connect/deep-dive/README.md)
   * [How It Works](intents-connect/deep-dive/how-it-works.md)
@@ -62,6 +62,7 @@
     * [Sui as destination](intents-connect/developer-guides/sui/sui-as-destination.md)
   * [Submit signing](intents-connect/developer-guides/submit-signing.md)
   * [Delete execution](intents-connect/developer-guides/delete-execution.md)
+  * [Deadlines and validity windows](intents-connect/developer-guides/deadlines-and-validity-windows.md)
 
 ## Intents Deposits
 
@@ -81,6 +82,7 @@
 * [What is Swap Widget?](intents-swap/what-is-swap-widget.md)
 * [Supported Assets](intents-swap/supported-assets.md)
 * [Supported Chains](intents-swap/supported-chains.md)
+* [Swap Lifecycle](intents-swap/swap-lifecycle.md)
 * [Widget integration](intents-swap/widget-integration.md)
 * [Widget Configuration](intents-swap/widget-configuration/README.md)
   * [Get started](intents-swap/widget-configuration/get-started.md)
