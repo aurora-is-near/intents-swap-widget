@@ -14,6 +14,7 @@
   * [UX Recommendations](getting-started/integration-best-practices/ux-recommendations.md)
   * [Rate Limits](getting-started/integration-best-practices/rate-limits.md)
   * [Frequently Asked Questions](getting-started/integration-best-practices/frequently-asked-questions.md)
+  * [Handling Incidents](getting-started/integration-best-practices/handling-incidents.md)
 
 ## Intents Connect
 
