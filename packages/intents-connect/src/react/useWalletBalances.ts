@@ -20,7 +20,10 @@ export type UseWalletBalancesResult = {
   balances: Readonly<Record<string, string>>;
   /** Chains that could not be read, fully or partly. */
   errors: Readonly<Record<string, Error>>;
-  /** The tokens balances were read for. */
+  /**
+   * 1Click's token list, on every chain: balances are read for those on the
+   * wallet family's chains. Also names intents balances (any chain).
+   */
   tokens: readonly BalanceToken[];
   status: ResourceStatus;
   error?: Error;

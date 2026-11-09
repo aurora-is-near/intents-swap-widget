@@ -68,7 +68,7 @@ const batch =
 beforeEach(() => resetDeadNearRpcUrls());
 
 describe('normalizeTokens', () => {
-  it('keeps EVM, Solana and NEAR tokens and adds native NEAR next to wNEAR', () => {
+  it('keeps every chain, lower-cased, and adds native NEAR next to wNEAR', () => {
     const tokens = normalizeTokens([
       {
         assetId: 'nep141:wrap.near',
@@ -94,9 +94,11 @@ describe('normalizeTokens', () => {
       },
     ]);
 
+    // Bitcoin can't be read from a wallet, but an intents account holds it.
     expect(tokens.map((t) => t.assetId)).toEqual([
       'nep141:wrap.near',
       NATIVE_NEAR_ASSET_ID,
+      'nep141:btc.omft.near',
       'nep141:base.omft.near',
     ]);
     expect(tokens[1]).toMatchObject({

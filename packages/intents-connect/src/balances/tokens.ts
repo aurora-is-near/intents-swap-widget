@@ -31,8 +31,10 @@ export const isNativeToken = (token: BalanceToken): boolean =>
   (token.blockchain !== 'near' && !token.contractAddress);
 
 /**
- * Keeps the tokens a supported wallet (EVM, Solana, NEAR, Stellar, TRON, TON) can hold, with
- * lower-cased chain slugs, and adds native NEAR next to wNEAR.
+ * 1Click's whole token list, on every chain, with lower-cased chain slugs,
+ * and native NEAR added next to wNEAR. Wallet balances are only read on the
+ * chains of the wallet's family (`getWalletBalances` skips the rest); an
+ * intents account can hold, and pay with, any of them (Bitcoin, XRP…).
  */
 export const normalizeTokens = (
   tokens: readonly IntentsApiToken[],
@@ -41,10 +43,6 @@ export const normalizeTokens = (
 
   tokens.forEach((token) => {
     const blockchain = token.blockchain.toLowerCase();
-
-    if (!getBalanceFamily(blockchain)) {
-      return;
-    }
 
     result.push({
       assetId: token.assetId,
