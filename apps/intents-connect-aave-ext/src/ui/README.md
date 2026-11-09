@@ -118,6 +118,42 @@ changes: the modal runs the dApp's plan with `depositViaWallet: false`.
   **Start over** cancels a run the SDK still follows (it holds the runner),
   then starts over.
 
+## Intents balances: paying from an intents account
+
+The asset picker shows the wallet's intents account next to its own
+balances. A supply paid from it takes two legs: the SDK's
+`useIntentsFundedFlow` moves the funds to the wallet's intermediary, then
+runs the dApp's `buildStepsPlan`. Without `buildStepsPlan` there are no
+intents tabs.
+
+- **Which tabs** (`assets/intentsAccess.ts`): EVM and NEAR wallets get
+  Wallet, Intents and Confidential; Solana gets Wallet and Intents (no
+  session for `raw_ed25519` yet); others only Wallet. The tabs show as soon
+  as the account id derives: there is no "account exists" call, and a
+  private balance can't be seen before authorizing.
+- **Rows** (`assets/useIntentsAssets.ts`): `useIntentsBalances` /
+  `useConfidentialBalances` joined with 1Click's token list for chain,
+  decimals and price (`AssetRow.source`, `tokenId`). Only the shown tab's
+  source is read: a reporter component (`assets/IntentsSources.tsx`) hands
+  its state up, so the search and the tab bar stay mounted.
+- **Authorize** (`AuthorizeGate`): `useIntentsAuth().authorize({ verify:
+  true })`, one signature. Rejections and verdicts get plain copy; the
+  session stays in memory (the SDK default).
+- **The form** (`supply/SupplyForm.tsx`, `funding: 'intents' |
+  'confidential'`): MAX is the balance. The quote is
+  `supply/useFundedPreview.ts`: the SDK's `useFundingPreview` (a dry 1Click
+  quote to the intermediary), then `exec.previewSteps` on its
+  `minAmountOut` for the fee. The `FundingRequest` is what runs: its
+  `context.optionId` names the reserve for the second leg.
+- **Running** (`SupplyModal.tsx`, `progress/FundedProgress.tsx`): the
+  funded flow lives next to the runner, so it outlives a close. It maps its
+  12 stages to Prepare · Move · Supply · Done. The second leg's plan carries
+  `metadata: { fundedFrom, originAsset, amountIn }`; History reads it, and
+  the in-flight check hands such a run back to the funded flow after a
+  reload (followed with no prompt, or **Supply it** when unsigned).
+- **Status outside** (`status.ts`, `kind: 'funded'`): "Moving funds…",
+  "Sign in your wallet", "Finish your supply", "Supplied", "Refunded".
+
 ## History
 
 The clock in the header opens a list of past supplies, over any screen;
@@ -152,7 +188,10 @@ Back (or Escape) returns to it as it was, a typed amount included.
   (one runner, kept above the dialog so a run outlives a close),
   `useQuotePreview`, `useSupportedTokens`, `useWalletBalances`,
   `useWalletExecutions` and `useIntermediaryBalance`; the runner's
-  `previewSteps` / `runSteps` for funds a failed supply left.
+  `previewSteps` / `runSteps` for funds a failed supply left;
+  `useIntentsAccount`, `useIntentsBalances`, `useConfidentialBalances`,
+  `useIntentsAuth`, `useFundingPreview` and `useIntentsFundedFlow` for
+  intents balances.
 - **intents-connect-wallet:**
   - `./detect` and `./detect/react` for browser wallets;
   - `./detect/connector`'s `toWalletConnector`;
@@ -322,7 +361,9 @@ tests (jsdom, axe-core) in `a11y/*.test.tsx`.
   the session is worth a relay connection;
 - `aurora-intents.transfers`: supplies paid by a transfer (execution id,
   signer, origin, deadline), kept a day, so they resume as transfers;
-- the SDK's own keys (`intents-connect.connectedWallets`, verification);
+- the SDK's own keys (`intents-connect.connectedWallets`, verification,
+  and `intents-connect.funding:<account>` for supplies paid from intents
+  balances);
 - WalletConnect's IndexedDB under its prefix.
 
 ## Before it becomes a package

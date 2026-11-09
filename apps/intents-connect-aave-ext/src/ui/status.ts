@@ -1,4 +1,5 @@
 import type { Phase } from '@aurora-is-near/intents-connect';
+import type { FundedFlowStage } from '@aurora-is-near/intents-connect/react';
 
 /**
  * Where the user's supply is, for the dApp to show outside the modal (its
@@ -35,6 +36,13 @@ export type StatusInput =
       kind: 'recovery';
       phase: Phase;
       state: 'idle' | 'running' | 'success' | 'failed';
+    }
+  | {
+      /** Paid from intents balances: moved first, then supplied. */
+      kind: 'funded';
+      stage: FundedFlowStage;
+      /** The runner's phase, while it supplies. */
+      phase: Phase;
     };
 
 const SUPPLYING: SupplyStatus = { state: 'running', label: 'Supplying…' };
@@ -58,6 +66,34 @@ export const supplyStatus = (input: StatusInput): SupplyStatus => {
         return FAILED;
       default:
         return input.phase === 'awaiting-signature' ? SIGN : SUPPLYING;
+    }
+  }
+
+  if (input.kind === 'funded') {
+    switch (input.stage) {
+      case 'idle':
+        return IDLE;
+      case 'ready-to-transfer':
+        return { state: 'action', label: 'Sign the move' };
+      case 'awaiting-transfer-signature':
+        return SIGN;
+      case 'quoting':
+      case 'submitting-transfer':
+      case 'bridging':
+      case 'awaiting-arrival':
+        return { state: 'running', label: 'Moving funds…' };
+      case 'ready-to-supply':
+        return input.phase === 'awaiting-signature'
+          ? SIGN
+          : { state: 'action', label: 'Finish your supply' };
+      case 'supplying':
+        return input.phase === 'awaiting-signature' ? SIGN : SUPPLYING;
+      case 'success':
+        return SUCCESS;
+      case 'refunded':
+        return { state: 'failed', label: 'Refunded' };
+      default:
+        return FAILED;
     }
   }
 

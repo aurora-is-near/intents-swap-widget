@@ -200,6 +200,38 @@ signs once, and the modal shows an address and a QR code to send to.
 - What happens to a wrong amount, or funds sent after a cancel, isn't
   documented by the service yet.
 
+## Paying from an intents account
+
+A wallet with a NEAR Intents account (EVM, Solana, NEAR) gets three tabs
+under the asset search: **Wallet**, **Intents** and **Confidential**
+(Solana: no Confidential, which the intents API doesn't open sessions for
+yet). TRON, Stellar and TON wallets get none: a supply can't be paid from
+them.
+
+- **Intents:** the account's public balances, read when the tab opens (no
+  prompt). Tokens 1Click doesn't list read "Not supported yet".
+- **Confidential:** hidden until the user presses **Authorize**: one
+  signature, which moves nothing, then the private balances. The session
+  lives in the page's memory, so a reload asks again; **Forget this
+  session** ends it.
+- **Supplying from either:** two signatures.
+  1. The move: a 1Click swap from the intents account to the wallet's
+     Aurora account on the market's chain, paid out as the reserve's
+     token. A move out of a private balance is public.
+  2. The supply, once it arrives.
+
+  MAX is the whole balance (there's no gas to keep). The form prices both
+  legs: a dry quote of the move, then a dry run of the supply on what it
+  delivers at least.
+- **Progress:** Prepare, Move, Supply, Done. Closing the modal is fine:
+  the wallet asks for the second signature when the funds arrive. After a
+  reload, a move in progress is followed again with no prompt, and it stops
+  at **Supply it**. A declined supply leaves the funds waiting there, with
+  **Supply it**. A refund puts them back in the intents account.
+- **On the page and in History:** the button shows "Moving funds…",
+  "Finish your supply", "Supplied" or "Refunded". History lists it as
+  "10 USDC → USDC · Intents account".
+
 ## History
 
 The clock in the modal's header lists past supplies to Aave from every

@@ -223,6 +223,26 @@ export const SearchField = ({
     />
   </label>
 );
+/** Private balances: closed until the user authorizes. */
+export const LockIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>,
+    size,
+  );
+
+/** An intents account: balances held on NEAR Intents, not on a chain. */
+export const IntentsGlyph = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 13 9 5 9-5" />
+    </>,
+    size,
+  );
+
 export const WalletGlyph = ({ size = 18 }: { size?: number }) =>
   icon(
     <>

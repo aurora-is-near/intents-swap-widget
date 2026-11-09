@@ -10,13 +10,16 @@ import {
 import type {
   Execution,
   ExecutionPreview,
+  FundingRequest,
   StepsPlan,
 } from '@aurora-is-near/intents-connect';
 import {
   IntentsConnectProvider,
   type IntentsConnectProviderProps,
   useIntentsConnectFlow,
+  useIntentsFundedFlow,
   useSupportedTokens,
+  useWalletBalances,
 } from '@aurora-is-near/intents-connect/react';
 import type { WalletConnectClient } from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
 import type {
@@ -36,7 +39,7 @@ import {
   truncateMiddle,
 } from './ui';
 import { AssetsScreen } from './assets/AssetsScreen';
-import type { AssetRow } from './assets/useWalletAssets';
+import type { AssetRow, BalanceSource } from './assets/useWalletAssets';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { HistoryEntry } from './history/entries';
 import {
@@ -45,6 +48,7 @@ import {
 } from './history/historyWallets';
 import { type Follow, HistoryIcon, HistoryView } from './history/HistoryView';
 import { DoneNotice } from './progress/DoneNotice';
+import { FundedProgress } from './progress/FundedProgress';
 import { InFlightCheck, ResolveRun } from './progress/InFlightCheck';
 import { ProgressScreen } from './progress/ProgressScreen';
 import {
@@ -67,7 +71,7 @@ import {
   type SupplyStatus,
   supplyStatus,
 } from './status';
-import { deliverableOptions } from './supply/options';
+import { type DeliverableOption, deliverableOptions } from './supply/options';
 import { type FormDraft, SupplyForm } from './supply/SupplyForm';
 import { type SupplyTheme, ThemeStyle } from './theme';
 import type { TransferOrigin } from './transfer/origins';
@@ -404,6 +408,91 @@ const SupplyFlow = ({
     value: FormDraft;
   } | null>(null);
 
+  // The balance list the asset picker shows: the wallet's, or its intents
+  // account's.
+  const [balanceTab, setBalanceTab] = useState<BalanceSource>('wallet');
+
+  // A supply paid from intents balances: moved to the wallet's Aurora
+  // account, then supplied there. Kept (and resumed after a reload) by the
+  // SDK, per intents account.
+  const funded = useIntentsFundedFlow<{ request: FundingRequest }, void>({
+    exec: flow.exec,
+    buildFunding: ({ request }) => request,
+    buildStepsPlan: ({ amount, context, record }) => {
+      const option = options?.find(
+        (candidate) => candidate.id === context?.optionId,
+      );
+
+      if (!option || !destination.buildStepsPlan) {
+        throw new Error(
+          'The reserve this supply was for isn’t offered here any more.',
+        );
+      }
+
+      const plan = destination.buildStepsPlan({
+        option,
+        destinationAsset: option.destinationAsset,
+        amount,
+      });
+
+      // History says where the funds came from.
+      return {
+        ...plan,
+        metadata: {
+          ...plan.metadata,
+          fundedFrom: record?.source,
+          originAsset: record?.originAsset,
+          amountIn: record?.amountIn,
+        },
+      };
+    },
+  });
+
+  // What was just submitted, before the funding's record names it.
+  const [fundedPick, setFundedPick] = useState<{
+    option: DeliverableOption;
+    origin: AssetRow['token'];
+  } | null>(null);
+
+  const [fundedSource, setFundedSource] = useState<'intents' | 'confidential'>(
+    'intents',
+  );
+
+  const fundedActive = funded.stage !== 'idle' || !!funded.error;
+
+  // A funded supply's last step, found running after a reload: the funded
+  // flow follows it (no prompt), or asks to sign one never signed.
+  const [fundedFound, setFundedFound] = useState<{
+    id: string;
+    waiting: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (
+      fundedFound &&
+      !fundedFound.waiting &&
+      (funded.stage === 'supplying' || funded.stage === 'ready-to-supply') &&
+      funded.record?.stepsExecutionId === fundedFound.id &&
+      !funded.isBusy
+    ) {
+      setFundedFound(null);
+      void funded.supply();
+    }
+  }, [
+    fundedFound,
+    funded.stage,
+    funded.record?.stepsExecutionId,
+    funded.isBusy,
+  ]);
+  const { tokens: knownTokens } = useWalletBalances();
+  const fundedOption: DeliverableOption | undefined = options?.find(
+    (candidate) => candidate.id === funded.record?.context?.optionId,
+  );
+
+  const fundedOrigin = knownTokens.find(
+    (token) => token.assetId === funded.record?.originAsset,
+  );
+
   const titleRef = useRef<HTMLHeadingElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
   const historyRef = useRef<HTMLButtonElement>(null);
@@ -415,6 +504,13 @@ const SupplyFlow = ({
     setCheckedWallet(walletKey);
 
     if (!found?.resumed) {
+      return;
+    }
+
+    // Paid from intents balances: the funded flow shows and follows it.
+    if (found.quoted.metadata?.fundedFrom) {
+      setFundedFound({ id: found.resumed.id, waiting: found.resumed.waiting });
+
       return;
     }
 
@@ -455,6 +551,7 @@ const SupplyFlow = ({
     funding === 'transfer'
       ? transferOrigin && {
           id: transferOrigin.id,
+          source: 'wallet',
           token: transferOrigin.token,
           amount: '0',
         }
@@ -529,6 +626,8 @@ const SupplyFlow = ({
             transferFailed: false,
             externalDeposit: false,
           };
+  } else if (fundedActive) {
+    statusInput = { kind: 'funded', stage: funded.stage, phase };
   } else if (recovery) {
     statusInput = { kind: 'recovery', phase, state: recovery.state };
   }
@@ -548,8 +647,16 @@ const SupplyFlow = ({
 
   // Once per execution: the dApp refreshes its positions.
   const supplied = useRef(new Set<string>());
-  const landedId = run ? flow.exec.executionId : recovery?.executionId;
-  const landedOption = run?.option ?? recovery?.waiting.option;
+  let landedId = recovery?.executionId;
+  let landedOption: SupplyOption | undefined = recovery?.waiting.option;
+
+  if (run) {
+    landedId = flow.exec.executionId;
+    landedOption = run.option;
+  } else if (fundedActive) {
+    landedId = funded.record?.stepsExecutionId ?? flow.exec.executionId;
+    landedOption = fundedOption;
+  }
 
   useEffect(() => {
     if (
@@ -658,6 +765,7 @@ const SupplyFlow = ({
     setHistory(null);
     setPendingOpen(null);
     setDraft(null);
+    setBalanceTab('wallet');
     onClose();
   };
 
@@ -702,6 +810,7 @@ const SupplyFlow = ({
   const view:
     | 'history'
     | 'progress'
+    | 'funded'
     | 'recover'
     | 'blocked'
     | 'loading'
@@ -718,6 +827,11 @@ const SupplyFlow = ({
     // Before anything else: the page may have changed under a running supply.
     if (run) {
       return 'progress';
+    }
+
+    // A supply paid from intents balances: past the form, until left.
+    if (fundedActive) {
+      return 'funded';
     }
 
     // A run picked in History, while its wallet becomes the active one.
@@ -758,6 +872,13 @@ const SupplyFlow = ({
 
     return asset ? 'form' : 'assets';
   })();
+
+  // How the form's asset is paid: the wallet, a transfer, or its intents
+  // account.
+  const formFunding =
+    funding === 'transfer' || !asset || asset.source === 'wallet'
+      ? funding
+      : asset.source;
 
   let title = 'Supply with Aurora';
   // Choosing what to pay with says what this is for; a running supply and a
@@ -945,6 +1066,34 @@ const SupplyFlow = ({
       ) : null;
       break;
 
+    case 'funded':
+      title = funded.stage === 'success' ? 'Supplied' : 'Supplying';
+      subtitle = destinationLine;
+      body = (
+        <FundedProgress
+          funded={funded}
+          unsigned={
+            !!fundedFound?.waiting &&
+            fundedFound.id === funded.record?.stepsExecutionId
+          }
+          supply={{
+            source: funded.record?.source ?? fundedSource,
+            option: fundedOption ?? fundedPick?.option,
+            origin: fundedOrigin ?? fundedPick?.origin,
+          }}
+          dappName={dappName}
+          destinationTitle={destination.title}
+          onDone={(succeeded) => {
+            setFundedPick(null);
+
+            if (succeeded) {
+              close();
+            }
+          }}
+        />
+      );
+      break;
+
     case 'recover':
       title = "Supply what's waiting";
       subtitle = destinationLine;
@@ -1079,6 +1228,9 @@ const SupplyFlow = ({
             />
           ) : null}
           <AssetsScreen
+            tab={balanceTab}
+            onTabChange={setBalanceTab}
+            intents={!!destination.buildStepsPlan}
             onPick={(row) => setPicked({ walletKey: active.key, row })}
           />
         </div>
@@ -1106,9 +1258,21 @@ const SupplyFlow = ({
         body = asset ? (
           <>
             <SupplyForm
-              key={`${funding}:${asset.id}`}
+              key={`${formFunding}:${asset.id}`}
               asset={asset}
-              funding={funding}
+              funding={formFunding}
+              buildStepsPlan={destination.buildStepsPlan}
+              onSubmitFunded={(request, option) => {
+                if (readOnly) {
+                  setReadOnlyShown(true);
+
+                  return;
+                }
+
+                setFundedPick({ option, origin: asset.token });
+                setFundedSource(request.source);
+                void funded.submit({ request });
+              }}
               signer={
                 funding === 'transfer' && active
                   ? {
@@ -1124,12 +1288,12 @@ const SupplyFlow = ({
               dappName={dappName}
               exec={flow.exec}
               draft={
-                draft?.assetId === `${funding}:${asset.id}`
+                draft?.assetId === `${formFunding}:${asset.id}`
                   ? draft.value
                   : undefined
               }
               onDraft={(value) =>
-                setDraft({ assetId: `${funding}:${asset.id}`, value })
+                setDraft({ assetId: `${formFunding}:${asset.id}`, value })
               }
               onSubmit={(preview, option) => {
                 if (readOnly) {

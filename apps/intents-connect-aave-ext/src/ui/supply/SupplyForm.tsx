@@ -6,11 +6,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
+import {
+  type ExecutionPreview,
+  type FundingRequest,
+  GuardError,
+} from '@aurora-is-near/intents-connect';
 import {
   type UseExecutionResult,
   useQuotePreview,
-  type UseQuotePreviewResult,
   useWalletBalances,
 } from '@aurora-is-near/intents-connect/react';
 
@@ -41,6 +44,7 @@ import { Steps } from '../Steps';
 import { WalletIcon } from '../wallets/WalletIcon';
 import { type DeliverableOption, matchingOption } from './options';
 import type { SupplyDestination } from './types';
+import { useFundedPreview } from './useFundedPreview';
 
 /**
  * Gas a native-token deposit leaves behind on MAX: the deposit transfer
@@ -89,8 +93,9 @@ const TOKEN_DEPOSIT_COST: Record<
   },
 };
 
-const maxSpend = ({ token, amount }: AssetRow): string => {
-  if (token.contractAddress) {
+const maxSpend = ({ token, amount, source }: AssetRow): string => {
+  // Intents balances pay no gas: the move is signed, not sent.
+  if (source !== 'wallet' || token.contractAddress) {
     return amount;
   }
 
@@ -106,6 +111,8 @@ const maxSpend = ({ token, amount }: AssetRow): string => {
 
 /** The service refuses an amount the destination's gas would eat. */
 const TOO_SMALL = /gas fee exceeds/i;
+/** 1Click's floor for moving a token out of NEAR Intents. */
+const BELOW_MINIMUM = /amount is too low/i;
 /** 1Click has no route between the two tokens. */
 const NO_ROUTE = /no liquidity/i;
 /** Worth of the dry quote that measures a too-small amount's fee. */
@@ -276,20 +283,33 @@ const OptionPicker = ({
   );
 };
 
+/** What a quote says, whichever way the supply is paid. */
+type QuoteSummary = {
+  /** Smallest unit of the option's token: what gets supplied at least. */
+  minAmountOut: string;
+  networkFee?: string;
+  /** Seconds. */
+  estimatedTime?: string;
+};
+
 /** The live quote: what the user gets, the fee, the time. */
 const QuoteLines = ({
-  quote,
+  summary: preview,
+  isLoading,
+  error,
   option,
   destinationPrice,
   problem,
 }: {
-  quote: UseQuotePreviewResult<void>;
+  /** A new object per quote: the refresh countdown restarts on it. */
+  summary?: QuoteSummary;
+  isLoading: boolean;
+  error?: Error;
   option: DeliverableOption;
   destinationPrice?: number;
   /** Plain words for a refusal the form recognises. */
   problem?: string;
 }) => {
-  const { preview } = quote;
   // The refresh timer starts when a quote arrives: count down from there.
   const [arrival, setArrival] = useState({ preview, at: Date.now() });
 
@@ -297,13 +317,13 @@ const QuoteLines = ({
     setArrival({ preview, at: Date.now() });
   }
 
-  const now = useNow(!!preview && !quote.isLoading);
+  const now = useNow(!!preview && !isLoading);
   const nextIn = Math.ceil((arrival.at + QUOTE_REFRESH_MS - now) / 1000);
 
-  if (quote.error && !preview) {
+  if (error && !preview) {
     return (
       <p className="text-danger">
-        {problem ?? `Couldn't get a quote: ${errorMessage(quote.error)}`}
+        {problem ?? `Couldn't get a quote: ${errorMessage(error)}`}
       </p>
     );
   }
@@ -317,8 +337,7 @@ const QuoteLines = ({
     );
   }
 
-  const { minAmountOut } = preview.execution.quote;
-  const { networkFee, estimatedTime } = preview.execution.details;
+  const { minAmountOut, networkFee, estimatedTime } = preview;
   const minUsd = usdValue(minAmountOut, option.decimals, destinationPrice);
   const feeUsd = networkFee
     ? usdValue(networkFee, option.decimals, destinationPrice)
@@ -358,7 +377,7 @@ const QuoteLines = ({
         {time ? <Line label="Estimated time">{time}</Line> : null}
       </dl>
       <p className="mt-1 text-text-muted">
-        {quote.isLoading || nextIn <= 0
+        {isLoading || nextIn <= 0
           ? 'Updating the quote…'
           : `The quote will update in ${nextIn} sec.`}
       </p>
@@ -386,6 +405,8 @@ export const SupplyForm = ({
   onDraft,
   funding = 'wallet',
   signer,
+  buildStepsPlan,
+  onSubmitFunded,
 }: {
   asset: AssetRow;
   options: readonly DeliverableOption[];
@@ -402,13 +423,20 @@ export const SupplyForm = ({
   /**
    * `transfer`: paid by sending to a deposit address, from an exchange or
    * any wallet. No balance applies, and every quote is a transfer's.
+   * `intents` / `confidential`: paid from the wallet's intents account,
+   * moved to its Aurora account first (two signatures).
    */
-  funding?: 'wallet' | 'transfer';
+  funding?: 'wallet' | 'transfer' | 'intents' | 'confidential';
   /** The wallet that signs a transfer, and gets a refund. */
   signer?: { name: string; address: string; icon?: string };
+  /** Prices the supply leg of an intents-paid supply. */
+  buildStepsPlan?: SupplyDestination['buildStepsPlan'];
+  /** Runs an intents-paid supply: exactly the priced request. */
+  onSubmitFunded?: (request: FundingRequest, option: DeliverableOption) => void;
 }) => {
   const { token } = asset;
   const transfer = funding === 'transfer';
+  const fromIntents = funding === 'intents' || funding === 'confidential';
   const [amount, setAmount] = useState(draft?.amount ?? '');
   const amountId = useId();
   const amountLabelId = useId();
@@ -440,11 +468,14 @@ export const SupplyForm = ({
   const tooMuch =
     !transfer && !!atomic && BigInt(atomic) > BigInt(asset.amount);
 
-  const sameToken = option?.destinationAsset === token.assetId;
+  // From intents, the same token still has to leave NEAR Intents: no
+  // shortcut through the dApp's own button.
+  const sameToken = !fromIntents && option?.destinationAsset === token.assetId;
+  const fillable = !!atomic && !!option && !tooMuch && !option.unavailable;
 
   const plan = useMemo(
     () =>
-      atomic && option && !tooMuch && !sameToken && !option.unavailable
+      fillable && !fromIntents && !sameToken
         ? buildPlan({
             option,
             destinationAsset: option.destinationAsset,
@@ -452,7 +483,27 @@ export const SupplyForm = ({
             amount: atomic,
           })
         : null,
-    [atomic, option, tooMuch, sameToken, token, buildPlan],
+    [fillable, fromIntents, atomic, option, sameToken, token, buildPlan],
+  );
+
+  // From intents: what to move to the wallet's Aurora account, for the
+  // option's token on its chain.
+  const request = useMemo<FundingRequest | null>(
+    () =>
+      fillable && fromIntents && asset.tokenId
+        ? {
+            source: funding,
+            originAsset: asset.tokenId,
+            amount: atomic,
+            destination: {
+              chain: option.chain,
+              assetId: option.destinationAsset,
+              tokenAddress: option.tokenAddress,
+            },
+            context: { optionId: option.id },
+          }
+        : null,
+    [fillable, fromIntents, funding, asset.tokenId, atomic, option],
   );
 
   // A transfer previews the same plan with its own funding and window, so
@@ -465,7 +516,40 @@ export const SupplyForm = ({
     refreshIntervalMs: QUOTE_REFRESH_MS,
   });
 
+  const funded = useFundedPreview({
+    request,
+    option,
+    exec,
+    buildStepsPlan,
+    refreshIntervalMs: QUOTE_REFRESH_MS,
+  });
+
   const { preview } = quote;
+  const priced = fromIntents ? funded.preview : preview;
+  const pricing = fromIntents ? funded : quote;
+
+  // What the quote box shows, the same way for every kind of payment.
+  const summary = useMemo((): QuoteSummary | undefined => {
+    if (funded.preview && fromIntents) {
+      const { funding: moved, steps } = funded.preview;
+      const supplyTime = Number(steps.execution.details.estimatedTime) || 0;
+
+      return {
+        minAmountOut: steps.spendable,
+        networkFee: steps.networkFee,
+        estimatedTime: String(moved.timeEstimate + supplyTime),
+      };
+    }
+
+    return preview && !fromIntents
+      ? {
+          minAmountOut: preview.execution.quote.minAmountOut,
+          networkFee: preview.execution.details.networkFee,
+          estimatedTime: preview.execution.details.estimatedTime,
+        }
+      : undefined;
+  }, [preview, funded.preview, fromIntents]);
+
   const destinationPrice = option
     ? tokens.find((candidate) => candidate.assetId === option.destinationAsset)
         ?.price
@@ -475,11 +559,11 @@ export const SupplyForm = ({
     ? usdValue(atomic, token.decimals, token.price)
     : undefined;
 
-  const refused = !preview && quote.error ? quote.error.message : '';
+  const refused = !priced && pricing.error ? pricing.error.message : '';
 
   // A token deposit on some chains pays its fees in the gas token.
   const depositCost =
-    !transfer && token.contractAddress
+    funding === 'wallet' && token.contractAddress
       ? TOKEN_DEPOSIT_COST[token.blockchain]
       : undefined;
 
@@ -497,7 +581,13 @@ export const SupplyForm = ({
     !!gasToken &&
     Number(fromAtomic(gasHeld, gasToken.decimals)) < depositCost.min;
 
-  const tooSmall = TOO_SMALL.test(refused);
+  const tooSmall =
+    TOO_SMALL.test(refused) ||
+    (fromIntents &&
+      pricing.error instanceof GuardError &&
+      pricing.error.code === 'FEE_EXCEEDS_AMOUNT');
+
+  const belowMinimum = fromIntents && BELOW_MINIMUM.test(refused);
   const noRoute = NO_ROUTE.test(refused);
 
   // The refusal names no fee, so a dry quote of a bigger amount measures it.
@@ -523,7 +613,7 @@ export const SupplyForm = ({
 
   const probe = useQuotePreview<void>({
     exec: previewer,
-    plan: tooSmall ? probePlan : null,
+    plan: tooSmall && !fromIntents ? probePlan : null,
     debounceMs: 0,
     refreshIntervalMs: 0,
   });
@@ -543,6 +633,8 @@ export const SupplyForm = ({
       feeUsd !== undefined && amountUsd !== undefined && feeUsd > amountUsd
         ? `Too small to supply on ${chain}: its network fee is about ${formatUsd(feeUsd)}, more than the ${formatUsd(amountUsd)} you'd send. Enter more, or pick a market on a cheaper chain.`
         : `Too small to supply on ${chain}: its network fee costs more than this amount. Enter more, or pick a market on a cheaper chain.`;
+  } else if (belowMinimum) {
+    problem = `Too small to move from your intents account on this route. Enter more.`;
   } else if (noRoute && option) {
     problem = `No route from ${token.symbol} on ${chainLabel(token.blockchain)} into ${option.symbol} right now. Try another reserve or asset.`;
   }
@@ -550,6 +642,8 @@ export const SupplyForm = ({
   let cta = transfer
     ? 'Sign to get the deposit address'
     : `Supply ${option?.symbol ?? ''}`.trim();
+
+  const loadingQuote = !priced && pricing.isLoading;
 
   if (!amount) {
     cta = 'Enter an amount';
@@ -561,17 +655,21 @@ export const SupplyForm = ({
     cta = 'Choose a reserve';
   } else if (sameToken) {
     cta = `Supply it on ${dappName} directly`;
-  } else if (!preview && quote.isLoading) {
+  } else if (loadingQuote) {
     cta = 'Getting a quote…';
-  } else if (tooSmall) {
+  } else if (tooSmall || belowMinimum) {
     cta = 'Amount too small';
   } else if (noRoute) {
     cta = 'No route';
-  } else if (!preview) {
+  } else if (!priced) {
     cta = 'No quote';
   }
 
-  const ready = !!plan && !!preview;
+  const ready = fromIntents
+    ? !!request &&
+      !!funded.preview &&
+      funded.preview.funding.request === request
+    : !!plan && !!preview;
 
   // A problem with the amount itself, shown under it and tied to it.
   let fieldProblem: string | undefined;
@@ -635,7 +733,11 @@ export const SupplyForm = ({
           </div>
           <div className="mt-0.5 flex justify-between text-text-muted">
             <span>{amountUsd === undefined ? ' ' : formatUsd(amountUsd)}</span>
-            <span>on {chainLabel(token.blockchain)}</span>
+            <span>
+              {fromIntents
+                ? `${funding === 'confidential' ? 'Private' : 'Intents'} · ${chainLabel(token.blockchain)}`
+                : `on ${chainLabel(token.blockchain)}`}
+            </span>
           </div>
         </div>
         {fieldProblem ? (
@@ -716,6 +818,31 @@ export const SupplyForm = ({
         </div>
       ) : null}
 
+      {fromIntents ? (
+        <div className="rounded-card bg-surface-raised p-3 shadow-box">
+          <Steps
+            label="How this supply works"
+            steps={[
+              {
+                id: 'move',
+                title:
+                  funding === 'confidential'
+                    ? 'Sign to move it out of your private balance'
+                    : 'Sign to move it from your intents account',
+                detail: option
+                  ? `To your Aurora account on ${chainLabel(option.chain)}, as ${option.symbol}.${funding === 'confidential' ? ' This move is public.' : ''}`
+                  : 'To your Aurora account on the market’s chain.',
+              },
+              {
+                id: 'supply',
+                title: 'Sign to supply it',
+                detail: `Into ${dappName}, once it arrives. Nothing to send.`,
+              },
+            ]}
+          />
+        </div>
+      ) : null}
+
       {depositCost && gasToken ? (
         <Notice tone={lowOnGas ? 'warning' : 'info'}>
           <p className="text-text-secondary">
@@ -728,10 +855,12 @@ export const SupplyForm = ({
         </Notice>
       ) : null}
 
-      {plan && option ? (
+      {(plan ?? request) && option ? (
         <div className="flex flex-col gap-1.5 rounded-card bg-surface-raised p-3 shadow-box">
           <QuoteLines
-            quote={quote}
+            summary={summary}
+            isLoading={pricing.isLoading}
+            error={pricing.error}
             option={option}
             destinationPrice={destinationPrice}
             problem={problem}
@@ -744,7 +873,11 @@ export const SupplyForm = ({
         className="w-full"
         disabled={!ready}
         onClick={() => {
-          if (preview && option) {
+          if (fromIntents) {
+            if (request && option) {
+              onSubmitFunded?.(request, option);
+            }
+          } else if (preview && option) {
             onSubmit(preview, option);
           }
         }}>

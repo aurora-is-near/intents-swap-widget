@@ -141,19 +141,46 @@ const titleOf = (execution: Execution) =>
     ? execution.metadata.title
     : undefined;
 
+const FUNDED_FROM = {
+  intents: 'Intents account',
+  confidential: 'Private balance',
+} as const;
+
+/**
+ * A supply paid from intents balances: its steps run says, in its metadata,
+ * what was moved out of the intents account to pay for it.
+ */
+const fundedOf = (execution: Execution) => {
+  const metadata = execution.metadata ?? {};
+  const { fundedFrom, originAsset, amountIn } = metadata;
+
+  return fundedFrom === 'intents' || fundedFrom === 'confidential'
+    ? {
+        from: FUNDED_FROM[fundedFrom],
+        originAsset: typeof originAsset === 'string' ? originAsset : undefined,
+        amountIn: typeof amountIn === 'string' ? amountIn : undefined,
+      }
+    : undefined;
+};
+
 /** What a run paid and supplied, as far as the token list can name it. */
 const describe = ({ execution, stepsOnly }: Entry, tokens: Tokens) => {
   const quote = execution.quote as Execution['quote'] | undefined;
-  const origin = tokens.get(quote?.originAsset ?? '');
+  const funded = stepsOnly ? fundedOf(execution) : undefined;
+  const origin = tokens.get(
+    (funded ? funded.originAsset : quote?.originAsset) ?? '',
+  );
+
   const destination = tokens.get(quote?.destinationAsset ?? '');
   const title = titleOf(execution);
+  const amountIn = funded ? funded.amountIn : quote?.amountIn;
 
   const paidAmount =
-    !stepsOnly &&
-    quote?.amountIn &&
+    (!stepsOnly || funded) &&
+    amountIn &&
     origin?.symbol &&
     origin.decimals !== undefined
-      ? formatAmount(quote.amountIn, origin.decimals)
+      ? formatAmount(amountIn, origin.decimals)
       : undefined;
 
   const paid = paidAmount ? `${paidAmount} ${origin!.symbol}` : undefined;
@@ -168,7 +195,12 @@ const describe = ({ execution, stepsOnly }: Entry, tokens: Tokens) => {
 
   let what = title ?? 'Supply';
 
-  if (stepsOnly) {
+  if (funded) {
+    what =
+      paid && destination?.symbol
+        ? `${paid} → ${destination.symbol}`
+        : (title ?? `Supplied from your ${funded.from.toLowerCase()}`);
+  } else if (stepsOnly) {
     // It names no amount: only the token it supplied, when the service says.
     what =
       title ??
@@ -185,15 +217,19 @@ const describe = ({ execution, stepsOnly }: Entry, tokens: Tokens) => {
       paidAmount && origin?.symbol
         ? { amount: paidAmount, symbol: origin.symbol }
         : undefined,
-    paidUsd: quote?.amountInUsd ? Number(quote.amountInUsd) : undefined,
+    paidUsd:
+      !funded && quote?.amountInUsd ? Number(quote.amountInUsd) : undefined,
+    /** Where a supply paid from intents balances took them from. */
+    from: funded?.from,
     supplies:
       suppliedAmount && destination?.symbol
         ? { amount: suppliedAmount, symbol: destination.symbol }
         : undefined,
     // A run naming no token (an older steps-only one): a glyph stands in.
-    logo: stepsOnly
-      ? destination?.symbol
-      : (origin?.symbol ?? destination?.symbol),
+    logo:
+      stepsOnly && !funded
+        ? destination?.symbol
+        : (origin?.symbol ?? destination?.symbol),
     originChain: stepsOnly ? undefined : origin?.blockchain,
     destinationChain: destination?.blockchain,
   };
@@ -228,8 +264,11 @@ const Row = ({
   tokens: Tokens;
   onSelect: () => void;
 }) => {
-  const { what, logo, originChain } = describe(entry, tokens);
-  const where = [originChain && chainLabel(originChain), entry.wallet.name]
+  const { what, logo, originChain, from } = describe(entry, tokens);
+  const where = [
+    from ?? (originChain && chainLabel(originChain)),
+    entry.wallet.name,
+  ]
     .filter(Boolean)
     .join(' · ');
 
@@ -262,8 +301,14 @@ const Row = ({
 
 /** One line on where the run is, or how it ended. */
 const statusLine = ({ execution, stepsOnly }: Entry, dappName: string) => {
+  const funded = stepsOnly ? fundedOf(execution) : undefined;
+
   switch (execution.status) {
     case 'SUCCESS':
+      if (funded) {
+        return `Supplied to ${dappName}, from your ${funded.from.toLowerCase()}.`;
+      }
+
       return stepsOnly
         ? `Supplied what was waiting to ${dappName}.`
         : `Supplied to ${dappName}.`;
@@ -310,7 +355,10 @@ const EntryDetail = ({
   extra?: ReactNode;
 }) => {
   const { execution, wallet } = entry;
-  const { paid, paidUsd, supplies, destinationChain } = describe(entry, tokens);
+  const { paid, paidUsd, supplies, destinationChain, from } = describe(
+    entry,
+    tokens,
+  );
 
   const when = fullDate(execution.createdAt);
   const txHash = execution.transaction?.evmTxHash;
@@ -335,6 +383,7 @@ const EntryDetail = ({
             )}
           </Detail>
         ) : null}
+        {from ? <Detail label="From">{from}</Detail> : null}
         {supplies ? (
           <Detail label={entry.label === 'supplied' ? 'Supplied' : 'To supply'}>
             <AssetAmount

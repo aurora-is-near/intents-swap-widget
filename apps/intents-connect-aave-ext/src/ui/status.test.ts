@@ -1,3 +1,4 @@
+import type { FundedFlowStage } from '@aurora-is-near/intents-connect/react';
 import { describe, expect, it } from 'vitest';
 
 import { sameStatus, supplyStatus } from './status';
@@ -89,5 +90,37 @@ describe('sameStatus', () => {
         { state: 'action', label: 'Confirm in your wallet' },
       ),
     ).toBe(false);
+  });
+
+  it('follows a supply paid from intents balances, through both legs', () => {
+    const funded = (
+      stage: FundedFlowStage,
+      phase: 'idle' | 'awaiting-signature' | 'settling' = 'idle',
+    ) => supplyStatus({ kind: 'funded', stage, phase });
+
+    expect(funded('idle')).toEqual({ state: 'idle' });
+    expect(funded('awaiting-transfer-signature')).toEqual({
+      state: 'action',
+      label: 'Sign in your wallet',
+    });
+    expect(funded('bridging')).toEqual({
+      state: 'running',
+      label: 'Moving funds…',
+    });
+    expect(funded('ready-to-supply')).toEqual({
+      state: 'action',
+      label: 'Finish your supply',
+    });
+    expect(funded('ready-to-supply', 'awaiting-signature')).toEqual({
+      state: 'action',
+      label: 'Sign in your wallet',
+    });
+    expect(funded('supplying', 'settling')).toEqual({
+      state: 'running',
+      label: 'Supplying…',
+    });
+    expect(funded('success').state).toBe('success');
+    expect(funded('refunded')).toEqual({ state: 'failed', label: 'Refunded' });
+    expect(funded('failed').state).toBe('failed');
   });
 });

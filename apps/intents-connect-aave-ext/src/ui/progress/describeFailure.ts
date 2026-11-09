@@ -1,5 +1,6 @@
 import {
   ExecutionPollTimeoutError,
+  FundingError,
   GuardError,
   IntentsConnectApiError,
   isUserRejection,
@@ -30,6 +31,63 @@ const GUARD_COPY: Partial<Record<GuardError['code'], Failure>> = {
     title: 'Your wallet disconnected',
     detail: 'Connect it again and retry.',
   },
+  EXECUTION_IN_FLIGHT: {
+    title: 'A supply from this wallet is already running',
+    detail: 'Wait for it to finish (History shows it), then try again.',
+  },
+};
+
+/** A supply paid from intents balances: its move, before the supply. */
+const FUNDING_COPY: Partial<Record<FundingError['code'], Failure>> = {
+  USER_REJECTED: {
+    title: 'You declined in your wallet',
+    detail: 'Nothing moved.',
+  },
+  SIGNING_FAILED: {
+    title: "Your wallet couldn't sign",
+    detail: 'Nothing moved. Try again.',
+  },
+  FUNDING_IN_FLIGHT: {
+    title: 'Another move from this account is running',
+    detail: 'Wait for it to finish, then try again.',
+  },
+  NOT_AUTHORIZED: {
+    title: 'Authorize again',
+    detail:
+      'Your session for private balances ended. Authorize on the Confidential tab, then try again.',
+  },
+  PUBLIC_KEY_NOT_REGISTERED: {
+    title: "This NEAR account can't sign for its intents account yet",
+    detail: 'Register its key with NEAR Intents first.',
+  },
+  UNSUPPORTED_STANDARD: {
+    title: "This wallet can't move intents balances yet",
+  },
+  QUOTE_EXPIRED: {
+    title: 'The quote expired before you signed',
+    detail: 'Nothing moved. Start over for a fresh one.',
+  },
+  PAYLOAD_MISMATCH: {
+    title: "The quote didn't match what you asked for",
+    detail: 'Nothing was signed. Try again.',
+  },
+  SUBMIT_REJECTED: {
+    title: "The move wasn't accepted",
+    detail: 'Nothing moved. Try again.',
+  },
+  SWAP_FAILED: {
+    title: "The move didn't go through",
+    detail: 'Keep the details below if you contact support.',
+  },
+  STATUS_TIMEOUT: {
+    title: 'Still moving',
+    detail: 'It may take a little longer. Reopen this to keep following it.',
+  },
+  ARRIVAL_TIMEOUT: {
+    title: "It hasn't arrived yet",
+    detail:
+      "The move went through, but the funds haven't shown up yet. Reopen this in a minute.",
+  },
 };
 
 /** What went wrong, in words a user can act on. */
@@ -56,6 +114,14 @@ export const describeFailure = (error: Error, symbol: string): Failure => {
 
   if (error instanceof GuardError && GUARD_COPY[error.code]) {
     return GUARD_COPY[error.code]!;
+  }
+
+  if (error instanceof FundingError && FUNDING_COPY[error.code]) {
+    return FUNDING_COPY[error.code]!;
+  }
+
+  if (error instanceof FundingError && error.code === 'QUOTE_FAILED') {
+    return { title: "Couldn't get a quote", detail: error.message };
   }
 
   if (error instanceof ExecutionPollTimeoutError) {

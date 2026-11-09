@@ -11,10 +11,19 @@ import {
 import { usdValue } from './amounts';
 import { chainLabel } from './tokens';
 
-/** One balance of the paying wallet. */
+/**
+ * Where a balance is held: on the wallet's own chains, or in its intents
+ * account on NEAR Intents, publicly or confidentially.
+ */
+export type BalanceSource = 'wallet' | 'intents' | 'confidential';
+
+/** One balance the user can pay with. */
 export type AssetRow = {
   /** 1Click asset id. */
   id: string;
+  source: BalanceSource;
+  /** The intents token id (`nep141:…`), for an intents or confidential row. */
+  tokenId?: string;
   token: BalanceToken;
   /** Smallest unit. */
   amount: string;
@@ -23,7 +32,7 @@ export type AssetRow = {
   unavailable?: string;
 };
 
-const byValue = (a: AssetRow, b: AssetRow) =>
+export const byValue = (a: AssetRow, b: AssetRow) =>
   (b.usd ?? -1) - (a.usd ?? -1) || a.token.symbol.localeCompare(b.token.symbol);
 
 // Native NEAR is quoted as wNEAR, and its deposit wraps it.
@@ -63,6 +72,7 @@ export const useWalletAssets = () => {
           ? [
               {
                 id,
+                source: 'wallet',
                 token,
                 amount,
                 usd: usdValue(amount, token.decimals, token.price),
