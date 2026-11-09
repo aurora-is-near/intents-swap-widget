@@ -6,6 +6,9 @@ export {
 export {
   fundIntermediaryFromIntents,
   type FundIntermediaryOptions,
+  type FundingPreview,
+  type FundingPreviewOptions,
+  previewFunding,
   quoteFunding,
   resumeFunding,
   signAndSubmitFunding,

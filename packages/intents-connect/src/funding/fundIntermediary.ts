@@ -22,6 +22,7 @@ import {
 } from '@/funding/types';
 import type {
   IntentsApi,
+  SwapQuoteRequest,
   SwapQuoteResponse,
   SwapStatusResult,
   UserTokenOptions,
@@ -173,6 +174,136 @@ const readBalance = (
     rpcs: ctx.rpcs,
   });
 
+/** What any funding needs, checked before the network is asked anything. */
+const assertFundable = (
+  request: FundingRequest,
+  {
+    wallet,
+    withAccessToken,
+  }: {
+    wallet: Pick<WalletConnector, 'signingStandard'>;
+    withAccessToken?: FundIntermediaryOptions['withAccessToken'];
+  },
+) => {
+  requireSignableStandard(wallet);
+
+  if (!isEvmChain(request.destination.chain)) {
+    throw new FundingError(
+      'QUOTE_FAILED',
+      `funding pays out on EVM chains only, not ${request.destination.chain}`,
+    );
+  }
+
+  if (request.source === 'confidential' && !withAccessToken) {
+    throw new FundingError(
+      'NOT_AUTHORIZED',
+      'confidential funding needs an authorized user session',
+    );
+  }
+};
+
+export type FundingPreviewOptions = {
+  intentsApi: Pick<IntentsApi, 'getQuote'>;
+  connectApi: Pick<IntentsConnectApi, 'getIntermediary'>;
+  wallet: Pick<
+    WalletConnector,
+    'signingStandard' | 'getAddress' | 'getPublicKey'
+  >;
+  /** Required for confidential funding, as for `quoteFunding`. */
+  withAccessToken?: FundIntermediaryOptions['withAccessToken'];
+  now?: () => number;
+};
+
+/** What a funding would deliver, from a dry quote: nothing reserved. */
+export type FundingPreview = {
+  request: FundingRequest;
+  /** The intermediary (EVM) the funds would reach. */
+  recipient: string;
+  /** Smallest unit of `request.originAsset`. */
+  amountIn: string;
+  /** Smallest unit of the destination token, before slippage. */
+  amountOut: string;
+  /** Smallest unit of the destination token: the least that arrives. */
+  minAmountOut: string;
+  amountInUsd?: string;
+  amountOutUsd?: string;
+  /** Seconds. */
+  timeEstimate: number;
+  correlationId: string;
+};
+
+/**
+ * Prices a funding with a dry 1Click quote: what reaches the intermediary,
+ * and how soon. Stores nothing, prompts nothing and creates no deposit
+ * address, so it can run as the user types — unlike `quoteFunding`, whose
+ * quote is the one the transfer pays. Not refused while another funding
+ * runs: only `quoteFunding` is.
+ */
+export const previewFunding = async (
+  request: FundingRequest,
+  options: FundingPreviewOptions,
+): Promise<FundingPreview> => {
+  const { wallet, intentsApi, connectApi, withAccessToken, now } = options;
+  const walletAddress = wallet.getAddress();
+  const intentsAccountId = getWalletIntentsAccountId(wallet);
+
+  if (!walletAddress || !intentsAccountId) {
+    throw new FundingError(
+      'WALLET_NOT_CONNECTED',
+      'the wallet has not shared an address',
+    );
+  }
+
+  assertFundable(request, options);
+
+  const intermediary = await connectApi.getIntermediary(walletAddress, {
+    publicKey: wallet.getPublicKey?.(),
+  });
+
+  const body: SwapQuoteRequest = {
+    ...buildFundingQuoteRequest({
+      request,
+      intentsAccountId,
+      recipient: intermediary.evm,
+      now,
+    }),
+    dry: true,
+  };
+
+  let response: SwapQuoteResponse;
+
+  try {
+    response =
+      request.source === 'confidential' && withAccessToken
+        ? await withAccessToken((accessToken) =>
+            intentsApi.getQuote(body, { accessToken }),
+          )
+        : await intentsApi.getQuote(body, {});
+  } catch (error) {
+    if (error instanceof FundingError) {
+      throw error;
+    }
+
+    throw new FundingError('QUOTE_FAILED', toError(error).message, {
+      cause: error,
+    });
+  }
+
+  const { quote } = response;
+
+  return {
+    request,
+    recipient: intermediary.evm,
+    amountIn: quote.amountIn,
+    amountOut: quote.amountOut,
+    minAmountOut: quote.minAmountOut,
+    amountInUsd: quote.amountInUsd,
+    amountOutUsd: quote.amountOutUsd,
+    timeEstimate: quote.timeEstimate,
+    correlationId: response.correlationId,
+  };
+};
+
 /**
  * Quotes a funding and records it as `quoted`. Nothing moves and nothing is
  * signed. Refuses while another funding of the account, or an Intents
@@ -186,22 +317,7 @@ export const quoteFunding = async (
   const ctx = createContext(options);
   const { walletAddress, intentsAccountId } = requireAccount(ctx);
 
-  requireSignableStandard(ctx.wallet);
-
-  if (!isEvmChain(request.destination.chain)) {
-    throw new FundingError(
-      'QUOTE_FAILED',
-      `funding pays out on EVM chains only, not ${request.destination.chain}`,
-    );
-  }
-
-  if (request.source === 'confidential' && !ctx.withAccessToken) {
-    throw new FundingError(
-      'NOT_AUTHORIZED',
-      'confidential funding needs an authorized user session',
-    );
-  }
-
+  assertFundable(request, ctx);
   ctx.phase('resolving');
 
   if (getActiveFunding(await ctx.store.load(intentsAccountId))) {

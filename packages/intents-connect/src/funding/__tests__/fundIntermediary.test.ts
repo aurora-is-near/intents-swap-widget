@@ -9,6 +9,7 @@ import {
   type FundingRequest,
   fundIntermediaryFromIntents,
   type FundIntermediaryOptions,
+  previewFunding,
   quoteFunding,
   resumeFunding,
   signAndSubmitFunding,
@@ -600,5 +601,107 @@ describe('resumeFunding', () => {
 
     await expect(watching).rejects.toThrow('left the page');
     expect(h.store.state.records[SIGNER]![0]!.stage).toBe('submitted');
+  });
+});
+
+describe('previewFunding', () => {
+  it('prices the funding with a dry quote, storing and signing nothing', async () => {
+    const h = setup();
+
+    h.intentsApi.getQuote.mockImplementation(async (body) => ({
+      correlationId: 'corr-dry',
+      timestamp: '',
+      signature: '',
+      quoteRequest: body,
+      quote: {
+        amountIn: body.amount,
+        minAmountIn: body.amount,
+        amountOut: '990000',
+        minAmountOut: '980000',
+        amountOutUsd: '0.99',
+        timeEstimate: 20,
+      },
+    }));
+
+    await expect(previewFunding(request(), h.options)).resolves.toEqual({
+      request: request(),
+      recipient: INTERMEDIARY,
+      amountIn: '1000000',
+      amountOut: '990000',
+      minAmountOut: '980000',
+      amountInUsd: undefined,
+      amountOutUsd: '0.99',
+      timeEstimate: 20,
+      correlationId: 'corr-dry',
+    });
+    expect(h.intentsApi.getQuote).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dry: true,
+        depositType: 'INTENTS',
+        refundTo: SIGNER,
+        recipient: INTERMEDIARY,
+        amount: '1000000',
+      }),
+      {},
+    );
+    expect(h.store.state.records[SIGNER] ?? []).toEqual([]);
+    expect(h.walletRequest).not.toHaveBeenCalled();
+    expect(h.intentsApi.generateIntent).not.toHaveBeenCalled();
+  });
+
+  it('prices while another funding runs: only quoting it is refused', async () => {
+    stubBalances(0n);
+
+    const h = setup();
+
+    await quoteFunding(request(), h.options);
+
+    await expect(previewFunding(request(), h.options)).resolves.toMatchObject({
+      minAmountOut: '980000',
+    });
+  });
+
+  it('needs an authorized session for confidential, and sends its token', async () => {
+    const h = setup();
+
+    await expect(
+      previewFunding(request({ source: 'confidential' }), h.options),
+    ).rejects.toMatchObject({ code: 'NOT_AUTHORIZED' });
+    expect(h.intentsApi.getQuote).not.toHaveBeenCalled();
+
+    await previewFunding(request({ source: 'confidential' }), {
+      ...h.options,
+      withAccessToken: (call) => call('tok'),
+    });
+
+    expect(h.intentsApi.getQuote.mock.calls[0]).toEqual([
+      expect.objectContaining({
+        dry: true,
+        depositType: 'CONFIDENTIAL_INTENTS',
+      }),
+      { accessToken: 'tok' },
+    ]);
+  });
+
+  it('refuses a non-EVM destination and wraps 1Click errors', async () => {
+    const h = setup();
+
+    await expect(
+      previewFunding(
+        request({
+          destination: { chain: 'sol', assetId: 'nep141:sol.omft.near' },
+        }),
+        h.options,
+      ),
+    ).rejects.toMatchObject({ code: 'QUOTE_FAILED' });
+
+    h.intentsApi.getQuote.mockRejectedValue(
+      new Error('Amount is too low for bridge, try at least 1000'),
+    );
+
+    await expect(previewFunding(request(), h.options)).rejects.toMatchObject({
+      code: 'QUOTE_FAILED',
+      message: 'Amount is too low for bridge, try at least 1000',
+    });
   });
 });

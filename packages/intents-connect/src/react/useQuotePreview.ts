@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-
 import type { ExecutionPlan, ExecutionPreview } from '@/runner/types';
 import type { UseExecutionResult } from '@/react/useExecution';
+import { useLiveResult } from '@/react/useLiveResult';
 
 export type UseQuotePreviewOptions<TParams> = {
   /** The runner to preview with, e.g. `useIntentsConnectFlow().exec`. */
@@ -37,15 +36,6 @@ export type UseQuotePreviewResult<TParams> = {
   refresh: () => void;
 };
 
-type Settled<TParams> = {
-  plan: ExecutionPlan<TParams>;
-  preview?: ExecutionPreview<TParams>;
-  error?: Error;
-};
-
-const toError = (error: unknown) =>
-  error instanceof Error ? error : new Error(String(error));
-
 const deadlineOf = <TParams>(preview: ExecutionPreview<TParams>) => {
   const deadline =
     preview.plan.quote.deadline ?? preview.execution.quote.deadline;
@@ -66,84 +56,17 @@ export const useQuotePreview = <TParams = unknown>({
   debounceMs = 500,
   refreshIntervalMs = 30_000,
 }: UseQuotePreviewOptions<TParams>): UseQuotePreviewResult<TParams> => {
-  const [settled, setSettled] = useState<Settled<TParams>>();
-  const [isLoading, setIsLoading] = useState(false);
-  // Bumped to re-quote the same plan: by `refresh` or the interval.
-  const [round, setRound] = useState(0);
-  // Bumped to re-arm the interval timer that found the page hidden.
-  const [tick, setTick] = useState(0);
-  const immediate = useRef(false);
-  const latestExec = useRef(exec);
-
-  latestExec.current = exec;
-
-  useEffect(() => {
-    if (!plan) {
-      setIsLoading(false);
-
-      return undefined;
-    }
-
-    let current = true;
-    const delay = immediate.current ? 0 : debounceMs;
-
-    immediate.current = false;
-    setIsLoading(true);
-
-    const timer = setTimeout(() => {
-      latestExec.current.preview(plan).then(
-        (preview) => {
-          if (current) {
-            setSettled({ plan, preview });
-            setIsLoading(false);
-          }
-        },
-        (error: unknown) => {
-          if (current) {
-            setSettled({ plan, error: toError(error) });
-            setIsLoading(false);
-          }
-        },
-      );
-    }, delay);
-
-    return () => {
-      current = false;
-      clearTimeout(timer);
-    };
-  }, [plan, round, debounceMs]);
-
-  const latest = settled?.plan === plan ? settled : undefined;
-  const preview = latest?.preview;
-
-  useEffect(() => {
-    if (!preview || !refreshIntervalMs) {
-      return undefined;
-    }
-
-    const timer = setTimeout(() => {
-      if (typeof document !== 'undefined' && document.hidden) {
-        setTick((value) => value + 1);
-      } else {
-        immediate.current = true;
-        setRound((value) => value + 1);
-      }
-    }, refreshIntervalMs);
-
-    return () => clearTimeout(timer);
-  }, [preview, refreshIntervalMs, tick]);
-
-  const refresh = useCallback(() => {
-    immediate.current = true;
-    setRound((value) => value + 1);
-  }, []);
+  const { result, isLoading, error, refresh } = useLiveResult(
+    plan,
+    (current: ExecutionPlan<TParams>) => exec.preview(current),
+    { debounceMs, refreshIntervalMs },
+  );
 
   return {
-    preview,
-    // Also before the effect has run for a new plan.
-    isLoading: !!plan && (isLoading || !latest),
-    error: latest?.error,
-    expiresAt: preview ? deadlineOf(preview) : undefined,
+    preview: result,
+    isLoading,
+    error,
+    expiresAt: result ? deadlineOf(result) : undefined,
     refresh,
   };
 };

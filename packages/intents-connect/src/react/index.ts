@@ -52,6 +52,11 @@ export {
   type UseIntentsConnectFlowResult,
 } from '@/react/useIntentsConnectFlow';
 export {
+  useFundingPreview,
+  type UseFundingPreviewOptions,
+  type UseFundingPreviewResult,
+} from '@/react/useFundingPreview';
+export {
   useIntentsFundedFlow,
   type FundedFlowStage,
   type UseIntentsFundedFlowOptions,

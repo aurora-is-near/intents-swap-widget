@@ -183,15 +183,36 @@ export const useIntentsFundedFlow = <TArgs, TParams = unknown>(
     record: FundingRecord | undefined,
     { amount, context }: { amount?: string; context?: Record<string, unknown> },
   ) => {
-    const { options: opts } = latest.current;
+    const { options: opts, connect: live } = latest.current;
     const fundingOpts = fundingOptions();
     const { store } = fundingOpts;
 
-    // A spend already created (found after a reload): follow it.
-    if (record?.stage === 'supplying' && record.stepsExecutionId) {
+    // A spend already created: follow it (found after a reload), or resume
+    // one whose signature was declined while it still holds the wallet's
+    // in-flight lock (its cancel declined too) — that prompts for its
+    // signature again. A second spend would be refused until it ends.
+    let resumable = record?.stage === 'supplying' && !!record.stepsExecutionId;
+
+    if (!resumable && record?.stage === 'arrived' && record.stepsExecutionId) {
+      const [execution] = await live.api
+        .listExecutions(record.walletAddress, { id: record.stepsExecutionId })
+        .catch(() => []);
+
+      resumable = !!execution && IN_FLIGHT_STATUSES.includes(execution.status);
+    }
+
+    if (resumable && record?.stepsExecutionId) {
       setSupplying(true);
 
       try {
+        if (record.stage !== 'supplying') {
+          await store.put({
+            ...record,
+            stage: 'supplying',
+            updatedAt: Date.now(),
+          });
+        }
+
         const execution = await opts.exec.resume(record.stepsExecutionId);
 
         await store.put({
@@ -200,6 +221,11 @@ export const useIntentsFundedFlow = <TArgs, TParams = unknown>(
           updatedAt: Date.now(),
         });
         setSucceeded(execution.status === SUPPLY_TERMINAL_OK);
+      } catch (resumeError) {
+        // The funds stay at the intermediary.
+        await store.put({ ...record, stage: 'arrived', updatedAt: Date.now() });
+
+        throw resumeError;
       } finally {
         setSupplying(false);
       }
@@ -261,7 +287,9 @@ export const useIntentsFundedFlow = <TArgs, TParams = unknown>(
         await store.put({
           ...current,
           stage: 'arrived',
-          stepsExecutionId: latest.current.options.exec.executionId,
+          // A spend refused before it was created keeps the earlier one's.
+          stepsExecutionId:
+            latest.current.options.exec.executionId ?? current.stepsExecutionId,
           updatedAt: Date.now(),
         });
       }

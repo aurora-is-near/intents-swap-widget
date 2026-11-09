@@ -389,6 +389,12 @@ In React, `useIntentsFundedFlow({ exec, buildFunding, buildStepsPlan })` runs
 both legs. `useIntermediaryBalance({ destination })` shows funds still waiting
 at the intermediary, for a "supply what's waiting" button.
 
+To price a funding while the user types, use `previewFunding(request, options)`
+or `useFundingPreview({ request })`. It's a dry 1Click quote: no deposit
+address, no record and no prompt. It returns what reaches the intermediary
+(`minAmountOut`) and how soon. To show what leg B then spends, pass
+`minAmountOut` to `exec.previewSteps(buildStepsPlan(...))`.
+
 Safety:
 
 - The quote must echo what was asked: recipient, refund and assets.

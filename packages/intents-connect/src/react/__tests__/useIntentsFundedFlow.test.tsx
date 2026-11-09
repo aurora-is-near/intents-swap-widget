@@ -150,7 +150,12 @@ const fakeExec = (
 const setup = ({
   exec = fakeExec(),
   storage = memoryStorage(),
-}: { exec?: UseExecutionResult; storage?: KeyValueStorage } = {}) => {
+  connect = connectApi(),
+}: {
+  exec?: UseExecutionResult;
+  storage?: KeyValueStorage;
+  connect?: IntentsConnectApi;
+} = {}) => {
   const api = intentsApi();
   const buildStepsPlan = vi.fn(
     ({
@@ -170,7 +175,7 @@ const setup = ({
   const wrapper = ({ children }: { children: ReactNode }) => (
     <StrictMode>
       <IntentsConnectProvider
-        api={connectApi()}
+        api={connect}
         wallet={wallet}
         intentsApi={api}
         fundingStorage={storage}>
@@ -250,6 +255,45 @@ describe('useIntentsFundedFlow', () => {
     await waitFor(() => expect(h.result.current.stage).toBe('success'));
 
     expect(runSteps).toHaveBeenCalledTimes(2);
+  });
+
+  it('resumes a declined spend that still holds the lock, rather than creating one', async () => {
+    stubBalances();
+
+    const runSteps = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('User rejected the signature'));
+
+    const exec = {
+      ...fakeExec(runSteps),
+      executionId: 'steps-1',
+      resume: vi.fn(async () => ({ id: 'steps-1', status: 'SUCCESS' })),
+    } as unknown as UseExecutionResult;
+
+    const connect = connectApi();
+
+    vi.mocked(connect.listExecutions).mockImplementation(
+      async (_address, filters) =>
+        (filters as { id?: string } | undefined)?.id === 'steps-1'
+          ? [{ id: 'steps-1', status: 'CREATED' } as Execution]
+          : [],
+    );
+
+    const h = setup({ exec, connect });
+
+    await act(() => h.result.current.submit({ amount: '1000000' }));
+
+    await waitFor(() => expect(h.result.current.stage).toBe('ready-to-supply'));
+
+    expect(h.result.current.record?.stepsExecutionId).toBe('steps-1');
+
+    await act(() => h.result.current.supply());
+
+    await waitFor(() => expect(h.result.current.stage).toBe('success'));
+
+    expect(runSteps).toHaveBeenCalledTimes(1);
+    expect(exec.resume).toHaveBeenCalledWith('steps-1');
+    expect(h.result.current.record?.stage).toBe('done');
   });
 
   it('resumes a submitted funding after a reload, without prompting', async () => {
