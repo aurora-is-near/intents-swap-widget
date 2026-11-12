@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/one-click-status",
+      "destination": "https://status.near-intents.org/api/posts?is_featured=true"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

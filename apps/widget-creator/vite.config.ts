@@ -36,6 +36,13 @@ export default defineConfig({
   },
   server: {
     port: 5175,
+    proxy: {
+      '/api/one-click-status': {
+        target: 'https://status.near-intents.org',
+        changeOrigin: true,
+        rewrite: () => '/api/posts?is_featured=true',
+      },
+    },
     fs: {
       allow: ['..'],
     },
