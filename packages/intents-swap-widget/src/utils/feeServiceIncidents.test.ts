@@ -1,7 +1,14 @@
+import { QueryClient } from '@tanstack/react-query';
+
 import { logger } from '@/logger';
 import { feeServiceApi } from '@/network';
 
-import { fetchFeeServiceIncidents } from './feeServiceIncidents';
+import {
+  fetchFeeServiceIncidents,
+  getChainIncidents,
+  INCIDENTS_STALE_TIME_MS,
+  INCIDENTS_WAIT_MS,
+} from './feeServiceIncidents';
 
 jest.mock('@/network', () => ({ feeServiceApi: { get: jest.fn() } }));
 
@@ -94,18 +101,114 @@ describe('fetchFeeServiceIncidents', () => {
     ]);
   });
 
+  it('drops incidents the fee service has resolved', async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        status: 'incidents',
+        incidents: [
+          {
+            scopeType: 'chain',
+            scopeValue: 'eth',
+            status: 'active',
+            resolvedAt: null,
+          },
+          {
+            scopeType: 'chain',
+            scopeValue: 'sol',
+            status: 'active',
+            resolvedAt: '2026-11-12T10:00:00.000Z',
+          },
+          { scopeType: 'chain', scopeValue: 'btc', status: 'resolved' },
+        ],
+      },
+    });
+
+    await expect(fetchFeeServiceIncidents('key')).resolves.toEqual([
+      { scopeType: 'chain', scopeValue: 'eth' },
+    ]);
+  });
+
   it('reads a malformed body as no incidents', async () => {
     mockGet.mockResolvedValue({ data: { incidents: 'nope' } });
 
     await expect(fetchFeeServiceIncidents('key')).resolves.toEqual([]);
   });
 
-  it('reads a failed request as no incidents', async () => {
+  it('fails when the request fails, so the failure is not cached', async () => {
     const warn = jest.spyOn(logger, 'warn').mockImplementation(() => {});
+    const error = new Error('Network Error');
 
-    mockGet.mockRejectedValue(new Error('Network Error'));
+    mockGet.mockRejectedValue(error);
 
-    await expect(fetchFeeServiceIncidents('key')).resolves.toEqual([]);
+    await expect(fetchFeeServiceIncidents('key')).rejects.toBe(error);
     expect(warn).toHaveBeenCalled();
+  });
+});
+
+describe('getChainIncidents', () => {
+  const ethIncident = { scopeType: 'chain', scopeValue: 'eth' };
+  const solIncident = { scopeType: 'chain', scopeValue: 'sol' };
+
+  const respondWith = (...incidents: unknown[]) =>
+    mockGet.mockResolvedValueOnce({
+      data: { status: 'incidents', incidents },
+    });
+
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.spyOn(logger, 'warn').mockImplementation(() => {});
+    mockGet.mockReset();
+    queryClient = new QueryClient();
+  });
+
+  afterEach(() => {
+    queryClient.clear();
+    jest.useRealTimers();
+  });
+
+  it('reuses incidents for a minute, then asks again', async () => {
+    respondWith(ethIncident);
+    respondWith(solIncident);
+
+    await expect(getChainIncidents(queryClient, 'key')).resolves.toEqual([
+      ethIncident,
+    ]);
+
+    jest.advanceTimersByTime(INCIDENTS_STALE_TIME_MS - 1);
+
+    await expect(getChainIncidents(queryClient, 'key')).resolves.toEqual([
+      ethIncident,
+    ]);
+    expect(mockGet).toHaveBeenCalledTimes(1);
+
+    jest.advanceTimersByTime(2);
+
+    await expect(getChainIncidents(queryClient, 'key')).resolves.toEqual([
+      solIncident,
+    ]);
+    expect(mockGet).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads a failed request as no incidents, and asks again next time', async () => {
+    mockGet.mockRejectedValueOnce(new Error('Network Error'));
+    respondWith(ethIncident);
+
+    await expect(getChainIncidents(queryClient, 'key')).resolves.toEqual([]);
+    await expect(getChainIncidents(queryClient, 'key')).resolves.toEqual([
+      ethIncident,
+    ]);
+    expect(mockGet).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops waiting on a slow request', async () => {
+    mockGet.mockReturnValueOnce(new Promise(() => {}));
+
+    const incidents = getChainIncidents(queryClient, 'key');
+
+    await jest.advanceTimersByTimeAsync(INCIDENTS_WAIT_MS);
+
+    await expect(incidents).resolves.toEqual([]);
   });
 });

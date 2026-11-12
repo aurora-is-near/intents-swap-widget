@@ -50,6 +50,26 @@ describe('findQuoteIncident', () => {
     },
   );
 
+  it.each([['withdrawal'], ['Withdraw'], ['withdrawals']])(
+    'reads direction %p as a withdrawal pause only',
+    (direction) => {
+      const incident = chain('eth', direction);
+
+      expect(findQuoteIncident([incident], ethOnEth, solOnSol)).toBeUndefined();
+      expect(findQuoteIncident([incident], solOnSol, ethOnEth)).toBe(incident);
+    },
+  );
+
+  it.each([['deposits'], ['Deposit']])(
+    'reads direction %p as a deposit pause only',
+    (direction) => {
+      const incident = chain('eth', direction);
+
+      expect(findQuoteIncident([incident], ethOnEth, solOnSol)).toBe(incident);
+      expect(findQuoteIncident([incident], solOnSol, ethOnEth)).toBeUndefined();
+    },
+  );
+
   it('ignores a pause in the direction the token does not move', () => {
     expect(
       findQuoteIncident([chain('eth', 'withdraw')], ethOnEth, solOnSol),

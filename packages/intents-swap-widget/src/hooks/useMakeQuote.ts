@@ -31,7 +31,7 @@ import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
-import { chainIncidentsQueryOptions } from '@/utils/feeServiceIncidents';
+import { getChainIncidents } from '@/utils/feeServiceIncidents';
 import { findQuoteIncident } from '@/utils/incidents/findQuoteIncident';
 
 import type { AppFee, Quote } from '../types';
@@ -50,6 +50,21 @@ type MakeArgs = {
   options?: {
     isRefetch?: boolean;
   };
+};
+
+// A paused network shows up as a failure the server answered. Being offline, a
+// timeout or a rate limit can't come from one, so incidents never explain those.
+const mayBeIncident = (error: unknown) => {
+  if (error instanceof QuoteError) {
+    return false;
+  }
+
+  if (error instanceof AxiosError) {
+    return !!error.response && error.response.status !== 429;
+  }
+
+  // An integrator's `fetchQuote` fails in its own way.
+  return true;
 };
 
 const validateQuoteProperties = (
@@ -572,12 +587,11 @@ export const useMakeQuote = () => {
 
       // The quote request failed for a reason the message doesn't name. Stay
       // loading while checking whether an ongoing incident on either token's
-      // chain explains it. Incidents load as the widget mounts, so this is
-      // usually instant.
-      if (!(error instanceof QuoteError)) {
-        const incidents = await queryClient
-          .ensureQueryData(chainIncidentsQueryOptions(apiKey))
-          .catch(() => []);
+      // chain explains it. Incidents load as the widget mounts and are reused
+      // for a minute, so this is usually instant, and never takes more than a
+      // few seconds.
+      if (mayBeIncident(error)) {
+        const incidents = await getChainIncidents(queryClient, apiKey);
 
         if (signal.aborted) {
           return;

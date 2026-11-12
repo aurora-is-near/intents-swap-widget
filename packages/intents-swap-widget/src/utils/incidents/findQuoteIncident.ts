@@ -5,9 +5,28 @@ type QuoteToken = Pick<Token, 'assetId' | 'blockchain' | 'isIntent'>;
 
 type Side = 'deposit' | 'withdraw';
 
-// `*`, an empty direction or anything unknown pauses both ways.
-const pausesSide = ({ direction }: IncidentScope, side: Side) =>
-  direction !== (side === 'deposit' ? 'withdraw' : 'deposit');
+// A direction starting with `deposit` or `withdraw` (so `withdrawal`, `Deposits`
+// too) pauses that way only. `*`, an empty direction or anything else pauses
+// both.
+const getPausedSide = (direction: string | null | undefined): Side | 'both' => {
+  const value = direction?.trim().toLowerCase() ?? '';
+
+  if (value.startsWith('deposit')) {
+    return 'deposit';
+  }
+
+  if (value.startsWith('withdraw')) {
+    return 'withdraw';
+  }
+
+  return 'both';
+};
+
+const pausesSide = ({ direction }: IncidentScope, side: Side) => {
+  const pausedSide = getPausedSide(direction);
+
+  return pausedSide === 'both' || pausedSide === side;
+};
 
 const coversToken = (
   { scopeType, scopeValue }: IncidentScope,
