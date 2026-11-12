@@ -1,9 +1,9 @@
-import { useOneClickStatus } from '@/api/hooks';
+import { useMaintenanceStatus } from '@/api/hooks';
 
 export const MaintenanceBanner = () => {
-  const { data } = useOneClickStatus();
+  const { data } = useMaintenanceStatus();
 
-  if (!data?.isDisrupted) {
+  if (!data?.isUnderMaintenance) {
     return null;
   }
 
@@ -17,7 +17,7 @@ export const MaintenanceBanner = () => {
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://status.near-intents.org/posts/dashboard"
+          href="https://partners.near-intents.org/shield/status"
           className="text-csw-accent-700 underline">
           status page
         </a>{' '}
