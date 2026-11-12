@@ -9,5 +9,8 @@ export const useMaintenanceStatus = () => {
     queryKey: ['maintenanceStatus'],
     queryFn: getMaintenanceStatus,
     refetchInterval: ONE_MINUTE,
+    // Polling pauses in a hidden tab, so check again as soon as it's back.
+    staleTime: ONE_MINUTE,
+    refetchOnWindowFocus: true,
   });
 };
