@@ -16,6 +16,8 @@ export const PLACEHOLDER_APP_KEY = 'your-generated-app-key';
 
 export const TERMS_URL = 'https://intents.aurora.dev/terms-of-service';
 export const PRIVACY_URL = 'https://intents.aurora.dev/privacy-policy';
+export const SHIELD_STATUS_URL =
+  'https://partners.near-intents.org/shield/status';
 
 export const DEFAULT_ZERO_FEE: Omit<FeeConfig, 'default_fee'> & {
   default_fee: Fee;
