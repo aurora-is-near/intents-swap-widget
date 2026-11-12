@@ -13,6 +13,8 @@ import {
   signNep413,
   signRawEd25519,
   signSep53,
+  signTip191,
+  signTonConnect,
   toBase64,
 } from '@/signers/standards';
 
@@ -56,7 +58,8 @@ const parseNep413Payload = (payloadJson: string): Nep413Payload => {
  * Which field to sign differs per standard, and getting it wrong produces a
  * signature the backend rejects with no useful diagnostic:
  *
- * - `erc191` / `sep53` — `payload_json`, verbatim as a string.
+ * - `erc191` / `tip191` / `sep53` / `ton_connect` — `payload_json`, verbatim
+ *   as a string (sign-data `text` for TON).
  * - `raw_ed25519` — the DECODED bytes of `payload_bytes_base64`.
  * - `nep413` — `payload_json` parsed into `{ message, recipient, nonce }`.
  */
@@ -72,6 +75,13 @@ export const signIntentsConnectPayload = async ({
       return signErc191({
         message: payload.payload_json,
         provider: requireProvider(providers.evm, standard),
+        expectedAddress: address,
+      });
+
+    case 'tip191':
+      return signTip191({
+        message: payload.payload_json,
+        provider: requireProvider(providers.tron, standard),
         expectedAddress: address,
       });
 
@@ -105,6 +115,13 @@ export const signIntentsConnectPayload = async ({
         provider: requireProvider(providers.stellar, standard),
         expectedAddress: address,
         decodePublicKey,
+      });
+
+    case 'ton_connect':
+      return signTonConnect({
+        message: payload.payload_json,
+        provider: requireProvider(providers.ton, standard),
+        expectedAddress: address,
       });
 
     default:
@@ -147,22 +164,30 @@ const randomNonce = (): Uint8Array => {
  * envelope — the backend needs both to rebuild the exact bytes the wallet
  * signed, and omitting the block is a 400.
  *
- * `sep53` is refused: the delete endpoint accepts only raw_ed25519, nep413,
- * erc191, tip191 and ton_connect, so a Stellar-signed delete would be signed,
- * submitted, and rejected with a 400 anyway. Failing before the wallet prompt
- * is the honest version of that outcome.
+ * `sep53` signs the text like any SEP-53 message and sends its public key,
+ * `tip191` signs it like erc191, with none, and `ton_connect` signs it as
+ * sign-data text, with its public key and envelope: the delete endpoint
+ * accepts all three (checked against the alpha service).
  */
 export const signIntentsConnectText = async ({
   text,
   standard,
   address,
   providers,
+  decodePublicKey,
 }: SignTextArgs): Promise<DeleteSignatureEnvelope> => {
   switch (standard) {
     case 'erc191':
       return signErc191({
         message: text,
         provider: requireProvider(providers.evm, standard),
+        expectedAddress: address,
+      });
+
+    case 'tip191':
+      return signTip191({
+        message: text,
+        provider: requireProvider(providers.tron, standard),
         expectedAddress: address,
       });
 
@@ -196,10 +221,24 @@ export const signIntentsConnectText = async ({
     }
 
     case 'sep53':
-      return failGuard(
-        'UNSUPPORTED_SIGNING_STANDARD',
-        'the delete_execution endpoint does not accept sep53 — a Stellar-origin execution cannot be cancelled client-side and clears on expiry',
-      );
+      return signSep53({
+        message: text,
+        provider: requireProvider(providers.stellar, standard),
+        expectedAddress: address,
+        decodePublicKey:
+          decodePublicKey ??
+          failGuard(
+            'UNSUPPORTED_SIGNING_STANDARD',
+            'sep53 needs the connector to decode its public key',
+          ),
+      });
+
+    case 'ton_connect':
+      return signTonConnect({
+        message: text,
+        provider: requireProvider(providers.ton, standard),
+        expectedAddress: address,
+      });
 
     default:
       return failGuard(

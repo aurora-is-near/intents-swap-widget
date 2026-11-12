@@ -99,8 +99,8 @@ amount. Two ways out:
 subpath per chain). It supplies the address, signing standard, providers, and
 the deposit transfer.
 
-Signing standards implemented: `erc191`, `raw_ed25519`, `nep413`, `sep53`.
-`tip191` (Tron) and `ton_connect` (TON) are not yet covered.
+Signing standards implemented: `erc191`, `tip191`, `raw_ed25519`, `nep413`,
+`sep53`, `ton_connect`.
 
 ## Guards
 
@@ -173,6 +173,65 @@ Notes:
 - `run`, `resume` and `cancel` always **reject** rather than throwing
   synchronously, so `run(plan).catch(…)` behaves.
 
+
+### Account hooks
+
+With `intentsApi` on the provider, the same bindings read an account screen:
+`useWalletBalances`, `useIntentsBalances`, `useWalletVerification`,
+`useIntentsAuth` and `useConfidentialBalances`, plus `useIntentsConnectFlow`
+(and `useIntentsOutFlow` for out-operations) for the submit / recovery glue
+around `useExecution`. Stores live at provider
+level, so hooks reading the same data share one request. See below.
+
+Three more need no `intentsApi`:
+
+- `useSupportedTokens({ flow? })` gives `origins` (what an execution can
+  start from) and `destinations` (what a recipe can receive), fetched once
+  per provider.
+- `useQuotePreview({ exec, plan })` keeps a live quote for a plan the user is
+  still editing: a debounced `preview`, refreshed every 30 s, with results
+  for an older plan dropped. Run `preview.plan` to commit to exactly the
+  quoted steps.
+- `useWalletExecutions({ status?, address? })` lists the provider wallet's
+  executions, newest first, or another wallet's by `address` (as its
+  connector reports it), e.g. a history across the wallets a user has.
+  With `IN_FLIGHT_STATUSES` it finds the one holding the wallet's lock, to
+  resume or cancel after a reload.
+
+## Account & balances
+
+Everything an account screen needs, for EVM, Solana and NEAR wallets, through
+the Aurora intents API (`createIntentsApi({ apiKey })`):
+
+- **Intents account** — `getWalletIntentsAccountId(wallet)`.
+- **Wallet balances** — `getWalletBalances({ family, address, tokens })`:
+  Alchemy for the chains it indexes when `alchemyApiKey` is set, JSON-RPC
+  otherwise (`DEFAULT_RPCS`, overridden per chain by `rpcs`). Chains fail
+  independently into `errors`. Free Solana RPCs refuse token-account queries,
+  so SPL balances need Alchemy or a keyed RPC.
+- **Public intents balances** — `intentsApi.getIntentsAccountBalances(id)`.
+
+### Verification & authorization
+
+Both rest on an **ownership proof**: an empty intent (`"intents": []`) the
+wallet signs with a versioned, salted nonce. It moves nothing.
+
+- `verifyWallet` has `intents.near` simulate the proof and remembers a pass
+  (`localStorage` by default). RPC failures throw rather than reading as
+  "not verified". Named NEAR accounts need their key registered on
+  `intents.near` (`add_public_key`), reported as `PUBLIC_KEY_NOT_REGISTERED`.
+- `createIntentsSession` exchanges a proof for a 1Click user session and
+  reads confidential balances with it, refreshing the access token as needed.
+  Pass the proof `verifyWallet` returned to verify and authorize with **one**
+  signature.
+
+Sessions live **in memory by default**. A persisted refresh token can mint
+access tokens until it expires — anything that can read the storage can read
+the user's confidential balances — so persist only deliberately
+(`createIntentsSession({ storage: webStorage(sessionStorage) })`).
+
+The intents API's NEAR RPC proxy is rate-limited per API key, shared by all
+of an integration's users; the SDK uses it first only for proof calls.
 
 ## Solana bridge-in previews
 
@@ -297,3 +356,114 @@ Steps-only and bridge-in executions share the per-wallet in-flight lock: a live
 one of either kind blocks the other until it settles or is cancelled. A `503`
 from the steps endpoint means no Solana durable-nonce account was free — retry
 shortly. `retryDeposit()` does not apply; there is nothing to deposit.
+
+## Funding from intents balances
+
+An Intents Connect quote's deposit address is on the origin chain, so it can
+only be funded by an on-chain transfer. To spend **intents** (or
+**confidential**) balances instead, `funding/` runs a deposit in two legs:
+
+1. **Leg A** — a 1Click swap from the user's intents account to their
+   intermediary, paid out as the recipe's destination token. One signature:
+   the transfer intent 1Click prepares (`generateIntent` → `signPreparedIntent`
+   → `submitIntent`). Refunds go back to the intents account.
+2. **Leg B** — a `steps-only` execution that spends what arrived at the
+   intermediary (the recipe with `flow: 'steps-only'`). A second signature.
+
+```ts
+const record = await fundIntermediaryFromIntents(
+  {
+    source: 'intents', // or 'confidential' (needs `withAccessToken`)
+    originAsset: 'nep141:base-0x8335…omft.near', // intents token id
+    amount: '1000000',
+    destination: recipe.destination, // EVM chains only
+  },
+  { intentsApi, connectApi, wallet, store: createFundingStore() },
+);
+// record.stage === 'arrived' — now spend it:
+const amount = await getIntermediaryBalance({ intermediary: { evm: record.recipient }, destination: recipe.destination });
+await runner.runSteps({ recipe: stepsRecipe, params, amount, feeFromAmount: true });
+```
+
+In React, `useIntentsFundedFlow({ exec, buildFunding, buildStepsPlan })` runs
+both legs. `useIntermediaryBalance({ destination })` shows funds still waiting
+at the intermediary, for a "supply what's waiting" button.
+
+To price a funding while the user types, use `previewFunding(request, options)`
+or `useFundingPreview({ request })`. It's a dry 1Click quote: no deposit
+address, no record and no prompt. It returns what reaches the intermediary
+(`minAmountOut`) and how soon. To show what leg B then spends, pass
+`minAmountOut` to `exec.previewSteps(buildStepsPlan(...))`.
+
+Safety:
+
+- The quote must echo what was asked: recipient, refund and assets.
+- The intent must be exactly one transfer of the amount to the quote's deposit
+  address.
+- Both are checked before the wallet prompts.
+- `submitting` is persisted before submitting. After a reload, a signed
+  transfer is only watched, never signed again (`resumeFunding`).
+- The funding store is per account and lives in `localStorage` by default.
+
+Leg B is a public transaction on the destination chain, from an intermediary
+that is deterministic per wallet. Confidential funding hides where the funds
+came from, not where they went.
+
+## Out-operations
+
+An out-operation runs the steps where the intermediary holds funds (e.g.
+withdrawing a lending position on Monad). It then sends what they released to
+a 1Click deposit address, and 1Click pays it out to `quote.recipient`: an
+address on any chain, or an intents account with `recipientType: 'INTENTS'`.
+There is one signature and no deposit leg.
+
+```ts
+const withdraw: Recipe<{ all: boolean }> = {
+  id: 'aave-withdraw', intent: 'aave_withdraw', title: 'Withdraw from Aave',
+  flow: 'out-operation', type: 'evm',
+  destination: { chain: 'monad', assetId: MONAD_USDC_ASSET, tokenAddress: MONAD_USDC },
+  // Release only: the runner appends the transfer to the deposit address.
+  buildSteps: ({ amount, intermediary }, { all }) => [
+    { to: POOL, functionSignature: 'withdraw(address,uint256,address)',
+      parameters: [MONAD_USDC, all ? MAX_UINT256 : amount, intermediary], value: '0' },
+  ],
+};
+
+await runner.runOut({
+  recipe: withdraw, params: { all: false },
+  amount: '5000000', // released by the steps
+  quote: { destinationAsset: BASE_USDC_ASSET, recipient: walletAddress },
+});
+```
+
+How the amounts work:
+
+1. **Measure the fee.** One dry create prices the fee.
+2. **Send less than `amount`.** The runner sends `amount − budget` to 1Click.
+   The budget is the fee plus `feeReserveBps` of headroom (default 50%), so the
+   intermediary can pay a fee that moved by the real create.
+3. **Check before signing.** A real fee above the budget is refused
+   (`FEE_EXCEEDS_AMOUNT`), and so is a quote that does not echo the payout
+   (`QUOTE_MOVED`).
+4. **Small overpayment, refunded.** 1Click quotes the deposit at `sent − fee`
+   and refunds the small excess.
+
+In React, `useIntentsOutFlow({ buildPlan })` wraps it. `submit(args)` builds
+the plan, runs it, and resolves the settled execution, or `undefined` with the
+reason on `error`. `stage` folds the phases into `preparing`, `signing`,
+`paying-out`, `success` and `failed`, plus `in-flight` when another execution
+holds the lock (`resume()` or `cancel()`). `networkFee`, `payout` and `quote`
+give the figures to show before and during the signature.
+
+```tsx
+const out = useIntentsOutFlow({
+  buildPlan: (amount: string) => ({ recipe: withdraw, params: { all: false }, amount, quote }),
+});
+
+const settled = await out.submit('5000000');
+if (settled) refreshPosition();
+```
+
+The API rejects the `{INTERMEDIARY}` placeholder in EVM address parameters, so
+use `ctx.intermediary`. `{AMOUNT_IN}` works only with `EXACT_OUTPUT`, which
+`runOut` does not use.

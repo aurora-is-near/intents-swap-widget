@@ -108,6 +108,12 @@ export type StepsPlan<TParams = void> = {
   maxNetworkFee?: string;
   /** How long a `previewSteps()` result stays committable. Defaults to 30 000 ms. */
   previewTtlMs?: number;
+  /**
+   * Extra execution metadata, e.g. where the funds came from. Stored with the
+   * execution and readable by anyone listing the wallet's executions; the
+   * runner's own keys (`title`, `intent`, `intentsConnect*`) take precedence.
+   */
+  metadata?: Record<string, unknown>;
   /** Additional acceptance checks after real create, before requesting a signature. */
   validateExecution?: (execution: Execution) => void | Promise<void>;
   /** Produced by previewSteps(). Reused verbatim by runSteps(); do not edit it. */
@@ -200,6 +206,12 @@ export type ResumeDepositOptions = {
   originToken?: OriginToken;
   originChainId?: number | null;
   /**
+   * The origin chain, for an asset id that doesn't name it. HOT-bridged
+   * assets (`nep245:v2_1.omni.hot.tg:…`, used for Stellar and TON) don't, so
+   * without it a resume can't drive their wallet deposit again.
+   */
+  originChain?: string;
+  /**
    * `false` skips any wallet-transfer attempt (QR / exchange deposits).
    *
    * `true` additionally FORCES the transfer for a cross-session resume of a
@@ -209,6 +221,42 @@ export type ResumeDepositOptions = {
    * twice; pass `true` when the caller knows no deposit was made.
    */
   depositViaWallet?: boolean;
+};
+
+/**
+ * An out-operation: the steps release `amount` of the recipe's destination
+ * token at the intermediary (e.g. withdraw a lending position), and 1Click
+ * pays it out elsewhere. The runner appends the transfer to the 1Click
+ * deposit address and sizes it against the fee, measured by one dry create:
+ * it sends `amount − feeBudget`, so the intermediary can pay the fee from
+ * what the steps released.
+ *
+ * 1Click quotes the deposit at `sent − fee`, so it receives the fee twice
+ * over and refunds that small excess.
+ */
+export type OutOperationPlan<TParams = void> = {
+  /** `flow` must be `out-operation`; `destination` is what the steps release. */
+  recipe: AnyRecipe<TParams>;
+  params: TParams;
+  /** Released by the steps, atomic: `ctx.amount` for `buildSteps`. */
+  amount: string;
+  /** Where 1Click pays out. `originAsset` is the recipe's destination asset. */
+  quote: {
+    destinationAsset: string;
+    recipient: string;
+    recipientType?: QuoteRequest['recipientType'];
+    /** Basis points. Defaults to 100. */
+    slippageTolerance?: number;
+    /** ISO 8601. Defaults to now + the runner's quote deadline. */
+    deadline?: string;
+  };
+  /** Headroom over the measured fee, basis points. Defaults to 5000 (50%). */
+  feeReserveBps?: number;
+  /** Absolute cap on the fee; refused before signing when exceeded. */
+  maxNetworkFee?: string;
+  /** Stored with the execution; the runner's own keys take precedence. */
+  metadata?: Record<string, unknown>;
+  validateExecution?: (execution: Execution) => void | Promise<void>;
 };
 
 export type ExecutionRunner = {
@@ -227,6 +275,12 @@ export type ExecutionRunner = {
    * — through create, signature and settlement. There is no deposit leg.
    */
   runSteps: <TParams>(plan: StepsPlan<TParams>) => Promise<Execution>;
+  /**
+   * Drives an out-operation — steps where the intermediary holds funds, then
+   * a 1Click payout to `quote.recipient` — through create, signature and
+   * settlement. There is no deposit leg.
+   */
+  runOut: <TParams>(plan: OutOperationPlan<TParams>) => Promise<Execution>;
   /**
    * Reattaches to an execution after a reload and resumes from wherever it
    * actually got — including driving the deposit transfer for a signed but

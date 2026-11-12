@@ -11,6 +11,10 @@ export const stellar: TransferPlugin<StellarTransferOptions> = { makeTransfer };
 
 export { makeTransfer } from '@/stellar/makeTransfer';
 export { decodePublicKey } from '@/stellar/decodePublicKey';
+export {
+  toStellarWalletConnector,
+  type StellarWalletConnectorOptions,
+} from '@/stellar/toWalletConnector';
 export { createMemo } from '@/stellar/createMemo';
 export { RPC_ENDPOINTS, USDC_ASSET } from '@/stellar/constants';
 export type { StellarTransferOptions } from '@/stellar/types';

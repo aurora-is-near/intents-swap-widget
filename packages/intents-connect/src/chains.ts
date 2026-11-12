@@ -50,6 +50,9 @@ export const MEMO_MODE_CHAINS = new Set(['stellar']);
  */
 export const SIGNING_STANDARD_CHAINS: Readonly<Record<string, string>> = {
   sep53: 'stellar',
+  // TON takes no memo (checked on the alpha service): resolving the chain is
+  // what lets the guard pass a TON deposit whose asset id doesn't name it.
+  ton_connect: 'ton',
 };
 
 /**
@@ -57,15 +60,17 @@ export const SIGNING_STANDARD_CHAINS: Readonly<Record<string, string>> = {
  * memo guard may be skipped when the origin chain itself is unknown.
  *
  * Deliberately the SAFE list rather than the unsafe one, so the default is to
- * fail CLOSED: a standard nobody has classified here — a new one, or
- * `ton_connect`, whose chain attributes deposits by comment exactly like
- * Stellar — must not slip past the guard just because the inference above
- * came back empty. `sep53` is absent because it resolves to a chain outright.
+ * fail CLOSED: a standard nobody has classified here must not slip past the
+ * guard just because the inference above came back empty. `sep53` and
+ * `ton_connect` are absent because they resolve to a chain outright.
  */
 export const MEMO_FREE_SIGNING_STANDARDS: ReadonlySet<string> = new Set([
   'erc191',
   'raw_ed25519',
   'nep413',
+  // TRON deposit addresses are per execution: no memo (checked on the alpha
+  // service).
+  'tip191',
 ]);
 
 /**
@@ -75,7 +80,7 @@ export const MEMO_FREE_SIGNING_STANDARDS: ReadonlySet<string> = new Set([
  */
 export const PUBLIC_KEY_REQUIRED_CHAINS = new Set(['ton']);
 
-export type ChainFamily = 'evm' | 'sol' | 'stellar' | 'near';
+export type ChainFamily = 'evm' | 'sol' | 'stellar' | 'near' | 'tron' | 'ton';
 
 const OMFT_SUFFIX = '.omft.near';
 
@@ -129,6 +134,14 @@ export const getChainFamily = (chain: string): ChainFamily | undefined => {
 
   if (chain === 'near') {
     return 'near';
+  }
+
+  if (chain === 'tron') {
+    return 'tron';
+  }
+
+  if (chain === 'ton') {
+    return 'ton';
   }
 
   return undefined;

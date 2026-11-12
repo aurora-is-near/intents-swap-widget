@@ -64,11 +64,12 @@ export const toError = (value: unknown): Error => {
 
 /**
  * How wallets word a rejection when they report no code. Kept in sync with the
- * widget's `isUserDeniedSigning`: Freighter says "User declined access", and
- * several connectors report a dismissed popup as "user closed".
+ * widget's `isUserDeniedSigning`: Freighter says "User declined access",
+ * several connectors report a dismissed popup as "user closed", and TronLink
+ * rejects with the bare string "Confirmation declined by user".
  */
 const USER_REJECTION_PROSE =
-  /user (rejected|denied|cancell?ed|declined|closed)/i;
+  /user (rejected|denied|cancell?ed|declined|closed)|(rejected|denied|declined) by (the )?user/i;
 
 const saysRejected = (value: unknown): boolean =>
   typeof value === 'string' && USER_REJECTION_PROSE.test(value);
@@ -136,6 +137,33 @@ export class IntentsConnectApiError extends IntentsConnectError {
    */
   get isExecutionInFlight(): boolean {
     return this.status === 409;
+  }
+}
+
+/** A non-2xx response from the Aurora intents API (`intents-api.aurora.dev`). */
+export class IntentsApiError extends IntentsConnectError {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body?: unknown,
+  ) {
+    super(message);
+    this.name = 'IntentsApiError';
+  }
+
+  /** The user session token is missing, invalid or expired. */
+  get isUnauthorized(): boolean {
+    return this.status === 401;
+  }
+
+  /** The API key in the path is unknown to the service. */
+  get isBadApiKey(): boolean {
+    return this.status === 404;
+  }
+
+  /** The per-API-key rate limit was hit. */
+  get isRateLimited(): boolean {
+    return this.status === 429;
   }
 }
 

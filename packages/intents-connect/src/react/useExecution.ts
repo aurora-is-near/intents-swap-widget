@@ -16,6 +16,7 @@ import { createExecutionRunner } from '@/runner/createExecutionRunner';
 import type {
   ExecutionPlan,
   ExecutionPreview,
+  OutOperationPlan,
   ResumeDepositOptions,
   RunnerEvent,
   StepsPlan,
@@ -76,6 +77,8 @@ export type UseExecutionResult = {
   ) => Promise<StepsPreview<TParams>>;
   /** Drives a steps-only execution: create, sign, settle — no deposit leg. */
   runSteps: <TParams>(plan: StepsPlan<TParams>) => Promise<Execution>;
+  /** Drives an out-operation: steps at the intermediary, then a 1Click payout. */
+  runOut: <TParams>(plan: OutOperationPlan<TParams>) => Promise<Execution>;
   resume: (
     executionId: string,
     options?: ResumeDepositOptions,
@@ -295,6 +298,12 @@ export const useExecution = (
     [requireRunner],
   );
 
+  const runOut = useCallback(
+    async <TParams>(plan: OutOperationPlan<TParams>) =>
+      requireRunner().runOut(plan),
+    [requireRunner],
+  );
+
   const previewSteps = useCallback(
     async <TParams>(plan: StepsPlan<TParams>) =>
       requireRunner().previewSteps(plan),
@@ -345,6 +354,7 @@ export const useExecution = (
     run,
     preview,
     runSteps,
+    runOut,
     previewSteps,
     resume,
     retryDeposit,

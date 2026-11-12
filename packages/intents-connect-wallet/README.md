@@ -21,12 +21,21 @@ copies), so an EVM-only integration must not be made to install it.
 | `.` | shared transfer types, no deps | — |
 | `./evm` | EVM deposit transfer | `viem` |
 | `./solana` | Solana deposit transfer | `@solana/web3.js`, `@solana/spl-token` |
-| `./stellar` | Stellar transfer + `decodePublicKey` | `@stellar/stellar-sdk` |
+| `./stellar` | Stellar transfer, `decodePublicKey`, `toStellarWalletConnector` | `@stellar/stellar-sdk` |
 | `./near` | NEAR deposit transfer | — (plain `fetch`) |
+| `./tron` | TRON deposit transfer, `toTronWalletConnector` | — (the wallet's own `tronWeb`) |
+| `./ton` | TON Connect client (extensions and phone QR), TON deposit transfer, `toTonWalletConnector` | `@tonconnect/sdk`, `@ton/core`, `@ton/crypto` (and a global `Buffer`) |
 | `./connect` | modal, presets, coordinator | `react`, `@headlessui/react` |
 | `./connect/appkit` | EVM + Solana connectors | `@reown/*`, `@solana/wallet-adapter-*`, `viem` |
 | `./connect/near` | NEAR connector | `@hot-labs/near-connect` |
 | `./connect/stellar` | Stellar connector | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
+| `./connect/walletconnect` | headless WalletConnect (EVM mobile, QR) | `@walletconnect/universal-provider` |
+| `./detect` | wallets already connected to the page | — |
+| `./detect/react` | `useDetectedWallets` | `react` |
+| `./detect/connector` | `toWalletConnector` for any detected wallet | `viem`, `@solana/web3.js`, `@solana/spl-token` |
+| `./detect/stellar` | Stellar wallets for detection (`stellarWallets`) | `@creit.tech/stellar-wallets-kit`, `@stellar/stellar-sdk` |
+| `./detect/tron` | TRON wallets for detection (`tronWallets`) | — |
+| `./detect/ton` | TON wallet extensions for detection (`tonWallets(client)`) | as `./ton` |
 
 Install only what you use — e.g. EVM with our modal:
 
@@ -36,6 +45,11 @@ yarn add @aurora-is-near/intents-connect @aurora-is-near/intents-connect-wallet 
 ```
 
 ## Transfers
+
+A NEAR deposit of native NEAR (no `tokenAddress`) is wrapped on the way: one
+transaction to `wrap.near` registers the payer if needed (refunded otherwise),
+wraps the amount and sends it as wNEAR, since 1Click only takes wNEAR. Quote
+it as wNEAR (`toQuoteAssetId` in core).
 
 ```ts
 import { evm } from '@aurora-is-near/intents-connect-wallet/evm';
@@ -121,6 +135,197 @@ const toWalletConnector = (selector: WalletSelectorState) => {
 Connections are **mutually exclusive**: an execution is bound to one origin
 wallet, since both the signing standard and the intermediary address follow from
 it. `select()` disconnects the others first.
+
+### Mobile wallets by QR, headless
+
+`./connect/walletconnect` pairs an EVM mobile wallet over WalletConnect v2
+without any modal. You render the pairing URI as a QR yourself. The session
+persists in the browser, so `getPeer()` restores it after a reload without UI.
+
+```ts
+import {
+  createWalletConnectClient,
+  PAIRING_TTL_MS,
+  toWalletConnectConnector,
+} from '@aurora-is-near/intents-connect-wallet/connect/walletconnect';
+
+const walletConnect = createWalletConnectClient({
+  projectId, // your WalletConnect Cloud project; defaults to Aurora's
+  metadata: { name: 'My app', url: location.origin },
+});
+
+// On "Connect with phone": render `uri` as a QR; abortPairing() after PAIRING_TTL_MS.
+const peer = await walletConnect.pair((uri) => showQr(uri));
+const connector = toWalletConnectConnector(walletConnect, peer);
+```
+
+Chain switches stay local to the provider (the session covers every EVM chain
+the engine routes). A transfer on a chain the phone wallet did not approve fails
+in the wallet. `onSessionEnd` reports a session the wallet ended from its side.
+
+Pass `storagePrefix` when the page may run WalletConnect itself, as a script
+injected into a dapp does. WalletConnect shares one Core per prefix through
+`globalThis`, so without one the client would reuse the page's Core (its
+project and its sessions) and write to the same storage keys.
+
+## Detection
+
+`./detect` finds wallets injected into the page — EVM over EIP-6963, Solana
+over the Wallet Standard, NEAR over near-connect's injection protocol — and the
+accounts they already share with the site, without prompting. Ported from the
+Chrome extensions' page bridge, minus the extension plumbing; unlike it, every
+listener is removed on `destroy()`.
+
+```ts
+import {
+  createWalletDetector,
+  pickConnectedWallet,
+} from '@aurora-is-near/intents-connect-wallet/detect';
+import { toEvmWalletConnector } from '@aurora-is-near/intents-connect-wallet/evm';
+
+const detector = createWalletDetector();
+detector.subscribe(() => {
+  const detected = pickConnectedWallet(detector.getSnapshot().wallets, ['evm']);
+  const { connector } = detected?.family === 'evm'
+    ? toEvmWalletConnector(detected)
+    : { connector: null };
+});
+```
+
+Detection never prompts, and only calls a wallet when that is safe:
+
+- **EVM** is read with `eth_accounts`, which never prompts.
+- **Solana** is read from `wallet.accounts`.
+- **NEAR and Solana wallets the user connected here** are restored silently:
+  `getAccounts`, or `connect({ silent: true })` once per page.
+- **No other wallet is called.** Some open their UI even when asked to stay
+  silent (HOT, the Solflare Snap), or answer an account read with a sign-in.
+
+`connectDetectedWallet(wallet)` is the one call that prompts. Run it from a
+user gesture, then `refresh()`. It records the wallet in localStorage
+(`intents-connect.connectedWallets`).
+
+Some wallets never answer a closed popup, so pass `{ signal }` to call an
+attempt off (e.g. when the user picks another wallet): it rejects at once
+with an `AbortError`, and the wallet's late answer is ignored, not
+remembered. TON extensions also give up on their own after 60 s.
+
+`disconnectDetectedWallet(wallet)` forgets it again and asks the wallet to
+revoke the connection, where it can. `pickConnectedWallet` skips a wallet the
+user disconnected, even one that still shares an account.
+
+Each chain subpath has the adapter for its family — `toEvmWalletConnector`,
+`toSolanaWalletConnector` (plus `standardWalletToSolanaProvider`) and
+`toNearWalletConnector`, which also accepts `./connect/near` state for the
+sandboxed wallets detection cannot see. They return
+`{ connector, unsupportedReason? }` rather than throwing.
+
+Other families plug in from their own subpaths, so `./detect` never pulls
+their chain SDK: pass their sources to `createWalletDetector({ sources })` or
+`useDetectedWallets({ sources })`. A plug-in wallet carries its own
+`connect`, `disconnect` and `toConnector` (`PluggableWallet`), which
+`connectDetectedWallet`, `disconnectDetectedWallet` and `toWalletConnector`
+call; its options go under its family name. A source keeps the same wallet
+objects while nothing changed, since the detector compares them by identity.
+`rememberWalletAddress` / `getRememberedAddress` let a source restore a wallet
+that can't share its address silently; disconnecting clears it.
+
+### Stellar
+
+`./detect/stellar`'s `stellarWallets()` is such a source, over the
+stellar-wallets-kit modules for Freighter, xBull, LOBSTR and Hana. Albedo and
+Rabet are left out: they can't sign a message.
+
+```ts
+import { stellarWallets } from '@aurora-is-near/intents-connect-wallet/detect/stellar';
+
+// Create it once: the detector registry is keyed by source ids.
+const sources = [stellarWallets()];
+const { wallets } = useDetectedWallets({ sources });
+```
+
+- **Availability** is checked once per detector and cached. A wallet that
+  isn't installed is never listed; its check waits at least 2.5 s, since some
+  extensions answer late. xBull is listed only with its extension: its web
+  wallet opens a popup per request, which the browser blocks once the
+  payment's signature and transfer come seconds after the click.
+- **Freighter** is restored silently (`getAddress({ skipRequestAccess: true })`).
+  The others ask on every address read, so they are restored from the address
+  remembered when the user connected them.
+- **Signing** passes the account to the wallet (Hana needs it) and checks the
+  result locally (`isSep53Signature`) before it's submitted. A wallet that signed
+  with another account, or not as SEP-53 requires, fails with a named error and
+  nothing is sent.
+- **Its options** go under `stellar`: `{ stellar: { rpcEndpoints } }` for the
+  transfer's Soroban RPC. Balances come from Horizon, through
+  `intents-connect`'s `rpcs.stellar`.
+
+### TRON
+
+`./detect/tron`'s `tronWallets()` lists the wallets announced over TIP-6963
+(TronLink), or `window.tron` when none is. It needs no dependencies.
+
+- **Its own `tronWeb`.** Each wallet signs and sends with its provider's
+  `tronWeb`, never the global `window.tronWeb`, which other wallets
+  overwrite. That `tronWeb` exists only once the user connected the site, so
+  the account is read from it without a prompt.
+- **Connecting** calls `eth_requestAccounts`. TronLink can't revoke a site, so
+  disconnecting only forgets it here.
+- **Signing** is `tip191` (`signMessageV2`), checked against the account with
+  `verifyMessageV2` before it's submitted.
+- **The deposit** sends TRX with `sendTrx` or a TRC-20 with
+  `transfer(address,uint256)` (a 100 TRX fee limit), and follows it into a
+  block. It refuses a wallet on a test network, and a memo. A transfer
+  broadcast but not seen in time still returns its hash: failing would offer
+  a second one.
+- **Rejections.** TronLink rejects with the bare string "Confirmation declined
+  by user"; it's rethrown as an Error with code 4001.
+
+### TON
+
+A client is one TON Connect session, which holds one wallet: give
+extensions and phones a client each, so pairing a phone doesn't drop the
+extension in use.
+
+```ts
+import { createTonConnectClient } from '@aurora-is-near/intents-connect-wallet/ton';
+import { tonWallets } from '@aurora-is-near/intents-connect-wallet/detect/ton';
+
+// Wallets fetch the manifest (url, name, iconUrl): it must be public.
+const extensions = createTonConnectClient({ manifestUrl, storagePrefix: 'my-app.ton-extension' });
+const phones = createTonConnectClient({ manifestUrl, storagePrefix: 'my-app.ton-phone' });
+const sources = [tonWallets(extensions)]; // installed extensions
+
+// A phone: show `uri` as a QR code; resolves once the wallet approves.
+const peer = await phones.pair((uri) => showQr(uri));
+const { connector } = toTonWalletConnector(phones, peer);
+```
+
+- **The session** is restored from storage (`getPeer`), once. TON Connect's
+  storage keys are fixed, so `storagePrefix` keeps sessions apart from each
+  other and from another TON Connect app on the origin. A new connection on
+  a client replaces its old one.
+- **The account.** Addresses are user-friendly and non-bounceable (`UQ…`)
+  everywhere. A wallet is refused without its public key
+  (`MISSING_PUBLIC_KEY`: a TON address doesn't carry it), without text
+  signing (`NO_SIGN_DATA`) or on the testnet (`WRONG_NETWORK`).
+- **Signing** is `ton_connect`: TON Connect's `signData({ type: 'text' })`,
+  with the public key and the `tonConnect` envelope the wallet chose.
+- **The deposit** sends TON non-bounceable, so it can't bounce off a deposit
+  address that isn't deployed yet, or a jetton (USDT) through the sender's
+  jetton wallet (found on toncenter) with 0.05 TON attached for fees. It
+  returns the hash of the transaction the message landed in, found by its
+  normalized hash (TEP-467); if that doesn't show up in time, the message
+  hash, since failing would offer a second transfer.
+- **Rejections** come back with code 4001 (`UserRejectsError`).
+- **`Buffer`.** `@ton/core` calls `Buffer` when it loads: give the browser
+  one (the `buffer` package), scoped to your bundle if it's injected into
+  another page.
+
+`./detect/connector`'s `toWalletConnector(detected, { evm?, sol?, near?, stellar?, ton? })`
+picks the adapter by family and hands it that family's options (e.g.
+`{ sol: { rpcUrl } }`). It pulls every family's transfer code, so it needs
+the peers of `./evm` and `./solana`.
 
 ## Deviations from the widget
 

@@ -8,13 +8,13 @@ tags:
 
 # Intents Connect SDK
 
-> **Beta.** The SDK talks to `https://intents-connect-alpha-api.aurora.dev`. APIs may change between minor versions. TON (`ton_connect`) and Tron (`tip191`) wallets are not supported yet.
+> **Beta.** The SDK talks to `https://intents-connect-alpha-api.aurora.dev`. APIs may change between minor versions.
 
 The SDK turns the [Intents Connect API](https://docs.intents.aurora.dev/api-reference/intents-connect-api-reference) into a single call. **A new integration is just a step builder**: you describe the on-chain calls to run on the destination chain, and the SDK handles everything else:
 
 - intermediary account resolution
 - quoting and fee arithmetic
-- wallet signing (EVM, Solana, NEAR, Stellar)
+- wallet signing (EVM, Solana, NEAR, Stellar, TRON, TON)
 - the deposit transfer
 - polling, expiry and in-flight recovery
 
@@ -53,7 +53,8 @@ The user signs once from their own wallet, on any supported chain. An [intermedi
 | Describe on-chain steps and choose a fee strategy | [Recipes & fees](typescript-sdk/recipes-and-fees.md) |
 | Handle statuses, errors, retries and resume | [Lifecycle & errors](typescript-sdk/lifecycle-and-errors.md) |
 | Use it from React | [React](typescript-sdk/react.md) |
-| Connect EVM, Solana, NEAR or Stellar wallets | [Wallet integrations](wallet-integrations.md) |
+| Show wallet, intents and confidential balances; verify wallets | [Account & balances](typescript-sdk/account-and-balances.md) |
+| Connect EVM, Solana, NEAR, Stellar, TRON or TON wallets, or detect connected ones | [Wallet integrations](wallet-integrations.md) |
 | See complete integrations (Hydrex, Polymarket, Jupiter) | [Examples](examples/README.md) |
 
 ## Related

@@ -92,7 +92,7 @@ Common guard codes:
 | `RECIPIENT_NOT_ALLOWED` | `quote.recipient` was set on a bridge-in |
 | `MEMO_REQUIRED` | Stellar deposit without a memo |
 | `NO_TRANSFER_IMPLEMENTATION` | `depositViaWallet: true`, but there's no transfer ([Wallet integrations](../wallet-integrations.md)) |
-| `UNSUPPORTED_SIGNING_STANDARD` | The wallet uses `tip191` / `ton_connect` |
+| `UNSUPPORTED_SIGNING_STANDARD` | The wallet signs with a standard this version can't (one the API added since) |
 | `FEE_EXCEEDS_AMOUNT` | Steps-only: the fee would eat the whole amount |
 
 ## Recovery
@@ -115,10 +115,9 @@ if (recovery?.kind === 'retry-transfer') {
 
 | Situation | Action |
 |---|---|
-| Page reloaded mid-execution | `resume(savedExecutionId)`. For a non-EVM origin across sessions, pass `{ originToken }` |
+| Page reloaded mid-execution | `resume(savedExecutionId)`. For a non-EVM origin across sessions, pass `{ originToken }`, plus `originChain` for a Stellar asset (its asset id doesn't name the chain) |
 | User rejected the signature | The runner auto-cancels by default (`autoCancelOnSignatureRejection`) to free the lock |
 | Deposit sent after `EXPIRED` | Keep polling: the execution revives |
-| Stellar origin | Can't be cancelled client-side. It clears on expiry |
 
 ## Next
 

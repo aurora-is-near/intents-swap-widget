@@ -1,0 +1,320 @@
+import {
+  type ButtonHTMLAttributes,
+  type CSSProperties,
+  forwardRef,
+  type ReactNode,
+  useEffect,
+  useState,
+} from 'react';
+
+import { useAnnounce } from './a11y/Announcer';
+
+/** The current time, ticking every second while `enabled`. */
+export const useNow = (enabled: boolean) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => clearInterval(timer);
+  }, [enabled]);
+
+  return now;
+};
+
+export const cx = (...parts: (string | false | null | undefined)[]) =>
+  parts.filter(Boolean).join(' ');
+
+const BUTTON_VARIANTS = {
+  /** The dialog's main action: full height, black, like Aave's own. */
+  primary:
+    'h-12 rounded-cta bg-cta px-6 text-button font-medium text-cta-text shadow-cta hover:bg-cta-hover disabled:bg-cta-disabled disabled:shadow-none',
+  secondary:
+    'h-9 rounded-control bg-control px-3.5 text-sm font-medium text-text-primary shadow-box hover:bg-surface-hover disabled:opacity-50',
+  /** Icon buttons: at least 24 px square, the WCAG 2.2 minimum target. */
+  ghost:
+    'min-h-[24px] min-w-[24px] rounded-chip p-1 text-text-muted hover:text-text-primary disabled:opacity-40',
+} as const;
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: keyof typeof BUTTON_VARIANTS;
+};
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ children, variant = 'secondary', className, ...props }, ref) => (
+    <button
+      ref={ref}
+      type="button"
+      {...props}
+      className={cx(
+        'inline-flex items-center justify-center gap-1.5 transition-colors duration-150 disabled:cursor-not-allowed',
+        BUTTON_VARIANTS[variant],
+        className,
+      )}>
+      {children}
+    </button>
+  ),
+);
+
+Button.displayName = 'Button';
+
+const NOTICE_TONES = {
+  info: 'bg-surface-raised shadow-box',
+  warning: 'bg-danger-bg shadow-danger',
+} as const;
+
+export const Notice = ({
+  tone,
+  children,
+}: {
+  tone: keyof typeof NOTICE_TONES;
+  children: ReactNode;
+}) => (
+  <div className={cx('rounded-card p-3', NOTICE_TONES[tone])}>{children}</div>
+);
+
+/**
+ * A list with nothing to show: an icon in a circle, a line saying why, and
+ * maybe a way out (`action`, e.g. "Clear search").
+ */
+export const EmptyState = ({
+  icon,
+  children,
+  action,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
+}) => (
+  <div className="flex flex-col items-center gap-2 py-6 text-center text-text-muted">
+    <span
+      aria-hidden="true"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-hover text-text-secondary">
+      {icon}
+    </span>
+    <p>{children}</p>
+    {action}
+  </div>
+);
+
+/** `0xd8dA…6045` */
+export const truncateMiddle = (value: string, head = 6, tail = 4) =>
+  value.length > head + tail + 1
+    ? `${value.slice(0, head)}…${value.slice(-tail)}`
+    : value;
+
+export const Skeleton = ({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: CSSProperties;
+}) => (
+  <div
+    aria-hidden="true"
+    className={cx('animate-pulse rounded-card bg-surface-hover', className)}
+    style={style}
+  />
+);
+
+const icon = (path: ReactNode, size = 14) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden>
+    {path}
+  </svg>
+);
+
+export const CloseIcon = ({ size = 14 }: { size?: number }) =>
+  icon(<path d="M6 6l12 12M18 6 6 18" />, size);
+export const BackIcon = () => icon(<path d="m15 18-6-6 6-6" />, 16);
+export const ChevronIcon = () => icon(<path d="m9 18 6-6-6-6" />, 16);
+export const CheckIcon = ({ size = 14 }: { size?: number }) =>
+  icon(<path d="M20 6 9 17l-5-5" />, size);
+export const QrIcon = ({ size = 16 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+    </>,
+    size,
+  );
+export const BrowserIcon = ({ size = 16 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01" />
+    </>,
+    size,
+  );
+export const SearchIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </>,
+    size,
+  );
+
+/** A stopped or failed state, beside its words. */
+export const AlertIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5v5.5M12 16.5v.01" />
+    </>,
+    size,
+  );
+
+/** Next to a link that opens a new tab. */
+export const ExternalIcon = ({ size = 11 }: { size?: number }) =>
+  icon(
+    <>
+      <path d="M14 4h6v6" />
+      <path d="M10 14 20 4" />
+      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </>,
+    size,
+  );
+
+/**
+ * A search box: named by `label`, and Escape clears a query it holds
+ * (claimed, so the dialog stays open) before it closes anything.
+ */
+export const SearchField = ({
+  value,
+  onChange,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  placeholder: string;
+}) => (
+  <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-control bg-field px-3 text-text-muted shadow-box focus-within:shadow-focus">
+    <SearchIcon />
+    <input
+      type="search"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && value) {
+          event.preventDefault();
+          onChange('');
+        }
+      }}
+      placeholder={placeholder}
+      aria-label={label}
+      className="min-w-0 flex-1 bg-transparent text-text-primary outline-hidden placeholder:text-text-muted"
+    />
+  </label>
+);
+/** Private balances: closed until the user authorizes. */
+export const LockIcon = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>,
+    size,
+  );
+
+/** An intents account: balances held on NEAR Intents, not on a chain. */
+export const IntentsGlyph = ({ size = 14 }: { size?: number }) =>
+  icon(
+    <>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 13 9 5 9-5" />
+    </>,
+    size,
+  );
+
+export const WalletGlyph = ({ size = 18 }: { size?: number }) =>
+  icon(
+    <>
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <path d="M3 10h18M16 15h2M7 6V4.5A1.5 1.5 0 0 1 8.5 3H17" />
+    </>,
+    size,
+  );
+
+const CopyIcon = () =>
+  icon(
+    <>
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </>,
+    12,
+  );
+
+/**
+ * Copies `value`: the icon turns into a check for a moment, and screen
+ * readers hear that it was copied (or that it couldn't be).
+ */
+export const CopyButton = ({
+  value,
+  label,
+  text,
+}: {
+  value: string;
+  /** What is copied, for screen readers. */
+  label: string;
+  /**
+   * Visible words next to the icon, e.g. "Copy link". Then they are its
+   * name, so what's read matches what's shown.
+   */
+  text?: string;
+}) => {
+  const [copied, setCopied] = useState(false);
+  const announce = useAnnounce();
+
+  useEffect(() => {
+    if (!copied) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setCopied(false), 1500);
+
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  return (
+    <Button
+      variant="ghost"
+      aria-label={text ? undefined : `Copy ${label}`}
+      className={text ? 'gap-1 px-1.5' : undefined}
+      onClick={() => {
+        navigator.clipboard.writeText(value).then(
+          () => {
+            setCopied(true);
+            announce(`Copied the ${label}`);
+          },
+          () => announce(`Couldn't copy the ${label}`, 'assertive'),
+        );
+      }}>
+      {text}
+      {copied ? <CheckIcon /> : <CopyIcon />}
+    </Button>
+  );
+};
+
+/** A small grey label: a wallet family, "Phone", "On Aave". */
+export const Tag = ({ children }: { children: ReactNode }) => (
+  <span className="inline-flex h-5 items-center rounded-chip bg-surface-hover px-1.5 text-xs font-medium text-text-secondary">
+    {children}
+  </span>
+);

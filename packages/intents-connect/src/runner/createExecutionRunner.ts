@@ -20,12 +20,14 @@ import { retryDeposit } from '@/runner/flows/retryDeposit';
 import { run } from '@/runner/flows/run';
 import { preview } from '@/runner/flows/preview';
 import { previewSteps } from '@/runner/flows/previewSteps';
+import { runOut } from '@/runner/flows/runOut';
 import { runSteps } from '@/runner/flows/runSteps';
 import { cancel } from '@/runner/stages/cancel';
 import type {
   ExecutionPlan,
   ExecutionRunner,
   ExecutionRunnerOptions,
+  OutOperationPlan,
   ResumeDepositOptions,
   RunnerEvent,
   StepsPlan,
@@ -286,6 +288,8 @@ export const createExecutionRunner = (
       previewSteps(ctx, plan),
     runSteps: <TParams>(plan: StepsPlan<TParams>) =>
       withFlowLock(() => runSteps(ctx, plan)),
+    runOut: <TParams>(plan: OutOperationPlan<TParams>) =>
+      withFlowLock(() => runOut(ctx, plan)),
     resume: (executionId: string, resumeOptions?: ResumeDepositOptions) =>
       withFlowLock(() => resume(ctx, executionId, resumeOptions)),
     retryDeposit: () => withFlowLock(() => retryDeposit(ctx)),

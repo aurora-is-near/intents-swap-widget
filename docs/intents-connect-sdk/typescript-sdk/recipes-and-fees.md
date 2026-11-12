@@ -25,6 +25,7 @@ A **recipe** says what the intermediary account should do on the destination cha
 |---|---|---|
 | `bridge-in` | User funds on any chain → bridged to the intermediary → steps run | `preview` / `run` |
 | `steps-only` | No bridge: steps spend what the intermediary already holds (e.g. sell, withdraw) | `previewSteps` / `runSteps` |
+| `out-operation` | Steps release funds where the intermediary holds them, then 1Click pays them out to `quote.recipient` on any chain (or intents account) | `runOut` |
 
 ## EVM steps
 

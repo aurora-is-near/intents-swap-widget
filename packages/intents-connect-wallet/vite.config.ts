@@ -28,10 +28,19 @@ const entries = [
   'solana',
   'stellar',
   'near',
+  'tron',
+  'ton',
   'connect',
   'connect/appkit',
   'connect/near',
   'connect/stellar',
+  'connect/walletconnect',
+  'detect',
+  'detect/react',
+  'detect/connector',
+  'detect/stellar',
+  'detect/tron',
+  'detect/ton',
 ];
 
 export default defineConfig({

@@ -99,6 +99,107 @@ describe('erc191', () => {
   });
 });
 
+describe('tip191', () => {
+  const address = 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G';
+
+  it('signs payload_json verbatim, normalises v and omits publicKey', async () => {
+    const signMessage = vi.fn().mockResolvedValue(toHex(sig65(0x1b)));
+
+    const result = await signIntentsConnectPayload({
+      payload: payload('tip191'),
+      standard: 'tip191',
+      address,
+      providers: { tron: { address, signMessage } },
+    });
+
+    expect(signMessage).toHaveBeenCalledWith(PAYLOAD_JSON);
+    expect(result).toEqual({
+      signature: `secp256k1:${base58.encode(sig65(0))}`,
+    });
+  });
+
+  it('refuses a provider bound to another account before prompting', async () => {
+    const signMessage = vi.fn();
+
+    await expect(
+      signIntentsConnectPayload({
+        payload: payload('tip191'),
+        standard: 'tip191',
+        address,
+        providers: { tron: { address: 'TOTHER', signMessage } },
+      }),
+    ).rejects.toThrow(/does not match/);
+    expect(signMessage).not.toHaveBeenCalled();
+  });
+});
+
+describe('ton_connect', () => {
+  const address = 'UQBNrjsFcpvNu5LZWuTuYQiQC0VeiBOmogFAzrP7AJOnWsaE';
+  const publicKey = base58.encode(Uint8Array.from({ length: 32 }, (_, i) => i));
+  const signed = {
+    signature: base64.encode(sig64),
+    address:
+      '0:4dae3b05729bcdbb92d95ae4ee6108900b455e8813a6a20140ceb3fb0093a75a',
+    domain: 'app.aave.com',
+    timestamp: 1_793_900_000,
+  };
+
+  it('signs payload_json as sign-data text, with its public key and envelope', async () => {
+    const signText = vi.fn().mockResolvedValue(signed);
+
+    const result = await signIntentsConnectPayload({
+      payload: payload('ton_connect'),
+      standard: 'ton_connect',
+      address,
+      providers: {
+        ton: { address, publicKey: `ed25519:${publicKey}`, signText },
+      },
+    });
+
+    expect(signText).toHaveBeenCalledWith(PAYLOAD_JSON);
+    expect(result).toEqual({
+      signature: `ed25519:${base58.encode(sig64)}`,
+      publicKey: `ed25519:${publicKey}`,
+      tonConnect: {
+        address: signed.address,
+        domain: 'app.aave.com',
+        timestamp: 1_793_900_000,
+      },
+    });
+  });
+
+  it('signs a delete the same way', async () => {
+    const signText = vi.fn().mockResolvedValue(signed);
+
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'ton_connect',
+      address,
+      providers: { ton: { publicKey, signText } },
+    });
+
+    expect(signText).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toMatchObject({
+      publicKey: `ed25519:${publicKey}`,
+      tonConnect: { domain: 'app.aave.com' },
+    });
+  });
+
+  it('refuses a provider bound to another account before prompting', async () => {
+    const signText = vi.fn();
+
+    await expect(
+      signIntentsConnectPayload({
+        payload: payload('ton_connect'),
+        standard: 'ton_connect',
+        address,
+        providers: { ton: { address: 'UQOTHER', publicKey, signText } },
+      }),
+    ).rejects.toThrow(/does not match/);
+    expect(signText).not.toHaveBeenCalled();
+  });
+});
+
 describe('raw_ed25519', () => {
   const address = '7XSfQk6pYyBGZ3fT8Jd6mR2vNwUq9Lz1AaBbCcDdEeFf';
 
@@ -399,20 +500,41 @@ describe('signIntentsConnectText', () => {
     expect(result.publicKey).toBe('ed25519:pub');
   });
 
-  it('refuses sep53 — the delete endpoint does not accept it', async () => {
-    const signMessage = vi.fn();
+  it('signs a tip191 delete like erc191, with no public key', async () => {
+    const signMessage = vi.fn().mockResolvedValue(toHex(sig65(0x1c)));
 
-    await expect(
-      signIntentsConnectText({
-        text: 'delete_execution:exec-1',
-        standard: 'sep53',
-        address: 'GABCDEF',
-        providers: { stellar: { signMessage } } as unknown as Providers,
-      }),
-    ).rejects.toMatchObject({ code: 'UNSUPPORTED_SIGNING_STANDARD' });
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'tip191',
+      address: 'TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G',
+      providers: { tron: { signMessage } },
+    });
 
-    // Refused BEFORE the wallet prompt: the backend would reject the delete
-    // anyway, so the user must not be asked to sign it.
-    expect(signMessage).not.toHaveBeenCalled();
+    expect(signMessage).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toEqual({
+      signature: `secp256k1:${base58.encode(sig65(1))}`,
+    });
+  });
+
+  it('signs a sep53 delete like any SEP-53 message, with its public key', async () => {
+    const publicKeyBytes = Uint8Array.from({ length: 32 }, (_, i) => i);
+    const signMessage = vi.fn().mockResolvedValue({
+      signedMessage: base64.encode(sig64),
+      signerAddress: 'GABCDEF',
+    });
+
+    const result = await signIntentsConnectText({
+      text: 'delete_execution:exec-1',
+      standard: 'sep53',
+      address: 'GABCDEF',
+      providers: { stellar: { signMessage } } as unknown as Providers,
+      decodePublicKey: () => publicKeyBytes,
+    });
+
+    expect(signMessage).toHaveBeenCalledWith('delete_execution:exec-1');
+    expect(result).toEqual({
+      signature: `ed25519:${base58.encode(sig64)}`,
+      publicKey: `ed25519:${base58.encode(publicKeyBytes)}`,
+    });
   });
 });

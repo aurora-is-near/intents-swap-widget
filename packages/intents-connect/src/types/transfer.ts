@@ -63,6 +63,10 @@ export type TransferPlugins = {
   stellar?: TransferPlugin<any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   near?: TransferPlugin<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tron?: TransferPlugin<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ton?: TransferPlugin<any>;
 };
 
 /**

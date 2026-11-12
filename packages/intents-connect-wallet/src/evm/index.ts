@@ -13,3 +13,7 @@ export { makeTransfer } from '@/evm/makeTransfer';
 export { makeVirtualChainTransfer } from '@/evm/makeVirtualChainTransfer';
 export { isEvmAddress, isVirtualChain } from '@/evm/utils';
 export type { EvmTransferOptions } from '@/evm/types';
+export {
+  toEvmWalletConnector,
+  type EvmWalletConnectorOptions,
+} from '@/evm/toWalletConnector';

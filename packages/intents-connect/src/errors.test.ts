@@ -22,6 +22,8 @@ describe('isUserRejection', () => {
       'User canceled the request',
       'User declined access',
       'User closed the popup',
+      // TronLink's, as a bare string.
+      'Confirmation declined by user',
     ].forEach((message) => {
       expect(isUserRejection(new Error(message))).toBe(true);
     });
@@ -31,6 +33,10 @@ describe('isUserRejection', () => {
     // Freighter rejects IN-BAND: sep53 rethrows the bare string through
     // toError, so the only evidence left is the cause.
     expect(isUserRejection(toError('User declined access'))).toBe(true);
+    // TronLink rejects signMessageV2 and trx.sign with a bare string too.
+    expect(isUserRejection(toError('Confirmation declined by user'))).toBe(
+      true,
+    );
   });
 
   it('does not classify unrelated failures as rejections', () => {

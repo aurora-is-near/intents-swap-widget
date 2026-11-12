@@ -20,7 +20,11 @@ import type {
   CreateStepsExecutionBody,
 } from '@/api/types';
 import { DEFAULT_QUOTE_DEADLINE_MS } from '@/runner/constants';
-import type { ExecutionPlan, StepsPlan } from '@/runner/types';
+import type {
+  ExecutionPlan,
+  OutOperationPlan,
+  StepsPlan,
+} from '@/runner/types';
 
 /**
  * What the recipe-level helpers below actually read. Both `ExecutionPlan` and
@@ -192,6 +196,7 @@ export const buildStepsBody = <TParams>(
     ? { addressLookupTables: prepared.addressLookupTables }
     : {}),
   metadata: {
+    ...plan.metadata,
     title: plan.recipe.title,
     intent: plan.recipe.intent,
     intentsConnectFlow: 'steps-only',
@@ -238,3 +243,63 @@ export const prepareRecipeSteps = async <TParams>(
 
   return validateSteps(plan, prepared);
 };
+
+/** Marks an execution created by `runOut()`: it has no deposit leg. */
+export const OUT_OPERATION_FLOW = 'out-operation';
+
+/**
+ * The step that hands what the recipe released to 1Click: an ERC-20 transfer
+ * to the deposit address, or a plain value transfer for a native token.
+ */
+export const payoutStep = (
+  destination: { tokenAddress?: string },
+  amount: string,
+): Step =>
+  destination.tokenAddress
+    ? {
+        to: destination.tokenAddress,
+        functionSignature: 'transfer(address,uint256)',
+        parameters: ['{DEPOSIT_ADDRESS}', amount],
+        value: '0',
+      }
+    : {
+        to: '{DEPOSIT_ADDRESS}',
+        functionSignature: '',
+        parameters: [],
+        value: amount,
+      };
+
+export const buildOutBody = <TParams>(
+  plan: OutOperationPlan<TParams>,
+  prepared: PreparedSteps,
+  amount: string,
+  dry: boolean,
+  extra: { feeBudget?: string } = {},
+): CreateExecutionBody => ({
+  version: '1.0',
+  type: plan.recipe.type,
+  outOperation: true,
+  quote: {
+    originAsset: plan.recipe.destination.assetId,
+    destinationAsset: plan.quote.destinationAsset,
+    amount,
+    swapType: 'EXACT_INPUT',
+    slippageTolerance: plan.quote.slippageTolerance ?? 100,
+    deadline:
+      plan.quote.deadline ??
+      new Date(Date.now() + DEFAULT_QUOTE_DEADLINE_MS).toISOString(),
+    recipient: plan.quote.recipient,
+    ...(plan.quote.recipientType
+      ? { recipientType: plan.quote.recipientType }
+      : {}),
+  },
+  steps: prepared.steps,
+  metadata: {
+    ...plan.metadata,
+    title: plan.recipe.title,
+    intent: plan.recipe.intent,
+    intentsConnectFlow: OUT_OPERATION_FLOW,
+    ...(extra.feeBudget ? { intentsConnectFeeBudget: extra.feeBudget } : {}),
+  },
+  dry,
+});

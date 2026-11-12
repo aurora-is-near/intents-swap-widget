@@ -31,6 +31,9 @@
         "@solana/wallet-adapter-solflare",
         "@solana/web3.js",
         "@stellar/stellar-sdk",
+        "@ton/core",
+        "@tonconnect/sdk",
+        "@walletconnect/universal-provider",
         "react",
         "viem"
       ]
@@ -43,8 +46,7 @@
         "manifest.config.ts"
       ],
       "ignoreDependencies": [
-        "@fontsource/figtree",
-        "@solana/spl-token"
+        "@fontsource/figtree"
       ]
     },
     "apps/aurora-intents-wallet-ext": {
@@ -55,9 +57,12 @@
         "manifest.config.ts"
       ],
       "ignoreDependencies": [
-        "@fontsource/figtree",
-        "@solana/spl-token"
+        "@fontsource/figtree"
       ]
+    },
+    "apps/intents-connect-aave-ext": {
+      "entry": ["manifest.config.ts", "src/background.ts"],
+      "ignoreDependencies": ["buffer", "jsdom"]
     }
   }
 }

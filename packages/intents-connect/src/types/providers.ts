@@ -48,6 +48,46 @@ export type StellarProvider = {
   >;
 };
 
+/**
+ * A TRON wallet, as far as signing goes. Wallet packages adapt `tronWeb`
+ * onto it; nothing here depends on TronWeb.
+ */
+export type TronProvider = {
+  /** The base58 `T…` address it signs with, when known. */
+  address?: string;
+  /**
+   * TIP-191 (`tronWeb.trx.signMessageV2`): signs the UTF-8 text under the
+   * `"\x19TRON Signed Message:\n" + length` prefix, and returns `0x` + the
+   * 65-byte r‖s‖v signature in hex.
+   */
+  signMessage: (message: string) => Promise<string>;
+};
+
+/** What a TON wallet returns for TON Connect's `signData({ type: 'text' })`. */
+export type TonSignedText = {
+  /** Base64 ed25519 signature over TON Connect's sign-data digest. */
+  signature: string;
+  /** The address the wallet signed for, as it reports it. */
+  address: string;
+  /** The dApp domain the wallet folded into the digest. */
+  domain: string;
+  /** Unix seconds, folded into the digest too. */
+  timestamp: number;
+};
+
+/**
+ * A TON wallet over TON Connect, as far as signing goes. Wallet packages
+ * adapt their TON Connect session onto it.
+ */
+export type TonProvider = {
+  /** The user-friendly address it signs with, when known. */
+  address?: string;
+  /** `ed25519:<base58>`: a TON address doesn't carry the key. */
+  publicKey: string;
+  /** TON Connect `signData({ type: 'text', text })`. */
+  signText: (text: string) => Promise<TonSignedText>;
+};
+
 export type NearSignedMessage = {
   accountId: string;
   publicKey: string;
@@ -67,5 +107,7 @@ export type Providers = {
   evm?: undefined | null | EvmProvider;
   sol?: undefined | null | SolanaProvider;
   stellar?: undefined | null | StellarProvider;
+  tron?: undefined | null | TronProvider;
+  ton?: undefined | null | TonProvider;
   near?: undefined | null | (() => NearWalletBase);
 };

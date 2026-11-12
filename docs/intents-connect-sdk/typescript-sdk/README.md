@@ -112,8 +112,9 @@ The origin wallet signs, whatever the destination chain is.
 | `erc191` | EVM (`personal_sign`) | ✅ |
 | `raw_ed25519` | Solana | ✅ |
 | `nep413` | NEAR | ✅ |
-| `sep53` | Stellar | ✅ (can't be cancelled client-side, clears on expiry) |
-| `tip191` / `ton_connect` | Tron / TON | ❌ not yet |
+| `sep53` | Stellar (Freighter, xBull, LOBSTR, Hana) | ✅ |
+| `tip191` | TRON (TronLink, `signMessageV2`); no public key, like erc191 | ✅ |
+| `ton_connect` | TON (TON Connect sign-data text); public key and the `tonConnect` envelope sent | ✅ |
 
 ## SDK → HTTP API
 
@@ -132,10 +133,22 @@ Every call maps to an endpoint in the [Intents Connect API Reference](https://do
 
 🔑 = sends `x-api-key`, or goes through `apiKeyProxyUrl`.
 
+The account features use the Aurora intents API (`createIntentsApi`), with the API key in the path:
+
+| `intentsApi.` method | Endpoint |
+|---|---|
+| `getTokens()` | `GET /api/tokens/{apiKey}` |
+| `getIntentsAccountBalances(id)` | `GET /api/intents-account/balances/{apiKey}?intentsAccountId=` |
+| `authenticate(proof)` | `POST /api/auth/authenticate/{apiKey}` |
+| `refreshAccessToken(token)` | `POST /api/auth/refresh/{apiKey}` |
+| `getConfidentialBalances(token, ids?)` | `GET /api/account/balances/{apiKey}` with `Authorization: Bearer` |
+| `nearRpcUrl` | `POST /rpc/{apiKey}` (NEAR JSON-RPC proxy) |
+
 ## Next
 
 - [Recipes & fees](recipes-and-fees.md): step shape, placeholders, fee strategies
 - [Lifecycle & errors](lifecycle-and-errors.md): phases, events, recovery
 - [React](react.md): `IntentsConnectProvider` and `useExecution`
+- [Account & balances](account-and-balances.md): balances, verification, confidential balances
 - [Examples](../examples/README.md): real integrations, end to end
 - [Package README](https://github.com/aurora-is-near/intents-swap-widget/tree/main/packages/intents-connect) · [npm](https://www.npmjs.com/package/@aurora-is-near/intents-connect)

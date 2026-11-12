@@ -1,6 +1,7 @@
 import * as guards from '@/machine/guards';
 import { AWAITING_FUNDS_STATUSES, type Execution } from '@/types/execution';
 import type { RunnerCtx } from '@/runner/ctx';
+import { OUT_OPERATION_FLOW } from '@/runner/planHelpers';
 import { buildResumeDepositPlan } from '@/runner/depositPlan';
 import { awaitDeposit, exposeDepositAddress } from '@/runner/stages/deposit';
 import { fail } from '@/runner/stages/fail';
@@ -18,6 +19,10 @@ import type { ResumeDepositOptions } from '@/runner/types';
 export const isStepsOnlyExecution = (execution: Execution): boolean =>
   execution.executionMode === 'steps_only' ||
   execution.metadata?.intentsConnectFlow === 'steps-only';
+
+/** Whether an execution was created by `runOut()`: it pays out, never takes a deposit. */
+export const isOutOperationExecution = (execution: Execution): boolean =>
+  execution.metadata?.intentsConnectFlow === OUT_OPERATION_FLOW;
 
 /**
  * The steps-only counterpart of `validatePreparedExecution`: there is no
@@ -87,9 +92,11 @@ export const resume = async (
     // effect the revival. From DEPOSIT_PROCESSING onward the funds have been
     // observed, so prompting another transfer would double-spend.
     //
-    // A steps-only execution spends the intermediary's existing balance and
-    // never has a deposit leg, whatever its status reads.
-    const stepsOnly = isStepsOnlyExecution(execution);
+    // A steps-only execution spends the intermediary's existing balance, and
+    // an out-operation pays out what it holds: neither has a deposit leg,
+    // whatever its status reads. Both carry their fee budget in metadata.
+    const stepsOnly =
+      isStepsOnlyExecution(execution) || isOutOperationExecution(execution);
 
     let needsDeposit =
       !stepsOnly &&
