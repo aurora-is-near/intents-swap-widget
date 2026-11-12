@@ -14,6 +14,7 @@ import type { Token } from '@/types/token';
 import { LocalisationDict } from './types/localisation';
 import { WidgetConfig } from './types/config';
 import { BalanceRpcLoader } from './features';
+import { IncidentsLoader } from './features/IncidentsLoader';
 import { DEFAULT_RPCS } from './rpcs';
 import { ChainRpcUrls } from './types';
 import { Theme } from './types/theme';
@@ -157,6 +158,7 @@ export const WidgetConfigProvider = ({
               <ErrorBoundary>{children}</ErrorBoundary>
             )}
             {balanceViaRpc && <BalanceRpcLoader rpcs={rpcs ?? DEFAULT_RPCS} />}
+            <IncidentsLoader />
           </ThemeProvider>
         </WidgetConfigContext.Provider>
       </I18nextProvider>
