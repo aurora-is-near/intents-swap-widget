@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { snakeCase } from 'change-case';
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
@@ -31,8 +30,6 @@ import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isDryQuote } from '@/machine/guards/checks/isDryQuote';
 import { getDryQuoteAddress } from '@/utils/getDryQuoteAddress';
-import { chainIncidentsQueryOptions } from '@/utils/feeServiceIncidents';
-import { findQuoteIncident } from '@/utils/incidents/findQuoteIncident';
 
 import type { AppFee, Quote } from '../types';
 
@@ -84,7 +81,6 @@ export const useMakeQuote = () => {
   } = useConfig();
 
   const isDry = isDryQuote(ctx);
-  const queryClient = useQueryClient();
 
   const request = useRef<Promise<QuoteRequestResult>>(null);
   const abortController = useRef<AbortController>(new AbortController());
@@ -197,10 +193,6 @@ export const useMakeQuote = () => {
       abortController.current.abort('Abort previous quote (auto)');
       abortController.current = new AbortController();
     }
-
-    // Tells whether this quote was superseded or cancelled while its failure
-    // was still being explained.
-    const { signal } = abortController.current;
 
     let quoteResult: QuoteRequestResult;
 
@@ -568,29 +560,7 @@ export const useMakeQuote = () => {
             code: 'QUOTE_PAIR_NOT_AVAILABLE',
           });
         }
-      }
 
-      // The quote request failed for a reason the message doesn't name. Stay
-      // loading while checking whether an ongoing incident on either token's
-      // chain explains it. Incidents load as the widget mounts, so this is
-      // usually instant.
-      if (!(error instanceof QuoteError)) {
-        const incidents = await queryClient
-          .ensureQueryData(chainIncidentsQueryOptions(apiKey))
-          .catch(() => []);
-
-        if (signal.aborted) {
-          return;
-        }
-
-        if (findQuoteIncident(incidents, ctx.sourceToken, ctx.targetToken)) {
-          throw new QuoteError({
-            code: 'QUOTE_PAIR_NOT_AVAILABLE',
-          });
-        }
-      }
-
-      if (error instanceof AxiosError) {
         throw error;
       }
 
