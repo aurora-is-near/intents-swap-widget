@@ -2,6 +2,7 @@ import { Button, Card, Text } from '@aurora-is-near/ui-kit';
 import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 
 import { useConnectWallet } from '../wallet/useConnectWallet';
+import { MarketList } from './MarketList';
 
 /**
  * A token picker and amount box stand-in: `.pick` is 188px wide with a 1.5px
@@ -22,8 +23,9 @@ const STATS = ['LTV', 'Liquidation', 'Health'] as const;
 
 /**
  * The New loan tab until the loan form exists (decided): the artboard's two
- * columns (lines 213–375), with placeholders where the form and the markets
- * go and no market numbers. Disconnected, the column ends with the working
+ * columns (lines 213–375), with a placeholder where the form goes and the
+ * live market list beside it. The summary tiles stay "—" until the form
+ * gives them a loan. Disconnected, the column ends with the working
  * CTA "Connect wallet to borrow on" and the lime "Aave" chip (line 371),
  * which opens the connect modal; connected, the CTA is left out until the
  * form brings its own.
@@ -55,16 +57,9 @@ export function NewLoanPlaceholder() {
       </Card>
 
       <section aria-label="Markets" className="min-w-0 flex-[1.3_1_520px]">
-        {/* `.mkc` cards (line 346): flex 1 1 170px, radius 18, 1.5px `bd`,
-            gap 10; one row of equal cards at ≤640px (line 117). */}
-        <div aria-hidden="true" className="flex flex-wrap gap-[10px]">
-          {[0, 1, 2].map((key) => (
-            <div
-              key={key}
-              className="box-border h-[164px] min-w-0 flex-[1_1_170px] rounded-[18px] border-[1.5px] border-solid border-bd bg-sf mobile:h-[124px] mobile:flex-[1_1_0]"
-            />
-          ))}
-        </div>
+        {/* The live markets as `.mkc` cards (lines 344–363), for the
+            default pair until the form drives it. */}
+        <MarketList layout="cards" />
         <dl className="m-0 mt-[16px] grid grid-cols-3 gap-[10px]">
           {STATS.map((label) => (
             <div

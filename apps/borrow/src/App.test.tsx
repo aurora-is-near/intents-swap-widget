@@ -13,6 +13,11 @@ vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
   (await import('./tests/appKitMock')).createAppKitMock(),
 );
 
+// The New loan tab reads markets; a fake adapter keeps these tests offline.
+vi.mock('./markets/aaveV3', async () =>
+  (await import('./tests/aaveV3Mock')).createAaveV3Mock(),
+);
+
 const renderApp = async (path = '/') => {
   const history = createMemoryHistory({ initialEntries: [path] });
 
