@@ -25,6 +25,7 @@ import { getFlexInputRetryAmount } from '@/utils/intents/getFlexInputRetryAmount
 import { isAuroraRecipient } from '@/utils/intents/isAuroraRecipient';
 import { isAuroraSourceRefund } from '@/utils/intents/isAuroraSourceRefund';
 import { isAuroraToken } from '@/utils/intents/isAuroraToken';
+import { isQuoteSignatureValid } from '@/utils/intents/isQuoteSignatureValid';
 import { supportsAuroraVcRefund } from '@/utils/intents/supportsAuroraVcRefund';
 import { formatMinDepositAmount } from '@/utils/formatters/formatMinDepositAmount';
 import { getResponseErrorMessage } from '@/utils/getResponseErrorMessage';
@@ -43,6 +44,10 @@ import { useIntentsAccountType } from './useIntentsAccountType';
 type QuoteRequestResult = {
   quote: OneClickQuote;
   appFees?: readonly AppFee[];
+  // Unset for dry quotes and for an integrator's `fetchQuote`, which returns
+  // no signature.
+  isSignatureValid?: boolean;
+  correlationId?: string;
 };
 
 type MakeArgs = {
@@ -130,7 +135,15 @@ export const useMakeQuote = () => {
         { signal },
       );
 
-      return { quote: response.quote, appFees: response.quoteRequest?.appFees };
+      return {
+        quote: response.quote,
+        appFees: response.quoteRequest?.appFees,
+        // A dry quote only shows a price, so there's nothing to protect.
+        isSignatureValid: data.dry
+          ? undefined
+          : isQuoteSignatureValid(data, response),
+        correlationId: response.correlationId,
+      };
     },
     [apiKey, fetchQuote],
   );
@@ -613,6 +626,20 @@ export const useMakeQuote = () => {
         meta: {
           message: errorMessage || 'Failed to fetch quote. Please try again.',
         },
+      });
+    }
+
+    // A real quote carries the deposit address the user will pay into, so
+    // never act on one 1Click didn't sign for this request.
+    if (quoteResult.isSignatureValid === false) {
+      logger.error('[WIDGET] Quote signature verification failed', {
+        correlationId: quoteResult.correlationId,
+        originAsset: commonQuoteParams.originAsset,
+        destinationAsset: commonQuoteParams.destinationAsset,
+      });
+      throw new QuoteError({
+        code: 'QUOTE_INVALID',
+        meta: { isDry: false },
       });
     }
 

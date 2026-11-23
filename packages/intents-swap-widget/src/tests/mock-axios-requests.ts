@@ -30,6 +30,16 @@ export const mockFeeServiceApi: {
   get: jest.fn<(url: string) => Promise<{ data: unknown }>>(),
 };
 
+// Mocked quotes aren't signed by 1Click, so trust them unless a test says not.
+export const mockIsQuoteSignatureValid: Mock<() => boolean> = jest.fn(
+  () => true,
+);
+
+jest.mock('../utils/intents/isQuoteSignatureValid', () => ({
+  __esModule: true,
+  isQuoteSignatureValid: mockIsQuoteSignatureValid,
+}));
+
 jest.mock('../network', () => ({
   __esModule: true,
   alchemyApi: mockAlchemyApi,

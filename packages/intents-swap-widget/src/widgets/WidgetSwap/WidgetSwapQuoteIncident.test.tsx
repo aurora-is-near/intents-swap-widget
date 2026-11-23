@@ -4,6 +4,7 @@
 import {
   mockAlchemyApi,
   mockFeeServiceApi,
+  mockIsQuoteSignatureValid,
 } from '../../tests/mock-axios-requests';
 import { mockEvmWallet } from '../../tests/mock-evm-wallet';
 import { mockAlchemyResponse } from '../../tests/mock-alchemy-response';
@@ -127,6 +128,7 @@ describe('Swap quote failures and chain incidents', () => {
   });
 
   afterEach(() => {
+    mockIsQuoteSignatureValid.mockReturnValue(true);
     jest.clearAllMocks();
     jest.clearAllTimers();
   });
@@ -313,6 +315,35 @@ describe('Swap quote failures and chain incidents', () => {
     expect(
       screen.queryByRole('button', { name: 'Pair not available' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('rejects a real quote 1Click did not sign for this request', async () => {
+    mockFeeService({ status: 'operational', maintenance: [] });
+    mockIsQuoteSignatureValid.mockReturnValue(false);
+    mockFeeServiceApi.post.mockResolvedValue({
+      data: mockOneClickQuote({
+        sourceToken,
+        targetToken,
+        amount: formatHumanToBig('0.5', sourceToken.decimals),
+        recipient: mockConnectedWalletAddress('evm'),
+      }),
+    });
+
+    const { screen, within, user } = setup(
+      <WidgetSwapSetup apiKey="key-unsigned" />,
+    );
+
+    const sell = await screen.findByLabelText('Sell');
+
+    await user.type(within(sell).getByPlaceholderText('0'), '0.5');
+
+    expect(
+      await screen.findByRole('button', { name: 'Quote failed' }),
+    ).toBeInTheDocument();
+    expect(mockIsQuoteSignatureValid).toHaveBeenCalledWith(
+      expect.objectContaining({ dry: false }),
+      expect.anything(),
+    );
   });
 
   it('drops the failure of a quote a newer one replaced', async () => {
