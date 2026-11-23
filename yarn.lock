@@ -8618,6 +8618,11 @@
     "@tailwindcss/oxide" "4.1.12"
     tailwindcss "4.1.12"
 
+"@tanstack/history@1.162.5":
+  version "1.162.5"
+  resolved "https://registry.yarnpkg.com/@tanstack/history/-/history-1.162.5.tgz#967cb42b2e33fb1a45cb6d17a561c9223567a0f3"
+  integrity sha512-w1+YvwmTkwt5n8yUqEH3IWZ9DsmorCZW/EQ3KYHnqEgIkOZpH54NvW6/Epq3Dzb8H0ifIeYX8PExvrNLIH5FIA==
+
 "@tanstack/query-core@5.85.5":
   version "5.85.5"
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.85.5.tgz#c4adc126bb3a927e4d60280bf3cf62210700147c"
@@ -8642,12 +8647,45 @@
   dependencies:
     "@tanstack/query-core" "5.90.11"
 
+"@tanstack/react-router@^1.170.46":
+  version "1.170.46"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.170.46.tgz#0a9cc04ef381425214958766332761d2d7e342ed"
+  integrity sha512-ez1iNIhsPjGlaDHg3BXWs67EWVIYzB2tbopEHYDESdkO7owgkGb5de52+5Kv2v1fxdkggcNzo35bdk4arTVGQw==
+  dependencies:
+    "@tanstack/history" "1.162.5"
+    "@tanstack/react-store" "^0.11.2"
+    "@tanstack/router-core" "1.171.39"
+    isbot "^5.1.22"
+
+"@tanstack/react-store@^0.11.2":
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-store/-/react-store-0.11.4.tgz#4d0a1eb1ad9dfa4ae7c77e3a278df65f09f92fb3"
+  integrity sha512-JAQz7LcABVRbxZ6qCd4u/KqDaqBc1qmcOWz7XBTdav1Ib363HQdihCQF1A755nDhoi9VEd6UqZ5thWVKTwIIXw==
+  dependencies:
+    "@tanstack/store" "0.11.3"
+    use-sync-external-store "^1.6.0"
+
 "@tanstack/react-virtual@^3.13.9":
   version "3.13.12"
   resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.13.12.tgz#d372dc2783739cc04ec1a728ca8203937687a819"
   integrity sha512-Gd13QdxPSukP8ZrkbgS2RwoZseTTbQPLnQEn7HY/rqtM+8Zt95f7xKC7N0EsKs7aoz0WzZ+fditZux+F8EzYxA==
   dependencies:
     "@tanstack/virtual-core" "3.13.12"
+
+"@tanstack/router-core@1.171.39":
+  version "1.171.39"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.171.39.tgz#6d44a91e56285c7e9558fc091c7e4ff3ca9a6cd7"
+  integrity sha512-qUhoJ0meuSUqGYQbHbcJYdASr06YtK+bulbj6vtrhKYFkLgkSsZ6tXmMyym7sFxiSJSPYgasgozrL01LyyR/6A==
+  dependencies:
+    "@tanstack/history" "1.162.5"
+    cookie-es "^3.0.0"
+    seroval "^1.6.7"
+    seroval-plugins "^1.6.7"
+
+"@tanstack/store@0.11.3":
+  version "0.11.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/store/-/store-0.11.3.tgz#3aef9f7926179fe0ba5858cd2a157f5e71773358"
+  integrity sha512-/Mt3h2Qe67HmRMc5SJ+8jM2Fp7O4fBbwOlS0ujUvx34KgAvkvdLSHrJatv0PJG5fbvlDsACTawMMY4ptCpVI8w==
 
 "@tanstack/virtual-core@3.13.12":
   version "3.13.12"
@@ -12782,6 +12820,11 @@ cookie-es@^1.2.2:
   resolved "https://registry.yarnpkg.com/cookie-es/-/cookie-es-1.2.2.tgz#18ceef9eb513cac1cb6c14bcbf8bdb2679b34821"
   integrity sha512-+W7VmiVINB+ywl1HGXJXmrqkOhpKrIiVZV6tQuV54ZyQC7MMuBt81Vc336GMLoHBq5hV/F9eXgt5Mnx0Rha5Fg==
 
+cookie-es@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/cookie-es/-/cookie-es-3.1.1.tgz#c4a8a16cf88cb5a185b23f4a61d6e9a85eb53287"
+  integrity sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==
+
 copy-text-to-clipboard@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/copy-text-to-clipboard/-/copy-text-to-clipboard-3.2.0.tgz#0202b2d9bdae30a49a53f898626dcc3b49ad960b"
@@ -16065,6 +16108,11 @@ isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==
+
+isbot@^5.1.22:
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/isbot/-/isbot-5.2.3.tgz#bbb816ea76e8a47451f7880319dbb98def3634da"
+  integrity sha512-e8gGz3VzAuImtTMnB5PqNRRWGAswObTc+X+X5a8PttKT78VSSFec98w9ZwUoy6jJdlvJkVdLiN+WMgA8TewoZg==
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -20989,6 +21037,16 @@ semver@~7.5.4:
   integrity sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==
   dependencies:
     lru-cache "^6.0.0"
+
+seroval-plugins@^1.6.7:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.8.0.tgz#1600d792c09548ed6980ec1729aa96c70b78d4c1"
+  integrity sha512-96vBb12rDvPPwdKUgWw1op3fGq8AVBFOr0IllbnM72yR5J9WWXF18cQ4g1XfDO7HCyh2dt70P3XdtyRayP8FWg==
+
+seroval@^1.6.7:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.8.2.tgz#d451ae2866501ecdef3c8ff793acdea85fccd69c"
+  integrity sha512-zmMxi/9MdLK1MKazLmIP6Rk39RuK0Xydd+QHeOYntS37olJeTjB3+nwVj4ce/ZWiZJeRhcO5htfxt0mUzQBscQ==
 
 set-blocking@^2.0.0:
   version "2.0.0"
