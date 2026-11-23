@@ -5,17 +5,19 @@ import { createRoot } from 'react-dom/client';
 
 import {
   Badge,
+  Button,
   Card,
   ChainMark,
   ChainMarkGroup,
   Highlight,
+  Spinner,
   Tag,
   Text,
   ThemeProvider,
   TokenMark,
   useTheme,
 } from '../src';
-import type { ThemePreference } from '../src';
+import type { ButtonVariant, ThemePreference } from '../src';
 
 // Class names are spelled out so Tailwind finds them in this file.
 const TOKENS = [
@@ -127,6 +129,51 @@ const MARKS = [
   { label: 'UC', bg: '#C7E0FF', fg: '#0B2E5C' },
 ] as const;
 
+const SIZED_VARIANTS: readonly ButtonVariant[] = [
+  'primary',
+  'accent',
+  'danger',
+];
+
+function Buttons() {
+  return (
+    <>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+        {SIZED_VARIANTS.map((variant) => (
+          <div className="flex flex-col gap-3" key={variant}>
+            <Text variant="label">{variant.toUpperCase()}</Text>
+            <Button variant={variant}>Borrow USDC</Button>
+            <Button disabled variant={variant}>
+              Disabled
+            </Button>
+            <Button loading variant={variant}>
+              Borrowing
+            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button size="md" variant={variant}>
+                Start a new loan
+              </Button>
+              <Button disabled size="md" variant={variant}>
+                Disabled
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary">Max</Button>
+        <Button disabled variant="secondary">
+          Disabled
+        </Button>
+        <Button variant="ghost">Positions</Button>
+        <Button disabled variant="ghost">
+          Disabled
+        </Button>
+      </div>
+    </>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
@@ -161,6 +208,20 @@ function Components() {
             <Text variant="label">TINT</Text>
             <p className="mt-2 mb-0">--tint surface, --limebd border.</p>
           </Card>
+        </div>
+      </Section>
+
+      <Section title="Button">
+        <Buttons />
+      </Section>
+
+      <Section title="Spinner">
+        <div className="flex flex-wrap items-center gap-6">
+          <Spinner />
+          <Spinner size={20} />
+          <span className="flex items-center gap-2 text-neg">
+            <Spinner tone="current" /> current colour
+          </span>
         </div>
       </Section>
 
