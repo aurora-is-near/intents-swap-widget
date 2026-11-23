@@ -26,6 +26,7 @@ export { TokenMark } from './components/TokenMark';
 export type { TokenMarkProps } from './components/TokenMark';
 export { cn } from './lib/cn';
 export { ThemeProvider, useTheme } from './theme/ThemeProvider';
+export { getThemeInitScript } from './theme/themeInitScript';
 export type {
   ResolvedTheme,
   ThemeContextValue,
