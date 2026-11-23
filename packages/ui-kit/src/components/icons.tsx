@@ -9,14 +9,18 @@ import type { SVGProps } from 'react';
  * Every icon is decorative (`aria-hidden`); the control that holds it
  * carries the accessible name.
  */
-export type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
+type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
   /** Width and height in px. Defaults to the artboard's size. */
   size?: number;
 };
 
 /** The white glyph on the filled status circles (lines 986, 992, 1004, 1006). */
 type CircleIconProps = IconProps & {
-  /** The glyph's colour. The artboards use #FFFFFF in both themes. */
+  /**
+   * The glyph's colour. White (#FFFFFF) in both themes by choice: the
+   * artboard's theme rule (line 168) repaints it `--sf` in dark, which is
+   * only about 2.7:1 on `#A8321F`; white is 6.4:1.
+   */
   glyphColor?: string;
 };
 
