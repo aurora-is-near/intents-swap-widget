@@ -1,110 +1,31 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, type Mock, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { MarketAdaptersProvider } from '../markets/MarketAdaptersProvider';
-import type {
-  BorrowReserve,
-  CollateralReserve,
-  LendingMarket,
-  LendingMarketAdapter,
-  MarketSnapshot,
-} from '../markets/types';
+import type { LendingMarketAdapter } from '../markets/types';
+import {
+  FAKE_ARB as ARB,
+  FAKE_BASE as BASE,
+  createFakeAdapter,
+  createTestQueryClient,
+  readFakeSnapshot,
+  pairSnapshot as snapshot,
+  usdc,
+  weth,
+} from '../tests/fakeMarkets';
 import { MarketList, type MarketListProps } from './MarketList';
 
-const market = (chain: string, chainLabel: string): LendingMarket => ({
-  id: `fake:${chain}`,
-  provider: 'fake',
-  name: 'Aave',
-  chain,
-  chainId: chain === 'base' ? 8453 : 42161,
-  chainLabel,
-});
-
-const BASE = market('base', 'Base');
-const ARB = market('arb', 'Arbitrum');
-
-const USD = 100_000_000n;
-
-const wstEth = (
-  overrides: Partial<CollateralReserve> = {},
-): CollateralReserve => ({
-  asset: '0x0000000000000000000000000000000000000001',
-  symbol: 'wstETH',
-  decimals: 18,
-  assetId: 'nep141:wsteth',
-  maxLtvBps: 7900,
-  liquidationLtvBps: 8100,
-  priceBase: 4_200n * USD,
-  ...overrides,
-});
-
-const usdc = (overrides: Partial<BorrowReserve> = {}): BorrowReserve => ({
-  asset: '0x0000000000000000000000000000000000000002',
-  symbol: 'USDC',
-  decimals: 6,
-  assetId: 'nep141:usdc',
-  variableBorrowApr: 0.0485,
-  availableLiquidity: 1_200_000_000n * 10n ** 6n,
-  priceBase: USD,
-  ...overrides,
-});
-
-const snapshot = (
-  of: LendingMarket,
-  reserves: Partial<Pick<MarketSnapshot, 'collateral' | 'borrowable'>> = {},
-): MarketSnapshot => ({
-  market: of,
-  blockNumber: 1n,
-  baseCurrencyUnit: USD,
-  collateral: [wstEth()],
-  borrowable: [usdc()],
-  ...reserves,
-});
-
-/** Base at 4.85% and Arbitrum at 4.41%, Spark's figures on the artboard. */
-const SNAPSHOTS: Record<string, MarketSnapshot> = {
-  [BASE.id]: snapshot(BASE),
-  [ARB.id]: snapshot(ARB, {
-    collateral: [wstEth({ maxLtvBps: 8000, liquidationLtvBps: 8250 })],
-    borrowable: [
-      usdc({
-        variableBorrowApr: 0.0441,
-        availableLiquidity: 356_000_000n * 10n ** 6n,
-      }),
-    ],
-  }),
-};
-
-type FakeAdapter = LendingMarketAdapter & {
-  getMarketSnapshot: Mock<LendingMarketAdapter['getMarketSnapshot']>;
-};
-
 const fakeAdapter = (
-  getMarketSnapshot: LendingMarketAdapter['getMarketSnapshot'] = async (of) => {
-    const found = SNAPSHOTS[of.id];
-
-    if (!found) {
-      throw new Error(`no snapshot for ${of.id}`);
-    }
-
-    return found;
-  },
-): FakeAdapter => ({
-  id: 'fake',
-  name: 'Aave',
-  listMarkets: vi.fn().mockResolvedValue([BASE, ARB]),
-  getMarketSnapshot: vi.fn(getMarketSnapshot),
-});
+  getMarketSnapshot?: LendingMarketAdapter['getMarketSnapshot'],
+) => createFakeAdapter({ getMarketSnapshot });
 
 const renderList = (
   adapter: LendingMarketAdapter,
   props: Partial<MarketListProps> = {},
 ) => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+  const queryClient = createTestQueryClient();
 
   return {
     queryClient,
@@ -126,9 +47,11 @@ const findCard = (chainLabel: string) =>
 
 describe('MarketList', () => {
   it('shows one card skeleton per launch chain while loading', async () => {
-    const adapter = fakeAdapter(() => new Promise(() => {}));
+    const adapter = createFakeAdapter({
+      listMarkets: () => new Promise(() => {}),
+      getMarketSnapshot: () => new Promise(() => {}),
+    });
 
-    adapter.listMarkets = () => new Promise(() => {});
     renderList(adapter);
 
     expect(screen.getAllByText('Loading markets')).toHaveLength(2);
@@ -238,7 +161,7 @@ describe('MarketList', () => {
         }
       }
 
-      return SNAPSHOTS[of.id] as MarketSnapshot;
+      return readFakeSnapshot(of);
     });
 
     const { queryClient } = renderList(adapter);
@@ -260,14 +183,15 @@ describe('MarketList', () => {
 
   it('shows a Banner for the failed market only, and "Try again" reads it again', async () => {
     const user = userEvent.setup();
-    let arbFailures = 1;
+    // The first read and its one retry.
+    let arbFailures = 2;
     const adapter = fakeAdapter(async (of) => {
       if (of.id === ARB.id && arbFailures > 0) {
         arbFailures -= 1;
         throw new Error('RPC down');
       }
 
-      return SNAPSHOTS[of.id] as MarketSnapshot;
+      return readFakeSnapshot(of);
     });
 
     renderList(adapter);
@@ -289,6 +213,7 @@ describe('MarketList', () => {
       BASE.id,
       ARB.id,
       ARB.id,
+      ARB.id,
     ]);
   });
 
@@ -296,8 +221,7 @@ describe('MarketList', () => {
     const user = userEvent.setup();
     const adapter = fakeAdapter();
 
-    adapter.listMarkets = vi
-      .fn()
+    adapter.listMarkets
       .mockRejectedValueOnce(new Error('list down'))
       .mockResolvedValue([BASE]);
     renderList(adapter);
@@ -333,13 +257,13 @@ describe('MarketList', () => {
     renderList(
       fakeAdapter(async (of) =>
         snapshot(of, {
-          collateral: of.id === BASE.id ? [] : [wstEth({ unavailable: true })],
+          collateral: of.id === BASE.id ? [] : [weth({ unavailable: true })],
         }),
       ),
     );
 
     expect(
-      await screen.findByText('No market offers wstETH / USDC right now.'),
+      await screen.findByText('No market offers WETH / USDC right now.'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });

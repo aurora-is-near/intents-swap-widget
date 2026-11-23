@@ -1,53 +1,31 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, expectTypeOf, it, type Mock, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 
+import {
+  FAKE_ARB as ARB,
+  FAKE_BASE as BASE,
+  createFakeAdapter,
+  createTestQueryClient,
+  pairSnapshot as snapshotOf,
+} from '../tests/fakeMarkets';
 import { MarketAdaptersProvider } from './MarketAdaptersProvider';
-import type {
-  LendingMarket,
-  LendingMarketAdapter,
-  MarketSnapshot,
-} from './types';
+import type { LendingMarketAdapter, MarketSnapshot } from './types';
 import { useMarketSnapshots } from './useMarketSnapshots';
 
-const market = (chain: string, chainId: number): LendingMarket => ({
-  id: `fake:${chain}`,
-  provider: 'fake',
-  name: 'Fake',
-  chain,
-  chainId,
-  chainLabel: chain.toUpperCase(),
-});
-
-const BASE = market('base', 8453);
-const ARB = market('arb', 42161);
-
-const snapshotOf = (of: LendingMarket): MarketSnapshot => ({
-  market: of,
-  blockNumber: 1n,
-  baseCurrencyUnit: 100_000_000n,
-  collateral: [],
-  borrowable: [],
-});
-
+/** Every market reads `snapshotOf` it, unless a test says otherwise. */
 const fakeAdapter = (
   overrides: Partial<Pick<LendingMarketAdapter, 'listMarkets'>> = {},
-): LendingMarketAdapter & {
-  getMarketSnapshot: Mock<LendingMarketAdapter['getMarketSnapshot']>;
-} => ({
-  id: 'fake',
-  name: 'Fake',
-  listMarkets: vi.fn().mockResolvedValue([BASE, ARB]),
-  getMarketSnapshot: vi.fn(async (of: LendingMarket) => snapshotOf(of)),
-  ...overrides,
-});
+) =>
+  createFakeAdapter({
+    ...overrides,
+    getMarketSnapshot: async (of) => snapshotOf(of),
+  });
 
 const render = (adapter: LendingMarketAdapter) => {
-  const queryClient = new QueryClient({
-    // The snapshot queries set their own retry; it runs without delay here.
-    defaultOptions: { queries: { retry: false, retryDelay: 0 } },
-  });
+  // The snapshot queries set their own retry; it runs without delay here.
+  const queryClient = createTestQueryClient();
 
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>

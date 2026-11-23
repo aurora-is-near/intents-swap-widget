@@ -22,11 +22,14 @@ import {
 } from '../markets/useMarketSnapshots';
 
 /**
- * The pair every row is read for until the New loan form drives it (decided):
- * the artboard's default state, wstETH collateral and USDC borrow (line 1052).
- * Matched against the reserve's symbol, in any case.
+ * The pair every row is read for until the New loan form drives it: WETH
+ * collateral and USDC borrow. The artboard's default is wstETH (line 1052),
+ * but 1Click does not deliver wstETH on Base or Arbitrum, so no market had
+ * the pair; WETH is delivered on both and is Aave collateral on both (decided
+ * in the feature review). Matched against the reserve's symbol, in any case,
+ * so Arbitrum's bridged `USDC.e` is not taken for USDC.
  */
-export const DEFAULT_PAIR = { collateral: 'wstETH', borrow: 'USDC' } as const;
+export const DEFAULT_PAIR = { collateral: 'WETH', borrow: 'USDC' } as const;
 
 /**
  * Borrow's launch chains, Base and Arbitrum: the number of card skeletons
@@ -349,7 +352,7 @@ export type MarketListProps = {
 const NO_IDS: readonly string[] = [];
 
 /**
- * Every market's figures for the default pair (wstETH / USDC), one card per
+ * Every market's figures for the default pair (WETH / USDC), one card per
  * market. BEST marks the lowest borrow APR among the markets that can be
  * picked, and the selection defaults to it. Each market loads and fails on
  * its own: a skeleton while it loads, a Banner with "Try again" when its read
