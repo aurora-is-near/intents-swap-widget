@@ -1,5 +1,12 @@
 {
-  "include": ["src", "plugins", "vite.config.ts", "vitest.config.ts"],
+  "include": [
+    "src",
+    "server",
+    "api",
+    "plugins",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ],
   "compilerOptions": {
     "rootDir": ".",
     "target": "ESNext",
