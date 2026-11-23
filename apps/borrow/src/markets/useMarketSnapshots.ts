@@ -1,4 +1,4 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, type UseQueryResult } from '@tanstack/react-query';
 
 import { useMarketAdapters } from './MarketAdaptersProvider';
 import type { LendingMarket, MarketSnapshot } from './types';
@@ -12,16 +12,43 @@ export const marketsQueryKey = (adapterId: string) =>
 export const marketSnapshotQueryKey = (adapterId: string, marketId: string) =>
   ['market-snapshot', adapterId, marketId] as const;
 
-/** One market's snapshot read. */
+/**
+ * A failed snapshot is retried once before it shows as an error: the viem
+ * client already retries each RPC call, so more would keep the skeleton up for
+ * seconds and hit a rate-limited public RPC many times per read.
+ */
+export const MARKET_SNAPSHOT_RETRY = 1;
+
+/** One market's snapshot read, by status. */
 export type MarketSnapshotResult = {
   adapterId: string;
   market: LendingMarket;
-  status: 'pending' | 'error' | 'success';
-  /** The last good snapshot; kept while a refetch runs. */
-  data: MarketSnapshot | undefined;
-  error: Error | null;
   /** Reads this market again, and only this one. */
   refetch: () => void;
+} & (
+  | { status: 'pending'; data: undefined; error: null }
+  | {
+      status: 'error';
+      /** The last good snapshot, when a later refetch failed. */
+      data: MarketSnapshot | undefined;
+      error: Error;
+    }
+  | { status: 'success'; data: MarketSnapshot; error: null }
+);
+
+const snapshotResult = (
+  base: Pick<MarketSnapshotResult, 'adapterId' | 'market' | 'refetch'>,
+  query: UseQueryResult<MarketSnapshot>,
+): MarketSnapshotResult => {
+  if (query.status === 'pending') {
+    return { ...base, status: 'pending', data: undefined, error: null };
+  }
+
+  if (query.status === 'error') {
+    return { ...base, status: 'error', data: query.data, error: query.error };
+  }
+
+  return { ...base, status: 'success', data: query.data, error: null };
 };
 
 /** An adapter whose market list could not be read. */
@@ -41,8 +68,8 @@ export type MarketSnapshots = {
 
 /**
  * Every market of every adapter, each read on its own: one query per market
- * (`['market-snapshot', adapterId, marketId]`, stale after 60 s), so one chain
- * failing leaves the others' data in place and retries alone.
+ * (`['market-snapshot', adapterId, marketId]`, stale after 60 s, retried
+ * once), so one chain failing leaves the others' data in place and retries alone.
  */
 export const useMarketSnapshots = (): MarketSnapshots => {
   const adapters = useMarketAdapters();
@@ -64,6 +91,7 @@ export const useMarketSnapshots = (): MarketSnapshots => {
       queryKey: marketSnapshotQueryKey(adapter.id, market.id),
       queryFn: () => adapter.getMarketSnapshot(market),
       staleTime: MARKET_SNAPSHOT_STALE_TIME_MS,
+      retry: MARKET_SNAPSHOT_RETRY,
     })),
   });
 
@@ -76,16 +104,16 @@ export const useMarketSnapshots = (): MarketSnapshots => {
       }
 
       return [
-        {
-          adapterId: adapter.id,
-          market,
-          status: query.status,
-          data: query.data,
-          error: query.error,
-          refetch: () => {
-            void query.refetch();
+        snapshotResult(
+          {
+            adapterId: adapter.id,
+            market,
+            refetch: () => {
+              void query.refetch();
+            },
           },
-        },
+          query,
+        ),
       ];
     }),
     listing: lists.some((list) => list.isPending),

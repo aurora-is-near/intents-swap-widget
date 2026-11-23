@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, type Mock, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, type Mock, vi } from 'vitest';
 
 import { MarketAdaptersProvider } from './MarketAdaptersProvider';
 import type {
@@ -45,7 +45,8 @@ const fakeAdapter = (
 
 const render = (adapter: LendingMarketAdapter) => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    // The snapshot queries set their own retry; it runs without delay here.
+    defaultOptions: { queries: { retry: false, retryDelay: 0 } },
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -100,7 +101,8 @@ describe('useMarketSnapshots', () => {
 
   it('keeps one market’s data when the other fails, and retries only the failed one', async () => {
     const adapter = fakeAdapter();
-    let arbFailures = 1;
+    // The first read and its one retry.
+    let arbFailures = 2;
 
     adapter.getMarketSnapshot.mockImplementation(async (of) => {
       if (of.id === ARB.id && arbFailures > 0) {
@@ -138,7 +140,50 @@ describe('useMarketSnapshots', () => {
       BASE.id,
       ARB.id,
       ARB.id,
+      ARB.id,
     ]);
+  });
+
+  it('retries a failing market once before showing the error', async () => {
+    const adapter = fakeAdapter();
+
+    adapter.getMarketSnapshot.mockImplementation(async (of) => {
+      if (of.id === ARB.id) {
+        throw new Error('429 Too Many Requests');
+      }
+
+      return snapshotOf(of);
+    });
+
+    const { result, queryClient } = render(adapter);
+
+    await waitFor(() =>
+      expect(byId(result.current.snapshots, ARB.id)?.status).toBe('error'),
+    );
+
+    expect(
+      adapter.getMarketSnapshot.mock.calls.filter(([of]) => of.id === ARB.id),
+    ).toHaveLength(2);
+    expect(
+      queryClient
+        .getQueryCache()
+        .find({ queryKey: ['market-snapshot', 'fake', ARB.id], exact: true })
+        ?.options,
+    ).toMatchObject({ retry: 1 });
+  });
+
+  it('types the result by status', () => {
+    type Result = ReturnType<typeof useMarketSnapshots>['snapshots'][number];
+
+    expectTypeOf<
+      Extract<Result, { status: 'success' }>['data']
+    >().toEqualTypeOf<MarketSnapshot>();
+    expectTypeOf<
+      Extract<Result, { status: 'error' }>['error']
+    >().toEqualTypeOf<Error>();
+    expectTypeOf<
+      Extract<Result, { status: 'pending' }>['data']
+    >().toEqualTypeOf<undefined>();
   });
 
   it('reports a failed market list with a retry', async () => {
