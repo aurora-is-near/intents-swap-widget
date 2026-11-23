@@ -65,6 +65,3 @@ export const AAVE_V3_MARKETS: readonly AaveMarket[] = [
     },
   },
 ];
-
-export const getAaveMarket = (name: string): AaveMarket | undefined =>
-  AAVE_V3_MARKETS.find((market) => market.name === name);
