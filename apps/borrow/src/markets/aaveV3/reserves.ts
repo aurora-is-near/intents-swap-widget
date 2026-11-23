@@ -297,6 +297,12 @@ export const readAaveReserves = async (
       return;
     }
 
+    // Aave's oracle reverts rather than pricing a listed asset at 0, so a zero
+    // is a broken read: it must not reach the screen as "$0".
+    if (priceBase <= 0n) {
+      throw fail('oracle price')();
+    }
+
     const unit = 10n ** decimals;
     const asset = {
       asset: reserve.tokenAddress,

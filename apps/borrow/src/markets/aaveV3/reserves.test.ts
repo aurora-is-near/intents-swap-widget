@@ -404,6 +404,19 @@ describe('readAaveReserves', () => {
       ).rejects.toThrow(`missing oracle price for reserve ${name}`);
     });
 
+    it('throws on a zero price instead of reading it as $0', async () => {
+      await expect(read([reserve({ price: 0n })])).rejects.toThrow(
+        `missing oracle price for reserve ${name}`,
+      );
+    });
+
+    it('ignores a zero price on a reserve it drops anyway', async () => {
+      const result = await read([reserve({ price: 0n, isFrozen: true })]);
+
+      expect(result.collateral).toEqual([]);
+      expect(result.borrowable).toEqual([]);
+    });
+
     it('throws on a missing base currency unit', async () => {
       await expect(
         readEdited((results) => results.with(0, undefined)),
