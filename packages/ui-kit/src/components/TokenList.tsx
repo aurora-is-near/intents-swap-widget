@@ -32,9 +32,10 @@ const LIST = 'flex max-h-[236px] flex-col gap-[2px] overflow-y-auto';
 /**
  * `.row` (lines 29–31, markup line 245): gap 12, padding 8px 10px, radius
  * 12, transparent 1.5px border; hover `hov`; selected `tint` with a `limebd`
- * border. Focus ring as on line 20.
+ * border. Focus ring as on line 20. Disabled: `.go:disabled`'s opacity
+ * (line 57) and the not-allowed cursor (line 16), with no hover, as Button.
  */
-const ROW = `box-border flex w-full cursor-pointer disabled:cursor-not-allowed items-center gap-[12px] rounded-[12px] border-[1.5px] border-solid border-transparent bg-transparent px-[10px] py-[8px] text-left font-sans text-ink hover:bg-hov aria-pressed:border-limebd aria-pressed:bg-tint ${FOCUS_RING}`;
+const ROW = `box-border flex w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-[12px] rounded-[12px] border-[1.5px] border-solid border-transparent bg-transparent px-[10px] py-[8px] text-left font-sans text-ink enabled:hover:bg-hov aria-pressed:border-limebd aria-pressed:bg-tint ${FOCUS_RING}`;
 
 /** Symbol and chains (line 246): `flex:1; min-width:0; line-height:1.25`. */
 const NAMES = 'min-w-0 flex-1 leading-[1.25]';

@@ -8,8 +8,10 @@ import { FOCUS_RING } from '../lib/focusRing';
  * gap 6px, padding 6px 12px, border 1.5px `bd2`, `sf`, 13px / 600; hover
  * border ink; selected `ink` with `sf` text. The line-height is the browser's
  * button `normal`, after the font size (see Button). Focus ring as on line 20.
+ * No disabled `.chip` on the artboards: it takes `.go:disabled`'s opacity
+ * (line 57) and the not-allowed cursor (line 16), with no hover, as Button.
  */
-const CHIP = `box-border inline-flex cursor-pointer disabled:cursor-not-allowed items-center gap-[6px] rounded-full border-[1.5px] border-solid border-bd2 bg-sf px-[12px] py-[6px] font-sans text-[13px] leading-[normal] font-semibold text-ink hover:border-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-sf ${FOCUS_RING}`;
+const CHIP = `box-border inline-flex cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-[6px] rounded-full border-[1.5px] border-solid border-bd2 bg-sf px-[12px] py-[6px] font-sans text-[13px] leading-[normal] font-semibold text-ink enabled:hover:border-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-sf ${FOCUS_RING}`;
 
 /**
  * The leading colour dot (line 239): 7px circle. Shared with TokenSelect's
