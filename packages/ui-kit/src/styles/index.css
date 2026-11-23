@@ -9,5 +9,6 @@
 @import './tokens.css';
 @import './theme.css';
 
-/* Generate the utilities the kit's components use. */
+/* Generate the utilities the kit's components use, but not their tests'. */
 @source "../components";
+@source not "../components/**/*.test.{ts,tsx}";
