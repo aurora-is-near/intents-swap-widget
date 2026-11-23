@@ -27,10 +27,23 @@ export type {
   QuickAmountOption,
   QuickAmountsProps,
 } from './components/QuickAmounts';
+export { RISK_ZONE_COLORS, Slider } from './components/Slider';
+export type {
+  SliderMarker,
+  SliderProps,
+  SliderZone,
+} from './components/Slider';
 export { Spinner } from './components/Spinner';
 export type { SpinnerProps, SpinnerTone } from './components/Spinner';
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
+export { Tab, Tabs, TabsList, TabsPanel } from './components/Tabs';
+export type {
+  TabProps,
+  TabsListProps,
+  TabsPanelProps,
+  TabsProps,
+} from './components/Tabs';
 export { Tag } from './components/Tag';
 export type { TagProps, TagTone } from './components/Tag';
 export { Text } from './components/Text';
