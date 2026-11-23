@@ -11,6 +11,7 @@ export type LocalisationKeys =
   | 'wallet.recipient.error.sendAddressNotFound'
   | 'wallet.recipient.error.sendAddressInvalid'
   | 'wallet.recipient.warn.compatibleNetwork'
+  | 'wallet.recipient.warn.sendAddressNewAccount'
   | 'wallet.recipient.message.networkVerified'
   | 'wallet.recipient.message.receiveFunds'
   | 'wallet.connected.error.notSupportedChain'

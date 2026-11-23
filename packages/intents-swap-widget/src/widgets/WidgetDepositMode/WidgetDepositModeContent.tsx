@@ -18,6 +18,7 @@ import { useTokenInputPair, useTokens, useUnsupportedChain } from '@/hooks';
 import { useStoreSideEffects } from '@/machine/effects';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
+import { isSameSendAddress } from '@/utils/near/isNearImplicitAccount';
 import type { Token, TransferResult } from '@/types';
 
 import { useTokenModal } from '../../hooks/useTokenModal';
@@ -88,7 +89,10 @@ export const WidgetDepositModeContent = ({
       return;
     }
 
-    if (config.sendAddress && ctx.sendAddress !== config.sendAddress) {
+    if (
+      config.sendAddress &&
+      !isSameSendAddress(ctx.sendAddress, config.sendAddress)
+    ) {
       fireEvent('addressSet', config.sendAddress);
     }
 
@@ -212,7 +216,7 @@ export const WidgetDepositModeContent = ({
   }
 
   if (
-    config.sendAddress !== ctx.sendAddress ||
+    !isSameSendAddress(config.sendAddress, ctx.sendAddress) ||
     config.defaultTargetToken.blockchain !== ctx.targetToken?.blockchain ||
     !compareTokenSymbols(
       config.defaultTargetToken.symbol,

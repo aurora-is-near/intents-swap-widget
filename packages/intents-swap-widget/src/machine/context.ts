@@ -83,6 +83,7 @@ export type InitialDryContext = {
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived: boolean | undefined;
   error: InitialDryStateError | null;
 
@@ -112,6 +113,7 @@ export type InitialWalletContext = {
   areInputsValidating: boolean;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived: boolean | undefined;
   error: InitialInternalStateError | InitialExternalStateError | null;
 
@@ -141,6 +143,7 @@ export type InputValidDryContext = {
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived?: never;
   error: InputValidDryError | null;
 
@@ -170,6 +173,7 @@ export type InputValidInternalContext = {
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived?: never;
   error: InputValidWalletError | null;
 
@@ -209,6 +213,7 @@ export type InputValidExternalContext = {
   sendAddress: string;
   areInputsValidating?: never;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived: boolean | undefined;
   error: InputValidWalletError | null;
 
@@ -238,6 +243,7 @@ export type QuoteSuccessDryContext = {
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
@@ -267,6 +273,7 @@ export type QuoteSuccessInternalContext = {
   areInputsValidating?: never;
   isDepositFromExternalWallet: boolean;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived?: never;
   error: QuoteSuccessError | null;
 
@@ -294,6 +301,7 @@ export type QuoteSuccessExternalContext = {
   sendAddress: string;
   areInputsValidating?: never;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived: boolean | undefined;
   error: QuoteSuccessError | null;
 
@@ -322,6 +330,7 @@ export type TransferSuccessContext = {
   areInputsValidating?: never;
   sendAddress: string | undefined;
   unsupportedChain: Chains | null;
+  newAccountSendAddress?: string;
   externalDepositTxReceived: boolean | undefined;
   error?: never;
 

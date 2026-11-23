@@ -9,6 +9,7 @@ import { Banner } from '@/components/Banner';
 import { Toggle } from '@/components/Toggle';
 
 import { cn } from '@/utils';
+import { isSameSendAddress } from '@/utils/near/isNearImplicitAccount';
 import { useConfig } from '@/config';
 import { fireEvent } from '@/machine';
 import { useTypedTranslation } from '@/localisation';
@@ -55,7 +56,7 @@ export const SendAddress = ({ error, className }: Props) => {
 
   // Sync fixed sendAddress with machine state
   useEffect(() => {
-    if (sendAddress && sendAddress !== ctx.sendAddress) {
+    if (sendAddress && !isSameSendAddress(sendAddress, ctx.sendAddress)) {
       fireEvent('addressSet', sendAddress);
     }
   }, [sendAddress, ctx.sendAddress]);

@@ -48,6 +48,10 @@ import {
   type UnsupportedChainSetPayload,
 } from './unsupportedChainSet';
 import {
+  sendAddressNewAccountSet,
+  type SendAddressNewAccountSetPayload,
+} from './sendAddressNewAccountSet';
+import {
   confidentialModeSet,
   type ConfidentialModeSetPayload,
 } from './confidentialModeSet';
@@ -63,6 +67,7 @@ export type TradeEvents = {
   tokenSetDefault: TokenSetDefaultPayload;
   tokenSetBalance: TokenSetBalancePayload;
   addressSet: AddressSetPayload;
+  sendAddressNewAccountSet: SendAddressNewAccountSetPayload;
   refundToAddressSet: RefundToAddressSetPayload;
   maxSlippageSet: MaxSlippageSetPayload;
   errorSet: ErrorSetPayload;
@@ -102,6 +107,7 @@ export const registerEvents = () => {
   onEvent('retryExternalDeposit', retryExternalDeposit);
   onEvent('tokenSelect', tokenSelect);
   onEvent('addressSet', addressSet);
+  onEvent('sendAddressNewAccountSet', sendAddressNewAccountSet);
   onEvent('maxSlippageSet', maxSlippageSet);
   onEvent('refundToAddressSet', refundToAddressSet);
   onEvent('errorSet', errorSet);

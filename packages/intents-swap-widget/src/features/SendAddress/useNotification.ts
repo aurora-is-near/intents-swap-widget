@@ -95,6 +95,22 @@ export const useNotification = (
       };
     }
 
+    if (
+      !ctx.error &&
+      !!ctx.sendAddress &&
+      ctx.newAccountSendAddress === ctx.sendAddress &&
+      ctx.targetToken.blockchain === 'near'
+    ) {
+      return {
+        variant: 'warn',
+        state: 'default',
+        message: t('wallet.recipient.warn.sendAddressNewAccount', {
+          defaultValue: 'New {{chain}} account, please check the address',
+          chain: 'NEAR',
+        }),
+      };
+    }
+
     const chainLabel = (EVM_CHAINS as ReadonlyArray<string>).includes(
       ctx.targetToken.blockchain,
     )

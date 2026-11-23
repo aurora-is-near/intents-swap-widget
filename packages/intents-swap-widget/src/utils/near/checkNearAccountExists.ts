@@ -3,6 +3,7 @@ import { noop } from '@tanstack/react-query';
 import { localStorageTyped } from '@/utils/localstorage';
 import { logger } from '@/logger';
 import { getNearSingleRpcClient } from './rpc';
+import { isNearImplicitAccount } from './isNearImplicitAccount';
 
 const DEBOUNCE_MS = 300;
 
@@ -49,7 +50,11 @@ const queryAccountExists = async (accountId: string): Promise<boolean> => {
       err instanceof Error ? `${err.message} ${String(err)}` : String(err);
 
     if (pattern.test(errText)) {
-      sessionCache.set(accountId, false);
+      // An implicit account is created by the first transfer it receives, so
+      // "missing" can go stale within the session: check it again next time.
+      if (!isNearImplicitAccount(accountId)) {
+        sessionCache.set(accountId, false);
+      }
 
       return false;
     }

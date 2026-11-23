@@ -3,6 +3,7 @@ import { validateInputAndMoveTo } from '@/machine/events/validateInputAndMoveTo'
 import { guardStates, machine, moveTo } from '@/machine';
 import { fireEvent } from '@/machine/events/utils/fireEvent';
 import { logger } from '@/logger';
+import { normaliseNearImplicitAccount } from '@/utils/near/isNearImplicitAccount';
 import { isQuoteIdle } from './checkers/isQuoteIdle';
 import { isInputChanged } from './checkers/isInputChanged';
 import { isErrorChanged } from './checkers/isErrorChanged';
@@ -119,6 +120,16 @@ export const registerGlobalContextSubscription = ({ debug }: Args) => {
     // reset send to address if transfer is possible to own wallet
     if (isSendAddressAsConnected(ctx, changes)) {
       ctx.sendAddress = ctx.walletAddress;
+    }
+
+    // NEAR account IDs are lowercase: accept an implicit account pasted in
+    // another case (e.g. a checksummed 0x address), whichever was set first
+    if (ctx.sendAddress && ctx.targetToken?.blockchain === 'near') {
+      const sendAddress = normaliseNearImplicitAccount(ctx.sendAddress);
+
+      if (sendAddress !== ctx.sendAddress) {
+        ctx.sendAddress = sendAddress;
+      }
     }
 
     // validate inputs on change

@@ -6,6 +6,7 @@ import { isValidChainAddress } from '@/utils/checkers/isValidChainAddress';
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
 import { isValidBigint } from '@/utils/checkers/isValidBigint';
 import { isNearAddress } from '@/utils/chains/isNearAddress';
+import { isNearImplicitAccount } from '@/utils/near/isNearImplicitAccount';
 
 import { moveTo } from '@/machine';
 import { guardStates } from '@/machine/guards';
@@ -68,7 +69,9 @@ const asyncValidateSendAddressOnNear = async (ctx: Context) => {
 
   fireEvent('setInputsValidating', false);
 
-  if (!exists) {
+  // Implicit accounts are created by the first transfer they receive, so a
+  // missing one is the normal way to fund a new account: warn, don't block.
+  if (!exists && !isNearImplicitAccount(address)) {
     setAsyncError({
       code: 'SEND_ADDRESS_IS_NOT_FOUND',
       meta: { address, chain: 'near' },
@@ -78,6 +81,8 @@ const asyncValidateSendAddressOnNear = async (ctx: Context) => {
 
     return;
   }
+
+  fireEvent('sendAddressNewAccountSet', exists ? undefined : address);
 
   const isClearableError =
     !ctx.error ||

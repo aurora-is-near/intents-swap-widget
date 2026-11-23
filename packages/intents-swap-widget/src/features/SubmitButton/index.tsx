@@ -23,6 +23,7 @@ import { useMakeTransfer } from '@/hooks/useMakeTransfer';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 
 import { isNotEmptyAmount } from '@/utils/checkers/isNotEmptyAmount';
+import { isSameSendAddress } from '@/utils/near/isNearImplicitAccount';
 import {
   isFullGasTokenAmount,
   isNearlyFullGasTokenAmount,
@@ -52,7 +53,7 @@ const useGetErrorButton = (ctx: Context) => {
 
   if (
     !!sendAddress &&
-    ctx.sendAddress !== sendAddress &&
+    !isSameSendAddress(ctx.sendAddress, sendAddress) &&
     ctx.state === 'quote_success_external'
   ) {
     return (
