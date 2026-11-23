@@ -10,6 +10,8 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 
+import { DEFAULT_THEME_STORAGE_KEY } from './themeInitScript';
+
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type ResolvedTheme = 'light' | 'dark';
 
@@ -87,7 +89,7 @@ const writeStoredPreference = (key: string, preference: ThemePreference) => {
 export function ThemeProvider({
   children,
   defaultPreference = 'system',
-  storageKey = 'aurora-ui-theme',
+  storageKey = DEFAULT_THEME_STORAGE_KEY,
 }: ThemeProviderProps) {
   const [preference, setPreferenceState] = useState<ThemePreference>(
     () => readStoredPreference(storageKey) ?? defaultPreference,
