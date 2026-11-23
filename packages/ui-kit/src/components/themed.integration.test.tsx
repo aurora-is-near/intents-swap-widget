@@ -43,8 +43,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  globalThis.localStorage.clear();
-  globalThis.document.documentElement.removeAttribute('data-theme');
+  localStorage.clear();
+  document.documentElement.removeAttribute('data-theme');
   vi.unstubAllGlobals();
 });
 
@@ -56,7 +56,7 @@ describe('components under ThemeProvider', () => {
       </ThemeProvider>,
     );
 
-    const root = globalThis.document.documentElement;
+    const root = document.documentElement;
 
     expect(screen.getByRole('button', { name: 'Borrow' })).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();

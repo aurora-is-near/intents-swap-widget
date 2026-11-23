@@ -76,13 +76,12 @@ const renderSwitch = (props?: Parameters<typeof ThemeProvider>[0]) =>
     </ThemeProvider>,
   );
 
-const dataTheme = () =>
-  globalThis.document.documentElement.getAttribute('data-theme');
+const dataTheme = () => document.documentElement.getAttribute('data-theme');
 
 describe('ThemeProvider', () => {
   beforeEach(() => {
-    globalThis.localStorage.clear();
-    globalThis.document.documentElement.removeAttribute('data-theme');
+    localStorage.clear();
+    document.documentElement.removeAttribute('data-theme');
   });
 
   afterEach(() => {
@@ -146,23 +145,23 @@ describe('ThemeProvider', () => {
 
     expect(dataTheme()).toBe('dark');
     expect(screen.getByText('dark:dark')).toBeInTheDocument();
-    expect(globalThis.localStorage.getItem(STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
   });
 
   it('clears the stored key when system is chosen', async () => {
     stubMatchMedia(false);
-    globalThis.localStorage.setItem(STORAGE_KEY, 'dark');
+    localStorage.setItem(STORAGE_KEY, 'dark');
     renderSwitch();
 
     await userEvent.click(screen.getByRole('button', { name: 'system' }));
 
-    expect(globalThis.localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(dataTheme()).toBe('light');
   });
 
   it('restores a stored choice on mount', () => {
     stubMatchMedia(false);
-    globalThis.localStorage.setItem(STORAGE_KEY, 'dark');
+    localStorage.setItem(STORAGE_KEY, 'dark');
     renderSwitch();
 
     expect(screen.getByText('dark:dark')).toBeInTheDocument();
@@ -171,7 +170,7 @@ describe('ThemeProvider', () => {
 
   it('ignores an invalid stored value and uses defaultPreference', () => {
     stubMatchMedia(true);
-    globalThis.localStorage.setItem(STORAGE_KEY, 'purple');
+    localStorage.setItem(STORAGE_KEY, 'purple');
     renderSwitch({ defaultPreference: 'light' });
 
     expect(screen.getByText('light:light')).toBeInTheDocument();
@@ -184,8 +183,8 @@ describe('ThemeProvider', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'dark' }));
 
-    expect(globalThis.localStorage.getItem('custom-key')).toBe('dark');
-    expect(globalThis.localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem('custom-key')).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
   it('does not throw when localStorage throws', async () => {
