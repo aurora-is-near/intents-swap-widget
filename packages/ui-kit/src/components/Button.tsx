@@ -2,6 +2,7 @@ import { type ButtonHTMLAttributes, forwardRef } from 'react';
 
 import { cn } from '../lib/cn';
 import { FOCUS_RING } from '../lib/focusRing';
+import { SEG_CLASSES } from '../lib/segClasses';
 import { Spinner } from './Spinner';
 
 /**
@@ -28,9 +29,8 @@ const VARIANT_CLASSES = {
   accent: `${GO} border-0 bg-accent text-onlime`,
   // `.go.bad` (line 56). #E5694F has no token on the artboards.
   danger: `${GO} border-2 border-solid border-[#E5694F] bg-sf text-neg`,
-  // `.seg` (lines 136–137).
-  secondary:
-    'rounded-full border-[1.5px] border-solid border-bd2 bg-sf px-[18px] py-[9px] text-[15px] text-ink enabled:hover:border-ink',
+  // `.seg` (lines 136–137), shared with `Tab`.
+  secondary: SEG_CLASSES,
   // `.nv` and `.ibtn` (lines 17–18, 53–54).
   ghost:
     'rounded-[12px] border-0 bg-transparent px-[20px] py-[10px] text-[16px] text-mut enabled:hover:bg-hov',
