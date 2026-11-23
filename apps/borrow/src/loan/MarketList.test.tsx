@@ -268,3 +268,126 @@ describe('MarketList', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });
+
+describe('MarketList, table layout', () => {
+  const BASE_NAME = /Aave (BEST |LTV TOO HIGH )?Base/;
+  const ARB_NAME = /Aave (BEST |LTV TOO HIGH )?Arbitrum/;
+
+  const row = (chainLabel: string) =>
+    screen.getByRole('button', {
+      name: new RegExp(`Aave (BEST |LTV TOO HIGH )?${chainLabel}`),
+    });
+
+  it('shows the five column headers', async () => {
+    renderList(fakeAdapter(), { layout: 'table' });
+
+    await screen.findByRole('button', { name: BASE_NAME });
+
+    ['Market', 'Borrow APR', 'Max LTV', 'Liquidation', 'Liquidity'].forEach(
+      (name) =>
+        expect(
+          screen.getByText(name, { selector: '[aria-hidden="true"] > span' }),
+        ).toBeInTheDocument(),
+    );
+  });
+
+  it('shows each market as a row of formatted figures', async () => {
+    renderList(fakeAdapter(), { layout: 'table' });
+
+    await screen.findByRole('button', { name: BASE_NAME });
+
+    const base = within(row('Base'));
+
+    expect(base.getByText('Aave')).toBeInTheDocument();
+    expect(base.getByText('4.85%')).toBeInTheDocument();
+    expect(base.getByText('79%')).toBeInTheDocument();
+    expect(base.getByText('81%')).toBeInTheDocument();
+    expect(base.getByText('$1.2B')).toBeInTheDocument();
+
+    const arb = within(row('Arbitrum'));
+
+    expect(arb.getByText('4.41%')).toBeInTheDocument();
+    expect(arb.getByText('80%')).toBeInTheDocument();
+    expect(arb.getByText('82.5%')).toBeInTheDocument();
+    expect(arb.getByText('$356M')).toBeInTheDocument();
+  });
+
+  it('tags the lowest APR as BEST, selects it, and moves the selection on a click', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    renderList(fakeAdapter(), { layout: 'table', onSelect });
+    await screen.findByRole('button', { name: BASE_NAME });
+
+    expect(within(row('Arbitrum')).getByText('BEST')).toBeInTheDocument();
+    expect(within(row('Base')).queryByText('BEST')).not.toBeInTheDocument();
+    expect(row('Arbitrum')).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(row('Base'));
+
+    expect(row('Base')).toHaveAttribute('aria-pressed', 'true');
+    expect(onSelect).toHaveBeenCalledWith(BASE.id);
+  });
+
+  it('shows a disabled market as off and moves BEST on', async () => {
+    renderList(fakeAdapter(), { layout: 'table', disabledIds: [ARB.id] });
+    await screen.findByRole('button', { name: ARB_NAME });
+
+    expect(row('Arbitrum')).toBeDisabled();
+    expect(row('Arbitrum')).toHaveTextContent('LTV TOO HIGH');
+    expect(within(row('Base')).getByText('BEST')).toBeInTheDocument();
+  });
+
+  it('shows one row skeleton per launch chain while loading', () => {
+    const adapter = createFakeAdapter({
+      listMarkets: () => new Promise(() => {}),
+      getMarketSnapshot: () => new Promise(() => {}),
+    });
+
+    renderList(adapter, { layout: 'table' });
+
+    expect(screen.getByText('Borrow APR')).toBeInTheDocument();
+
+    const rows = screen.getAllByTestId('market-row-skeleton');
+
+    expect(rows).toHaveLength(2);
+
+    rows.forEach((skeleton) => {
+      expect(within(skeleton).getByText('Loading markets')).toBeInTheDocument();
+      expect(
+        skeleton.querySelectorAll(':scope > span[aria-hidden]'),
+      ).toHaveLength(5);
+    });
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows a Banner for the failing market only, and "Try again" reads it again', async () => {
+    const user = userEvent.setup();
+    // The first read and its one retry.
+    let arbFailures = 2;
+    const adapter = fakeAdapter(async (of) => {
+      if (of.id === ARB.id && arbFailures > 0) {
+        arbFailures -= 1;
+        throw new Error('RPC down');
+      }
+
+      return readFakeSnapshot(of);
+    });
+
+    renderList(adapter, { layout: 'table' });
+
+    const banner = await screen.findByRole('alert');
+
+    expect(banner).toHaveTextContent('Aave on Arbitrum did not load');
+    expect(banner).not.toHaveTextContent(/\d/);
+    expect(within(row('Base')).getByText('4.85%')).toBeInTheDocument();
+
+    await user.click(within(banner).getByRole('button', { name: 'Try again' }));
+
+    expect(
+      await screen.findByRole('button', { name: ARB_NAME }),
+    ).toHaveTextContent('4.41%');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});

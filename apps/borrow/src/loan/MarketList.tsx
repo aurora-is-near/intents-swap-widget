@@ -32,7 +32,7 @@ import {
 export const DEFAULT_PAIR = { collateral: 'WETH', borrow: 'USDC' } as const;
 
 /**
- * Borrow's launch chains, Base and Arbitrum: the number of card skeletons
+ * Borrow's launch chains, Base and Arbitrum: the number of skeletons
  * shown while the market list itself is still loading.
  */
 const LAUNCH_CHAIN_COUNT = 2;
@@ -316,15 +316,17 @@ function MarketCardSkeleton({ market }: { market?: LendingMarket }) {
 type MarketErrorProps = {
   title: string;
   retry: () => void;
+  className?: string;
 };
 
-/** A failed read in the card's place: a kit `Banner` with a retry. */
-function MarketError({ title, retry }: MarketErrorProps) {
+/** A failed read in the card's or row's place: a kit `Banner` with a retry. */
+function MarketError({
+  title,
+  retry,
+  className = 'min-w-0 flex-[1_1_170px] mobile:flex-[1_1_0]',
+}: MarketErrorProps) {
   return (
-    <Banner
-      className="min-w-0 flex-[1_1_170px] mobile:flex-[1_1_0]"
-      title={title}
-      tone="danger">
+    <Banner className={className} title={title} tone="danger">
       <p className="m-0">The market data could not be read.</p>
       <Button
         className="mt-[10px] px-[14px] py-[6px] text-[14px]"
@@ -336,10 +338,115 @@ function MarketError({ title, retry }: MarketErrorProps) {
   );
 }
 
+/**
+ * `.mgrid` (line 78): five columns, gap 8, centred. `.mrow` (lines 79–84):
+ * full width, padding 0 20px, min-height 78, radius 18, 1.5px `bd`, `sf`;
+ * hover `mid`, `.best` tint, `.sel` 3px ink border with padding 18.5, `.off`
+ * at .55. The mobile artboard sets no override for either.
+ */
+const GRID =
+  'grid grid-cols-[minmax(150px,1.5fr)_minmax(84px,1fr)_64px_88px_84px] items-center gap-x-[8px]';
+
+const ROW = `${GRID} box-border min-h-[78px] w-full min-w-0 rounded-[18px] border-[1.5px] border-solid border-bd bg-sf px-[20px] py-0 text-left font-sans leading-[normal] text-ink`;
+const ROW_BUTTON = `${ROW} cursor-pointer enabled:hover:border-mid focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed`;
+const ROW_SELECTED =
+  'border-[3px] border-ink px-[18.5px] enabled:hover:border-ink';
+
+/** The figures (lines 338–340): 18px / 700. */
+const FIGURE = 'text-[18px] font-bold';
+
+const COLUMNS = [
+  'Market',
+  'Borrow APR',
+  'Max LTV',
+  'Liquidation',
+  'Liquidity',
+] as const;
+
+/** One market as an `.mrow` (lines 328–341). */
+function MarketTableRow({ row, best, selected, off, onPick }: MarketCardProps) {
+  const { market } = row;
+
+  return (
+    <button
+      aria-pressed={selected}
+      className={cn(
+        ROW_BUTTON,
+        best && CARD_BEST,
+        selected && ROW_SELECTED,
+        off && CARD_OFF,
+      )}
+      disabled={off}
+      type="button"
+      onClick={onPick}>
+      {/* The artboard's cell (name, then the tag, one nowrap line) with the
+          chain label under it, so the line fits the 150px column minimum. */}
+      <span className="flex min-w-0 flex-col items-start gap-[4px]">
+        <span className="flex items-center gap-[10px] whitespace-nowrap">
+          <span
+            className={cn(
+              'text-[24px] font-extrabold leading-[1.25] tracking-[-0.03em]',
+              best && 'rounded-[8px] bg-accent px-[8px] text-onlime',
+            )}>
+            {market.name}
+          </span>
+          {best ? (
+            <span className={BEST_TAG}>
+              <span
+                aria-hidden="true"
+                className="inline-block h-[7px] w-[7px] rounded-full bg-[#5E9E12]"
+              />
+              BEST
+            </span>
+          ) : null}
+          {off ? (
+            <span className="text-[11px] tracking-[0.06em] text-neg">
+              LTV TOO HIGH
+            </span>
+          ) : null}
+        </span>
+        <ChainLabel market={market} />
+      </span>
+      <span className="text-[24px] font-extrabold tracking-[-0.03em]">
+        <span className="sr-only">Borrow APR </span>
+        {formatApr(row.apr)}
+      </span>
+      <span className={FIGURE}>
+        <span className="sr-only">Max LTV </span>
+        {formatBps(row.maxLtvBps)}
+      </span>
+      <span className={FIGURE}>
+        <span className="sr-only">Liquidation </span>
+        {formatBps(row.liquidationLtvBps)}
+      </span>
+      <span className={FIGURE}>
+        <span className="sr-only">Liquidity </span>
+        {formatCompactUsd(row.liquidityUsd)}
+      </span>
+    </button>
+  );
+}
+
+/** A row-shaped placeholder: the same grid and height, a `Skeleton` per cell. */
+function MarketRowSkeleton({ market }: { market?: LendingMarket }) {
+  return (
+    <div className={ROW} data-testid="market-row-skeleton">
+      <span className="sr-only">
+        {market ? `Loading ${marketTitle(market)}` : 'Loading markets'}
+      </span>
+      <Skeleton height={28} width="60%" />
+      <Skeleton height={28} width="70%" />
+      <Skeleton height={20} width="80%" />
+      <Skeleton height={20} width="80%" />
+      <Skeleton height={20} width="80%" />
+    </div>
+  );
+}
+
 export type MarketListLayout = 'cards' | 'table';
 
 export type MarketListProps = {
-  /** `cards` (the artboard's default); `table` is drawn as cards for now. */
+  /** `cards` (the artboard's default); `table` is the `.mgrid` rows. */
   layout: MarketListLayout;
   /** The picked market, when the caller owns the selection. */
   selectedId?: string;
@@ -352,9 +459,9 @@ export type MarketListProps = {
 const NO_IDS: readonly string[] = [];
 
 /**
- * Every market's figures for the default pair (WETH / USDC), one card per
- * market. BEST marks the lowest borrow APR among the markets that can be
- * picked, and the selection defaults to it. Each market loads and fails on
+ * Every market's figures for the default pair (WETH / USDC), one card or
+ * table row per market. BEST marks the lowest borrow APR among the markets
+ * that can be picked, and the selection defaults to it. Each market loads and fails on
  * its own: a skeleton while it loads, a Banner with "Try again" when its read
  * fails. A market without the pair is left out.
  */
@@ -401,56 +508,81 @@ export function MarketList({
     );
   }
 
+  const table = layout === 'table';
+
+  const content = items.map((item) => {
+    switch (item.kind) {
+      case 'loading':
+        return table ? (
+          <MarketRowSkeleton key={item.key} market={item.market} />
+        ) : (
+          <MarketCardSkeleton key={item.key} market={item.market} />
+        );
+      case 'error':
+        return (
+          <MarketError
+            key={item.key}
+            className={table ? 'min-w-0' : undefined}
+            retry={item.retry}
+            title={`${marketTitle(item.market)} did not load`}
+          />
+        );
+      case 'listError':
+        return (
+          <MarketError
+            key={item.key}
+            className={table ? 'min-w-0' : undefined}
+            retry={item.retry}
+            title="The markets did not load"
+          />
+        );
+
+      case 'market': {
+        const { id } = item.row.market;
+        const Row = table ? MarketTableRow : MarketCard;
+
+        return (
+          <Row
+            key={item.key}
+            best={best?.market.id === id}
+            off={disabledIds.includes(id)}
+            row={item.row}
+            selected={selected === id}
+            onPick={() => pick(id)}
+          />
+        );
+      }
+      default: {
+        const unknown: never = item;
+
+        return unknown;
+      }
+    }
+  });
+
+  if (table) {
+    return (
+      <div aria-busy={loading || undefined} data-layout={layout}>
+        {/* Line 325: padding 0 20px 8px, 12px `mut2`. */}
+        <div
+          aria-hidden="true"
+          className={cn(GRID, 'px-[20px] pb-[8px] text-[12px] text-mut2')}>
+          {COLUMNS.map((name) => (
+            <span key={name}>{name}</span>
+          ))}
+        </div>
+        <div className="flex flex-col gap-[10px]">{content}</div>
+      </div>
+    );
+  }
+
   return (
-    // Gap 10, wrapping (line 345). The table layout (`.mgrid`, lines 323–343)
-    // comes later; until then it shows the cards.
+    // Gap 10, wrapping (line 345).
     <div
       aria-busy={loading || undefined}
       className="flex flex-wrap gap-[10px]"
       data-layout={layout}>
-      {items.map((item) => {
-        switch (item.kind) {
-          case 'loading':
-            return <MarketCardSkeleton key={item.key} market={item.market} />;
-          case 'error':
-            return (
-              <MarketError
-                key={item.key}
-                retry={item.retry}
-                title={`${marketTitle(item.market)} did not load`}
-              />
-            );
-          case 'listError':
-            return (
-              <MarketError
-                key={item.key}
-                retry={item.retry}
-                title="The markets did not load"
-              />
-            );
-
-          case 'market': {
-            const { id } = item.row.market;
-
-            return (
-              <MarketCard
-                key={item.key}
-                best={best?.market.id === id}
-                off={disabledIds.includes(id)}
-                row={item.row}
-                selected={selected === id}
-                onPick={() => pick(id)}
-              />
-            );
-          }
-
-          default: {
-            const unknown: never = item;
-
-            return unknown;
-          }
-        }
-      })}
+      {content}
     </div>
   );
 }
