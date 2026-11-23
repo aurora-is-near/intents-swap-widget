@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import handler, { config } from './intents-connect';
+import handler, { config } from '../api/intents-connect';
 
 const BODY = JSON.stringify({ steps: [] });
 

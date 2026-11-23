@@ -2,6 +2,7 @@ import {
   DEFAULT_INTENTS_CONNECT_API_URL,
   INTENTS_CONNECT_PROXY_PATH,
 } from '../src/intentsConnectUrls.js';
+import { readEnv } from '../src/env.js';
 
 export type IntentsConnectProxyOptions = {
   /** `INTENTS_CONNECT_API_KEY`; the proxy answers 500 while it is unset. */
@@ -11,13 +12,6 @@ export type IntentsConnectProxyOptions = {
 };
 
 export type ProxyEnv = Record<string, string | undefined>;
-
-/** A trimmed env value, or `undefined` when unset or empty. */
-const readEnv = (value: string | undefined) => {
-  const trimmed = value?.trim();
-
-  return trimmed === '' ? undefined : trimmed;
-};
 
 /**
  * Reads the proxy's settings from a server environment (`process.env` on

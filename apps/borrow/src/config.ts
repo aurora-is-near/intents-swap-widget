@@ -1,16 +1,10 @@
 import { createIntentsConnectApi } from '@aurora-is-near/intents-connect';
 
+import { readEnv } from './env';
 import {
   DEFAULT_INTENTS_CONNECT_API_URL,
   INTENTS_CONNECT_PROXY_PATH,
 } from './intentsConnectUrls';
-
-/** A trimmed env value, or `undefined` when unset or empty. */
-const readEnv = (value: string | undefined) => {
-  const trimmed = value?.trim();
-
-  return trimmed === '' ? undefined : trimmed;
-};
 
 /**
  * The Reown (WalletConnect Cloud) project id, from `VITE_REOWN_PROJECT_ID`.
