@@ -18,10 +18,12 @@ import { TokenList, type TokenOption, TokenRow } from './TokenList';
  * `.pick` (Web-Borrow.dc.html lines 23–25, markup line 219): gap 10, padding
  * 8px 12px 8px 8px, radius 14, border 1.5px `bd2`, `sf`; hover border ink;
  * open (`.pick.open`, Base UI's `data-popup-open`) border ink with a 2px ink
- * ring. Focus ring as on line 20. The artboard sets the width (188px) where
- * the trigger is placed: pass it as `className`.
+ * ring. Focus ring as on line 20. Disabled: `.go:disabled`'s opacity (line
+ * 57) and the not-allowed cursor (line 16), with no hover, as Button. The
+ * artboard sets the width (188px) where the trigger is placed: pass it as
+ * `className`.
  */
-const TRIGGER = `box-border flex min-w-0 cursor-pointer disabled:cursor-not-allowed items-center gap-[10px] rounded-[14px] border-[1.5px] border-solid border-bd2 bg-sf py-[8px] pr-[12px] pl-[8px] text-left font-sans text-ink hover:border-ink data-popup-open:border-ink data-popup-open:shadow-[0_0_0_2px_var(--ink)] ${FOCUS_RING}`;
+const TRIGGER = `box-border flex min-w-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-[10px] rounded-[14px] border-[1.5px] border-solid border-bd2 bg-sf py-[8px] pr-[12px] pl-[8px] text-left font-sans text-ink enabled:hover:border-ink data-popup-open:border-ink data-popup-open:shadow-[0_0_0_2px_var(--ink)] ${FOCUS_RING}`;
 
 /** Symbol and chain (line 221): `flex:1; min-width:0; line-height:1.2`. */
 const TRIGGER_NAMES = 'min-w-0 flex-1 leading-[1.2]';
@@ -32,14 +34,16 @@ const TRIGGER_SYMBOL = 'block text-[18px] font-bold';
 /** Line 221: chain dot and name, gap 5, 12px `mut`. */
 const TRIGGER_CHAIN = 'flex items-center gap-[5px] text-[12px] text-mut';
 
-/** `.panel` sits on top of the card (line 32: `z-index:20`). */
-const POSITIONER = 'z-20';
-
 /**
  * `.panel` (line 32): as wide as the anchor wrapper (`left:0; right:0` on
  * the artboard), 8px below it, border 1.5px ink, radius 18, padding 12,
  * `sf`. The shadow's rgba is the light ink (#111613) in both themes on the
  * artboards, so it stays literal.
+ *
+ * No z-index: the artboard's `z-index:20` lifted an in-flow `.panel` over
+ * the card. The popup is portalled, so like the kit's other portalled
+ * layers it stacks in DOM order above the app root, which needs
+ * `isolation: isolate`.
  */
 const POPUP =
   'box-border w-[var(--anchor-width)] rounded-[18px] border-[1.5px] border-solid border-ink bg-sf p-[12px] font-sans text-ink shadow-[0_18px_40px_rgba(17,22,19,0.18)] outline-none';
@@ -139,7 +143,6 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
           <Popover.Positioner
             align="start"
             anchor={anchor}
-            className={POSITIONER}
             side="bottom"
             sideOffset={8}>
             <Popover.Popup aria-label={ariaLabel} className={POPUP}>
