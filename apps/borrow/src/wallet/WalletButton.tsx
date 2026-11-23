@@ -1,6 +1,7 @@
 import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 
 import { formatAddress } from './formatAddress';
+import { useConnectWallet } from './useConnectWallet';
 
 /**
  * The `.wal` button (Web-Borrow-NotConnected.dc.html line 21, 640px block
@@ -15,8 +16,8 @@ const WALLET_BUTTON =
  * green dot and the shortened address, and a click disconnects.
  */
 export function WalletButton() {
-  const { address, isConnected, connect, disconnect } =
-    useIntentsConnectWallet();
+  const { address, isConnected, disconnect } = useIntentsConnectWallet();
+  const connectWallet = useConnectWallet();
 
   if (isConnected && address) {
     const label = formatAddress(address);
@@ -41,14 +42,7 @@ export function WalletButton() {
   }
 
   return (
-    <button
-      className={WALLET_BUTTON}
-      onClick={() => {
-        // Closing the modal without connecting rejects; that is not an error
-        // here, and the modal reports its own failures.
-        Promise.resolve(connect()).catch(() => {});
-      }}
-      type="button">
+    <button className={WALLET_BUTTON} onClick={connectWallet} type="button">
       Connect wallet
     </button>
   );

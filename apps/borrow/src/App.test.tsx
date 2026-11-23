@@ -42,7 +42,9 @@ describe('App', () => {
 
     expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     expect(
-      screen.getByRole('img', { name: 'Aurora Intents' }),
+      within(screen.getByRole('banner')).getByRole('img', {
+        name: 'Aurora Intents',
+      }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'One click borrow' }),

@@ -6,20 +6,24 @@ import {
 } from '@tanstack/react-router';
 import type { RouterHistory } from '@tanstack/react-router';
 
+import { NewLoanPlaceholder } from './loan/NewLoanPlaceholder';
+import { PositionsEmptyState } from './positions/PositionsEmptyState';
 import { Shell } from './shell/Shell';
 
 const rootRoute = createRootRoute({ component: Shell });
 
-/** The New loan tab. Its panel is filled by a later feature. */
+/** The New loan tab: a placeholder until the loan form feature. */
 const newLoanRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  component: NewLoanPlaceholder,
 });
 
-/** The My positions tab. Its panel is filled by a later feature. */
+/** The My positions tab: the empty state until positions are read. */
 const positionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/positions',
+  component: PositionsEmptyState,
 });
 
 /**
