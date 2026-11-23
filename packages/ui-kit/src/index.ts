@@ -2,6 +2,8 @@ export { AmountInput } from './components/AmountInput';
 export type { AmountInputProps } from './components/AmountInput';
 export { Badge } from './components/Badge';
 export type { BadgeProps, BadgeVariant } from './components/Badge';
+export { Banner } from './components/Banner';
+export type { BannerProps, BannerTone } from './components/Banner';
 export { Button } from './components/Button';
 export type {
   ButtonProps,
@@ -43,6 +45,8 @@ export type {
   QuickAmountOption,
   QuickAmountsProps,
 } from './components/QuickAmounts';
+export { Skeleton } from './components/Skeleton';
+export type { SkeletonProps } from './components/Skeleton';
 export { RISK_ZONE_COLORS, Slider } from './components/Slider';
 export type {
   SliderMarker,
@@ -51,6 +55,12 @@ export type {
 } from './components/Slider';
 export { Spinner } from './components/Spinner';
 export type { SpinnerProps, SpinnerTone } from './components/Spinner';
+export { StepProgress } from './components/StepProgress';
+export type {
+  Step,
+  StepProgressProps,
+  StepStatus,
+} from './components/StepProgress';
 export { Switch } from './components/Switch';
 export type { SwitchProps } from './components/Switch';
 export { Tab, Tabs, TabsList, TabsPanel } from './components/Tabs';
@@ -79,6 +89,8 @@ export type {
   TokenSelectDisplay,
   TokenSelectProps,
 } from './components/TokenSelect';
+export { Tooltip, TooltipProvider } from './components/Tooltip';
+export type { TooltipProps, TooltipProviderProps } from './components/Tooltip';
 export { cn } from './lib/cn';
 export { ThemeProvider, useTheme } from './theme/ThemeProvider';
 export { getThemeInitScript } from './theme/themeInitScript';

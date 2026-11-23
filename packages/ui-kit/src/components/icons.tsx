@@ -168,3 +168,32 @@ export function CrossIcon({
     </svg>
   );
 }
+
+/**
+ * Done: a filled circle with a check (done step, line 1004). The artboard
+ * paints the circle `#111613`, which its theme rule `.aur svg
+ * circle[fill="#111613"]` (line 171) turns into `--badge`: give the icon
+ * `text-badge`. The check is `#C9EB8A`, the `--accent` token, the same in
+ * both themes.
+ */
+export function DoneIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      {...props}>
+      <circle cx="12" cy="12" fill="currentColor" r="12" />
+      <path
+        className="stroke-accent"
+        d="M7 12.4l3.3 3.3L17 8.8"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2.2}
+      />
+    </svg>
+  );
+}
