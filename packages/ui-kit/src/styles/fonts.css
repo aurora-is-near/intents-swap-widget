@@ -1,0 +1,9 @@
+/*
+ * Schibsted Grotesk, self-hosted, in the weights the artboards load
+ * (400–800). 400 is the default for text that sets no weight.
+ */
+@import '@fontsource/schibsted-grotesk/400.css';
+@import '@fontsource/schibsted-grotesk/500.css';
+@import '@fontsource/schibsted-grotesk/600.css';
+@import '@fontsource/schibsted-grotesk/700.css';
+@import '@fontsource/schibsted-grotesk/800.css';

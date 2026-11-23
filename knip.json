@@ -15,6 +15,7 @@
     },
     "packages/ui-kit": {
       "ignoreDependencies": [
+        "@fontsource/schibsted-grotesk",
         "react",
         "react-dom"
       ]
