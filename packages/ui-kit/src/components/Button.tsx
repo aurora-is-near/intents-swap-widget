@@ -1,14 +1,14 @@
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
 
 import { cn } from '../lib/cn';
+import { FOCUS_RING } from '../lib/focusRing';
 import { Spinner } from './Spinner';
 
 /**
  * Shared by every variant: focus ring (Web-Borrow.dc.html line 52) and the
  * disabled look (lines 16, 57).
  */
-const BASE =
-  'box-border inline-flex cursor-pointer items-center justify-center gap-[8px] font-sans font-bold focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed disabled:opacity-50';
+const BASE = `box-border inline-flex cursor-pointer items-center justify-center gap-[8px] font-sans font-bold ${FOCUS_RING} disabled:cursor-not-allowed disabled:opacity-50`;
 
 /**
  * The browser's own button line-height, which the artboards rely on.

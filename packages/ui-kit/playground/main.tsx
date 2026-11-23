@@ -4,15 +4,20 @@ import { type ReactNode, StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import {
+  AmountInput,
   Badge,
   Button,
   Card,
   ChainMark,
   ChainMarkGroup,
+  Checkbox,
   Highlight,
+  QuickAmounts,
   Spinner,
+  Switch,
   Tag,
   Text,
+  TextField,
   ThemeProvider,
   TokenMark,
   useTheme,
@@ -174,6 +179,104 @@ function Buttons() {
   );
 }
 
+function Toggles() {
+  const [sendOther, setSendOther] = useState(false);
+  const [recvOther, setRecvOther] = useState(true);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Checkbox
+        checked={sendOther}
+        label="Send borrowed funds to another wallet"
+        onCheckedChange={setSendOther}
+      />
+      <Switch
+        checked={recvOther}
+        label="Send to another wallet"
+        onCheckedChange={setRecvOther}
+      />
+      <div className="flex flex-wrap items-center gap-6">
+        <Checkbox aria-label="Unlabelled checkbox" />
+        <Switch aria-label="Unlabelled switch" />
+        <Checkbox disabled label="Disabled" />
+        <Checkbox checked disabled label="Disabled, checked" />
+        <Switch disabled label="Disabled" />
+        <Switch checked disabled label="Disabled, on" />
+      </div>
+    </div>
+  );
+}
+
+function TextFields() {
+  const [address, setAddress] = useState('');
+
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+      <TextField
+        hideLabel
+        label="Recipient wallet address"
+        onChange={(event) => setAddress(event.target.value)}
+        placeholder="0x… or name.eth"
+        value={address}
+      />
+      <TextField label="RECIPIENT" placeholder="0x… or name.eth" />
+      <TextField
+        defaultValue="0x12"
+        error="Not a valid address"
+        label="WITH AN ERROR"
+      />
+      <TextField disabled label="DISABLED" placeholder="0x… or name.eth" />
+    </div>
+  );
+}
+
+const QUICK_AMOUNTS = [
+  { value: '0.25', label: '25%' },
+  { value: '0.5', label: '50%' },
+  { value: '0.75', label: '75%' },
+  { value: '1', label: 'Max' },
+];
+
+/** Sample balance for the quick-amount chips. */
+const BALANCE = 2.5;
+
+function Amounts() {
+  const [amount, setAmount] = useState('');
+  const [share, setShare] = useState<string>();
+
+  return (
+    <div className="flex max-w-[560px] flex-col gap-3">
+      <AmountInput
+        decimals={6}
+        hideLabel
+        label="Collateral amount"
+        onValueChange={(value) => {
+          setAmount(value);
+          setShare(undefined);
+        }}
+        secondary="≈ $1,234.00"
+        value={amount}
+      />
+      <QuickAmounts
+        aria-label="Share of balance"
+        onSelect={(value) => {
+          setShare(value);
+          setAmount(String(BALANCE * Number(value)));
+        }}
+        options={QUICK_AMOUNTS}
+        value={share}
+      />
+      <AmountInput
+        label="SUPPLY"
+        onValueChange={() => undefined}
+        secondary="Disabled"
+        disabled
+        value="1.5"
+      />
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
@@ -213,6 +316,18 @@ function Components() {
 
       <Section title="Button">
         <Buttons />
+      </Section>
+
+      <Section title="Checkbox and Switch">
+        <Toggles />
+      </Section>
+
+      <Section title="TextField">
+        <TextFields />
+      </Section>
+
+      <Section title="AmountInput and QuickAmounts">
+        <Amounts />
       </Section>
 
       <Section title="Spinner">
