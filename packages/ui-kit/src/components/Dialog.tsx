@@ -1,0 +1,266 @@
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
+import {
+  type ComponentPropsWithoutRef,
+  createContext,
+  forwardRef,
+  type ReactNode,
+  useContext,
+} from 'react';
+
+import { cn } from '../lib/cn';
+import { Button } from './Button';
+import { CloseIcon } from './icons';
+
+/*
+ * The confirm modal (Web-Borrow.dc.html lines 967–983). Mobile is an
+ * edge-to-edge bottom sheet, as approved in the plan review. The mobile
+ * artboard (Mob-Borrow-Confirm.dc.html lines 967–968) has the same markup as
+ * desktop and no modal rule in its `@media (max-width:640px)` block, so the
+ * sheet keeps the desktop popup's radius, padding and shadow, and its height
+ * cap leaves the artboard's 20px gutter of backdrop above it.
+ *
+ * `[@media(max-width:640px)]:` is the artboards' breakpoint exactly;
+ * Tailwind's `max-sm:` is `width < 640px` and would miss 640 itself.
+ */
+
+/**
+ * The backdrop (line 967): `rgba(17,22,19,0.5)`, the light ink in both
+ * themes on the artboards, so it stays literal. Fades in and out.
+ *
+ * No z-index (the artboard's is `z-index:100`): with the app root isolated
+ * (see `styles/index.css`), portalled layers stack above the app in DOM
+ * order, so a popup opened from inside the dialog, such as a `TokenSelect`,
+ * is portalled later and lands on top of it.
+ */
+const BACKDROP =
+  'fixed inset-0 bg-[rgba(17,22,19,0.5)] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none';
+
+/**
+ * The scroll container (line 967): fixed, flex, padding 20px, scrolls, and
+ * centres the popup with the popup's `margin:auto`. Mobile drops the gutter.
+ * No z-index, as for the backdrop.
+ */
+const VIEWPORT =
+  'fixed inset-0 box-border flex overflow-y-auto p-[20px] [@media(max-width:640px)]:p-0';
+
+/**
+ * The popup (line 968): `margin:auto; flex:0 1 460px; min-width:0`, radius
+ * 28, padding 26, `sf`, shadow `0 30px 80px rgba(17,22,19,0.35)` (light ink
+ * in both themes, so literal). The close button is positioned against it.
+ *
+ * Mobile: full width, pinned to the bottom (`margin-top:auto`), top corners
+ * rounded, scrolls inside, at most the screen height less the 20px gutter,
+ * with the bottom padding clear of the home indicator.
+ *
+ * Motion: desktop fades and scales from .96; the sheet slides up. Both are
+ * off under `prefers-reduced-motion`.
+ */
+const POPUP = [
+  'relative m-auto box-border min-w-0 flex-[0_1_460px] rounded-[28px] bg-sf p-[26px] font-sans text-ink shadow-[0_30px_80px_rgba(17,22,19,0.35)] outline-none',
+  'transition-[opacity,scale,translate] duration-200 data-ending-style:scale-[0.96] data-ending-style:opacity-0 data-starting-style:scale-[0.96] data-starting-style:opacity-0 motion-reduce:transition-none',
+  '[@media(max-width:640px)]:mx-0 [@media(max-width:640px)]:mt-auto [@media(max-width:640px)]:mb-0 [@media(max-width:640px)]:max-h-[calc(100dvh_-_20px)] [@media(max-width:640px)]:basis-full [@media(max-width:640px)]:overflow-y-auto [@media(max-width:640px)]:overscroll-contain [@media(max-width:640px)]:rounded-t-[28px] [@media(max-width:640px)]:rounded-b-none [@media(max-width:640px)]:pb-[calc(26px_+_env(safe-area-inset-bottom))]',
+  '[@media(max-width:640px)]:data-ending-style:translate-y-full [@media(max-width:640px)]:data-ending-style:scale-100 [@media(max-width:640px)]:data-ending-style:opacity-100 [@media(max-width:640px)]:data-starting-style:translate-y-full [@media(max-width:640px)]:data-starting-style:scale-100 [@media(max-width:640px)]:data-starting-style:opacity-100',
+].join(' ');
+
+/**
+ * `.ibtn` (lines 53–54, markup line 982): 36×36, radius 12, transparent,
+ * hover `hov`, focus ring (line 52): the `ghost` button without its padding.
+ * On the artboard it ends the header row (`align-items:flex-start`), which
+ * puts it at the popup's top-right padding corner.
+ */
+const CLOSE = 'absolute top-[26px] right-[26px] h-[36px] w-[36px] p-0 text-ink';
+
+/**
+ * Keeps the title and description clear of the close button: the button's
+ * 36px plus the header row's 12px gap (line 981).
+ */
+const CLEAR_CLOSE = 'pr-[48px]';
+
+/** Line 981: `margin:0; font-size:26px; font-weight:800; letter-spacing:-0.02em`. */
+const TITLE =
+  'm-0 text-[26px] font-extrabold leading-[normal] tracking-[-0.02em]';
+
+/** Line 981: `margin:6px 0 0; font-size:15px; color:var(--mut)`. */
+const DESCRIPTION = 'mx-0 mt-[6px] mb-0 text-[15px] leading-[normal] text-mut';
+
+/** Close reasons a non-dismissible dialog ignores. */
+const DISMISS_REASONS: ReadonlySet<DialogPrimitive.Root.ChangeEventReason> =
+  new Set(['escape-key', 'outside-press', 'focus-out']);
+
+const DismissibleContext = createContext(true);
+
+export type DialogProps = Omit<
+  DialogPrimitive.Root.Props,
+  'children' | 'disablePointerDismissal' | 'handle'
+> & {
+  children?: ReactNode;
+  /**
+   * Whether Escape, an outside press and the close button close the dialog.
+   * When `false` (such as while a transaction is being signed) there is no
+   * close button and only the app closes it, through `open` or a
+   * `DialogClose` it renders. Defaults to `true`.
+   */
+  dismissible?: boolean;
+};
+
+/**
+ * A modal dialog on Base UI `Dialog`. Uncontrolled with `defaultOpen`, or
+ * controlled with `open` and `onOpenChange`. Holds a `DialogTrigger` and a
+ * `DialogContent`.
+ */
+export function Dialog({
+  dismissible = true,
+  onOpenChange,
+  children,
+  ...props
+}: DialogProps) {
+  return (
+    <DismissibleContext.Provider value={dismissible}>
+      <DialogPrimitive.Root
+        {...props}
+        disablePointerDismissal={!dismissible}
+        onOpenChange={(open, eventDetails) => {
+          if (
+            !open &&
+            !dismissible &&
+            DISMISS_REASONS.has(eventDetails.reason)
+          ) {
+            eventDetails.cancel();
+
+            return;
+          }
+
+          onOpenChange?.(open, eventDetails);
+        }}>
+        {children}
+      </DialogPrimitive.Root>
+    </DismissibleContext.Provider>
+  );
+}
+
+export type DialogTriggerProps = ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Trigger
+>;
+
+/**
+ * Opens the dialog; focus returns to it on close. Unstyled: pass
+ * `render={<Button />}` for the kit's look.
+ */
+export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
+  (props, ref) => <DialogPrimitive.Trigger ref={ref} {...props} />,
+);
+
+DialogTrigger.displayName = 'DialogTrigger';
+
+export type DialogContentProps = Omit<
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Popup>,
+  'className'
+> & {
+  className?: string;
+};
+
+/**
+ * The portalled backdrop, scroll viewport and popup (role `dialog`, named by
+ * its `DialogTitle`). Centred, at most 460px wide; at 640px or narrower a
+ * full-width sheet pinned to the bottom. Shows the close button unless the
+ * dialog is not `dismissible`.
+ *
+ * Portals render into `<body>`: the app's root needs `isolation: isolate`
+ * so the dialog stacks above it (see `styles/index.css`).
+ */
+export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
+  ({ className, children, ...props }, ref) => {
+    const dismissible = useContext(DismissibleContext);
+
+    return (
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Backdrop className={BACKDROP} />
+        <DialogPrimitive.Viewport className={VIEWPORT}>
+          <DialogPrimitive.Popup
+            ref={ref}
+            className={cn(POPUP, className)}
+            {...props}>
+            {/* Rendered before the children (the artboard has it after the
+                title, line 982) so that it is the first focusable element
+                and takes the initial focus rather than the dialog's main
+                action. */}
+            {dismissible ? (
+              <DialogPrimitive.Close
+                aria-label="Close"
+                render={<Button className={CLOSE} variant="ghost" />}>
+                <CloseIcon />
+              </DialogPrimitive.Close>
+            ) : null}
+            {children}
+          </DialogPrimitive.Popup>
+        </DialogPrimitive.Viewport>
+      </DialogPrimitive.Portal>
+    );
+  },
+);
+
+DialogContent.displayName = 'DialogContent';
+
+export type DialogTitleProps = Omit<
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Title>,
+  'className'
+> & {
+  className?: string;
+};
+
+/** The dialog's `<h2>` heading; it names the dialog. */
+export const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(
+  ({ className, ...props }, ref) => {
+    const dismissible = useContext(DismissibleContext);
+
+    return (
+      <DialogPrimitive.Title
+        ref={ref}
+        className={cn(TITLE, dismissible && CLEAR_CLOSE, className)}
+        {...props}
+      />
+    );
+  },
+);
+
+DialogTitle.displayName = 'DialogTitle';
+
+export type DialogDescriptionProps = Omit<
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>,
+  'className'
+> & {
+  className?: string;
+};
+
+/** The line under the title; it describes the dialog. */
+export const DialogDescription = forwardRef<
+  HTMLParagraphElement,
+  DialogDescriptionProps
+>(({ className, ...props }, ref) => {
+  const dismissible = useContext(DismissibleContext);
+
+  return (
+    <DialogPrimitive.Description
+      ref={ref}
+      className={cn(DESCRIPTION, dismissible && CLEAR_CLOSE, className)}
+      {...props}
+    />
+  );
+});
+
+DialogDescription.displayName = 'DialogDescription';
+
+export type DialogCloseProps = ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Close
+>;
+
+/**
+ * Closes the dialog, such as a "Cancel" action. It works even when the
+ * dialog is not `dismissible`. Unstyled: pass `render={<Button />}` for the
+ * kit's look.
+ */
+export const DialogClose = forwardRef<HTMLButtonElement, DialogCloseProps>(
+  (props, ref) => <DialogPrimitive.Close ref={ref} {...props} />,
+);
+
+DialogClose.displayName = 'DialogClose';

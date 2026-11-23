@@ -12,6 +12,12 @@ import {
   ChainMarkGroup,
   Checkbox,
   Chip,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
   Highlight,
   QuickAmounts,
   RISK_ZONE_COLORS,
@@ -544,6 +550,58 @@ function Sliders() {
   );
 }
 
+/** Closes the non-dismissible dialog, as the app does once signing ends. */
+const SIGNING_MS = 4000;
+
+function Dialogs() {
+  const [signing, setSigning] = useState(false);
+
+  useEffect(() => {
+    if (!signing) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setSigning(false), SIGNING_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [signing]);
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      <Dialog>
+        <DialogTrigger render={<Button size="md" />}>Review loan</DialogTrigger>
+        <DialogContent>
+          <DialogTitle>Confirm loan</DialogTitle>
+          <DialogDescription>
+            Borrow 1,000 USDC against 1 ETH.
+          </DialogDescription>
+          <div className="mt-[16px] rounded-[18px] bg-sf2 px-[16px] py-[11px] text-[15px] text-mut">
+            Loan summary rows go here.
+          </div>
+          <DialogClose render={<Button className="mt-[20px]" />}>
+            Confirm in wallet
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
+      <Dialog dismissible={false} onOpenChange={setSigning} open={signing}>
+        <DialogTrigger render={<Button size="md" variant="secondary" />}>
+          Sign (not dismissible)
+        </DialogTrigger>
+        <DialogContent>
+          <DialogTitle>Waiting for signature</DialogTitle>
+          <DialogDescription>
+            Escape and outside presses are ignored. Closes in{' '}
+            {SIGNING_MS / 1000} seconds.
+          </DialogDescription>
+          <div className="mt-[16px] flex items-center gap-[12px] text-[15px] font-semibold">
+            <Spinner size={20} /> Confirm in your wallet
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function TabsDemo() {
   return (
     <div className="flex flex-col gap-6">
@@ -636,6 +694,10 @@ function Components() {
 
       <Section title="Tabs">
         <TabsDemo />
+      </Section>
+
+      <Section title="Dialog">
+        <Dialogs />
       </Section>
 
       <Section title="Spinner">

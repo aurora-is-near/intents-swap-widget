@@ -20,6 +20,22 @@ export { Checkbox } from './components/Checkbox';
 export type { CheckboxProps } from './components/Checkbox';
 export { Chip } from './components/Chip';
 export type { ChipProps } from './components/Chip';
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from './components/Dialog';
+export type {
+  DialogCloseProps,
+  DialogContentProps,
+  DialogDescriptionProps,
+  DialogProps,
+  DialogTitleProps,
+  DialogTriggerProps,
+} from './components/Dialog';
 export { Highlight } from './components/Highlight';
 export type { HighlightProps } from './components/Highlight';
 export { QuickAmounts } from './components/QuickAmounts';
