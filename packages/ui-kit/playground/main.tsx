@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { type ReactNode, StrictMode, useEffect, useState } from 'react';
+import { type ReactNode, StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import {
@@ -11,6 +11,7 @@ import {
   ChainMark,
   ChainMarkGroup,
   Checkbox,
+  Chip,
   Highlight,
   QuickAmounts,
   Spinner,
@@ -20,9 +21,10 @@ import {
   TextField,
   ThemeProvider,
   TokenMark,
+  TokenSelect,
   useTheme,
 } from '../src';
-import type { ButtonVariant, ThemePreference } from '../src';
+import type { ButtonVariant, ThemePreference, TokenOption } from '../src';
 
 // Class names are spelled out so Tailwind finds them in this file.
 const TOKENS = [
@@ -277,6 +279,190 @@ function Amounts() {
   );
 }
 
+/** Chains and tokens from the artboard's sample data (Web-Borrow.dc.html lines 1098–1111). */
+const CHAINS = {
+  eth: { name: 'Ethereum', color: '#5B74D6' },
+  base: { name: 'Base', color: '#2E6BFF' },
+  arb: { name: 'Arbitrum', color: '#1F8FD6' },
+  op: { name: 'Optimism', color: '#D9341F' },
+} as const;
+
+type ChainId = keyof typeof CHAINS;
+
+type Group = 'all' | 'eth' | 'btc' | 'stable';
+
+const GROUPS: { id: Group; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'eth', label: 'ETH' },
+  { id: 'btc', label: 'BTC' },
+  { id: 'stable', label: 'Stables' },
+];
+
+const SAMPLE_TOKENS: {
+  id: string;
+  symbol: string;
+  label: string;
+  bg: string;
+  fg: string;
+  price: string;
+  group: Exclude<Group, 'all'>;
+  chains: ChainId[];
+}[] = [
+  {
+    id: 'wsteth',
+    symbol: 'wstETH',
+    label: 'ws',
+    bg: '#BFE3FF',
+    fg: '#0B3350',
+    price: '$3,600.00',
+    group: 'eth',
+    chains: ['eth', 'base', 'arb', 'op'],
+  },
+  {
+    id: 'eth',
+    symbol: 'ETH',
+    label: 'ET',
+    bg: '#DAD9F7',
+    fg: '#25235C',
+    price: '$3,000.00',
+    group: 'eth',
+    chains: ['eth', 'base', 'arb', 'op'],
+  },
+  {
+    id: 'weeth',
+    symbol: 'weETH',
+    label: 'we',
+    bg: '#E3D4F7',
+    fg: '#3B1F63',
+    price: '$3,150.00',
+    group: 'eth',
+    chains: ['eth', 'base', 'arb'],
+  },
+  {
+    id: 'wbtc',
+    symbol: 'WBTC',
+    label: 'WB',
+    bg: '#FFE2A8',
+    fg: '#4A3000',
+    price: '$90,000.00',
+    group: 'btc',
+    chains: ['eth', 'arb', 'op'],
+  },
+  {
+    id: 'cbbtc',
+    symbol: 'cbBTC',
+    label: 'cb',
+    bg: '#C9D7FF',
+    fg: '#14275E',
+    price: '$90,000.00',
+    group: 'btc',
+    chains: ['eth', 'base', 'arb'],
+  },
+  {
+    id: 'susds',
+    symbol: 'sUSDS',
+    label: 'sU',
+    bg: '#FFD0E4',
+    fg: '#5E0B33',
+    price: '$1.08',
+    group: 'stable',
+    chains: ['eth', 'base', 'arb'],
+  },
+  {
+    id: 'usds',
+    symbol: 'USDS',
+    label: 'US',
+    bg: '#D3F2DF',
+    fg: '#0C4325',
+    price: '$1.00',
+    group: 'stable',
+    chains: ['eth', 'base', 'arb'],
+  },
+];
+
+const toOption = (token: (typeof SAMPLE_TOKENS)[number]): TokenOption => ({
+  id: token.id,
+  symbol: token.symbol,
+  mark: { label: token.label, bg: token.bg, fg: token.fg },
+  chainsLabel: token.chains.map((chain) => CHAINS[chain].name).join(' · '),
+  priceLabel: token.price,
+});
+
+/** The Supply card's picker row (lines 216–228): trigger and amount field. */
+function TokenPicker() {
+  const anchor = useRef<HTMLDivElement>(null);
+  const [value, setValue] = useState('eth');
+  const [chain, setChain] = useState<ChainId>('eth');
+  const [group, setGroup] = useState<Group>('all');
+  const [amount, setAmount] = useState('');
+
+  const token =
+    SAMPLE_TOKENS.find((item) => item.id === value) ?? SAMPLE_TOKENS[0];
+
+  const options = SAMPLE_TOKENS.filter(
+    (item) =>
+      (group === 'all' || item.group === group) && item.chains.includes(chain),
+  ).map(toOption);
+
+  return (
+    <div ref={anchor} className="flex max-w-[560px] items-stretch gap-2">
+      <TokenSelect
+        anchor={anchor}
+        aria-label="Choose collateral token"
+        className="w-[188px] shrink-0"
+        filters={
+          <>
+            <div
+              aria-label="Token group"
+              className="mb-[8px] flex flex-wrap gap-[6px]"
+              role="group">
+              {GROUPS.map((item) => (
+                <Chip
+                  key={item.id}
+                  onClick={() => setGroup(item.id)}
+                  pressed={group === item.id}>
+                  {item.label}
+                </Chip>
+              ))}
+            </div>
+            <div
+              aria-label="Chain"
+              className="flex flex-wrap gap-[6px]"
+              role="group">
+              {(Object.keys(CHAINS) as ChainId[]).map((id) => (
+                <Chip
+                  dotColor={CHAINS[id].color}
+                  key={id}
+                  onClick={() => setChain(id)}
+                  pressed={chain === id}>
+                  {CHAINS[id].name}
+                </Chip>
+              ))}
+            </div>
+          </>
+        }
+        onValueChange={setValue}
+        options={options}
+        selected={{
+          symbol: token.symbol,
+          mark: { label: token.label, bg: token.bg, fg: token.fg },
+          chainName: CHAINS[chain].name,
+          chainColor: CHAINS[chain].color,
+        }}
+        value={value}
+      />
+      <AmountInput
+        className="min-w-0 flex-1"
+        hideLabel
+        label="Collateral amount"
+        onValueChange={setAmount}
+        secondary="≈ $0.00"
+        value={amount}
+      />
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
@@ -328,6 +514,10 @@ function Components() {
 
       <Section title="AmountInput and QuickAmounts">
         <Amounts />
+      </Section>
+
+      <Section title="TokenSelect and Chip">
+        <TokenPicker />
       </Section>
 
       <Section title="Spinner">
