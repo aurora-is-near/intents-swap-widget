@@ -1,25 +1,13 @@
 import { createMemoryHistory } from '@tanstack/react-router';
 import { render, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App';
 import { createAppRouter } from './router';
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () => {
-  const { createContext } = await import('react');
-
-  return {
-    AppKitContext: createContext(undefined),
-    AppKitProvider: ({ children }: { children: ReactNode }) => children,
-    useIntentsConnectWallet: () => ({
-      address: undefined,
-      isConnected: false,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-    }),
-  };
-});
+vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
+  (await import('./tests/appKitMock')).createAppKitMock(),
+);
 
 const renderAt = (path: string, dev: boolean) => {
   vi.stubEnv('DEV', dev);

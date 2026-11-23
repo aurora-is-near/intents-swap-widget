@@ -1,7 +1,6 @@
 import { createMemoryHistory } from '@tanstack/react-router';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App';
@@ -15,15 +14,9 @@ const wallet = vi.hoisted(() => ({
 }));
 
 // AppKit is replaced by a stub whose wallet state each test sets.
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () => {
-  const { createContext } = await import('react');
-
-  return {
-    AppKitContext: createContext(undefined),
-    AppKitProvider: ({ children }: { children: ReactNode }) => children,
-    useIntentsConnectWallet: () => wallet,
-  };
-});
+vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
+  (await import('./tests/appKitMock')).createAppKitMock(wallet),
+);
 
 const ADDRESS = '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21';
 

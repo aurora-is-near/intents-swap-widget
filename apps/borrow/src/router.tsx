@@ -54,6 +54,11 @@ const unknownRoute = createRoute({
  * dynamic import included, sits behind `import.meta.env.DEV`, which Vite
  * replaces with a literal, so a production build drops the branch and the
  * gallery chunk is never emitted.
+ *
+ * The subpath is kit source (TSX), so this app's `tsc` typechecks the kit's
+ * source under this app's tsconfig (`noUncheckedIndexedAccess` included), and
+ * kit files reachable from it must not use the kit's `@/` path alias, which
+ * does not resolve from here.
  */
 const createGalleryRoutes = () => {
   if (!import.meta.env.DEV) {
