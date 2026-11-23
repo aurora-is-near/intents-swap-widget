@@ -37,6 +37,23 @@ export const INTENTS_CONNECT_API_KEY_PROXY_URL = new URL(
 ).toString();
 
 /**
+ * Default read RPCs for the Aave markets: the publicnode endpoints the wallet
+ * package also uses (`DEFAULT_RPC_OVERRIDES` in
+ * `packages/intents-connect-wallet/src/connect/appkit/appkit.tsx`). Public
+ * endpoints may rate-limit; production sets its own.
+ */
+export const DEFAULT_RPC_URL_BASE = 'https://base-rpc.publicnode.com';
+export const DEFAULT_RPC_URL_ARB = 'https://arbitrum-one-rpc.publicnode.com';
+
+/** Base (8453) JSON-RPC URL, from `VITE_RPC_URL_BASE`. */
+export const RPC_URL_BASE =
+  readEnv(import.meta.env.VITE_RPC_URL_BASE) ?? DEFAULT_RPC_URL_BASE;
+
+/** Arbitrum One (42161) JSON-RPC URL, from `VITE_RPC_URL_ARB`. */
+export const RPC_URL_ARB =
+  readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB;
+
+/**
  * The app's one Intents Connect client. It carries no API key: the key lives
  * only on the server (`INTENTS_CONNECT_API_KEY`), and create calls reach it
  * through `apiKeyProxyUrl`.

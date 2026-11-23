@@ -7,6 +7,10 @@ interface ImportMetaEnv {
   readonly VITE_INTENTS_CONNECT_API_URL?: string;
   /** The API-key proxy for create calls; `/api/intents-connect` when unset. */
   readonly VITE_INTENTS_CONNECT_API_KEY_PROXY_URL?: string;
+  /** Base JSON-RPC for Aave market reads; publicnode when unset. */
+  readonly VITE_RPC_URL_BASE?: string;
+  /** Arbitrum One JSON-RPC for Aave market reads; publicnode when unset. */
+  readonly VITE_RPC_URL_ARB?: string;
 }
 
 interface ImportMeta {

@@ -63,6 +63,17 @@ yarn turbo run build typecheck lint test --filter=borrow
   `vite preview`, and the Vercel Edge Function `api/intents-connect.ts` in
   production. Put the key in `.env.local` (see `.env.example`); never prefix
   it with `VITE_`.
+- **Markets** (`src/markets/`): screens see lending protocols only through
+  `types.ts` (`LendingMarketAdapter`, markets, reserves, snapshots).
+  `aaveV3/registry.ts` holds the Aave V3 Pool, data provider and oracle for
+  Base and Arbitrum (checked against `@bgd-labs/aave-address-book`), and
+  `aaveV3/clients.ts` one viem public client per chain. Their RPCs are
+  `VITE_RPC_URL_BASE` and `VITE_RPC_URL_ARB`; unset, they default to
+  `https://base-rpc.publicnode.com` and
+  `https://arbitrum-one-rpc.publicnode.com`, which may rate-limit, so set
+  your own for production. `math.ts` holds the loan math (LTV, health
+  factor, liquidation price, max borrow) in bigint, rounded against the
+  borrower.
 - **Vercel routing**: catch-all files in `api/` are not reliably routed
   outside Next.js, so `vercel.json` rewrites `/api/intents-connect/:path*`
   to `/api/intents-connect?path=:path*`, and the function restores the
