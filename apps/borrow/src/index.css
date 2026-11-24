@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import '@aurora-is-near/ui-kit/styles.css';
+
+/* The artboards' mobile block, `@media (max-width:640px)`. Tailwind's own
+   `max-*` variants stop at `width < N`, one pixel short of it. */
+@custom-variant mobile (@media (max-width: 640px));
+
+/* Kit stacking policy: portalled popups carry no z-index, so the app root
+   gets its own stacking context and they stack above it. */
+#root {
+  isolation: isolate;
+}
