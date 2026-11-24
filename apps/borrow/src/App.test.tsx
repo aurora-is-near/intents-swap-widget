@@ -13,6 +13,12 @@ vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
   (await import('./tests/appKitMock')).createAppKitMock(),
 );
 
+// The New loan tab reads markets through a fake Aave adapter with fixed
+// snapshots, so these tests stay offline and still show the market cards.
+vi.mock('./markets/aaveV3', async () =>
+  (await import('./tests/aaveV3Mock')).createAaveV3Mock(),
+);
+
 const renderApp = async (path = '/') => {
   const history = createMemoryHistory({ initialEntries: [path] });
 
@@ -70,6 +76,19 @@ describe('App', () => {
 
     expect(tab('New loan')).toHaveAttribute('aria-selected', 'true');
     expect(tab('My positions')).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('shows the adapter’s markets as cards on the New loan tab', async () => {
+    await renderApp('/');
+
+    const panel = screen.getByRole('tabpanel');
+
+    expect(
+      await within(panel).findByRole('button', { name: /Aave Base/ }),
+    ).toHaveTextContent('4.85%');
+    expect(
+      within(panel).getByRole('button', { name: /Aave Arbitrum/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('selects My positions at /positions', async () => {

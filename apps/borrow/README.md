@@ -35,8 +35,10 @@ yarn turbo run build typecheck lint test --filter=borrow
   section, theme toggle, wallet button), hero, the route-driven tabs and the
   reduced footer (logo, tagline and copyright; dark in both themes).
 - **Tab panels**: New loan shows `src/loan/NewLoanPlaceholder.tsx`, the
-  artboard's two columns with placeholders and, disconnected, the working
-  "Connect wallet to borrow on Aave" CTA. My positions shows
+  artboard's two columns: a form placeholder beside the live market list
+  (`src/loan/MarketList.tsx`), the LTV / Liquidation / Health tiles (still
+  "—") and, disconnected, the working "Connect wallet to borrow on Aave"
+  CTA. My positions shows
   `src/positions/PositionsEmptyState.tsx`: "Connect wallet" when
   disconnected, "No positions right now" with "Make a loan" when connected.
 - **Wallet** (`src/wallet/`): `WalletProvider.tsx` mounts Reown AppKit (EVM
@@ -73,7 +75,17 @@ yarn turbo run build typecheck lint test --filter=borrow
   `https://arbitrum-one-rpc.publicnode.com`, which may rate-limit, so set
   your own for production. `math.ts` holds the loan math (LTV, health
   factor, liquidation price, max borrow) in bigint, rounded against the
-  borrower.
+  borrower. `aaveV3/supported.ts` keeps only the reserves 1Click can deliver:
+  the `listSupportedTokens('inOperation')` destinations on the market's
+  chain, matched by contract address (WETH also counts when only native ETH
+  is listed). `MarketAdaptersProvider` (mounted in `App.tsx`) holds the
+  adapter list, and `useMarketSnapshots` reads each market in its own query,
+  so one chain failing leaves the other in place; `format.ts` formats APR,
+  LTVs and compact dollars. `loan/MarketList.tsx` shows one card per market
+  (`layout` is `cards` or `table`; `table` draws the cards for now) for the
+  fixed default pair WETH collateral / USDC borrow until the loan form
+  drives it, with BEST on the lowest borrow APR, a skeleton per market
+  while loading and a "Try again" Banner per failed market.
 - **Vercel routing**: catch-all files in `api/` are not reliably routed
   outside Next.js, so `vercel.json` rewrites `/api/intents-connect/:path*`
   to `/api/intents-connect?path=:path*`, and the function restores the

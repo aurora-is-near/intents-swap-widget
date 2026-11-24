@@ -18,6 +18,12 @@ vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
   (await import('./tests/appKitMock')).createAppKitMock(wallet),
 );
 
+// The New loan tab reads markets through a fake Aave adapter with fixed
+// snapshots (Base 4.85%, Arbitrum 4.41%), so these tests stay offline.
+vi.mock('./markets/aaveV3', async () =>
+  (await import('./tests/aaveV3Mock')).createAaveV3Mock(),
+);
+
 const ADDRESS = '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21';
 
 const setConnected = (connected: boolean) => {
@@ -65,10 +71,23 @@ describe('New loan tab', () => {
     expect(wallet.connect).toHaveBeenCalledTimes(1);
   });
 
-  it('shows no market numbers', async () => {
+  it('shows the market cards’ figures while the summary tiles stay "—"', async () => {
     await renderApp('/');
 
-    expect(panel()).not.toHaveTextContent(/\d/);
+    const markets = within(panel()).getByRole('region', { name: 'Markets' });
+    const base = await within(markets).findByRole('button', {
+      name: /Aave Base/,
+    });
+
+    expect(base).toHaveTextContent('4.85%');
+    expect(base).toHaveTextContent('Liq. 81% · $1.2B');
+    expect(
+      within(markets).getByRole('button', { name: /Aave Arbitrum/ }),
+    ).toHaveTextContent('4.41%');
+
+    const tiles = within(markets).getAllByRole('definition');
+
+    expect(tiles.map((tile) => tile.textContent)).toEqual(['—', '—', '—']);
   });
 
   it('keeps the placeholder without the CTA while connected', async () => {
@@ -79,7 +98,14 @@ describe('New loan tab', () => {
     expect(
       within(panel()).getByRole('region', { name: 'Loan details' }),
     ).toBeInTheDocument();
-    expect(within(panel()).queryByRole('button')).not.toBeInTheDocument();
+
+    await within(panel()).findByRole('button', { name: /Aave Base/ });
+
+    expect(
+      within(panel()).queryByRole('button', {
+        name: 'Connect wallet to borrow on Aave',
+      }),
+    ).not.toBeInTheDocument();
   });
 });
 
