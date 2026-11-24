@@ -392,7 +392,10 @@ const toOption = (token: (typeof SAMPLE_TOKENS)[number]): TokenOption => ({
 function TokenPicker() {
   const anchor = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState('eth');
+  // The chain on the trigger changes only with a pick, so it always pairs
+  // with a chain the selected token is on; the chips set the filter.
   const [chain, setChain] = useState<ChainId>('eth');
+  const [filterChain, setFilterChain] = useState<ChainId>('eth');
   const [group, setGroup] = useState<Group>('all');
   const [amount, setAmount] = useState('');
 
@@ -401,7 +404,8 @@ function TokenPicker() {
 
   const options = SAMPLE_TOKENS.filter(
     (item) =>
-      (group === 'all' || item.group === group) && item.chains.includes(chain),
+      (group === 'all' || item.group === group) &&
+      item.chains.includes(filterChain),
   ).map(toOption);
 
   return (
@@ -433,15 +437,18 @@ function TokenPicker() {
                 <Chip
                   dotColor={CHAINS[id].color}
                   key={id}
-                  onClick={() => setChain(id)}
-                  pressed={chain === id}>
+                  onClick={() => setFilterChain(id)}
+                  pressed={filterChain === id}>
                   {CHAINS[id].name}
                 </Chip>
               ))}
             </div>
           </>
         }
-        onValueChange={setValue}
+        onValueChange={(id) => {
+          setValue(id);
+          setChain(filterChain);
+        }}
         options={options}
         selected={{
           symbol: token.symbol,
