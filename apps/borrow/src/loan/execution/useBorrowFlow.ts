@@ -1,5 +1,6 @@
 import {
   DepositTransferError,
+  type Execution,
   ExecutionCancelledError,
   ExecutionPollTimeoutError,
   type ExecutionStatus,
@@ -27,6 +28,7 @@ import {
   type GasPreCheckInput,
 } from './classifyBorrowError';
 import { checkLiquidity } from './liquidity';
+import type { BorrowOrigin } from './plan';
 import {
   type BorrowPreview,
   previewBorrow,
@@ -35,7 +37,9 @@ import {
 import {
   type BorrowPreviewFigures,
   borrowPreviewFigures,
+  stepsPreviewFigures,
 } from './previewFigures';
+import { type BorrowStepsPreview, previewBorrowSteps } from './stepsRetry';
 
 /** The pending dialog's three steps (`n: 3`, Web-Borrow-Confirm.dc.html). */
 export type BorrowPendingStep = 0 | 1 | 2;
@@ -50,6 +54,10 @@ export type BorrowPendingStep = 0 | 1 | 2;
  * - `pending`: signed. Step 0: the deposit is being sent; 1: the collateral
  *   is bridging to the market's chain; 2: it is being supplied, the loan
  *   opened and the borrowed funds delivered (the operation).
+ * - `deposit`: signed, but this session can't tell that the deposit was sent
+ *   (a reload, or a reconnect, before it was): it waits for the user to send
+ *   it (`canSend`, `sendDeposit()`), or, without the token to send it in,
+ *   shows the deposit address while the runner watches for it.
  * - `done`: the borrow succeeded.
  * - `error`: one of the error states (`classifyBorrowError`); `delayed` is a
  *   warning, and the borrow is still tracked.
@@ -57,11 +65,39 @@ export type BorrowPendingStep = 0 | 1 | 2;
 export type BorrowFlowState =
   | { kind: 'idle' }
   | { kind: 'previewing' }
-  | { kind: 'confirm'; preview: BorrowPreview; figures: BorrowPreviewFigures }
+  | {
+      kind: 'confirm';
+      /** A bridge-in, or a steps-only retry over the waiting collateral. */
+      preview: BorrowPreview | BorrowStepsPreview;
+      figures: BorrowPreviewFigures;
+    }
   | { kind: 'signing' }
   | { kind: 'pending'; step: BorrowPendingStep; executionId?: string }
+  | {
+      kind: 'deposit';
+      executionId: string;
+      depositAddress: string | undefined;
+      canSend: boolean;
+    }
   | { kind: 'done'; executionId: string }
   | { kind: 'error'; error: BorrowErrorKind; cause: unknown };
+
+/** A steps-only retry's dry run, not a bridge-in's. */
+const isStepsPreview = (
+  preview: BorrowPreview | BorrowStepsPreview,
+): preview is BorrowStepsPreview => 'steps' in preview;
+
+/** What a restored borrow's kept record says about its deposit. */
+export type RestoredDeposit = {
+  /** The token the deposit is paid in: with it, `sendDeposit()` can send it. */
+  origin?: BorrowOrigin | Omit<BorrowOrigin, 'assetId'>;
+  /** The wallet broadcast it before the reload. */
+  depositSent?: boolean;
+};
+
+/** A restored execution: what `restore()` reads of it. */
+export type RestorableExecution = Pick<Execution, 'id' | 'status' | 'details'> &
+  Partial<Pick<Execution, 'quote'>>;
 
 /** What `start()` previews and pre-checks a borrow from. */
 export type BorrowFlowInput = Omit<
@@ -83,6 +119,17 @@ export type UseBorrowFlowOptions = {
    * an in-flight borrow can be found again after a reload.
    */
   onCreated?: (executionId: string) => void;
+  /**
+   * Called once the execution is over: a terminal status (`SUCCESS`,
+   * `DEPOSIT_FAILED`, `OPERATION_FAILED`), or it was cancelled. What
+   * `onCreated` kept for it can go.
+   */
+  onSettled?: (executionId: string) => void;
+  /**
+   * Called once the wallet broadcast the deposit (the runner's
+   * `deposit-sent`), so a reload does not offer to send it again.
+   */
+  onDepositSent?: (executionId: string) => void;
 };
 
 export type UseBorrowFlowResult = {
@@ -91,13 +138,27 @@ export type UseBorrowFlowResult = {
    * The figures of the dry run the borrow runs, or is about to: set each time
    * a preview is accepted, whether it goes to `confirm` or, on a retry of a
    * confirmed borrow, straight to the run; kept through signing, pending,
-   * done and errors, and cleared by `start()` and `leave()`.
+   * done and errors, and cleared by `start()`, `leave()` and `restore()` (a
+   * restored borrow's figures are not known).
    */
   figures: BorrowPreviewFigures | undefined;
   /** Gas pre-check, the two-pass dry run and the liquidity pre-check. */
   start: (input: BorrowFlowInput) => Promise<void>;
   /** Runs the confirmed dry run's plan as it is. */
   confirm: () => Promise<void>;
+  /**
+   * Picks up an in-flight borrow found after a reload: `resume()`s it and
+   * shows it as `pending` (or `signing` while it still waits for the
+   * signature). A signed `DEPOSIT_PENDING` one whose deposit is not known to
+   * be sent shows `deposit` instead. It never has a form input: a retry
+   * that would quote again leaves it. Ignored unless `idle`.
+   */
+  restore: (execution: RestorableExecution, saved?: RestoredDeposit) => void;
+  /**
+   * From `deposit` with `canSend`: resumes with `depositViaWallet: true`, so
+   * the wallet is prompted for the deposit transfer.
+   */
+  sendDeposit: () => Promise<void>;
   /** The error state's action, as the artboard names it. */
   action: BorrowRecoveryAction | undefined;
   /**
@@ -122,10 +183,12 @@ export type UseBorrowFlowResult = {
   leave: () => Promise<void>;
   /**
    * The collateral arrived and the borrow step failed: the funds wait at the
-   * intermediary, and `retry()` does nothing until the steps-only retry
-   * lands (see the TODO in `retry`).
+   * intermediary. `retry()` and `refresh()` re-size the borrow and run it
+   * steps-only from them; nothing is bridged again.
    */
   fundsWaiting: boolean;
+  /** The execution the funds wait for, while `fundsWaiting`: to find them. */
+  fundsWaitingExecutionId: string | undefined;
 };
 
 const STATUS_STEP: Partial<Record<ExecutionStatus, BorrowPendingStep>> = {
@@ -134,6 +197,9 @@ const STATUS_STEP: Partial<Record<ExecutionStatus, BorrowPendingStep>> = {
   OPERATION_PENDING: 2,
   OPERATION_PROCESSING: 2,
 };
+
+/** Statuses before the deposit was seen: it may still have to be sent. */
+const AWAITING_FUNDS = new Set<ExecutionStatus>(['CREATED', 'DEPOSIT_PENDING']);
 
 /**
  * Phases before the service has the signature. `submitting` is one: the
@@ -155,6 +221,8 @@ const SIGNING_PHASES = new Set([
  */
 export const useBorrowFlow = ({
   onCreated,
+  onSettled,
+  onDepositSent,
 }: UseBorrowFlowOptions = {}): UseBorrowFlowResult => {
   const [state, setState] = useState<BorrowFlowState>({ kind: 'idle' });
   const [figures, setFigures] = useState<BorrowPreviewFigures>();
@@ -163,7 +231,10 @@ export const useBorrowFlow = ({
   /** The latest input, for a retry or a refresh. */
   const inputRef = useRef<BorrowFlowInput | undefined>(undefined);
   /** The confirmed dry run's borrow amount, to diagnose a failed borrow step. */
-  const borrowRef = useRef<BorrowPreview | undefined>(undefined);
+  const borrowRef = useRef<BorrowPreview | BorrowStepsPreview | undefined>(
+    undefined,
+  );
+
   /** Bumped by every new start and by leaving: stale async work is dropped. */
   const generationRef = useRef(0);
   /** A run, retry or resume is driving the runner: its events are ours. */
@@ -192,9 +263,40 @@ export const useBorrowFlow = ({
   const reconnectingRef = useRef(false);
   /** The signed execution to resume once the wallet is back. */
   const reconnectResumeRef = useRef<string | undefined>(undefined);
+  /** This run's deposit was broadcast (`deposit-sent`): never send it again. */
+  const depositSentRef = useRef(false);
+  /**
+   * In `deposit`, the runner watches for a deposit it was not asked to send:
+   * its `deposit-address` and awaiting-funds events keep the dialog there.
+   */
+  const awaitingDepositRef = useRef(false);
+  /** The token a signed, unsent deposit is sent in (`sendDeposit()`). */
+  const depositOriginRef = useRef<RestoredDeposit['origin']>(undefined);
+  /**
+   * The collateral of this borrow waits at the intermediary: until the user
+   * leaves, every retry runs steps-only from it, never a new bridge-in.
+   */
+  const waitingRef = useRef(false);
+  /** The wallet's intermediary, where the collateral waits. */
+  const intermediaryRef = useRef<string | undefined>(undefined);
+  /** The execution whose collateral waits: shown so it can be found. */
+  const waitingExecutionIdRef = useRef<string | undefined>(undefined);
+  /** The deposit address the runner surfaced for this run. */
+  const depositAddressRef = useRef<string | undefined>(undefined);
   const onCreatedRef = useRef(onCreated);
+  const onSettledRef = useRef(onSettled);
+  const onDepositSentRef = useRef(onDepositSent);
 
   onCreatedRef.current = onCreated;
+  onSettledRef.current = onSettled;
+  onDepositSentRef.current = onDepositSent;
+
+  /** The execution is over: what was kept for it can go. */
+  const settled = (executionId: string | undefined) => {
+    if (executionId !== undefined) {
+      onSettledRef.current?.(executionId);
+    }
+  };
 
   const setFlow = useCallback((next: BorrowFlowState) => {
     stateRef.current = next;
@@ -208,6 +310,16 @@ export const useBorrowFlow = ({
 
   const toPending = (step: BorrowPendingStep) => {
     const { current } = stateRef;
+
+    // Waiting for a deposit nobody was asked to send: only its arrival
+    // (step 1 on) moves the dialog on.
+    if (awaitingDepositRef.current) {
+      if (step === 0) {
+        return;
+      }
+
+      awaitingDepositRef.current = false;
+    }
 
     stepRef.current = Math.max(stepRef.current, step) as BorrowPendingStep;
 
@@ -246,6 +358,7 @@ export const useBorrowFlow = ({
     clearDelayTimer();
 
     if (executionId) {
+      settled(executionId);
       setFlow({ kind: 'done', executionId });
     }
   };
@@ -294,8 +407,12 @@ export const useBorrowFlow = ({
           snapshot,
           collateral: input.collateral,
           borrow: input.borrow,
+          // What was supplied: the steps-only `spendable`, else the bridge's
+          // minimum received.
           collateralAmount: BigInt(
-            borrowed.preview.execution.quote.minAmountOut,
+            isStepsPreview(borrowed)
+              ? borrowed.steps.spendable
+              : borrowed.preview.execution.quote.minAmountOut,
           ),
           borrowAmount: borrowed.borrowAmount,
         });
@@ -346,6 +463,10 @@ export const useBorrowFlow = ({
           signedRef.current = true;
         }
 
+        if (TERMINAL_STATUSES.includes(event.status)) {
+          settled(createdIdRef.current);
+        }
+
         if (step !== undefined) {
           toPending(step);
         } else if (event.status === 'SUCCESS') {
@@ -359,12 +480,31 @@ export const useBorrowFlow = ({
         createdIdRef.current = event.executionId;
         onCreatedRef.current?.(event.executionId);
         break;
-      case 'deposit-address':
+
+      case 'deposit-address': {
         signedRef.current = true;
-        toPending(0);
+        depositAddressRef.current = event.address;
+
+        const { current } = stateRef;
+
+        if (awaitingDepositRef.current && current.kind === 'deposit') {
+          // The address the runner surfaced, for a deposit sent by hand.
+          setFlow({ ...current, depositAddress: event.address });
+        } else {
+          toPending(0);
+        }
+
         break;
+      }
+
       case 'deposit-sent':
         signedRef.current = true;
+        depositSentRef.current = true;
+
+        if (createdIdRef.current !== undefined) {
+          onDepositSentRef.current?.(createdIdRef.current);
+        }
+
         toPending(1);
         break;
       case 'error':
@@ -415,6 +555,8 @@ export const useBorrowFlow = ({
     } catch {
       // Already gone, or the lock is released when it expires.
     }
+
+    settled(executionId);
   };
 
   /** A fresh run's bookkeeping. */
@@ -427,12 +569,18 @@ export const useBorrowFlow = ({
     lastErrorRef.current = undefined;
     delayDismissedRef.current = false;
     signedRef.current = false;
+    depositSentRef.current = false;
+    awaitingDepositRef.current = false;
+    depositAddressRef.current = undefined;
   };
 
   const previewFor = async (
     input: BorrowFlowInput,
     generation: number,
-  ): Promise<BorrowFlowState | undefined> => {
+  ): Promise<
+    | { kind: 'confirm'; preview: BorrowPreview; figures: BorrowPreviewFigures }
+    | undefined
+  > => {
     const { adapter, fundingRows, ...previewInput } = input;
 
     if (
@@ -507,6 +655,7 @@ export const useBorrowFlow = ({
 
       if (error instanceof ExecutionCancelledError) {
         runningRef.current = false;
+        settled(createdIdRef.current);
         setFlow({ kind: 'idle' });
 
         return;
@@ -516,10 +665,30 @@ export const useBorrowFlow = ({
     }
   };
 
+  const leave = async () => {
+    generationRef.current += 1;
+    await releaseUnsigned();
+    resetRun();
+    reconnectingRef.current = false;
+    reconnectResumeRef.current = undefined;
+    confirmedRef.current = false;
+    borrowRef.current = undefined;
+    waitingRef.current = false;
+    intermediaryRef.current = undefined;
+    waitingExecutionIdRef.current = undefined;
+    depositOriginRef.current = undefined;
+    setFigures(undefined);
+    setFlow({ kind: 'idle' });
+  };
+
   const previewAnd = async (then: 'confirm' | 'run') => {
     const input = inputRef.current;
 
     if (!input) {
+      // A borrow restored after a reload has no form input to quote again:
+      // it is left, and the form starts a new one.
+      await leave();
+
       return;
     }
 
@@ -532,7 +701,7 @@ export const useBorrowFlow = ({
     await releaseUnsigned();
     resetRun();
 
-    let next: BorrowFlowState | undefined;
+    let next: Awaited<ReturnType<typeof previewFor>>;
 
     try {
       next = await previewFor(input, generation);
@@ -544,7 +713,7 @@ export const useBorrowFlow = ({
       return;
     }
 
-    if (!next || next.kind !== 'confirm') {
+    if (!next) {
       return;
     }
 
@@ -572,6 +741,10 @@ export const useBorrowFlow = ({
 
     inputRef.current = input;
     confirmedRef.current = false;
+    waitingRef.current = false;
+    intermediaryRef.current = undefined;
+    waitingExecutionIdRef.current = undefined;
+    depositOriginRef.current = undefined;
     setFigures(undefined);
     await previewAnd('confirm');
   };
@@ -586,8 +759,140 @@ export const useBorrowFlow = ({
     resetRun();
     confirmedRef.current = true;
     setFlow({ kind: 'signing' });
-    // The dry run's plan as it is: `run()` reuses its prepared steps.
-    await drive(() => requireExecution().run(current.preview.preview.plan));
+
+    const { preview } = current;
+
+    // The dry run's plan as it is: `run()` and `runSteps()` reuse its
+    // prepared steps.
+    await drive(() =>
+      isStepsPreview(preview)
+        ? requireExecution().runSteps(preview.steps.plan)
+        : requireExecution().run(preview.preview.plan),
+    );
+  };
+
+  /**
+   * Signed, and the deposit not known to be sent: with its token, the user
+   * is offered to send it (no runner flow until then: the runner refuses a
+   * second one); without, the runner surfaces the address and watches.
+   */
+  const awaitDeposit = (
+    executionId: string,
+    depositAddress: string | undefined,
+    origin: RestoredDeposit['origin'],
+  ) => {
+    createdIdRef.current = executionId;
+    signedRef.current = true;
+    depositOriginRef.current = origin;
+    clearDelayTimer();
+
+    const address = depositAddress === '' ? undefined : depositAddress;
+
+    if (origin) {
+      runningRef.current = false;
+      setFlow({
+        kind: 'deposit',
+        executionId,
+        depositAddress: address,
+        canSend: true,
+      });
+
+      return;
+    }
+
+    awaitingDepositRef.current = true;
+    setFlow({
+      kind: 'deposit',
+      executionId,
+      depositAddress: address,
+      canSend: false,
+    });
+    void drive(() => requireExecution().resume(executionId));
+  };
+
+  const sendDeposit = async () => {
+    const { current } = stateRef;
+    const origin = depositOriginRef.current;
+
+    if (current.kind !== 'deposit' || !current.canSend || !origin) {
+      return;
+    }
+
+    const { executionId } = current;
+
+    generationRef.current += 1;
+    awaitingDepositRef.current = false;
+    lastErrorRef.current = undefined;
+    createdIdRef.current = executionId;
+    toPending(0);
+    // The user says no deposit was sent: the runner may prompt it
+    // (`ResumeDepositOptions.depositViaWallet`).
+    await drive(() =>
+      requireExecution().resume(executionId, {
+        depositViaWallet: true,
+        originChain: origin.chain,
+        originToken: {
+          contractAddress: origin.contractAddress,
+          decimals: origin.decimals,
+        },
+      }),
+    );
+  };
+
+  const restore = (found: RestorableExecution, saved?: RestoredDeposit) => {
+    if (stateRef.current.kind !== 'idle') {
+      return;
+    }
+
+    generationRef.current += 1;
+    resetRun();
+    // A restored borrow has no form input: an earlier one in this session
+    // (another wallet's, say) must never be quoted or run for it.
+    inputRef.current = undefined;
+    borrowRef.current = undefined;
+    // Nor are its figures known: the dialog shows the kept rows instead.
+    setFigures(undefined);
+    waitingRef.current = false;
+    intermediaryRef.current = undefined;
+    waitingExecutionIdRef.current = undefined;
+    reconnectingRef.current = false;
+    reconnectResumeRef.current = undefined;
+    depositOriginRef.current = saved?.origin;
+    depositSentRef.current = saved?.depositSent === true;
+    createdIdRef.current = found.id;
+    statusRef.current = found.status;
+    // It was confirmed before the reload. Past CREATED, or with the message
+    // signed, the service has the signature; else resuming prompts for it.
+    confirmedRef.current = true;
+    signedRef.current =
+      found.status !== 'CREATED' || found.details?.messageSigned === true;
+
+    const { id } = found;
+
+    if (
+      signedRef.current &&
+      found.status === 'DEPOSIT_PENDING' &&
+      !depositSentRef.current
+    ) {
+      // Resumed without `depositViaWallet`, the runner would only surface
+      // the address, and no wallet prompt would come.
+      awaitDeposit(id, found.quote?.depositAddress, saved?.origin);
+
+      return;
+    }
+
+    if (signedRef.current) {
+      // A deposit sent before the reload is on its way: past step 0.
+      toPending(
+        depositSentRef.current
+          ? (Math.max(STATUS_STEP[found.status] ?? 0, 1) as BorrowPendingStep)
+          : (STATUS_STEP[found.status] ?? 0),
+      );
+    } else {
+      setFlow({ kind: 'signing' });
+    }
+
+    void drive(() => requireExecution().resume(id));
   };
 
   /**
@@ -595,14 +900,109 @@ export const useBorrowFlow = ({
    * spend the user's funds a second time.
    */
   const isFundsWaiting = () =>
-    isSigned() && statusRef.current === 'OPERATION_FAILED';
+    waitingRef.current ||
+    (isSigned() && statusRef.current === 'OPERATION_FAILED');
 
   const fundsWaiting = state.kind === 'error' && isFundsWaiting();
+
+  /** Where the collateral waits: the runner's execution, else the dry run's. */
+  const intermediaryOf = (): string | undefined => {
+    const known =
+      intermediaryRef.current ??
+      executionRef.current?.execution?.details.intermediaryAddress;
+
+    const borrowed = borrowRef.current;
+
+    if (known !== undefined || borrowed === undefined) {
+      return known;
+    }
+
+    return isStepsPreview(borrowed)
+      ? borrowed.steps.plan.prepared?.intermediary
+      : borrowed.preview.plan.prepared?.intermediary;
+  };
+
+  /**
+   * The steps-only retry: the borrow re-sized on the market read afresh and
+   * the collateral waiting (`previewBorrowSteps`), back to `confirm` with the
+   * new figures; confirming runs it with `runSteps()`.
+   */
+  const retryWaiting = async () => {
+    const input = inputRef.current;
+    const intermediary = intermediaryOf();
+
+    if (!input || intermediary === undefined) {
+      // Restored without its form: nothing to size the borrow from.
+      return;
+    }
+
+    waitingRef.current = true;
+    intermediaryRef.current = intermediary;
+    waitingExecutionIdRef.current ??= createdIdRef.current;
+    generationRef.current += 1;
+
+    const generation = generationRef.current;
+
+    setFlow({ kind: 'previewing' });
+    // A rejected retry's unsigned execution would hold the wallet's lock.
+    await releaseUnsigned();
+    resetRun();
+
+    let previewed: BorrowStepsPreview;
+
+    try {
+      previewed = await previewBorrowSteps({
+        adapter: input.adapter,
+        market: input.market,
+        collateral: input.collateral,
+        borrow: input.borrow,
+        ltv: input.ltv,
+        recipient: input.recipient,
+        intermediary,
+        previewSteps: (plan) => requireExecution().previewSteps(plan),
+      });
+    } catch (error) {
+      if (generation === generationRef.current) {
+        await fail(error);
+      }
+
+      return;
+    }
+
+    if (generation !== generationRef.current) {
+      return;
+    }
+
+    const stepsFigures = stepsPreviewFigures({
+      spendable: BigInt(previewed.steps.spendable),
+      networkFee:
+        previewed.steps.networkFee === undefined
+          ? undefined
+          : BigInt(previewed.steps.networkFee),
+      borrowAmount: previewed.borrowAmount,
+      collateral: previewed.collateral,
+      borrow: previewed.borrow,
+    });
+
+    borrowRef.current = previewed;
+    confirmedRef.current = false;
+    // Accepted: the dialogs show the re-sized borrow from now on.
+    setFigures(stepsFigures);
+    setFlow({ kind: 'confirm', preview: previewed, figures: stepsFigures });
+  };
 
   const retry = async () => {
     const { current } = executionRef;
 
     if (stateRef.current.kind !== 'error' || !current) {
+      return;
+    }
+
+    if (isFundsWaiting()) {
+      // The collateral waits at the intermediary: a new bridge-in would
+      // spend the user's funds a second time.
+      await retryWaiting();
+
       return;
     }
 
@@ -624,17 +1024,6 @@ export const useBorrowFlow = ({
       // before that (a pre-check, the dry run) goes back to `confirm`.
       await previewAnd(confirmedRef.current ? 'run' : 'confirm');
 
-      return;
-    }
-
-    if (isFundsWaiting()) {
-      // TODO(borrow-execution): the collateral arrived and the borrow step
-      // failed, so the funds wait at the intermediary. The retry re-quotes
-      // the borrow amount and runs a steps-only plan from them, as the Aave
-      // extension's `buildAaveStepsPlan` / `feeFromAmount` do
-      // (`runSteps`). `recovery` does not expose the waiting funds, so
-      // until they are read (`useIntermediaryBalance`), nothing is retried:
-      // a new bridge-in would spend the user's funds a second time.
       return;
     }
 
@@ -662,22 +1051,12 @@ export const useBorrowFlow = ({
   const refresh = async () => {
     // The collateral waits at the intermediary: no new bridge-in.
     if (isFundsWaiting()) {
+      await retryWaiting();
+
       return;
     }
 
     await previewAnd('confirm');
-  };
-
-  const leave = async () => {
-    generationRef.current += 1;
-    await releaseUnsigned();
-    resetRun();
-    reconnectingRef.current = false;
-    reconnectResumeRef.current = undefined;
-    confirmedRef.current = false;
-    borrowRef.current = undefined;
-    setFigures(undefined);
-    setFlow({ kind: 'idle' });
   };
 
   const close = async () => {
@@ -733,12 +1112,35 @@ export const useBorrowFlow = ({
     reconnectResumeRef.current = undefined;
 
     if (executionId === undefined) {
-      await previewAnd('confirm');
+      if (isFundsWaiting()) {
+        await retryWaiting();
+      } else {
+        await previewAnd('confirm');
+      }
 
       return;
     }
 
     lastErrorRef.current = undefined;
+
+    const status = statusRef.current;
+
+    if (
+      !depositSentRef.current &&
+      (status === undefined || AWAITING_FUNDS.has(status)) &&
+      stepRef.current === 0
+    ) {
+      // Signed, deposit not sent: the new runner did not drive this run, so
+      // a plain resume would only surface the address.
+      awaitDeposit(
+        executionId,
+        depositAddressRef.current,
+        inputRef.current?.origin ?? depositOriginRef.current,
+      );
+
+      return;
+    }
+
     createdIdRef.current = executionId;
     signedRef.current = true;
     setFlow({ kind: 'pending', step: stepRef.current, executionId });
@@ -770,10 +1172,14 @@ export const useBorrowFlow = ({
 
   let action: BorrowRecoveryAction | undefined;
 
-  if (fundsWaiting) {
-    // Only closing is offered: every other action would bridge the funds in
-    // again (see the TODO in `retry`).
-    action = 'close';
+  if (fundsWaiting && state.kind === 'error') {
+    // Only the steps-only retry is offered: every other action would bridge
+    // the funds in again. Restored without the form, or unexplained (such
+    // as nothing waiting any more), it only closes.
+    action =
+      inputRef.current !== undefined && state.error !== 'unknown'
+        ? 'retry'
+        : 'close';
   } else if (state.kind === 'error') {
     action = borrowRecoveryAction(state.error, state.cause);
   }
@@ -783,12 +1189,17 @@ export const useBorrowFlow = ({
     figures,
     start,
     confirm,
+    restore,
     action,
     retry,
     refresh,
     reconnect,
     close,
     leave,
+    sendDeposit,
     fundsWaiting,
+    fundsWaitingExecutionId: fundsWaiting
+      ? (waitingExecutionIdRef.current ?? createdIdRef.current)
+      : undefined,
   };
 };

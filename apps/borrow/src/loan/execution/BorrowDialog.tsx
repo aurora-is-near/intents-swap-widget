@@ -22,6 +22,7 @@ import {
   ACTION_LABEL,
   CANCEL_LABEL,
   errorCopy,
+  type ErrorCopyContext,
   WARN_SECONDARY_LABEL,
 } from './errorCopy';
 import type { BorrowPreviewFigures } from './previewFigures';
@@ -42,11 +43,20 @@ export type BorrowDialogStep =
   | { kind: 'pending'; step: BorrowPendingStep }
   | { kind: 'done' }
   | {
+      /** Signed; the deposit is still to be sent (`useBorrowFlow`'s `deposit`). */
+      kind: 'deposit';
+      depositAddress: string | undefined;
+      /** "Send deposit" is offered; else only the address is shown. */
+      canSend: boolean;
+    }
+  | {
       kind: 'error';
       error: BorrowErrorKind;
       action: BorrowRecoveryAction;
       /** The collateral arrived and waits; the borrow step failed. */
       fundsWaiting: boolean;
+      /** While `fundsWaiting`: the execution, so the collateral can be found. */
+      executionId?: string;
     };
 
 /**
@@ -59,6 +69,7 @@ export const borrowDialogStep = (
   state: BorrowFlowState,
   action?: BorrowRecoveryAction,
   fundsWaiting = false,
+  fundsWaitingExecutionId?: string,
 ): BorrowDialogStep | undefined => {
   switch (state.kind) {
     case 'confirm':
@@ -69,11 +80,20 @@ export const borrowDialogStep = (
       return { kind: 'pending', step: state.step };
     case 'done':
       return { kind: 'done' };
+    case 'deposit':
+      return {
+        kind: 'deposit',
+        depositAddress: state.depositAddress,
+        canSend: state.canSend,
+      };
     case 'error':
       return {
         kind: 'error',
         error: state.error,
         fundsWaiting,
+        ...(fundsWaiting && fundsWaitingExecutionId
+          ? { executionId: fundsWaitingExecutionId }
+          : {}),
         action:
           state.error === 'unknown'
             ? 'close'
@@ -112,6 +132,22 @@ const DONE_BUTTON = 'View position';
 /** Line 1020. */
 const PENDING_NOTE = 'Check your wallet to sign. Don’t close this window.';
 
+/*
+ * A signed borrow whose deposit was not sent (a reload or a reconnect came
+ * first). No artboard draws it: the warning banner and buttons of the error
+ * dialogs (lines 984–995, 1016–1019), with this copy.
+ */
+const DEPOSIT_TITLE = 'Deposit not sent yet';
+const DEPOSIT_TEXT =
+  'Your intent is signed, but the deposit wasn’t sent from your wallet. Send it to open the loan.';
+
+const DEPOSIT_ADDRESS_TITLE = 'Waiting for your deposit';
+const DEPOSIT_ADDRESS_TEXT =
+  'Your intent is signed. A deposit already sent is picked up here. If you haven’t sent it, send the amount you confirmed to the deposit address below.';
+
+const SEND_DEPOSIT = 'Send deposit';
+const CLOSE = 'Close';
+
 /**
  * The three steps (`n: 3`, line 1453), worded in the order the borrow runs
  * them, which is `useBorrowFlow`'s pending steps: 0 signing and the deposit,
@@ -119,12 +155,13 @@ const PENDING_NOTE = 'Check your wallet to sign. Don’t close this window.';
  * borrow and the delivery. The artboard's labels put "Supply collateral and
  * open the loan" before "Bridge and deliver", the other way round, so they
  * are reworded here (review finding F22, option a). The last names the
- * borrowed token.
+ * borrowed token, or the funds when it is not known (a borrow restored
+ * without its record).
  */
-const stepLabels = (borrowSymbol: string) => [
+const stepLabels = (borrowSymbol: string | undefined) => [
   'Sign and deposit',
   'Bridge the collateral',
-  `Open the loan and deliver ${borrowSymbol}`,
+  `Open the loan and deliver ${borrowSymbol ?? 'the funds'}`,
 ];
 
 /**
@@ -132,12 +169,17 @@ const stepLabels = (borrowSymbol: string) => [
  * one active, the rest waiting; all waiting while confirming.
  */
 const steps = (
-  borrowSymbol: string,
+  borrowSymbol: string | undefined,
   dialog: Exclude<BorrowDialogStep, { kind: 'done' }>,
 ): Step[] =>
   stepLabels(borrowSymbol).map((label, index) => {
     if (dialog.kind === 'confirm') {
       return { label, status: 'waiting' };
+    }
+
+    if (dialog.kind === 'deposit') {
+      // The deposit is the rest of the first step.
+      return { label, status: index === 0 ? 'active' : 'waiting' };
     }
 
     if (dialog.kind === 'error') {
@@ -173,7 +215,7 @@ const amountOf = (amount: bigint, decimals: number) =>
  * also say what is paid, the rate and the least collateral that arrives
  * (what is supplied).
  */
-const confirmRows = (
+export const confirmRows = (
   loan: BorrowDialogLoan,
   figures: BorrowPreviewFigures,
 ): [string, string][] => {
@@ -269,25 +311,99 @@ function DoneMark() {
   );
 }
 
+/**
+ * A borrow picked up after a reload (`useRestoreBorrow`): the rows its
+ * dialog showed, kept by `pendingBorrowStore`, or generic ones built from
+ * the execution when nothing was kept.
+ */
+export type RestoredBorrowSummary = {
+  executionId: string;
+  rows: [string, string][];
+  borrowSymbol?: string;
+};
+
+/** What the dialog says, from the loan and its figures or a restored summary. */
+type Summary = {
+  rows: [string, string][] | undefined;
+  borrowSymbol: string | undefined;
+  errorContext: Omit<ErrorCopyContext, 'fundsWaiting'>;
+  /** Done's line (line 974). */
+  doneText: string;
+};
+
+/** A restored borrow's error copy names nothing it doesn't know. */
+const RESTORED_ERROR_CONTEXT: Summary['errorContext'] = {
+  chainName: 'the paying chain',
+  collateralSymbol: 'The collateral',
+  borrowSymbol: 'that token',
+  marketName: 'the market',
+};
+
+const summaryOf = (
+  loan: BorrowDialogLoan | undefined,
+  figures: BorrowPreviewFigures | undefined,
+  restored: RestoredBorrowSummary | undefined,
+): Summary | undefined => {
+  if (loan) {
+    return {
+      rows: figures ? confirmRows(loan, figures) : undefined,
+      borrowSymbol: loan.borrow.symbol,
+      errorContext: {
+        chainName: loan.paid.chainName,
+        collateralSymbol: loan.collateral.symbol,
+        borrowSymbol: loan.borrow.symbol,
+        marketName: loan.market.name,
+      },
+      doneText: `${figures ? amountOf(figures.borrowAmount, loan.borrow.decimals) : ''} ${loan.borrow.symbol} is on its way to ${loan.recipient ?? 'your wallet'}.`,
+    };
+  }
+
+  if (restored) {
+    const { borrowSymbol } = restored;
+
+    return {
+      rows: restored.rows,
+      borrowSymbol,
+      errorContext: {
+        ...RESTORED_ERROR_CONTEXT,
+        ...(borrowSymbol ? { borrowSymbol } : {}),
+      },
+      // The amount and the recipient are in the rows, if at all.
+      doneText: `The borrowed ${borrowSymbol ?? 'funds'} ${borrowSymbol ? 'is' : 'are'} on the way.`,
+    };
+  }
+
+  return undefined;
+};
+
+/**
+ * Rows the step adds: the deposit address to send to, or the execution whose
+ * collateral waits, in full, so it can be looked up.
+ */
+const extraRows = (step: BorrowDialogStep): [string, string][] => {
+  if (step.kind === 'deposit' && step.depositAddress) {
+    return [['Deposit address', step.depositAddress]];
+  }
+
+  if (step.kind === 'error' && step.executionId) {
+    return [['Execution', step.executionId]];
+  }
+
+  return [];
+};
+
 /** Lines 984–995: the error or warning block, 16px above the rows. */
 function ErrorBanner({
   error,
   fundsWaiting,
-  loan,
+  errorContext,
 }: {
   error: BorrowErrorKind;
   fundsWaiting: boolean;
-  loan: BorrowDialogLoan;
+  errorContext: Summary['errorContext'];
 }) {
   const copy = errorCopy[error];
-
-  const context = {
-    chainName: loan.paid.chainName,
-    collateralSymbol: loan.collateral.symbol,
-    borrowSymbol: loan.borrow.symbol,
-    marketName: loan.market.name,
-    fundsWaiting,
-  };
+  const context = { ...errorContext, fundsWaiting };
 
   return (
     <Banner
@@ -343,6 +459,11 @@ type BorrowDialogProps = {
   loan: BorrowDialogLoan | undefined;
   /** The confirmed dry run's figures; kept through pending and done. */
   figures: BorrowPreviewFigures | undefined;
+  /**
+   * A borrow restored after a reload, shown when there is no `loan`: its
+   * kept (or generic) rows instead of the figures.
+   */
+  restored?: RestoredBorrowSummary;
   /** "Confirm in wallet". */
   onConfirm: () => void;
   /** Cancel, the close button, Escape or an outside press (confirm, done). */
@@ -351,21 +472,30 @@ type BorrowDialogProps = {
   onViewPosition: () => void;
   /** The error dialog's button: the step's `action` (`retry`, …). */
   onAction: (action: BorrowRecoveryAction) => void;
+  /** "Send deposit" on the deposit dialog. */
+  onSendDeposit?: () => void;
 };
 
 const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
   a.kind === b.kind &&
   (a.kind !== 'pending' || (b.kind === 'pending' && a.step === b.step)) &&
+  (a.kind !== 'deposit' ||
+    (b.kind === 'deposit' &&
+      a.depositAddress === b.depositAddress &&
+      a.canSend === b.canSend)) &&
   (a.kind !== 'error' ||
     (b.kind === 'error' &&
       a.error === b.error &&
       a.action === b.action &&
-      a.fundsWaiting === b.fundsWaiting));
+      a.fundsWaiting === b.fundsWaiting &&
+      a.executionId === b.executionId));
 
 type Shown = {
   step: BorrowDialogStep;
-  loan: BorrowDialogLoan;
+  summary: Summary;
+  loan: BorrowDialogLoan | undefined;
   figures: BorrowPreviewFigures | undefined;
+  restored: RestoredBorrowSummary | undefined;
 };
 
 /**
@@ -376,21 +506,28 @@ type Shown = {
  *   to keep the window open. It cannot be closed (line 1625).
  * - Done: "Loan opened" and "View position". No close button (the artboard
  *   draws none), but Escape and an outside press close it (line 1625).
+ * - Deposit: signed, the deposit not sent; "Send deposit" when it can be
+ *   sent from here, and the deposit address. It closes like any dialog: the
+ *   borrow is restored again on the next visit.
  */
 export function BorrowDialog({
   step,
   loan,
   figures,
+  restored,
   onConfirm,
   onCancel,
   onViewPosition,
   onAction,
+  onSendDeposit,
 }: BorrowDialogProps) {
-  // An error before the dry run finished (a pre-check) has no figures.
+  // An error before the dry run finished (a pre-check) has no figures. A
+  // restored borrow has its rows instead, and is never confirmed here.
   const open =
     step !== undefined &&
-    loan !== undefined &&
-    (figures !== undefined || step.kind === 'error');
+    (loan !== undefined
+      ? figures !== undefined || step.kind === 'error'
+      : restored !== undefined && step.kind !== 'confirm');
 
   // The last content shown, so the popup keeps it while it animates out.
   const [shown, setShown] = useState<Shown>();
@@ -400,12 +537,19 @@ export function BorrowDialog({
     (!shown ||
       !sameStep(shown.step, step) ||
       shown.loan !== loan ||
-      shown.figures !== figures)
+      shown.figures !== figures ||
+      shown.restored !== restored)
   ) {
-    setShown({ step, loan, figures });
+    const summary = summaryOf(loan, figures, restored);
+
+    if (summary) {
+      setShown({ step, summary, loan, figures, restored });
+    }
   }
 
-  const content = open ? { step, loan, figures } : shown;
+  const current = open ? summaryOf(loan, figures, restored) : undefined;
+  const content = open && current ? { step, summary: current } : shown;
+
   const kind = content?.step.kind;
 
   const step_ = content?.step;
@@ -437,6 +581,23 @@ export function BorrowDialog({
         onViewPosition={onViewPosition}
       />
     );
+  } else if (step_?.kind === 'deposit') {
+    footer = step_.canSend ? (
+      <>
+        <Button className="mt-[20px]" onClick={onSendDeposit}>
+          {SEND_DEPOSIT}
+        </Button>
+        <div className="mt-[12px] text-center">
+          <Button variant="link" onClick={onCancel}>
+            {CLOSE}
+          </Button>
+        </div>
+      </>
+    ) : (
+      <Button className="mt-[20px]" onClick={onCancel}>
+        {CLOSE}
+      </Button>
+    );
   } else if (step_?.kind === 'pending') {
     // Line 1020: 14px `mut2`, centred, 20px above.
     footer = (
@@ -450,7 +611,7 @@ export function BorrowDialog({
 
   return (
     <Dialog
-      closeButton={kind === 'confirm' || kind === 'error'}
+      closeButton={kind === 'confirm' || kind === 'error' || kind === 'deposit'}
       dismissible={kind !== 'pending'}
       open={open}
       onOpenChange={(next) => {
@@ -479,14 +640,7 @@ export function BorrowDialog({
                 </DialogTitle>
                 {/* Line 974: 16px / 1.45 `mut`, 10px above. */}
                 <DialogDescription className="mt-[10px] text-[16px] leading-[1.45]">
-                  {content.figures
-                    ? amountOf(
-                        content.figures.borrowAmount,
-                        content.loan.borrow.decimals,
-                      )
-                    : ''}{' '}
-                  {content.loan.borrow.symbol} is on its way to{' '}
-                  {content.loan.recipient ?? 'your wallet'}.
+                  {content.summary.doneText}
                 </DialogDescription>
               </div>
               {/* Line 976: `.go`, 22px above. */}
@@ -501,18 +655,30 @@ export function BorrowDialog({
               {content.step.kind === 'error' ? (
                 <ErrorBanner
                   error={content.step.error}
+                  errorContext={content.summary.errorContext}
                   fundsWaiting={content.step.fundsWaiting}
-                  loan={content.loan}
                 />
               ) : null}
-              {content.figures ? (
-                <Rows rows={confirmRows(content.loan, content.figures)} />
+              {content.step.kind === 'deposit' ? (
+                <Banner
+                  className="mt-[16px]"
+                  title={
+                    content.step.canSend ? DEPOSIT_TITLE : DEPOSIT_ADDRESS_TITLE
+                  }
+                  tone="warning">
+                  {content.step.canSend ? DEPOSIT_TEXT : DEPOSIT_ADDRESS_TEXT}
+                </Banner>
+              ) : null}
+              {content.summary.rows ? (
+                <Rows
+                  rows={[...content.summary.rows, ...extraRows(content.step)]}
+                />
               ) : null}
               {/* Line 1001: 16px above. */}
               <StepProgress
                 aria-label="Loan progress"
                 className="mt-[16px]"
-                steps={steps(content.loan.borrow.symbol, content.step)}
+                steps={steps(content.summary.borrowSymbol, content.step)}
               />
               {footer}
             </>
