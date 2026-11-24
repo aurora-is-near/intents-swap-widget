@@ -17,7 +17,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "outDir": "./dist",
-    "rootDir": "src",
     "paths": {
       "@/*": [
         "./src/*"
@@ -26,6 +25,8 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
+    "src",
+    "playground",
+    "vite.playground.config.ts"
   ]
 }

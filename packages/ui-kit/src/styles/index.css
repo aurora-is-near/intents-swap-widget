@@ -1,0 +1,14 @@
+/*
+ * The kit's stylesheet, shipped as source: the consuming app's Tailwind
+ * compiles it. In the app's CSS:
+ *
+ *   @import 'tailwindcss';
+ *   @import '@aurora-is-near/ui-kit/styles.css';
+ */
+@import './fonts.css';
+@import './tokens.css';
+@import './theme.css';
+
+/* Generate the utilities the kit's components use, but not their tests'. */
+@source "../components";
+@source not "../components/**/*.test.{ts,tsx}";

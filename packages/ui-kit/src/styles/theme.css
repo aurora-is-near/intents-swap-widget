@@ -1,0 +1,41 @@
+/*
+ * Exposes the tokens to Tailwind. `inline`, so utilities resolve to the raw
+ * variable (`bg-sf` → `background-color: var(--sf)`), and switching
+ * data-theme restyles every utility built on a token.
+ */
+@theme inline {
+  --color-sf: var(--sf);
+  --color-sf2: var(--sf2);
+  --color-sf3: var(--sf3);
+  --color-hov: var(--hov);
+  --color-tint: var(--tint);
+  --color-track: var(--track);
+  --color-bd: var(--bd);
+  --color-bd2: var(--bd2);
+  --color-mid: var(--mid);
+  --color-mid2: var(--mid2);
+  --color-limebd: var(--limebd);
+  --color-ink: var(--ink);
+  --color-mut: var(--mut);
+  --color-mut2: var(--mut2);
+  --color-mut3: var(--mut3);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-warn: var(--warn);
+  --color-warnbd: var(--warnbd);
+  --color-warnbg: var(--warnbg);
+  --color-negbg: var(--negbg);
+  --color-onlime: var(--onlime);
+  --color-badge: var(--badge);
+  --color-accent: var(--accent);
+
+  --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
+
+  --text-h64: var(--h64);
+  --text-h56: var(--h56);
+  --text-h44: var(--h44);
+  --text-big: var(--big);
+}
+
+/* For the rare case a token is not enough: `dark:…` under data-theme=dark. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));

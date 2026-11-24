@@ -1,0 +1,131 @@
+/*
+ * The Borrow design tokens. Values are verbatim from the artboards
+ * (.dotsso/inputs/lane/easy-borrow-borrow/Web-Borrow.dc.html, lines 163–164),
+ * which scope them to `.aur` and `.aur[data-theme="dark"]`. Every artboard
+ * of the Borrow, Positions and Repay/Withdraw canvases shares this block.
+ *
+ * Light is the default on :root; dark applies under [data-theme="dark"],
+ * which the ThemeProvider writes on <html>.
+ */
+
+:root {
+  --sf: #FFFFFF;
+  --sf2: #F6F8F1;
+  --sf3: #FAFBF7;
+  --hov: #F1F3EC;
+  --tint: #F3F9E4;
+  --track: #EEF1E8;
+  --bd: #E3E6DD;
+  --bd2: #D5D9CE;
+  --mid: #9AA39B;
+  --mid2: #C4CABF;
+  --limebd: #B7DA72;
+  --ink: #111613;
+  --mut: #4A524C;
+  --mut2: #5C645E;
+  --mut3: #8A928C;
+  --pos: #3F7A0A;
+  --neg: #A8321F;
+  --warn: #7A4E00;
+  --warnbd: #E0B54A;
+  --warnbg: #FFF7E3;
+  --negbg: #FDF0EC;
+  --onlime: #111613;
+  --badge: #111613;
+
+  /* The artboards' {{accent}} tweak default; the same in both themes. */
+  --accent: #C9EB8A;
+}
+
+[data-theme="dark"] {
+  --sf: #16181D;
+  --sf2: #1F2328;
+  --sf3: #1B1E23;
+  --hov: #262A30;
+  --tint: #222B19;
+  --track: #2A2E34;
+  --bd: #2D3238;
+  --bd2: #3B4148;
+  --mid: #6B737C;
+  --mid2: #434950;
+  --limebd: #5F7B2E;
+  --ink: #F2F4EF;
+  --mut: #AAB1AB;
+  --mut2: #8F978F;
+  --mut3: #7A827B;
+  --pos: #8FD14F;
+  --neg: #FF8A73;
+  --warn: #F2C35B;
+  --warnbd: #8A6A1F;
+  --warnbg: #2A2415;
+  --negbg: #2E1D1A;
+  --onlime: #111613;
+  --badge: #0B0D0F;
+  color-scheme: dark;
+}
+
+/*
+ * Before JS sets data-theme, follow the system theme. Must equal the
+ * [data-theme="dark"] block above (tokens.test.ts asserts it).
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --sf: #16181D;
+    --sf2: #1F2328;
+    --sf3: #1B1E23;
+    --hov: #262A30;
+    --tint: #222B19;
+    --track: #2A2E34;
+    --bd: #2D3238;
+    --bd2: #3B4148;
+    --mid: #6B737C;
+    --mid2: #434950;
+    --limebd: #5F7B2E;
+    --ink: #F2F4EF;
+    --mut: #AAB1AB;
+    --mut2: #8F978F;
+    --mut3: #7A827B;
+    --pos: #8FD14F;
+    --neg: #FF8A73;
+    --warn: #F2C35B;
+    --warnbd: #8A6A1F;
+    --warnbg: #2A2415;
+    --negbg: #2E1D1A;
+    --onlime: #111613;
+    --badge: #0B0D0F;
+    color-scheme: dark;
+  }
+}
+
+/* Type scale (line 99), smaller at ≤640px (lines 107, 118). */
+:root {
+  --h64: 64px;
+  --h56: 56px;
+  --h44: 44px;
+  --big: 44px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --h64: 38px;
+    --h56: 36px;
+    --h44: 28px;
+    --big: 32px;
+  }
+}
+
+/* In the base layer, so an app's utilities on <body> can override it. */
+@layer base {
+  body {
+    margin: 0;
+    background: var(--sf);
+    color: var(--ink);
+    font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
