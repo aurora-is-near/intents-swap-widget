@@ -60,14 +60,17 @@ const renderList = (
   };
 };
 
-/** A provider's card, named by its chosen chain. */
-const card = (name: string, chainLabel: string) =>
-  screen.getByRole('button', { name: new RegExp(`${name} on ${chainLabel}`) });
+/**
+ * A provider's card, by its name: the tile names no chain, so the tests
+ * tell the chosen chain by its figures.
+ */
+const cardName = (name: string) => new RegExp(`\\b${name}\\b`);
 
-const findCard = (name: string, chainLabel: string) =>
-  screen.findByRole('button', {
-    name: new RegExp(`${name} on ${chainLabel}`),
-  });
+const card = (name: string) =>
+  screen.getByRole('button', { name: cardName(name) });
+
+const findCard = (name: string) =>
+  screen.findByRole('button', { name: cardName(name) });
 
 /** Every read has settled. */
 const settled = () =>
@@ -94,20 +97,19 @@ describe('MarketList', () => {
     expect(screen.queryByText(/\d%/)).not.toBeInTheDocument();
   });
 
-  it('shows one Aave card for Base and Arbitrum, on the chosen chain, with its figures', async () => {
+  it('shows one Aave card for Base and Arbitrum, with the chosen chain’s figures and no chain label', async () => {
     renderList(fakeAdapter());
 
     // Arbitrum, the lower APR.
-    const aave = await findCard('Aave', 'Arbitrum');
+    const aave = await findCard('Aave');
 
     await settled();
 
     expect(screen.getAllByRole('button')).toEqual([aave]);
-    expect(aave).toHaveTextContent('on Arbitrum');
-    expect(aave).toHaveTextContent('4.41%');
+    expect(aave).toHaveTextContent(/^Aave4\.41%/);
     expect(aave).toHaveTextContent('APR · max LTV 80%');
     expect(aave).toHaveTextContent('Liq. 82.5% · $356M');
-    expect(aave).not.toHaveTextContent('Base');
+    expect(aave).not.toHaveTextContent(/Base|Arbitrum/);
   });
 
   it('shows one tile for a provider whose chains two adapters list', async () => {
@@ -119,30 +121,32 @@ describe('MarketList', () => {
       }),
     ]);
 
-    const aave = await findCard('Aave', 'Arbitrum');
+    const aave = await findCard('Aave');
 
     await settled();
 
     expect(screen.getAllByRole('button')).toEqual([aave]);
+    // Arbitrum, the lower APR.
+    expect(aave).toHaveTextContent('4.41%');
   });
 
   it('moves to the chain that can lend the loan when the cheaper one cannot', async () => {
     // $400M: above Arbitrum's $356M, within Base's $1.2B.
     renderList(fakeAdapter(), { loanUsd: 400_000_000 });
 
-    const aave = await findCard('Aave', 'Base');
+    const aave = await findCard('Aave');
 
     expect(aave).toHaveTextContent('4.85%');
     expect(aave).toHaveTextContent('Liq. 81% · $1.2B');
     expect(
-      screen.queryByRole('button', { name: /on Arbitrum/ }),
+      screen.queryByRole('button', { name: /4\.41%/ }),
     ).not.toBeInTheDocument();
   });
 
   it('tags no card BEST with one provider, and selects it by default', async () => {
     renderList(fakeAdapter());
 
-    const aave = await findCard('Aave', 'Arbitrum');
+    const aave = await findCard('Aave');
 
     expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
     expect(aave).toHaveAttribute('aria-pressed', 'true');
@@ -151,8 +155,8 @@ describe('MarketList', () => {
   it('tags the lowest-APR provider BEST with two providers, and selects it', async () => {
     renderList([fakeAdapter(), createFakeSparkAdapter()]);
 
-    const aave = await findCard('Aave', 'Arbitrum');
-    const spark = await findCard('Spark', 'Base');
+    const aave = await findCard('Aave');
+    const spark = await findCard('Spark');
 
     expect(within(aave).getByText('BEST')).toBeInTheDocument();
     expect(within(spark).queryByText('BEST')).not.toBeInTheDocument();
@@ -166,11 +170,11 @@ describe('MarketList', () => {
 
     renderList([fakeAdapter(), createFakeSparkAdapter()], { onSelect });
 
-    await findCard('Aave', 'Arbitrum');
-    await user.click(await findCard('Spark', 'Base'));
+    await findCard('Aave');
+    await user.click(await findCard('Spark'));
 
-    expect(card('Spark', 'Base')).toHaveAttribute('aria-pressed', 'true');
-    expect(card('Aave', 'Arbitrum')).toHaveAttribute('aria-pressed', 'false');
+    expect(card('Spark')).toHaveAttribute('aria-pressed', 'true');
+    expect(card('Aave')).toHaveAttribute('aria-pressed', 'false');
     expect(onSelect).toHaveBeenCalledWith('spark');
   });
 
@@ -179,8 +183,8 @@ describe('MarketList', () => {
       disabledIds: [AAVE],
     });
 
-    const aave = await findCard('Aave', 'Arbitrum');
-    const spark = await findCard('Spark', 'Base');
+    const aave = await findCard('Aave');
+    const spark = await findCard('Spark');
 
     expect(aave).toBeDisabled();
     expect(aave).toHaveTextContent('LTV too high, MAX 80%');
@@ -195,7 +199,7 @@ describe('MarketList', () => {
       createFakeSparkAdapter(() => new Promise(() => {})),
     ]);
 
-    const aave = await findCard('Aave', 'Arbitrum');
+    const aave = await findCard('Aave');
 
     expect(screen.getByText('Loading Spark')).toBeInTheDocument();
     expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
@@ -229,7 +233,7 @@ describe('MarketList', () => {
 
     loadArbitrum();
 
-    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
+    expect(await findCard('Aave')).toHaveTextContent('4.41%');
   });
 
   it('follows a controlled selectedId over the BEST default', async () => {
@@ -237,8 +241,8 @@ describe('MarketList', () => {
       selectedId: 'spark',
     });
 
-    const aave = await findCard('Aave', 'Arbitrum');
-    const spark = await findCard('Spark', 'Base');
+    const aave = await findCard('Aave');
+    const spark = await findCard('Spark');
 
     expect(spark).toHaveAttribute('aria-pressed', 'true');
     expect(aave).toHaveAttribute('aria-pressed', 'false');
@@ -249,7 +253,7 @@ describe('MarketList', () => {
     // Arbitrum's read and its one retry.
     renderList(failingAdapter({ [ARB.id]: 2 }));
 
-    const aave = await findCard('Aave', 'Base');
+    const aave = await findCard('Aave');
 
     await settled();
 
@@ -273,7 +277,7 @@ describe('MarketList', () => {
 
     const { queryClient } = renderList(adapter);
 
-    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
+    expect(await findCard('Aave')).toHaveTextContent('4.41%');
 
     await act(() =>
       queryClient.refetchQueries({
@@ -281,7 +285,7 @@ describe('MarketList', () => {
       }),
     );
 
-    expect(await findCard('Aave', 'Base')).toHaveTextContent('4.85%');
+    expect(await findCard('Aave')).toHaveTextContent('4.85%');
     expect(screen.queryByText(/4\.41%/)).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
@@ -304,7 +308,7 @@ describe('MarketList', () => {
 
     await user.click(within(banner).getByRole('button', { name: 'Try again' }));
 
-    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
+    expect(await findCard('Aave')).toHaveTextContent('4.41%');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
     const reads = adapter.getMarketSnapshot.mock.calls.map(([of]) => of.id);
@@ -345,7 +349,7 @@ describe('MarketList', () => {
 
     await user.click(within(banner).getByRole('button', { name: 'Try again' }));
 
-    expect(await findCard('Aave', 'Base')).toHaveTextContent('4.85%');
+    expect(await findCard('Aave')).toHaveTextContent('4.85%');
   });
 
   it('leaves a chain that lacks the pair out of the choice', async () => {
@@ -357,7 +361,7 @@ describe('MarketList', () => {
       ),
     );
 
-    const aave = await findCard('Aave', 'Base');
+    const aave = await findCard('Aave');
 
     await settled();
 
@@ -379,7 +383,7 @@ describe('MarketList', () => {
       { pair: { collateral: 'WETH', borrow: 'USDT' } },
     );
 
-    const aave = await findCard('Aave', 'Base');
+    const aave = await findCard('Aave');
 
     await settled();
 
@@ -412,8 +416,9 @@ describe('MarketList', () => {
 });
 
 describe('MarketList, table layout', () => {
-  const AAVE_NAME = /^Aave (BEST |LTV TOO HIGH )?on Arbitrum/;
-  const SPARK_NAME = /^Spark (BEST |LTV TOO HIGH )?on Base/;
+  /** Aave on Arbitrum (its chosen chain, by its APR), and Spark. */
+  const AAVE_NAME = /^Aave (BEST |LTV TOO HIGH )?Borrow APR 4\.41%/;
+  const SPARK_NAME = /^Spark (BEST |LTV TOO HIGH )?Borrow APR/;
 
   const row = (name: RegExp) => screen.getByRole('button', { name });
 
@@ -430,7 +435,7 @@ describe('MarketList, table layout', () => {
     );
   });
 
-  it('shows one row for Aave on Base and Arbitrum, with the chosen chain under the name', async () => {
+  it('shows one row for Aave on Base and Arbitrum, with the chosen chain’s figures and no chain label', async () => {
     renderList(fakeAdapter(), { layout: 'table' });
 
     const aave = await screen.findByRole('button', { name: AAVE_NAME });
@@ -442,7 +447,7 @@ describe('MarketList, table layout', () => {
     const cells = within(aave);
 
     expect(cells.getByText('Aave')).toBeInTheDocument();
-    expect(cells.getByText(/on Arbitrum/)).toBeInTheDocument();
+    expect(aave).not.toHaveTextContent(/Base|Arbitrum/);
     expect(cells.getByText('4.41%')).toBeInTheDocument();
     expect(cells.getByText('80%')).toBeInTheDocument();
     expect(cells.getByText('82.5%')).toBeInTheDocument();
@@ -534,7 +539,7 @@ describe('MarketList, table layout', () => {
     renderList(failingAdapter({ [ARB.id]: 2 }), { layout: 'table' });
 
     const aave = await screen.findByRole('button', {
-      name: /^Aave on Base/,
+      name: /^Aave Borrow APR 4\.85%/,
     });
 
     await settled();

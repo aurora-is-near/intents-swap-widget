@@ -125,12 +125,12 @@ const SNAPSHOTS: Readonly<Record<string, MarketSnapshot>> = {
 /**
  * Renders the form over `snapshots`, and any `more` providers, and waits for
  * the market list to select `selected` (Aave on Arbitrum, its chosen chain,
- * by default).
+ * by default). The cards name no chain: a card is told by its APR.
  */
 const renderForm = async ({
   snapshots = SNAPSHOTS,
   more = [],
-  selected = /Aave on Arbitrum/,
+  selected = /\bAave 4\.41%/,
   onBorrow,
 }: {
   snapshots?: Readonly<Record<string, MarketSnapshot>>;
@@ -323,10 +323,10 @@ describe('NewLoanForm', () => {
       // The fee is taken from the collateral, not the borrowed USDT.
       expect(feeRow()).toHaveTextContent('WETH');
       expect(
-        screen.getByRole('button', { name: /Aave on Base/ }),
+        screen.getByRole('button', { name: /\bAave 5\.10%/ }),
       ).toHaveAttribute('aria-pressed', 'true');
       expect(
-        screen.queryByRole('button', { name: /Aave on Arbitrum/ }),
+        screen.queryByRole('button', { name: /\bAave 4\.41%/ }),
       ).not.toBeInTheDocument();
     });
 
@@ -424,15 +424,15 @@ describe('NewLoanForm', () => {
             collateral: [...arb.collateral, usdcCollateral],
           },
         },
-        // Only Base lends USDT.
-        selected: /Aave on Base/,
+        // Only Base lends USDT, at 5.10%.
+        selected: /\bAave 5\.10%/,
       });
 
       expect(supplyPicker()).toHaveAccessibleName('SUPPLY USDC Arbitrum');
       expect(borrowPicker()).toHaveAccessibleName('BORROW USDT Base');
       expect(screen.queryByText(/^Supplied as/)).not.toBeInTheDocument();
       expect(
-        screen.queryByRole('button', { name: /Aave on Arbitrum/ }),
+        screen.queryByRole('button', { name: /\bAave 4\.41%/ }),
       ).not.toBeInTheDocument();
 
       await user.click(borrowPicker());
@@ -664,7 +664,7 @@ describe('NewLoanForm', () => {
 
     /** A provider's card: Aave on Arbitrum, or the fake Spark on Base. */
     const market = (name: 'Aave' | 'Spark') =>
-      screen.getByRole('button', { name: new RegExp(`${name} on`) });
+      screen.getByRole('button', { name: new RegExp(`\\b${name} \\d`) });
 
     const cta = (name: string | RegExp) =>
       within(screen.getByRole('region', { name: 'Markets' })).getByRole(
@@ -785,7 +785,7 @@ describe('NewLoanForm', () => {
       // Then Aave on Arbitrum, its chosen chain, everywhere at once.
       expect(
         await screen.findByRole('button', {
-          name: /Aave on Arbitrum/,
+          name: /\bAave 4\.41%/,
           pressed: true,
         }),
       ).toBeInTheDocument();

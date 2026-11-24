@@ -82,7 +82,7 @@ describe('New loan tab', () => {
 
     const markets = within(panel()).getByRole('region', { name: 'Markets' });
     const aave = await within(markets).findByRole('button', {
-      name: /Aave on Arbitrum/,
+      name: /\bAave 4\.41%/,
     });
 
     expect(aave).toHaveTextContent('4.41%');
@@ -108,7 +108,7 @@ describe('New loan tab', () => {
       within(panel()).getByRole('region', { name: 'Loan details' }),
     ).toBeInTheDocument();
 
-    await within(panel()).findByRole('button', { name: /Aave on Arbitrum/ });
+    await within(panel()).findByRole('button', { name: /\bAave 4\.41%/ });
 
     expect(
       within(panel()).queryByRole('button', {

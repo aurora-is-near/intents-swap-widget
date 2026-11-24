@@ -89,14 +89,14 @@ describe('App', () => {
 
     const panel = screen.getByRole('tabpanel');
     const aave = await within(panel).findByRole('button', {
-      name: /Aave on Arbitrum/,
+      name: /\bAave 4\.41%/,
     });
 
     // Arbitrum, the lower APR of Aave's two chains.
     expect(aave).toHaveTextContent('4.41%');
     expect(aave).toHaveAttribute('aria-pressed', 'true');
     expect(
-      within(panel).queryByRole('button', { name: /Aave on Base/ }),
+      within(panel).queryByRole('button', { name: /\bAave 4\.85%/ }),
     ).not.toBeInTheDocument();
   });
 

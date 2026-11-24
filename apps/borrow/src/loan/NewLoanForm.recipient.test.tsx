@@ -54,9 +54,9 @@ const renderForm = async () => {
     </QueryClientProvider>,
   );
 
-  // Aave on Arbitrum, its chosen chain, is selected once the markets load.
+  // Aave on Arbitrum, its chosen chain (4.41%), is selected once the markets load.
   await screen.findByRole('button', {
-    name: /Aave on Arbitrum/,
+    name: /\bAave 4\.41%/,
     pressed: true,
   });
 };

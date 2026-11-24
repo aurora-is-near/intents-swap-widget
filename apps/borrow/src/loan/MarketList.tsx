@@ -1,15 +1,7 @@
-import {
-  Banner,
-  Button,
-  Card,
-  ChainMark,
-  cn,
-  Skeleton,
-} from '@aurora-is-near/ui-kit';
+import { Banner, Button, Card, cn, Skeleton } from '@aurora-is-near/ui-kit';
 import { useState } from 'react';
 
 import { formatApr, formatBps, formatCompactUsd } from '../markets/format';
-import type { LendingMarket } from '../markets/types';
 import {
   type MarketListError,
   type MarketSnapshotResult,
@@ -28,16 +20,6 @@ import {
  * while the market list itself is still loading.
  */
 const LAUNCH_PROVIDER_COUNT = 1;
-
-/**
- * Chain marks by SDK slug. The colours are the artboard's chain dots
- * (`CH`, line 1099); the letters follow the kit's two-letter marks. White on
- * Base's blue, ink on Arbitrum's lighter blue, for contrast.
- */
-const CHAIN_MARKS: Record<string, { label: string; bg: string; fg: string }> = {
-  base: { label: 'BA', bg: '#2E6BFF', fg: '#FFFFFF' },
-  arb: { label: 'AR', bg: '#1F8FD6', fg: '#111613' },
-};
 
 /**
  * `.mkc` (Web-Borrow-NotConnected.dc.html lines 72–77): flex 1 1 170px,
@@ -189,23 +171,6 @@ const listItems = (
   return [...items, ...placeholders, ...errors];
 };
 
-/** The chain a provider lends on: its mark, then "on Arbitrum". */
-function ChainLabel({ market }: { market: LendingMarket }) {
-  const mark = CHAIN_MARKS[market.chain] ?? {
-    label: market.chainLabel.slice(0, 2).toUpperCase(),
-    bg: 'var(--mid2)',
-    fg: 'var(--ink)',
-  };
-
-  return (
-    <span className="inline-flex items-center gap-[6px] text-[13px] font-semibold tracking-normal text-mut">
-      {/* No ring: the mark stands alone, on `sf` or the BEST tint. */}
-      <ChainMark aria-hidden="true" ringColor="transparent" {...mark} />
-      on {market.chainLabel}
-    </span>
-  );
-}
-
 type MarketCardProps = {
   row: ProviderRow;
   best: boolean;
@@ -251,22 +216,17 @@ function MarketCard({ row, best, selected, off, onPick }: MarketCardProps) {
           </span>
         ) : null}
       </div>
-      {/* The chain beside the name (decided), wrapping under it when the
-          card is narrow. */}
-      <div
-        className={cn(
-          NAME,
-          'flex flex-wrap items-center gap-x-[8px] gap-y-[4px]',
-        )}>
+      {/* No chain label: the tile is the provider, whichever chain it
+          lends on. */}
+      <div className={NAME}>
         {best ? (
           // Line 353: the accent highlight on the BEST market's name.
           <span className="inline-block rounded-[8px] bg-accent px-[8px] text-onlime">
             {row.name}
           </span>
         ) : (
-          <span>{row.name}</span>
+          row.name
         )}
-        <ChainLabel market={chosen.market} />
       </div>
       <div>
         <div className={APR}>{formatApr(chosen.apr)}</div>
@@ -382,33 +342,29 @@ function MarketTableRow({ row, best, selected, off, onPick }: MarketCardProps) {
       disabled={off}
       type="button"
       onClick={onPick}>
-      {/* The artboard's cell (name, then the tag, one nowrap line) with the
-          chain label under it, so the line fits the 150px column minimum. */}
-      <span className="flex min-w-0 flex-col items-start gap-[4px]">
-        <span className="flex items-center gap-[10px] whitespace-nowrap">
-          <span
-            className={cn(
-              'text-[24px] font-extrabold leading-[1.25] tracking-[-0.03em]',
-              best && 'rounded-[8px] bg-accent px-[8px] text-onlime',
-            )}>
-            {row.name}
-          </span>
-          {best ? (
-            <span className={BEST_TAG}>
-              <span
-                aria-hidden="true"
-                className="inline-block h-[7px] w-[7px] rounded-full bg-[#5E9E12]"
-              />
-              BEST
-            </span>
-          ) : null}
-          {off ? (
-            <span className="text-[11px] tracking-[0.06em] text-neg">
-              LTV TOO HIGH
-            </span>
-          ) : null}
+      {/* The artboard's cell: the name, then the tag, one nowrap line. */}
+      <span className="flex items-center gap-[10px] whitespace-nowrap">
+        <span
+          className={cn(
+            'text-[24px] font-extrabold leading-[1.25] tracking-[-0.03em]',
+            best && 'rounded-[8px] bg-accent px-[8px] text-onlime',
+          )}>
+          {row.name}
         </span>
-        <ChainLabel market={chosen.market} />
+        {best ? (
+          <span className={BEST_TAG}>
+            <span
+              aria-hidden="true"
+              className="inline-block h-[7px] w-[7px] rounded-full bg-[#5E9E12]"
+            />
+            BEST
+          </span>
+        ) : null}
+        {off ? (
+          <span className="text-[11px] tracking-[0.06em] text-neg">
+            LTV TOO HIGH
+          </span>
+        ) : null}
       </span>
       <span className="text-[24px] font-extrabold tracking-[-0.03em]">
         <span className="sr-only">Borrow APR </span>
@@ -468,9 +424,9 @@ const NO_IDS: readonly string[] = [];
 
 /**
  * Every provider's figures for `pair`, one card or table row per provider
- * (Aave, not Aave on each chain), on the chain it lends on: the lowest APR
- * among its chains with the liquidity for `loanUsd` (`chooseChain`), shown
- * by the chain's mark and name. With two or more providers, BEST marks the
+ * (Aave, not Aave on each chain), with the figures of the chain it lends
+ * on: the lowest APR among its chains with the liquidity for `loanUsd`
+ * (`chooseChain`). The chain itself is not shown. With two or more providers, BEST marks the
  * lowest APR among those that can be picked; with one it means nothing and
  * is not shown. The selection defaults to the lowest APR either way.
  *
