@@ -15,8 +15,12 @@ export const BPS = 10_000n;
 /** The health factor's scale: 1e18 is a health factor of 1. */
 export const HEALTH_FACTOR_ONE = 10n ** 18n;
 
-const ceilDiv = (numerator: bigint, denominator: bigint) =>
+/** `numerator / denominator`, rounded up (both positive). */
+export const ceilDiv = (numerator: bigint, denominator: bigint) =>
   (numerator + denominator - 1n) / denominator;
+
+/** One whole token in its atomic units: `10^decimals`. */
+export const scaleOf = (decimals: number) => 10n ** BigInt(decimals);
 
 const nonNegative = (name: string, value: bigint) => {
   if (value < 0n) {
@@ -40,6 +44,49 @@ const decimalsScale = (name: string, value: number) => {
   }
 
   return 10n ** BigInt(value);
+};
+
+export type LoanValuesInput = {
+  /** Collateral, in its token units. */
+  collateralAmount: bigint;
+  collateral: { decimals: number; priceBase: bigint };
+  /** Borrowed, in borrow-token units. */
+  borrowAmount: bigint;
+  borrow: { decimals: number; priceBase: bigint };
+};
+
+export type LoanValues = {
+  /** The collateral's value, in base currency units. */
+  collateralValue: bigint;
+  /** The debt's value, in base currency units. */
+  debt: bigint;
+};
+
+/**
+ * A loan's two sides in base currency units, at the given oracle prices:
+ * `amount × priceBase / 10^decimals`. The collateral rounds **down** and the
+ * debt **up**, so the LTV and health figures built on them never read as
+ * safer than the Pool's. Every figure of a loan's LTV uses this, so they
+ * agree at the max-LTV edge.
+ */
+export const loanValues = ({
+  collateralAmount,
+  collateral,
+  borrowAmount,
+  borrow,
+}: LoanValuesInput): LoanValues => {
+  nonNegative('collateralAmount', collateralAmount);
+  nonNegative('borrowAmount', borrowAmount);
+
+  return {
+    collateralValue:
+      (collateralAmount * collateral.priceBase) /
+      decimalsScale('collateral decimals', collateral.decimals),
+    debt: ceilDiv(
+      borrowAmount * borrow.priceBase,
+      decimalsScale('borrow decimals', borrow.decimals),
+    ),
+  };
 };
 
 /**

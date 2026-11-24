@@ -4,7 +4,9 @@ import {
   HEALTH_FACTOR_ONE,
   healthFactor,
   liquidationPrice,
+  loanValues,
   ltvBps,
+  scaleOf,
 } from '../../markets/math';
 import type { BorrowReserve, CollateralReserve } from '../../markets/types';
 
@@ -59,11 +61,6 @@ export type BorrowPreviewFigures = {
   healthHundredths: bigint | null;
 };
 
-const scaleOf = (decimals: number) => 10n ** BigInt(decimals);
-
-const ceilDiv = (numerator: bigint, denominator: bigint) =>
-  (numerator + denominator - 1n) / denominator;
-
 export const borrowPreviewFigures = ({
   execution: { quote, details },
   borrowAmount,
@@ -80,14 +77,12 @@ export const borrowPreviewFigures = ({
       ? (collateralExpected * scaleOf(paid.decimals)) / amountIn
       : undefined;
 
-  // Values in the oracle's base units: collateral rounded down, debt up.
-  const collateralValue =
-    (minimumReceived * collateral.priceBase) / scaleOf(collateral.decimals);
-
-  const debt = ceilDiv(
-    borrowAmount * borrow.priceBase,
-    scaleOf(borrow.decimals),
-  );
+  const { collateralValue, debt } = loanValues({
+    collateralAmount: minimumReceived,
+    collateral,
+    borrowAmount,
+    borrow,
+  });
 
   const health = healthFactor(
     collateralValue,

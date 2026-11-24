@@ -74,6 +74,40 @@ describe('ctaState', () => {
     expect(kindOf({ recipient: { status: 'invalid' } })).toBe('ready');
   });
 
+  describe('with a non-EVM wallet', () => {
+    const NON_EVM: Partial<CtaInput> = { recipientRequired: true };
+
+    it('blocks the ready state until a valid EVM recipient is entered, box ticked or not', () => {
+      expect(kindOf(NON_EVM)).toBe('enterRecipient');
+      expect(kindOf({ ...NON_EVM, sendToOther: true })).toBe('enterRecipient');
+      expect(kindOf({ ...NON_EVM, recipient: { status: 'invalid' } })).toBe(
+        'enterRecipient',
+      );
+      expect(
+        kindOf({
+          ...NON_EVM,
+          recipient: {
+            status: 'valid',
+            address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+          },
+        }),
+      ).toBe('ready');
+    });
+
+    it('still asks to connect, for an amount and so on first', () => {
+      expect(kindOf({ ...NON_EVM, connected: false })).toBe('connect');
+      expect(kindOf({ ...NON_EVM, amount: 0n })).toBe('enterAmount');
+      expect(kindOf({ ...NON_EVM, market: undefined })).toBe('ltvTooHigh');
+    });
+  });
+
+  it('with an EVM wallet, needs no recipient unless the box is ticked', () => {
+    expect(kindOf({ recipientRequired: false })).toBe('ready');
+    expect(kindOf({ recipientRequired: false, sendToOther: true })).toBe(
+      'enterRecipient',
+    );
+  });
+
   describe('priority', () => {
     /** Every state's cause at once; each step below removes one. */
     const ALL_WRONG: Partial<CtaInput> = {

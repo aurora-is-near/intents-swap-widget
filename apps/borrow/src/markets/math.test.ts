@@ -4,12 +4,65 @@ import {
   HEALTH_FACTOR_ONE,
   healthFactor,
   liquidationPrice,
+  loanValues,
   ltvBps,
   maxBorrow,
 } from './math';
 
 /** Dollars in the oracle's base currency (8 decimals, as Aave's USD oracle). */
 const usd = (dollars: number) => BigInt(dollars) * 10n ** 8n;
+
+describe('loanValues', () => {
+  const weth = { decimals: 18, priceBase: usd(3000) };
+  const usdc = { decimals: 6, priceBase: usd(1) };
+
+  it('values both sides at the oracle prices', () => {
+    expect(
+      loanValues({
+        collateralAmount: 10n ** 18n,
+        collateral: weth,
+        borrowAmount: 2250n * 10n ** 6n,
+        borrow: usdc,
+      }),
+    ).toEqual({ collateralValue: usd(3000), debt: usd(2250) });
+  });
+
+  it('rounds the collateral down and the debt up', () => {
+    // One wei of WETH is worth 3e-7 base units; one unit of `odd` 150.000001.
+    const odd = { decimals: 6, priceBase: 150_000_001n };
+
+    expect(
+      loanValues({
+        collateralAmount: 1n,
+        collateral: weth,
+        borrowAmount: 1n,
+        borrow: odd,
+      }),
+    ).toEqual({ collateralValue: 0n, debt: 151n });
+  });
+
+  it('gives no debt for no borrow', () => {
+    expect(
+      loanValues({
+        collateralAmount: 10n ** 18n,
+        collateral: weth,
+        borrowAmount: 0n,
+        borrow: usdc,
+      }).debt,
+    ).toBe(0n);
+  });
+
+  it('throws on a negative amount', () => {
+    expect(() =>
+      loanValues({
+        collateralAmount: -1n,
+        collateral: weth,
+        borrowAmount: 0n,
+        borrow: usdc,
+      }),
+    ).toThrow(RangeError);
+  });
+});
 
 describe('ltvBps', () => {
   it('is 0 with no debt, with or without collateral', () => {

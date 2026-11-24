@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { parseUnits } from 'viem';
+import { type Address, parseUnits } from 'viem';
 
 import type { FundingAsset } from '../balances/toFundingAssets';
 import {
@@ -108,11 +108,26 @@ export type LoanForm = {
   /** Keeps the pick; while it does not fit the LTV, the selection is BEST. */
   pickMarket: (marketId: string) => void;
 
+  /** The box is ticked, or the recipient is required. */
   recipientEnabled: boolean;
-  /** Turning it off also clears the recipient. */
+  /**
+   * Turning it off also clears the recipient. Ignored while the recipient
+   * is required.
+   */
   setRecipientEnabled: (enabled: boolean) => void;
+  /**
+   * The connected wallet is not EVM, so it can't receive the borrowed funds
+   * on the market's chain: the box is on and locked, and the call to action
+   * waits for a valid address.
+   */
+  recipientRequired: boolean;
   recipient: string;
   setRecipient: (recipient: string) => void;
+  /**
+   * What the borrow plan sends the funds to (`params.recipient`): the valid
+   * address while the box is on, else `undefined` (the connected wallet).
+   */
+  recipientAddress: Address | undefined;
 
   /** The loan in `figuresMarket`; `undefined` until a market has the pair. */
   figures: LoanFigures | undefined;
@@ -287,11 +302,18 @@ const NOT_CONNECTED_FUNDING: Omit<FundingAssets, 'refresh'> = {
  * loan model, for the selected market. Funding comes from the wallet's
  * balances (1Click prices); the loan figures use the market's oracle prices
  * (decided in the plan review).
+ *
+ * `walletFamily` is `useIntentsConnectWallet().family`: a connected wallet
+ * of another family than `evm` (Solana) must name an EVM recipient, since
+ * the borrowed funds arrive on the market's EVM chain. An unknown family
+ * (`null`, or not given) is not taken for a non-EVM one.
  */
 export const useLoanForm = ({
   connected,
+  walletFamily,
 }: {
   connected: boolean;
+  walletFamily?: string | null;
 }): LoanForm => {
   const wallet = useFundingAssets();
   const { snapshots, listing } = useMarketSnapshots();
@@ -441,6 +463,15 @@ export const useLoanForm = ({
   const balance =
     held?.amount ?? (fundingAssets.status === 'ready' ? 0n : undefined);
 
+  const recipientRequired =
+    connected &&
+    walletFamily !== undefined &&
+    walletFamily !== null &&
+    walletFamily !== 'evm';
+
+  const sendToOther = recipientEnabled || recipientRequired;
+  const recipientCheck = validateRecipient(recipient);
+
   const cta = ctaState({
     connected,
     amount: atomic,
@@ -448,8 +479,9 @@ export const useLoanForm = ({
     borrowAmount: figures?.borrowAmount ?? 0n,
     borrow: { symbol: pair.borrow, decimals: borrowDecimals },
     market,
-    sendToOther: recipientEnabled,
-    recipient: validateRecipient(recipient),
+    sendToOther,
+    recipientRequired,
+    recipient: recipientCheck,
   });
 
   return {
@@ -480,16 +512,25 @@ export const useLoanForm = ({
     ),
     marketsSettled,
     pickMarket: setPickedMarketId,
-    recipientEnabled,
+    recipientEnabled: sendToOther,
     setRecipientEnabled: (enabled) => {
+      if (recipientRequired) {
+        return;
+      }
+
       setRecipientEnabled(enabled);
 
       if (!enabled) {
         setRecipient('');
       }
     },
+    recipientRequired,
     recipient,
     setRecipient,
+    recipientAddress:
+      sendToOther && recipientCheck.status === 'valid'
+        ? recipientCheck.address
+        : undefined,
     figures,
     liquidationPriceUsd:
       figures && figures.liquidationPrice !== null && snapshot
