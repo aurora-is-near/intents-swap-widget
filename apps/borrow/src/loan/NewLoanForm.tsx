@@ -16,7 +16,9 @@ import { BORROW_FEE_BPS } from '../config';
 import type { FundingAsset } from '../balances/toFundingAssets';
 import { formatApr } from '../markets/format';
 import { useConnectWallet } from '../wallet/useConnectWallet';
+import { LtvField } from './LtvField';
 import { MarketList } from './MarketList';
+import { RecipientField } from './RecipientField';
 import { sameSymbol } from './model/symbols';
 import {
   type LoanForm,
@@ -277,7 +279,10 @@ function SupplySection({ form }: { form: LoanForm }) {
       );
 
   // The held balance's chain; not connected, the selected market's.
-  const triggerSlug = funding.asset?.chain ?? form.market?.chain;
+  // The selection, or the figures' stand-in when the LTV fits no market.
+  const triggerSlug =
+    funding.asset?.chain ?? (form.market ?? form.figuresMarket)?.chain;
+
   const triggerChain = triggerSlug ? chainOf(triggerSlug) : undefined;
 
   return (
@@ -377,7 +382,9 @@ function BorrowSection({ form }: { form: LoanForm }) {
   const labelId = useId();
   const triggerId = useId();
   const receiveId = useId();
-  const { borrow, figures, market } = form;
+  const { borrow, figures } = form;
+  // The selection, or the figures' stand-in when the LTV fits no market.
+  const market = form.market ?? form.figuresMarket;
 
   const chainsOf = (asset: ReserveAsset) =>
     asset.markets.map(({ chain }) => chain);
@@ -461,7 +468,8 @@ const STATS = ['LTV', 'Liquidation', 'Health'] as const;
 
 /**
  * The New loan tab: the artboard's two columns (lines 213–375). The form
- * card holds the Supply and Borrow cards and the fee row; the markets beside
+ * card holds the Supply and Borrow cards, the fee row, the loan-to-value
+ * slider and the recipient option; the markets beside
  * it are read for the form's pair and follow its selection. The summary
  * tiles stay "—" and the CTA shows only while disconnected until the
  * summary and call to action are built.
@@ -485,6 +493,17 @@ export function NewLoanForm() {
         <SupplySection form={form} />
         <div aria-hidden="true" className="my-[18px] h-px bg-bd" />
         <BorrowSection form={form} />
+        <LtvField
+          liquidationLtvBps={form.liquidationLtvBps}
+          ltv={form.ltv}
+          onLtvChange={form.setLtv}
+        />
+        <RecipientField
+          enabled={form.recipientEnabled}
+          value={form.recipient}
+          onEnabledChange={form.setRecipientEnabled}
+          onValueChange={form.setRecipient}
+        />
       </Card>
 
       <section aria-label="Markets" className="min-w-0 flex-[1.3_1_520px]">
