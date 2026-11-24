@@ -87,6 +87,13 @@ export type UseBorrowFlowOptions = {
 
 export type UseBorrowFlowResult = {
   state: BorrowFlowState;
+  /**
+   * The figures of the dry run the borrow runs, or is about to: set each time
+   * a preview is accepted, whether it goes to `confirm` or, on a retry of a
+   * confirmed borrow, straight to the run; kept through signing, pending,
+   * done and errors, and cleared by `start()` and `leave()`.
+   */
+  figures: BorrowPreviewFigures | undefined;
   /** Gas pre-check, the two-pass dry run and the liquidity pre-check. */
   start: (input: BorrowFlowInput) => Promise<void>;
   /** Runs the confirmed dry run's plan as it is. */
@@ -150,6 +157,7 @@ export const useBorrowFlow = ({
   onCreated,
 }: UseBorrowFlowOptions = {}): UseBorrowFlowResult => {
   const [state, setState] = useState<BorrowFlowState>({ kind: 'idle' });
+  const [figures, setFigures] = useState<BorrowPreviewFigures>();
   const stateRef = useRef(state);
 
   /** The latest input, for a retry or a refresh. */
@@ -540,6 +548,9 @@ export const useBorrowFlow = ({
       return;
     }
 
+    // Accepted: what the dialogs show from now on, also when it runs at once.
+    setFigures(next.figures);
+
     if (then === 'confirm') {
       confirmedRef.current = false;
       setFlow(next);
@@ -561,6 +572,7 @@ export const useBorrowFlow = ({
 
     inputRef.current = input;
     confirmedRef.current = false;
+    setFigures(undefined);
     await previewAnd('confirm');
   };
 
@@ -664,6 +676,7 @@ export const useBorrowFlow = ({
     reconnectResumeRef.current = undefined;
     confirmedRef.current = false;
     borrowRef.current = undefined;
+    setFigures(undefined);
     setFlow({ kind: 'idle' });
   };
 
@@ -767,6 +780,7 @@ export const useBorrowFlow = ({
 
   return {
     state,
+    figures,
     start,
     confirm,
     action,

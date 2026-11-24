@@ -5,6 +5,7 @@ import {
   forwardRef,
   type ReactNode,
   useContext,
+  useMemo,
 } from 'react';
 
 import { cn } from '../lib/cn';
@@ -87,7 +88,14 @@ const DESCRIPTION = 'mx-0 mt-[6px] mb-0 text-[15px] leading-[normal] text-mut';
 const DISMISS_REASONS: ReadonlySet<DialogPrimitive.Root.ChangeEventReason> =
   new Set(['escape-key', 'outside-press', 'focus-out']);
 
-const DismissibleContext = createContext(true);
+/**
+ * Whether the dialog is dismissible, and whether it shows its close button
+ * (which the title and description keep clear of).
+ */
+const DismissibleContext = createContext({
+  dismissible: true,
+  closeButton: true,
+});
 
 export type DialogProps = Omit<
   DialogPrimitive.Root.Props,
@@ -101,6 +109,13 @@ export type DialogProps = Omit<
    * `DialogClose` it renders. Defaults to `true`.
    */
   dismissible?: boolean;
+  /**
+   * Whether the popup shows its close button. Defaults to `dismissible`. A
+   * dismissible dialog without one (such as a success message the artboard
+   * draws with no close button, Web-Borrow-Done.dc.html lines 970–976) still
+   * closes on Escape and an outside press.
+   */
+  closeButton?: boolean;
 };
 
 /**
@@ -110,12 +125,18 @@ export type DialogProps = Omit<
  */
 export function Dialog({
   dismissible = true,
+  closeButton = dismissible,
   onOpenChange,
   children,
   ...props
 }: DialogProps) {
+  const context = useMemo(
+    () => ({ dismissible, closeButton }),
+    [dismissible, closeButton],
+  );
+
   return (
-    <DismissibleContext.Provider value={dismissible}>
+    <DismissibleContext.Provider value={context}>
       <DialogPrimitive.Root
         {...props}
         disablePointerDismissal={!dismissible}
@@ -163,14 +184,14 @@ export type DialogContentProps = Omit<
  * The portalled backdrop, scroll viewport and popup (role `dialog`, named by
  * its `DialogTitle`). Centred, at most 460px wide; at 640px or narrower a
  * full-width sheet pinned to the bottom. Shows the close button unless the
- * dialog is not `dismissible`.
+ * dialog's `closeButton` is off (by default, when it is not `dismissible`).
  *
  * Portals render into `<body>`: the app's root needs `isolation: isolate`
  * so the dialog stacks above it (see `styles/index.css`).
  */
 export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, children, ...props }, ref) => {
-    const dismissible = useContext(DismissibleContext);
+    const { closeButton } = useContext(DismissibleContext);
 
     return (
       <DialogPrimitive.Portal>
@@ -184,7 +205,7 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
                 title, line 982) so that it is the first focusable element
                 and takes the initial focus rather than the dialog's main
                 action. */}
-            {dismissible ? (
+            {closeButton ? (
               <DialogPrimitive.Close
                 aria-label="Close"
                 render={<Button className={CLOSE} variant="ghost" />}>
@@ -211,12 +232,12 @@ export type DialogTitleProps = Omit<
 /** The dialog's `<h2>` heading; it names the dialog. */
 export const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(
   ({ className, ...props }, ref) => {
-    const dismissible = useContext(DismissibleContext);
+    const { closeButton } = useContext(DismissibleContext);
 
     return (
       <DialogPrimitive.Title
         ref={ref}
-        className={cn(TITLE, dismissible && CLEAR_CLOSE, className)}
+        className={cn(TITLE, closeButton && CLEAR_CLOSE, className)}
         {...props}
       />
     );
@@ -237,12 +258,12 @@ export const DialogDescription = forwardRef<
   HTMLParagraphElement,
   DialogDescriptionProps
 >(({ className, ...props }, ref) => {
-  const dismissible = useContext(DismissibleContext);
+  const { closeButton } = useContext(DismissibleContext);
 
   return (
     <DialogPrimitive.Description
       ref={ref}
-      className={cn(DESCRIPTION, dismissible && CLEAR_CLOSE, className)}
+      className={cn(DESCRIPTION, closeButton && CLEAR_CLOSE, className)}
       {...props}
     />
   );

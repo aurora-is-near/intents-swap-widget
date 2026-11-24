@@ -28,15 +28,28 @@ export type LoanFiguresInput = {
   borrow: Pick<BorrowReserve, 'decimals' | 'priceBase'>;
   /** The slider's loan-to-value, in whole percent. */
   ltv: number;
+  /**
+   * The fee taken from `collateralAmount` before it is supplied, in basis
+   * points; `BORROW_FEE_BPS` by default. 0 for an amount already net of the
+   * fee, such as the dry run's minimum received.
+   */
+  feeBps?: number;
 };
 
 export type LoanFigures = {
-  /** Borrowed, in borrow-token units: collateral USD × LTV ÷ borrow price. */
+  /**
+   * Borrowed, in borrow-token units: the collateral supplied (less the fee)
+   * in USD × LTV ÷ borrow price. It reaches the wallet whole.
+   */
   borrowAmount: bigint;
-  /** `BORROW_FEE_BPS` of the borrow amount, an estimate (as drawn). */
+  /**
+   * `BORROW_FEE_BPS` of the collateral, in collateral units: an estimate.
+   * The dry run reports the service's fee in the bridged collateral
+   * (`details.networkFee`, see `execution/preview.ts`), so the borrowed
+   * amount reaches the wallet whole (decided in the Borrow execution plan
+   * review).
+   */
   fee: bigint;
-  /** What reaches the wallet: the borrow amount less the fee. */
-  received: bigint;
   /**
    * Liquidation LTV ÷ LTV, in hundredths (162n is 1.62), rounded down.
    * `null` at LTV 0, shown as "—".
@@ -63,6 +76,7 @@ export const loanFigures = ({
   collateral,
   borrow,
   ltv,
+  feeBps = BORROW_FEE_BPS,
 }: LoanFiguresInput): LoanFigures => {
   if (!Number.isInteger(ltv) || ltv < 0) {
     throw new RangeError('ltv must be a whole, non-negative percent');
@@ -78,15 +92,15 @@ export const loanFigures = ({
 
   const loanLtvBps = BigInt(ltv) * 100n;
 
+  // The fee is taken from the bridged collateral (as the dry run reports
+  // it), so the loan is made against what is left.
+  const fee = ceilDiv(collateralAmount * BigInt(feeBps), BPS);
+  const supplied = collateralAmount - fee;
+
   // One division, so only one unit is ever lost.
   const borrowAmount =
-    (collateralAmount *
-      collateral.priceBase *
-      loanLtvBps *
-      scaleOf(borrow.decimals)) /
+    (supplied * collateral.priceBase * loanLtvBps * scaleOf(borrow.decimals)) /
     (scaleOf(collateral.decimals) * BPS * borrow.priceBase);
-
-  const fee = ceilDiv(borrowAmount * BigInt(BORROW_FEE_BPS), BPS);
 
   // The debt the borrow amount carries, rounded up so the liquidation price
   // comes no later than the protocol's.
@@ -100,10 +114,9 @@ export const loanFigures = ({
   return {
     borrowAmount,
     fee,
-    received: borrowAmount - fee,
     healthHundredths: healthOf(collateral.liquidationLtvBps, loanLtvBps),
     liquidationPrice: liquidationPrice({
-      collateralAmount,
+      collateralAmount: supplied,
       decimals: collateral.decimals,
       liquidationLtvBps: collateral.liquidationLtvBps,
       debt,

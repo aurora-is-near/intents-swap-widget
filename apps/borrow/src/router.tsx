@@ -9,7 +9,7 @@ import type { RouterHistory } from '@tanstack/react-router';
 import { useTheme } from '@aurora-is-near/ui-kit';
 import { lazy } from 'react';
 
-import { NewLoanForm } from './loan/NewLoanForm';
+import { NewLoanPage } from './loan/NewLoanPage';
 import { PositionsEmptyState } from './positions/PositionsEmptyState';
 import { Shell } from './shell/Shell';
 
@@ -22,11 +22,14 @@ const shellRoute = createRoute({
   component: Shell,
 });
 
-/** The New loan tab: the loan form beside the market list. */
+/**
+ * The New loan tab: the loan form beside the market list, and the borrow
+ * dialogs it opens.
+ */
 const newLoanRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/',
-  component: NewLoanForm,
+  component: NewLoanPage,
 });
 
 /** The My positions tab: the empty state until positions are read. */
@@ -71,9 +74,21 @@ const createGalleryRoutes = () => {
     })),
   );
 
+  // The app's own entries: the borrow dialogs, beside the artboards.
+  const LazyBorrowGallery = lazy(() =>
+    import('./loan/execution/BorrowDialogGallery').then((m) => ({
+      default: m.BorrowDialogGallery,
+    })),
+  );
+
   // The theme comes from the app's kit copy (`dist`), the one its provider
   // belongs to; the gallery's source copy has its own, empty, context.
-  const Gallery = () => <LazyGallery theme={useTheme()} />;
+  const Gallery = () => (
+    <>
+      <LazyGallery theme={useTheme()} />
+      <LazyBorrowGallery />
+    </>
+  );
 
   return [
     createRoute({

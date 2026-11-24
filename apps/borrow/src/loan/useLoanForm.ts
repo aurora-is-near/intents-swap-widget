@@ -14,6 +14,7 @@ import type {
   MarketSnapshot,
 } from '../markets/types';
 import { useMarketSnapshots } from '../markets/useMarketSnapshots';
+import type { BorrowFlowInput } from './execution/useBorrowFlow';
 import { type MarketPair, type MarketRow, pairRow } from './marketRows';
 import { collateralFor } from './model/collateral';
 import { type CtaState, ctaState } from './model/ctaState';
@@ -55,6 +56,14 @@ type Funding = {
   decimals: number;
 };
 
+/**
+ * A ready loan, as the borrow flow takes it (`useBorrowFlow().start`), less
+ * the market's adapter, with the wallet balance it is paid from.
+ */
+export type BorrowRequest = Omit<BorrowFlowInput, 'adapter'> & {
+  paid: FundingAsset;
+};
+
 export type LoanForm = {
   connected: boolean;
   /** The wallet's balances; empty rows while not connected. */
@@ -72,7 +81,7 @@ export type LoanForm = {
   amountUsd: number | undefined;
 
   /** The collateral the funding asset is supplied as, in the selected market. */
-  collateral: { symbol: string; convertedFrom?: string };
+  collateral: { symbol: string; decimals: number; convertedFrom?: string };
 
   /** The borrowable reserves across the markets, less the collateral's symbol. */
   borrowAssets: ReserveAsset[];
@@ -139,6 +148,11 @@ export type LoanForm = {
 
   /** The call to action's state. */
   cta: CtaState;
+  /**
+   * The loan to borrow while the call to action is ready: a held balance,
+   * the selected market and its reserves; `undefined` otherwise.
+   */
+  borrowRequest: BorrowRequest | undefined;
 };
 
 /** `parseUnits` for what `AmountInput` lets through; `0n` for a partial value. */
@@ -484,6 +498,39 @@ export const useLoanForm = ({
     recipient: recipientCheck,
   });
 
+  const recipientAddress =
+    sendToOther && recipientCheck.status === 'valid'
+      ? recipientCheck.address
+      : undefined;
+
+  const borrowRequest: BorrowRequest | undefined =
+    cta.kind === 'ready' &&
+    held &&
+    market &&
+    snapshot?.market.id === market.id &&
+    choice &&
+    borrowReserve &&
+    figures
+      ? {
+          market,
+          collateral: choice.reserve,
+          borrow: borrowReserve,
+          origin: {
+            assetId: held.assetId,
+            chain: held.chain,
+            decimals: held.decimals,
+            contractAddress: held.contractAddress,
+          },
+          amount: atomic,
+          ltv,
+          estimatedBorrowAmount: figures.borrowAmount,
+          recipient: recipientAddress,
+          fundingRows:
+            fundingAssets.status === 'ready' ? fundingAssets.rows : undefined,
+          paid: held,
+        }
+      : undefined;
+
   return {
     connected,
     fundingAssets,
@@ -495,6 +542,12 @@ export const useLoanForm = ({
     amountUsd,
     collateral: {
       symbol: pair.collateral,
+      decimals:
+        choice?.reserve.decimals ??
+        collateralAssets.find(({ symbol }) =>
+          sameSymbol(symbol, pair.collateral),
+        )?.decimals ??
+        18,
       convertedFrom: converted ? fundingSymbol : undefined,
     },
     borrowAssets,
@@ -527,15 +580,13 @@ export const useLoanForm = ({
     recipientRequired,
     recipient,
     setRecipient,
-    recipientAddress:
-      sendToOther && recipientCheck.status === 'valid'
-        ? recipientCheck.address
-        : undefined,
+    recipientAddress,
     figures,
     liquidationPriceUsd:
       figures && figures.liquidationPrice !== null && snapshot
         ? baseToUsd(figures.liquidationPrice, snapshot.baseCurrencyUnit)
         : undefined,
     cta,
+    borrowRequest,
   };
 };

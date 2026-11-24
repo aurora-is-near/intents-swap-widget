@@ -3,8 +3,7 @@ import type { RecipientCheck } from './recipient';
 /**
  * The New loan form's call to action (Web-Borrow.dc.html line 1578), one
  * state at a time. `ready` carries what its label needs: "Borrow 1,234 USDC
- * on Aave". Until Borrow execution, `ready` still leaves the button disabled
- * (decided in the plan review).
+ * on Aave". `ready` starts the borrow flow (`LoanCta`'s `onBorrow`).
  */
 export type CtaState =
   | { kind: 'connect' }

@@ -16,6 +16,7 @@ import { BORROW_FEE_BPS } from '../config';
 import type { FundingAsset } from '../balances/toFundingAssets';
 import { formatApr } from '../markets/format';
 import { useConnectWallet } from '../wallet/useConnectWallet';
+import { ALL_CHAINS_COLOR, chainOf } from './chains';
 import { LoanCta } from './LoanCta';
 import {
   formatAmount,
@@ -29,34 +30,12 @@ import { LtvField } from './LtvField';
 import { MarketList } from './MarketList';
 import { RecipientField } from './RecipientField';
 import { sameSymbol } from './model/symbols';
-import { type LoanForm, type ReserveAsset, useLoanForm } from './useLoanForm';
-
-/**
- * Chain names and dots by 1Click slug: the artboard's `CH` (Web-Borrow.dc.html
- * line 1099) for the four it draws; other chains get their slug's name and
- * the "All chains" grey.
- */
-const CHAINS: Record<string, { name: string; color: string }> = {
-  eth: { name: 'Ethereum', color: '#5B74D6' },
-  base: { name: 'Base', color: '#2E6BFF' },
-  arb: { name: 'Arbitrum', color: '#1F8FD6' },
-  op: { name: 'Optimism', color: '#D9341F' },
-  pol: { name: 'Polygon', color: '#8A928C' },
-  avax: { name: 'Avalanche', color: '#8A928C' },
-  bsc: { name: 'BNB Chain', color: '#8A928C' },
-  gnosis: { name: 'Gnosis', color: '#8A928C' },
-  sol: { name: 'Solana', color: '#8A928C' },
-  near: { name: 'NEAR', color: '#8A928C' },
-};
-
-/** "All chains" (line 1165). */
-const ALL_CHAINS_COLOR = '#8A928C';
-
-const chainOf = (slug: string) =>
-  CHAINS[slug] ?? {
-    name: slug.charAt(0).toUpperCase() + slug.slice(1),
-    color: ALL_CHAINS_COLOR,
-  };
+import {
+  type BorrowRequest,
+  type LoanForm,
+  type ReserveAsset,
+  useLoanForm,
+} from './useLoanForm';
 
 /**
  * Token marks by symbol: the artboard's letters and colours (lines
@@ -358,14 +337,19 @@ function SupplySection({ form }: { form: LoanForm }) {
   );
 }
 
-/** The Borrow card (lines 256–293) and the fee row (line 295). */
+/**
+ * The Borrow card (lines 256–293) and the fee row (line 295). The fee is
+ * taken from the bridged collateral, as the dry run reports it, so the row
+ * shows it in the collateral and "You receive" is the whole borrow amount
+ * (decided in the Borrow execution plan review).
+ */
 function BorrowSection({ form }: { form: LoanForm }) {
   const anchor = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState(ALL_FILTERS);
   const labelId = useId();
   const triggerId = useId();
   const receiveId = useId();
-  const { borrow, figures } = form;
+  const { borrow, collateral, figures } = form;
   // The selection, or the figures' stand-in when the LTV fits no market.
   const market = form.market ?? form.figuresMarket;
 
@@ -385,10 +369,10 @@ function BorrowSection({ form }: { form: LoanForm }) {
   const triggerChain = market ? chainOf(market.chain) : undefined;
 
   const received = figures
-    ? toDisplayNumber(figures.received, borrow.decimals)
+    ? toDisplayNumber(figures.borrowAmount, borrow.decimals)
     : 0;
 
-  const fee = figures ? toDisplayNumber(figures.fee, borrow.decimals) : 0;
+  const fee = figures ? toDisplayNumber(figures.fee, collateral.decimals) : 0;
 
   return (
     <>
@@ -432,14 +416,13 @@ function BorrowSection({ form }: { form: LoanForm }) {
           </span>
         </div>
       </div>
-      {/* The fee as drawn (line 295): BORROW_FEE_BPS of the borrow amount.
-          An estimate: the real fee is the API key's Intents Connect fee,
-          taken on each swap's input (docs: "API Keys & Fees"), so Borrow
-          execution reconciles this row with the quote (decided). */}
+      {/* The fee row (line 295): BORROW_FEE_BPS of the collateral, an
+          estimate. The real fee is the API key's Intents Connect fee, which
+          the confirm dialog shows as the dry run reports it. */}
       <div className="mt-[12px] flex justify-between text-[14px] text-mut">
         <span>Borrow fee · {formatApr(BORROW_FEE_BPS / 10_000)}</span>
         <span className="font-semibold">
-          −{formatFee(fee)} {borrow.symbol}
+          −{formatFee(fee)} {collateral.symbol}
         </span>
       </div>
     </>
@@ -456,8 +439,18 @@ function BorrowSection({ form }: { form: LoanForm }) {
  *
  * Columns: the form card `flex:1 1 460px; max-width:560px`, the markets
  * `flex:1.3 1 520px`, gap 24, wrapping to one column on narrow screens.
+ *
+ * The ready call to action hands the loan to `onBorrow`, which opens the
+ * borrow flow (`NewLoanPage`); `borrowing` shows it busy while the flow
+ * prepares the dry run.
  */
-export function NewLoanForm() {
+export function NewLoanForm({
+  onBorrow,
+  borrowing = false,
+}: {
+  onBorrow?: (request: BorrowRequest) => void;
+  borrowing?: boolean;
+}) {
   const { isConnected, family } = useIntentsConnectWallet();
   const connectWallet = useConnectWallet();
   const form = useLoanForm({ connected: isConnected, walletFamily: family });
@@ -513,7 +506,13 @@ export function NewLoanForm() {
           marketName={
             (form.market ?? form.figuresMarket)?.name ?? LAUNCH_MARKET_NAME
           }
+          busy={borrowing}
           state={form.cta}
+          onBorrow={() => {
+            if (form.borrowRequest) {
+              onBorrow?.(form.borrowRequest);
+            }
+          }}
           onConnect={connectWallet}
         />
       </section>

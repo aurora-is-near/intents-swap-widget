@@ -684,6 +684,57 @@ describe('useBorrowFlow', () => {
       expect(result.current.state.kind).toBe('done');
     });
 
+    it("shows the retry's new dry run, not the confirmed one, when a rejected borrow is retried", async () => {
+      const { result } = renderFlow();
+
+      await confirmFailing(result, EIP1193_REJECTION);
+
+      // 0.99 WETH at $3,000 at LTV 50%: the figures the user confirmed.
+      expect(result.current.figures?.borrowAmount).toBe(1_485_000_000n);
+      expect(result.current.state).toMatchObject({ error: 'rejected' });
+
+      // The retry's quote delivers less collateral: 0.5 WETH.
+      vi.mocked(exec().preview).mockImplementation(async (plan) =>
+        dryPreview(
+          plan,
+          dryExecution({
+            amountOut: '505000000000000000',
+            minAmountOut: '500000000000000000',
+          }),
+        ),
+      );
+
+      const run = deferred<Execution>();
+
+      vi.mocked(exec().run).mockReturnValueOnce(run.promise);
+
+      let retrying: Promise<void> = Promise.resolve();
+
+      act(() => {
+        retrying = result.current.retry();
+      });
+
+      // It runs at once, without going back to confirm.
+      await vi.waitFor(() => {
+        expect(exec().run).toHaveBeenCalledTimes(2);
+      });
+
+      expect(result.current.state).toEqual({ kind: 'signing' });
+      // 0.5 WETH at $3,000 at LTV 50%.
+      expect(result.current.figures?.borrowAmount).toBe(750_000_000n);
+      expect(result.current.figures?.minimumReceived).toBe(
+        500_000_000_000_000_000n,
+      );
+
+      await act(async () => {
+        run.resolve(succeeded());
+        await retrying;
+      });
+
+      expect(result.current.state.kind).toBe('done');
+      expect(result.current.figures?.borrowAmount).toBe(750_000_000n);
+    });
+
     it('goes back to confirm, without running, on retry after the gas pre-check failed', async () => {
       const { result } = renderFlow();
       const USDC_ON_BASE = 'nep141:base-0x8335.omft.near';
@@ -954,6 +1005,18 @@ describe('useBorrowFlow', () => {
 
       expect(result.current.state).toEqual({ kind: 'idle' });
       expect(exec().cancel).not.toHaveBeenCalled();
+    });
+
+    it("forgets the dry run's figures", async () => {
+      const { result } = renderFlow();
+
+      await startFlow(result);
+
+      expect(result.current.figures?.borrowAmount).toBe(1_485_000_000n);
+
+      await act(() => result.current.leave());
+
+      expect(result.current.figures).toBeUndefined();
     });
   });
 });

@@ -144,6 +144,41 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog', { name: 'Confirm loan' })).toBe(dialog);
   });
 
+  it('has no close button with closeButton off, and still closes on Escape and backdrop press', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dialog closeButton={false}>
+        <DialogTrigger>Review loan</DialogTrigger>
+        <DialogContent>
+          <DialogTitle>Loan opened</DialogTitle>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Review loan' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Loan opened' });
+
+    expect(
+      screen.queryByRole('button', { name: 'Close' }),
+    ).not.toBeInTheDocument();
+    // Nothing to keep clear of.
+    expect(
+      screen.getByRole('heading', { name: 'Loan opened' }),
+    ).not.toHaveClass('pr-[48px]');
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Review loan' }));
+
+    const reopened = await screen.findByRole('dialog', { name: 'Loan opened' });
+
+    await user.click(outsideOf(reopened));
+    await waitFor(() => expect(reopened).not.toBeInTheDocument());
+  });
+
   it('follows a controlled open and reports changes through onOpenChange', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

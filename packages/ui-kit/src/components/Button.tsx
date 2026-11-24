@@ -34,6 +34,9 @@ const VARIANT_CLASSES = {
   // `.nv` and `.ibtn` (lines 17–18, 53–54).
   ghost:
     'rounded-[12px] border-0 bg-transparent px-[20px] py-[10px] text-[16px] text-mut enabled:hover:bg-hov',
+  // `.linkb` (Web-Borrow-Confirm.dc.html line 159), such as a dialog's
+  // "Cancel": no box, 15px / 600, underlined, `mut`.
+  link: 'border-0 bg-transparent p-0 text-[15px] font-semibold text-mut underline',
 } as const;
 
 export type ButtonVariant = keyof typeof VARIANT_CLASSES;
