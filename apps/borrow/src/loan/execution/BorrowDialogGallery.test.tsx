@@ -68,7 +68,7 @@ describe('BorrowDialogGallery', () => {
       await screen.findByRole('dialog', { name: 'Confirm loan' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent(
-      'Supply collateral and open the loan',
+      'Bridge the collateral',
     );
 
     await act(async () => {

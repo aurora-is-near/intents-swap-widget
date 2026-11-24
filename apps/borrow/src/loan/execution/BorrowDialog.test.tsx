@@ -188,9 +188,9 @@ describe('BorrowDialog', () => {
       await screen.findByRole('dialog', { name: 'Confirm loan' });
 
       expect(stepTexts()).toEqual([
-        'Waiting: Sign one intent',
-        'Waiting: Supply collateral and open the loan',
-        'Waiting: Bridge and deliver USDC',
+        'Waiting: Sign and deposit',
+        'Waiting: Bridge the collateral',
+        'Waiting: Open the loan and deliver USDC',
       ]);
     });
 
@@ -222,9 +222,9 @@ describe('BorrowDialog', () => {
       await screen.findByRole('dialog', { name: 'Confirm loan' });
 
       expect(stepTexts()).toEqual([
-        'In progress: Sign one intent',
-        'Waiting: Supply collateral and open the loan',
-        'Waiting: Bridge and deliver USDC',
+        'In progress: Sign and deposit',
+        'Waiting: Bridge the collateral',
+        'Waiting: Open the loan and deliver USDC',
       ]);
       expect(screen.getByRole('status')).toHaveTextContent(
         'Check your wallet to sign. Don’t close this window.',
@@ -236,17 +236,17 @@ describe('BorrowDialog', () => {
       rerender({ kind: 'pending', step: 1 });
 
       expect(stepTexts()).toEqual([
-        'Done: Sign one intent',
-        'In progress: Supply collateral and open the loan',
-        'Waiting: Bridge and deliver USDC',
+        'Done: Sign and deposit',
+        'In progress: Bridge the collateral',
+        'Waiting: Open the loan and deliver USDC',
       ]);
 
       rerender({ kind: 'pending', step: 2 });
 
       expect(stepTexts()).toEqual([
-        'Done: Sign one intent',
-        'Done: Supply collateral and open the loan',
-        'In progress: Bridge and deliver USDC',
+        'Done: Sign and deposit',
+        'Done: Bridge the collateral',
+        'In progress: Open the loan and deliver USDC',
       ]);
     });
 

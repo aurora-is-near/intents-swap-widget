@@ -204,17 +204,17 @@ describe('NewLoanPage', () => {
     );
 
     expect(stepTexts()).toEqual([
-      'In progress: Sign one intent',
-      'Waiting: Supply collateral and open the loan',
-      'Waiting: Bridge and deliver USDC',
+      'In progress: Sign and deposit',
+      'Waiting: Bridge the collateral',
+      'Waiting: Open the loan and deliver USDC',
     ]);
 
     emit({ type: 'status', status: 'DEPOSIT_PROCESSING' });
 
     expect(stepTexts()).toEqual([
-      'Done: Sign one intent',
-      'In progress: Supply collateral and open the loan',
-      'Waiting: Bridge and deliver USDC',
+      'Done: Sign and deposit',
+      'In progress: Bridge the collateral',
+      'Waiting: Open the loan and deliver USDC',
     ]);
 
     // Pending: Escape does not close it.
@@ -230,9 +230,9 @@ describe('NewLoanPage', () => {
     emit({ type: 'status', status: 'OPERATION_PROCESSING' });
 
     expect(stepTexts()).toEqual([
-      'Done: Sign one intent',
-      'Done: Supply collateral and open the loan',
-      'In progress: Bridge and deliver USDC',
+      'Done: Sign and deposit',
+      'Done: Bridge the collateral',
+      'In progress: Open the loan and deliver USDC',
     ]);
 
     await act(async () => {

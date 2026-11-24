@@ -9,7 +9,6 @@ import {
   type BorrowDialogLoan,
   borrowDialogStep,
 } from './execution/BorrowDialog';
-import type { BorrowPreviewFigures } from './execution/previewFigures';
 import { useBorrowFlow } from './execution/useBorrowFlow';
 import { NewLoanForm } from './NewLoanForm';
 import type { BorrowRequest } from './useLoanForm';
@@ -49,13 +48,10 @@ export function NewLoanPage() {
   const navigate = useNavigate();
   const { address } = useIntentsConnectWallet();
   const [loan, setLoan] = useState<BorrowDialogLoan>();
-  // The confirmed dry run's figures, kept through pending and done.
-  const [figures, setFigures] = useState<BorrowPreviewFigures>();
-  const { state } = flow;
-
-  if (state.kind === 'confirm' && state.figures !== figures) {
-    setFigures(state.figures);
-  }
+  // The figures come from the hook, which keeps the dry run the borrow runs:
+  // a retry that previews afresh and runs at once (never back in `confirm`)
+  // replaces them.
+  const { state, figures } = flow;
 
   const onBorrow = (request: BorrowRequest) => {
     const adapter = adapters.find(({ id }) => id === request.market.provider);
@@ -67,7 +63,6 @@ export function NewLoanPage() {
     const { paid: _paid, ...input } = request;
 
     setLoan(dialogLoan(request, address));
-    setFigures(undefined);
     void flow.start({ ...input, adapter });
   };
 

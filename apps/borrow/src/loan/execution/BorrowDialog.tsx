@@ -32,7 +32,7 @@ export type BorrowDialogStep =
 
 /**
  * The dialog for a flow state. Signing is the artboard's first pending
- * step ("Sign one intent"); `idle`, `previewing` and the error states show
+ * step ("Sign and deposit"); `idle`, `previewing` and the error states show
  * no dialog here.
  */
 export const borrowDialogStep = (
@@ -80,11 +80,19 @@ const DONE_BUTTON = 'View position';
 /** Line 1020. */
 const PENDING_NOTE = 'Check your wallet to sign. Don’t close this window.';
 
-/** The three steps (`n: 3`, line 1453); the last names the borrowed token. */
+/**
+ * The three steps (`n: 3`, line 1453), worded in the order the borrow runs
+ * them, which is `useBorrowFlow`'s pending steps: 0 signing and the deposit,
+ * 1 the collateral bridging to the market's chain, 2 Aave's supply and
+ * borrow and the delivery. The artboard's labels put "Supply collateral and
+ * open the loan" before "Bridge and deliver", the other way round, so they
+ * are reworded here (review finding F22, option a). The last names the
+ * borrowed token.
+ */
 const stepLabels = (borrowSymbol: string) => [
-  'Sign one intent',
-  'Supply collateral and open the loan',
-  `Bridge and deliver ${borrowSymbol}`,
+  'Sign and deposit',
+  'Bridge the collateral',
+  `Open the loan and deliver ${borrowSymbol}`,
 ];
 
 /**
