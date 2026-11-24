@@ -1,7 +1,10 @@
 import './styles.css';
 
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+
+import { ThemeProvider, useTheme } from '../src';
+import type { ThemePreference } from '../src';
 
 // Class names are spelled out so Tailwind finds them in this file.
 const TOKENS = [
@@ -38,6 +41,8 @@ const TYPE_SCALE = [
   { name: 'big', className: 'text-big font-semibold' },
 ] as const;
 
+const PREFERENCES: readonly ThemePreference[] = ['system', 'light', 'dark'];
+
 const WEIGHTS = [
   { weight: 500, className: 'font-medium' },
   { weight: 600, className: 'font-semibold' },
@@ -45,20 +50,24 @@ const WEIGHTS = [
   { weight: 800, className: 'font-extrabold' },
 ] as const;
 
-/** Reads a token's computed value, so the swatch shows the hex it resolves to. */
+/**
+ * Reads a token's computed value, so the swatch shows the hex it resolves to.
+ * A passive effect, because it runs after ThemeProvider's layout effect has
+ * written the new data-theme (a ref or child layout effect runs before it).
+ */
 function TokenValue({ name }: { name: string }) {
-  return (
-    <code
-      className="text-xs text-mut2"
-      ref={(element) => {
-        if (element) {
-          element.textContent = getComputedStyle(element)
-            .getPropertyValue(`--${name}`)
-            .trim();
-        }
-      }}
-    />
-  );
+  const { theme } = useTheme();
+  const [value, setValue] = useState('');
+
+  useEffect(() => {
+    setValue(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue(`--${name}`)
+        .trim(),
+    );
+  }, [name, theme]);
+
+  return <code className="text-xs text-mut2">{value}</code>;
 }
 
 function Tokens() {
@@ -96,40 +105,56 @@ function Type() {
   );
 }
 
-function Theme({ theme }: { theme: 'light' | 'dark' }) {
+/** System / light / dark, as a radio group so it works from the keyboard. */
+function ThemeSwitch() {
+  const { preference, theme, setPreference } = useTheme();
+
   return (
-    <section
-      aria-label={`${theme} theme`}
-      className="flex min-w-0 flex-1 flex-col gap-6 bg-sf p-6 font-sans text-ink"
-      data-theme={theme}>
-      <h2 className="m-0 text-xs font-semibold tracking-[0.14em] text-mut2 uppercase">
-        {theme}
-      </h2>
-      <Tokens />
-      <Type />
-    </section>
+    <fieldset className="m-0 flex flex-wrap items-center gap-2 border-0 p-0">
+      <legend className="sr-only">Theme</legend>
+      {PREFERENCES.map((option) => (
+        <label
+          className="cursor-pointer rounded-full border-[1.5px] border-bd2 bg-sf px-[18px] py-[9px] text-[15px] font-bold capitalize hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-sf has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-ink has-focus-visible:outline-solid"
+          key={option}>
+          <input
+            checked={preference === option}
+            className="sr-only"
+            name="theme"
+            onChange={() => setPreference(option)}
+            type="radio"
+            value={option}
+          />
+          {option}
+        </label>
+      ))}
+      <span className="text-sm text-mut2">Resolved: {theme}</span>
+    </fieldset>
   );
 }
 
 function Playground() {
   return (
-    <main className="flex flex-wrap">
-      <Theme theme="light" />
-      <Theme theme="dark" />
+    <main className="flex min-h-screen flex-col gap-6 bg-sf p-6 font-sans text-ink">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="m-0 text-xs font-semibold tracking-[0.14em] text-mut2 uppercase">
+          UI kit playground
+        </h1>
+        <ThemeSwitch />
+      </header>
+      <Tokens />
+      <Type />
     </main>
   );
 }
-
-// Until the ThemeProvider exists: pin the page to light, so a dark system
-// theme (the pre-JS fallback in tokens.css) doesn't darken the light column.
-document.documentElement.dataset.theme = 'light';
 
 const root = document.getElementById('root');
 
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <Playground />
+      <ThemeProvider>
+        <Playground />
+      </ThemeProvider>
     </StrictMode>,
   );
 }
