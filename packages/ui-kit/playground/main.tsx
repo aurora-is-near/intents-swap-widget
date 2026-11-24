@@ -1,9 +1,20 @@
 import './styles.css';
 
-import { StrictMode, useEffect, useState } from 'react';
+import { type ReactNode, StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { ThemeProvider, useTheme } from '../src';
+import {
+  Badge,
+  Card,
+  ChainMark,
+  ChainMarkGroup,
+  Highlight,
+  Tag,
+  Text,
+  ThemeProvider,
+  TokenMark,
+  useTheme,
+} from '../src';
 import type { ThemePreference } from '../src';
 
 // Class names are spelled out so Tailwind finds them in this file.
@@ -105,6 +116,91 @@ function Type() {
   );
 }
 
+/**
+ * Sample marks, from the artboard's script data (`EX`). The real palette is
+ * app data, not the kit's.
+ */
+const MARKS = [
+  { label: 'BT', bg: '#FFE2A8', fg: '#4A3000' },
+  { label: 'ET', bg: '#DAD9F7', fg: '#25235C' },
+  { label: 'US', bg: '#D3F2DF', fg: '#0C4325' },
+  { label: 'UC', bg: '#C7E0FF', fg: '#0B2E5C' },
+] as const;
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <Text as="h2" variant="label">
+        {title.toUpperCase()}
+      </Text>
+      {children}
+    </section>
+  );
+}
+
+function Components() {
+  return (
+    <div className="flex flex-col gap-8">
+      <Section title="Text">
+        <Text variant="h64">
+          Borrow <Highlight>easy</Highlight>
+        </Text>
+        <Text variant="h56">Earn on stables</Text>
+        <Text variant="h44">Steakhouse USDC</Text>
+        <Text variant="big">1,250.00</Text>
+        <Text variant="label">ACTIVE LOAN</Text>
+      </Section>
+
+      <Section title="Card">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
+          <Card>
+            <Text variant="label">DEFAULT</Text>
+            <p className="mt-2 mb-0">1.5px --bd border, 24px radius.</p>
+          </Card>
+          <Card variant="tint">
+            <Text variant="label">TINT</Text>
+            <p className="mt-2 mb-0">--tint surface, --limebd border.</p>
+          </Card>
+        </div>
+      </Section>
+
+      <Section title="Badge and Tag">
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="best">USDC</Badge>
+          <Badge variant="neutral">Aave V3</Badge>
+          <Badge variant="count">2</Badge>
+          <Tag tone="positive">Active</Tag>
+          <Tag tone="warn">Watch</Tag>
+          <Tag tone="risk">At risk</Tag>
+          <Tag tone="neutral">Closed</Tag>
+        </div>
+      </Section>
+
+      <Section title="Token and chain marks">
+        <div className="flex flex-wrap items-center gap-3">
+          {MARKS.map((mark) => (
+            <TokenMark key={mark.label} {...mark} />
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-6">
+          <ChainMarkGroup>
+            {MARKS.map((mark) => (
+              <ChainMark key={mark.label} {...mark} />
+            ))}
+          </ChainMarkGroup>
+          <div className="rounded-[18px] bg-sf2 px-[18px] py-[16px]">
+            <ChainMarkGroup size={32}>
+              {MARKS.map((mark) => (
+                <ChainMark key={mark.label} {...mark} />
+              ))}
+            </ChainMarkGroup>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 /** System / light / dark, as a radio group so it works from the keyboard. */
 function ThemeSwitch() {
   const { preference, theme, setPreference } = useTheme();
@@ -143,6 +239,7 @@ function Playground() {
       </header>
       <Tokens />
       <Type />
+      <Components />
     </main>
   );
 }
