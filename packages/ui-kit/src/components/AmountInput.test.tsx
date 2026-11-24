@@ -157,6 +157,25 @@ describe('AmountInput', () => {
     expect(input).toHaveValue('1925');
   });
 
+  it('keeps the caret before the digits when a leading zero collapses', async () => {
+    const user = userEvent.setup();
+
+    render(<Controlled initial="12" />);
+
+    const input = screen.getByRole<HTMLInputElement>('textbox');
+
+    input.focus();
+    input.setSelectionRange(0, 0);
+    await user.keyboard('0');
+
+    expect(input).toHaveValue('12');
+    expect(input.selectionStart).toBe(0);
+
+    await user.keyboard('9');
+
+    expect(input).toHaveValue('912');
+  });
+
   it('forwards its ref to the input and puts className on the field wrapper', () => {
     const ref = createRef<HTMLInputElement>();
 
