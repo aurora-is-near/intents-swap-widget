@@ -4,6 +4,10 @@
     {
       "source": "/api/intents-connect/:path*",
       "destination": "/api/intents-connect?path=:path*"
+    },
+    {
+      "source": "/api/vaults-fyi/:path*",
+      "destination": "/api/vaults-fyi?path=:path*"
     }
   ]
 }
