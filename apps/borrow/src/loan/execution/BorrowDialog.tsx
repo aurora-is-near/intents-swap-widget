@@ -57,6 +57,11 @@ export type BorrowDialogStep =
       fundsWaiting: boolean;
       /** While `fundsWaiting`: the execution, so the collateral can be found. */
       executionId?: string;
+      /**
+       * Where the borrow failed (the flow's error `step`): `null` before
+       * anything was signed, every step waiting. Absent, the kind's own.
+       */
+      step?: BorrowPendingStep | null;
     };
 
 /**
@@ -94,6 +99,7 @@ export const borrowDialogStep = (
         ...(fundsWaiting && fundsWaitingExecutionId
           ? { executionId: fundsWaitingExecutionId }
           : {}),
+        ...(state.step === undefined ? {} : { step: state.step }),
         action:
           state.error === 'unknown'
             ? 'close'
@@ -165,8 +171,29 @@ const stepLabels = (borrowSymbol: string | undefined) => [
 ];
 
 /**
+ * Where a funds-waiting error of a kind drawn on no step (`quoteChanged`) is
+ * drawn: the collateral arrived, so as the other funds-waiting errors
+ * (`priceMoved`, `noLiquidity`), past the signature and deposit.
+ */
+const FUNDS_WAITING_STEP: BorrowPendingStep = 1;
+
+/** The step an error is drawn on: the flow's, else the kind's; `null` none. */
+const errorStepAt = (
+  dialog: Extract<BorrowDialogStep, { kind: 'error' }>,
+): BorrowPendingStep | null => {
+  if (dialog.step !== undefined) {
+    return dialog.step;
+  }
+
+  const { step } = errorCopy[dialog.error];
+
+  return step === null && dialog.fundsWaiting ? FUNDS_WAITING_STEP : step;
+};
+
+/**
  * Each step's status (line 1519): before the current one done, the current
- * one active, the rest waiting; all waiting while confirming.
+ * one active, the rest waiting; all waiting while confirming, and on an
+ * error before anything was signed.
  */
 const steps = (
   borrowSymbol: string | undefined,
@@ -183,8 +210,12 @@ const steps = (
     }
 
     if (dialog.kind === 'error') {
-      const at = errorCopy[dialog.error].step;
+      const at = errorStepAt(dialog);
       const warn = errorCopy[dialog.error].tone === 'warn';
+
+      if (at === null) {
+        return { label, status: 'waiting' };
+      }
 
       if (index < at) {
         return { label, status: 'done' };
@@ -326,7 +357,7 @@ export type RestoredBorrowSummary = {
 type Summary = {
   rows: [string, string][] | undefined;
   borrowSymbol: string | undefined;
-  errorContext: Omit<ErrorCopyContext, 'fundsWaiting'>;
+  errorContext: Omit<ErrorCopyContext, 'fundsWaiting' | 'beforeSigning'>;
   /** Done's line (line 974). */
   doneText: string;
 };
@@ -396,14 +427,16 @@ const extraRows = (step: BorrowDialogStep): [string, string][] => {
 function ErrorBanner({
   error,
   fundsWaiting,
+  beforeSigning,
   errorContext,
 }: {
   error: BorrowErrorKind;
   fundsWaiting: boolean;
+  beforeSigning: boolean;
   errorContext: Summary['errorContext'];
 }) {
   const copy = errorCopy[error];
-  const context = { ...errorContext, fundsWaiting };
+  const context = { ...errorContext, fundsWaiting, beforeSigning };
 
   return (
     <Banner
@@ -488,7 +521,8 @@ const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
       a.error === b.error &&
       a.action === b.action &&
       a.fundsWaiting === b.fundsWaiting &&
-      a.executionId === b.executionId));
+      a.executionId === b.executionId &&
+      a.step === b.step));
 
 type Shown = {
   step: BorrowDialogStep;
@@ -654,6 +688,7 @@ export function BorrowDialog({
               <DialogDescription>{SUBTITLE}</DialogDescription>
               {content.step.kind === 'error' ? (
                 <ErrorBanner
+                  beforeSigning={errorStepAt(content.step) === null}
                   error={content.step.error}
                   errorContext={content.summary.errorContext}
                   fundsWaiting={content.step.fundsWaiting}

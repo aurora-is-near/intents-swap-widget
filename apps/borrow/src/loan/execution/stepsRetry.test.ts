@@ -16,7 +16,7 @@ import {
   weth,
 } from '../../tests/fakeMarkets';
 import { BorrowPreCheckError } from './classifyBorrowError';
-import { BorrowPreviewError } from './preview';
+import { BorrowPreviewError, QUOTE_BUFFER_BPS } from './preview';
 import type { BorrowParams } from './recipe';
 import {
   buildBorrowStepsPlan,
@@ -104,12 +104,12 @@ describe('previewBorrowSteps', () => {
 
     const previewed = await previewBorrowSteps(input({ adapter }));
 
-    // 50% of 0.98 WETH at $2,000.
-    expect(previewed.borrowAmount).toBe(980_000_000n);
+    // 50% of 0.98 WETH less the 0.5% buffer (0.9751 WETH) at $2,000.
+    expect(previewed.borrowAmount).toBe(975_100_000n);
     expect(previewed.collateral.priceBase).toBe(2_000n * USD);
     expect(previewSteps).toHaveBeenCalledTimes(2);
     expect(previewSteps.mock.calls[1]?.[0].params.borrowAmount).toBe(
-      '980000000',
+      '975100000',
     );
     expect(previewed.steps.spendable).toBe((98n * 10n ** 16n).toString());
   });
@@ -138,6 +138,56 @@ describe('previewBorrowSteps', () => {
       }));
 
     await expect(previewBorrowSteps(input())).rejects.toMatchObject({
+      reason: 'quoteMoved',
+    });
+  });
+
+  it('accepts a final spendable a little lower, within the buffer', async () => {
+    const first = 98n * 10n ** 16n;
+    const lower = first - (first * BigInt(QUOTE_BUFFER_BPS / 2)) / 10_000n;
+    let second: StepsPreview<BorrowParams> | undefined;
+
+    previewSteps
+      .mockImplementationOnce(async (plan) => ({
+        execution: dryExecution(),
+        spendable: first.toString(),
+        plan,
+      }))
+      .mockImplementationOnce(async (plan) => {
+        second = {
+          execution: dryExecution(),
+          spendable: lower.toString(),
+          plan,
+        };
+
+        return second;
+      });
+
+    const previewed = await previewBorrowSteps(input());
+
+    expect(previewed.steps).toBe(second);
+    // 50% of 0.9751 WETH at $3,000.
+    expect(previewed.borrowAmount).toBe(1_462_650_000n);
+  });
+
+  it('refuses a final spendable lower by more than the buffer', async () => {
+    const first = 98n * 10n ** 16n;
+    const lower = first - (first * BigInt(QUOTE_BUFFER_BPS + 10)) / 10_000n;
+
+    previewSteps
+      .mockImplementationOnce(async (plan) => ({
+        execution: dryExecution(),
+        spendable: first.toString(),
+        plan,
+      }))
+      .mockImplementationOnce(async (plan) => ({
+        execution: dryExecution(),
+        spendable: lower.toString(),
+        plan,
+      }));
+
+    await expect(previewBorrowSteps(input())).rejects.toMatchObject({
+      constructor: BorrowPreviewError,
       reason: 'quoteMoved',
     });
   });

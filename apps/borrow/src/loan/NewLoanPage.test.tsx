@@ -172,7 +172,8 @@ describe('NewLoanPage', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
 
     // The dry run: 0.995 WETH expected, 0.99 at least, 0.01 WETH fee; the
-    // borrow is 50% of the minimum, 1,485 USDC.
+    // borrow is 50% of the minimum less the 0.5% quote buffer, 1,477.575
+    // USDC.
     expect(within(dialog).getByText('Supply').nextSibling).toHaveTextContent(
       '≈ 0.995 WETH · Base',
     );
@@ -180,7 +181,7 @@ describe('NewLoanPage', () => {
       within(dialog).getByText('Minimum received').nextSibling,
     ).toHaveTextContent('0.99 WETH');
     expect(within(dialog).getByText('Borrow').nextSibling).toHaveTextContent(
-      '1,485 USDC · Base',
+      '1,478 USDC · Base',
     );
     expect(
       within(dialog).getByText('Borrow fee').nextSibling,
@@ -243,7 +244,7 @@ describe('NewLoanPage', () => {
     const done = await screen.findByRole('dialog', { name: 'Loan opened' });
 
     expect(done).toHaveAccessibleDescription(
-      '1,485 USDC is on its way to your wallet.',
+      '1,478 USDC is on its way to your wallet.',
     );
 
     await user.click(screen.getByRole('button', { name: 'View position' }));
@@ -353,7 +354,7 @@ describe('NewLoanPage', () => {
 
       expect(
         await screen.findByRole('dialog', { name: 'Loan opened' }),
-      ).toHaveAccessibleDescription('1,485 USDC is on its way to your wallet.');
+      ).toHaveAccessibleDescription('1,478 USDC is on its way to your wallet.');
     });
   });
 });

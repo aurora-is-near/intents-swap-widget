@@ -2,6 +2,7 @@ import type { ExecutionPreview } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
 import { dryExecution, dryPreview } from '../../tests/executionFixtures';
+import { loanValues, ltvBps } from '../../markets/math';
 import {
   createFakeAdapter,
   FAKE_BASE,
@@ -13,11 +14,22 @@ import {
   previewBorrow,
   type PreviewBorrowInput,
   type PreviewBorrowPlan,
+  QUOTE_BUFFER_BPS,
 } from './preview';
 import type { BorrowParams } from './recipe';
 
-/** 0.99 WETH at $3,000 at LTV 50%: $1,485. */
-const BORROW_AT_MINIMUM = '1485000000';
+/** The dry run's minimum received: 0.99 WETH. */
+const MINIMUM = 99n * 10n ** 16n;
+
+/**
+ * 0.99 WETH less the 0.5% buffer (0.98505 WETH) at $3,000 at LTV 50%:
+ * $1,477.575.
+ */
+const BORROW_AT_MINIMUM = '1477575000';
+
+/** The minimum received, `bps` lower than the first dry run's. */
+const droppedBy = (bps: number) =>
+  (MINIMUM - (MINIMUM * BigInt(bps)) / 10_000n).toString();
 
 const input = (preview: PreviewBorrowPlan): PreviewBorrowInput => ({
   preview,
@@ -42,7 +54,7 @@ describe('previewBorrow', () => {
     expect(preview.mock.calls[1]?.[0].params.borrowAmount).toBe(
       BORROW_AT_MINIMUM,
     );
-    expect(result.borrowAmount).toBe(1_485_000_000n);
+    expect(result.borrowAmount).toBe(1_477_575_000n);
   });
 
   it("hands the second dry run's plan on as it is, for run()", async () => {
@@ -67,7 +79,8 @@ describe('previewBorrow', () => {
     const preview = vi
       .fn<PreviewBorrowPlan>()
       .mockImplementationOnce(async (plan) => dryPreview(plan))
-      // 0.98 WETH: $1,485 would be about 50.5% of it, above the chosen 50%.
+      // 0.98 WETH, about 1% lower: beyond the buffer, $1,477.575 would be
+      // about 50.25% of it, above the chosen 50%.
       .mockImplementationOnce(async (plan) =>
         dryPreview(plan, dryExecution({ minAmountOut: '980000000000000000' })),
       );
@@ -89,8 +102,82 @@ describe('previewBorrow', () => {
 
     const result = await previewBorrow(input(preview));
 
-    expect(result.borrowAmount).toBe(1_485_000_000n);
+    expect(result.borrowAmount).toBe(1_477_575_000n);
     expect(result.preview.plan.params.borrowAmount).toBe(BORROW_AT_MINIMUM);
+  });
+
+  it('accepts a final minimum a little lower, within the buffer, and returns the final plan', async () => {
+    let second: ExecutionPreview<BorrowParams> | undefined;
+    const preview = vi
+      .fn<PreviewBorrowPlan>()
+      .mockImplementationOnce(async (plan) => dryPreview(plan))
+      .mockImplementationOnce(async (plan) => {
+        second = dryPreview(
+          plan,
+          dryExecution({ minAmountOut: droppedBy(QUOTE_BUFFER_BPS / 2) }),
+        );
+
+        return second;
+      });
+
+    const result = await previewBorrow(input(preview));
+
+    expect(result.preview).toBe(second);
+    expect(result.borrowAmount).toBe(1_477_575_000n);
+    expect(result.preview.plan.params.borrowAmount).toBe(BORROW_AT_MINIMUM);
+  });
+
+  it('refuses a final minimum lower by more than the buffer', async () => {
+    const preview = vi
+      .fn<PreviewBorrowPlan>()
+      .mockImplementationOnce(async (plan) => dryPreview(plan))
+      .mockImplementationOnce(async (plan) =>
+        dryPreview(
+          plan,
+          dryExecution({ minAmountOut: droppedBy(QUOTE_BUFFER_BPS + 10) }),
+        ),
+      );
+
+    await expect(previewBorrow(input(preview))).rejects.toMatchObject({
+      constructor: BorrowPreviewError,
+      reason: 'quoteMoved',
+    });
+  });
+
+  it("never borrows above the collateral's max LTV at the final minimum", async () => {
+    const collateral = weth();
+    const finalMinimum = droppedBy(QUOTE_BUFFER_BPS - 1);
+    const preview = vi
+      .fn<PreviewBorrowPlan>()
+      .mockImplementationOnce(async (plan) => dryPreview(plan))
+      .mockImplementationOnce(async (plan) =>
+        dryPreview(plan, dryExecution({ minAmountOut: finalMinimum })),
+      );
+
+    // At the max LTV itself, the drop just within the buffer.
+    const result = await previewBorrow({
+      ...input(preview),
+      ltv: collateral.maxLtvBps / 100,
+    });
+
+    const { collateralValue, debt } = loanValues({
+      collateralAmount: BigInt(finalMinimum),
+      collateral,
+      borrowAmount: result.borrowAmount,
+      borrow: usdc(),
+    });
+
+    expect(ltvBps(debt, collateralValue)).toBeLessThanOrEqual(
+      BigInt(collateral.maxLtvBps),
+    );
+  });
+
+  it('refuses a chosen LTV above the max LTV, even when the quote held', async () => {
+    const preview = vi.fn<PreviewBorrowPlan>(async (plan) => dryPreview(plan));
+
+    await expect(
+      previewBorrow({ ...input(preview), ltv: weth().maxLtvBps / 100 + 2 }),
+    ).rejects.toMatchObject({ reason: 'quoteMoved' });
   });
 
   it('stops when the first dry run has no fee: its amounts are gross', async () => {

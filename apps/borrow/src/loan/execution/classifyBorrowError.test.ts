@@ -86,17 +86,66 @@ describe('classifyBorrowError', () => {
       {},
       'noGas',
     ],
+    // noRoute
+    [
+      "the API's no-liquidity quote failure",
+      new IntentsConnectApiError('No liquidity available', 400, {
+        message: 'No liquidity available',
+      }),
+      undefined,
+      {},
+      'noRoute',
+    ],
+    [
+      'a 400 saying the gas fee exceeds the minimum output',
+      new IntentsConnectApiError(
+        'Estimated gas fee exceeds minimum output amount',
+        400,
+      ),
+      undefined,
+      {},
+      'noRoute',
+    ],
+    [
+      'a 400 saying the gas fee exceeds the expected output, in other case',
+      new IntentsConnectApiError(
+        'estimated gas fee (12345) EXCEEDS expected output amount (1000)',
+        400,
+      ),
+      undefined,
+      {},
+      'noRoute',
+    ],
+    [
+      'a no-route API error nested as a cause',
+      new Error('create failed', {
+        cause: new IntentsConnectApiError('No liquidity available', 400),
+      }),
+      undefined,
+      {},
+      'noRoute',
+    ],
+    [
+      'the message only in the API error body',
+      new IntentsConnectApiError('Bad Request', 400, {
+        message: 'No liquidity available',
+      }),
+      undefined,
+      {},
+      'noRoute',
+    ],
+    // quoteChanged
+    [
+      "the two-pass preview's moved quote",
+      new BorrowPreviewError('quoteMoved', 'moved'),
+      undefined,
+      {},
+      'quoteChanged',
+    ],
     // priceMoved
     [
       'the QUOTE_MOVED guard',
       new GuardError('QUOTE_MOVED', 'quote moved'),
-      undefined,
-      {},
-      'priceMoved',
-    ],
-    [
-      "the two-pass preview's moved quote",
-      new BorrowPreviewError('quoteMoved', 'moved'),
       undefined,
       {},
       'priceMoved',
@@ -179,6 +228,22 @@ describe('classifyBorrowError', () => {
     expect(classifyBorrowError(error, recovery, context)).toBe(kind);
   });
 
+  it('never reads a route failure as the market out of liquidity', () => {
+    expect(
+      classifyBorrowError(
+        new IntentsConnectApiError('No liquidity available', 400),
+        undefined,
+        { status: 'OPERATION_FAILED', borrowStep: 'noLiquidity' },
+      ),
+    ).toBe('noRoute');
+    expect(
+      classifyBorrowError(
+        new BorrowPreCheckError('noLiquidity', 'no liquidity'),
+        undefined,
+      ),
+    ).toBe('noLiquidity');
+  });
+
   it('takes a rejection over anything else it also says', () => {
     expect(
       classifyBorrowError(
@@ -216,6 +281,8 @@ describe('borrowRecoveryAction', () => {
     ['rejected', 'retry'],
     ['noGas', 'retry'],
     ['priceMoved', 'refresh'],
+    ['quoteChanged', 'refresh'],
+    ['noRoute', 'close'],
     ['noLiquidity', 'close'],
     ['delayed', 'close'],
     ['unknown', 'retry'],

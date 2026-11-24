@@ -4,6 +4,8 @@ import type {
   ExecutionPreview,
 } from '@aurora-is-near/intents-connect';
 
+import { BPS, ceilDiv, loanValues, ltvBps } from '../../markets/math';
+import type { BorrowReserve, CollateralReserve } from '../../markets/types';
 import { loanFigures } from '../model/loanFigures';
 import { type BorrowPlanInput, buildBorrowPlan } from './plan';
 import type { BorrowParams } from './recipe';
@@ -46,8 +48,9 @@ export type BorrowPreviewErrorReason =
    */
   | 'nothingWaiting'
   /**
-   * The final dry run's minimum received is lower than the first's, so the
-   * borrow sized on the first would exceed the chosen LTV.
+   * The final dry run's minimum received fell by more than
+   * `QUOTE_BUFFER_BPS` from the first's, so the borrow sized on the first
+   * would exceed the chosen LTV.
    */
   | 'quoteMoved';
 
@@ -81,6 +84,68 @@ export type BorrowPreview = {
   borrowAmount: bigint;
 };
 
+/**
+ * How far the collateral received may fall between the two dry runs, in
+ * basis points: the borrow is sized on the first pass's minimum less this.
+ * The passes differ by design (the fee is priced from the steps' gas, the
+ * steps change with the borrow amount, and 1Click quotes vary between
+ * calls), so without it a 1-wei drop would refuse the loan.
+ */
+export const QUOTE_BUFFER_BPS = 50;
+
+/** What a two-pass preview sizes the borrow at. */
+export type BorrowSizing = {
+  collateral: Pick<
+    CollateralReserve,
+    'decimals' | 'priceBase' | 'liquidationLtvBps' | 'maxLtvBps'
+  >;
+  borrow: Pick<BorrowReserve, 'decimals' | 'priceBase'>;
+  /** The slider's loan-to-value, in whole percent. */
+  ltv: number;
+};
+
+/** The chosen LTV of a collateral amount already net of the service's fee. */
+const borrowOn = (
+  { collateral, borrow, ltv }: BorrowSizing,
+  collateralAmount: bigint,
+) =>
+  loanFigures({ collateralAmount, collateral, borrow, ltv, feeBps: 0 })
+    .borrowAmount;
+
+/**
+ * The two-pass previews' tolerance, shared by `previewBorrow` and
+ * `previewBorrowSteps`:
+ * - `sizeBorrow`: the borrow for the first pass's net collateral, sized on it
+ *   less `QUOTE_BUFFER_BPS`, so the final pass may come in a little lower.
+ * - `quoteHeld`: whether the final pass's net collateral still covers that
+ *   borrow at the chosen LTV, and the loan stays within the collateral's
+ *   `maxLtvBps` at it. A drop larger than the buffer fails it.
+ */
+export const borrowTolerance = (sizing: BorrowSizing) => ({
+  sizeBorrow: (firstCollateral: bigint): bigint =>
+    borrowOn(
+      sizing,
+      firstCollateral -
+        ceilDiv(firstCollateral * BigInt(QUOTE_BUFFER_BPS), BPS),
+    ),
+  quoteHeld: (finalCollateral: bigint, borrowAmount: bigint): boolean => {
+    if (borrowOn(sizing, finalCollateral) < borrowAmount) {
+      return false;
+    }
+
+    const { collateralValue, debt } = loanValues({
+      collateralAmount: finalCollateral,
+      collateral: sizing.collateral,
+      borrowAmount,
+      borrow: sizing.borrow,
+    });
+
+    const ltv = ltvBps(debt, collateralValue);
+
+    return ltv !== null && ltv <= BigInt(sizing.collateral.maxLtvBps);
+  },
+});
+
 /** `quote.minAmountOut`, once the fee was carved out of it. */
 const netMinAmountOut = (execution: Execution): bigint => {
   if (execution.details.networkFee === undefined) {
@@ -96,14 +161,15 @@ const netMinAmountOut = (execution: Execution): bigint => {
 /**
  * 1. A dry run with the form's estimate gives the collateral's minimum
  *    received for the typed amount.
- * 2. The borrow amount is the chosen LTV of that minimum, at the market's
- *    oracle prices (`loanFigures`); a second dry run builds the final steps
- *    with it.
+ * 2. The borrow amount is the chosen LTV of that minimum less
+ *    `QUOTE_BUFFER_BPS`, at the market's oracle prices (`borrowTolerance`);
+ *    a second dry run builds the final steps with it.
  * 3. The final dry run's minimum must still cover that borrow at the chosen
- *    LTV, so the real LTV is at most the chosen one. When it has moved down,
- *    the preview is refused (`quoteMoved`) rather than re-sized: a new pass
- *    could move again, and at the market's max LTV the excess would make
- *    the `borrow` step revert after the collateral has arrived.
+ *    LTV (and so within the collateral's max LTV): a drop within the buffer
+ *    passes, and the real LTV is at most the chosen one. A larger drop is
+ *    refused (`quoteMoved`) rather than re-sized: a new pass could move
+ *    again, and at the market's max LTV the excess would make the `borrow`
+ *    step revert after the collateral has arrived.
  *
  * The second dry run's plan is returned as it is: `run()` reuses its
  * `prepared` steps verbatim.
@@ -114,21 +180,18 @@ export const previewBorrow = async ({
   estimatedBorrowAmount,
   ...planInput
 }: PreviewBorrowInput): Promise<BorrowPreview> => {
-  const borrowOn = (execution: Execution) =>
-    loanFigures({
-      collateralAmount: netMinAmountOut(execution),
-      collateral: planInput.collateral,
-      borrow: planInput.borrow,
-      ltv,
-      // The minimum received is already net of the service's fee.
-      feeBps: 0,
-    }).borrowAmount;
+  // The minimum received is already net of the service's fee.
+  const { sizeBorrow, quoteHeld } = borrowTolerance({
+    collateral: planInput.collateral,
+    borrow: planInput.borrow,
+    ltv,
+  });
 
   const first = await preview(
     buildBorrowPlan({ ...planInput, borrowAmount: estimatedBorrowAmount }),
   );
 
-  const borrowAmount = borrowOn(first.execution);
+  const borrowAmount = sizeBorrow(netMinAmountOut(first.execution));
 
   if (borrowAmount <= 0n) {
     throw new BorrowPreviewError(
@@ -139,7 +202,7 @@ export const previewBorrow = async ({
 
   const final = await preview(buildBorrowPlan({ ...planInput, borrowAmount }));
 
-  if (borrowOn(final.execution) < borrowAmount) {
+  if (!quoteHeld(netMinAmountOut(final.execution), borrowAmount)) {
     throw new BorrowPreviewError(
       'quoteMoved',
       'The quote moved while preparing the loan; get a new quote',

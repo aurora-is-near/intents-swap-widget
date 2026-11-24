@@ -32,6 +32,10 @@ describe('BorrowDialogGallery', () => {
       'Error · price moved',
       'Error · no liquidity',
       'Error · delayed',
+      'Error · no route',
+      'Error · quote changed',
+      'Error · unknown',
+      'Error · unknown before signing',
     ]);
   });
 

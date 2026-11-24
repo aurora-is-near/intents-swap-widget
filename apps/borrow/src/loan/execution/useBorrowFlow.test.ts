@@ -5,6 +5,7 @@ import {
   ExecutionPollTimeoutError,
   getIntermediaryBalance,
   GuardError,
+  IntentsConnectApiError,
   type RunnerEvent,
   type StepsPlan,
   type StepsPreview,
@@ -238,9 +239,9 @@ describe('useBorrowFlow', () => {
       expect(exec().preview).toHaveBeenCalledTimes(2);
 
       if (state.kind === 'confirm') {
-        // 0.99 WETH at $3,000 at LTV 50%.
-        expect(state.preview.borrowAmount).toBe(1_485_000_000n);
-        expect(state.figures.borrowAmount).toBe(1_485_000_000n);
+        // 0.99 WETH less the 0.5% quote buffer at $3,000 at LTV 50%.
+        expect(state.preview.borrowAmount).toBe(1_477_575_000n);
+        expect(state.figures.borrowAmount).toBe(1_477_575_000n);
         expect(state.figures.minimumReceived).toBe(990_000_000_000_000_000n);
       }
     });
@@ -259,7 +260,7 @@ describe('useBorrowFlow', () => {
       ];
 
       expect(plan.prepared).toBeDefined();
-      expect(plan.params.borrowAmount).toBe('1485000000');
+      expect(plan.params.borrowAmount).toBe('1477575000');
 
       await emit(
         { type: 'phase', phase: 'resolving-identity' },
@@ -436,6 +437,68 @@ describe('useBorrowFlow', () => {
       expect(result.current.state).toMatchObject({ error: 'unknown' });
     });
 
+    it('is noRoute, with no step marked, when the dry run finds no route, and logs the cause', async () => {
+      const { result } = renderFlow();
+      const noRoute = new IntentsConnectApiError('No liquidity available', 400);
+      const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      vi.mocked(exec().preview).mockRejectedValueOnce(noRoute);
+      await startFlow(result);
+
+      expect(result.current.state).toEqual({
+        kind: 'error',
+        error: 'noRoute',
+        cause: noRoute,
+        step: null,
+      });
+      expect(result.current.action).toBe('close');
+      expect(logged).toHaveBeenCalledWith(expect.any(String), noRoute);
+
+      logged.mockRestore();
+    });
+
+    it('is quoteChanged, with no step marked, when the two dry runs differ beyond the buffer', async () => {
+      const { result } = renderFlow();
+
+      vi.mocked(exec().preview)
+        .mockImplementationOnce(async (plan) => dryPreview(plan))
+        .mockImplementationOnce(async (plan) =>
+          dryPreview(
+            plan,
+            dryExecution({ minAmountOut: '900000000000000000' }),
+          ),
+        );
+      await startFlow(result);
+
+      expect(result.current.state).toMatchObject({
+        kind: 'error',
+        error: 'quoteChanged',
+        step: null,
+      });
+      expect(result.current.action).toBe('refresh');
+    });
+
+    it('marks an unexplained error after the deposit on the step it reached', async () => {
+      const { result } = renderFlow();
+      const { run } = await confirmHeld(result);
+
+      await emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+        { type: 'deposit-sent', txHash: '0xtx' },
+      );
+
+      await act(async () => {
+        run.reject(new Error('boom'));
+      });
+
+      expect(result.current.state).toMatchObject({
+        kind: 'error',
+        error: 'unknown',
+        step: 1,
+      });
+    });
+
     describe('when the borrow step failed after the collateral arrived', () => {
       /** Signed, collateral delivered, OPERATION_FAILED; the market reads `after`. */
       const operationFailed = async (
@@ -501,6 +564,37 @@ describe('useBorrowFlow', () => {
         expect(result.current.action).toBe('retry');
       });
 
+      it('keeps the collateral reported as held when the steps-only retry’s quote moves beyond the buffer', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(result, PRICE_FELL());
+
+        // As `fakeExecution` does: the SDK's `previewSteps` is generic.
+        vi.mocked(exec().previewSteps)
+          .mockImplementationOnce(vi.fn().mockImplementation(previewStepsDry))
+          // 0.95 WETH spendable, about 3% under the first pass's 0.98.
+          .mockImplementationOnce(
+            vi
+              .fn()
+              .mockImplementation(async (plan: StepsPlan<BorrowParams>) => ({
+                ...(await previewStepsDry(plan)),
+                spendable: '950000000000000000',
+              })),
+          );
+
+        await act(() => result.current.retry());
+
+        expect(exec().previewSteps).toHaveBeenCalledTimes(2);
+        expect(result.current.state).toMatchObject({
+          kind: 'error',
+          error: 'quoteChanged',
+        });
+        // Not drawn as an error before signing: the deposit happened.
+        expect(result.current.state).not.toHaveProperty('step');
+        expect(result.current.fundsWaiting).toBe(true);
+        expect(result.current.action).toBe('retry');
+      });
+
       it('retries steps-only from the waiting collateral, re-sized at the fresh price, without a new bridge-in', async () => {
         const { result } = renderFlow();
 
@@ -516,7 +610,8 @@ describe('useBorrowFlow', () => {
         );
 
         // Two steps-only dry runs over the 0.99 WETH waiting; the second
-        // borrows 50% of the 0.98 WETH spendable at $1,800: $882.
+        // borrows 50% of the 0.98 WETH spendable less the 0.5% quote buffer
+        // (0.9751 WETH) at $1,800: $877.59.
         const { previewSteps } = exec();
 
         expect(previewSteps).toHaveBeenCalledTimes(2);
@@ -526,14 +621,14 @@ describe('useBorrowFlow', () => {
         expect(final).toMatchObject({
           amount: '990000000000000000',
           feeFromAmount: true,
-          params: { borrowAmount: '882000000' },
+          params: { borrowAmount: '877590000' },
         });
         expect(final?.recipe.flow).toBe('steps-only');
 
         expect(result.current.state).toMatchObject({
           kind: 'confirm',
           figures: {
-            borrowAmount: 882_000_000n,
+            borrowAmount: 877_590_000n,
             minimumReceived: 98n * 10n ** 16n,
             fee: 10n ** 16n,
             rate: undefined,
@@ -544,7 +639,7 @@ describe('useBorrowFlow', () => {
 
         expect(exec().runSteps).toHaveBeenCalledTimes(1);
         expect(vi.mocked(exec().runSteps).mock.calls[0]?.[0]).toMatchObject({
-          params: { borrowAmount: '882000000' },
+          params: { borrowAmount: '877590000' },
         });
         // The bridge-in was dry-run twice and run once, before the failure.
         expect(exec().preview).toHaveBeenCalledTimes(2);
@@ -822,7 +917,7 @@ describe('useBorrowFlow', () => {
       await confirmFailing(result, EIP1193_REJECTION);
 
       // 0.99 WETH at $3,000 at LTV 50%: the figures the user confirmed.
-      expect(result.current.figures?.borrowAmount).toBe(1_485_000_000n);
+      expect(result.current.figures?.borrowAmount).toBe(1_477_575_000n);
       expect(result.current.state).toMatchObject({ error: 'rejected' });
 
       // The retry's quote delivers less collateral: 0.5 WETH.
@@ -852,8 +947,8 @@ describe('useBorrowFlow', () => {
       });
 
       expect(result.current.state).toEqual({ kind: 'signing' });
-      // 0.5 WETH at $3,000 at LTV 50%.
-      expect(result.current.figures?.borrowAmount).toBe(750_000_000n);
+      // 0.5 WETH less the 0.5% quote buffer at $3,000 at LTV 50%.
+      expect(result.current.figures?.borrowAmount).toBe(746_250_000n);
       expect(result.current.figures?.minimumReceived).toBe(
         500_000_000_000_000_000n,
       );
@@ -864,7 +959,7 @@ describe('useBorrowFlow', () => {
       });
 
       expect(result.current.state.kind).toBe('done');
-      expect(result.current.figures?.borrowAmount).toBe(750_000_000n);
+      expect(result.current.figures?.borrowAmount).toBe(746_250_000n);
     });
 
     it('goes back to confirm, without running, on retry after the gas pre-check failed', async () => {
@@ -1331,7 +1426,7 @@ describe('useBorrowFlow', () => {
 
       await startFlow(result);
 
-      expect(result.current.figures?.borrowAmount).toBe(1_485_000_000n);
+      expect(result.current.figures?.borrowAmount).toBe(1_477_575_000n);
 
       await act(() => result.current.leave());
 

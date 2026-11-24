@@ -43,6 +43,32 @@ const FIGURES: BorrowPreviewFigures = {
 const stateOf = (error: BorrowErrorKind) =>
   ({ kind: 'error', error, cause: undefined }) as const;
 
+/** An error the flow raised before anything was signed. */
+const unsignedStateOf = (error: BorrowErrorKind) =>
+  ({ ...stateOf(error), step: null }) as const;
+
+/** The progress steps' statuses, as their screen-reader text says them. */
+const stepStatuses = () =>
+  within(screen.getByRole('list', { name: 'Loan progress' }))
+    .getAllByRole('listitem')
+    .map(
+      (item) =>
+        /(Done|In progress|Failed|Waiting):/.exec(item.textContent ?? '')?.[1],
+    );
+
+const renderStep = (step: ReturnType<typeof borrowDialogStep>) =>
+  render(
+    <BorrowDialog
+      figures={FIGURES}
+      loan={LOAN}
+      step={step}
+      onAction={vi.fn()}
+      onCancel={vi.fn()}
+      onConfirm={vi.fn()}
+      onViewPosition={vi.fn()}
+    />,
+  );
+
 const renderError = (error: BorrowErrorKind, withFigures = true) => {
   const handlers = {
     onConfirm: vi.fn(),
@@ -71,6 +97,8 @@ const CASES: [
 ][] = [
   ['rejected', 'Signature rejected', 'Try again', 'retry'],
   ['noGas', 'Not enough for the network fee', 'Try again', 'retry'],
+  ['noRoute', 'No route for this amount', 'Back to the form', 'close'],
+  ['quoteChanged', 'The quote changed', 'Refresh quote', 'refresh'],
   ['priceMoved', 'Collateral price moved', 'Refresh quote', 'refresh'],
   [
     'noLiquidity',
@@ -128,6 +156,107 @@ describe('BorrowDialog error states', () => {
     renderError('rejected');
 
     expect(screen.getByText(/Failed/)).toBeInTheDocument();
+  });
+
+  it('marks no step on no route: nothing was sent', () => {
+    renderStep(borrowDialogStep(unsignedStateOf('noRoute')));
+
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+    expect(screen.getByText(/Nothing was sent/)).toBeVisible();
+    expect(
+      screen.getByText(/larger amount, or another asset or chain/),
+    ).toBeVisible();
+  });
+
+  it('marks no step on no route even without the flow’s step', () => {
+    renderStep(borrowDialogStep(stateOf('noRoute')));
+
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+  });
+
+  it('says nothing was signed on a quote change before signing, and marks no step', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+
+    render(
+      <BorrowDialog
+        figures={FIGURES}
+        loan={LOAN}
+        step={borrowDialogStep(unsignedStateOf('quoteChanged'))}
+        onAction={onAction}
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        onViewPosition={vi.fn()}
+      />,
+    );
+
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+    expect(
+      screen.getByText(
+        'The quote changed while the loan was being prepared. Nothing was signed — review the new terms.',
+      ),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Refresh quote' }));
+
+    expect(onAction).toHaveBeenCalledWith('refresh');
+  });
+
+  it('says the collateral is held, with the earlier steps done, when a steps-only retry’s quote changed', () => {
+    renderStep(borrowDialogStep(stateOf('quoteChanged'), 'retry', true));
+
+    expect(stepStatuses()).toEqual(['Done', 'Failed', 'Waiting']);
+    expect(screen.getByText(/collateral arrived and is held/)).toBeVisible();
+    expect(screen.queryByText(/Nothing was signed/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible();
+  });
+
+  it('marks no step on any error raised before signing', () => {
+    renderStep(borrowDialogStep(unsignedStateOf('noGas')));
+
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+  });
+
+  it('does not send the user to their wallet for an unknown error before signing', () => {
+    renderStep(borrowDialogStep(unsignedStateOf('unknown')));
+
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+    expect(
+      screen.queryByText(/wallet for what was sent/),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/nothing was sent from your wallet/)).toBeVisible();
+  });
+
+  it('marks an unknown error after signing on the step the borrow reached', () => {
+    renderStep(borrowDialogStep({ ...stateOf('unknown'), step: 1 }));
+
+    expect(stepStatuses()).toEqual(['Done', 'Failed', 'Waiting']);
+    expect(
+      screen.getByText(/Check your wallet for what was sent/),
+    ).toBeVisible();
+  });
+
+  it('keeps the price-moved marks after the deposit, without signing or max-LTV claims beyond the diagnosis', () => {
+    renderStep(borrowDialogStep(stateOf('priceMoved'), 'retry', true));
+
+    expect(stepStatuses()).toEqual(['Done', 'Failed', 'Waiting']);
+    expect(screen.getByText(/collateral arrived and is held/)).toBeVisible();
+    expect(screen.queryByText(/signing/)).not.toBeInTheDocument();
+  });
+
+  it('does not claim a max-LTV breach for the quote guard, nor that the user was signing', () => {
+    renderStep(borrowDialogStep(unsignedStateOf('priceMoved')));
+
+    const text = errorCopy.priceMoved.text({
+      chainName: 'Arbitrum',
+      collateralSymbol: 'WETH',
+      borrowSymbol: 'USDC',
+      marketName: 'Aave',
+    });
+
+    expect(text).not.toMatch(/maximum LTV|signing/);
+    expect(screen.getByText(text)).toBeVisible();
+    expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
   });
 
   it('cancels from Cancel on an error', async () => {
