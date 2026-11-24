@@ -16,15 +16,21 @@ export type Step = {
   status: StepStatus;
 };
 
+/*
+ * Text sizes and gaps are in rem (px / 16), so they follow the user's
+ * text-size setting. The waiting circle is in rem too, so its number never
+ * outgrows it; the SVG icons and all borders stay in px.
+ */
+
 /** Line 1001: `display:flex; flex-direction:column; gap:12px`, as a list. */
-const LIST = 'm-0 flex list-none flex-col gap-[12px] p-0 font-sans';
+const LIST = 'm-0 flex list-none flex-col gap-[0.75rem] p-0 font-sans';
 
 /**
  * Line 1003: `display:flex; align-items:center; gap:12px; font-size:15px`,
  * label `font-weight:600` (line 1008).
  */
 const ROW =
-  'flex items-center gap-[12px] text-[15px] leading-[normal] font-semibold';
+  'flex items-center gap-[0.75rem] text-[0.9375rem] leading-[normal] font-semibold';
 
 /** Line 1520: failed rows are `neg`, waiting rows `mut2`, the rest `ink`. */
 const ROW_TONE: Record<StepStatus, string> = {
@@ -44,10 +50,10 @@ const STATUS_TEXT: Record<StepStatus, string> = {
 
 /**
  * Line 1007: 24px circle, `border:1.5px solid var(--mid)`, the step number
- * at 12px / 700 `mut2`.
+ * at 12px / 700 `mut2`. The circle is 1.5rem so it grows with its number.
  */
 const WAITING =
-  'box-border inline-flex size-[24px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-solid border-mid text-[12px] leading-[normal] font-bold text-mut2';
+  'box-border inline-flex size-[1.5rem] shrink-0 items-center justify-center rounded-full border-[1.5px] border-solid border-mid text-[0.75rem] leading-[normal] font-bold text-mut2';
 
 /** The status icon for each step, by status. All are decorative. */
 const STEP_ICONS: Record<StepStatus, (index: number) => ReactNode> = {

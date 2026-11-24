@@ -1,5 +1,6 @@
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import {
+  cloneElement,
   forwardRef,
   type ReactElement,
   type ReactNode,
@@ -34,9 +35,10 @@ export type TooltipProps = {
   content: ReactNode;
   /**
    * The trigger: one focusable element, such as a `Button`. It gets the
-   * hover and focus handlers and `aria-describedby`.
+   * hover and focus handlers, and the popup's id is added to its own
+   * `aria-describedby` while open.
    */
-  children: ReactElement;
+  children: ReactElement<{ 'aria-describedby'?: string }>;
   /** Which side of the trigger it opens on. Defaults to `top`. */
   side?: TooltipPrimitive.Positioner.Props['side'];
   /** Distance from the trigger in px. Defaults to 8. */
@@ -57,7 +59,8 @@ export type TooltipProps = {
  *
  * Base UI 1.8 renders the popup without a role and leaves the trigger
  * unlinked, so the popup gets `role="tooltip"` and, while it is open, the
- * trigger gets `aria-describedby` pointing at it (never at a missing node).
+ * trigger gets `aria-describedby` pointing at it (never at a missing node),
+ * after any ids the trigger already had.
  */
 export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   (
@@ -82,19 +85,31 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
 
     const isOpen = open ?? uncontrolledOpen;
 
+    // Base UI merges the render element's own props last, so a description
+    // passed to `Trigger` would lose to the child's. Merge into the child.
+    const ownDescription = children.props['aria-describedby'];
+    const description =
+      [ownDescription, isOpen ? popupId : undefined]
+        .filter(Boolean)
+        .join(' ') || undefined;
+
     return (
       <TooltipPrimitive.Root
         defaultOpen={defaultOpen}
         disabled={disabled}
         onOpenChange={(nextOpen, eventDetails) => {
-          setUncontrolledOpen(nextOpen);
           onOpenChange?.(nextOpen, eventDetails);
+
+          // Base UI checks for a cancel after this callback; a cancelled
+          // change leaves the popup as it was, so the description must too.
+          if (!eventDetails.isCanceled) {
+            setUncontrolledOpen(nextOpen);
+          }
         }}
         open={open}>
         <TooltipPrimitive.Trigger
-          aria-describedby={isOpen ? popupId : undefined}
           delay={delay}
-          render={children}
+          render={cloneElement(children, { 'aria-describedby': description })}
         />
         <TooltipPrimitive.Portal>
           <TooltipPrimitive.Positioner side={side} sideOffset={sideOffset}>

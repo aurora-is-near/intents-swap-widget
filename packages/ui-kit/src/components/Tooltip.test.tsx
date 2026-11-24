@@ -76,3 +76,61 @@ describe('Tooltip description', () => {
     });
   });
 });
+
+describe('Tooltip description with the trigger’s own', () => {
+  it('keeps the trigger’s own description and adds the tooltip while open', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TooltipProvider delay={0}>
+        <p id="apr-help">Paid yearly</p>
+        <Tooltip content="Annual rate, variable">
+          <Button aria-describedby="apr-help" variant="ghost">
+            APR
+          </Button>
+        </Tooltip>
+      </TooltipProvider>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'APR' });
+
+    expect(trigger).toHaveAttribute('aria-describedby', 'apr-help');
+
+    await user.tab();
+    await screen.findByRole('tooltip');
+
+    expect(trigger).toHaveAccessibleDescription(
+      'Paid yearly Annual rate, variable',
+    );
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute('aria-describedby', 'apr-help');
+    });
+  });
+});
+
+describe('Tooltip cancelled open', () => {
+  it('leaves the trigger undescribed when the open is cancelled', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TooltipProvider delay={0}>
+        <Tooltip
+          content="Annual rate, variable"
+          onOpenChange={(_open, eventDetails) => eventDetails.cancel()}>
+          <Button variant="ghost">APR</Button>
+        </Tooltip>
+      </TooltipProvider>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'APR' });
+
+    await user.tab();
+
+    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(trigger).not.toHaveAttribute('aria-describedby');
+  });
+});

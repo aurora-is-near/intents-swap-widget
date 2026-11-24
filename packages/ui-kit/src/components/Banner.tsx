@@ -10,12 +10,17 @@ import { AlertIcon, ClockIcon } from './icons';
  * under the text, which `tinted` and the children cover.
  */
 
+/*
+ * Text sizes and spacing are in rem (px / 16), so they follow the user's
+ * text-size setting; borders, radii and the 24px icons stay in px.
+ */
+
 /**
  * Lines 985 and 991: `display:flex; gap:12px; align-items:flex-start;
  * border:1.5px; border-radius:18px; padding:14px 16px`.
  */
 const BASE =
-  'box-border flex items-start gap-[12px] rounded-[18px] border-[1.5px] border-solid px-[16px] py-[14px] font-sans text-ink';
+  'box-border flex items-start gap-[0.75rem] rounded-[18px] border-[1.5px] border-solid px-[1rem] py-[0.875rem] font-sans text-ink';
 
 /** Lines 986 and 992: `flex:0 0 auto; margin-top:1px`. */
 const ICON = 'mt-px shrink-0';
@@ -24,10 +29,10 @@ const ICON = 'mt-px shrink-0';
 const BODY = 'min-w-0 flex-1';
 
 /** Lines 987 and 993: `font-size:16px; font-weight:700`. */
-const TITLE = 'text-[16px] leading-[normal] font-bold';
+const TITLE = 'text-[1rem] leading-[normal] font-bold';
 
 /** Lines 987 and 993: `margin-top:4px; font-size:14px; line-height:1.45; color:var(--mut)`. */
-const TEXT = 'mt-[4px] text-[14px] leading-[1.45] text-mut';
+const TEXT = 'mt-[0.25rem] text-[0.875rem] leading-[1.45] text-mut';
 
 /**
  * The icon circles are literal hex on the artboards, the same in both
