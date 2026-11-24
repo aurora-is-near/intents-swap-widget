@@ -47,6 +47,21 @@ export const weth = (
   ...overrides,
 });
 
+/**
+ * Native ETH delivered and supplied as WETH through Aave's gateway, as the
+ * Aave adapter reads Base's and Arbitrum's wrapped-native reserve.
+ */
+export const nativeEth = (
+  overrides: Partial<CollateralReserve> = {},
+): CollateralReserve =>
+  weth({
+    asset: '0x0000000000000000000000000000000000000003',
+    symbol: 'ETH',
+    assetId: 'nep141:eth',
+    nativeDelivery: true,
+    ...overrides,
+  });
+
 export const usdc = (
   overrides: Partial<BorrowReserve> = {},
 ): BorrowReserve => ({
@@ -106,28 +121,32 @@ export const readFakeSnapshot = async (
 export type FakeAdapter = LendingMarketAdapter & {
   listMarkets: Mock<LendingMarketAdapter['listMarkets']>;
   getMarketSnapshot: Mock<LendingMarketAdapter['getMarketSnapshot']>;
+  buildBorrowSteps: Mock<LendingMarketAdapter['buildBorrowSteps']>;
 };
 
 type FakeAdapterOptions = {
   id?: string;
   listMarkets?: LendingMarketAdapter['listMarkets'];
   getMarketSnapshot?: LendingMarketAdapter['getMarketSnapshot'];
+  buildBorrowSteps?: LendingMarketAdapter['buildBorrowSteps'];
 };
 
 /**
  * An adapter listing Base and Arbitrum and reading `FAKE_SNAPSHOTS`, unless
- * told otherwise. Both methods are mocks, so a test can count or replace
- * the calls.
+ * told otherwise; it builds no borrow steps. Every method is a mock, so a
+ * test can count or replace the calls.
  */
 export const createFakeAdapter = ({
   id = 'fake',
   listMarkets = () => Promise.resolve([FAKE_BASE, FAKE_ARB]),
   getMarketSnapshot = readFakeSnapshot,
+  buildBorrowSteps = () => [],
 }: FakeAdapterOptions = {}): FakeAdapter => ({
   id,
   name: 'Aave',
   listMarkets: vi.fn(listMarkets),
   getMarketSnapshot: vi.fn(getMarketSnapshot),
+  buildBorrowSteps: vi.fn(buildBorrowSteps),
 });
 
 /**

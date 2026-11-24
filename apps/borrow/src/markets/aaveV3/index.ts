@@ -7,6 +7,7 @@ import type {
 } from '../types';
 import { AAVE_V3_MARKETS, type AaveMarket } from './registry';
 import { type AaveReadClient, readAaveReserves } from './reserves';
+import { buildAaveBorrowSteps } from './steps';
 import {
   intersectSupported,
   listDeliveredTokens,
@@ -33,6 +34,19 @@ const toLendingMarket = (market: AaveMarket): LendingMarket => ({
   chainId: market.chainId,
   chainLabel: market.chainLabel,
 });
+
+/** The registry entry behind `market`; throws for a market it doesn't list. */
+const aaveMarketOf = (market: LendingMarket): AaveMarket => {
+  const aave = AAVE_V3_MARKETS.find(
+    (entry) => toLendingMarket(entry).id === market.id,
+  );
+
+  if (!aave) {
+    throw new Error(`Aave V3: unknown market ${market.id}`);
+  }
+
+  return aave;
+};
 
 /**
  * Aave V3 on Borrow's launch chains (Base and Arbitrum). A snapshot is the
@@ -63,14 +77,7 @@ export const createAaveV3Adapter = ({
     listMarkets: async () => AAVE_V3_MARKETS.map(toLendingMarket),
 
     getMarketSnapshot: async (market): Promise<MarketSnapshot> => {
-      const aave = AAVE_V3_MARKETS.find(
-        (entry) => toLendingMarket(entry).id === market.id,
-      );
-
-      if (!aave) {
-        throw new Error(`Aave V3: unknown market ${market.id}`);
-      }
-
+      const aave = aaveMarketOf(market);
       const supported = intersectSupported(await deliveredTokens(), aave);
       const reserves = await readAaveReserves(getClient(aave.chainId), aave, {
         assets: supported.assets,
@@ -83,5 +90,8 @@ export const createAaveV3Adapter = ({
         ...withDeliveredAssets(reserves, supported),
       };
     },
+
+    buildBorrowSteps: ({ market, ...input }) =>
+      buildAaveBorrowSteps(aaveMarketOf(market), input),
   };
 };
