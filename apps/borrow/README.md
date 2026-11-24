@@ -23,10 +23,28 @@ yarn turbo run build typecheck lint test --filter=borrow
 ## How it is put together
 
 - **Routes** (`src/router.tsx`, TanStack Router, code-based): `/` is the New
-  loan tab, `/positions` is My positions; any other path redirects to `/`.
-  Path routes need an SPA rewrite to `index.html` when deployed.
+  loan tab, `/positions` is My positions, both inside the shell layout route;
+  any other path redirects to `/`. Path routes need an SPA rewrite to
+  `index.html` when deployed.
+- **Dev-only gallery**: in `vite dev` only (`import.meta.env.DEV`), `/gallery`
+  renders the kit's gallery full page, lazily imported from the kit's
+  `@aurora-is-near/ui-kit/gallery` source export (TSX, not `dist`). In a
+  production build the route and its chunk are absent, and `/gallery`
+  redirects to `/`.
 - **Shell** (`src/shell/`): the page column, header (logo, the Borrow
-  section, theme toggle, wallet slot), hero and the route-driven tabs.
+  section, theme toggle, wallet button), hero, the route-driven tabs and the
+  reduced footer (logo, tagline and copyright; dark in both themes).
+- **Tab panels**: New loan shows `src/loan/NewLoanPlaceholder.tsx`, the
+  artboard's two columns with placeholders and, disconnected, the working
+  "Connect wallet to borrow on Aave" CTA. My positions shows
+  `src/positions/PositionsEmptyState.tsx`: "Connect wallet" when
+  disconnected, "No positions right now" with "Make a loan" when connected.
+- **Wallet** (`src/wallet/`): `WalletProvider.tsx` mounts Reown AppKit (EVM
+  and Solana) inside `ThemeProvider`, and keeps the connect modal's theme in
+  step with the kit's. Set `VITE_REOWN_PROJECT_ID` to Borrow's own Reown
+  project in production; unset, AppKit falls back to the wallet package's
+  shared Aurora id. `WalletButton.tsx` in the header connects, and when
+  connected shows the short address and disconnects on click.
 - **Theme**: `ThemeProvider` from the kit wraps the router.
   `plugins/themeInitScript.ts` inlines the kit's `getThemeInitScript()` in
   `<head>`, with the same storage key (`src/theme.ts`), so a stored choice

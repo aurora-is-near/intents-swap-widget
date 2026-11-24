@@ -10,3 +10,7 @@
 #root {
   isolation: isolate;
 }
+
+/* Tailwind skips node_modules, where the kit is linked, so the dev-only
+   gallery's class names are scanned by path. */
+@source "../../../packages/ui-kit/src/gallery";

@@ -25,6 +25,7 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./gallery": "./src/gallery/index.tsx",
     "./styles.css": "./src/styles/index.css",
     "./package.json": "./package.json"
   },

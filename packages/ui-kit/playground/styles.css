@@ -1,6 +1,7 @@
 /* Compiled the way a consuming app compiles the kit. */
 @import 'tailwindcss';
 @import '@aurora-is-near/ui-kit/styles.css';
+@source "../src/gallery";
 
 /*
  * Base UI portals popups (dialogs, popovers) into <body>. Isolating the app

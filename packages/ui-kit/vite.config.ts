@@ -23,7 +23,7 @@ export default defineConfig({
     react(),
     dts({
       include: ['src'],
-      exclude: ['**/*.test.ts', '**/*.test.tsx', 'src/tests'],
+      exclude: ['**/*.test.ts', '**/*.test.tsx', 'src/tests', 'src/gallery'],
       entryRoot: 'src',
       outDir: 'dist',
       tsconfigPath: 'tsconfig.build.json',
