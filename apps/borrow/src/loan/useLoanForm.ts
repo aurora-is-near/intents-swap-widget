@@ -86,18 +86,30 @@ export type LoanForm = {
   /** The collateral and borrow symbols the market list is read for. */
   pair: MarketPair;
   marketRows: MarketRow[];
-  /** The selected market: the user's pick if it fits, else BEST. */
+  /**
+   * The selected market, as `marketFit` gives it: the user's pick if it
+   * fits, else BEST; `undefined` when the LTV fits no market.
+   */
   market: LendingMarket | undefined;
+  /**
+   * The market the figures and the liquidation marker are read for: the
+   * selection, or, when the LTV fits no market, the first market with the
+   * pair, as the artboard's `|| M[0]` (line 1143). Not a selection.
+   */
+  figuresMarket: LendingMarket | undefined;
+  /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
+  liquidationLtvBps: number | undefined;
   /** True once every market's read has settled (loaded or failed). */
   marketsSettled: boolean;
   pickMarket: (marketId: string) => void;
 
   recipientEnabled: boolean;
+  /** Turning it off also clears the recipient. */
   setRecipientEnabled: (enabled: boolean) => void;
   recipient: string;
   setRecipient: (recipient: string) => void;
 
-  /** The loan in the selected market; `undefined` until a market has the pair. */
+  /** The loan in `figuresMarket`; `undefined` until a market has the pair. */
   figures: LoanFigures | undefined;
 };
 
@@ -346,7 +358,13 @@ export const useLoanForm = ({
     pickedId: pickedMarketId,
   });
 
-  const snapshot = ready.find(({ market }) => market.id === selectedId);
+  // The selection, or a stand-in when none fits, for the figures only.
+  const figuresRow =
+    marketRows.find(({ market }) => market.id === selectedId) ?? marketRows[0];
+
+  const snapshot = ready.find(
+    ({ market }) => market.id === figuresRow?.market.id,
+  );
 
   const choice = snapshot ? collateralFor(fundingSymbol, snapshot) : undefined;
   const borrowReserve = snapshot?.borrowable.find(({ symbol }) =>
@@ -413,11 +431,19 @@ export const useLoanForm = ({
     setLtv,
     pair,
     marketRows,
-    market: snapshot?.market,
+    market: ready.find(({ market }) => market.id === selectedId)?.market,
+    figuresMarket: snapshot?.market,
+    liquidationLtvBps: figuresRow?.liquidationLtvBps,
     marketsSettled,
     pickMarket: setPickedMarketId,
     recipientEnabled,
-    setRecipientEnabled,
+    setRecipientEnabled: (enabled) => {
+      setRecipientEnabled(enabled);
+
+      if (!enabled) {
+        setRecipient('');
+      }
+    },
     recipient,
     setRecipient,
     figures,

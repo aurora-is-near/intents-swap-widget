@@ -1,3 +1,5 @@
+import '../tests/pointerEvent';
+
 import { QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -513,6 +515,106 @@ describe('NewLoanForm', () => {
       );
 
       expect(balances.wallet.refresh).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('loan to value and recipient', () => {
+    const ltvSlider = () =>
+      screen.getByRole('slider', { name: 'Loan to value, percent' });
+
+    it('recomputes the borrow amount, the received amount and the fee as the slider moves', async () => {
+      const user = userEvent.setup();
+
+      await renderForm();
+      await user.type(amountField(), '2');
+
+      expect(screen.getByText('Loan to value · Moderate')).toBeInTheDocument();
+      expect(received()).toHaveTextContent('2,991');
+
+      ltvSlider().focus();
+      await user.keyboard('{ArrowLeft}');
+
+      // 2 WETH at $3,000, LTV 49%: 2,940 USDC, less 8.82 USDC (0.30%).
+      expect(
+        screen.getByText('Loan to value · Conservative'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('49%')).toBeInTheDocument();
+      expect(received()).toHaveTextContent('2,931');
+      expect(feeRow()).toHaveTextContent('−8.82 USDC');
+    });
+
+    it('marks the selected market’s liquidation LTV', async () => {
+      await renderForm();
+
+      // Arbitrum is BEST: liquidation at 82.5%.
+      expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
+    });
+
+    it('still works the loan out at LTV 82, above every market’s max', async () => {
+      const user = userEvent.setup();
+
+      await renderForm();
+      await user.type(amountField(), '2');
+
+      ltvSlider().focus();
+
+      // 50 → 82.
+      await user.keyboard('{ArrowRight}'.repeat(32));
+
+      expect(ltvSlider()).toHaveAttribute('aria-valuenow', '82');
+      expect(
+        screen.getByText('Loan to value · Near liquidation'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('82%')).toBeInTheDocument();
+      // No market fits: the first one stands in (the artboard's `|| M[0]`),
+      // Base, liquidation at 81%. 4,920 USDC, less 14.76.
+      expect(screen.getByText('liq. 81%')).toBeInTheDocument();
+      expect(received()).toHaveTextContent('4,905');
+      expect(feeRow()).toHaveTextContent('−14.76 USDC');
+      // A stand-in for the figures only: no market is selected.
+      expect(
+        screen.queryByRole('button', { name: /^Aave /, pressed: true }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('asks for a recipient on check and clears it on uncheck', async () => {
+      const user = userEvent.setup();
+      const checkbox = () =>
+        screen.getByRole('checkbox', {
+          name: 'Send borrowed funds to another wallet',
+        });
+
+      const address = () =>
+        screen.getByRole('textbox', { name: 'Recipient wallet address' });
+
+      await renderForm();
+
+      expect(
+        screen.queryByRole('textbox', { name: 'Recipient wallet address' }),
+      ).not.toBeInTheDocument();
+
+      await user.click(checkbox());
+      await user.type(address(), 'not-an-address');
+      await user.tab();
+
+      expect(address()).toHaveAccessibleDescription(
+        'Enter a valid EVM address (0x…)',
+      );
+
+      await user.clear(address());
+      await user.type(address(), '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21');
+
+      expect(address()).not.toHaveAttribute('aria-invalid');
+
+      await user.click(checkbox());
+
+      expect(
+        screen.queryByRole('textbox', { name: 'Recipient wallet address' }),
+      ).not.toBeInTheDocument();
+
+      await user.click(checkbox());
+
+      expect(address()).toHaveValue('');
     });
   });
 });
