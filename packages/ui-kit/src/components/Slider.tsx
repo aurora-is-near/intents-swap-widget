@@ -56,10 +56,12 @@ const MARKER_LABEL =
 
 /**
  * The thumb (line 307): 24px, `sf`, 4px ink border, centred on the track
- * (5px from the control's top).
+ * (5px from the control's top). With the control's focus ring removed, the
+ * thumb fills with ink while its range input has keyboard focus, so keyboard
+ * users still see which control the arrow keys move, without an outline.
  */
 const THUMB =
-  'box-border size-[24px] rounded-full border-4 border-solid border-ink bg-sf';
+  'box-border size-[24px] rounded-full border-4 border-solid border-ink bg-sf has-focus-visible:bg-ink';
 
 export type SliderZone = {
   /** Where the zone ends; it starts where the previous one ended, or at `min`. */
