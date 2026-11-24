@@ -29,6 +29,8 @@ describe('BorrowDialogGallery', () => {
       'Done',
       'Error · rejected',
       'Error · no gas',
+      'In flight · running',
+      'Error · transfer failed',
       'Error · price moved',
       'Error · no liquidity',
       'Error · delayed',
@@ -36,6 +38,10 @@ describe('BorrowDialogGallery', () => {
       'Error · quote changed',
       'Error · unknown',
       'Error · unknown before signing',
+      'In flight · never signed',
+      'In flight · waiting for deposit',
+      'In flight · another app',
+      'In flight · cancelling',
     ]);
   });
 

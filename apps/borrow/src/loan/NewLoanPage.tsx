@@ -15,10 +15,15 @@ import {
   clearPendingBorrow,
   markPendingDepositSent,
   type PendingBorrowOrigin,
+  readPendingBorrow,
   savePendingBorrow,
 } from './execution/pendingBorrowStore';
-import { useBorrowFlow } from './execution/useBorrowFlow';
-import { useRestoreBorrow } from './execution/useRestoreBorrow';
+import { type FoundExecution, useBorrowFlow } from './execution/useBorrowFlow';
+import {
+  awaitsUser,
+  foundSummary,
+  useRestoreBorrow,
+} from './execution/useRestoreBorrow';
 import { NewLoanForm } from './NewLoanForm';
 import type { BorrowRequest } from './useLoanForm';
 
@@ -53,7 +58,10 @@ const dialogLoan = (
  *
  * A created borrow is kept per wallet (`pendingBorrowStore`) until it is
  * over, so after a reload `useRestoreBorrow` resumes it and the pending
- * dialog reopens with the rows it showed.
+ * dialog reopens with the rows it showed. One that still waits for the
+ * user (a signature or a deposit), or another app's run holding the
+ * wallet's lock, is offered instead (the `inFlight` dialog: Resume or
+ * Cancel), so the wallet is never prompted unasked.
  */
 export function NewLoanPage() {
   const adapters = useMarketAdapters();
@@ -66,8 +74,14 @@ export function NewLoanPage() {
   const ownerRef = useRef<string | undefined>(undefined);
   // The token the requested borrow's deposit is paid in.
   const originRef = useRef<PendingBorrowOrigin | undefined>(undefined);
+  // `useRestoreBorrow`'s lookup, which the flow needs before it is called.
+  const findRef = useRef<
+    ((executionId: string) => Promise<FoundExecution | undefined>) | undefined
+  >(undefined);
 
   const flow = useBorrowFlow({
+    findExecution: (executionId) =>
+      findRef.current?.(executionId) ?? Promise.resolve(undefined),
     onCreated: (executionId) => {
       ownerRef.current = address;
 
@@ -120,7 +134,7 @@ export function NewLoanPage() {
     state.kind === 'deposit' ||
     delayed;
 
-  useRestoreBorrow({
+  const { findExecution } = useRestoreBorrow({
     address,
     idle: state.kind === 'idle',
     onRestore: (execution, summary, kept) => {
@@ -129,12 +143,41 @@ export function NewLoanPage() {
       setLoan(undefined);
       setRestored(summary);
       setDismissed(false);
-      flow.restore(execution, {
-        origin: kept?.origin,
-        depositSent: kept?.depositSent,
-      });
+
+      const saved = { origin: kept?.origin, depositSent: kept?.depositSent };
+
+      if (awaitsUser(execution, kept)) {
+        flow.offerResume(execution, saved);
+      } else {
+        flow.restore(execution, saved);
+      }
     },
   });
+
+  findRef.current = findExecution;
+
+  /**
+   * Resume on the `inFlight` dialog: the dialog follows the execution that
+   * holds the lock, with its kept rows (or generic ones), not the loan that
+   * was asked for.
+   */
+  const resumeExisting = () => {
+    const lock = state.kind === 'error' ? state.lock : undefined;
+
+    if (lock?.execution) {
+      const owner = ownerRef.current ?? address;
+      const record = owner ? readPendingBorrow(owner) : undefined;
+      const kept =
+        record?.executionId === lock.executionId ? record : undefined;
+
+      ownerRef.current = owner;
+      originRef.current = undefined;
+      setLoan(undefined);
+      setRestored(foundSummary(lock.execution, kept));
+    }
+
+    void flow.resumeExisting();
+  };
 
   const onBorrow = (request: BorrowRequest) => {
     if (tracked) {
@@ -179,6 +222,7 @@ export function NewLoanPage() {
                 flow.action,
                 flow.fundsWaiting,
                 flow.fundsWaitingExecutionId,
+                flow.isCancelling,
               )
         }
         onCancel={() => {
@@ -190,9 +234,18 @@ export function NewLoanPage() {
         onSendDeposit={() => {
           void flow.sendDeposit();
         }}
+        onCancelExisting={() => {
+          void flow.cancelExisting();
+        }}
         onAction={(action) => {
           if (action === 'close' && delayed) {
             setDismissed(true);
+          }
+
+          if (action === 'resumeExisting') {
+            resumeExisting();
+
+            return;
           }
 
           void flow[action]();

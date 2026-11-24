@@ -4,7 +4,7 @@ import {
   IN_FLIGHT_STATUSES,
 } from '@aurora-is-near/intents-connect';
 import { useWalletExecutions } from '@aurora-is-near/intents-connect/react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { formatAddress } from '../../wallet/formatAddress';
 import { formatUsd } from '../loanFormat';
@@ -14,7 +14,12 @@ import {
   type PendingBorrowRecord,
   readPendingBorrow,
 } from './pendingBorrowStore';
-import { AAVE_BORROW_INTENT } from './recipe';
+import { isBorrowExecution } from './recipe';
+import {
+  type FoundExecution,
+  lockStageOf,
+  type RestorableExecution,
+} from './useBorrowFlow';
 
 /** Where an in-flight execution is, in the dialog's words. */
 const STATUS_LABEL: Partial<Record<ExecutionStatus, string>> = {
@@ -39,7 +44,8 @@ const usdRow = (label: string, usd: string | undefined) => {
  * can't be named without their tokens, so the quote's dollar values stand in.
  */
 export const genericBorrowRows = (
-  execution: Pick<Execution, 'id' | 'status' | 'quote'>,
+  execution: Pick<Execution, 'id' | 'status'> &
+    Partial<Pick<Execution, 'quote'>>,
 ): [string, string][] => [
   ...usdRow('You pay', execution.quote?.amountInUsd),
   ...usdRow('Supply', execution.quote?.amountOutUsd),
@@ -47,9 +53,49 @@ export const genericBorrowRows = (
   ['Execution', formatAddress(execution.id)],
 ];
 
-/** One of this app's borrows: another app's runs share the wallet's lock. */
-export const isBorrowExecution = (execution: Execution) =>
-  execution.metadata?.intent === AAVE_BORROW_INTENT;
+/**
+ * Rows for another app's in-flight execution: nothing about it is a loan,
+ * so only where it is and its id.
+ */
+const otherAppRows = (
+  execution: Pick<Execution, 'id' | 'status'>,
+): [string, string][] => [
+  ['Status', STATUS_LABEL[execution.status] ?? execution.status],
+  ['Execution', formatAddress(execution.id)],
+];
+
+/**
+ * What the dialog shows for an in-flight execution of the wallet: the kept
+ * record's rows when it is this execution's, else generic ones (a loan's for
+ * one of this app's borrows, only the status and id for another app's).
+ */
+export const foundSummary = (
+  execution: RestorableExecution,
+  kept: PendingBorrowRecord | undefined,
+): RestoredBorrowSummary => {
+  if (!isBorrowExecution(execution)) {
+    return { executionId: execution.id, rows: otherAppRows(execution) };
+  }
+
+  return {
+    executionId: execution.id,
+    rows: kept?.rows ?? genericBorrowRows(execution),
+    ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
+  };
+};
+
+/**
+ * A found in-flight execution can't be resumed unasked: it is another
+ * app's, or one of this app's borrows still waits for the user (a
+ * signature, or a deposit not known to be sent), and resuming it could
+ * open the wallet. It is offered (`useBorrowFlow().offerResume`) instead.
+ */
+export const awaitsUser = (
+  execution: RestorableExecution,
+  kept: Pick<PendingBorrowRecord, 'depositSent'> | undefined,
+) =>
+  !isBorrowExecution(execution) ||
+  lockStageOf(execution, kept?.depositSent) !== 'running';
 
 export type UseRestoreBorrowOptions = {
   /** The connected wallet; nothing is looked up without one. */
@@ -72,13 +118,19 @@ export type UseRestoreBorrowOptions = {
  * After a reload, looks once per connected wallet for an in-flight borrow
  * (an `IN_FLIGHT_STATUSES` execution with `intent === AAVE_BORROW_INTENT`),
  * as the Aave extension's `InFlightCheck` does, and hands it to `onRestore`.
- * A kept record no in-flight borrow matches is stale and dropped.
+ * Without one, another app's in-flight execution, which holds the same
+ * lock, is handed over too (it is offered, never resumed). A kept record no
+ * in-flight borrow matches is stale and dropped.
  *
  * Only a list fetched after this mount is trusted: the SDK keeps the last
  * list per wallet at provider level, so on a remount (switching tabs) the
  * first snapshot is the old one, which may still hold a finished borrow or
  * miss a running one. `refresh()` shares the load the hook starts and
  * resolves to the fresh list.
+ *
+ * Returns `findExecution`, which looks an in-flight execution of the wallet
+ * up by id on a fresh list (for `useBorrowFlow`'s `inFlight` error), with
+ * what its kept record says about the deposit.
  */
 export const useRestoreBorrow = ({
   address,
@@ -122,31 +174,60 @@ export const useRestoreBorrow = ({
         return;
       }
 
-      const execution: Execution | undefined = fresh.find(isBorrowExecution);
+      const executions = fresh as Execution[];
+      const borrow = executions.find(isBorrowExecution);
+      const execution = borrow ?? executions[0];
 
       const record = readPendingBorrow(address);
 
-      if (!execution) {
+      if (!borrow) {
         clearPendingBorrow(address);
+      }
 
+      if (!execution) {
         return;
       }
 
-      const kept = record?.executionId === execution.id ? record : undefined;
+      const kept =
+        borrow && record?.executionId === execution.id ? record : undefined;
 
-      if (record && !kept) {
+      if (borrow && record && !kept) {
         clearPendingBorrow(address, record.executionId);
       }
 
-      onRestoreRef.current(
-        execution,
-        {
-          executionId: execution.id,
-          rows: kept?.rows ?? genericBorrowRows(execution),
-          ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
-        },
-        kept,
-      );
+      onRestoreRef.current(execution, foundSummary(execution, kept), kept);
     });
   }, [address, listable]);
+
+  const findExecution = useCallback(
+    async (executionId: string): Promise<FoundExecution | undefined> => {
+      const fresh = await refreshRef.current();
+      const owner = addressRef.current;
+
+      if (!Array.isArray(fresh)) {
+        return undefined;
+      }
+
+      const execution = (fresh as Execution[]).find(
+        ({ id }) => id === executionId,
+      );
+
+      if (!execution) {
+        return undefined;
+      }
+
+      const record = owner === undefined ? undefined : readPendingBorrow(owner);
+      const kept = record?.executionId === executionId ? record : undefined;
+
+      return {
+        execution,
+        ...(kept
+          ? { saved: { origin: kept.origin, depositSent: kept.depositSent } }
+          : {}),
+      };
+    },
+    [],
+  );
+
+  return { findExecution };
 };

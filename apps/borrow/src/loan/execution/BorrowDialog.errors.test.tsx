@@ -389,3 +389,170 @@ describe('BorrowDialog error states', () => {
     ).not.toHaveProperty('executionId');
   });
 });
+
+describe('BorrowDialog: the wallet’s in-flight lock and a failed transfer', () => {
+  const LOCK_ID = 'exec-lock-0001';
+
+  const lockState = (
+    error: 'inFlight' | 'transferFailed',
+    owner: 'borrow' | 'other' | 'unknown',
+    stage: 'unsigned' | 'deposit' | 'running',
+  ) =>
+    ({
+      ...stateOf(error),
+      ...(error === 'inFlight' ? { step: null } : {}),
+      lock: { executionId: LOCK_ID, owner, stage },
+    }) as const;
+
+  const renderLock = (
+    state: ReturnType<typeof lockState>,
+    cancelling = false,
+  ) => {
+    const handlers = {
+      onConfirm: vi.fn(),
+      onCancel: vi.fn(),
+      onViewPosition: vi.fn(),
+      onAction: vi.fn(),
+      onCancelExisting: vi.fn(),
+    };
+
+    render(
+      <BorrowDialog
+        figures={FIGURES}
+        loan={LOAN}
+        step={borrowDialogStep(state, undefined, false, undefined, cancelling)}
+        {...handlers}
+      />,
+    );
+
+    return handlers;
+  };
+
+  /** The footer's buttons, without the dialog's own close button. */
+  const footerButtons = () =>
+    screen
+      .getAllByRole('button')
+      .filter((button) => !button.hasAttribute('aria-label'))
+      .map((button) => button.textContent);
+
+  it.each([
+    ['running', 'A borrow from this wallet is already running'],
+    ['unsigned', 'A borrow from this wallet was never signed'],
+    ['deposit', 'A borrow from this wallet is waiting for its deposit'],
+  ] as const)(
+    'in flight (%s): the title, Resume, Cancel it and Close',
+    async (stage, title) => {
+      const user = userEvent.setup();
+      const handlers = renderLock(lockState('inFlight', 'borrow', stage));
+
+      expect(screen.getByText(title)).toBeVisible();
+      expect(
+        screen.getByText(
+          'Resume it to follow it here, or cancel it to start a new one.',
+        ),
+      ).toBeVisible();
+      expect(footerButtons()).toEqual(['Resume', 'Cancel it', 'Close']);
+      // Nothing was created for this borrow: no step marked.
+      expect(stepStatuses()).toEqual(['Waiting', 'Waiting', 'Waiting']);
+
+      await user.click(screen.getByRole('button', { name: 'Resume' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel it' }));
+
+      expect(handlers.onAction).toHaveBeenCalledExactlyOnceWith(
+        'resumeExisting',
+      );
+      expect(handlers.onCancelExisting).toHaveBeenCalledOnce();
+    },
+  );
+
+  it('says another app’s execution belongs to another app, and offers only Cancel it and Close', () => {
+    renderLock(lockState('inFlight', 'other', 'running'));
+
+    expect(screen.getByText('Another app is using this wallet')).toBeVisible();
+    expect(screen.getByText(/from another app/)).toBeVisible();
+    expect(footerButtons()).toEqual(['Cancel it', 'Close']);
+    expect(
+      screen.queryByRole('button', { name: 'Resume' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('offers only Cancel it and Close for an execution that could not be read', () => {
+    renderLock(lockState('inFlight', 'unknown', 'running'));
+
+    expect(footerButtons()).toEqual(['Cancel it', 'Close']);
+  });
+
+  it('reads "Sign to cancel…", and waits, while the cancel is signed', () => {
+    renderLock(lockState('inFlight', 'borrow', 'running'), true);
+
+    expect(
+      screen.getByRole('button', { name: 'Sign to cancel…' }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeDisabled();
+    expect(
+      screen.queryByRole('button', { name: 'Cancel it' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('closes the in-flight dialog with Close', async () => {
+    const user = userEvent.setup();
+    const handlers = renderLock(lockState('inFlight', 'borrow', 'running'));
+
+    const [close] = screen
+      .getAllByRole('button', { name: 'Close' })
+      .filter((element) => !element.hasAttribute('aria-label'));
+
+    await user.click(close as HTMLElement);
+
+    expect(handlers.onCancel).toHaveBeenCalledOnce();
+    expect(handlers.onCancelExisting).not.toHaveBeenCalled();
+  });
+
+  it('offers Retry transfer and Cancel the borrow when the transfer failed', async () => {
+    const user = userEvent.setup();
+    const handlers = renderLock(
+      lockState('transferFailed', 'borrow', 'deposit'),
+    );
+
+    expect(screen.getByText('The transfer didn’t go through')).toBeVisible();
+    expect(footerButtons()).toEqual(['Retry transfer', 'Cancel the borrow']);
+
+    await user.click(screen.getByRole('button', { name: 'Retry transfer' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel the borrow' }));
+
+    expect(handlers.onAction).toHaveBeenCalledExactlyOnceWith('retryTransfer');
+    expect(handlers.onCancelExisting).toHaveBeenCalledOnce();
+  });
+
+  it.each(['inFlight', 'transferFailed'] as const)(
+    '%s shows the execution id in full, with a copy button',
+    async (error) => {
+      const user = userEvent.setup();
+      const writeText = vi.fn(async () => {});
+
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText },
+      });
+
+      renderLock(lockState(error, 'borrow', 'running'));
+
+      const dialog = screen.getByRole('dialog');
+
+      expect(
+        within(dialog).getByText('Execution').nextSibling,
+      ).toHaveTextContent(LOCK_ID);
+
+      await user.click(
+        within(dialog).getByRole('button', { name: 'Copy the execution id' }),
+      );
+
+      expect(writeText).toHaveBeenCalledWith(LOCK_ID);
+      expect(
+        await within(dialog).findByRole('button', {
+          name: 'Copied the execution id',
+        }),
+      ).toBeVisible();
+    },
+  );
+});

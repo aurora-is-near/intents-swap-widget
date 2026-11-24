@@ -2,6 +2,7 @@ import type {
   BorrowErrorKind,
   BorrowRecoveryAction,
 } from './classifyBorrowError';
+import type { BorrowLockOwner, BorrowLockStage } from './useBorrowFlow';
 
 /*
  * The error dialogs' copy: the error table of Web-Borrow-Confirm.dc.html
@@ -27,6 +28,18 @@ export type ErrorCopyContext = {
    * run, or creating the execution): the dialog's steps are all waiting.
    */
   beforeSigning?: boolean;
+  /**
+   * `inFlight`: whose the execution holding the wallet's lock is, and where
+   * it is (`useBorrowFlow`'s `BorrowLock`).
+   */
+  lock?: { owner: BorrowLockOwner; stage: BorrowLockStage };
+};
+
+/** The `inFlight` title of one of this app's borrows, by where it is. */
+const IN_FLIGHT_TITLE: Record<BorrowLockStage, string> = {
+  running: 'A borrow from this wallet is already running',
+  unsigned: 'A borrow from this wallet was never signed',
+  deposit: 'A borrow from this wallet is waiting for its deposit',
 };
 
 export type ErrorCopy = {
@@ -64,6 +77,50 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
       `Your wallet needs more of ${chainName}’s gas token to cover the network fee. Add some and try again.`,
     button: 'Try again',
     action: 'retry',
+    tone: 'error',
+    step: 0,
+  },
+  // No artboard: another execution holds the wallet's in-flight lock (the
+  // SDK's EXECUTION_IN_FLIGHT guard). Nothing new was created. One of this
+  // app's borrows is resumed or cancelled; another app's (or one that
+  // could not be read) can only be cancelled. The copy follows the Aave
+  // extension's in-flight notice.
+  inFlight: {
+    title: ({ lock }) => {
+      if (lock?.owner === 'other') {
+        return 'Another app is using this wallet';
+      }
+
+      if (lock?.owner === 'borrow') {
+        return IN_FLIGHT_TITLE[lock.stage];
+      }
+
+      return 'A run from this wallet is already in progress';
+    },
+    text: ({ lock }) => {
+      if (lock?.owner === 'other') {
+        return 'A run from another app holds this wallet, so a new borrow can’t start. It can’t be followed here: cancel it to start a new one, or wait for it to finish.';
+      }
+
+      if (lock?.owner === 'borrow') {
+        return 'Resume it to follow it here, or cancel it to start a new one.';
+      }
+
+      return 'It couldn’t be read here, so it can’t be followed. Cancel it to start a new one, or wait for it to finish.';
+    },
+    button: 'Resume',
+    action: 'resumeExisting',
+    tone: 'warn',
+    step: null,
+  },
+  // No artboard: the borrow is signed, but the wallet's deposit transfer
+  // failed (not a rejection, not gas). Only the transfer is prompted again.
+  transferFailed: {
+    title: () => 'The transfer didn’t go through',
+    text: () =>
+      'Your borrow is signed, but the deposit transfer from your wallet failed. Retry the transfer, or cancel the borrow.',
+    button: 'Retry transfer',
+    action: 'retryTransfer',
     tone: 'error',
     step: 0,
   },
@@ -151,8 +208,22 @@ export const ACTION_LABEL: Record<BorrowRecoveryAction, string> = {
   refresh: 'Refresh quote',
   reconnect: 'Reconnect wallet',
   close: 'Close',
+  resumeExisting: 'Resume',
+  retryTransfer: 'Retry transfer',
 };
 
 /** The secondary button: line 1513. */
 export const CANCEL_LABEL = 'Cancel';
 export const WARN_SECONDARY_LABEL = 'Go to my positions';
+
+/** `inFlight` and `transferFailed`: cancelling the execution they are about. */
+export const CANCEL_EXISTING_LABEL: Record<
+  'inFlight' | 'transferFailed',
+  string
+> = {
+  inFlight: 'Cancel it',
+  transferFailed: 'Cancel the borrow',
+};
+
+/** While the cancel signature is prompted (the Aave extension's words). */
+export const CANCELLING_LABEL = 'Sign to cancel…';

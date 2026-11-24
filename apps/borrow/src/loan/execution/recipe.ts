@@ -1,4 +1,4 @@
-import type { Recipe } from '@aurora-is-near/intents-connect';
+import type { Execution, Recipe } from '@aurora-is-near/intents-connect';
 
 import type {
   BorrowReserve,
@@ -13,6 +13,11 @@ import type {
  * reload.
  */
 export const AAVE_BORROW_INTENT = 'aave_borrow';
+
+/** One of this app's borrows: another app's runs share the wallet's lock. */
+export const isBorrowExecution = (
+  execution: Partial<Pick<Execution, 'metadata'>>,
+) => execution.metadata?.intent === AAVE_BORROW_INTENT;
 
 /** What a borrow's steps need beyond the step context. */
 export type BorrowParams = {

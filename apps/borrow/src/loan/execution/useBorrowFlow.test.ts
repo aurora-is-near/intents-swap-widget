@@ -27,7 +27,7 @@ import {
   weth,
 } from '../../tests/fakeMarkets';
 import { BORROW_DELAYED_AFTER_MS } from './classifyBorrowError';
-import type { BorrowParams } from './recipe';
+import { AAVE_BORROW_INTENT, type BorrowParams } from './recipe';
 import { type BorrowFlowInput, useBorrowFlow } from './useBorrowFlow';
 
 const wallet = vi.hoisted(() => ({
@@ -682,6 +682,38 @@ describe('useBorrowFlow', () => {
         expect(result.current.state.kind).toBe('confirm');
       });
 
+      it('offers Resume, not the steps-only retry, when the retry meets the wallet’s lock', async () => {
+        const { result } = renderFlow({
+          findExecution: async () => ({
+            execution: {
+              ...dryExecution(),
+              id: 'exec-lock',
+              status: 'OPERATION_PENDING',
+              metadata: { intent: AAVE_BORROW_INTENT },
+            },
+          }),
+        });
+
+        await operationFailed(result, PRICE_FELL());
+        await act(() => result.current.retry());
+
+        vi.mocked(exec().runSteps).mockRejectedValueOnce(
+          new GuardError(
+            'EXECUTION_IN_FLIGHT',
+            'execution exec-lock is already in progress',
+            { executionId: 'exec-lock' },
+          ),
+        );
+        await act(() => result.current.confirm());
+
+        expect(result.current.state).toMatchObject({
+          error: 'inFlight',
+          lock: { executionId: 'exec-lock', owner: 'borrow' },
+        });
+        expect(result.current.fundsWaiting).toBe(true);
+        expect(result.current.action).toBe('resumeExisting');
+      });
+
       it('only closes when nothing waits at the intermediary any more', async () => {
         const { result } = renderFlow();
 
@@ -839,7 +871,11 @@ describe('useBorrowFlow', () => {
         await confirmed;
       });
 
-      expect(result.current.state).toMatchObject({ error: 'unknown' });
+      // Not a rejection and not gas: the transfer itself failed.
+      expect(result.current.state).toMatchObject({
+        error: 'transferFailed',
+        lock: { executionId: EXECUTION_ID },
+      });
 
       const retried = deferred<Execution>();
 
@@ -1431,6 +1467,302 @@ describe('useBorrowFlow', () => {
       await act(() => result.current.leave());
 
       expect(result.current.figures).toBeUndefined();
+    });
+  });
+
+  describe('the wallet’s in-flight lock', () => {
+    const LOCK_ID = 'exec-lock';
+
+    /** The execution holding the lock: a borrow unless `intent` says. */
+    const holder = (
+      status: Execution['status'],
+      intent: string = AAVE_BORROW_INTENT,
+      messageSigned = status !== 'CREATED',
+    ): Execution => {
+      const base = dryExecution();
+
+      return {
+        ...base,
+        id: LOCK_ID,
+        status,
+        quote: { ...base.quote, depositAddress: '0xdeposit' },
+        details: { ...base.details, messageSigned },
+        metadata: { intent },
+      };
+    };
+
+    const IN_FLIGHT_GUARD = new GuardError(
+      'EXECUTION_IN_FLIGHT',
+      `execution ${LOCK_ID} is already in progress — resume it, cancel it, or wait for it to reach a terminal status`,
+      { executionId: LOCK_ID },
+    );
+
+    it('is inFlight on the EXECUTION_IN_FLIGHT guard, carrying the execution that holds the lock', async () => {
+      const findExecution = vi.fn(async () => ({
+        execution: holder('DEPOSIT_PROCESSING'),
+      }));
+
+      const { result } = renderFlow({ findExecution });
+
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+
+      expect(findExecution).toHaveBeenCalledWith(LOCK_ID);
+      expect(result.current.state).toMatchObject({
+        kind: 'error',
+        error: 'inFlight',
+        step: null,
+        lock: { executionId: LOCK_ID, owner: 'borrow', stage: 'running' },
+      });
+      expect(result.current.action).toBe('resumeExisting');
+    });
+
+    it('is inFlight on a resume-or-cancel recovery, its owner unknown without a lookup', async () => {
+      const { result } = renderFlow();
+
+      exec().recovery = { kind: 'resume-or-cancel', executionId: LOCK_ID };
+      await confirmFailing(result, new Error('busy'));
+
+      expect(result.current.state).toMatchObject({
+        error: 'inFlight',
+        lock: { executionId: LOCK_ID, owner: 'unknown' },
+      });
+    });
+
+    it.each([
+      ['CREATED', AAVE_BORROW_INTENT, 'borrow', 'unsigned'],
+      ['DEPOSIT_PENDING', AAVE_BORROW_INTENT, 'borrow', 'deposit'],
+      ['OPERATION_PENDING', 'aave_supply', 'other', 'running'],
+    ] as const)(
+      'tells a %s execution of %s apart',
+      async (status, intent, owner, stage) => {
+        const { result } = renderFlow({
+          findExecution: async () => ({ execution: holder(status, intent) }),
+        });
+
+        await confirmFailing(result, IN_FLIGHT_GUARD);
+
+        expect(result.current.state).toMatchObject({
+          error: 'inFlight',
+          lock: { owner, stage },
+        });
+      },
+    );
+
+    it('resumeExisting() resumes the running borrow and follows it as pending', async () => {
+      const { result } = renderFlow({
+        findExecution: async () => ({
+          execution: holder('DEPOSIT_PROCESSING'),
+        }),
+      });
+
+      const resumed = deferred<Execution>();
+
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
+
+      await act(() => result.current.resumeExisting());
+
+      expect(exec().resume).toHaveBeenCalledExactlyOnceWith(LOCK_ID);
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: LOCK_ID,
+      });
+      // Nothing is cancelled: it is the user's borrow.
+      expect(exec().cancel).not.toHaveBeenCalled();
+    });
+
+    it('resumeExisting() asks for the signature of a borrow never signed', async () => {
+      const { result } = renderFlow({
+        findExecution: async () => ({ execution: holder('CREATED') }),
+      });
+
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+      await act(() => result.current.resumeExisting());
+
+      expect(exec().resume).toHaveBeenCalledExactlyOnceWith(LOCK_ID);
+      expect(result.current.state).toEqual({ kind: 'signing' });
+    });
+
+    it('resumeExisting() sends the deposit through the wallet when it was not sent and its token is known', async () => {
+      const { result } = renderFlow({
+        findExecution: async () => ({
+          execution: holder('DEPOSIT_PENDING'),
+          saved: { origin: { chain: 'arb', decimals: 6 } },
+        }),
+      });
+
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+
+      act(() => {
+        void result.current.resumeExisting();
+      });
+
+      expect(exec().resume).toHaveBeenCalledExactlyOnceWith(LOCK_ID, {
+        depositViaWallet: true,
+        originChain: 'arb',
+        originToken: { contractAddress: undefined, decimals: 6 },
+      });
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 0,
+        executionId: LOCK_ID,
+      });
+    });
+
+    it('resumeExisting() does nothing for another app’s execution', async () => {
+      const { result } = renderFlow({
+        findExecution: async () => ({
+          execution: holder('OPERATION_PENDING', 'aave_supply'),
+        }),
+      });
+
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+      await act(() => result.current.resumeExisting());
+
+      expect(exec().resume).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({ error: 'inFlight' });
+    });
+
+    it('cancelExisting() cancels the execution, forgets it, and goes back to confirm with a fresh preview', async () => {
+      const onSettled = vi.fn();
+      const { result } = renderFlow({
+        onSettled,
+        findExecution: async () => ({ execution: holder('CREATED') }),
+      });
+
+      await confirmFailing(result, IN_FLIGHT_GUARD);
+
+      expect(exec().preview).toHaveBeenCalledTimes(2);
+
+      await act(() => result.current.cancelExisting());
+
+      expect(exec().cancel).toHaveBeenCalledExactlyOnceWith(LOCK_ID);
+      expect(onSettled).toHaveBeenCalledWith(LOCK_ID);
+      // The quote is fetched again: two more dry runs.
+      expect(exec().preview).toHaveBeenCalledTimes(4);
+      expect(result.current.state.kind).toBe('confirm');
+      expect(exec().run).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancelExisting() goes back to idle for an execution found on load, which has no form input', async () => {
+      const onSettled = vi.fn();
+      const { result } = renderFlow({ onSettled });
+
+      act(() => {
+        result.current.offerResume(holder('CREATED'));
+      });
+
+      expect(result.current.state).toMatchObject({
+        error: 'inFlight',
+        lock: { executionId: LOCK_ID, owner: 'borrow', stage: 'unsigned' },
+      });
+      // Offered, never resumed unasked.
+      expect(exec().resume).not.toHaveBeenCalled();
+
+      await act(() => result.current.cancelExisting());
+
+      expect(exec().cancel).toHaveBeenCalledExactlyOnceWith(LOCK_ID);
+      expect(onSettled).toHaveBeenCalledWith(LOCK_ID);
+      expect(exec().preview).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({ kind: 'idle' });
+    });
+
+    it('stays on the error when the cancel is refused', async () => {
+      const { result } = renderFlow();
+
+      act(() => {
+        result.current.offerResume(holder('CREATED'));
+      });
+      vi.mocked(exec().cancel).mockRejectedValueOnce(EIP1193_REJECTION);
+
+      await act(() => result.current.cancelExisting());
+
+      expect(result.current.state).toMatchObject({ error: 'inFlight' });
+    });
+
+    it('reports the cancel signature being prompted', () => {
+      exec().isCancelling = true;
+
+      const { result } = renderFlow();
+
+      expect(result.current.isCancelling).toBe(true);
+    });
+  });
+
+  describe('a failed deposit transfer', () => {
+    /** Signed, then the deposit transfer failed for another reason. */
+    const failTransfer = async (flow: Flow) => {
+      const run = deferred<Execution>();
+
+      vi.mocked(exec().run).mockReturnValueOnce(run.promise);
+      await startFlow(flow);
+
+      let confirmed: Promise<void> = Promise.resolve();
+
+      act(() => {
+        confirmed = flow.current.confirm();
+      });
+
+      await emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+      );
+      exec().hasSubmittedSignature = true;
+      exec().recovery = {
+        kind: 'retry-transfer',
+        executionId: EXECUTION_ID,
+        cause: new Error('nonce too low'),
+      };
+
+      await act(async () => {
+        run.reject(
+          new DepositTransferError(EXECUTION_ID, {
+            cause: new Error('nonce too low'),
+          }),
+        );
+        await confirmed;
+      });
+    };
+
+    it('is transferFailed, and retryTransfer() prompts the transfer again', async () => {
+      const { result } = renderFlow();
+
+      await failTransfer(result);
+
+      expect(result.current.state).toMatchObject({
+        error: 'transferFailed',
+        lock: { executionId: EXECUTION_ID },
+      });
+      expect(result.current.action).toBe('retryTransfer');
+
+      await act(() => result.current.retryTransfer());
+
+      expect(exec().retryDeposit).toHaveBeenCalledTimes(1);
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({
+        kind: 'done',
+        executionId: EXECUTION_ID,
+      });
+    });
+
+    it('cancelExisting() cancels the borrow and leaves', async () => {
+      const onSettled = vi.fn();
+      const { result } = renderFlow({ onSettled });
+
+      await failTransfer(result);
+      await act(() => result.current.cancelExisting());
+
+      expect(exec().cancel).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
+      expect(onSettled).toHaveBeenCalledWith(EXECUTION_ID);
+      expect(exec().retryDeposit).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({ kind: 'idle' });
     });
   });
 });

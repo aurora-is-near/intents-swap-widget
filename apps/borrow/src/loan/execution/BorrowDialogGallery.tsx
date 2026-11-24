@@ -79,11 +79,17 @@ type Entry = {
   step: BorrowDialogStep;
 };
 
+type ErrorStep = Extract<BorrowDialogStep, { kind: 'error' }>;
+
+/** What an error entry adds: the lock-holding execution, cancelling. */
+type ErrorExtra = Pick<ErrorStep, 'executionId' | 'lock' | 'cancelling'>;
+
 function errorEntry(
   label: string,
   error: BorrowErrorKind,
   action: BorrowRecoveryAction,
   step?: null,
+  extra: ErrorExtra = {},
 ): Entry {
   return {
     label,
@@ -94,9 +100,24 @@ function errorEntry(
       action,
       fundsWaiting: false,
       ...(step === undefined ? {} : { step }),
+      ...extra,
     },
   };
 }
+
+/** A sample execution holding the wallet's lock. */
+const LOCK_EXECUTION_ID = '7f3c2a10-5b4e-4d8a-9e61-0c2b8f4d1a93';
+
+/** An `inFlight` entry: whose the execution is, and where it is. */
+const inFlightExtra = (
+  owner: NonNullable<ErrorStep['lock']>['owner'],
+  stage: NonNullable<ErrorStep['lock']>['stage'],
+  cancelling = false,
+): ErrorExtra => ({
+  executionId: LOCK_EXECUTION_ID,
+  lock: { owner, stage },
+  cancelling,
+});
 
 /**
  * Every error kind's entry, typed by `BorrowErrorKind` so a new kind can't
@@ -107,10 +128,27 @@ function errorEntry(
  */
 const ERRORS: Record<
   BorrowErrorKind,
-  { label: string; action: BorrowRecoveryAction; step?: null }
+  {
+    label: string;
+    action: BorrowRecoveryAction;
+    step?: null;
+    extra?: ErrorExtra;
+  }
 > = {
   rejected: { label: 'Error · rejected', action: 'retry' },
   noGas: { label: 'Error · no gas', action: 'retry' },
+  // Another execution holds the wallet's lock: a borrow running here.
+  inFlight: {
+    label: 'In flight · running',
+    action: 'resumeExisting',
+    step: null,
+    extra: inFlightExtra('borrow', 'running'),
+  },
+  transferFailed: {
+    label: 'Error · transfer failed',
+    action: 'retryTransfer',
+    extra: { executionId: LOCK_EXECUTION_ID },
+  },
   priceMoved: { label: 'Error · price moved', action: 'refresh' },
   noLiquidity: { label: 'Error · no liquidity', action: 'close' },
   delayed: { label: 'Error · delayed', action: 'close' },
@@ -149,10 +187,40 @@ const ENTRIES: Entry[] = [
   { label: 'Done', sample: SAME_ASSET, step: { kind: 'done' } },
   // One entry per error kind (`ERRORS`), then the unknown error raised
   // before anything was signed: no step marked, nothing sent.
-  ...Object.entries(ERRORS).map(([error, { label, action, step }]) =>
-    errorEntry(label, error as BorrowErrorKind, action, step),
+  ...Object.entries(ERRORS).map(([error, { label, action, step, extra }]) =>
+    errorEntry(label, error as BorrowErrorKind, action, step, extra),
   ),
   errorEntry('Error · unknown before signing', 'unknown', 'close', null),
+  // The other in-flight variants: never signed, waiting for its deposit,
+  // another app's run, and the cancel signature being prompted.
+  errorEntry(
+    'In flight · never signed',
+    'inFlight',
+    'resumeExisting',
+    null,
+    inFlightExtra('borrow', 'unsigned'),
+  ),
+  errorEntry(
+    'In flight · waiting for deposit',
+    'inFlight',
+    'resumeExisting',
+    null,
+    inFlightExtra('borrow', 'deposit'),
+  ),
+  errorEntry(
+    'In flight · another app',
+    'inFlight',
+    'resumeExisting',
+    null,
+    inFlightExtra('other', 'running'),
+  ),
+  errorEntry(
+    'In flight · cancelling',
+    'inFlight',
+    'resumeExisting',
+    null,
+    inFlightExtra('borrow', 'running', true),
+  ),
 ];
 
 /**
@@ -213,19 +281,21 @@ export function BorrowDialogGallery() {
           )
         }
         onViewPosition={close}
+        onCancelExisting={close}
         onAction={(action) =>
           setOpen((current) => {
             if (!current || action === 'close') {
               return undefined;
             }
 
-            // Refreshing or reconnecting goes back to confirm; retrying signs.
+            // Refreshing or reconnecting goes back to confirm; retrying,
+            // resuming or retrying the transfer goes on to signing.
             return {
               ...current,
               step:
-                action === 'retry'
-                  ? { kind: 'pending', step: 0 }
-                  : { kind: 'confirm' },
+                action === 'refresh' || action === 'reconnect'
+                  ? { kind: 'confirm' }
+                  : { kind: 'pending', step: 0 },
             };
           })
         }
