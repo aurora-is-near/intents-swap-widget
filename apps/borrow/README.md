@@ -34,11 +34,11 @@ yarn turbo run build typecheck lint test --filter=borrow
 - **Shell** (`src/shell/`): the page column, header (logo, the Borrow
   section, theme toggle, wallet button), hero, the route-driven tabs and the
   reduced footer (logo, tagline and copyright; dark in both themes).
-- **Tab panels**: New loan shows `src/loan/NewLoanPlaceholder.tsx`, the
-  artboard's two columns: a form placeholder beside the live market list
-  (`src/loan/MarketList.tsx`), the LTV / Liquidation / Health tiles (still
-  "—") and, disconnected, the working "Connect wallet to borrow on Aave"
-  CTA. My positions shows
+- **Tab panels**: New loan shows `src/loan/NewLoanForm.tsx`, the
+  artboard's two columns: the loan form beside the live market list
+  (`src/loan/MarketList.tsx`), the LTV / Liquidation / Health tiles and,
+  disconnected, the working "Connect wallet to borrow on Aave" CTA. My
+  positions shows
   `src/positions/PositionsEmptyState.tsx`: "Connect wallet" when
   disconnected, "No positions right now" with "Make a loan" when connected.
 - **Wallet** (`src/wallet/`): `WalletProvider.tsx` mounts Reown AppKit (EVM
@@ -57,8 +57,10 @@ yarn turbo run build typecheck lint test --filter=borrow
 - **Intents Connect** (`src/config.ts`, `src/wallet/`): one API client with
   no key; `IntentsConnectProvider` gets it and the AppKit wallet (`null`
   while disconnected), under a `QueryClientProvider`. `src/intentsApi.ts`
-  is the intents API client the SDK's balance hooks need; its key,
-  `VITE_INTENTS_API_KEY`, is public (it travels in the URL path).
+  is the intents API client the SDK's balance hooks need, passed to the
+  provider from `App.tsx`. Its key, `VITE_INTENTS_API_KEY`, is **required**
+  and public (it travels in the URL path); unset, the app logs a
+  configuration error at start-up and no balances load.
 - **API-key proxy** (`server/intentsConnectProxy.ts`): the SDK's two create
   calls (`POST api/v1/executions/:wallet` and `…/:wallet/steps`) go to
   `/api/intents-connect`, which adds `x-api-key` from the server-only
@@ -84,18 +86,39 @@ yarn turbo run build typecheck lint test --filter=borrow
   adapter list, and `useMarketSnapshots` reads each market in its own query,
   so one chain failing leaves the other in place; `format.ts` formats APR,
   LTVs and compact dollars. `loan/MarketList.tsx` shows one card per market
-  (`layout` is `cards` or `table`) for the `pair` it is given (the New loan
-  tab passes the default WETH collateral / USDC borrow until the loan form
-  drives it), with BEST on the lowest borrow APR, a skeleton per market
-  while loading and a "Try again" Banner per failed market. The rows and
-  BEST come from `loan/marketRows.ts`, which the loan form shares.
+  (`layout` is `cards` or `table`) for the `pair` it is given (the loan
+  form's collateral and borrow symbols), with BEST on the lowest borrow APR,
+  a skeleton per market while loading and a "Try again" Banner per failed
+  market; the form passes its selected market and takes the user's pick.
+  The rows and BEST come from `loan/marketRows.ts`, which the loan form
+  shares.
+- **Funding assets** (`src/balances/`): `useFundingAssets` turns the SDK's
+  `useWalletBalances` and `useSupportedTokens` into the rows the Supply
+  picker lists: non-zero wallet balances, highest USD value first, a token
+  Intents Connect cannot start from marked unavailable, and the chains that
+  could not be read. Two price sources, on purpose: held assets are priced
+  by 1Click (an arbitrary token has no oracle price), the loan figures by the
+  market's Aave oracle (what the Pool enforces). Wallet balances only, not
+  the NEAR Intents account.
+- **Loan form** (`src/loan/NewLoanForm.tsx`, `src/loan/useLoanForm.ts`):
+  `useLoanForm` holds the form's state (funding asset, amount, borrow asset,
+  LTV, picked market, recipient) and derives the pair, the selected market
+  and the figures through the model below. The Supply card picks a wallet
+  balance (group and chain filter chips; a skeleton while loading; a
+  "Try again" Banner when balances or some chains fail) and takes the
+  amount with its "≈ $" value; an asset no market takes as collateral is
+  "Supplied as WETH". The Borrow card picks a borrowable reserve (never the
+  collateral's own symbol) and shows the read-only amount received after
+  the fee; the fee row is 0.30% of the borrow amount, an estimate until a
+  quote. Disconnected, the pickers show WETH / USDC and no balances.
 - **Loan form model** (`src/loan/model/`): pure, bigint, no React. The LTV
   zones (`zones.ts`), the borrow amount, fee (`BORROW_FEE_BPS` in
   `config.ts`), received amount, health and liquidation price
   (`loanFigures.ts`), the collateral a held asset is supplied as
   (`collateral.ts`), which markets fit the LTV and which is BEST
   (`marketFit.ts`), the call-to-action state (`ctaState.ts`) and the
-  recipient check (`recipient.ts`). Not on screen until the form uses it.
+  recipient check (`recipient.ts`). `useLoanForm` derives the form's
+  figures through it.
 - **Vercel routing**: catch-all files in `api/` are not reliably routed
   outside Next.js, so `vercel.json` rewrites `/api/intents-connect/:path*`
   to `/api/intents-connect?path=:path*`, and the function restores the
@@ -104,5 +127,5 @@ yarn turbo run build typecheck lint test --filter=borrow
   deploy that `POST /api/intents-connect/api/v1/executions/0xabc/steps`
   reaches the function.
 
-Designs: `.dotsso/inputs/lane/easy-borrow-borrow` (`Web-Borrow-NotConnected`
-at 1280, `Mob-Borrow-NotConnected` at 420).
+Designs: `.dotsso/inputs/lane/easy-borrow-borrow` (`Web-Borrow` and `Web-Borrow-NotConnected`
+at 1280, `Mob-Borrow` and `Mob-Borrow-NotConnected` at 420).

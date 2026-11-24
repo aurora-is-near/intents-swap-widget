@@ -493,17 +493,26 @@ function TokenPicker() {
 
 /**
  * The Supply picker with the wallet's balances in each row's right-hand
- * slot, in place of the price. A row without a balance keeps its price.
+ * slot, in place of the price. A row without a balance keeps its price; a
+ * held token that can't be picked is disabled, its reason on the chains line.
  */
 const HELD: Partial<
-  Record<string, Pick<TokenOption, 'balanceLabel' | 'balanceUsdLabel'>>
+  Record<
+    string,
+    Pick<TokenOption, 'balanceLabel' | 'balanceUsdLabel' | 'unavailableReason'>
+  >
 > = {
   eth: { balanceLabel: '1.25 ETH', balanceUsdLabel: '$3,750.00' },
   usds: { balanceLabel: '1,200 USDS', balanceUsdLabel: '$1,200.00' },
+  cbbtc: {
+    balanceLabel: '0.02 cbBTC',
+    balanceUsdLabel: '$1,800.00',
+    unavailableReason: 'Not supported yet',
+  },
 };
 
 const HELD_OPTIONS: TokenOption[] = SAMPLE_TOKENS.filter((token) =>
-  ['eth', 'usds', 'wbtc'].includes(token.id),
+  ['eth', 'usds', 'cbbtc', 'wbtc'].includes(token.id),
 ).map((token) => ({ ...toOption(token), ...HELD[token.id] }));
 
 function HeldTokenPicker() {

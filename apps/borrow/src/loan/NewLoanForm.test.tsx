@@ -9,9 +9,11 @@ import { type BalancesMockState, emptyBalances } from '../tests/balancesMock';
 import {
   createFakeAdapter,
   createTestQueryClient,
+  FAKE_ARB,
   FAKE_BASE,
   FAKE_SNAPSHOTS,
   pairSnapshot,
+  USD,
   usdc,
   weth,
 } from '../tests/fakeMarkets';
@@ -116,10 +118,20 @@ const SNAPSHOTS: Readonly<Record<string, MarketSnapshot>> = {
   }),
 };
 
-const renderForm = async () => {
+/**
+ * Renders the form over `snapshots` and waits for the market list to select
+ * `selected` (Arbitrum, the BEST of the fake markets, by default).
+ */
+const renderForm = async ({
+  snapshots = SNAPSHOTS,
+  selected = /Aave Arbitrum/,
+}: {
+  snapshots?: Readonly<Record<string, MarketSnapshot>>;
+  selected?: RegExp;
+} = {}) => {
   const adapter = createFakeAdapter({
     getMarketSnapshot: async (market) => {
-      const found = SNAPSHOTS[market.id];
+      const found = snapshots[market.id];
 
       if (!found) {
         throw new Error(`no snapshot for ${market.id}`);
@@ -137,8 +149,8 @@ const renderForm = async () => {
     </QueryClientProvider>,
   );
 
-  // Both markets loaded: the BEST card is selected.
-  await screen.findByRole('button', { name: /Aave Arbitrum/, pressed: true });
+  // The markets loaded: the selected card is pressed.
+  await screen.findByRole('button', { name: selected, pressed: true });
 };
 
 const supplyPicker = () => screen.getByRole('button', { name: /^SUPPLY / });
@@ -346,6 +358,84 @@ describe('NewLoanForm', () => {
       // $1,000 of USDT as WETH at LTV 50%: about 500 USDC, fee 1.50.
       expect(screen.getByText('≈ $1,000')).toBeInTheDocument();
       expect(feeRow()).toHaveTextContent('−1.50 USDC');
+    });
+
+    it('never borrows the collateral: a USDC holding moves the borrow off USDC', async () => {
+      const user = userEvent.setup();
+      const USDC = {
+        assetId: 'nep141:arb-usdc.omft.near',
+        symbol: 'USDC',
+        blockchain: 'arb',
+        decimals: 6,
+        price: 1,
+      };
+
+      // USDC is Aave collateral on both chains, as on Base and Arbitrum.
+      const usdcCollateral = weth({
+        asset: '0x0000000000000000000000000000000000000002',
+        symbol: 'USDC',
+        decimals: 6,
+        assetId: 'nep141:usdc',
+        maxLtvBps: 7500,
+        liquidationLtvBps: 7800,
+        priceBase: USD,
+      });
+
+      const base = SNAPSHOTS[FAKE_BASE.id];
+      const arb = SNAPSHOTS[FAKE_ARB.id];
+
+      if (!base || !arb) {
+        throw new Error('missing fake snapshots');
+      }
+
+      // The top holding: 10,000 USDC, worth more than the 1.5 ETH.
+      balances.wallet = {
+        ...balances.wallet,
+        tokens: [...balances.wallet.tokens, USDC],
+        balances: {
+          ...balances.wallet.balances,
+          [USDC.assetId]: '10000000000',
+        },
+      };
+      balances.supported = {
+        ...balances.supported,
+        origins: [...balances.supported.origins, { assetId: USDC.assetId }],
+      };
+
+      await renderForm({
+        snapshots: {
+          [FAKE_BASE.id]: {
+            ...base,
+            collateral: [...base.collateral, usdcCollateral],
+          },
+          [FAKE_ARB.id]: {
+            ...arb,
+            collateral: [...arb.collateral, usdcCollateral],
+          },
+        },
+        // Only Base lends USDT.
+        selected: /Aave Base/,
+      });
+
+      expect(supplyPicker()).toHaveAccessibleName('SUPPLY USDC Arbitrum');
+      expect(borrowPicker()).toHaveAccessibleName('BORROW USDT Base');
+      expect(screen.queryByText(/^Supplied as/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /Aave Arbitrum/ }),
+      ).not.toBeInTheDocument();
+
+      await user.click(borrowPicker());
+
+      const borrowList = within(
+        screen.getByRole('dialog', { name: 'Choose token to borrow' }),
+      );
+
+      expect(
+        borrowList.getByRole('button', { name: /^USDT / }),
+      ).toBeInTheDocument();
+      expect(
+        borrowList.queryByRole('button', { name: /^USDC / }),
+      ).not.toBeInTheDocument();
     });
 
     it('shows a skeleton in the picker’s place while the balances load', async () => {

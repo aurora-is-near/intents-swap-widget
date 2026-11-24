@@ -74,6 +74,7 @@ export type LoanForm = {
   /** The collateral the funding asset is supplied as, in the selected market. */
   collateral: { symbol: string; convertedFrom?: string };
 
+  /** The borrowable reserves across the markets, less the collateral's symbol. */
   borrowAssets: ReserveAsset[];
   borrow: { symbol: string; decimals: number };
   setBorrowSymbol: (symbol: string) => void;
@@ -287,7 +288,6 @@ export const useLoanForm = ({
     !listing && snapshots.every(({ status }) => status !== 'pending');
 
   const collateralAssets = reserveAssets(ready, ({ collateral }) => collateral);
-  const borrowAssets = reserveAssets(ready, ({ borrowable }) => borrowable);
 
   // A held balance when connected (the pick, else the most valuable one that
   // can fund a loan); the default collateral, or the one picked, otherwise.
@@ -314,12 +314,28 @@ export const useLoanForm = ({
       18,
   };
 
-  const borrowAsset = borrowAssets.find(({ symbol }) =>
-    sameSymbol(symbol, borrowSymbol),
-  );
+  const collateralSymbol = collateralSymbolFor(fundingSymbol, ready);
+
+  // The collateral is never borrowed too (decided in the feature review): its
+  // symbol is left out of the borrow list, and a borrow asset that collides
+  // with it (USDC held and listed as collateral, say) moves to the default,
+  // else the first asset left.
+  const borrowAssets = reserveAssets(
+    ready,
+    ({ borrowable }) => borrowable,
+  ).filter(({ symbol }) => !sameSymbol(symbol, collateralSymbol));
+
+  const bySymbol = (wanted: string) =>
+    borrowAssets.find(({ symbol }) => sameSymbol(symbol, wanted));
+
+  const borrowAsset =
+    bySymbol(borrowSymbol) ??
+    (sameSymbol(borrowSymbol, collateralSymbol)
+      ? (bySymbol(DEFAULT_PAIR.borrow) ?? borrowAssets[0])
+      : undefined);
 
   const pair: MarketPair = {
-    collateral: collateralSymbolFor(fundingSymbol, ready),
+    collateral: collateralSymbol,
     borrow: borrowAsset?.symbol ?? borrowSymbol,
   };
 
