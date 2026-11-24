@@ -13,6 +13,12 @@
         "@fontsource/figtree"
       ]
     },
+    "packages/ui-kit": {
+      "ignoreDependencies": [
+        "react",
+        "react-dom"
+      ]
+    },
     "packages/intents-connect": {
       "ignoreDependencies": [
         "react"
