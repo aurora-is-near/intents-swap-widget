@@ -9,7 +9,7 @@ import {
   RunnerDisposedError,
 } from '@aurora-is-near/intents-connect';
 
-import { ltvBps } from '../../markets/math';
+import { loanValues, ltvBps } from '../../markets/math';
 import type {
   BorrowReserve,
   CollateralReserve,
@@ -72,7 +72,7 @@ export type BorrowErrorContext = {
 };
 
 /** Each value an error wraps: `cause`, a wallet's nested `error`, and so on. */
-const chainOf = (value: unknown): unknown[] => {
+const causeChainOf = (value: unknown): unknown[] => {
   const seen: unknown[] = [];
   let current = value;
 
@@ -131,7 +131,7 @@ const saysInsufficientFunds = (value: unknown): boolean => {
 
 /** The wallet could not pay for the deposit transaction's gas. */
 export const isInsufficientFunds = (value: unknown): boolean =>
-  chainOf(value).some(saysInsufficientFunds);
+  causeChainOf(value).some(saysInsufficientFunds);
 
 /**
  * Which error state a failed borrow is, first match wins:
@@ -283,12 +283,13 @@ export const diagnoseBorrowStep = ({
     return undefined;
   }
 
-  // Values in the oracle's base units: collateral rounded down, debt up.
-  const collateralValue =
-    (collateralAmount * supplied.priceBase) / 10n ** BigInt(supplied.decimals);
+  const { collateralValue, debt } = loanValues({
+    collateralAmount,
+    collateral: supplied,
+    borrowAmount,
+    borrow: borrowed,
+  });
 
-  const scale = 10n ** BigInt(borrowed.decimals);
-  const debt = (borrowAmount * borrowed.priceBase + scale - 1n) / scale;
   const ltv = ltvBps(debt, collateralValue);
 
   return ltv === null || ltv > BigInt(supplied.maxLtvBps)

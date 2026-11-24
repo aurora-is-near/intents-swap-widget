@@ -1,9 +1,12 @@
 import { BORROW_FEE_BPS } from '../../config';
 import {
   BPS,
+  ceilDiv,
   HEALTH_FACTOR_ONE,
   healthFactor,
   liquidationPrice,
+  loanValues,
+  scaleOf,
 } from '../../markets/math';
 import type { BorrowReserve, CollateralReserve } from '../../markets/types';
 
@@ -47,11 +50,6 @@ export type LoanFigures = {
   liquidationPrice: bigint | null;
 };
 
-const ceilDiv = (numerator: bigint, denominator: bigint) =>
-  (numerator + denominator - 1n) / denominator;
-
-const scaleOf = (decimals: number) => 10n ** BigInt(decimals);
-
 /** Health from the two LTVs alone: the artboard shows it at any amount. */
 const healthOf = (liquidationLtvBps: number, loanLtvBps: bigint) => {
   // A nominal collateral of 100% with debt at the loan's LTV.
@@ -92,10 +90,12 @@ export const loanFigures = ({
 
   // The debt the borrow amount carries, rounded up so the liquidation price
   // comes no later than the protocol's.
-  const debt = ceilDiv(
-    borrowAmount * borrow.priceBase,
-    scaleOf(borrow.decimals),
-  );
+  const { debt } = loanValues({
+    collateralAmount,
+    collateral,
+    borrowAmount,
+    borrow,
+  });
 
   return {
     borrowAmount,
