@@ -14,8 +14,14 @@ import {
   Chip,
   Highlight,
   QuickAmounts,
+  RISK_ZONE_COLORS,
+  Slider,
   Spinner,
   Switch,
+  Tab,
+  Tabs,
+  TabsList,
+  TabsPanel,
   Tag,
   Text,
   TextField,
@@ -470,6 +476,103 @@ function TokenPicker() {
   );
 }
 
+/** The artboard's LTV zones end at 50, 65, 80 and 90 (line 304). */
+const LTV_MAX = 90;
+const LTV_ZONES = [50, 65, 80, 90].map((upTo, index) => ({
+  upTo,
+  color: RISK_ZONE_COLORS[index] ?? RISK_ZONE_COLORS[0],
+}));
+
+const LIQ_LTV = 83;
+const REPAY_AMOUNTS = [
+  { value: '25', label: '25%' },
+  { value: '50', label: '50%' },
+  { value: '75', label: '75%' },
+  { value: '100', label: 'Max' },
+];
+
+function Sliders() {
+  const [ltv, setLtv] = useState(40);
+  const [repay, setRepay] = useState(50);
+
+  return (
+    <div className="flex max-w-[460px] flex-col gap-6">
+      <div>
+        <div className="flex items-baseline justify-between">
+          <span className="text-[14px] font-semibold text-mut">
+            Loan to value
+          </span>
+          <span className="text-[28px] font-extrabold tracking-[-0.03em]">
+            {ltv}%
+          </span>
+        </div>
+        <Slider
+          aria-label="Loan to value, percent"
+          className="mt-[22px]"
+          getAriaValueText={(_formatted, value) => `${value} percent`}
+          marker={{ value: LIQ_LTV, label: `liq. ${LIQ_LTV}%` }}
+          max={LTV_MAX}
+          onValueChange={setLtv}
+          value={ltv}
+          zones={LTV_ZONES}
+        />
+      </div>
+      <div>
+        <div className="flex items-baseline justify-between">
+          <span className="text-[14px] font-semibold text-mut">
+            Amount to repay
+          </span>
+          <span className="text-[28px] font-extrabold tracking-[-0.03em]">
+            {repay}%
+          </span>
+        </div>
+        <Slider
+          aria-label="Percent of debt to repay"
+          onValueChange={setRepay}
+          value={repay}
+        />
+        <QuickAmounts
+          aria-label="Repay presets"
+          className="mt-[10px]"
+          onSelect={(value) => setRepay(Number(value))}
+          options={REPAY_AMOUNTS}
+          value={String(repay)}
+        />
+      </div>
+      <Slider aria-label="Disabled slider" defaultValue={30} disabled />
+    </div>
+  );
+}
+
+function TabsDemo() {
+  return (
+    <div className="flex flex-col gap-6">
+      <Tabs defaultValue="new">
+        <TabsList aria-label="Borrow views">
+          <Tab value="new">New loan</Tab>
+          <Tab count={2} value="positions">
+            My positions
+          </Tab>
+        </TabsList>
+        <TabsPanel className="mt-[20px] text-mut" value="new">
+          New loan form
+        </TabsPanel>
+        <TabsPanel className="mt-[20px] text-mut" value="positions">
+          Two open positions
+        </TabsPanel>
+      </Tabs>
+      <Tabs defaultValue="deposit">
+        <TabsList aria-label="Vault action">
+          <Tab value="deposit">Deposit</Tab>
+          <Tab disabled value="withdraw">
+            Withdraw
+          </Tab>
+        </TabsList>
+      </Tabs>
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
@@ -525,6 +628,14 @@ function Components() {
 
       <Section title="TokenSelect and Chip">
         <TokenPicker />
+      </Section>
+
+      <Section title="Slider">
+        <Sliders />
+      </Section>
+
+      <Section title="Tabs">
+        <TabsDemo />
       </Section>
 
       <Section title="Spinner">
