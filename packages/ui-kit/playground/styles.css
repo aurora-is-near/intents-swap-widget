@@ -1,3 +1,11 @@
 /* Compiled the way a consuming app compiles the kit. */
 @import 'tailwindcss';
 @import '@aurora-is-near/ui-kit/styles.css';
+
+/*
+ * Base UI portals popups (dialogs, popovers) into <body>. Isolating the app
+ * root gives it its own stacking context, so they always sit above it.
+ */
+#root {
+  isolation: isolate;
+}

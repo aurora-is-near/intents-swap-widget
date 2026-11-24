@@ -4,6 +4,13 @@
  *
  *   @import 'tailwindcss';
  *   @import '@aurora-is-near/ui-kit/styles.css';
+ *
+ * Popups (Dialog, TokenSelect) are portalled into <body>. Give the app's root
+ * element its own stacking context so they stack above it:
+ *
+ *   #root {
+ *     isolation: isolate;
+ *   }
  */
 @import './fonts.css';
 @import './tokens.css';
