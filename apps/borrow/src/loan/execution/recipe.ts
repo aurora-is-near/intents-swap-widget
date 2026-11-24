@@ -25,6 +25,21 @@ export type BorrowParams = {
   recipient?: string;
 };
 
+/** A recipe's `destination`: the token the intermediary receives, and where. */
+export type CollateralDestination = Recipe<BorrowParams>['destination'];
+
+/** Where the collateral arrives: the intermediary on the market's chain. */
+export const collateralDestination = (
+  market: Pick<LendingMarket, 'chain'>,
+  collateral: Pick<CollateralReserve, 'assetId' | 'asset' | 'nativeDelivery'>,
+): CollateralDestination => ({
+  chain: market.chain,
+  assetId: collateral.assetId,
+  // Native delivery arrives as the chain's gas token: no contract.
+  tokenAddress:
+    collateral.nativeDelivery === true ? undefined : collateral.asset,
+});
+
 /**
  * Bridges the user's funds into `collateral` on the market's chain, where
  * the intermediary supplies it, borrows `params.borrowAmount` of `borrow`
@@ -34,25 +49,24 @@ export type BorrowParams = {
  * position"): it runs the steps, and Aave lets an account borrow only on its
  * own collateral. `ctx.amount` is opaque (it may be `{MIN_AMOUNT_OUT}`), so
  * it is passed through, never inspected.
+ *
+ * With `flow: 'steps-only'` nothing is bridged: the same steps spend the
+ * collateral already waiting at the intermediary (a borrow whose borrow step
+ * failed after the collateral arrived; see `stepsRetry.ts`).
  */
 export const aaveBorrowRecipe = (
   adapter: Pick<LendingMarketAdapter, 'buildBorrowSteps'>,
   market: LendingMarket,
   collateral: CollateralReserve,
   borrow: BorrowReserve,
+  flow: 'bridge-in' | 'steps-only' = 'bridge-in',
 ): Recipe<BorrowParams> => ({
   id: `aave-borrow:${market.id}:${collateral.symbol}:${borrow.symbol}`,
   intent: AAVE_BORROW_INTENT,
   title: `Borrow ${borrow.symbol} against ${collateral.symbol} on ${market.name} ${market.chainLabel}`,
-  flow: 'bridge-in',
+  flow,
   type: 'evm',
-  destination: {
-    chain: market.chain,
-    assetId: collateral.assetId,
-    // Native delivery arrives as the chain's gas token: no contract.
-    tokenAddress:
-      collateral.nativeDelivery === true ? undefined : collateral.asset,
-  },
+  destination: collateralDestination(market, collateral),
   buildSteps: (ctx, params) =>
     adapter.buildBorrowSteps({
       market,

@@ -221,4 +221,42 @@ describe('BorrowDialog error states', () => {
       fundsWaiting: false,
     });
   });
+
+  it('names the execution whose collateral waits, and offers the steps-only retry', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+
+    render(
+      <BorrowDialog
+        figures={FIGURES}
+        loan={LOAN}
+        step={borrowDialogStep(
+          stateOf('noLiquidity'),
+          'retry',
+          true,
+          'exec-waiting-0001',
+        )}
+        onAction={onAction}
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        onViewPosition={vi.fn()}
+      />,
+    );
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(within(dialog).getByText('Execution').nextSibling).toHaveTextContent(
+      'exec-waiting-0001',
+    );
+
+    await user.click(within(dialog).getByRole('button', { name: 'Try again' }));
+
+    expect(onAction).toHaveBeenCalledWith('retry');
+  });
+
+  it('names no execution while nothing waits', () => {
+    expect(
+      borrowDialogStep(stateOf('rejected'), 'retry', false, 'exec-1'),
+    ).not.toHaveProperty('executionId');
+  });
 });

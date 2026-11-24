@@ -3,8 +3,11 @@ import {
   type Execution,
   type ExecutionPlan,
   ExecutionPollTimeoutError,
+  getIntermediaryBalance,
   GuardError,
   type RunnerEvent,
+  type StepsPlan,
+  type StepsPreview,
 } from '@aurora-is-near/intents-connect';
 import type {
   UseExecutionOptions,
@@ -38,6 +41,12 @@ const wallet = vi.hoisted(() => ({
 const sdk = vi.hoisted(() => ({
   result: null as UseExecutionResult | null,
   onEvent: undefined as ((event: RunnerEvent) => void) | undefined,
+}));
+
+// The collateral waiting at the intermediary, for the steps-only retry.
+vi.mock('@aurora-is-near/intents-connect', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@aurora-is-near/intents-connect')>()),
+  getIntermediaryBalance: vi.fn(async () => '990000000000000000'),
 }));
 
 vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
@@ -76,6 +85,30 @@ const deferred = <T>() => {
   return { promise, resolve, reject };
 };
 
+/** 0.98 WETH supplied once the 0.01 WETH fee is carved from the 0.99 waiting. */
+const SPENDABLE = '980000000000000000';
+
+/** `previewSteps()`: the plan back, prepared, `SPENDABLE` after the fee. */
+const previewStepsDry = async (
+  plan: StepsPlan<BorrowParams>,
+): Promise<StepsPreview<BorrowParams>> => ({
+  execution: dryExecution(),
+  networkFee: '10000000000000000',
+  spendable: SPENDABLE,
+  plan: {
+    ...plan,
+    prepared: {
+      steps: [],
+      walletAddress: '0x00000000000000000000000000000000000000cc',
+      intermediary: '0x00000000000000000000000000000000000000aa',
+      amount: plan.amount,
+      spendable: SPENDABLE,
+      networkFee: '10000000000000000',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    },
+  },
+});
+
 /** `preview()`: the plan back, prepared, with the default dry run. */
 const previewDry = async (plan: ExecutionPlan<BorrowParams>) =>
   dryPreview(plan);
@@ -87,8 +120,8 @@ const fakeExecution = (): UseExecutionResult => ({
   isBusy: false,
   preview: vi.fn().mockImplementation(previewDry),
   run: vi.fn(async () => succeeded()),
-  previewSteps: vi.fn(),
-  runSteps: vi.fn(),
+  previewSteps: vi.fn().mockImplementation(previewStepsDry),
+  runSteps: vi.fn(async () => succeeded()),
   runOut: vi.fn(),
   resume: vi.fn(async () => succeeded()),
   retryDeposit: vi.fn(async () => succeeded()),
@@ -159,6 +192,7 @@ const EIP1193_REJECTION = { code: 4001, message: 'User rejected the request.' };
 
 beforeEach(() => {
   sdk.result = fakeExecution();
+  vi.mocked(getIntermediaryBalance).mockResolvedValue('990000000000000000');
   wallet.isConnected = true;
   wallet.connect.mockReset();
 });
@@ -450,22 +484,120 @@ describe('useBorrowFlow', () => {
         expect(exec().resume).not.toHaveBeenCalled();
       };
 
-      it('is priceMoved when the market, read afresh, blames the price, and offers only close', async () => {
+      /** WETH fell to $1,800: the loan is above the max LTV now. */
+      const PRICE_FELL = () =>
+        pairSnapshot(FAKE_BASE, {
+          collateral: [weth({ priceBase: 1_800n * USD })],
+        });
+
+      it('is priceMoved when the market, read afresh, blames the price, and offers the steps-only retry', async () => {
         const { result } = renderFlow();
 
-        // WETH fell to $1,800: the loan is above the max LTV now.
-        await operationFailed(
-          result,
-          pairSnapshot(FAKE_BASE, {
-            collateral: [weth({ priceBase: 1_800n * USD })],
-          }),
-        );
+        await operationFailed(result, PRICE_FELL());
 
         expect(result.current.state).toMatchObject({ error: 'priceMoved' });
         expect(result.current.fundsWaiting).toBe(true);
-        expect(result.current.action).toBe('close');
+        expect(result.current.fundsWaitingExecutionId).toBe(EXECUTION_ID);
+        expect(result.current.action).toBe('retry');
+      });
 
-        await expectNoNewBridgeIn(result);
+      it('retries steps-only from the waiting collateral, re-sized at the fresh price, without a new bridge-in', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(result, PRICE_FELL());
+        await act(() => result.current.retry());
+
+        // The intermediary's WETH on Base is read.
+        expect(getIntermediaryBalance).toHaveBeenCalledWith(
+          expect.objectContaining({
+            intermediary: { evm: '0x00000000000000000000000000000000000000aa' },
+            destination: expect.objectContaining({ chain: 'base' }),
+          }),
+        );
+
+        // Two steps-only dry runs over the 0.99 WETH waiting; the second
+        // borrows 50% of the 0.98 WETH spendable at $1,800: $882.
+        const { previewSteps } = exec();
+
+        expect(previewSteps).toHaveBeenCalledTimes(2);
+
+        const final = vi.mocked(previewSteps).mock.calls[1]?.[0];
+
+        expect(final).toMatchObject({
+          amount: '990000000000000000',
+          feeFromAmount: true,
+          params: { borrowAmount: '882000000' },
+        });
+        expect(final?.recipe.flow).toBe('steps-only');
+
+        expect(result.current.state).toMatchObject({
+          kind: 'confirm',
+          figures: {
+            borrowAmount: 882_000_000n,
+            minimumReceived: 98n * 10n ** 16n,
+            fee: 10n ** 16n,
+            rate: undefined,
+          },
+        });
+
+        await act(() => result.current.confirm());
+
+        expect(exec().runSteps).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(exec().runSteps).mock.calls[0]?.[0]).toMatchObject({
+          params: { borrowAmount: '882000000' },
+        });
+        // The bridge-in was dry-run twice and run once, before the failure.
+        expect(exec().preview).toHaveBeenCalledTimes(2);
+        expect(exec().run).toHaveBeenCalledTimes(1);
+        expect(result.current.state).toEqual({
+          kind: 'done',
+          executionId: EXECUTION_ID,
+        });
+      });
+
+      it('re-quotes steps-only on refresh too', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(result, PRICE_FELL());
+        await act(() => result.current.refresh());
+
+        expect(exec().previewSteps).toHaveBeenCalledTimes(2);
+        expect(exec().preview).toHaveBeenCalledTimes(2);
+        expect(result.current.state.kind).toBe('confirm');
+      });
+
+      it('stays steps-only after the retry’s signature is rejected', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(result, PRICE_FELL());
+        await act(() => result.current.retry());
+
+        vi.mocked(exec().runSteps).mockRejectedValueOnce(EIP1193_REJECTION);
+        await act(() => result.current.confirm());
+
+        expect(result.current.state).toMatchObject({ error: 'rejected' });
+        expect(result.current.fundsWaiting).toBe(true);
+        expect(result.current.fundsWaitingExecutionId).toBe(EXECUTION_ID);
+
+        await act(() => result.current.retry());
+
+        expect(exec().previewSteps).toHaveBeenCalledTimes(4);
+        expect(exec().preview).toHaveBeenCalledTimes(2);
+        expect(exec().run).toHaveBeenCalledTimes(1);
+        expect(result.current.state.kind).toBe('confirm');
+      });
+
+      it('only closes when nothing waits at the intermediary any more', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(result, PRICE_FELL());
+        vi.mocked(getIntermediaryBalance).mockResolvedValueOnce('0');
+        await act(() => result.current.retry());
+
+        expect(exec().previewSteps).not.toHaveBeenCalled();
+        expect(result.current.state).toMatchObject({ error: 'unknown' });
+        expect(result.current.fundsWaiting).toBe(true);
+        expect(result.current.action).toBe('close');
       });
 
       it('is unknown when the market explains nothing, and offers only close', async () => {
@@ -871,7 +1003,7 @@ describe('useBorrowFlow', () => {
       expect(result.current.state.kind).toBe('confirm');
     });
 
-    it('resumes a signed execution after reconnecting, without cancelling it', async () => {
+    it('offers to send the deposit of a signed execution after reconnecting, without cancelling it', async () => {
       wallet.connect.mockResolvedValue(undefined);
 
       const { result, rerender } = renderFlow();
@@ -911,9 +1043,29 @@ describe('useBorrowFlow', () => {
         rerender();
       });
 
-      expect(fresh.resume).toHaveBeenCalledWith(EXECUTION_ID);
+      // The deposit was never sent: a plain resume on the new runner would
+      // only surface the address, so the user is asked to send it.
+      expect(fresh.resume).not.toHaveBeenCalled();
       expect(fresh.preview).not.toHaveBeenCalled();
       expect(fresh.cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({
+        kind: 'deposit',
+        executionId: EXECUTION_ID,
+        depositAddress: undefined,
+        canSend: true,
+      });
+
+      let sent: Promise<void> = Promise.resolve();
+
+      act(() => {
+        sent = result.current.sendDeposit();
+      });
+
+      expect(fresh.resume).toHaveBeenCalledWith(EXECUTION_ID, {
+        depositViaWallet: true,
+        originChain: 'arb',
+        originToken: { contractAddress: undefined, decimals: 6 },
+      });
       expect(result.current.state).toEqual({
         kind: 'pending',
         step: 0,
@@ -922,12 +1074,179 @@ describe('useBorrowFlow', () => {
 
       await act(async () => {
         resumed.resolve(succeeded());
+        await sent;
       });
 
       expect(result.current.state).toEqual({
         kind: 'done',
         executionId: EXECUTION_ID,
       });
+    });
+  });
+
+  describe('restoring', () => {
+    /** An in-flight execution found after a reload. */
+    const found = (
+      status: Execution['status'],
+      messageSigned: boolean,
+    ): Execution => {
+      const base = dryExecution();
+
+      return {
+        ...base,
+        id: EXECUTION_ID,
+        status,
+        quote: { ...base.quote, depositAddress: '0xdeposit' },
+        details: { ...base.details, messageSigned },
+      };
+    };
+
+    const ORIGIN = { chain: 'arb', decimals: 6, contractAddress: '0xaf88' };
+
+    it('never quotes or runs an earlier form input for a restored borrow', async () => {
+      const { result } = renderFlow();
+
+      // Another wallet's borrow was previewed, then cancelled.
+      await startFlow(result);
+      await act(() => result.current.leave());
+
+      vi.mocked(exec().resume).mockRejectedValueOnce(EIP1193_REJECTION);
+      await act(async () => {
+        result.current.restore(found('CREATED', false));
+      });
+
+      expect(result.current.state).toMatchObject({ error: 'rejected' });
+
+      await act(() => result.current.retry());
+
+      // Only the two dry runs of the earlier start.
+      expect(exec().preview).toHaveBeenCalledTimes(2);
+      expect(exec().run).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({ kind: 'idle' });
+    });
+
+    it('offers to send the deposit of a signed DEPOSIT_PENDING borrow whose deposit was not sent', async () => {
+      const { result } = renderFlow();
+
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING', true), {
+          origin: ORIGIN,
+        });
+      });
+
+      expect(result.current.state).toEqual({
+        kind: 'deposit',
+        executionId: EXECUTION_ID,
+        depositAddress: '0xdeposit',
+        canSend: true,
+      });
+      // No runner flow yet: it would refuse the one sendDeposit() starts.
+      expect(exec().resume).not.toHaveBeenCalled();
+
+      await act(() => result.current.sendDeposit());
+
+      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID, {
+        depositViaWallet: true,
+        originChain: 'arb',
+        originToken: { contractAddress: '0xaf88', decimals: 6 },
+      });
+      expect(result.current.state).toEqual({
+        kind: 'done',
+        executionId: EXECUTION_ID,
+      });
+    });
+
+    it('shows the deposit address, and watches for it, when the deposit token is not known', async () => {
+      const { result } = renderFlow();
+      const resumed = deferred<Execution>();
+
+      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING', true));
+      });
+
+      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
+      expect(result.current.state).toMatchObject({
+        kind: 'deposit',
+        canSend: false,
+      });
+
+      await emit(
+        { type: 'phase', phase: 'awaiting-deposit' },
+        { type: 'deposit-address', address: '0xsurfaced', memo: null },
+        { type: 'status', status: 'DEPOSIT_PENDING' },
+      );
+
+      expect(result.current.state).toEqual({
+        kind: 'deposit',
+        executionId: EXECUTION_ID,
+        depositAddress: '0xsurfaced',
+        canSend: false,
+      });
+
+      // sendDeposit() can't send it without the token.
+      await act(() => result.current.sendDeposit());
+
+      expect(exec().resume).toHaveBeenCalledTimes(1);
+
+      await emit({ type: 'status', status: 'DEPOSIT_PROCESSING' });
+
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: EXECUTION_ID,
+      });
+    });
+
+    it('resumes a borrow whose deposit was sent before the reload past the deposit step', async () => {
+      const { result } = renderFlow();
+      const resumed = deferred<Execution>();
+
+      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING', true), {
+          origin: ORIGIN,
+          depositSent: true,
+        });
+      });
+
+      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
+
+      await emit({
+        type: 'deposit-address',
+        address: '0xsurfaced',
+        memo: null,
+      });
+
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: EXECUTION_ID,
+      });
+    });
+
+    it('reports a deposit sent through onDepositSent', async () => {
+      const onDepositSent = vi.fn();
+      const { result } = renderFlow({ onDepositSent });
+
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING', true), {
+          origin: ORIGIN,
+        });
+      });
+
+      const resumed = deferred<Execution>();
+
+      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
+
+      act(() => {
+        void result.current.sendDeposit();
+      });
+
+      await emit({ type: 'deposit-sent', txHash: '0xtx' });
+
+      expect(onDepositSent).toHaveBeenCalledWith(EXECUTION_ID);
+      expect(result.current.state).toMatchObject({ kind: 'pending', step: 1 });
     });
   });
 
