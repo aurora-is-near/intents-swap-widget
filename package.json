@@ -12,7 +12,7 @@
     "check-docs": "node ./bin/verify-docs.js"
   },
   "engines": {
-    "node": ">=20.18.1"
+    "node": ">=22.14.0"
   },
   "husky": {
     "hooks": {
@@ -38,7 +38,7 @@
     "@semantic-release/exec": "^7.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.1",
-    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/npm": "^13.2.0",
     "@semantic-release/release-notes-generator": "^14.0.1",
     "@sentry/vite-plugin": "^4.6.0",
     "@swc/core": "^1.15.2",
