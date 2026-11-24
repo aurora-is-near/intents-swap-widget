@@ -48,12 +48,29 @@ export function NewLoanPage() {
   const navigate = useNavigate();
   const { address } = useIntentsConnectWallet();
   const [loan, setLoan] = useState<BorrowDialogLoan>();
+  // "Close and keep tracking" was pressed on the delayed warning: the
+  // borrow stays pending underneath, but its dialog is gone.
+  const [dismissed, setDismissed] = useState(false);
   // The figures come from the hook, which keeps the dry run the borrow runs:
   // a retry that previews afresh and runs at once (never back in `confirm`)
   // replaces them.
   const { state, figures } = flow;
+  const delayed = state.kind === 'error' && state.error === 'delayed';
+
+  if (dismissed && state.kind !== 'pending' && !delayed) {
+    setDismissed(false);
+  }
+
+  // A signed borrow is being tracked, whether or not its dialog is shown:
+  // a new one must not replace its loan and figures.
+  const tracked =
+    state.kind === 'signing' || state.kind === 'pending' || delayed;
 
   const onBorrow = (request: BorrowRequest) => {
+    if (tracked) {
+      return;
+    }
+
     const adapter = adapters.find(({ id }) => id === request.market.provider);
 
     if (!adapter) {
@@ -63,24 +80,36 @@ export function NewLoanPage() {
     const { paid: _paid, ...input } = request;
 
     setLoan(dialogLoan(request, address));
+    setDismissed(false);
     void flow.start({ ...input, adapter });
   };
 
   return (
     <>
       <NewLoanForm
-        borrowing={state.kind === 'previewing'}
+        borrowing={state.kind === 'previewing' || tracked}
         onBorrow={onBorrow}
       />
       <BorrowDialog
         figures={figures}
         loan={loan}
-        step={borrowDialogStep(state)}
+        step={
+          dismissed && (state.kind === 'pending' || delayed)
+            ? undefined
+            : borrowDialogStep(state, flow.action, flow.fundsWaiting)
+        }
         onCancel={() => {
           void flow.leave();
         }}
         onConfirm={() => {
           void flow.confirm();
+        }}
+        onAction={(action) => {
+          if (action === 'close' && delayed) {
+            setDismissed(true);
+          }
+
+          void flow[action]();
         }}
         onViewPosition={() => {
           void flow.leave();
