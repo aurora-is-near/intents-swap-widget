@@ -167,6 +167,47 @@ describe('network handling', () => {
       false,
     );
   });
+
+  it('adds the chain when the switch reports 4902 nested in its cause', async () => {
+    let chainId = 1;
+
+    const { provider, calls } = stubProvider(1, {
+      eth_chainId: () => `0x${chainId.toString(16)}`,
+      wallet_switchEthereumChain: (_, nth) => {
+        if (nth === 0) {
+          // Some wallets wrap the 4902 in an internal error.
+          throw Object.assign(
+            new Error('Internal', { cause: { code: 4902 } }),
+            { code: -32603 },
+          );
+        }
+
+        chainId = BASE_CHAIN_ID;
+
+        return null;
+      },
+    });
+
+    await makeTransfer(
+      {
+        address: DEPOSIT,
+        amountAtomic: '1',
+        decimals: 6,
+        tokenAddress: USDC,
+        chain: 'base',
+        evmChainId: BASE_CHAIN_ID,
+      },
+      { provider },
+    );
+
+    const methods = calls.map((c) => c.method);
+
+    expect(methods).toContain('wallet_addEthereumChain');
+    expect(
+      methods.filter((m) => m === 'wallet_switchEthereumChain'),
+    ).toHaveLength(2);
+    expect(methods).toContain('eth_sendTransaction');
+  });
 });
 
 describe('validation', () => {

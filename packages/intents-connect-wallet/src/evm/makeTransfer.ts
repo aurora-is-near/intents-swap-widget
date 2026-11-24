@@ -69,9 +69,6 @@ const errorCodes = (error: unknown): unknown[] => {
   return codes;
 };
 
-/** The outermost EIP-1193 `code` along an error's `cause` chain. */
-const errorCode = (error: unknown): unknown => errorCodes(error)[0];
-
 const hasErrorCode = (error: unknown, code: number): boolean =>
   errorCodes(error).includes(code);
 
@@ -135,7 +132,7 @@ const switchEthereumChain = async (
   try {
     await requestSwitch();
   } catch (error: unknown) {
-    if (errorCode(error) === 4902) {
+    if (hasErrorCode(error, 4902)) {
       await addEthereumChain(targetChainId, provider);
 
       // Adding usually switches as well, but that is wallet-specific — the
