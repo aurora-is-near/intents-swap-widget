@@ -5,6 +5,7 @@ import { usdc, weth } from '../../tests/fakeMarkets';
 import {
   borrowPreviewFigures,
   type BorrowPreviewFiguresInput,
+  stepsPreviewFigures,
 } from './previewFigures';
 
 const ETH = 10n ** 18n;
@@ -86,5 +87,27 @@ describe('borrowPreviewFigures', () => {
     expect(figures.ltvBps).toBe(0n);
     expect(figures.liquidationPrice).toBeNull();
     expect(figures.healthHundredths).toBeNull();
+  });
+});
+
+describe('stepsPreviewFigures', () => {
+  it('supplies exactly what is spendable, with the fee reported and no rate', () => {
+    const figures = stepsPreviewFigures({
+      spendable: 98n * 10n ** 16n,
+      networkFee: 10n ** 16n,
+      borrowAmount: 1_470n * USDC,
+      collateral: weth(),
+      borrow: usdc(),
+    });
+
+    expect(figures).toMatchObject({
+      collateralExpected: 98n * 10n ** 16n,
+      minimumReceived: 98n * 10n ** 16n,
+      rate: undefined,
+      fee: 10n ** 16n,
+      borrowAmount: 1_470n * USDC,
+      // $1,470 against $2,940.
+      ltvBps: 5_000n,
+    });
   });
 });

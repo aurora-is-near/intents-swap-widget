@@ -41,6 +41,11 @@ export type BorrowPreviewErrorReason =
   /** The minimum received buys no borrow at this LTV. */
   | 'nothingToBorrow'
   /**
+   * A steps-only retry found no collateral waiting at the intermediary: it
+   * was spent, or the supply went through and only the borrow failed.
+   */
+  | 'nothingWaiting'
+  /**
    * The final dry run's minimum received is lower than the first's, so the
    * borrow sized on the first would exceed the chosen LTV.
    */

@@ -61,22 +61,23 @@ export type BorrowPreviewFigures = {
   healthHundredths: bigint | null;
 };
 
-export const borrowPreviewFigures = ({
-  execution: { quote, details },
+/** The loan's figures once the collateral amounts are known. */
+const loanAt = ({
+  collateralExpected,
+  minimumReceived,
+  rate,
+  fee,
   borrowAmount,
-  paid,
   collateral,
   borrow,
-}: BorrowPreviewFiguresInput): BorrowPreviewFigures => {
-  const collateralExpected = BigInt(quote.amountOut);
-  const minimumReceived = BigInt(quote.minAmountOut);
-  const amountIn = BigInt(quote.amountIn);
-
-  const rate =
-    paid.assetId !== collateral.assetId && amountIn > 0n
-      ? (collateralExpected * scaleOf(paid.decimals)) / amountIn
-      : undefined;
-
+}: Pick<
+  BorrowPreviewFigures,
+  'collateralExpected' | 'minimumReceived' | 'rate' | 'fee' | 'borrowAmount'
+> &
+  Pick<
+    BorrowPreviewFiguresInput,
+    'collateral' | 'borrow'
+  >): BorrowPreviewFigures => {
   const { collateralValue, debt } = loanValues({
     collateralAmount: minimumReceived,
     collateral,
@@ -95,8 +96,7 @@ export const borrowPreviewFigures = ({
     minimumReceived,
     rate,
     borrowAmount,
-    fee:
-      details.networkFee === undefined ? undefined : BigInt(details.networkFee),
+    fee,
     ltvBps: ltvBps(debt, collateralValue),
     liquidationPrice: liquidationPrice({
       collateralAmount: minimumReceived,
@@ -108,3 +108,55 @@ export const borrowPreviewFigures = ({
       health === null ? null : (health * 100n) / HEALTH_FACTOR_ONE,
   };
 };
+
+export const borrowPreviewFigures = ({
+  execution: { quote, details },
+  borrowAmount,
+  paid,
+  collateral,
+  borrow,
+}: BorrowPreviewFiguresInput): BorrowPreviewFigures => {
+  const collateralExpected = BigInt(quote.amountOut);
+  const amountIn = BigInt(quote.amountIn);
+
+  return loanAt({
+    collateralExpected,
+    minimumReceived: BigInt(quote.minAmountOut),
+    rate:
+      paid.assetId !== collateral.assetId && amountIn > 0n
+        ? (collateralExpected * scaleOf(paid.decimals)) / amountIn
+        : undefined,
+    fee:
+      details.networkFee === undefined ? undefined : BigInt(details.networkFee),
+    borrowAmount,
+    collateral,
+    borrow,
+  });
+};
+
+export type StepsPreviewFiguresInput = {
+  /** What the steps supply, net of the fee: the steps preview's `spendable`. */
+  spendable: bigint;
+  /** The steps preview's `networkFee`, in collateral units, if reported. */
+  networkFee: bigint | undefined;
+  borrowAmount: bigint;
+  collateral: BorrowPreviewFiguresInput['collateral'];
+  borrow: BorrowPreviewFiguresInput['borrow'];
+};
+
+/**
+ * The confirm figures of a steps-only retry (`stepsRetry.ts`): nothing is
+ * converted, so no rate, and the collateral supplied is exactly `spendable`.
+ */
+export const stepsPreviewFigures = ({
+  spendable,
+  networkFee,
+  ...loan
+}: StepsPreviewFiguresInput): BorrowPreviewFigures =>
+  loanAt({
+    collateralExpected: spendable,
+    minimumReceived: spendable,
+    rate: undefined,
+    fee: networkFee,
+    ...loan,
+  });

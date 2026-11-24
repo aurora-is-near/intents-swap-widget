@@ -9,7 +9,11 @@ import { useEffect, useRef } from 'react';
 import { formatAddress } from '../../wallet/formatAddress';
 import { formatUsd } from '../loanFormat';
 import type { RestoredBorrowSummary } from './BorrowDialog';
-import { clearPendingBorrow, readPendingBorrow } from './pendingBorrowStore';
+import {
+  clearPendingBorrow,
+  type PendingBorrowRecord,
+  readPendingBorrow,
+} from './pendingBorrowStore';
 import { AAVE_BORROW_INTENT } from './recipe';
 
 /** Where an in-flight execution is, in the dialog's words. */
@@ -54,9 +58,14 @@ export type UseRestoreBorrowOptions = {
   idle: boolean;
   /**
    * Called once per wallet with its in-flight borrow and the rows to show:
-   * the kept record's when it is this execution's, else generic ones.
+   * the kept record's when it is this execution's, else generic ones. `kept`
+   * is that record (its deposit origin and whether the deposit was sent).
    */
-  onRestore: (execution: Execution, summary: RestoredBorrowSummary) => void;
+  onRestore: (
+    execution: Execution,
+    summary: RestoredBorrowSummary,
+    kept: PendingBorrowRecord | undefined,
+  ) => void;
 };
 
 /**
@@ -129,11 +138,15 @@ export const useRestoreBorrow = ({
         clearPendingBorrow(address, record.executionId);
       }
 
-      onRestoreRef.current(execution, {
-        executionId: execution.id,
-        rows: kept?.rows ?? genericBorrowRows(execution),
-        ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
-      });
+      onRestoreRef.current(
+        execution,
+        {
+          executionId: execution.id,
+          rows: kept?.rows ?? genericBorrowRows(execution),
+          ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
+        },
+        kept,
+      );
     });
   }, [address, listable]);
 };

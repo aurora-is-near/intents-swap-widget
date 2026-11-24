@@ -160,12 +160,13 @@ chain, where the execution's intermediary runs the steps.
    the borrow arrives whole); LTV against the minimum received; recipient.
    "Confirm in wallet" runs that preview's plan as it is (`run(plan)`
    reuses its prepared steps).
-3. **Sign** (pending step 1, "Sign one intent"). The runner creates the
+3. **Sign** (pending step 1, "Sign and deposit"). The runner creates the
    execution (the `created` event; see restore below) and asks the wallet
    to sign the intent.
-4. **Deposit**. An EVM origin then sends the deposit transaction from the
+4. **Deposit** (still pending step 1). An EVM origin then sends the deposit transaction from the
    wallet: this is where "not enough gas" arises.
-5. **Steps** (pending steps 2 and 3). Once the collateral arrives, the
+5. **Steps** (pending step 2, "Bridge the collateral", then step 3, "Open
+   the loan and deliver …"). Once the collateral arrives, the
    intermediary runs the recipe's steps (`recipe.ts`,
    `markets/aaveV3/steps.ts`): approve and `supply` (or the WETH gateway's
    `depositETH` for native ETH), `borrow` at variable rate, and `transfer`
@@ -201,18 +202,30 @@ recovery action:
   not hold the wallet's in-flight lock.
 - A wallet that disconnects mid-borrow gets "Reconnect wallet": a signed
   execution is resumed from the new connection, an unsigned one re-quoted.
-- If the borrow step fails after the collateral arrived, the collateral
-  waits at the intermediary and only Close is offered: a new bridge-in
-  would spend the user's funds again. The steps-only retry from the waiting
-  funds is a follow-up (the TODO in `useBorrowFlow.retry`).
+- If the borrow step fails after the collateral arrived
+  (`OPERATION_FAILED`), the collateral waits at the intermediary. The error
+  dialog says so and shows the execution id in full, and its action is
+  "Try again": a steps-only retry (`stepsRetry.ts`), never a new bridge-in.
+  It reads the market afresh and the collateral waiting at the
+  intermediary (`getIntermediaryBalance`), re-sizes the borrow at the
+  chosen LTV with two `previewSteps()` dry runs (the fee is carved from the
+  collateral, `feeFromAmount`), and goes back to confirm with the new
+  figures; confirming runs it with `runSteps()`. Until the user leaves,
+  every retry stays steps-only. With nothing waiting any more (the supply
+  went through and only the borrow failed), or for a restored borrow
+  (no form to size it from), only Close is offered.
+- After Close, or a reload, nothing in the app lists the waiting
+  collateral yet; the execution id in the dialog is how to find it.
 
 ### Restore after a reload
 
 - On `created`, `NewLoanPage` keeps a record in `localStorage` under one
   key, `aurora-borrow-pending`, per wallet address
-  (`pendingBorrowStore.ts`): the execution id and the confirm dialog's rows.
-  It is cleared on a terminal status (`SUCCESS`, `DEPOSIT_FAILED`,
-  `OPERATION_FAILED`) or a cancel. Malformed stored data is ignored.
+  (`pendingBorrowStore.ts`): the execution id, the confirm dialog's rows
+  and the token the deposit is paid in (chain, contract, decimals). The
+  runner's `deposit-sent` marks it `depositSent`. It is cleared on a
+  terminal status (`SUCCESS`, `DEPOSIT_FAILED`, `OPERATION_FAILED`) or a
+  cancel. Malformed stored data is ignored.
 - On mount with a connected wallet, `useRestoreBorrow` looks once for the
   wallet's in-flight executions (`useWalletExecutions` with
   `IN_FLIGHT_STATUSES`) and takes the one whose `metadata.intent` is
@@ -220,10 +233,30 @@ recovery action:
   `useBorrowFlow().restore` calls `resume(executionId)` and reopens the
   pending dialog at the execution's step (or at signing, if it was never
   signed).
+- A signed `DEPOSIT_PENDING` borrow whose deposit is not known to be sent
+  is not resumed plainly: across sessions the runner can't tell a deposit
+  never sent from one not yet seen, so it would only surface the address
+  and no wallet prompt would come. Instead the dialog says the deposit
+  wasn't sent and offers "Send deposit", which resumes with
+  `depositViaWallet: true` and the kept token (`ResumeDepositOptions`).
+  Without the token kept, it shows the deposit address while the runner
+  watches for a deposit. Both can be closed; the borrow is restored again
+  on the next visit. A deposit marked sent resumes past the deposit step.
+  A reconnect after the signature but before the deposit does the same.
+- A restored borrow never has a form input: a retry that would quote again
+  closes it instead of quoting an earlier borrow's input.
 - The dialog shows the kept rows when the record is this execution's.
   Without one (another browser, cleared storage) it shows generic rows from
   the execution: the paid and supplied values in dollars, its status and
   id. A record no in-flight borrow matches is dropped.
+
+### Open
+
+- Funding with the collateral asset already on the market's chain (WETH on
+  Base into the Base market) may not be quotable as a bridge-in. The plan
+  review's answer: use the bridge-in if it quotes, otherwise disable that
+  funding row with a reason. Not known until the maintainer's Base run;
+  until then, a refused quote shows "Something went wrong".
 
 ### Environment
 
