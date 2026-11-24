@@ -162,6 +162,42 @@ describe('TokenSelect', () => {
     expect(plain).toHaveAccessibleName(/wstETH.*\$3,120\.40$/);
   });
 
+  it('disables an unavailable row and shows its reason after the chains', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+
+    render(
+      <TokenSelect
+        aria-label="Choose collateral token"
+        onValueChange={onValueChange}
+        options={[
+          OPTIONS[0],
+          { ...OPTIONS[1], unavailableReason: 'Not supported yet' },
+        ]}
+        selected={{
+          symbol: 'ETH',
+          mark: OPTIONS[0].mark,
+          chainName: 'Ethereum',
+        }}
+      />,
+    );
+    await user.click(getTrigger());
+
+    const [available, unavailable] = within(
+      queryPopup() as HTMLElement,
+    ).getAllByRole('button');
+
+    expect(available).toBeEnabled();
+    expect(unavailable).toBeDisabled();
+    expect(unavailable).toHaveTextContent(
+      'Ethereum · Arbitrum · Not supported yet',
+    );
+
+    await user.click(unavailable);
+
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
   it('a pick calls onValueChange with the id, closes and focuses the trigger', async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();

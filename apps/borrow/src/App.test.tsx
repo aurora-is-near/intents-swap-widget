@@ -19,6 +19,12 @@ vi.mock('./markets/aaveV3', async () =>
   (await import('./tests/aaveV3Mock')).createAaveV3Mock(),
 );
 
+// The New loan form reads wallet balances through the SDK's hooks; they are
+// replaced by empty results, so no chain or token list is read.
+vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
+  (await import('./tests/balancesMock')).createBalancesMock(importOriginal),
+);
+
 const renderApp = async (path = '/') => {
   const history = createMemoryHistory({ initialEntries: [path] });
 

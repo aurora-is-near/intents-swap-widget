@@ -27,6 +27,11 @@ export type TokenOption = {
   balanceLabel?: string;
   /** The balance's value, such as `$3,900.50`; only with `balanceLabel`. */
   balanceUsdLabel?: string;
+  /**
+   * Why the token can't be picked, such as `Not supported yet`. When set,
+   * the row is disabled and the reason follows the chains label.
+   */
+  unavailableReason?: string;
 };
 
 /**
@@ -90,14 +95,26 @@ export type TokenRowProps = Omit<
  * One token in a `TokenList`: a plain button (reached with Tab) showing the
  * mark, symbol, chains and price, or the balance and its USD value when the
  * option has a `balanceLabel`. Its accessible name is that text; the mark is
- * decorative.
+ * decorative. An option with an `unavailableReason` is disabled, and the
+ * reason is part of the name.
  */
 export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
-  ({ option, selected = false, className, type = 'button', ...props }, ref) => (
+  (
+    {
+      option,
+      selected = false,
+      disabled,
+      className,
+      type = 'button',
+      ...props
+    },
+    ref,
+  ) => (
     <button
       ref={ref}
       aria-pressed={selected}
       className={cn(ROW, className)}
+      disabled={disabled ?? option.unavailableReason !== undefined}
       type={type}
       {...props}>
       {/* Line 245: 34px, letters 13px / 800. */}
@@ -113,7 +130,11 @@ export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
       />
       <span className={NAMES}>
         <span className={cn('block', SYMBOL)}>{option.symbol}</span>
-        <span className={cn('block', CHAINS)}>{option.chainsLabel}</span>
+        <span className={cn('block', CHAINS)}>
+          {option.unavailableReason === undefined
+            ? option.chainsLabel
+            : `${option.chainsLabel} · ${option.unavailableReason}`}
+        </span>
       </span>
       {option.balanceLabel === undefined ? (
         <span className={PRICE}>{option.priceLabel}</span>

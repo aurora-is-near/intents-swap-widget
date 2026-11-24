@@ -56,7 +56,9 @@ yarn turbo run build typecheck lint test --filter=borrow
   app. The `mobile:` variant is the artboards' `max-width: 640px` block.
 - **Intents Connect** (`src/config.ts`, `src/wallet/`): one API client with
   no key; `IntentsConnectProvider` gets it and the AppKit wallet (`null`
-  while disconnected), under a `QueryClientProvider`.
+  while disconnected), under a `QueryClientProvider`. `src/intentsApi.ts`
+  is the intents API client the SDK's balance hooks need; its key,
+  `VITE_INTENTS_API_KEY`, is public (it travels in the URL path).
 - **API-key proxy** (`server/intentsConnectProxy.ts`): the SDK's two create
   calls (`POST api/v1/executions/:wallet` and `…/:wallet/steps`) go to
   `/api/intents-connect`, which adds `x-api-key` from the server-only

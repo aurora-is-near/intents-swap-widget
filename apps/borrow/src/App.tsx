@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { intentsConnectApi } from './config';
+import { intentsApi } from './intentsApi';
 import { createAaveV3Adapter } from './markets/aaveV3';
 import { getClient } from './markets/aaveV3/clients';
 import { MarketAdaptersProvider } from './markets/MarketAdaptersProvider';
@@ -24,7 +25,7 @@ const marketAdapters = [
 /**
  * The theme around the wallet and the router, so every route can read and set
  * it and the connect modal follows it. Inside the wallet, Intents Connect gets
- * the API client and the connected wallet; queries share one client per app,
+ * the API clients and the connected wallet; queries share one client per app,
  * and the market adapters sit inside it for the market hooks.
  */
 export function App({ router }: AppProps) {
@@ -35,7 +36,7 @@ export function App({ router }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <MarketAdaptersProvider adapters={marketAdapters}>
           <WalletProvider>
-            <IntentsConnectWalletProvider>
+            <IntentsConnectWalletProvider intentsApi={intentsApi}>
               <RouterProvider router={router} />
             </IntentsConnectWalletProvider>
           </WalletProvider>

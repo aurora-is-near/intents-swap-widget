@@ -24,6 +24,12 @@ vi.mock('./markets/aaveV3', async () =>
   (await import('./tests/aaveV3Mock')).createAaveV3Mock(),
 );
 
+// The New loan form reads wallet balances through the SDK's hooks; they are
+// replaced by empty results, so no chain or token list is read.
+vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
+  (await import('./tests/balancesMock')).createBalancesMock(importOriginal),
+);
+
 const ADDRESS = '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21';
 
 const setConnected = (connected: boolean) => {
@@ -50,7 +56,7 @@ describe('New loan tab', () => {
     wallet.disconnect.mockReset().mockResolvedValue(undefined);
   });
 
-  it('shows the placeholder and a connect CTA with the Aave chip while disconnected', async () => {
+  it('shows the loan form and a connect CTA with the Aave chip while disconnected', async () => {
     const user = userEvent.setup();
 
     await renderApp('/');
@@ -90,7 +96,7 @@ describe('New loan tab', () => {
     expect(tiles.map((tile) => tile.textContent)).toEqual(['—', '—', '—']);
   });
 
-  it('keeps the placeholder without the CTA while connected', async () => {
+  it('keeps the loan form without the CTA while connected', async () => {
     setConnected(true);
 
     await renderApp('/');

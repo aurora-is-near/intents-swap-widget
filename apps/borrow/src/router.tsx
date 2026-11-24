@@ -9,7 +9,7 @@ import type { RouterHistory } from '@tanstack/react-router';
 import { useTheme } from '@aurora-is-near/ui-kit';
 import { lazy } from 'react';
 
-import { NewLoanPlaceholder } from './loan/NewLoanPlaceholder';
+import { NewLoanForm } from './loan/NewLoanForm';
 import { PositionsEmptyState } from './positions/PositionsEmptyState';
 import { Shell } from './shell/Shell';
 
@@ -22,11 +22,11 @@ const shellRoute = createRoute({
   component: Shell,
 });
 
-/** The New loan tab: a placeholder until the loan form feature. */
+/** The New loan tab: the loan form beside the market list. */
 const newLoanRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/',
-  component: NewLoanPlaceholder,
+  component: NewLoanForm,
 });
 
 /** The My positions tab: the empty state until positions are read. */
