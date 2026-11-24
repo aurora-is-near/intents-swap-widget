@@ -722,6 +722,60 @@ describe('NewLoanForm', () => {
       expect(tile('Health')).toHaveTextContent('1.02');
     });
 
+    it('selects nothing until every market has loaded, as the list does', async () => {
+      const user = userEvent.setup();
+      let loadArbitrum: () => void = () => {};
+      const arbitrumLoaded = new Promise<void>((resolve) => {
+        loadArbitrum = resolve;
+      });
+
+      const adapter = createFakeAdapter({
+        getMarketSnapshot: async (read) => {
+          const found = SNAPSHOTS[read.id];
+
+          if (!found) {
+            throw new Error(`no snapshot for ${read.id}`);
+          }
+
+          // Arbitrum, the cheaper market, answers last.
+          if (read.id === FAKE_ARB.id) {
+            await arbitrumLoaded;
+          }
+
+          return found;
+        },
+      });
+
+      render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <MarketAdaptersProvider adapters={[adapter]}>
+            <NewLoanForm />
+          </MarketAdaptersProvider>
+        </QueryClientProvider>,
+      );
+
+      await screen.findByRole('button', { name: /Aave Base/ });
+      await user.type(amountField(), '2');
+
+      // Base alone has loaded: no selection, so no figures from it yet.
+      expect(market('Base')).toHaveAttribute('aria-pressed', 'false');
+      expect(tile('Health')).toHaveTextContent('—');
+      expect(tile('Liquidation')).toHaveTextContent('—');
+      expect(received()).toHaveTextContent('0');
+
+      loadArbitrum();
+
+      // Then BEST, Arbitrum, everywhere at once.
+      expect(
+        await screen.findByRole('button', {
+          name: /Aave Arbitrum/,
+          pressed: true,
+        }),
+      ).toBeInTheDocument();
+      expect(tile('Liquidation')).toHaveTextContent('$1,818at 82.5% LTV');
+      expect(received()).toHaveTextContent('2,991');
+    });
+
     describe('not connected', () => {
       it('offers to connect on the selected market, and opens the wallet', async () => {
         const user = userEvent.setup();

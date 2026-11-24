@@ -17,18 +17,19 @@ import type { FundingAsset } from '../balances/toFundingAssets';
 import { formatApr } from '../markets/format';
 import { useConnectWallet } from '../wallet/useConnectWallet';
 import { LoanCta } from './LoanCta';
-import { formatAmount, formatUsd, USD_CENTS, USD_ROUND } from './loanFormat';
+import {
+  formatAmount,
+  formatUsd,
+  toDisplayNumber,
+  USD_CENTS,
+  USD_ROUND,
+} from './loanFormat';
 import { LoanSummary } from './LoanSummary';
 import { LtvField } from './LtvField';
 import { MarketList } from './MarketList';
 import { RecipientField } from './RecipientField';
 import { sameSymbol } from './model/symbols';
-import {
-  type LoanForm,
-  type ReserveAsset,
-  toDisplayNumber,
-  useLoanForm,
-} from './useLoanForm';
+import { type LoanForm, type ReserveAsset, useLoanForm } from './useLoanForm';
 
 /**
  * Chain names and dots by 1Click slug: the artboard's `CH` (Web-Borrow.dc.html
@@ -492,7 +493,7 @@ export function NewLoanForm() {
           disabledIds={form.disabledMarketIds}
           layout="cards"
           pair={form.pair}
-          selectedId={form.marketsSettled ? form.market?.id : undefined}
+          selectedId={form.market?.id}
           onSelect={form.pickMarket}
         />
         {/* At an LTV no market fits, the figures stand in with the first

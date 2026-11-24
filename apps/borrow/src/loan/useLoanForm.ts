@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatUnits, parseUnits } from 'viem';
+import { parseUnits } from 'viem';
 
 import type { FundingAsset } from '../balances/toFundingAssets';
 import {
@@ -17,7 +17,7 @@ import { useMarketSnapshots } from '../markets/useMarketSnapshots';
 import { type MarketPair, type MarketRow, pairRow } from './marketRows';
 import { collateralFor } from './model/collateral';
 import { type CtaState, ctaState } from './model/ctaState';
-import { loanFigures } from './model/loanFigures';
+import { type LoanFigures, loanFigures } from './model/loanFigures';
 import { marketFit } from './model/marketFit';
 import { validateRecipient } from './model/recipient';
 import { sameSymbol } from './model/symbols';
@@ -55,8 +55,6 @@ type Funding = {
   decimals: number;
 };
 
-type LoanFigures = ReturnType<typeof loanFigures>;
-
 export type LoanForm = {
   connected: boolean;
   /** The wallet's balances; empty rows while not connected. */
@@ -90,13 +88,15 @@ export type LoanForm = {
   marketRows: MarketRow[];
   /**
    * The selected market, as `marketFit` gives it: the user's pick if it
-   * fits, else BEST; `undefined` when the LTV fits no market.
+   * fits, else BEST; `undefined` when the LTV fits no market. Until every
+   * market has settled, only a fitting pick, as the market list does.
    */
   market: LendingMarket | undefined;
   /**
    * The market the figures and the liquidation marker are read for: the
    * selection, or, when the LTV fits no market, the first market with the
    * pair, as the artboard's `|| M[0]` (line 1143). Not a selection.
+   * `undefined` while the markets load and nothing is picked.
    */
   figuresMarket: LendingMarket | undefined;
   /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
@@ -369,15 +369,23 @@ export const useLoanForm = ({
   };
 
   const marketRows = ready.flatMap((snapshot) => pairRow(snapshot, pair) ?? []);
-  const { fits, selectedId } = marketFit({
-    rows: marketRows,
-    ltv,
-    pickedId: pickedMarketId,
-  });
+  const fit = marketFit({ rows: marketRows, ltv, pickedId: pickedMarketId });
+  const { fits } = fit;
 
-  // The selection, or a stand-in when none fits, for the figures only.
+  // One rule with the market list: until every market has settled, BEST is
+  // not known, so only the user's own pick (when it fits) is a selection.
+  const fittingPick =
+    pickedMarketId !== undefined && fits.get(pickedMarketId) === true
+      ? pickedMarketId
+      : undefined;
+
+  const selectedId = marketsSettled ? fit.selectedId : fittingPick;
+
+  // The selection, or, once settled and none fits, a stand-in for the
+  // figures only; nothing while the markets still load.
   const figuresRow =
-    marketRows.find(({ market }) => market.id === selectedId) ?? marketRows[0];
+    marketRows.find(({ market }) => market.id === selectedId) ??
+    (marketsSettled ? marketRows[0] : undefined);
 
   const snapshot = ready.find(
     ({ market }) => market.id === figuresRow?.market.id,
@@ -490,7 +498,3 @@ export const useLoanForm = ({
     cta,
   };
 };
-
-/** A smallest-unit amount as a float, for display only. */
-export const toDisplayNumber = (amount: bigint, decimals: number) =>
-  Number(formatUnits(amount, decimals));

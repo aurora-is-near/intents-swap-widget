@@ -1,8 +1,7 @@
 import { Button } from '@aurora-is-near/ui-kit';
 
 import type { CtaState } from './model/ctaState';
-import { formatAmount } from './loanFormat';
-import { toDisplayNumber } from './useLoanForm';
+import { formatAmount, toDisplayNumber } from './loanFormat';
 
 /**
  * `.cta` (Web-Borrow.dc.html line 371): the kit's `.go` with radius 16, gap

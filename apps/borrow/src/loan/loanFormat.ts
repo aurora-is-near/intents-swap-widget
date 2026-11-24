@@ -1,3 +1,5 @@
+import { formatUnits } from 'viem';
+
 /**
  * The New loan form's numbers as Web-Borrow.dc.html shows them, shared by
  * the form, the summary tiles and the call to action.
@@ -32,3 +34,7 @@ export const formatAmount = (value: number) =>
   value.toLocaleString('en-US', {
     maximumFractionDigits: amountDigits(value),
   });
+
+/** A smallest-unit amount as a float, for display only. */
+export const toDisplayNumber = (amount: bigint, decimals: number) =>
+  Number(formatUnits(amount, decimals));

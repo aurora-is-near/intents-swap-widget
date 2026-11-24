@@ -5,6 +5,7 @@ import {
 } from '@aurora-is-near/ui-kit';
 import { useId } from 'react';
 
+import { formatBps } from '../markets/format';
 import { LTV_MAX, LTV_MIN, LTV_STEP, LTV_ZONES, zoneOf } from './model/zones';
 
 /** Each zone's colour from the kit's risk colours, safe to risky (line 304). */
@@ -21,11 +22,9 @@ const ZONES: readonly SliderZone[] = LTV_ZONES.map(({ name, upTo }) => ({
   color: ZONE_COLORS[name],
 }));
 
-const PERCENT = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
-
 /** "liq. 81%", "liq. 82.5%": the marker's label (script line 1574). */
 const liquidationLabel = (liquidationLtvBps: number) =>
-  `liq. ${PERCENT.format(liquidationLtvBps / 100)}%`;
+  `liq. ${formatBps(liquidationLtvBps)}`;
 
 type LtvFieldProps = {
   /** Loan-to-value in whole percent. */
