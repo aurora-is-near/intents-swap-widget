@@ -33,6 +33,28 @@ describe('REOWN_PROJECT_ID', () => {
   });
 });
 
+describe('RPC URLs', () => {
+  it('fall back to the publicnode defaults when unset', async () => {
+    vi.stubEnv('VITE_RPC_URL_BASE', '');
+    vi.stubEnv('VITE_RPC_URL_ARB', '');
+
+    const { RPC_URL_BASE, RPC_URL_ARB } = await loadConfig();
+
+    expect(RPC_URL_BASE).toBe('https://base-rpc.publicnode.com');
+    expect(RPC_URL_ARB).toBe('https://arbitrum-one-rpc.publicnode.com');
+  });
+
+  it('read VITE_RPC_URL_BASE and VITE_RPC_URL_ARB', async () => {
+    vi.stubEnv('VITE_RPC_URL_BASE', ' https://base.example ');
+    vi.stubEnv('VITE_RPC_URL_ARB', 'https://arb.example');
+
+    const { RPC_URL_BASE, RPC_URL_ARB } = await loadConfig();
+
+    expect(RPC_URL_BASE).toBe('https://base.example');
+    expect(RPC_URL_ARB).toBe('https://arb.example');
+  });
+});
+
 describe('intentsConnectApi', () => {
   it('sends create calls through the same-origin proxy by default, with no key', async () => {
     vi.stubEnv('VITE_INTENTS_CONNECT_API_URL', '');
