@@ -1,11 +1,29 @@
 import { createMemoryHistory } from '@tanstack/react-router';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { App } from './App';
 import { createAppRouter } from './router';
 import { THEME_STORAGE_KEY } from './theme';
+
+// The shell now mounts Reown AppKit and the header's wallet button; the shell
+// tests run without a wallet, so AppKit is replaced by a disconnected stub.
+vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () => {
+  const { createContext } = await import('react');
+
+  return {
+    AppKitContext: createContext(undefined),
+    AppKitProvider: ({ children }: { children: ReactNode }) => children,
+    useIntentsConnectWallet: () => ({
+      address: undefined,
+      isConnected: false,
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    }),
+  };
+});
 
 const renderApp = async (path = '/') => {
   const history = createMemoryHistory({ initialEntries: [path] });
@@ -28,6 +46,16 @@ describe('App', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'One click borrow' }),
+    ).toBeInTheDocument();
+  });
+
+  it('puts the wallet button in the header', async () => {
+    await renderApp();
+
+    expect(
+      within(screen.getByRole('banner')).getByRole('button', {
+        name: 'Connect wallet',
+      }),
     ).toBeInTheDocument();
   });
 
