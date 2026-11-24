@@ -125,6 +125,43 @@ describe('TokenSelect', () => {
     });
   });
 
+  it('shows a balance label in place of the price, and the price without one', async () => {
+    const user = userEvent.setup();
+    const held: TokenOption[] = [
+      {
+        ...OPTIONS[0],
+        balanceLabel: '1.25 ETH',
+        balanceUsdLabel: '$3,900.50',
+      },
+      { ...OPTIONS[1], balanceLabel: '0.1 WBTC' },
+      { ...OPTIONS[0], id: 'plain', symbol: 'wstETH' },
+    ];
+
+    render(
+      <TokenSelect
+        aria-label="Choose collateral token"
+        onValueChange={vi.fn()}
+        options={held}
+        selected={{
+          symbol: 'ETH',
+          mark: OPTIONS[0].mark,
+          chainName: 'Ethereum',
+        }}
+      />,
+    );
+    await user.click(getTrigger());
+
+    const [withUsd, withoutUsd, plain] = within(
+      queryPopup() as HTMLElement,
+    ).getAllByRole('button');
+
+    expect(withUsd).toHaveAccessibleName(/1\.25 ETH\s*\$3,900\.50$/);
+    expect(withUsd).not.toHaveTextContent('$3,120.40');
+    expect(withoutUsd).toHaveAccessibleName(/0\.1 WBTC$/);
+    expect(withoutUsd).not.toHaveTextContent('$64,210.00');
+    expect(plain).toHaveAccessibleName(/wstETH.*\$3,120\.40$/);
+  });
+
   it('a pick calls onValueChange with the id, closes and focuses the trigger', async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
