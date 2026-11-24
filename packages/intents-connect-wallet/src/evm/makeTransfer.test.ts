@@ -507,6 +507,42 @@ describe('4100 (site not authorized on the chain)', () => {
     );
   });
 
+  it('does not retry when the wallet left the chain during the permission prompt', async () => {
+    // An unregistered chain: viem has no chain to check, so only makeTransfer
+    // stands between the retry and a send on the wrong network.
+    const UNKNOWN_CHAIN_ID = 987654321;
+    let chainId = BASE_CHAIN_ID;
+
+    const { provider, calls } = stubProvider(BASE_CHAIN_ID, {
+      eth_chainId: () => `0x${chainId.toString(16)}`,
+      wallet_switchEthereumChain: (params) => {
+        const [{ chainId: hex }] = params as [{ chainId: string }];
+
+        chainId = Number.parseInt(hex, 16);
+
+        return null;
+      },
+      wallet_requestPermissions: () => {
+        // The user switches back to Base while the prompt is open.
+        chainId = BASE_CHAIN_ID;
+
+        return [];
+      },
+      eth_sendTransaction: () => {
+        throw unauthorized();
+      },
+    });
+
+    await expect(
+      makeTransfer(
+        { ...gnosisWethArgs, evmChainId: UNKNOWN_CHAIN_ID },
+        { provider },
+      ),
+    ).rejects.toThrow(/switch to the correct network \(Chain ID: 987654321\)/);
+    expect(countOf(calls, 'eth_sendTransaction')).toBe(1);
+    expect(countOf(calls, 'wallet_requestPermissions')).toBe(1);
+  });
+
   it('still retries when the wallet does not support wallet_requestPermissions', async () => {
     const { provider, calls } = stubProvider(BASE_CHAIN_ID, {
       eth_sendTransaction: (_, nth) => {

@@ -215,16 +215,26 @@ const reauthorize = async (walletClient: WalletClient): Promise<Address> => {
 const isUnauthorized = (error: unknown): boolean =>
   hasErrorCode(error, UNAUTHORIZED) && !hasErrorCode(error, USER_REJECTED);
 
+type SendContext = {
+  walletClient: WalletClient;
+  provider: Eip1193Provider;
+  from: Address;
+  evmChainId: number;
+};
+
 /**
  * Runs a send, and recovers ONCE from a 4100 (site not authorized for the
  * account on this chain) by requesting permissions and retrying with the
  * re-read account. A second 4100 becomes a readable error naming the chain;
  * anything else — a 4001 above all — is rethrown unchanged.
+ *
+ * The chain is confirmed again before the retry: the user may switch networks
+ * while the permission prompt is open, and for a chain viem does not know
+ * (`chain: null`) viem would not catch it, so the retry would be signed for
+ * whatever network the wallet is on.
  */
 const sendAuthorized = async <T>(
-  walletClient: WalletClient,
-  from: Address,
-  evmChainId: number,
+  { walletClient, provider, from, evmChainId }: SendContext,
   send: (account: Address) => Promise<T>,
 ): Promise<T> => {
   try {
@@ -236,6 +246,8 @@ const sendAuthorized = async <T>(
   }
 
   const account = await reauthorize(walletClient);
+
+  await assertChainSettled(evmChainId, provider);
 
   try {
     return await send(account);
@@ -301,9 +313,15 @@ export const makeTransfer: MakeTransfer<EvmTransferOptions> = async (
 
   const from = await readAccount(walletClient);
   const chain = findViemChain(evmChainId) ?? null;
+  const sendContext: SendContext = {
+    walletClient,
+    provider: resolved,
+    from,
+    evmChainId,
+  };
 
   if (isVirtualChainSource) {
-    return sendAuthorized(walletClient, from, evmChainId, (account) =>
+    return sendAuthorized(sendContext, (account) =>
       makeVirtualChainTransfer(args, { walletClient, from: account, chain }),
     );
   }
@@ -311,17 +329,13 @@ export const makeTransfer: MakeTransfer<EvmTransferOptions> = async (
   const amount = resolveTransferAmount(args);
 
   if (args.isNativeEvmTokenTransfer) {
-    const hash = await sendAuthorized(
-      walletClient,
-      from,
-      evmChainId,
-      (account) =>
-        walletClient.sendTransaction({
-          account,
-          to: args.address as `0x${string}`,
-          value: amount,
-          chain,
-        }),
+    const hash = await sendAuthorized(sendContext, (account) =>
+      walletClient.sendTransaction({
+        account,
+        to: args.address as `0x${string}`,
+        value: amount,
+        chain,
+      }),
     );
 
     return { hash };
@@ -339,7 +353,7 @@ export const makeTransfer: MakeTransfer<EvmTransferOptions> = async (
 
   const tokenAddress = args.tokenAddress as `0x${string}`;
 
-  const hash = await sendAuthorized(walletClient, from, evmChainId, (account) =>
+  const hash = await sendAuthorized(sendContext, (account) =>
     walletClient.sendTransaction({ account, to: tokenAddress, data, chain }),
   );
 
