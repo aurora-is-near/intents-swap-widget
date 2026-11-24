@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import {
   AmountInput,
   Badge,
+  Banner,
   Button,
   Card,
   ChainMark,
@@ -21,8 +22,10 @@ import {
   Highlight,
   QuickAmounts,
   RISK_ZONE_COLORS,
+  Skeleton,
   Slider,
   Spinner,
+  StepProgress,
   Switch,
   Tab,
   Tabs,
@@ -34,9 +37,11 @@ import {
   ThemeProvider,
   TokenMark,
   TokenSelect,
+  Tooltip,
+  TooltipProvider,
   useTheme,
 } from '../src';
-import type { ButtonVariant, ThemePreference, TokenOption } from '../src';
+import type { ButtonVariant, Step, ThemePreference, TokenOption } from '../src';
 
 // Class names are spelled out so Tailwind finds them in this file.
 const TOKENS = [
@@ -631,6 +636,87 @@ function TabsDemo() {
   );
 }
 
+/** The confirm modal's banners (lines 985–994) and the position's (line 409). */
+function Banners() {
+  return (
+    <div className="flex max-w-[460px] flex-col gap-4">
+      <Banner title="Transaction failed" tone="danger">
+        The wallet rejected the request. Nothing was sent.
+      </Banner>
+      <Banner title="Taking longer than usual" tone="warning">
+        The bridge is still settling. You can close this window; the loan
+        finishes on its own.
+      </Banner>
+      <Banner tinted title="Close to liquidation" tone="danger">
+        Health factor 1.08. Add collateral or repay part of the loan.
+        <div className="mt-[12px] flex flex-wrap gap-[8px]">
+          <Button variant="secondary">Add collateral</Button>
+          <Button variant="secondary">Repay part</Button>
+        </div>
+      </Banner>
+    </div>
+  );
+}
+
+const PENDING_STEPS: readonly Step[] = [
+  { label: 'Approve WETH', status: 'done' },
+  { label: 'Supply collateral', status: 'active' },
+  { label: 'Borrow USDC', status: 'waiting' },
+];
+
+const FAILED_STEPS: readonly Step[] = [
+  { label: 'Approve WETH', status: 'done' },
+  { label: 'Supply collateral', status: 'failed' },
+  { label: 'Borrow USDC', status: 'waiting' },
+];
+
+/** The confirm modal's steps (lines 1001–1011). */
+function Steps() {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
+      <StepProgress aria-label="Loan progress" steps={PENDING_STEPS} />
+      <StepProgress aria-label="Failed loan progress" steps={FAILED_STEPS} />
+    </div>
+  );
+}
+
+/** A token row while prices load: mark, two lines, price. */
+function Skeletons() {
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading tokens"
+      className="flex max-w-[460px] flex-col gap-3"
+      role="group">
+      {[0, 1].map((row) => (
+        <div className="flex items-center gap-[12px]" key={row}>
+          <Skeleton height={34} radius="full" width={34} />
+          <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
+            <Skeleton height={16} width="40%" />
+            <Skeleton height={12} width="70%" />
+          </div>
+          <Skeleton height={16} width={64} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Tooltips() {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Tooltip content="Variable annual rate, paid in the borrowed token.">
+        <Button variant="secondary">APR</Button>
+      </Tooltip>
+      <Tooltip
+        content="The loan is liquidated when its loan to value reaches this line."
+        side="bottom">
+        <Button variant="ghost">Liquidation LTV</Button>
+      </Tooltip>
+    </div>
+  );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
@@ -698,6 +784,22 @@ function Components() {
 
       <Section title="Dialog">
         <Dialogs />
+      </Section>
+
+      <Section title="Banner">
+        <Banners />
+      </Section>
+
+      <Section title="StepProgress">
+        <Steps />
+      </Section>
+
+      <Section title="Skeleton">
+        <Skeletons />
+      </Section>
+
+      <Section title="Tooltip">
+        <Tooltips />
       </Section>
 
       <Section title="Spinner">
@@ -796,7 +898,9 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <ThemeProvider>
-        <Playground />
+        <TooltipProvider>
+          <Playground />
+        </TooltipProvider>
       </ThemeProvider>
     </StrictMode>,
   );
