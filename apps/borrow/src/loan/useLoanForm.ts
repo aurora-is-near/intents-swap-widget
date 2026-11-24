@@ -16,8 +16,10 @@ import type {
 import { useMarketSnapshots } from '../markets/useMarketSnapshots';
 import { type MarketPair, type MarketRow, pairRow } from './marketRows';
 import { collateralFor } from './model/collateral';
+import { type CtaState, ctaState } from './model/ctaState';
 import { loanFigures } from './model/loanFigures';
 import { marketFit } from './model/marketFit';
+import { validateRecipient } from './model/recipient';
 import { sameSymbol } from './model/symbols';
 
 /**
@@ -99,8 +101,11 @@ export type LoanForm = {
   figuresMarket: LendingMarket | undefined;
   /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
   liquidationLtvBps: number | undefined;
+  /** The markets the LTV is above the max LTV of: shown off, not pickable. */
+  disabledMarketIds: string[];
   /** True once every market's read has settled (loaded or failed). */
   marketsSettled: boolean;
+  /** Keeps the pick; while it does not fit the LTV, the selection is BEST. */
   pickMarket: (marketId: string) => void;
 
   recipientEnabled: boolean;
@@ -111,6 +116,14 @@ export type LoanForm = {
 
   /** The loan in `figuresMarket`; `undefined` until a market has the pair. */
   figures: LoanFigures | undefined;
+  /**
+   * `figures.liquidationPrice` in dollars per whole collateral token;
+   * `undefined` with no amount, no borrow or no market.
+   */
+  liquidationPriceUsd: number | undefined;
+
+  /** The call to action's state. */
+  cta: CtaState;
 };
 
 /** `parseUnits` for what `AmountInput` lets through; `0n` for a partial value. */
@@ -127,6 +140,10 @@ const rescale = (amount: bigint, from: number, to: number) =>
   to >= from
     ? amount * 10n ** BigInt(to - from)
     : amount / 10n ** BigInt(from - to);
+
+/** An amount in the oracle's base units in dollars, `unit` being one dollar. */
+const baseToUsd = (value: bigint, unit: bigint) =>
+  Number(value / unit) + Number(value % unit) / Number(unit);
 
 /** Dollars with 8 decimals, as the oracle's unit, for the bigint maths. */
 const USD_SCALE = 100_000_000;
@@ -352,7 +369,7 @@ export const useLoanForm = ({
   };
 
   const marketRows = ready.flatMap((snapshot) => pairRow(snapshot, pair) ?? []);
-  const { selectedId } = marketFit({
+  const { fits, selectedId } = marketFit({
     rows: marketRows,
     ltv,
     pickedId: pickedMarketId,
@@ -408,6 +425,25 @@ export const useLoanForm = ({
         })
       : undefined;
 
+  const market = ready.find(({ market: { id } }) => id === selectedId)?.market;
+  const borrowDecimals = borrowReserve?.decimals ?? borrowAsset?.decimals ?? 6;
+
+  // No held row means a zero balance only once the balances have been read;
+  // while they load or after a failed read, the balance is unknown.
+  const balance =
+    held?.amount ?? (fundingAssets.status === 'ready' ? 0n : undefined);
+
+  const cta = ctaState({
+    connected,
+    amount: atomic,
+    balance,
+    borrowAmount: figures?.borrowAmount ?? 0n,
+    borrow: { symbol: pair.borrow, decimals: borrowDecimals },
+    market,
+    sendToOther: recipientEnabled,
+    recipient: validateRecipient(recipient),
+  });
+
   return {
     connected,
     fundingAssets,
@@ -422,18 +458,18 @@ export const useLoanForm = ({
       convertedFrom: converted ? fundingSymbol : undefined,
     },
     borrowAssets,
-    borrow: {
-      symbol: pair.borrow,
-      decimals: borrowReserve?.decimals ?? borrowAsset?.decimals ?? 6,
-    },
+    borrow: { symbol: pair.borrow, decimals: borrowDecimals },
     setBorrowSymbol,
     ltv,
     setLtv,
     pair,
     marketRows,
-    market: ready.find(({ market }) => market.id === selectedId)?.market,
+    market,
     figuresMarket: snapshot?.market,
     liquidationLtvBps: figuresRow?.liquidationLtvBps,
+    disabledMarketIds: marketRows.flatMap(({ market: { id } }) =>
+      fits.get(id) === true ? [] : [id],
+    ),
     marketsSettled,
     pickMarket: setPickedMarketId,
     recipientEnabled,
@@ -447,6 +483,11 @@ export const useLoanForm = ({
     recipient,
     setRecipient,
     figures,
+    liquidationPriceUsd:
+      figures && figures.liquidationPrice !== null && snapshot
+        ? baseToUsd(figures.liquidationPrice, snapshot.baseCurrencyUnit)
+        : undefined,
+    cta,
   };
 };
 

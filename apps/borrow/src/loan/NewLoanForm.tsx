@@ -16,6 +16,9 @@ import { BORROW_FEE_BPS } from '../config';
 import type { FundingAsset } from '../balances/toFundingAssets';
 import { formatApr } from '../markets/format';
 import { useConnectWallet } from '../wallet/useConnectWallet';
+import { LoanCta } from './LoanCta';
+import { formatAmount, formatUsd, USD_CENTS, USD_ROUND } from './loanFormat';
+import { LoanSummary } from './LoanSummary';
 import { LtvField } from './LtvField';
 import { MarketList } from './MarketList';
 import { RecipientField } from './RecipientField';
@@ -106,32 +109,11 @@ const groupOf = (symbol: string): Group | undefined => {
 
 const ALL = 'all';
 
-const USD_ROUND = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
-const USD_CENTS = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-/** "≈ $7,200" as on line 1573 (whole dollars), cents below $100. */
-const formatUsd = (usd: number) =>
-  `$${(usd >= 100 ? USD_ROUND : USD_CENTS).format(usd)}`;
-
 /**
- * A token amount: whole units from 1,000 (as the artboard's "You receive",
- * line 1573), two decimals from 1, up to six below.
+ * The connect chip's market before any market has loaded: Borrow launches
+ * on Aave only (line 372 names the selected market).
  */
-const amountDigits = (value: number) => {
-  if (value >= 1000) {
-    return 0;
-  }
-
-  return value >= 1 ? 2 : 6;
-};
-
-const formatAmount = (value: number) =>
-  value.toLocaleString('en-US', {
-    maximumFractionDigits: amountDigits(value),
-  });
+const LAUNCH_MARKET_NAME = 'Aave';
 
 /** The fee to two decimals (line 1573), more below one unit. */
 const formatFee = (value: number) =>
@@ -463,16 +445,13 @@ function BorrowSection({ form }: { form: LoanForm }) {
   );
 }
 
-/** The three summary tiles (line 368): `sf2`, radius 14, padding 12px 16px. */
-const STATS = ['LTV', 'Liquidation', 'Health'] as const;
-
 /**
  * The New loan tab: the artboard's two columns (lines 213–375). The form
  * card holds the Supply and Borrow cards, the fee row, the loan-to-value
- * slider and the recipient option; the markets beside
- * it are read for the form's pair and follow its selection. The summary
- * tiles stay "—" and the CTA shows only while disconnected until the
- * summary and call to action are built.
+ * slider and the recipient option. Beside it, the markets for the form's
+ * pair: those the LTV is above the max LTV of are off, and the selection is
+ * the user's pick while it fits, else BEST (lines 1142–1143). Under them,
+ * the summary tiles for the selected market and the call to action.
  *
  * Columns: the form card `flex:1 1 460px; max-width:560px`, the markets
  * `flex:1.3 1 520px`, gap 24, wrapping to one column on narrow screens.
@@ -510,37 +489,27 @@ export function NewLoanForm() {
         {/* The live markets as `.mkc` cards (lines 344–363), for the
             form's pair. */}
         <MarketList
+          disabledIds={form.disabledMarketIds}
           layout="cards"
           pair={form.pair}
           selectedId={form.marketsSettled ? form.market?.id : undefined}
           onSelect={form.pickMarket}
         />
-        <dl className="m-0 mt-[16px] grid grid-cols-3 gap-[10px]">
-          {STATS.map((label) => (
-            <div
-              key={label}
-              className="rounded-[14px] bg-sf2 px-[16px] py-[12px] leading-[normal]">
-              <dt className="text-[12px] text-mut2">{label}</dt>
-              <dd className="m-0 text-[26px] font-extrabold tracking-[-0.02em]">
-                —
-              </dd>
-            </div>
-          ))}
-        </dl>
-        {isConnected ? null : (
-          // `.cta` (line 371): `.go` with radius 16, gap 10, margin-top 14.
-          <Button
-            className="mt-[14px] gap-[10px] rounded-[16px]"
-            onClick={connectWallet}>
-            <span>Connect wallet to borrow on</span>
-            {/* The lime market chip (line 372): `accent`, `onlime` text,
-                padding 1px 10px, radius 7. A span, not the kit's `Chip`,
-                which is a button and cannot sit inside one. */}
-            <span className="rounded-[7px] bg-accent px-[10px] py-px text-onlime">
-              Aave
-            </span>
-          </Button>
-        )}
+        {/* At an LTV no market fits, the figures stand in with the first
+            market, as the artboard's `|| M[0]` (line 1143). */}
+        <LoanSummary
+          healthHundredths={form.figures?.healthHundredths}
+          liquidationLtvBps={form.liquidationLtvBps}
+          liquidationPriceUsd={form.liquidationPriceUsd}
+          ltv={form.ltv}
+        />
+        <LoanCta
+          marketName={
+            (form.market ?? form.figuresMarket)?.name ?? LAUNCH_MARKET_NAME
+          }
+          state={form.cta}
+          onConnect={connectWallet}
+        />
       </section>
     </div>
   );
