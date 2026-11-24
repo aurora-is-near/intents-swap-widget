@@ -6,10 +6,11 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MarketAdaptersProvider } from '../markets/MarketAdaptersProvider';
-import type { MarketSnapshot } from '../markets/types';
+import type { LendingMarketAdapter, MarketSnapshot } from '../markets/types';
 import { type BalancesMockState, emptyBalances } from '../tests/balancesMock';
 import {
   createFakeAdapter,
+  createFakeSparkAdapter,
   createTestQueryClient,
   FAKE_ARB,
   FAKE_BASE,
@@ -122,15 +123,18 @@ const SNAPSHOTS: Readonly<Record<string, MarketSnapshot>> = {
 };
 
 /**
- * Renders the form over `snapshots` and waits for the market list to select
- * `selected` (Arbitrum, the BEST of the fake markets, by default).
+ * Renders the form over `snapshots`, and any `more` providers, and waits for
+ * the market list to select `selected` (Aave on Arbitrum, its chosen chain,
+ * by default).
  */
 const renderForm = async ({
   snapshots = SNAPSHOTS,
-  selected = /Aave Arbitrum/,
+  more = [],
+  selected = /Aave on Arbitrum/,
   onBorrow,
 }: {
   snapshots?: Readonly<Record<string, MarketSnapshot>>;
+  more?: LendingMarketAdapter[];
   selected?: RegExp;
   onBorrow?: (request: BorrowRequest) => void;
 } = {}) => {
@@ -148,7 +152,7 @@ const renderForm = async ({
 
   render(
     <QueryClientProvider client={createTestQueryClient()}>
-      <MarketAdaptersProvider adapters={[adapter]}>
+      <MarketAdaptersProvider adapters={[adapter, ...more]}>
         <NewLoanForm onBorrow={onBorrow} />
       </MarketAdaptersProvider>
     </QueryClientProvider>,
@@ -314,16 +318,15 @@ describe('NewLoanForm', () => {
         borrowList.getByRole('button', { name: 'USDT Base $1.00' }),
       );
 
-      // Only Base lends USDT, so the loan moves there.
+      // Only Base lends USDT, so Aave's loan moves there.
       expect(borrowPicker()).toHaveAccessibleName('BORROW USDT Base');
       // The fee is taken from the collateral, not the borrowed USDT.
       expect(feeRow()).toHaveTextContent('WETH');
-      expect(screen.getByRole('button', { name: /Aave Base/ })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      );
       expect(
-        screen.queryByRole('button', { name: /Aave Arbitrum/ }),
+        screen.getByRole('button', { name: /Aave on Base/ }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        screen.queryByRole('button', { name: /Aave on Arbitrum/ }),
       ).not.toBeInTheDocument();
     });
 
@@ -422,14 +425,14 @@ describe('NewLoanForm', () => {
           },
         },
         // Only Base lends USDT.
-        selected: /Aave Base/,
+        selected: /Aave on Base/,
       });
 
       expect(supplyPicker()).toHaveAccessibleName('SUPPLY USDC Arbitrum');
       expect(borrowPicker()).toHaveAccessibleName('BORROW USDT Base');
       expect(screen.queryByText(/^Supplied as/)).not.toBeInTheDocument();
       expect(
-        screen.queryByRole('button', { name: /Aave Arbitrum/ }),
+        screen.queryByRole('button', { name: /Aave on Arbitrum/ }),
       ).not.toBeInTheDocument();
 
       await user.click(borrowPicker());
@@ -558,7 +561,7 @@ describe('NewLoanForm', () => {
     it('marks the selected market’s liquidation LTV', async () => {
       await renderForm();
 
-      // Arbitrum is BEST: liquidation at 82.5%.
+      // Aave lends on Arbitrum, the lower APR: liquidation at 82.5%.
       expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
     });
 
@@ -583,14 +586,15 @@ describe('NewLoanForm', () => {
           '82%',
         ),
       ).toBeInTheDocument();
-      // No market fits: the first one stands in (the artboard's `|| M[0]`),
-      // Base, liquidation at 81%. 1.994 WETH after the fee: 4,905 USDC.
-      expect(screen.getByText('liq. 81%')).toBeInTheDocument();
+      // No provider fits: the first one's chosen chain stands in (the
+      // artboard's `|| M[0]`), Aave on Arbitrum, liquidation at 82.5%.
+      // 1.994 WETH after the fee: 4,905 USDC.
+      expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
       expect(received()).toHaveTextContent('4,905');
       expect(feeRow()).toHaveTextContent('−0.006 WETH');
       // The triggers keep the stand-in's chain.
-      expect(supplyPicker()).toHaveAccessibleName('SUPPLY WETH Base');
-      expect(borrowPicker()).toHaveAccessibleName('BORROW USDC Base');
+      expect(supplyPicker()).toHaveAccessibleName('SUPPLY WETH Arbitrum');
+      expect(borrowPicker()).toHaveAccessibleName('BORROW USDC Arbitrum');
       // A stand-in for the figures only: no market is selected.
       expect(
         screen.queryByRole('button', { name: /^Aave /, pressed: true }),
@@ -658,8 +662,9 @@ describe('NewLoanForm', () => {
     const tile = (label: string) =>
       screen.getByText(label, { selector: 'dt' }).nextElementSibling;
 
-    const market = (chain: 'Base' | 'Arbitrum') =>
-      screen.getByRole('button', { name: new RegExp(`Aave ${chain}`) });
+    /** A provider's card: Aave on Arbitrum, or the fake Spark on Base. */
+    const market = (name: 'Aave' | 'Spark') =>
+      screen.getByRole('button', { name: new RegExp(`${name} on`) });
 
     const cta = (name: string | RegExp) =>
       within(screen.getByRole('region', { name: 'Markets' })).getByRole(
@@ -670,7 +675,7 @@ describe('NewLoanForm', () => {
     it('shows the selected market’s LTV, liquidation price and LTV, and health', async () => {
       const user = userEvent.setup();
 
-      await renderForm();
+      await renderForm({ more: [createFakeSparkAdapter()] });
 
       // Nothing borrowed yet: no liquidation price.
       expect(tile('LTV')).toHaveTextContent('50%');
@@ -679,17 +684,17 @@ describe('NewLoanForm', () => {
 
       await user.type(amountField(), '2');
 
-      // Arbitrum (BEST): 2,991 USDC against 1.994 WETH (2 less the fee),
-      // liquidated at 82.5%,
-      // so when WETH is at $1,818.18; health 82.5 ÷ 50.
+      // Aave on Arbitrum (BEST): 2,991 USDC against 1.994 WETH (2 less the
+      // fee), liquidated at 82.5%, so when WETH is at $1,818.18; health
+      // 82.5 ÷ 50.
       expect(tile('Liquidation')).toHaveTextContent('$1,818at 82.5% LTV');
       expect(tile('Health')).toHaveTextContent('1.65');
 
-      await user.click(market('Base'));
+      await user.click(market('Spark'));
 
-      // Base: liquidation at 81%, so at $1,851.85; health 81 ÷ 50.
-      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
-      expect(market('Arbitrum')).toHaveAttribute('aria-pressed', 'false');
+      // Spark: liquidation at 81%, so at $1,851.85; health 81 ÷ 50.
+      expect(market('Spark')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Aave')).toHaveAttribute('aria-pressed', 'false');
       expect(tile('Liquidation')).toHaveTextContent('$1,852at 81% LTV');
       expect(tile('Health')).toHaveTextContent('1.62');
     });
@@ -704,29 +709,29 @@ describe('NewLoanForm', () => {
       expect(tile('Health')).toHaveTextContent('—');
     });
 
-    it('falls back to BEST when the picked market stops fitting the LTV', async () => {
+    it('falls back to BEST when the picked provider stops fitting the LTV', async () => {
       const user = userEvent.setup();
 
-      await renderForm();
-      await user.click(market('Base'));
+      await renderForm({ more: [createFakeSparkAdapter()] });
+      await user.click(market('Spark'));
 
-      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Spark')).toHaveAttribute('aria-pressed', 'true');
 
-      // 50 → 80: above Base's max of 79%, within Arbitrum's 80%.
+      // 50 → 80: above Spark's max of 79%, within Aave on Arbitrum's 80%.
       await moveLtv(user, '{ArrowRight}'.repeat(30));
 
-      expect(market('Base')).toBeDisabled();
-      expect(market('Base')).toHaveTextContent('MAX 79%');
-      expect(market('Arbitrum')).toHaveAttribute('aria-pressed', 'true');
-      expect(market('Arbitrum')).toHaveTextContent('BEST');
+      expect(market('Spark')).toBeDisabled();
+      expect(market('Spark')).toHaveTextContent('MAX 79%');
+      expect(market('Aave')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Aave')).toHaveTextContent('BEST');
       expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
       // 82.5 ÷ 80, rounded down.
       expect(tile('Health')).toHaveTextContent('1.03');
 
-      // Back within Base's max: the pick holds again.
+      // Back within Spark's max: the pick holds again.
       await moveLtv(user, '{ArrowLeft}');
 
-      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Spark')).toHaveAttribute('aria-pressed', 'true');
       expect(tile('Health')).toHaveTextContent('1.02');
     });
 
@@ -762,21 +767,25 @@ describe('NewLoanForm', () => {
         </QueryClientProvider>,
       );
 
-      await screen.findByRole('button', { name: /Aave Base/ });
+      // Base alone has loaded: Aave's card waits for Arbitrum, so its
+      // chain does not jump.
+      await screen.findByText('Loading Aave');
       await user.type(amountField(), '2');
 
-      // Base alone has loaded: no selection, so no figures from it yet.
-      expect(market('Base')).toHaveAttribute('aria-pressed', 'false');
+      // No selection, so no figures from Base yet.
+      expect(
+        screen.queryByRole('button', { name: /Aave on/ }),
+      ).not.toBeInTheDocument();
       expect(tile('Health')).toHaveTextContent('—');
       expect(tile('Liquidation')).toHaveTextContent('—');
       expect(received()).toHaveTextContent('0');
 
       loadArbitrum();
 
-      // Then BEST, Arbitrum, everywhere at once.
+      // Then Aave on Arbitrum, its chosen chain, everywhere at once.
       expect(
         await screen.findByRole('button', {
-          name: /Aave Arbitrum/,
+          name: /Aave on Arbitrum/,
           pressed: true,
         }),
       ).toBeInTheDocument();
@@ -849,15 +858,15 @@ describe('NewLoanForm', () => {
         // 50 → 82, as Web-Borrow-HighLtv.
         await moveLtv(user, '{ArrowRight}'.repeat(32));
 
-        expect(market('Base')).toBeDisabled();
-        expect(market('Arbitrum')).toBeDisabled();
-        expect(market('Base')).toHaveTextContent('MAX 79%');
-        expect(market('Arbitrum')).toHaveTextContent('MAX 80%');
+        expect(market('Aave')).toBeDisabled();
+        // Arbitrum's max, the chain Aave lends on.
+        expect(market('Aave')).toHaveTextContent('MAX 80%');
         expect(screen.queryByText('BEST')).not.toBeInTheDocument();
         expect(cta('LTV too high')).toBeDisabled();
-        // The first market stands in for the figures (`|| M[0]`).
+        // Aave's chosen chain stands in for the figures (`|| M[0]`):
+        // 82.5 ÷ 82, rounded down.
         expect(tile('LTV')).toHaveTextContent('82%');
-        expect(tile('Health')).toHaveTextContent('0.98');
+        expect(tile('Health')).toHaveTextContent('1.00');
       });
 
       it('asks for a recipient while the address is empty or invalid', async () => {

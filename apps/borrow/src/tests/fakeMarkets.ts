@@ -150,6 +150,32 @@ export const createFakeAdapter = ({
 });
 
 /**
+ * A second provider, for the tests that compare providers: Spark on Base,
+ * whose default snapshot (`pairSnapshot`) is 4.85%, max LTV 79%,
+ * liquidation 81%, $1.2B.
+ */
+export const FAKE_SPARK: LendingMarket = {
+  id: 'spark:base',
+  provider: 'spark',
+  name: 'Spark',
+  chain: 'base',
+  chainId: 8453,
+  chainLabel: 'Base',
+};
+
+/** An adapter listing `FAKE_SPARK` alone, read as `pairSnapshot` unless told otherwise. */
+export const createFakeSparkAdapter = (
+  getMarketSnapshot: LendingMarketAdapter['getMarketSnapshot'] = async (
+    market,
+  ) => pairSnapshot(market),
+): FakeAdapter =>
+  createFakeAdapter({
+    id: 'spark',
+    listMarkets: () => Promise.resolve([FAKE_SPARK]),
+    getMarketSnapshot,
+  });
+
+/**
  * A query client that does not retry, so a failure shows at once. Queries
  * that set their own retry, such as the market snapshots, run it without
  * delay.

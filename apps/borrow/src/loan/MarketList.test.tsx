@@ -9,6 +9,7 @@ import {
   FAKE_ARB as ARB,
   FAKE_BASE as BASE,
   createFakeAdapter,
+  createFakeSparkAdapter,
   createTestQueryClient,
   readFakeSnapshot,
   pairSnapshot as snapshot,
@@ -20,12 +21,28 @@ import { MarketList, type MarketListProps } from './MarketList';
 /** The fake markets' pair. */
 const PAIR = { collateral: 'WETH', borrow: 'USDC' };
 
+/** The fake Aave adapter's provider, on Base and Arbitrum. */
+const AAVE = BASE.provider;
+
 const fakeAdapter = (
   getMarketSnapshot?: LendingMarketAdapter['getMarketSnapshot'],
 ) => createFakeAdapter({ getMarketSnapshot });
 
+/** An adapter whose read of each market fails `times` times, then succeeds. */
+const failingAdapter = (failures: Record<string, number>) =>
+  fakeAdapter(async (of) => {
+    const left = failures[of.id] ?? 0;
+
+    if (left > 0) {
+      failures[of.id] = left - 1;
+      throw new Error('RPC down');
+    }
+
+    return readFakeSnapshot(of);
+  });
+
 const renderList = (
-  adapter: LendingMarketAdapter,
+  adapters: LendingMarketAdapter | LendingMarketAdapter[],
   props: Partial<MarketListProps> = {},
 ) => {
   const queryClient = createTestQueryClient();
@@ -34,7 +51,8 @@ const renderList = (
     queryClient,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <MarketAdaptersProvider adapters={[adapter]}>
+        <MarketAdaptersProvider
+          adapters={Array.isArray(adapters) ? adapters : [adapters]}>
           <MarketList layout="cards" pair={PAIR} {...props} />
         </MarketAdaptersProvider>
       </QueryClientProvider>,
@@ -42,14 +60,21 @@ const renderList = (
   };
 };
 
-const card = (chainLabel: string) =>
-  screen.getByRole('button', { name: new RegExp(`Aave ${chainLabel}`) });
+/** A provider's card, named by its chosen chain. */
+const card = (name: string, chainLabel: string) =>
+  screen.getByRole('button', { name: new RegExp(`${name} on ${chainLabel}`) });
 
-const findCard = (chainLabel: string) =>
-  screen.findByRole('button', { name: new RegExp(`Aave ${chainLabel}`) });
+const findCard = (name: string, chainLabel: string) =>
+  screen.findByRole('button', {
+    name: new RegExp(`${name} on ${chainLabel}`),
+  });
+
+/** Every read has settled. */
+const settled = () =>
+  waitFor(() => expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument());
 
 describe('MarketList', () => {
-  it('shows one card skeleton per launch chain while loading', async () => {
+  it('shows one card skeleton per launch provider while loading', async () => {
     const adapter = createFakeAdapter({
       listMarkets: () => new Promise(() => {}),
       getMarketSnapshot: () => new Promise(() => {}),
@@ -57,103 +82,182 @@ describe('MarketList', () => {
 
     renderList(adapter);
 
-    expect(screen.getAllByText('Loading markets')).toHaveLength(2);
+    expect(screen.getAllByText('Loading markets')).toHaveLength(1);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('names a skeleton by its market once the markets are listed', async () => {
+  it('names a skeleton by its provider once the markets are listed', async () => {
     renderList(fakeAdapter(() => new Promise(() => {})));
 
-    expect(await screen.findByText('Loading Aave on Base')).toBeInTheDocument();
-    expect(screen.getByText('Loading Aave on Arbitrum')).toBeInTheDocument();
+    expect(await screen.findByText('Loading Aave')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Loading/)).toHaveLength(1);
     expect(screen.queryByText(/\d%/)).not.toBeInTheDocument();
   });
 
-  it('shows each market’s pair figures, formatted', async () => {
+  it('shows one Aave card for Base and Arbitrum, on the chosen chain, with its figures', async () => {
     renderList(fakeAdapter());
 
-    const base = await findCard('Base');
+    // Arbitrum, the lower APR.
+    const aave = await findCard('Aave', 'Arbitrum');
 
-    expect(base).toHaveTextContent('Aave');
-    expect(base).toHaveTextContent('Base');
-    expect(base).toHaveTextContent('4.85%');
-    expect(base).toHaveTextContent('APR · max LTV 79%');
-    expect(base).toHaveTextContent('Liq. 81% · $1.2B');
+    await settled();
 
-    const arb = card('Arbitrum');
-
-    expect(arb).toHaveTextContent('4.41%');
-    expect(arb).toHaveTextContent('APR · max LTV 80%');
-    expect(arb).toHaveTextContent('Liq. 82.5% · $356M');
-    expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toEqual([aave]);
+    expect(aave).toHaveTextContent('on Arbitrum');
+    expect(aave).toHaveTextContent('4.41%');
+    expect(aave).toHaveTextContent('APR · max LTV 80%');
+    expect(aave).toHaveTextContent('Liq. 82.5% · $356M');
+    expect(aave).not.toHaveTextContent('Base');
   });
 
-  it('tags the lowest APR as BEST and selects it by default', async () => {
+  it('shows one tile for a provider whose chains two adapters list', async () => {
+    renderList([
+      createFakeAdapter({ listMarkets: () => Promise.resolve([BASE]) }),
+      createFakeAdapter({
+        id: 'other',
+        listMarkets: () => Promise.resolve([ARB]),
+      }),
+    ]);
+
+    const aave = await findCard('Aave', 'Arbitrum');
+
+    await settled();
+
+    expect(screen.getAllByRole('button')).toEqual([aave]);
+  });
+
+  it('moves to the chain that can lend the loan when the cheaper one cannot', async () => {
+    // $400M: above Arbitrum's $356M, within Base's $1.2B.
+    renderList(fakeAdapter(), { loanUsd: 400_000_000 });
+
+    const aave = await findCard('Aave', 'Base');
+
+    expect(aave).toHaveTextContent('4.85%');
+    expect(aave).toHaveTextContent('Liq. 81% · $1.2B');
+    expect(
+      screen.queryByRole('button', { name: /on Arbitrum/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('tags no card BEST with one provider, and selects it by default', async () => {
     renderList(fakeAdapter());
 
-    const arb = await findCard('Arbitrum');
-    const base = card('Base');
+    const aave = await findCard('Aave', 'Arbitrum');
 
-    expect(within(arb).getByText('BEST')).toBeInTheDocument();
-    expect(within(base).queryByText('BEST')).not.toBeInTheDocument();
-    expect(arb).toHaveAttribute('aria-pressed', 'true');
-    expect(base).toHaveAttribute('aria-pressed', 'false');
+    expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
+    expect(aave).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('moves the selection to the card the user picks', async () => {
+  it('tags the lowest-APR provider BEST with two providers, and selects it', async () => {
+    renderList([fakeAdapter(), createFakeSparkAdapter()]);
+
+    const aave = await findCard('Aave', 'Arbitrum');
+    const spark = await findCard('Spark', 'Base');
+
+    expect(within(aave).getByText('BEST')).toBeInTheDocument();
+    expect(within(spark).queryByText('BEST')).not.toBeInTheDocument();
+    expect(aave).toHaveAttribute('aria-pressed', 'true');
+    expect(spark).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('moves the selection to the provider the user picks', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    renderList(fakeAdapter(), { onSelect });
+    renderList([fakeAdapter(), createFakeSparkAdapter()], { onSelect });
 
-    await user.click(await findCard('Base'));
+    await findCard('Aave', 'Arbitrum');
+    await user.click(await findCard('Spark', 'Base'));
 
-    expect(card('Base')).toHaveAttribute('aria-pressed', 'true');
-    expect(card('Arbitrum')).toHaveAttribute('aria-pressed', 'false');
-    expect(onSelect).toHaveBeenCalledWith(BASE.id);
+    expect(card('Spark', 'Base')).toHaveAttribute('aria-pressed', 'true');
+    expect(card('Aave', 'Arbitrum')).toHaveAttribute('aria-pressed', 'false');
+    expect(onSelect).toHaveBeenCalledWith('spark');
   });
 
-  it('shows a market the LTV is too high for as off, and BEST moves to the next lowest APR', async () => {
-    renderList(fakeAdapter(), { disabledIds: [ARB.id] });
+  it('shows a provider the LTV is too high for as off, and BEST moves to the next lowest APR', async () => {
+    renderList([fakeAdapter(), createFakeSparkAdapter()], {
+      disabledIds: [AAVE],
+    });
 
-    const arb = await findCard('Arbitrum');
-    const base = card('Base');
+    const aave = await findCard('Aave', 'Arbitrum');
+    const spark = await findCard('Spark', 'Base');
 
-    expect(arb).toBeDisabled();
-    expect(arb).toHaveTextContent('LTV too high, MAX 80%');
-    expect(within(arb).queryByText('BEST')).not.toBeInTheDocument();
-    expect(within(base).getByText('BEST')).toBeInTheDocument();
-    expect(base).toHaveAttribute('aria-pressed', 'true');
+    expect(aave).toBeDisabled();
+    expect(aave).toHaveTextContent('LTV too high, MAX 80%');
+    expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
+    expect(within(spark).getByText('BEST')).toBeInTheDocument();
+    expect(spark).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('tags no card BEST and selects none while another market is still loading', async () => {
+  it('tags no card BEST and selects none while another provider is still loading', async () => {
+    renderList([
+      fakeAdapter(),
+      createFakeSparkAdapter(() => new Promise(() => {})),
+    ]);
+
+    const aave = await findCard('Aave', 'Arbitrum');
+
+    expect(screen.getByText('Loading Spark')).toBeInTheDocument();
+    expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
+    expect(aave).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('shows the provider’s skeleton while one of its chains is still pending', async () => {
+    let loadArbitrum: () => void = () => {};
+    const arbitrumLoaded = new Promise<void>((resolve) => {
+      loadArbitrum = resolve;
+    });
+
     renderList(
-      fakeAdapter((of) =>
-        of.id === BASE.id
-          ? Promise.resolve(snapshot(BASE))
-          : new Promise(() => {}),
-      ),
+      fakeAdapter(async (of) => {
+        if (of.id === ARB.id) {
+          await arbitrumLoaded;
+        }
+
+        return readFakeSnapshot(of);
+      }),
     );
 
-    const base = await findCard('Base');
+    expect(await screen.findByText('Loading Aave')).toBeInTheDocument();
 
-    expect(screen.getByText('Loading Aave on Arbitrum')).toBeInTheDocument();
-    expect(within(base).queryByText('BEST')).not.toBeInTheDocument();
-    expect(base).toHaveAttribute('aria-pressed', 'false');
+    // Base has loaded, but its figures would jump once Arbitrum does.
+    await waitFor(() =>
+      expect(screen.queryByText(/\d%/)).not.toBeInTheDocument(),
+    );
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+
+    loadArbitrum();
+
+    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
   });
 
   it('follows a controlled selectedId over the BEST default', async () => {
-    renderList(fakeAdapter(), { selectedId: BASE.id });
+    renderList([fakeAdapter(), createFakeSparkAdapter()], {
+      selectedId: 'spark',
+    });
 
-    const arb = await findCard('Arbitrum');
-    const base = card('Base');
+    const aave = await findCard('Aave', 'Arbitrum');
+    const spark = await findCard('Spark', 'Base');
 
-    expect(base).toHaveAttribute('aria-pressed', 'true');
-    expect(arb).toHaveAttribute('aria-pressed', 'false');
-    expect(within(arb).getByText('BEST')).toBeInTheDocument();
+    expect(spark).toHaveAttribute('aria-pressed', 'true');
+    expect(aave).toHaveAttribute('aria-pressed', 'false');
+    expect(within(aave).getByText('BEST')).toBeInTheDocument();
   });
 
-  it('shows the Banner and no numbers when a read fails after an earlier success', async () => {
+  it('shows the tile from the chain that loaded, and no Banner, when one chain fails', async () => {
+    // Arbitrum's read and its one retry.
+    renderList(failingAdapter({ [ARB.id]: 2 }));
+
+    const aave = await findCard('Aave', 'Base');
+
+    await settled();
+
+    expect(aave).toHaveTextContent('4.85%');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('drops a chain’s numbers when its read fails after an earlier success', async () => {
     let arbReads = 0;
     const adapter = fakeAdapter(async (of) => {
       if (of.id === ARB.id) {
@@ -169,7 +273,7 @@ describe('MarketList', () => {
 
     const { queryClient } = renderList(adapter);
 
-    expect(await findCard('Arbitrum')).toHaveTextContent('4.41%');
+    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
 
     await act(() =>
       queryClient.refetchQueries({
@@ -177,47 +281,53 @@ describe('MarketList', () => {
       }),
     );
 
-    const banner = await screen.findByRole('alert');
-
-    expect(banner).toHaveTextContent('Aave on Arbitrum did not load');
+    expect(await findCard('Aave', 'Base')).toHaveTextContent('4.85%');
     expect(screen.queryByText(/4\.41%/)).not.toBeInTheDocument();
-    expect(card('Base')).toHaveTextContent('4.85%');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('shows a Banner for the failed market only, and "Try again" reads it again', async () => {
+  it('shows one Banner when every chain of a provider fails, and "Try again" reads each again', async () => {
     const user = userEvent.setup();
-    // The first read and its one retry.
-    let arbFailures = 2;
-    const adapter = fakeAdapter(async (of) => {
-      if (of.id === ARB.id && arbFailures > 0) {
-        arbFailures -= 1;
-        throw new Error('RPC down');
-      }
-
-      return readFakeSnapshot(of);
-    });
+    // Each chain's read and its one retry.
+    const adapter = failingAdapter({ [BASE.id]: 2, [ARB.id]: 2 });
 
     renderList(adapter);
 
     const banner = await screen.findByRole('alert');
 
-    expect(banner).toHaveTextContent('Aave on Arbitrum did not load');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(banner).toHaveTextContent('Aave did not load');
     expect(banner).not.toHaveTextContent(/\d/);
     expect(
-      screen.queryByRole('button', { name: /Aave Arbitrum/ }),
+      screen.queryByRole('button', { name: /^Aave/ }),
     ).not.toBeInTheDocument();
-    expect(card('Base')).toHaveTextContent('4.85%');
 
     await user.click(within(banner).getByRole('button', { name: 'Try again' }));
 
-    expect(await findCard('Arbitrum')).toHaveTextContent('4.41%');
+    expect(await findCard('Aave', 'Arbitrum')).toHaveTextContent('4.41%');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(adapter.getMarketSnapshot.mock.calls.map(([of]) => of.id)).toEqual([
-      BASE.id,
-      ARB.id,
-      ARB.id,
-      ARB.id,
-    ]);
+
+    const reads = adapter.getMarketSnapshot.mock.calls.map(([of]) => of.id);
+
+    expect(reads.filter((id) => id === BASE.id)).toHaveLength(3);
+    expect(reads.filter((id) => id === ARB.id)).toHaveLength(3);
+  });
+
+  it('shows the Banner when a chain fails and the one that loaded lacks the pair', async () => {
+    renderList(
+      fakeAdapter(async (of) => {
+        if (of.id === ARB.id) {
+          throw new Error('RPC down');
+        }
+
+        return snapshot(BASE, { borrowable: [usdc({ symbol: 'USDT' })] });
+      }),
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Aave did not load',
+    );
+    expect(screen.queryByText(/^No market offers/)).not.toBeInTheDocument();
   });
 
   it('shows a Banner with a retry when the market list fails', async () => {
@@ -235,10 +345,10 @@ describe('MarketList', () => {
 
     await user.click(within(banner).getByRole('button', { name: 'Try again' }));
 
-    expect(await findCard('Base')).toHaveTextContent('4.85%');
+    expect(await findCard('Aave', 'Base')).toHaveTextContent('4.85%');
   });
 
-  it('leaves out a market that lacks the pair', async () => {
+  it('leaves a chain that lacks the pair out of the choice', async () => {
     renderList(
       fakeAdapter(async (of) =>
         of.id === ARB.id
@@ -247,13 +357,11 @@ describe('MarketList', () => {
       ),
     );
 
-    await findCard('Base');
+    const aave = await findCard('Aave', 'Base');
 
-    await waitFor(() =>
-      expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument(),
-    );
+    await settled();
 
-    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getAllByRole('button')).toEqual([aave]);
   });
 
   it('reads every row for the pair it is given', async () => {
@@ -271,13 +379,11 @@ describe('MarketList', () => {
       { pair: { collateral: 'WETH', borrow: 'USDT' } },
     );
 
-    const base = await findCard('Base');
+    const aave = await findCard('Aave', 'Base');
 
-    await waitFor(() =>
-      expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument(),
-    );
+    await settled();
 
-    expect(base).toHaveTextContent('5.10%');
+    expect(aave).toHaveTextContent('5.10%');
     expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 
@@ -306,18 +412,15 @@ describe('MarketList', () => {
 });
 
 describe('MarketList, table layout', () => {
-  const BASE_NAME = /Aave (BEST |LTV TOO HIGH )?Base/;
-  const ARB_NAME = /Aave (BEST |LTV TOO HIGH )?Arbitrum/;
+  const AAVE_NAME = /^Aave (BEST |LTV TOO HIGH )?on Arbitrum/;
+  const SPARK_NAME = /^Spark (BEST |LTV TOO HIGH )?on Base/;
 
-  const row = (chainLabel: string) =>
-    screen.getByRole('button', {
-      name: new RegExp(`Aave (BEST |LTV TOO HIGH )?${chainLabel}`),
-    });
+  const row = (name: RegExp) => screen.getByRole('button', { name });
 
   it('shows the five column headers', async () => {
     renderList(fakeAdapter(), { layout: 'table' });
 
-    await screen.findByRole('button', { name: BASE_NAME });
+    await screen.findByRole('button', { name: AAVE_NAME });
 
     ['Market', 'Borrow APR', 'Max LTV', 'Liquidation', 'Liquidity'].forEach(
       (name) =>
@@ -327,54 +430,69 @@ describe('MarketList, table layout', () => {
     );
   });
 
-  it('shows each market as a row of formatted figures', async () => {
+  it('shows one row for Aave on Base and Arbitrum, with the chosen chain under the name', async () => {
     renderList(fakeAdapter(), { layout: 'table' });
 
-    await screen.findByRole('button', { name: BASE_NAME });
+    const aave = await screen.findByRole('button', { name: AAVE_NAME });
 
-    const base = within(row('Base'));
+    await settled();
 
-    expect(base.getByText('Aave')).toBeInTheDocument();
-    expect(base.getByText('4.85%')).toBeInTheDocument();
-    expect(base.getByText('79%')).toBeInTheDocument();
-    expect(base.getByText('81%')).toBeInTheDocument();
-    expect(base.getByText('$1.2B')).toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toEqual([aave]);
 
-    const arb = within(row('Arbitrum'));
+    const cells = within(aave);
 
-    expect(arb.getByText('4.41%')).toBeInTheDocument();
-    expect(arb.getByText('80%')).toBeInTheDocument();
-    expect(arb.getByText('82.5%')).toBeInTheDocument();
-    expect(arb.getByText('$356M')).toBeInTheDocument();
+    expect(cells.getByText('Aave')).toBeInTheDocument();
+    expect(cells.getByText(/on Arbitrum/)).toBeInTheDocument();
+    expect(cells.getByText('4.41%')).toBeInTheDocument();
+    expect(cells.getByText('80%')).toBeInTheDocument();
+    expect(cells.getByText('82.5%')).toBeInTheDocument();
+    expect(cells.getByText('$356M')).toBeInTheDocument();
   });
 
-  it('tags the lowest APR as BEST, selects it, and moves the selection on a click', async () => {
+  it('tags no row BEST with one provider', async () => {
+    renderList(fakeAdapter(), { layout: 'table' });
+
+    const aave = await screen.findByRole('button', { name: AAVE_NAME });
+
+    expect(within(aave).queryByText('BEST')).not.toBeInTheDocument();
+    expect(aave).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('tags the lowest-APR provider BEST, selects it, and moves the selection on a click', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    renderList(fakeAdapter(), { layout: 'table', onSelect });
-    await screen.findByRole('button', { name: BASE_NAME });
+    renderList([fakeAdapter(), createFakeSparkAdapter()], {
+      layout: 'table',
+      onSelect,
+    });
+    await screen.findByRole('button', { name: AAVE_NAME });
+    await screen.findByRole('button', { name: SPARK_NAME });
 
-    expect(within(row('Arbitrum')).getByText('BEST')).toBeInTheDocument();
-    expect(within(row('Base')).queryByText('BEST')).not.toBeInTheDocument();
-    expect(row('Arbitrum')).toHaveAttribute('aria-pressed', 'true');
+    expect(within(row(AAVE_NAME)).getByText('BEST')).toBeInTheDocument();
+    expect(within(row(SPARK_NAME)).queryByText('BEST')).not.toBeInTheDocument();
+    expect(row(AAVE_NAME)).toHaveAttribute('aria-pressed', 'true');
 
-    await user.click(row('Base'));
+    await user.click(row(SPARK_NAME));
 
-    expect(row('Base')).toHaveAttribute('aria-pressed', 'true');
-    expect(onSelect).toHaveBeenCalledWith(BASE.id);
+    expect(row(SPARK_NAME)).toHaveAttribute('aria-pressed', 'true');
+    expect(onSelect).toHaveBeenCalledWith('spark');
   });
 
-  it('shows a disabled market as off and moves BEST on', async () => {
-    renderList(fakeAdapter(), { layout: 'table', disabledIds: [ARB.id] });
-    await screen.findByRole('button', { name: ARB_NAME });
+  it('shows a disabled provider as off and moves BEST on', async () => {
+    renderList([fakeAdapter(), createFakeSparkAdapter()], {
+      layout: 'table',
+      disabledIds: [AAVE],
+    });
+    await screen.findByRole('button', { name: AAVE_NAME });
+    await screen.findByRole('button', { name: SPARK_NAME });
 
-    expect(row('Arbitrum')).toBeDisabled();
-    expect(row('Arbitrum')).toHaveTextContent('LTV TOO HIGH');
-    expect(within(row('Base')).getByText('BEST')).toBeInTheDocument();
+    expect(row(AAVE_NAME)).toBeDisabled();
+    expect(row(AAVE_NAME)).toHaveTextContent('LTV TOO HIGH');
+    expect(within(row(SPARK_NAME)).getByText('BEST')).toBeInTheDocument();
   });
 
-  it('shows one row skeleton per launch chain while loading', () => {
+  it('shows one row skeleton per launch provider while loading', () => {
     const adapter = createFakeAdapter({
       listMarkets: () => new Promise(() => {}),
       getMarketSnapshot: () => new Promise(() => {}),
@@ -386,7 +504,7 @@ describe('MarketList, table layout', () => {
 
     const rows = screen.getAllByTestId('market-row-skeleton');
 
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(1);
 
     rows.forEach((skeleton) => {
       expect(within(skeleton).getByText('Loading markets')).toBeInTheDocument();
@@ -398,31 +516,50 @@ describe('MarketList, table layout', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('shows a Banner for the failing market only, and "Try again" reads it again', async () => {
-    const user = userEvent.setup();
-    // The first read and its one retry.
-    let arbFailures = 2;
-    const adapter = fakeAdapter(async (of) => {
-      if (of.id === ARB.id && arbFailures > 0) {
-        arbFailures -= 1;
-        throw new Error('RPC down');
-      }
+  it('shows the provider’s row skeleton while one of its chains is still pending', async () => {
+    renderList(
+      fakeAdapter((of) =>
+        of.id === BASE.id ? readFakeSnapshot(of) : new Promise(() => {}),
+      ),
+      { layout: 'table' },
+    );
 
-      return readFakeSnapshot(of);
+    const label = await screen.findByText('Loading Aave');
+
+    expect(screen.getByTestId('market-row-skeleton')).toContainElement(label);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows the row from the chain that loaded, and no Banner, when one chain fails', async () => {
+    renderList(failingAdapter({ [ARB.id]: 2 }), { layout: 'table' });
+
+    const aave = await screen.findByRole('button', {
+      name: /^Aave on Base/,
     });
 
-    renderList(adapter, { layout: 'table' });
+    await settled();
+
+    expect(within(aave).getByText('4.85%')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows one Banner when every chain fails, and "Try again" reads them again', async () => {
+    const user = userEvent.setup();
+
+    renderList(failingAdapter({ [BASE.id]: 2, [ARB.id]: 2 }), {
+      layout: 'table',
+    });
 
     const banner = await screen.findByRole('alert');
 
-    expect(banner).toHaveTextContent('Aave on Arbitrum did not load');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(banner).toHaveTextContent('Aave did not load');
     expect(banner).not.toHaveTextContent(/\d/);
-    expect(within(row('Base')).getByText('4.85%')).toBeInTheDocument();
 
     await user.click(within(banner).getByRole('button', { name: 'Try again' }));
 
     expect(
-      await screen.findByRole('button', { name: ARB_NAME }),
+      await screen.findByRole('button', { name: AAVE_NAME }),
     ).toHaveTextContent('4.41%');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });

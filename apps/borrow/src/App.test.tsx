@@ -84,17 +84,20 @@ describe('App', () => {
     expect(tab('My positions')).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('shows the adapter’s markets as cards on the New loan tab', async () => {
+  it('shows the adapter’s markets as one card per provider on the New loan tab', async () => {
     await renderApp('/');
 
     const panel = screen.getByRole('tabpanel');
+    const aave = await within(panel).findByRole('button', {
+      name: /Aave on Arbitrum/,
+    });
 
+    // Arbitrum, the lower APR of Aave's two chains.
+    expect(aave).toHaveTextContent('4.41%');
+    expect(aave).toHaveAttribute('aria-pressed', 'true');
     expect(
-      await within(panel).findByRole('button', { name: /Aave Base/ }),
-    ).toHaveTextContent('4.85%');
-    expect(
-      within(panel).getByRole('button', { name: /Aave Arbitrum/ }),
-    ).toHaveAttribute('aria-pressed', 'true');
+      within(panel).queryByRole('button', { name: /Aave on Base/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('selects My positions at /positions', async () => {

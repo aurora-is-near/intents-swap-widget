@@ -15,7 +15,13 @@ import type {
 } from '../markets/types';
 import { useMarketSnapshots } from '../markets/useMarketSnapshots';
 import type { BorrowFlowInput } from './execution/useBorrowFlow';
-import { type MarketPair, type MarketRow, pairRow } from './marketRows';
+import {
+  type MarketPair,
+  type MarketRow,
+  pairRow,
+  type ProviderRow,
+  providerRows,
+} from './marketRows';
 import { collateralFor } from './model/collateral';
 import { type CtaState, ctaState } from './model/ctaState';
 import { type LoanFigures, loanFigures } from './model/loanFigures';
@@ -94,28 +100,46 @@ export type LoanForm = {
 
   /** The collateral and borrow symbols the market list is read for. */
   pair: MarketPair;
+  /** One per loaded market (a provider on one chain) with the pair. */
   marketRows: MarketRow[];
+  /** `marketRows` by provider, each with the chain the loan goes to. */
+  providerRows: ProviderRow[];
   /**
-   * The selected market, as `marketFit` gives it: the user's pick if it
-   * fits, else BEST; `undefined` when the LTV fits no market. Until every
-   * market has settled, only a fitting pick, as the market list does.
+   * The loan's size in dollars (the collateral's value × the LTV), read
+   * without the chosen chain, which it helps choose; `undefined` with no
+   * amount or no price for it. The market list takes it to choose the same
+   * chains.
+   */
+  loanUsd: number | undefined;
+  /**
+   * The selected market, one provider on one chain: the provider
+   * `marketFit` gives (the user's pick if it fits, else BEST) on its chosen
+   * chain, chosen again as the pair, the amount or the LTV change;
+   * `undefined` when the LTV fits no provider. Until every market has
+   * settled, only a fitting pick, as the market list does.
    */
   market: LendingMarket | undefined;
   /**
    * The market the figures and the liquidation marker are read for: the
-   * selection, or, when the LTV fits no market, the first market with the
-   * pair, as the artboard's `|| M[0]` (line 1143). Not a selection.
+   * selection, or, when the LTV fits no provider, the first provider's
+   * chosen chain, as the artboard's `|| M[0]` (line 1143). Not a selection.
    * `undefined` while the markets load and nothing is picked.
    */
   figuresMarket: LendingMarket | undefined;
   /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
   liquidationLtvBps: number | undefined;
-  /** The markets the LTV is above the max LTV of: shown off, not pickable. */
+  /**
+   * The providers (`LendingMarket.provider`) the LTV is above the max LTV
+   * of: shown off, not pickable.
+   */
   disabledMarketIds: string[];
   /** True once every market's read has settled (loaded or failed). */
   marketsSettled: boolean;
-  /** Keeps the pick; while it does not fit the LTV, the selection is BEST. */
-  pickMarket: (marketId: string) => void;
+  /**
+   * Keeps the picked provider (`LendingMarket.provider`); while it does not
+   * fit the LTV, the selection is BEST.
+   */
+  pickMarket: (provider: string) => void;
 
   /** The box is ticked, or the recipient is required. */
   recipientEnabled: boolean;
@@ -337,7 +361,7 @@ export const useLoanForm = ({
   const [amount, setAmount] = useState('');
   const [borrowSymbol, setBorrowSymbol] = useState(DEFAULT_PAIR.borrow);
   const [ltv, setLtv] = useState(DEFAULT_LTV);
-  const [pickedMarketId, setPickedMarketId] = useState<string>();
+  const [pickedProvider, setPickedProvider] = useState<string>();
   const [recipientEnabled, setRecipientEnabled] = useState(false);
   const [recipient, setRecipient] = useState('');
 
@@ -405,52 +429,81 @@ export const useLoanForm = ({
   };
 
   const marketRows = ready.flatMap((snapshot) => pairRow(snapshot, pair) ?? []);
-  const fit = marketFit({ rows: marketRows, ltv, pickedId: pickedMarketId });
+  const snapshotOf = (row: MarketRow | undefined) =>
+    ready.find(({ market }) => market.id === row?.market.id);
+
+  const atomic = toAtomic(amount, funding.decimals);
+
+  // How the funding asset is supplied in `snapshot`'s market, and the typed
+  // amount in dollars there.
+  const supplyIn = (snapshot: MarketSnapshot | undefined) => {
+    const choice = snapshot
+      ? collateralFor(fundingSymbol, snapshot)
+      : undefined;
+
+    // Before a market is known, the pair already says whether it converts.
+    const converted = choice
+      ? choice.convertedFrom !== undefined
+      : !sameSymbol(pair.collateral, fundingSymbol) &&
+        !(
+          sameSymbol(fundingSymbol, 'ETH') &&
+          sameSymbol(pair.collateral, 'WETH')
+        );
+
+    const amountUsd =
+      atomic > 0n
+        ? amountInUsd({
+            atomic,
+            funding,
+            reserve: choice?.reserve,
+            converted,
+            baseCurrencyUnit: snapshot?.baseCurrencyUnit,
+          })
+        : 0;
+
+    return { choice, converted, amountUsd };
+  };
+
+  // The loan's size chooses each provider's chain, so it is read without
+  // the chosen chain: in the first market with the pair (a 1Click price
+  // when there is one, else that market's oracle).
+  const sizingUsd = supplyIn(snapshotOf(marketRows[0])).amountUsd;
+  const loanUsd =
+    atomic > 0n && sizingUsd !== undefined
+      ? (sizingUsd * ltv) / 100
+      : undefined;
+
+  const providers = providerRows(marketRows, loanUsd);
+  const fit = marketFit({
+    rows: providers.map(({ chosen }) => chosen),
+    ltv,
+    pickedId: pickedProvider,
+  });
+
   const { fits } = fit;
 
   // One rule with the market list: until every market has settled, BEST is
   // not known, so only the user's own pick (when it fits) is a selection.
   const fittingPick =
-    pickedMarketId !== undefined && fits.get(pickedMarketId) === true
-      ? pickedMarketId
+    pickedProvider !== undefined && fits.get(pickedProvider) === true
+      ? pickedProvider
       : undefined;
 
-  const selectedId = marketsSettled ? fit.selectedId : fittingPick;
+  const selectedProvider = marketsSettled ? fit.selectedId : fittingPick;
+  const selectedRow = providers.find(
+    ({ provider }) => provider === selectedProvider,
+  )?.chosen;
 
   // The selection, or, once settled and none fits, a stand-in for the
   // figures only; nothing while the markets still load.
   const figuresRow =
-    marketRows.find(({ market }) => market.id === selectedId) ??
-    (marketsSettled ? marketRows[0] : undefined);
+    selectedRow ?? (marketsSettled ? providers[0]?.chosen : undefined);
 
-  const snapshot = ready.find(
-    ({ market }) => market.id === figuresRow?.market.id,
-  );
-
-  const choice = snapshot ? collateralFor(fundingSymbol, snapshot) : undefined;
+  const snapshot = snapshotOf(figuresRow);
+  const { choice, converted, amountUsd } = supplyIn(snapshot);
   const borrowReserve = snapshot?.borrowable.find(({ symbol }) =>
     sameSymbol(symbol, pair.borrow),
   );
-
-  // Before a market is known, the pair already says whether it converts.
-  const converted = choice
-    ? choice.convertedFrom !== undefined
-    : !sameSymbol(pair.collateral, fundingSymbol) &&
-      !(
-        sameSymbol(fundingSymbol, 'ETH') && sameSymbol(pair.collateral, 'WETH')
-      );
-
-  const atomic = toAtomic(amount, funding.decimals);
-  const amountUsd =
-    atomic > 0n
-      ? amountInUsd({
-          atomic,
-          funding,
-          reserve: choice?.reserve,
-          converted,
-          baseCurrencyUnit: snapshot?.baseCurrencyUnit,
-        })
-      : 0;
 
   const figures =
     snapshot && choice && borrowReserve
@@ -469,7 +522,7 @@ export const useLoanForm = ({
         })
       : undefined;
 
-  const market = ready.find(({ market: { id } }) => id === selectedId)?.market;
+  const market = selectedRow?.market;
   const borrowDecimals = borrowReserve?.decimals ?? borrowAsset?.decimals ?? 6;
 
   // No held row means a zero balance only once the balances have been read;
@@ -557,14 +610,16 @@ export const useLoanForm = ({
     setLtv,
     pair,
     marketRows,
+    providerRows: providers,
+    loanUsd,
     market,
     figuresMarket: snapshot?.market,
     liquidationLtvBps: figuresRow?.liquidationLtvBps,
-    disabledMarketIds: marketRows.flatMap(({ market: { id } }) =>
-      fits.get(id) === true ? [] : [id],
+    disabledMarketIds: providers.flatMap(({ provider }) =>
+      fits.get(provider) === true ? [] : [provider],
     ),
     marketsSettled,
-    pickMarket: setPickedMarketId,
+    pickMarket: setPickedProvider,
     recipientEnabled: sendToOther,
     setRecipientEnabled: (enabled) => {
       if (recipientRequired) {

@@ -15,13 +15,19 @@ import {
   type MarketSnapshotResult,
   useMarketSnapshots,
 } from '../markets/useMarketSnapshots';
-import { bestOf, type MarketPair, type MarketRow, pairRow } from './marketRows';
+import {
+  bestOf,
+  type MarketPair,
+  pairRow,
+  type ProviderRow,
+  providerRows,
+} from './marketRows';
 
 /**
- * Borrow's launch chains, Base and Arbitrum: the number of skeletons
- * shown while the market list itself is still loading.
+ * Borrow's launch providers, Aave alone: the number of skeletons shown
+ * while the market list itself is still loading.
  */
-const LAUNCH_CHAIN_COUNT = 2;
+const LAUNCH_PROVIDER_COUNT = 1;
 
 /**
  * Chain marks by SDK slug. The colours are the artboard's chain dots
@@ -74,32 +80,85 @@ const BEST_TAG =
   'inline-flex items-center gap-[6px] text-[11px] tracking-[0.1em]';
 
 type Item =
-  | { kind: 'loading'; key: string; market?: LendingMarket }
-  | { kind: 'error'; key: string; market: LendingMarket; retry: () => void }
+  /** `name`: the provider's, once its markets are listed. */
+  | { kind: 'loading'; key: string; name?: string }
+  | { kind: 'error'; key: string; name: string; retry: () => void }
   | { kind: 'listError'; key: string; retry: () => void }
-  | { kind: 'market'; key: string; row: MarketRow };
+  | { kind: 'provider'; key: string; row: ProviderRow };
 
 /**
- * One item per market, in order. A failed read is an error whatever data
- * an earlier read left, so no number is shown for it.
+ * The snapshot reads by provider (`LendingMarket.provider`, the key
+ * `providerRows` and `marketFit` use), in the order each provider first
+ * comes, whichever adapter listed them.
  */
-const snapshotItem = (
-  result: MarketSnapshotResult,
+const byProvider = (
+  snapshots: readonly MarketSnapshotResult[],
+): MarketSnapshotResult[][] => {
+  const groups = new Map<string, MarketSnapshotResult[]>();
+
+  snapshots.forEach((result) => {
+    const { provider } = result.market;
+    const group = groups.get(provider);
+
+    if (group) {
+      group.push(result);
+    } else {
+      groups.set(provider, [result]);
+    }
+  });
+
+  return [...groups.values()];
+};
+
+/**
+ * One item per provider, from the reads of its chains (`results`, never
+ * empty). A skeleton while any chain is pending, so the chosen chain does
+ * not jump as the others load. Then the chains that loaded with the pair,
+ * a failed read counting as none whatever data an earlier read left, so
+ * no number is shown for it. With none, a Banner when a chain failed (it
+ * may have had the pair), its retry reading each failed chain again;
+ * nothing when every chain lacks the pair.
+ */
+const providerItem = (
+  results: readonly MarketSnapshotResult[],
   pair: MarketPair,
+  loanUsd: number | undefined,
 ): Item | undefined => {
-  const key = `${result.adapterId}:${result.market.id}`;
+  const [first] = results;
 
-  if (result.status === 'error') {
-    return { kind: 'error', key, market: result.market, retry: result.refetch };
+  if (!first) {
+    return undefined;
   }
 
-  if (result.status === 'pending' || !result.data) {
-    return { kind: 'loading', key, market: result.market };
+  const key = `provider-${first.market.provider}`;
+  const { name } = first.market;
+
+  if (results.some(({ status }) => status === 'pending')) {
+    return { kind: 'loading', key, name };
   }
 
-  const row = pairRow(result.data, pair);
+  const rows = results.flatMap((result) =>
+    result.status === 'success' ? (pairRow(result.data, pair) ?? []) : [],
+  );
 
-  return row ? { kind: 'market', key, row } : undefined;
+  const [row] = providerRows(rows, loanUsd);
+
+  if (row) {
+    return { kind: 'provider', key, row };
+  }
+
+  const failed = results.filter(({ status }) => status === 'error');
+
+  return failed.length > 0
+    ? {
+        kind: 'error',
+        key,
+        name,
+        retry: () => {
+          failed.forEach(({ refetch }) => refetch());
+        },
+      }
+    : undefined;
 };
 
 const listItems = (
@@ -107,12 +166,15 @@ const listItems = (
   listing: boolean,
   listErrors: MarketListError[],
   pair: MarketPair,
+  loanUsd: number | undefined,
 ): Item[] => {
-  const items = snapshots.flatMap((result) => snapshotItem(result, pair) ?? []);
+  const items = byProvider(snapshots).flatMap(
+    (results) => providerItem(results, pair, loanUsd) ?? [],
+  );
 
   const placeholders: Item[] =
     listing && snapshots.length === 0
-      ? Array.from({ length: LAUNCH_CHAIN_COUNT }, (_, index) => ({
+      ? Array.from({ length: LAUNCH_PROVIDER_COUNT }, (_, index) => ({
           kind: 'loading',
           key: `listing-${index}`,
         }))
@@ -127,9 +189,7 @@ const listItems = (
   return [...items, ...placeholders, ...errors];
 };
 
-const marketTitle = (market: LendingMarket) =>
-  `${market.name} on ${market.chainLabel}`;
-
+/** The chain a provider lends on: its mark, then "on Arbitrum". */
 function ChainLabel({ market }: { market: LendingMarket }) {
   const mark = CHAIN_MARKS[market.chain] ?? {
     label: market.chainLabel.slice(0, 2).toUpperCase(),
@@ -141,23 +201,26 @@ function ChainLabel({ market }: { market: LendingMarket }) {
     <span className="inline-flex items-center gap-[6px] text-[13px] font-semibold tracking-normal text-mut">
       {/* No ring: the mark stands alone, on `sf` or the BEST tint. */}
       <ChainMark aria-hidden="true" ringColor="transparent" {...mark} />
-      {market.chainLabel}
+      on {market.chainLabel}
     </span>
   );
 }
 
 type MarketCardProps = {
-  row: MarketRow;
+  row: ProviderRow;
   best: boolean;
   selected: boolean;
   off: boolean;
   onPick: () => void;
 };
 
-/** One market as an `.mkc` card (lines 346–361). */
+/**
+ * One provider as an `.mkc` card (lines 346–361), with its chosen chain's
+ * figures.
+ */
 function MarketCard({ row, best, selected, off, onPick }: MarketCardProps) {
-  const { market } = row;
-  const maxLtv = formatBps(row.maxLtvBps);
+  const { chosen } = row;
+  const maxLtv = formatBps(chosen.maxLtvBps);
 
   return (
     <button
@@ -198,35 +261,37 @@ function MarketCard({ row, best, selected, off, onPick }: MarketCardProps) {
         {best ? (
           // Line 353: the accent highlight on the BEST market's name.
           <span className="inline-block rounded-[8px] bg-accent px-[8px] text-onlime">
-            {market.name}
+            {row.name}
           </span>
         ) : (
-          <span>{market.name}</span>
+          <span>{row.name}</span>
         )}
-        <ChainLabel market={market} />
+        <ChainLabel market={chosen.market} />
       </div>
       <div>
-        <div className={APR}>{formatApr(row.apr)}</div>
+        <div className={APR}>{formatApr(chosen.apr)}</div>
         <div className={cn(META, 'mt-[4px]')}>APR · max LTV {maxLtv}</div>
       </div>
       <div className={cn(META, 'border-t border-solid border-bd pt-[10px]')}>
-        Liq. {formatBps(row.liquidationLtvBps)} ·{' '}
-        {formatCompactUsd(row.liquidityUsd)}
+        Liq. {formatBps(chosen.liquidationLtvBps)} ·{' '}
+        {formatCompactUsd(chosen.liquidityUsd)}
       </div>
     </button>
   );
 }
 
+/** A skeleton's screen-reader label: the provider once it is listed. */
+const loadingLabel = (name: string | undefined) =>
+  name ? `Loading ${name}` : 'Loading markets';
+
 /**
  * A card-shaped placeholder: the same box and lines as a card, each line a
  * kit `Skeleton` sized in `em` so it follows the mobile type sizes.
  */
-function MarketCardSkeleton({ market }: { market?: LendingMarket }) {
+function MarketCardSkeleton({ name }: { name?: string }) {
   return (
     <div className={CARD}>
-      <span className="sr-only">
-        {market ? `Loading ${marketTitle(market)}` : 'Loading markets'}
-      </span>
+      <span className="sr-only">{loadingLabel(name)}</span>
       <div className={TAG_ROW}>
         <Skeleton height={11} width={44} />
       </div>
@@ -298,9 +363,12 @@ const COLUMNS = [
   'Liquidity',
 ] as const;
 
-/** One market as an `.mrow` (lines 328–341). */
+/**
+ * One provider as an `.mrow` (lines 328–341), with its chosen chain's
+ * figures.
+ */
 function MarketTableRow({ row, best, selected, off, onPick }: MarketCardProps) {
-  const { market } = row;
+  const { chosen } = row;
 
   return (
     <button
@@ -323,7 +391,7 @@ function MarketTableRow({ row, best, selected, off, onPick }: MarketCardProps) {
               'text-[24px] font-extrabold leading-[1.25] tracking-[-0.03em]',
               best && 'rounded-[8px] bg-accent px-[8px] text-onlime',
             )}>
-            {market.name}
+            {row.name}
           </span>
           {best ? (
             <span className={BEST_TAG}>
@@ -340,35 +408,33 @@ function MarketTableRow({ row, best, selected, off, onPick }: MarketCardProps) {
             </span>
           ) : null}
         </span>
-        <ChainLabel market={market} />
+        <ChainLabel market={chosen.market} />
       </span>
       <span className="text-[24px] font-extrabold tracking-[-0.03em]">
         <span className="sr-only">Borrow APR </span>
-        {formatApr(row.apr)}
+        {formatApr(chosen.apr)}
       </span>
       <span className={FIGURE}>
         <span className="sr-only">Max LTV </span>
-        {formatBps(row.maxLtvBps)}
+        {formatBps(chosen.maxLtvBps)}
       </span>
       <span className={FIGURE}>
         <span className="sr-only">Liquidation </span>
-        {formatBps(row.liquidationLtvBps)}
+        {formatBps(chosen.liquidationLtvBps)}
       </span>
       <span className={FIGURE}>
         <span className="sr-only">Liquidity </span>
-        {formatCompactUsd(row.liquidityUsd)}
+        {formatCompactUsd(chosen.liquidityUsd)}
       </span>
     </button>
   );
 }
 
 /** A row-shaped placeholder: the same grid and height, a `Skeleton` per cell. */
-function MarketRowSkeleton({ market }: { market?: LendingMarket }) {
+function MarketRowSkeleton({ name }: { name?: string }) {
   return (
     <div className={ROW} data-testid="market-row-skeleton">
-      <span className="sr-only">
-        {market ? `Loading ${marketTitle(market)}` : 'Loading markets'}
-      </span>
+      <span className="sr-only">{loadingLabel(name)}</span>
       <Skeleton height={28} width="60%" />
       <Skeleton height={28} width="70%" />
       <Skeleton height={20} width="80%" />
@@ -385,25 +451,38 @@ export type MarketListProps = {
   layout: MarketListLayout;
   /** The collateral and borrow symbols every row is read for. */
   pair: MarketPair;
-  /** The picked market, when the caller owns the selection. */
+  /**
+   * The loan's size in dollars, which each provider's chain must have the
+   * liquidity for; `undefined` while it is not known (every chain counts).
+   */
+  loanUsd?: number;
+  /** The picked provider (`LendingMarket.provider`), when the caller owns the selection. */
   selectedId?: string;
-  /** Called with the market id the user picks. */
-  onSelect?: (marketId: string) => void;
-  /** Markets the loan's LTV is too high for: shown off and not pickable. */
+  /** Called with the provider (`LendingMarket.provider`) the user picks. */
+  onSelect?: (provider: string) => void;
+  /** Providers the loan's LTV is too high for: shown off and not pickable. */
   disabledIds?: readonly string[];
 };
 
 const NO_IDS: readonly string[] = [];
 
 /**
- * Every market's figures for `pair`, one card or table row per market. BEST marks the lowest borrow APR among the markets
- * that can be picked, and the selection defaults to it. Each market loads and fails on
- * its own: a skeleton while it loads, a Banner with "Try again" when its read
- * fails. A market without the pair is left out.
+ * Every provider's figures for `pair`, one card or table row per provider
+ * (Aave, not Aave on each chain), on the chain it lends on: the lowest APR
+ * among its chains with the liquidity for `loanUsd` (`chooseChain`), shown
+ * by the chain's mark and name. With two or more providers, BEST marks the
+ * lowest APR among those that can be picked; with one it means nothing and
+ * is not shown. The selection defaults to the lowest APR either way.
+ *
+ * Each chain loads and fails on its own: a provider shows a skeleton while
+ * any of its chains loads, then the chains that loaded; a Banner with "Try
+ * again" only when none did and a read failed. A provider without the pair
+ * is left out.
  */
 export function MarketList({
   layout,
   pair,
+  loanUsd,
   selectedId,
   onSelect,
   disabledIds = NO_IDS,
@@ -411,29 +490,33 @@ export function MarketList({
   const { snapshots, listing, listErrors } = useMarketSnapshots();
   const [picked, setPicked] = useState<string>();
 
-  const items = listItems(snapshots, listing, listErrors, pair);
+  const items = listItems(snapshots, listing, listErrors, pair, loanUsd);
   const rows = items.flatMap((item) =>
-    item.kind === 'market' ? [item.row] : [],
+    item.kind === 'provider' ? [item.row] : [],
   );
 
   const pickable = rows.filter(
-    ({ market }) => !disabledIds.includes(market.id),
+    ({ provider }) => !disabledIds.includes(provider),
   );
 
   const loading = items.some(({ kind }) => kind === 'loading');
   // Compared only once every market has settled, so no card is tagged BEST
   // (or selected by default) before the markets still loading are known.
-  const best = loading ? undefined : bestOf(pickable);
+  const lowest = loading
+    ? undefined
+    : bestOf(pickable.map(({ chosen }) => chosen))?.market.provider;
+
+  const best = rows.length > 1 ? lowest : undefined;
   const selected =
     selectedId ??
-    (pickable.some(({ market }) => market.id === picked)
+    (pickable.some(({ provider }) => provider === picked)
       ? picked
       : undefined) ??
-    best?.market.id;
+    lowest;
 
-  const pick = (marketId: string) => {
-    setPicked(marketId);
-    onSelect?.(marketId);
+  const pick = (provider: string) => {
+    setPicked(provider);
+    onSelect?.(provider);
   };
 
   if (items.length === 0) {
@@ -450,9 +533,9 @@ export function MarketList({
     switch (item.kind) {
       case 'loading':
         return table ? (
-          <MarketRowSkeleton key={item.key} market={item.market} />
+          <MarketRowSkeleton key={item.key} name={item.name} />
         ) : (
-          <MarketCardSkeleton key={item.key} market={item.market} />
+          <MarketCardSkeleton key={item.key} name={item.name} />
         );
       case 'error':
         return (
@@ -460,7 +543,7 @@ export function MarketList({
             key={item.key}
             className={table ? 'min-w-0' : undefined}
             retry={item.retry}
-            title={`${marketTitle(item.market)} did not load`}
+            title={`${item.name} did not load`}
           />
         );
       case 'listError':
@@ -473,18 +556,18 @@ export function MarketList({
           />
         );
 
-      case 'market': {
-        const { id } = item.row.market;
+      case 'provider': {
+        const { provider } = item.row;
         const Row = table ? MarketTableRow : MarketCard;
 
         return (
           <Row
             key={item.key}
-            best={best?.market.id === id}
-            off={disabledIds.includes(id)}
+            best={best === provider}
+            off={disabledIds.includes(provider)}
             row={item.row}
-            selected={selected === id}
-            onPick={() => pick(id)}
+            selected={selected === provider}
+            onPick={() => pick(provider)}
           />
         );
       }

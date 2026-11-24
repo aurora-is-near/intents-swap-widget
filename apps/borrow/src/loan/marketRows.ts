@@ -4,8 +4,9 @@ import { sameSymbol } from './model/symbols';
 
 /**
  * The market rows the list shows and the loan form picks from, derived the
- * same way for both: one row per market that offers the pair, and BEST on
- * the lowest borrow APR.
+ * same way for both: one row per market (a provider on one chain) that
+ * offers the pair, grouped into one row per provider, which lends on the
+ * chain it chooses; BEST on the lowest borrow APR.
  */
 
 /** The collateral and borrow symbols a row is read for. */
@@ -75,3 +76,63 @@ export const bestOf = <Row extends Pick<MarketRow, 'apr'>>(
     (best, row) => (!best || row.apr < best.apr ? row : best),
     undefined,
   );
+
+/** One provider, such as Aave, across the chains that offer the pair. */
+export type ProviderRow = {
+  /** `LendingMarket.provider`, such as `aave-v3`. */
+  provider: string;
+  /** `LendingMarket.name`, such as `Aave`. */
+  name: string;
+  /** The chain the loan goes to; its figures are the provider's. */
+  chosen: MarketRow;
+  /** Every loaded chain with the pair, in the order given. */
+  chains: MarketRow[];
+};
+
+/**
+ * The chain a provider lends on: the lowest APR among the chains whose
+ * liquidity covers the loan (`loanUsd`, in dollars; `undefined` while its
+ * size is not known, when every chain counts). When none covers it, the
+ * lowest APR all the same: the call to action and the borrow's liquidity
+ * check catch it. The first on a tie.
+ */
+export const chooseChain = (
+  chains: readonly MarketRow[],
+  loanUsd: number | undefined,
+): MarketRow | undefined =>
+  bestOf(
+    chains.filter(
+      ({ liquidityUsd }) => loanUsd === undefined || liquidityUsd >= loanUsd,
+    ),
+  ) ?? bestOf(chains);
+
+/**
+ * One row per provider (`LendingMarket.provider`) among the pair's `rows`,
+ * in the order its first chain comes, with the chain `chooseChain` picks.
+ * The liquidity is compared in dollars, so the choice does not depend on
+ * the chosen chain's own figures.
+ */
+export const providerRows = (
+  rows: readonly MarketRow[],
+  loanUsd: number | undefined,
+): ProviderRow[] => {
+  const byProvider = new Map<string, MarketRow[]>();
+
+  rows.forEach((row) => {
+    const chains = byProvider.get(row.market.provider);
+
+    if (chains) {
+      chains.push(row);
+    } else {
+      byProvider.set(row.market.provider, [row]);
+    }
+  });
+
+  return [...byProvider].flatMap(([provider, chains]) => {
+    const chosen = chooseChain(chains, loanUsd);
+
+    return chosen
+      ? [{ provider, name: chosen.market.name, chosen, chains }]
+      : [];
+  });
+};
