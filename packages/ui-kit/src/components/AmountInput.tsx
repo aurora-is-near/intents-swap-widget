@@ -61,15 +61,20 @@ export type AmountInputProps = Omit<
   className?: string;
 };
 
+/** The digits and dots `sanitizeAmountInput` starts from (`,` is a dot). */
+const keptCharacters = (text: string): string =>
+  text.replace(/,/g, '.').replace(/[^\d.]/g, '');
+
 /**
  * Where the caret goes in `next` (the cleaned `raw`) when it was at `caret`
  * in `raw`: the length of the text before the caret once cleaned.
  *
  * The text before the caret cleans the same way alone as inside the whole
- * value, except for leading zeros: they collapse only when a digit follows,
- * and that digit may be after the caret. So when the part before the caret
- * is only zeros (it cleans to `0`) and the whole value lost them (`next`
- * does not start with `0`), the caret goes to the start: `0|12` → `|12`.
+ * value, except for a run of leading zeros, which may go on after the caret.
+ * Cleaning keeps at most the run's last zero (none when a digit follows), so
+ * when only zeros are before the caret, the caret is after a kept zero only
+ * if the run ends before the caret and `next` kept a zero:
+ * `0|12` → `|12`, `0|0` → `|0`, `0|.5` → `0|.5`.
  */
 const caretAfterCleaning = (
   raw: string,
@@ -77,9 +82,15 @@ const caretAfterCleaning = (
   next: string,
   decimals: number | undefined,
 ): number => {
-  const before = sanitizeAmountInput(raw.slice(0, caret), decimals);
+  const head = raw.slice(0, caret);
 
-  return before === '0' && !next.startsWith('0') ? 0 : before.length;
+  if (/^0+$/.test(keptCharacters(head))) {
+    const runGoesOn = keptCharacters(raw.slice(caret)).startsWith('0');
+
+    return next.startsWith('0') && !runGoesOn ? 1 : 0;
+  }
+
+  return sanitizeAmountInput(head, decimals).length;
 };
 
 /**

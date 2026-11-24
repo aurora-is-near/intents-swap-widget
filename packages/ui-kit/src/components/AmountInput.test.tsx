@@ -176,6 +176,40 @@ describe('AmountInput', () => {
     expect(input).toHaveValue('912');
   });
 
+  it('keeps the caret before the kept zero when a zero is typed before it', async () => {
+    const user = userEvent.setup();
+
+    render(<Controlled initial="0" />);
+
+    const input = screen.getByRole<HTMLInputElement>('textbox');
+
+    input.focus();
+    input.setSelectionRange(0, 0);
+    await user.keyboard('0');
+
+    expect(input).toHaveValue('0');
+    expect(input.selectionStart).toBe(0);
+
+    await user.keyboard('9');
+
+    expect(input).toHaveValue('90');
+  });
+
+  it('keeps the caret after a zero that stays before a dot', async () => {
+    const user = userEvent.setup();
+
+    render(<Controlled initial="0" />);
+
+    const input = screen.getByRole<HTMLInputElement>('textbox');
+
+    input.focus();
+    input.setSelectionRange(1, 1);
+    await user.keyboard('.');
+
+    expect(input).toHaveValue('0.');
+    expect(input.selectionStart).toBe(2);
+  });
+
   it('forwards its ref to the input and puts className on the field wrapper', () => {
     const ref = createRef<HTMLInputElement>();
 
