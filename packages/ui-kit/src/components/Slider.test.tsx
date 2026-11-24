@@ -70,6 +70,18 @@ const percentOf = (element: Element) =>
   Number.parseFloat((element as HTMLElement).style.width);
 
 describe('Slider', () => {
+  it('shows no outline on its control when focused', async () => {
+    const user = userEvent.setup();
+
+    render(<Slider aria-label={LABEL} max={90} min={10} value={40} />);
+
+    const slider = await focusSlider(user);
+    const control = slider.closest('.h-\\[36px\\]');
+
+    expect(control).not.toBeNull();
+    expect(control?.className).not.toContain('outline');
+  });
+
   it('has role slider with its label, min, max and value', () => {
     render(<Slider aria-label={LABEL} max={90} min={10} value={40} />);
 

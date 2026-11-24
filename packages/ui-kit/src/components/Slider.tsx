@@ -16,12 +16,12 @@ export const RISK_ZONE_COLORS = [
 
 /**
  * `.ltvwrap` (lines 302, 44): 36px high, holding the track 12px from its
- * top, with `focus-within` outline 3px ink, offset 6px, radius 8. The
- * disabled look is `.go:disabled`'s opacity (line 57); the artboards have
- * no disabled slider.
+ * top. The artboard's `focus-within` outline was removed on purpose, so the
+ * slider shows no focus ring. The disabled look is `.go:disabled`'s opacity
+ * (line 57); the artboards have no disabled slider.
  */
 const CONTROL =
-  'relative box-border h-[36px] cursor-pointer touch-none rounded-[8px] pt-[12px] focus-within:outline-[3px] focus-within:outline-offset-[6px] focus-within:outline-ink focus-within:outline-solid data-disabled:cursor-not-allowed data-disabled:opacity-50';
+  'relative box-border h-[36px] cursor-pointer touch-none pt-[12px] data-disabled:cursor-not-allowed data-disabled:opacity-50';
 
 /**
  * The track (line 303): 10px high, radius 5. Base UI positions the thumb
@@ -56,10 +56,14 @@ const MARKER_LABEL =
 
 /**
  * The thumb (line 307): 24px, `sf`, 4px ink border, centred on the track
- * (5px from the control's top).
+ * (5px from the control's top). With the control's focus ring removed, the
+ * thumb fills with ink while its range input has keyboard focus, so keyboard
+ * users still see which control the arrow keys move, without an outline.
+ * Forced-colors mode replaces both fills with the same system colour, so
+ * there, and only there, the focused thumb gets a `Highlight` outline.
  */
 const THUMB =
-  'box-border size-[24px] rounded-full border-4 border-solid border-ink bg-sf';
+  'box-border size-[24px] rounded-full border-4 border-solid border-ink bg-sf has-focus-visible:bg-ink forced-colors:has-focus-visible:outline-2 forced-colors:has-focus-visible:outline-offset-2 forced-colors:has-focus-visible:outline-solid forced-colors:has-focus-visible:outline-[Highlight]';
 
 export type SliderZone = {
   /** Where the zone ends; it starts where the previous one ended, or at `min`. */
