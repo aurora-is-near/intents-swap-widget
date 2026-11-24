@@ -86,6 +86,19 @@ describe('Button', () => {
         'leading-[normal]',
       ],
     ],
+    [
+      'link',
+      [
+        'bg-transparent',
+        'border-0',
+        'p-0',
+        'text-[15px]',
+        'font-semibold',
+        'text-mut',
+        'underline',
+        'leading-[normal]',
+      ],
+    ],
   ] as const)('%s renders its artboard classes', (variant, expected) => {
     render(<Button variant={variant}>Borrow</Button>);
 

@@ -54,10 +54,12 @@ export const RPC_URL_ARB =
   readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB;
 
 /**
- * The borrow fee the form shows, in basis points (30 = 0.30%), taken from
- * the borrowed amount as the artboard draws it (Web-Borrow.dc.html line
- * 1139). An estimate: the fee is an Intents Connect API-key fee, and Borrow
- * execution reconciles it with the quote (decided in the plan review).
+ * The borrow fee the form shows, in basis points (30 = 0.30%), as the
+ * artboard labels it (Web-Borrow.dc.html line 1139). An estimate, taken from
+ * the collateral: the fee is an Intents Connect API-key fee, which the dry
+ * run reports in the bridged collateral, so the form's fee row shows it in
+ * the collateral and the confirm dialog shows the dry run's own figure
+ * (decided in the Borrow execution plan review).
  */
 export const BORROW_FEE_BPS = 30;
 

@@ -38,17 +38,29 @@ type LoanCtaProps = {
   /** The market the chip names while connecting: the selection, if any. */
   marketName: string;
   onConnect: () => void;
+  /** The ready state's action: starts the borrow flow. */
+  onBorrow: () => void;
+  /** The borrow flow is preparing its dry run: the ready button is busy. */
+  busy?: boolean;
 };
 
 /**
  * The call to action (lines 371–373, script line 1578), one state at a
- * time. Connecting opens the wallet. Every other state is disabled: the
- * ready one too, which shows "Borrow 1,234 USDC on Aave" but has nothing to
- * open until Borrow execution wires the confirm dialog (decided). An
- * insufficient balance or an LTV above every market's max takes `.go.bad`
- * (line 56), as the artboard's other forms do for an error.
+ * time. Connecting opens the wallet; the ready state, "Borrow 1,234 USDC on
+ * Aave", starts the borrow flow (`onBorrow`), which opens the confirm
+ * dialog. This reverses the earlier ruling that kept it disabled until
+ * Borrow execution, which named this feature as the point to enable it.
+ * Every other state is disabled. An insufficient balance or an LTV above
+ * every market's max takes `.go.bad` (line 56), as the artboard's other
+ * forms do for an error.
  */
-export function LoanCta({ state, marketName, onConnect }: LoanCtaProps) {
+export function LoanCta({
+  state,
+  marketName,
+  onConnect,
+  onBorrow,
+  busy = false,
+}: LoanCtaProps) {
   switch (state.kind) {
     case 'connect':
       return (
@@ -59,7 +71,7 @@ export function LoanCta({ state, marketName, onConnect }: LoanCtaProps) {
       );
     case 'ready':
       return (
-        <Button className={CTA} disabled>
+        <Button className={CTA} loading={busy} onClick={onBorrow}>
           <span>
             Borrow{' '}
             {formatAmount(toDisplayNumber(state.borrowAmount, state.decimals))}{' '}

@@ -108,8 +108,8 @@ describe('NewLoanForm recipient by wallet family', () => {
     await user.clear(address);
     await user.type(address, '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21');
 
-    // 1 WETH at $3,000, LTV 50%, on Arbitrum.
-    expect(cta('Borrow 1,500 USDC on Aave')).toBeInTheDocument();
+    // 1 WETH less the 0.30% fee at $3,000, LTV 50%, on Arbitrum.
+    expect(cta('Borrow 1,496 USDC on Aave')).toBeInTheDocument();
   });
 
   it('with an EVM wallet, leaves the recipient optional', async () => {
@@ -127,6 +127,6 @@ describe('NewLoanForm recipient by wallet family', () => {
       '1',
     );
 
-    expect(cta('Borrow 1,500 USDC on Aave')).toBeInTheDocument();
+    expect(cta('Borrow 1,496 USDC on Aave')).toBeInTheDocument();
   });
 });

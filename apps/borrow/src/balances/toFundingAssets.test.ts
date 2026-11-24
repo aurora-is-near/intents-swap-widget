@@ -64,6 +64,8 @@ describe('toFundingAssets', () => {
         symbol: 'USDC',
         chain: 'base',
         decimals: 6,
+        // The wallet's deposit sends this token (the borrow plan's origin).
+        contractAddress: USDC.contractAddress,
         amount: 2_500_000n,
         usdValue: 2.5,
         unavailableReason: undefined,

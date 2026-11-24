@@ -20,6 +20,7 @@ import {
   weth,
 } from '../tests/fakeMarkets';
 import { NewLoanForm } from './NewLoanForm';
+import type { BorrowRequest } from './useLoanForm';
 
 const wallet = vi.hoisted(() => ({
   address: undefined as string | undefined,
@@ -127,9 +128,11 @@ const SNAPSHOTS: Readonly<Record<string, MarketSnapshot>> = {
 const renderForm = async ({
   snapshots = SNAPSHOTS,
   selected = /Aave Arbitrum/,
+  onBorrow,
 }: {
   snapshots?: Readonly<Record<string, MarketSnapshot>>;
   selected?: RegExp;
+  onBorrow?: (request: BorrowRequest) => void;
 } = {}) => {
   const adapter = createFakeAdapter({
     getMarketSnapshot: async (market) => {
@@ -146,7 +149,7 @@ const renderForm = async ({
   render(
     <QueryClientProvider client={createTestQueryClient()}>
       <MarketAdaptersProvider adapters={[adapter]}>
-        <NewLoanForm />
+        <NewLoanForm onBorrow={onBorrow} />
       </MarketAdaptersProvider>
     </QueryClientProvider>,
   );
@@ -204,14 +207,16 @@ describe('NewLoanForm', () => {
 
       expect(screen.getByText('≈ $0.00')).toBeInTheDocument();
       expect(received()).toHaveTextContent('0');
-      expect(feeRow()).toHaveTextContent('Borrow fee · 0.30%−0.00 USDC');
+      expect(feeRow()).toHaveTextContent('Borrow fee · 0.30%−0.00 WETH');
 
       await user.type(amountField(), '2');
 
-      // 2 WETH at $3,000, LTV 50%: 3,000 USDC, less 9 USDC (0.30%).
+      // 2 WETH at $3,000: the fee, 0.30%, is taken from the collateral, as
+      // the dry run reports it, so 1.994 WETH at LTV 50% is 2,991 USDC,
+      // received whole.
       expect(screen.getByText('≈ $6,000')).toBeInTheDocument();
       expect(received()).toHaveTextContent('2,991');
-      expect(feeRow()).toHaveTextContent('Borrow fee · 0.30%−9.00 USDC');
+      expect(feeRow()).toHaveTextContent('Borrow fee · 0.30%−0.006 WETH');
     });
   });
 
@@ -311,7 +316,8 @@ describe('NewLoanForm', () => {
 
       // Only Base lends USDT, so the loan moves there.
       expect(borrowPicker()).toHaveAccessibleName('BORROW USDT Base');
-      expect(feeRow()).toHaveTextContent('USDT');
+      // The fee is taken from the collateral, not the borrowed USDT.
+      expect(feeRow()).toHaveTextContent('WETH');
       expect(screen.getByRole('button', { name: /Aave Base/ })).toHaveAttribute(
         'aria-pressed',
         'true',
@@ -328,17 +334,17 @@ describe('NewLoanForm', () => {
 
       await user.type(amountField(), '1');
 
-      // 1 ETH at 1Click's $3,000; 1 WETH at the oracle's $3,000, LTV 50%:
-      // 1,500 USDC, less 4.50 USDC.
+      // 1 ETH at 1Click's $3,000; 1 WETH at the oracle's $3,000 less the
+      // 0.30% fee, 0.997 WETH, at LTV 50%: 1,495.50 USDC.
       expect(screen.getByText('≈ $3,000')).toBeInTheDocument();
       expect(received()).toHaveTextContent('1,496');
-      expect(feeRow()).toHaveTextContent('−4.50 USDC');
+      expect(feeRow()).toHaveTextContent('−0.003 WETH');
 
       await user.type(amountField(), '.5');
 
       expect(screen.getByText('≈ $4,500')).toBeInTheDocument();
       expect(received()).toHaveTextContent('2,243');
-      expect(feeRow()).toHaveTextContent('−6.75 USDC');
+      expect(feeRow()).toHaveTextContent('−0.0045 WETH');
     });
 
     it('notes "Supplied as WETH" for an asset no market takes as collateral', async () => {
@@ -357,9 +363,9 @@ describe('NewLoanForm', () => {
 
       await user.type(amountField(), '1000');
 
-      // $1,000 of USDT as WETH at LTV 50%: about 500 USDC, fee 1.50.
+      // $1,000 of USDT as WETH: about 0.333 WETH, fee 0.001 WETH.
       expect(screen.getByText('≈ $1,000')).toBeInTheDocument();
-      expect(feeRow()).toHaveTextContent('−1.50 USDC');
+      expect(feeRow()).toHaveTextContent('−0.001 WETH');
     });
 
     it('never borrows the collateral: a USDC holding moves the borrow off USDC', async () => {
@@ -534,7 +540,8 @@ describe('NewLoanForm', () => {
       ltvSlider().focus();
       await user.keyboard('{ArrowLeft}');
 
-      // 2 WETH at $3,000, LTV 49%: 2,940 USDC, less 8.82 USDC (0.30%).
+      // 2 WETH less the 0.30% fee, at $3,000 and LTV 49%: 2,931 USDC; the
+      // fee stays 0.006 WETH.
       expect(
         screen.getByText('Loan to value · Conservative'),
       ).toBeInTheDocument();
@@ -545,7 +552,7 @@ describe('NewLoanForm', () => {
         ),
       ).toBeInTheDocument();
       expect(received()).toHaveTextContent('2,931');
-      expect(feeRow()).toHaveTextContent('−8.82 USDC');
+      expect(feeRow()).toHaveTextContent('−0.006 WETH');
     });
 
     it('marks the selected market’s liquidation LTV', async () => {
@@ -577,10 +584,10 @@ describe('NewLoanForm', () => {
         ),
       ).toBeInTheDocument();
       // No market fits: the first one stands in (the artboard's `|| M[0]`),
-      // Base, liquidation at 81%. 4,920 USDC, less 14.76.
+      // Base, liquidation at 81%. 1.994 WETH after the fee: 4,905 USDC.
       expect(screen.getByText('liq. 81%')).toBeInTheDocument();
       expect(received()).toHaveTextContent('4,905');
-      expect(feeRow()).toHaveTextContent('−14.76 USDC');
+      expect(feeRow()).toHaveTextContent('−0.006 WETH');
       // The triggers keep the stand-in's chain.
       expect(supplyPicker()).toHaveAccessibleName('SUPPLY WETH Base');
       expect(borrowPicker()).toHaveAccessibleName('BORROW USDC Base');
@@ -672,7 +679,8 @@ describe('NewLoanForm', () => {
 
       await user.type(amountField(), '2');
 
-      // Arbitrum (BEST): 3,000 USDC against 2 WETH, liquidated at 82.5%,
+      // Arbitrum (BEST): 2,991 USDC against 1.994 WETH (2 less the fee),
+      // liquidated at 82.5%,
       // so when WETH is at $1,818.18; health 82.5 ÷ 50.
       expect(tile('Liquidation')).toHaveTextContent('$1,818at 82.5% LTV');
       expect(tile('Health')).toHaveTextContent('1.65');
@@ -876,24 +884,38 @@ describe('NewLoanForm', () => {
         await user.clear(address);
         await user.type(address, '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21');
 
-        expect(cta('Borrow 1,500 USDC on Aave')).toBeDisabled();
+        expect(cta('Borrow 1,496 USDC on Aave')).toBeEnabled();
       });
 
-      it('shows the loan it is ready to make, disabled until Borrow execution', async () => {
+      it('shows the loan it is ready to make, and hands it to onBorrow', async () => {
         const user = userEvent.setup();
+        const onBorrow = vi.fn();
 
-        await renderForm();
-        // 1 ETH at $3,000, LTV 50%, on Arbitrum: 1,500 USDC.
+        await renderForm({ onBorrow });
+        // 1 ETH less the 0.30% fee at $3,000, LTV 50%, on Arbitrum:
+        // 1,495.50 USDC.
         await user.type(amountField(), '1');
 
-        const button = cta('Borrow 1,500 USDC on Aave');
+        const button = cta('Borrow 1,496 USDC on Aave');
 
-        expect(button).toBeDisabled();
+        expect(button).toBeEnabled();
         expect(within(button).getByText('Aave')).toBeInTheDocument();
 
         await user.click(button);
 
         expect(wallet.connect).not.toHaveBeenCalled();
+        expect(onBorrow).toHaveBeenCalledOnce();
+        expect(onBorrow.mock.lastCall?.[0]).toMatchObject({
+          market: FAKE_ARB,
+          collateral: { symbol: 'WETH' },
+          borrow: { symbol: 'USDC' },
+          origin: { assetId: ETH.assetId, chain: 'base', decimals: 18 },
+          amount: 10n ** 18n,
+          ltv: 50,
+          estimatedBorrowAmount: 1_495_500_000n,
+          recipient: undefined,
+          paid: { symbol: 'ETH' },
+        });
       });
     });
   });

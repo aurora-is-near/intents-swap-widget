@@ -30,7 +30,9 @@ yarn turbo run build typecheck lint test --filter=borrow
   renders the kit's gallery full page, lazily imported from the kit's
   `@aurora-is-near/ui-kit/gallery` source export (TSX, not `dist`). In a
   production build the route and its chunk are absent, and `/gallery`
-  redirects to `/`.
+  redirects to `/`. Below the kit's gallery, "Borrow dialogs" opens the
+  confirm, pending and done dialogs with sample figures, to compare with the
+  artboards (a pending one turns into done after a few seconds).
 - **Shell** (`src/shell/`): the page column, header (logo, the Borrow
   section, theme toggle, wallet button), hero, the route-driven tabs and the
   reduced footer (logo, tagline and copyright; dark in both themes).
@@ -108,12 +110,20 @@ yarn turbo run build typecheck lint test --filter=borrow
   "Try again" Banner when balances or some chains fail) and takes the
   amount with its "≈ $" value; an asset no market takes as collateral is
   "Supplied as WETH". The Borrow card picks a borrowable reserve (never the
-  collateral's own symbol) and shows the read-only amount received after
-  the fee; the fee row is 0.30% of the borrow amount, an estimate until a
-  quote. Disconnected, the pickers show WETH / USDC and no balances.
+  collateral's own symbol) and shows the read-only amount received, the
+  whole borrow amount, borrowed against the collateral less the fee; the fee
+  row is 0.30% of the collateral, an estimate, since the dry run reports the
+  fee in the bridged collateral. Disconnected,
+  the pickers show WETH / USDC and no balances.
+- **Borrow dialogs** (`src/loan/NewLoanPage.tsx`,
+  `src/loan/execution/BorrowDialog.tsx`): the ready call to action starts
+  `useBorrowFlow`, which previews the loan; the confirm dialog shows the dry
+  run's rows (and the rate and minimum received when the paid token is
+  converted), the pending dialog follows the runner through three steps and
+  cannot be closed, and done's "View position" goes to `/positions`.
 - **Loan form model** (`src/loan/model/`): pure, bigint, no React. The LTV
-  zones (`zones.ts`), the borrow amount, fee (`BORROW_FEE_BPS` in
-  `config.ts`), received amount, health and liquidation price
+  zones (`zones.ts`), the borrow amount, the fee on the collateral
+  (`BORROW_FEE_BPS` in `config.ts`), health and liquidation price
   (`loanFigures.ts`), the collateral a held asset is supplied as
   (`collateral.ts`), which markets fit the LTV and which is BEST
   (`marketFit.ts`), the call-to-action state (`ctaState.ts`) and the

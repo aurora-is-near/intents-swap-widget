@@ -14,6 +14,8 @@ export type FundingAsset = {
   /** 1Click chain slug, such as `base`. */
   chain: string;
   decimals: number;
+  /** The token's contract on its chain; absent for the chain's gas token. */
+  contractAddress?: string;
   /** Smallest unit. */
   amount: bigint;
   /** From the 1Click price; `undefined` when the token has none. */
@@ -65,6 +67,7 @@ export const toFundingAssets = (
           symbol: token.symbol,
           chain: token.blockchain,
           decimals: token.decimals,
+          contractAddress: token.contractAddress,
           amount,
           usdValue: usdValue(raw, token.decimals, token.price),
           unavailableReason:

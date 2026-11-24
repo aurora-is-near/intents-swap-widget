@@ -115,6 +115,8 @@ export const previewBorrow = async ({
       collateral: planInput.collateral,
       borrow: planInput.borrow,
       ltv,
+      // The minimum received is already net of the service's fee.
+      feeBps: 0,
     }).borrowAmount;
 
   const first = await preview(

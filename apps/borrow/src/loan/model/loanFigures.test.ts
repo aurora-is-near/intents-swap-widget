@@ -18,28 +18,26 @@ const input = (
 });
 
 describe('loanFigures', () => {
-  it('borrows collateral USD × LTV ÷ borrow price, less a 0.30% fee', () => {
+  it('takes a 0.30% fee from the collateral and borrows the rest’s USD × LTV ÷ borrow price', () => {
     const figures = loanFigures(input());
 
-    expect(figures.borrowAmount).toBe(1_500n * USDC);
-    expect(figures.fee).toBe(4_500_000n);
-    expect(figures.received).toBe(1_495_500_000n);
+    // 0.997 WETH at $3,000, LTV 50%.
+    expect(figures.borrowAmount).toBe(1_495_500_000n);
+    expect(figures.fee).toBe(3n * 10n ** 15n);
   });
 
-  it('recomputes the borrow amount, fee and received amount when the collateral amount changes', () => {
+  it('recomputes the borrow amount and fee when the collateral amount changes', () => {
     const figures = loanFigures(input({ collateralAmount: 2n * ETH }));
 
-    expect(figures.borrowAmount).toBe(3_000n * USDC);
-    expect(figures.fee).toBe(9_000_000n);
-    expect(figures.received).toBe(2_991_000_000n);
+    expect(figures.borrowAmount).toBe(2_991n * USDC);
+    expect(figures.fee).toBe(6n * 10n ** 15n);
   });
 
-  it('recomputes the borrow amount, fee and received amount when the LTV changes', () => {
+  it('recomputes the borrow amount when the LTV changes; the fee stays on the collateral', () => {
     const figures = loanFigures(input({ ltv: 70 }));
 
-    expect(figures.borrowAmount).toBe(2_100n * USDC);
-    expect(figures.fee).toBe(6_300_000n);
-    expect(figures.received).toBe(2_093_700_000n);
+    expect(figures.borrowAmount).toBe(2_093_700_000n);
+    expect(figures.fee).toBe(3n * 10n ** 15n);
   });
 
   it('converts through both oracle prices and decimals', () => {
@@ -49,35 +47,53 @@ describe('loanFigures', () => {
         collateralAmount: ETH / 2n,
         ltv: 40,
         borrow: { decimals: 18, priceBase: 3_000n * USD },
+        feeBps: 0,
       }),
     );
 
     expect(figures.borrowAmount).toBe((2n * ETH) / 10n);
   });
 
+  it('borrows on the whole amount with feeBps 0, as for the dry run’s net minimum', () => {
+    const figures = loanFigures(input({ feeBps: 0 }));
+
+    expect(figures.borrowAmount).toBe(1_500n * USDC);
+    expect(figures.fee).toBe(0n);
+  });
+
+  it('puts the liquidation price on the collateral left after the fee', () => {
+    // 1,495.50 USDC against 0.997 WETH at 81%: the same price as 1,500
+    // against 1 WETH, since both shrink by the fee.
+    expect(loanFigures(input()).liquidationPrice).toBe(
+      loanFigures(input({ feeBps: 0 })).liquidationPrice,
+    );
+  });
+
   it('rounds the borrow amount down and the fee up', () => {
-    // $0.000003 at 50%: 1.5 units, borrowed as 1; the fee rounds up to 1.
+    // $0.000003 at 50%: 1.5 units, borrowed as 1; 0.30% of 1e9 wei is
+    // exactly 3e6, and of 1e9 + 1 rounds up to 3,000,001.
     const figures = loanFigures(
       input({ collateralAmount: 1_000_000_000n, ltv: 50 }),
     );
 
     expect(figures.borrowAmount).toBe(1n);
-    expect(figures.fee).toBe(1n);
-    expect(figures.received).toBe(0n);
+    expect(figures.fee).toBe(3_000_000n);
+    expect(loanFigures(input({ collateralAmount: 1_000_000_001n })).fee).toBe(
+      3_000_001n,
+    );
   });
 
   it('borrows nothing with no collateral or at LTV 0', () => {
     expect(loanFigures(input({ collateralAmount: 0n }))).toMatchObject({
       borrowAmount: 0n,
       fee: 0n,
-      received: 0n,
       liquidationPrice: null,
     });
 
+    // The collateral is still bridged in, so its fee stays.
     expect(loanFigures(input({ ltv: 0 }))).toMatchObject({
       borrowAmount: 0n,
-      fee: 0n,
-      received: 0n,
+      fee: 3n * 10n ** 15n,
       liquidationPrice: null,
     });
   });
