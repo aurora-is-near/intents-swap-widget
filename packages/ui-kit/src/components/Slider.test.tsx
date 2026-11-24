@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -249,8 +250,34 @@ describe('Slider', () => {
     const label = screen.getByText('liq. 83%');
     const expected = ((83 - 20) / (90 - 20)) * 100;
 
-    expect(Number.parseFloat(marker?.style.left ?? '')).toBeCloseTo(expected);
-    expect(Number.parseFloat(label.style.left)).toBeCloseTo(expected);
+    [marker, label].forEach((element) => {
+      const inset = element?.style.getPropertyValue('inset-inline-start') ?? '';
+
+      expect(Number.parseFloat(inset)).toBeCloseTo(expected);
+      expect(element?.style.getPropertyValue('translate')).toBe('-50% 0');
+    });
+  });
+
+  it('places the marker from the inline start in RTL, as the thumb', () => {
+    const { container } = render(
+      <DirectionProvider direction="rtl">
+        <div dir="rtl">
+          <Slider
+            aria-label={LABEL}
+            marker={{ value: 80, label: 'liq. 80%' }}
+            value={40}
+          />
+        </div>
+      </DirectionProvider>,
+    );
+
+    const marker = container.querySelector<HTMLElement>('[data-slot="marker"]');
+
+    [marker, screen.getByText('liq. 80%')].forEach((element) => {
+      expect(element?.style.getPropertyValue('inset-inline-start')).toBe('80%');
+      expect(element?.style.getPropertyValue('translate')).toBe('50% 0');
+      expect(element?.style.left).toBe('');
+    });
   });
 
   it('describes the slider with the marker label', () => {

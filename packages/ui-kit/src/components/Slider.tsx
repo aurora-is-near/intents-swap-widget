@@ -1,3 +1,4 @@
+import { useDirection } from '@base-ui/react/direction-provider';
 import { Slider as SliderPrimitive } from '@base-ui/react/slider';
 import { forwardRef, type ReactNode, useId } from 'react';
 
@@ -40,17 +41,18 @@ const INDICATOR = 'rounded-[5px] bg-ink';
 
 /**
  * The liquidation marker (line 306): 3×22px `neg`, radius 2, 6px from the
- * control's top (−6px from the track's), centred on its value.
+ * control's top (−6px from the track's), centred on its value (see
+ * `markerPosition`).
  */
 const MARKER =
-  'pointer-events-none absolute top-[-6px] h-[22px] w-[3px] -translate-x-1/2 rounded-[2px] bg-neg';
+  'pointer-events-none absolute top-[-6px] h-[22px] w-[3px] rounded-[2px] bg-neg';
 
 /**
  * The marker's label (line 302): 10px `neg`, 17px above the control's top
  * (−29px from the track's), centred on the marker.
  */
 const MARKER_LABEL =
-  'pointer-events-none absolute top-[-29px] -translate-x-1/2 font-sans text-[10px] whitespace-nowrap text-neg';
+  'pointer-events-none absolute top-[-29px] font-sans text-[10px] whitespace-nowrap text-neg';
 
 /**
  * The thumb (line 307): 24px, `sf`, 4px ink border, centred on the track
@@ -132,6 +134,17 @@ const toPercent = (value: number, min: number, max: number) =>
   max > min ? clamp(((value - min) / (max - min)) * 100, 0, 100) : 0;
 
 /**
+ * Places the marker and its label as Base UI places the thumb: from the
+ * inline start (the left in LTR, the right in RTL), centred by a
+ * translation that flips in RTL. The zone strip is a flex row, so it
+ * already runs from the inline start.
+ */
+const markerPosition = (percent: number, rtl: boolean) => ({
+  insetInlineStart: `${percent}%`,
+  translate: `${rtl ? 50 : -50}% 0`,
+});
+
+/**
  * A single-value slider (role `slider`) on Base UI's `Slider`. Arrow keys
  * move it by `step`, Page Up/Down by `largeStep`, Home and End jump to the
  * ends. With `zones` it is the loan-to-value slider; without, the plain
@@ -154,14 +167,17 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
     ref,
   ) => {
     const markerLabelId = useId();
+    const rtl = useDirection() === 'rtl';
     const hasMarkerLabel = marker?.label != null;
     const describedBy =
       [ariaDescribedBy, hasMarkerLabel ? markerLabelId : undefined]
         .filter(Boolean)
         .join(' ') || undefined;
 
-    const markerLeft =
-      marker == null ? undefined : `${toPercent(marker.value, min, max)}%`;
+    const markerStyle =
+      marker == null
+        ? undefined
+        : markerPosition(toPercent(marker.value, min, max), rtl);
 
     return (
       <SliderPrimitive.Root
@@ -186,13 +202,13 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
                 ))}
               </div>
             )}
-            {markerLeft != null && (
+            {markerStyle != null && (
               <>
                 {hasMarkerLabel && (
                   <div
                     className={MARKER_LABEL}
                     id={markerLabelId}
-                    style={{ left: markerLeft }}>
+                    style={markerStyle}>
                     {marker?.label}
                   </div>
                 )}
@@ -200,7 +216,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
                   aria-hidden
                   className={MARKER}
                   data-slot="marker"
-                  style={{ left: markerLeft }}
+                  style={markerStyle}
                 />
               </>
             )}

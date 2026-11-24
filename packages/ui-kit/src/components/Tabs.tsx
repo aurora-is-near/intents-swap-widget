@@ -5,8 +5,12 @@ import { cn } from '../lib/cn';
 import { FOCUS_RING } from '../lib/focusRing';
 import { SEG_CLASSES } from '../lib/segClasses';
 
-/** The tab row (Web-Borrow.dc.html line 208): flex, gap 8px. */
-const LIST = 'flex gap-[8px]';
+/**
+ * The tab row (Web-Borrow.dc.html line 208): flex, gap 8px. A vertical
+ * `orientation` (Base UI's `data-orientation`) stacks the tabs, so the
+ * layout matches the arrow keys.
+ */
+const LIST = 'flex gap-[8px] data-[orientation=vertical]:flex-col';
 
 /**
  * A tab is the `.seg` pill (lines 136–138): inline-flex, gap 8px, 15px /
