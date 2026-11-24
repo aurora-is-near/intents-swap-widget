@@ -8,9 +8,10 @@ import type {
 import { createMemoryHistory } from '@tanstack/react-router';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../App';
+import { BORROW_DELAYED_AFTER_MS } from './execution/classifyBorrowError';
 import { createAppRouter } from '../router';
 import { dryExecution, dryPreview } from '../tests/executionFixtures';
 import { FAKE_BASE, usdc, weth } from '../tests/fakeMarkets';
@@ -266,5 +267,93 @@ describe('NewLoanPage', () => {
     );
 
     expect(sdk.result?.run).not.toHaveBeenCalled();
+  });
+
+  describe('delayed', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('closes the dialog on "Close and keep tracking" while the borrow stays pending', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const { cta } = await renderPage();
+
+      await user.click(cta);
+      await user.click(
+        await screen.findByRole('button', { name: 'Confirm in wallet' }),
+      );
+
+      emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+        { type: 'deposit-sent', txHash: '0xtx' },
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(BORROW_DELAYED_AFTER_MS);
+      });
+
+      expect(await screen.findByText('Taking longer than usual')).toBeVisible();
+
+      await user.click(
+        screen.getByRole('button', { name: 'Close and keep tracking' }),
+      );
+
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+
+      // Still tracked: the run is not cancelled.
+      expect(sdk.result?.cancel).not.toHaveBeenCalled();
+    });
+
+    it('ignores a new borrow while one is tracked, and still shows the original done dialog', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const { cta } = await renderPage();
+
+      await user.click(cta);
+      await user.click(
+        await screen.findByRole('button', { name: 'Confirm in wallet' }),
+      );
+
+      emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+        { type: 'deposit-sent', txHash: '0xtx' },
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(BORROW_DELAYED_AFTER_MS);
+      });
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Close and keep tracking' }),
+      );
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+
+      const preview = sdk.result?.preview as ReturnType<typeof vi.fn>;
+      const previews = preview.mock.calls.length;
+
+      expect(cta).toHaveAttribute('aria-busy', 'true');
+
+      await user.click(cta);
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(preview).toHaveBeenCalledTimes(previews);
+
+      await act(async () => {
+        run.resolve({ ...dryExecution(), id: EXECUTION_ID, status: 'SUCCESS' });
+      });
+
+      expect(
+        await screen.findByRole('dialog', { name: 'Loan opened' }),
+      ).toHaveAccessibleDescription('1,485 USDC is on its way to your wallet.');
+    });
   });
 });

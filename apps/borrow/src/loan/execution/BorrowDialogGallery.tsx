@@ -6,6 +6,10 @@ import {
   type BorrowDialogLoan,
   type BorrowDialogStep,
 } from './BorrowDialog';
+import type {
+  BorrowErrorKind,
+  BorrowRecoveryAction,
+} from './classifyBorrowError';
 import type { BorrowPreviewFigures } from './previewFigures';
 
 /*
@@ -75,6 +79,18 @@ type Entry = {
   step: BorrowDialogStep;
 };
 
+function errorEntry(
+  label: string,
+  error: BorrowErrorKind,
+  action: BorrowRecoveryAction,
+): Entry {
+  return {
+    label,
+    sample: SAME_ASSET,
+    step: { kind: 'error', error, action, fundsWaiting: false },
+  };
+}
+
 const ENTRIES: Entry[] = [
   { label: 'Confirm', sample: SAME_ASSET, step: { kind: 'confirm' } },
   {
@@ -99,6 +115,13 @@ const ENTRIES: Entry[] = [
     step: { kind: 'pending', step: 2 },
   },
   { label: 'Done', sample: SAME_ASSET, step: { kind: 'done' } },
+  // The error artboards (`Web-/Mob-Borrow-Rejected`, `-NoGas`, `-PriceMoved`,
+  // `-NoMarketLiquidity`, `-Delayed`.dc.html), each with its own action.
+  errorEntry('Error · rejected', 'rejected', 'retry'),
+  errorEntry('Error · no gas', 'noGas', 'retry'),
+  errorEntry('Error · price moved', 'priceMoved', 'refresh'),
+  errorEntry('Error · no liquidity', 'noLiquidity', 'close'),
+  errorEntry('Error · delayed', 'delayed', 'close'),
 ];
 
 /**
@@ -159,6 +182,22 @@ export function BorrowDialogGallery() {
           )
         }
         onViewPosition={close}
+        onAction={(action) =>
+          setOpen((current) => {
+            if (!current || action === 'close') {
+              return undefined;
+            }
+
+            // Refreshing or reconnecting goes back to confirm; retrying signs.
+            return {
+              ...current,
+              step:
+                action === 'retry'
+                  ? { kind: 'pending', step: 0 }
+                  : { kind: 'confirm' },
+            };
+          })
+        }
       />
     </section>
   );

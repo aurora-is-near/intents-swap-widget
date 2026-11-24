@@ -67,6 +67,7 @@ const renderDialog = ({
     onConfirm: vi.fn(),
     onCancel: vi.fn(),
     onViewPosition: vi.fn(),
+    onAction: vi.fn(),
   };
 
   const view = render(
@@ -127,7 +128,12 @@ describe('borrowDialogStep', () => {
     });
     expect(
       borrowDialogStep({ kind: 'error', error: 'rejected', cause: undefined }),
-    ).toBeUndefined();
+    ).toEqual({
+      kind: 'error',
+      error: 'rejected',
+      action: 'retry',
+      fundsWaiting: false,
+    });
   });
 });
 

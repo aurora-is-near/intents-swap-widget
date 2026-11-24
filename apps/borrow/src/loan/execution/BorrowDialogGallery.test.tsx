@@ -27,6 +27,11 @@ describe('BorrowDialogGallery', () => {
       'Pending · step 2',
       'Pending · step 3',
       'Done',
+      'Error · rejected',
+      'Error · no gas',
+      'Error · price moved',
+      'Error · no liquidity',
+      'Error · delayed',
     ]);
   });
 
