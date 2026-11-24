@@ -8,7 +8,7 @@ import {
   type Step,
   StepProgress,
 } from '@aurora-is-near/ui-kit';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { formatApr, formatBps } from '../../markets/format';
 import { formatAddress } from '../../wallet/formatAddress';
@@ -20,13 +20,20 @@ import {
 } from './classifyBorrowError';
 import {
   ACTION_LABEL,
+  CANCEL_EXISTING_LABEL,
   CANCEL_LABEL,
+  CANCELLING_LABEL,
   errorCopy,
   type ErrorCopyContext,
   WARN_SECONDARY_LABEL,
 } from './errorCopy';
 import type { BorrowPreviewFigures } from './previewFigures';
-import type { BorrowFlowState, BorrowPendingStep } from './useBorrowFlow';
+import type {
+  BorrowFlowState,
+  BorrowLockOwner,
+  BorrowLockStage,
+  BorrowPendingStep,
+} from './useBorrowFlow';
 
 /*
  * The borrow modal (Web-Borrow-Confirm.dc.html lines 965–1025; the borrow
@@ -55,8 +62,16 @@ export type BorrowDialogStep =
       action: BorrowRecoveryAction;
       /** The collateral arrived and waits; the borrow step failed. */
       fundsWaiting: boolean;
-      /** While `fundsWaiting`: the execution, so the collateral can be found. */
+      /**
+       * The execution, in full with a copy button: while `fundsWaiting`, so
+       * the collateral can be found; on `inFlight` and `transferFailed`, the
+       * one they are about.
+       */
       executionId?: string;
+      /** `inFlight`: whose the lock-holding execution is, and where it is. */
+      lock?: { owner: BorrowLockOwner; stage: BorrowLockStage };
+      /** The cancel signature is being prompted: "Sign to cancel…". */
+      cancelling?: boolean;
       /**
        * Where the borrow failed (the flow's error `step`): `null` before
        * anything was signed, every step waiting. Absent, the kind's own.
@@ -68,13 +83,16 @@ export type BorrowDialogStep =
  * The dialog for a flow state. Signing is the artboard's first pending
  * step ("Sign and deposit"); `idle` and `previewing` show no dialog here.
  * An error offers the hook's `action` (`useBorrowFlow().action`), else the
- * kind's own; an unknown error only closes.
+ * kind's own; an unknown error only closes. `cancelling` is
+ * `useBorrowFlow().isCancelling`, for the `inFlight` and `transferFailed`
+ * dialogs.
  */
 export const borrowDialogStep = (
   state: BorrowFlowState,
   action?: BorrowRecoveryAction,
   fundsWaiting = false,
   fundsWaitingExecutionId?: string,
+  cancelling = false,
 ): BorrowDialogStep | undefined => {
   switch (state.kind) {
     case 'confirm':
@@ -91,7 +109,27 @@ export const borrowDialogStep = (
         depositAddress: state.depositAddress,
         canSend: state.canSend,
       };
-    case 'error':
+
+    case 'error': {
+      const { lock } = state;
+
+      if (state.error === 'inFlight' || state.error === 'transferFailed') {
+        return {
+          kind: 'error',
+          error: state.error,
+          fundsWaiting: false,
+          ...(lock
+            ? {
+                executionId: lock.executionId,
+                lock: { owner: lock.owner, stage: lock.stage },
+              }
+            : {}),
+          ...(state.step === undefined ? {} : { step: state.step }),
+          cancelling,
+          action: action ?? borrowRecoveryAction(state.error, state.cause),
+        };
+      }
+
       return {
         kind: 'error',
         error: state.error,
@@ -105,6 +143,7 @@ export const borrowDialogStep = (
             ? 'close'
             : (action ?? borrowRecoveryAction(state.error, state.cause)),
       };
+    }
     default:
       return undefined;
   }
@@ -298,21 +337,63 @@ export const confirmRows = (
   ];
 };
 
+/** A row: its label, its value, and what a copy button copies, if any. */
+type Row = [label: string, value: string, copy?: string];
+
+/** How long "Copied" shows before the button reads "Copy" again. */
+const COPIED_MS = 1500;
+
+/**
+ * Copies `value` (the kit's link button, as the dialog's Cancel): it reads
+ * "Copied" for a moment, and its name says what is copied.
+ */
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setCopied(false), COPIED_MS);
+
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  return (
+    <Button
+      aria-label={copied ? `Copied the ${label}` : `Copy the ${label}`}
+      className="ml-[8px] text-[14px]"
+      variant="link"
+      onClick={() => {
+        navigator.clipboard?.writeText(value).then(
+          () => setCopied(true),
+          () => {},
+        );
+      }}>
+      {copied ? 'Copied' : 'Copy'}
+    </Button>
+  );
+}
+
 /**
  * Line 996: `sf2`, radius 18, padding 4px 16px; each row (line 998) padding
  * 11px 0 with a 1px `bd` top rule, 15px, the label `mut`, the value 600
  * right-aligned and wrapping anywhere (a full recipient address).
  */
-function Rows({ rows }: { rows: [string, string][] }) {
+function Rows({ rows }: { rows: Row[] }) {
   return (
     <dl className="m-0 mt-[16px] rounded-[18px] bg-sf2 px-[16px] py-[4px]">
-      {rows.map(([label, value]) => (
+      {rows.map(([label, value, copy]) => (
         <div
           key={label}
           className="flex justify-between gap-[16px] border-0 border-t border-solid border-bd py-[11px] text-[15px] leading-[normal]">
           <dt className="shrink-0 text-mut">{label}</dt>
           <dd className="m-0 min-w-0 text-right font-semibold [overflow-wrap:anywhere]">
             {value}
+            {copy === undefined ? null : (
+              <CopyButton label={`${label.toLowerCase()} id`} value={copy} />
+            )}
           </dd>
         </div>
       ))}
@@ -408,19 +489,36 @@ const summaryOf = (
 };
 
 /**
- * Rows the step adds: the deposit address to send to, or the execution whose
- * collateral waits, in full, so it can be looked up.
+ * Rows the step adds: the deposit address to send to, or the execution an
+ * error is about (the one whose collateral waits, or that holds the
+ * wallet's lock), in full with a copy button, so it can be looked up.
  */
-const extraRows = (step: BorrowDialogStep): [string, string][] => {
+const extraRows = (step: BorrowDialogStep): Row[] => {
   if (step.kind === 'deposit' && step.depositAddress) {
     return [['Deposit address', step.depositAddress]];
   }
 
   if (step.kind === 'error' && step.executionId) {
-    return [['Execution', step.executionId]];
+    return [['Execution', step.executionId, step.executionId]];
   }
 
   return [];
+};
+
+/**
+ * The summary's rows with the step's: a step row replaces a summary row of
+ * the same label (a restored borrow's shortened execution id), in place.
+ */
+const withExtraRows = (rows: Row[], step: BorrowDialogStep): Row[] => {
+  const extra = extraRows(step);
+  const replaced = rows.map(
+    (row) => extra.find(([label]) => label === row[0]) ?? row,
+  );
+
+  return [
+    ...replaced,
+    ...extra.filter(([label]) => !rows.some((row) => row[0] === label)),
+  ];
 };
 
 /** Lines 984–995: the error or warning block, 16px above the rows. */
@@ -429,14 +527,21 @@ function ErrorBanner({
   fundsWaiting,
   beforeSigning,
   errorContext,
+  lock,
 }: {
   error: BorrowErrorKind;
   fundsWaiting: boolean;
   beforeSigning: boolean;
   errorContext: Summary['errorContext'];
+  lock: ErrorCopyContext['lock'];
 }) {
   const copy = errorCopy[error];
-  const context = { ...errorContext, fundsWaiting, beforeSigning };
+  const context = {
+    ...errorContext,
+    fundsWaiting,
+    beforeSigning,
+    ...(lock ? { lock } : {}),
+  };
 
   return (
     <Banner
@@ -486,6 +591,72 @@ function ErrorActions({
   );
 }
 
+/**
+ * The `inFlight` and `transferFailed` actions (no artboard; the Aave
+ * extension's Resume / Cancel and Retry transfer), in the error dialog's
+ * layout: the primary `.go` 20px above, a `.go.bad` cancel 12px below it,
+ * then the centred link. In flight, one of this app's borrows offers
+ * Resume, "Cancel it" and Close; another app's (or an unread one) only
+ * "Cancel it" and Close. A failed transfer offers Retry transfer and
+ * "Cancel the borrow". While the cancel signature is prompted, the cancel
+ * button reads "Sign to cancel…" and every action waits.
+ */
+function LockActions({
+  dialog,
+  onAction,
+  onCancel,
+  onCancelExisting,
+}: {
+  dialog: Extract<BorrowDialogStep, { kind: 'error' }> & {
+    error: 'inFlight' | 'transferFailed';
+  };
+  onAction: (action: BorrowRecoveryAction) => void;
+  onCancel: () => void;
+  onCancelExisting?: () => void;
+}) {
+  const { error, action, lock, cancelling = false } = dialog;
+  const copy = errorCopy[error];
+  const primary =
+    error === 'transferFailed' || lock?.owner === 'borrow' ? action : undefined;
+
+  const canCancel = dialog.executionId !== undefined;
+
+  return (
+    <>
+      {primary === undefined ? null : (
+        <Button
+          className="mt-[20px]"
+          disabled={cancelling}
+          onClick={() => onAction(primary)}>
+          {primary === copy.action ? copy.button : ACTION_LABEL[primary]}
+        </Button>
+      )}
+      {canCancel ? (
+        <Button
+          className={primary === undefined ? 'mt-[20px]' : 'mt-[12px]'}
+          disabled={cancelling}
+          variant="danger"
+          onClick={onCancelExisting}>
+          {cancelling ? CANCELLING_LABEL : CANCEL_EXISTING_LABEL[error]}
+        </Button>
+      ) : null}
+      {error === 'inFlight' || !canCancel ? (
+        <div className="mt-[12px] text-center">
+          <Button disabled={cancelling} variant="link" onClick={onCancel}>
+            {CLOSE}
+          </Button>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+const isLockDialog = (
+  dialog: Extract<BorrowDialogStep, { kind: 'error' }>,
+): dialog is Extract<BorrowDialogStep, { kind: 'error' }> & {
+  error: 'inFlight' | 'transferFailed';
+} => dialog.error === 'inFlight' || dialog.error === 'transferFailed';
+
 type BorrowDialogProps = {
   /** Which dialog to show; `undefined` closes it. */
   step: BorrowDialogStep | undefined;
@@ -507,6 +678,11 @@ type BorrowDialogProps = {
   onAction: (action: BorrowRecoveryAction) => void;
   /** "Send deposit" on the deposit dialog. */
   onSendDeposit?: () => void;
+  /**
+   * "Cancel it" (in flight) and "Cancel the borrow" (transfer failed):
+   * cancels the execution the error is about.
+   */
+  onCancelExisting?: () => void;
 };
 
 const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
@@ -522,6 +698,9 @@ const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
       a.action === b.action &&
       a.fundsWaiting === b.fundsWaiting &&
       a.executionId === b.executionId &&
+      a.lock?.owner === b.lock?.owner &&
+      a.lock?.stage === b.lock?.stage &&
+      a.cancelling === b.cancelling &&
       a.step === b.step));
 
 type Shown = {
@@ -554,6 +733,7 @@ export function BorrowDialog({
   onViewPosition,
   onAction,
   onSendDeposit,
+  onCancelExisting,
 }: BorrowDialogProps) {
   // An error before the dry run finished (a pre-check) has no figures. A
   // restored borrow has its rows instead, and is never confirmed here.
@@ -603,6 +783,15 @@ export function BorrowDialog({
           </Button>
         </div>
       </>
+    );
+  } else if (step_?.kind === 'error' && isLockDialog(step_)) {
+    footer = (
+      <LockActions
+        dialog={step_}
+        onAction={onAction}
+        onCancel={onCancel}
+        onCancelExisting={onCancelExisting}
+      />
     );
   } else if (step_?.kind === 'error') {
     footer = (
@@ -692,6 +881,7 @@ export function BorrowDialog({
                   error={content.step.error}
                   errorContext={content.summary.errorContext}
                   fundsWaiting={content.step.fundsWaiting}
+                  lock={content.step.lock}
                 />
               ) : null}
               {content.step.kind === 'deposit' ? (
@@ -706,7 +896,7 @@ export function BorrowDialog({
               ) : null}
               {content.summary.rows ? (
                 <Rows
-                  rows={[...content.summary.rows, ...extraRows(content.step)]}
+                  rows={withExtraRows(content.summary.rows, content.step)}
                 />
               ) : null}
               {/* Line 1001: 16px above. */}

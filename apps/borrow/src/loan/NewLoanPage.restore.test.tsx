@@ -1,6 +1,10 @@
 import '../tests/pointerEvent';
 
-import type { Execution, RunnerEvent } from '@aurora-is-near/intents-connect';
+import {
+  type Execution,
+  GuardError,
+  type RunnerEvent,
+} from '@aurora-is-near/intents-connect';
 import type {
   UseExecutionOptions,
   UseExecutionResult,
@@ -8,7 +12,7 @@ import type {
   UseWalletExecutionsResult,
 } from '@aurora-is-near/intents-connect/react';
 import { createMemoryHistory } from '@tanstack/react-router';
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -373,7 +377,7 @@ describe('NewLoanPage: restoring a borrow', () => {
     });
   };
 
-  it('offers to send the deposit of a borrow signed before the reload but never funded', async () => {
+  it('offers to resume a borrow signed before the reload but never funded, and sends its deposit on Resume', async () => {
     const user = userEvent.setup();
 
     savePendingBorrow(WALLET, {
@@ -388,13 +392,16 @@ describe('NewLoanPage: restoring a borrow', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
 
-    expect(within(dialog).getByText('Deposit not sent yet')).toBeVisible();
-    expect(rowValue(dialog, 'Deposit address')).toHaveTextContent('0xdeposit');
+    // Offered, never resumed unasked: no wallet prompt.
+    expect(
+      within(dialog).getByText(
+        'A borrow from this wallet is waiting for its deposit',
+      ),
+    ).toBeVisible();
+    expect(rowValue(dialog, 'Execution')).toHaveTextContent(EXECUTION_ID);
     expect(sdk.result?.resume).not.toHaveBeenCalled();
 
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Send deposit' }),
-    );
+    await user.click(within(dialog).getByRole('button', { name: 'Resume' }));
 
     expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID, {
       depositViaWallet: true,
@@ -404,7 +411,7 @@ describe('NewLoanPage: restoring a borrow', () => {
     expect(stepTexts()[0]).toBe('In progress: Sign and deposit');
   });
 
-  it('shows the deposit address, and can be closed, when the deposit token was not kept', async () => {
+  it('shows the deposit address on Resume, and can be closed, when the deposit token was not kept', async () => {
     const user = userEvent.setup();
 
     sdk.executions = walletExecutions([awaitingDeposit()]);
@@ -412,6 +419,15 @@ describe('NewLoanPage: restoring a borrow', () => {
     await renderPage();
 
     const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText(
+        'A borrow from this wallet is waiting for its deposit',
+      ),
+    ).toBeVisible();
+    expect(sdk.result?.resume).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Resume' }));
 
     expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
     expect(within(dialog).getByText('Waiting for your deposit')).toBeVisible();
@@ -467,14 +483,31 @@ describe('NewLoanPage: restoring a borrow', () => {
     expect(readPendingBorrow(WALLET)).toBeUndefined();
   });
 
-  it('asks for the signature again when the borrow was created but not signed', async () => {
+  it('offers a borrow created but never signed, and asks for the signature only on Resume', async () => {
+    const user = userEvent.setup();
+
     sdk.executions = walletExecutions([
       inFlight({ status: 'CREATED', details: dryExecution().details }),
     ]);
 
     await renderPage();
 
-    await screen.findByRole('dialog', { name: 'Confirm loan' });
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText('A borrow from this wallet was never signed'),
+    ).toBeVisible();
+    expect(
+      within(dialog).getByText(
+        'Resume it to follow it here, or cancel it to start a new one.',
+      ),
+    ).toBeVisible();
+    expect(
+      within(dialog).getByRole('button', { name: 'Cancel it' }),
+    ).toBeVisible();
+    expect(sdk.result?.resume).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Resume' }));
 
     expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
     expect(stepTexts()).toEqual([
@@ -484,7 +517,9 @@ describe('NewLoanPage: restoring a borrow', () => {
     ]);
   });
 
-  it('leaves another app’s in-flight execution alone and forgets a stale record', async () => {
+  it('offers only to cancel another app’s in-flight execution, and forgets a stale record', async () => {
+    const user = userEvent.setup();
+
     savePendingBorrow(WALLET, {
       executionId: EXECUTION_ID,
       rows: KEPT_ROWS,
@@ -493,9 +528,85 @@ describe('NewLoanPage: restoring a borrow', () => {
 
     await renderPage();
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText('Another app is using this wallet'),
+    ).toBeVisible();
+    expect(within(dialog).getByText(/from another app/)).toBeVisible();
+    expect(
+      within(dialog).queryByRole('button', { name: 'Resume' }),
+    ).not.toBeInTheDocument();
+    // Its own rows, not a loan's.
+    expect(within(dialog).queryByText('Supply')).not.toBeInTheDocument();
     expect(sdk.result?.resume).not.toHaveBeenCalled();
     expect(readPendingBorrow(WALLET)).toBeUndefined();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel it' }));
+
+    expect(sdk.result?.cancel).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
+
+    // No form input: back to the form.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Confirm loan' }),
+      ).not.toBeInTheDocument(),
+    );
+
+    expect(sdk.result?.resume).not.toHaveBeenCalled();
+  });
+
+  it('offers Resume and Cancel when a new borrow meets the wallet’s lock, and resumes the running borrow with its kept rows', async () => {
+    const user = userEvent.setup();
+    const running = inFlight({ id: 'exec-running' });
+
+    // Nothing in flight on load; the borrow's create meets the lock.
+    sdk.executions = walletExecutions([], [running]);
+    sdk.executions.refresh = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValue([running]);
+    vi.mocked(sdk.result!.run).mockRejectedValueOnce(
+      new GuardError(
+        'EXECUTION_IN_FLIGHT',
+        'execution exec-running is already in progress — resume it, cancel it, or wait for it to reach a terminal status',
+        { executionId: 'exec-running' },
+      ),
+    );
+
+    const borrow = await renderPage();
+
+    await act(async () => {});
+    // Kept by this browser, e.g. from another tab.
+    savePendingBorrow(WALLET, {
+      executionId: 'exec-running',
+      rows: KEPT_ROWS,
+      borrowSymbol: 'USDC',
+    });
+
+    await user.click(borrow);
+    await user.click(
+      await screen.findByRole('button', { name: 'Confirm in wallet' }),
+    );
+
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      await within(dialog).findByText(
+        'A borrow from this wallet is already running',
+      ),
+    ).toBeVisible();
+    expect(rowValue(dialog, 'Execution')).toHaveTextContent('exec-running');
+    expect(
+      within(dialog).getByRole('button', { name: 'Copy the execution id' }),
+    ).toBeVisible();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Resume' }));
+
+    expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith('exec-running');
+    // The running borrow's kept rows, at its step.
+    expect(rowValue(dialog, 'Borrow')).toHaveTextContent('1,485 USDC · Base');
+    expect(stepTexts()[1]).toBe('In progress: Bridge the collateral');
   });
 
   it('ignores the cached list of an earlier mount and acts on the fresh one', async () => {

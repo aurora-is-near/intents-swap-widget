@@ -26,6 +26,7 @@ import {
   classifyBorrowError,
   diagnoseBorrowStep,
   type GasPreCheckInput,
+  lockingExecutionId,
 } from './classifyBorrowError';
 import { checkLiquidity } from './liquidity';
 import type { BorrowOrigin } from './plan';
@@ -39,6 +40,7 @@ import {
   borrowPreviewFigures,
   stepsPreviewFigures,
 } from './previewFigures';
+import { isBorrowExecution } from './recipe';
 import { type BorrowStepsPreview, previewBorrowSteps } from './stepsRetry';
 
 /** The pending dialog's three steps (`n: 3`, Web-Borrow-Confirm.dc.html). */
@@ -60,7 +62,8 @@ export type BorrowPendingStep = 0 | 1 | 2;
  *   shows the deposit address while the runner watches for it.
  * - `done`: the borrow succeeded.
  * - `error`: one of the error states (`classifyBorrowError`); `delayed` is a
- *   warning, and the borrow is still tracked.
+ *   warning, and the borrow is still tracked. `inFlight` and
+ *   `transferFailed` carry the execution they are about (`lock`).
  */
 export type BorrowFlowState =
   | { kind: 'idle' }
@@ -92,7 +95,74 @@ export type BorrowFlowState =
        * (`errorCopy`) is used.
        */
       step?: BorrowPendingStep | null;
+      /**
+       * `inFlight`: the execution holding the wallet's lock;
+       * `transferFailed`: the signed borrow whose transfer failed. Absent
+       * when no execution could be named.
+       */
+      lock?: BorrowLock;
     };
+
+/**
+ * Where a lock-holding execution is: never signed (`CREATED` without
+ * `details.messageSigned`), signed and waiting for a deposit not known to be
+ * sent (`DEPOSIT_PENDING`), or past both (running).
+ */
+export type BorrowLockStage = 'unsigned' | 'deposit' | 'running';
+
+/**
+ * Whose the execution is: one of this app's borrows (`aave_borrow`), another
+ * app's run on the same wallet, or not known (it could not be looked up).
+ */
+export type BorrowLockOwner = 'borrow' | 'other' | 'unknown';
+
+/** The execution an `inFlight` or `transferFailed` error is about. */
+export type BorrowLock = {
+  executionId: string;
+  owner: BorrowLockOwner;
+  stage: BorrowLockStage;
+  /** The execution as looked up, when it was. */
+  execution?: RestorableExecution;
+  /** What a kept record says about its deposit. */
+  saved?: RestoredDeposit;
+};
+
+/** An execution's lock stage; `depositSent` from the kept record. */
+export const lockStageOf = (
+  execution: Pick<Execution, 'status' | 'details'>,
+  depositSent?: boolean,
+): BorrowLockStage => {
+  if (
+    execution.status === 'CREATED' &&
+    execution.details?.messageSigned !== true
+  ) {
+    return 'unsigned';
+  }
+
+  return execution.status === 'DEPOSIT_PENDING' && depositSent !== true
+    ? 'deposit'
+    : 'running';
+};
+
+/** What is known of the execution `executionId`, looked up or not. */
+const lockOf = (
+  executionId: string,
+  found: FoundExecution | undefined,
+): BorrowLock => {
+  if (!found) {
+    return { executionId, owner: 'unknown', stage: 'running' };
+  }
+
+  const { execution, saved } = found;
+
+  return {
+    executionId,
+    owner: isBorrowExecution(execution) ? 'borrow' : 'other',
+    stage: lockStageOf(execution, saved?.depositSent),
+    execution,
+    ...(saved ? { saved } : {}),
+  };
+};
 
 /** A steps-only retry's dry run, not a bridge-in's. */
 const isStepsPreview = (
@@ -109,7 +179,13 @@ export type RestoredDeposit = {
 
 /** A restored execution: what `restore()` reads of it. */
 export type RestorableExecution = Pick<Execution, 'id' | 'status' | 'details'> &
-  Partial<Pick<Execution, 'quote'>>;
+  Partial<Pick<Execution, 'quote' | 'metadata'>>;
+
+/** An execution found by its id, and what a kept record says about it. */
+export type FoundExecution = {
+  execution: RestorableExecution;
+  saved?: RestoredDeposit;
+};
 
 /** What `start()` previews and pre-checks a borrow from. */
 export type BorrowFlowInput = Omit<
@@ -142,6 +218,12 @@ export type UseBorrowFlowOptions = {
    * `deposit-sent`), so a reload does not offer to send it again.
    */
   onDepositSent?: (executionId: string) => void;
+  /**
+   * Looks up an execution of the wallet by id (the in-flight list), to tell
+   * whose the execution holding the lock is and where it is. Without it, or
+   * when it finds nothing, the lock's owner is `unknown`.
+   */
+  findExecution?: (executionId: string) => Promise<FoundExecution | undefined>;
 };
 
 export type UseBorrowFlowResult = {
@@ -201,6 +283,34 @@ export type UseBorrowFlowResult = {
   fundsWaiting: boolean;
   /** The execution the funds wait for, while `fundsWaiting`: to find them. */
   fundsWaitingExecutionId: string | undefined;
+  /**
+   * Shows an in-flight execution found on load that waits for the user (a
+   * signature or a deposit), or is another app's, as the `inFlight` error,
+   * without resuming it: nothing prompts the wallet until the user picks
+   * Resume or Cancel. Ignored unless `idle`.
+   */
+  offerResume: (
+    execution: RestorableExecution,
+    saved?: RestoredDeposit,
+  ) => void;
+  /**
+   * From `inFlight`, for one of this app's borrows: follows the execution
+   * holding the lock as `restore()` does (`pending`, `signing` or
+   * `deposit`). A signed one whose deposit was not sent, with its token
+   * known, is resumed with `depositViaWallet`, as `sendDeposit()` does.
+   */
+  resumeExisting: () => Promise<void>;
+  /**
+   * From `inFlight` or `transferFailed`: cancels the execution (a wallet
+   * signature), forgets what was kept for it, then goes back to `confirm`
+   * with a fresh preview when there is a form input (`inFlight`), else to
+   * `idle`. A refused cancel stays on the error.
+   */
+  cancelExisting: () => Promise<void>;
+  /** From `transferFailed`: prompts the deposit transfer again. */
+  retryTransfer: () => Promise<void>;
+  /** The cancel signature is being prompted (`useExecution().isCancelling`). */
+  isCancelling: boolean;
 };
 
 const STATUS_STEP: Partial<Record<ExecutionStatus, BorrowPendingStep>> = {
@@ -235,6 +345,7 @@ export const useBorrowFlow = ({
   onCreated,
   onSettled,
   onDepositSent,
+  findExecution,
 }: UseBorrowFlowOptions = {}): UseBorrowFlowResult => {
   const [state, setState] = useState<BorrowFlowState>({ kind: 'idle' });
   const [figures, setFigures] = useState<BorrowPreviewFigures>();
@@ -298,10 +409,14 @@ export const useBorrowFlow = ({
   const onCreatedRef = useRef(onCreated);
   const onSettledRef = useRef(onSettled);
   const onDepositSentRef = useRef(onDepositSent);
+  const findExecutionRef = useRef(findExecution);
+  /** An `inFlight` error whose lock-holding execution is being looked up. */
+  const lookingUpRef = useRef<unknown>(undefined);
 
   onCreatedRef.current = onCreated;
   onSettledRef.current = onSettled;
   onDepositSentRef.current = onDepositSent;
+  findExecutionRef.current = findExecution;
 
   /** The execution is over: what was kept for it can go. */
   const settled = (executionId: string | undefined) => {
@@ -426,7 +541,10 @@ export const useBorrowFlow = ({
 
   /** Classifies `error` into the error state; the borrow step is read afresh. */
   const fail = async (error: unknown) => {
-    if (lastErrorRef.current === error && stateRef.current.kind === 'error') {
+    if (
+      lastErrorRef.current === error &&
+      (stateRef.current.kind === 'error' || lookingUpRef.current === error)
+    ) {
       return;
     }
 
@@ -443,9 +561,69 @@ export const useBorrowFlow = ({
     let borrowStep: BorrowStepFailure | undefined;
     const input = inputRef.current;
     const borrowed = borrowRef.current;
-    const kind = classifyBorrowError(error, executionRef.current?.recovery, {
-      status,
-    });
+    const recovery = executionRef.current?.recovery;
+    const kind = classifyBorrowError(error, recovery, { status });
+
+    if (kind === 'inFlight') {
+      // Another execution holds the wallet's lock: looked up first, so the
+      // dialog can say whose it is and where, and offer the right actions.
+      const executionId = lockingExecutionId(error, recovery);
+
+      lookingUpRef.current = error;
+
+      const found =
+        executionId === undefined
+          ? undefined
+          : await findExecutionRef
+              .current?.(executionId)
+              .catch(() => undefined);
+
+      if (
+        generation !== generationRef.current ||
+        lookingUpRef.current !== error
+      ) {
+        return;
+      }
+
+      lookingUpRef.current = undefined;
+      setFlow({
+        kind: 'error',
+        error: kind,
+        cause: error,
+        ...errorStepOf(kind),
+        ...(executionId === undefined
+          ? {}
+          : { lock: lockOf(executionId, found) }),
+      });
+
+      return;
+    }
+
+    if (kind === 'transferFailed') {
+      const executionId =
+        recovery?.executionId ??
+        (error instanceof DepositTransferError
+          ? error.executionId
+          : createdIdRef.current);
+
+      setFlow({
+        kind: 'error',
+        error: kind,
+        cause: error,
+        ...errorStepOf(kind),
+        ...(executionId === undefined
+          ? {}
+          : {
+              lock: {
+                executionId,
+                owner: 'borrow',
+                stage: 'deposit',
+              } satisfies BorrowLock,
+            }),
+      });
+
+      return;
+    }
 
     // Shown as `error` at once, refined once the market is read.
     setFlow({ kind: 'error', error: kind, cause: error, ...errorStepOf(kind) });
@@ -615,6 +793,7 @@ export const useBorrowFlow = ({
     statusRef.current = undefined;
     stepRef.current = 0;
     lastErrorRef.current = undefined;
+    lookingUpRef.current = undefined;
     delayDismissedRef.current = false;
     signedRef.current = false;
     depositSentRef.current = false;
@@ -887,15 +1066,14 @@ export const useBorrowFlow = ({
     );
   };
 
-  const restore = (found: RestorableExecution, saved?: RestoredDeposit) => {
-    if (stateRef.current.kind !== 'idle') {
-      return;
-    }
-
+  /**
+   * Forgets this session's borrow for one found by id: a restored borrow has
+   * no form input, so an earlier one in this session (another wallet's,
+   * say) must never be quoted or run for it.
+   */
+  const forgetForFound = () => {
     generationRef.current += 1;
     resetRun();
-    // A restored borrow has no form input: an earlier one in this session
-    // (another wallet's, say) must never be quoted or run for it.
     inputRef.current = undefined;
     borrowRef.current = undefined;
     // Nor are its figures known: the dialog shows the kept rows instead.
@@ -905,6 +1083,11 @@ export const useBorrowFlow = ({
     waitingExecutionIdRef.current = undefined;
     reconnectingRef.current = false;
     reconnectResumeRef.current = undefined;
+  };
+
+  /** Follows `found`, whatever the state: `restore()` and `resumeExisting()`. */
+  const follow = (found: RestorableExecution, saved?: RestoredDeposit) => {
+    forgetForFound();
     depositOriginRef.current = saved?.origin;
     depositSentRef.current = saved?.depositSent === true;
     createdIdRef.current = found.id;
@@ -941,6 +1124,114 @@ export const useBorrowFlow = ({
     }
 
     void drive(() => requireExecution().resume(id));
+  };
+
+  const restore = (found: RestorableExecution, saved?: RestoredDeposit) => {
+    if (stateRef.current.kind !== 'idle') {
+      return;
+    }
+
+    follow(found, saved);
+  };
+
+  const offerResume = (found: RestorableExecution, saved?: RestoredDeposit) => {
+    if (stateRef.current.kind !== 'idle') {
+      return;
+    }
+
+    forgetForFound();
+    confirmedRef.current = false;
+    depositOriginRef.current = undefined;
+    setFlow({
+      kind: 'error',
+      error: 'inFlight',
+      cause: undefined,
+      step: null,
+      lock: lockOf(found.id, { execution: found, saved }),
+    });
+  };
+
+  /** The `inFlight` or `transferFailed` error's execution, if one is shown. */
+  const shownLock = (...kinds: BorrowErrorKind[]): BorrowLock | undefined => {
+    const { current } = stateRef;
+
+    return current.kind === 'error' && kinds.includes(current.error)
+      ? current.lock
+      : undefined;
+  };
+
+  const resumeExisting = async () => {
+    const lock = shownLock('inFlight');
+
+    // Only one of this app's borrows is followed here.
+    if (lock?.owner !== 'borrow' || !lock.execution) {
+      return;
+    }
+
+    follow(lock.execution, lock.saved);
+
+    const { current } = stateRef;
+
+    if (current.kind === 'deposit' && current.canSend) {
+      // Signed, the deposit not sent and its token known: the user asked to
+      // resume it, so the wallet is prompted for it at once.
+      await sendDeposit();
+    }
+  };
+
+  const cancelExisting = async () => {
+    const { current } = stateRef;
+    const lock = shownLock('inFlight', 'transferFailed');
+
+    if (current.kind !== 'error' || !lock) {
+      return;
+    }
+
+    const generation = generationRef.current;
+
+    try {
+      await requireExecution().cancel(lock.executionId);
+    } catch {
+      // Refused or failed: the error stays, so it can be tried again.
+      return;
+    }
+
+    settled(lock.executionId);
+
+    if (generation !== generationRef.current) {
+      return;
+    }
+
+    if (createdIdRef.current === lock.executionId) {
+      createdIdRef.current = undefined;
+    }
+
+    // In flight: the user wanted a new borrow, so its quote (maybe expired
+    // meanwhile) is fetched again. A failed transfer's borrow is left.
+    if (current.error === 'inFlight' && inputRef.current) {
+      await previewAnd('confirm');
+
+      return;
+    }
+
+    await leave();
+  };
+
+  /** Prompts the signed borrow's deposit transfer again (`retryDeposit()`). */
+  const promptTransfer = async (current: UseExecutionResult) => {
+    lastErrorRef.current = undefined;
+    toPending(stepRef.current);
+    await drive(() => current.retryDeposit());
+  };
+
+  const retryTransfer = async () => {
+    const { current } = executionRef;
+
+    if (!current || !shownLock('transferFailed')) {
+      return;
+    }
+
+    await promptTransfer(current);
   };
 
   /** Shown on an error while the collateral waits (`isFundsWaiting`). */
@@ -1052,9 +1343,7 @@ export const useBorrowFlow = ({
       current.recovery?.kind === 'retry-transfer'
     ) {
       // Signed: only the deposit transfer is prompted again.
-      lastErrorRef.current = undefined;
-      toPending(stepRef.current);
-      await drive(() => current.retryDeposit());
+      await promptTransfer(current);
 
       return;
     }
@@ -1213,7 +1502,16 @@ export const useBorrowFlow = ({
 
   let action: BorrowRecoveryAction | undefined;
 
-  if (fundsWaiting && state.kind === 'error') {
+  /**
+   * The lock and a failed transfer have their own actions (Resume, Retry
+   * transfer), which never bridge the funds in again: a steps-only retry
+   * that meets the wallet's lock is resumed or cancelled, not run again.
+   */
+  const ownActions =
+    state.kind === 'error' &&
+    (state.error === 'inFlight' || state.error === 'transferFailed');
+
+  if (fundsWaiting && state.kind === 'error' && !ownActions) {
     // Only the steps-only retry is offered: every other action would bridge
     // the funds in again. Restored without the form, or unexplained (such
     // as nothing waiting any more), it only closes.
@@ -1242,5 +1540,10 @@ export const useBorrowFlow = ({
     fundsWaitingExecutionId: fundsWaiting
       ? (waitingExecutionIdRef.current ?? createdIdRef.current)
       : undefined,
+    offerResume,
+    resumeExisting,
+    cancelExisting,
+    retryTransfer,
+    isCancelling: execution.isCancelling,
   };
 };

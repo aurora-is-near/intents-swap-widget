@@ -20,6 +20,7 @@ import {
   classifyBorrowError,
   diagnoseBorrowStep,
   isInsufficientFunds,
+  lockingExecutionId,
 } from './classifyBorrowError';
 import { BorrowPreviewError } from './preview';
 
@@ -85,6 +86,42 @@ describe('classifyBorrowError', () => {
       transferRecovery(new Error('insufficient funds for intrinsic gas')),
       {},
       'noGas',
+    ],
+    // inFlight
+    [
+      'the EXECUTION_IN_FLIGHT guard',
+      new GuardError(
+        'EXECUTION_IN_FLIGHT',
+        'execution exec-9 is already in progress',
+        {
+          executionId: 'exec-9',
+        },
+      ),
+      undefined,
+      {},
+      'inFlight',
+    ],
+    [
+      'a resume-or-cancel recovery',
+      new Error('this runner is already driving an execution'),
+      { kind: 'resume-or-cancel', executionId: 'exec-9' },
+      {},
+      'inFlight',
+    ],
+    // transferFailed
+    [
+      'a deposit transfer that failed for another reason',
+      new DepositTransferError('exec-1', { cause: new Error('nonce too low') }),
+      transferRecovery(new Error('nonce too low')),
+      {},
+      'transferFailed',
+    ],
+    [
+      'a deposit transfer error without its recovery',
+      new DepositTransferError('exec-1'),
+      undefined,
+      {},
+      'transferFailed',
     ],
     // noRoute
     [
@@ -286,6 +323,8 @@ describe('borrowRecoveryAction', () => {
     ['noLiquidity', 'close'],
     ['delayed', 'close'],
     ['unknown', 'retry'],
+    ['inFlight', 'resumeExisting'],
+    ['transferFailed', 'retryTransfer'],
   ])('%s offers %s', (kind, action) => {
     expect(borrowRecoveryAction(kind, new Error('x'))).toBe(action);
   });
@@ -403,5 +442,42 @@ describe('checkOriginGas', () => {
         amount: 10n,
       }),
     ).toBe('unknown');
+  });
+});
+
+describe('lockingExecutionId', () => {
+  it('names the execution from the guard’s meta, else its message', () => {
+    expect(
+      lockingExecutionId(
+        new GuardError('EXECUTION_IN_FLIGHT', 'x', {
+          executionId: 'exec-meta',
+        }),
+        undefined,
+      ),
+    ).toBe('exec-meta');
+    expect(
+      lockingExecutionId(
+        new GuardError(
+          'EXECUTION_IN_FLIGHT',
+          'execution exec-msg is already in progress — resume it, cancel it, or wait for it to reach a terminal status',
+        ),
+        undefined,
+      ),
+    ).toBe('exec-msg');
+  });
+
+  it('names the execution from a resume-or-cancel recovery', () => {
+    expect(
+      lockingExecutionId(new Error('busy'), {
+        kind: 'resume-or-cancel',
+        executionId: 'exec-recovery',
+      }),
+    ).toBe('exec-recovery');
+  });
+
+  it('names none for anything else', () => {
+    expect(
+      lockingExecutionId(new Error('boom'), transferRecovery(new Error('x'))),
+    ).toBeUndefined();
   });
 });

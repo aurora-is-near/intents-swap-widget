@@ -27,11 +27,17 @@ import { BorrowPreviewError } from './preview';
  * the error dialog: no route for the amount (`noRoute`: 1Click can't quote
  * it, so nothing is created), and the quote changed while the loan was
  * being prepared (`quoteChanged`: a two-pass dry run, before anything new
- * is signed; on a steps-only retry the collateral already waits).
+ * is signed; on a steps-only retry the collateral already waits). Two more
+ * have no artboard either: another execution holds the wallet's in-flight
+ * lock (`inFlight`: the SDK's `EXECUTION_IN_FLIGHT` guard, offered Resume
+ * and Cancel), and the signed borrow's deposit transfer failed
+ * (`transferFailed`, offered Retry transfer).
  */
 export type BorrowErrorKind =
   | 'rejected'
   | 'noGas'
+  | 'inFlight'
+  | 'transferFailed'
   | 'noRoute'
   | 'quoteChanged'
   | 'priceMoved'
@@ -185,23 +191,29 @@ export const isNoRoute = (value: unknown): boolean =>
  *    transfer's cause included): `rejected`.
  * 2. The gas pre-check failed, or the wallet reports insufficient funds for
  *    the deposit transaction: `noGas`.
- * 3. The API could not quote the amount (`isNoRoute`, anywhere in the cause
+ * 3. Another execution holds the wallet's in-flight lock: the SDK's
+ *    `EXECUTION_IN_FLIGHT` guard, or a `resume-or-cancel` recovery:
+ *    `inFlight`.
+ * 4. The signed borrow's deposit transfer failed for another reason than
+ *    those above: a `retry-transfer` recovery, or a `DepositTransferError`:
+ *    `transferFailed`.
+ * 5. The API could not quote the amount (`isNoRoute`, anywhere in the cause
  *    chain): no liquidity for the route, or the estimated gas fee exceeds
  *    the output: `noRoute`.
- * 4. A two-pass preview's minimum received fell by more than its buffer
+ * 6. A two-pass preview's minimum received fell by more than its buffer
  *    (`BorrowPreviewError` `quoteMoved`): `quoteChanged`. Nothing new was
  *    signed; on a steps-only retry the collateral already waits, which the
  *    copy and the dialog's step marks say (`fundsWaiting`).
- * 5. The SDK's `QUOTE_MOVED` guard (`quoteMustNotHaveMoved`) refused the
+ * 7. The SDK's `QUOTE_MOVED` guard (`quoteMustNotHaveMoved`) refused the
  *    run, or the borrow step failed because the collateral's price moved:
  *    `priceMoved`.
- * 6. The liquidity pre-check failed, or the borrow step failed for want of
+ * 8. The liquidity pre-check failed, or the borrow step failed for want of
  *    liquidity: `noLiquidity`.
- * 7. Polling stopped before a terminal status
+ * 9. Polling stopped before a terminal status
  *    (`ExecutionPollTimeoutError`), or the borrow has been pending longer
  *    than `BORROW_DELAYED_AFTER_MS`: `delayed`. A warning; the execution is
  *    still live.
- * 8. Anything else: `unknown`.
+ * 10. Anything else: `unknown`.
  *
  * `error` may be `undefined` for a borrow that is only slow.
  */
@@ -227,6 +239,20 @@ export const classifyBorrowError = (
     isInsufficientFunds(transferCause)
   ) {
     return 'noGas';
+  }
+
+  if (
+    (error instanceof GuardError && error.code === 'EXECUTION_IN_FLIGHT') ||
+    recovery?.kind === 'resume-or-cancel'
+  ) {
+    return 'inFlight';
+  }
+
+  if (
+    recovery?.kind === 'retry-transfer' ||
+    error instanceof DepositTransferError
+  ) {
+    return 'transferFailed';
   }
 
   if (error !== undefined && isNoRoute(error)) {
@@ -266,9 +292,37 @@ export const classifyBorrowError = (
 };
 
 /**
+ * The execution holding the wallet's in-flight lock, from the
+ * `EXECUTION_IN_FLIGHT` guard (its `meta`, else its message) or a
+ * `resume-or-cancel` recovery; `undefined` when neither names one.
+ */
+export const lockingExecutionId = (
+  error: unknown,
+  recovery: ExecutionRecovery | undefined,
+): string | undefined => {
+  if (error instanceof GuardError && error.code === 'EXECUTION_IN_FLIGHT') {
+    const named =
+      error.meta.executionId ??
+      /execution (\S+) is already in progress/.exec(error.message)?.[1];
+
+    if (named !== undefined) {
+      return named;
+    }
+  }
+
+  return recovery?.kind === 'resume-or-cancel'
+    ? recovery.executionId
+    : undefined;
+};
+
+/**
  * What an error state's button does, by the artboard's action names
  * (`Web-Borrow-Confirm.dc.html` lines 1493–1505 and 1513):
  * - `retry`: run again (rejected, no gas, unknown);
+ * - `resumeExisting`: follow the execution that holds the wallet's lock
+ *   (in flight);
+ * - `retryTransfer`: prompt the signed borrow's deposit transfer again
+ *   (transfer failed);
  * - `refresh`: re-quote and confirm again (the price moved, the quote
  *   changed);
  * - `reconnect`: connect the wallet again (it left mid-borrow);
@@ -277,7 +331,13 @@ export const classifyBorrowError = (
  *   artboard's "Choose another market"), or to try a larger amount or
  *   another asset or chain (no route).
  */
-export type BorrowRecoveryAction = 'retry' | 'refresh' | 'reconnect' | 'close';
+export type BorrowRecoveryAction =
+  | 'retry'
+  | 'refresh'
+  | 'reconnect'
+  | 'close'
+  | 'resumeExisting'
+  | 'retryTransfer';
 
 export const borrowRecoveryAction = (
   kind: BorrowErrorKind,
@@ -294,6 +354,10 @@ export const borrowRecoveryAction = (
     case 'priceMoved':
     case 'quoteChanged':
       return 'refresh';
+    case 'inFlight':
+      return 'resumeExisting';
+    case 'transferFailed':
+      return 'retryTransfer';
     case 'noRoute':
     case 'noLiquidity':
     case 'delayed':
