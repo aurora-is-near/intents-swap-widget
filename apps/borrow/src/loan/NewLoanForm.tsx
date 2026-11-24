@@ -279,7 +279,10 @@ function SupplySection({ form }: { form: LoanForm }) {
       );
 
   // The held balance's chain; not connected, the selected market's.
-  const triggerSlug = funding.asset?.chain ?? form.market?.chain;
+  // The selection, or the figures' stand-in when the LTV fits no market.
+  const triggerSlug =
+    funding.asset?.chain ?? (form.market ?? form.figuresMarket)?.chain;
+
   const triggerChain = triggerSlug ? chainOf(triggerSlug) : undefined;
 
   return (
@@ -379,7 +382,9 @@ function BorrowSection({ form }: { form: LoanForm }) {
   const labelId = useId();
   const triggerId = useId();
   const receiveId = useId();
-  const { borrow, figures, market } = form;
+  const { borrow, figures } = form;
+  // The selection, or the figures' stand-in when the LTV fits no market.
+  const market = form.market ?? form.figuresMarket;
 
   const chainsOf = (asset: ReserveAsset) =>
     asset.markets.map(({ chain }) => chain);

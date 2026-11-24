@@ -571,6 +571,9 @@ describe('NewLoanForm', () => {
       expect(screen.getByText('liq. 81%')).toBeInTheDocument();
       expect(received()).toHaveTextContent('4,905');
       expect(feeRow()).toHaveTextContent('−14.76 USDC');
+      // The triggers keep the stand-in's chain.
+      expect(supplyPicker()).toHaveAccessibleName('SUPPLY WETH Base');
+      expect(borrowPicker()).toHaveAccessibleName('BORROW USDC Base');
       // A stand-in for the figures only: no market is selected.
       expect(
         screen.queryByRole('button', { name: /^Aave /, pressed: true }),
