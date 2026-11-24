@@ -1,11 +1,12 @@
+import type { Step } from '@aurora-is-near/intents-connect';
 import type { Address } from 'viem';
 
 /**
  * The boundary between screens and lending protocols. Screens import only
  * these types (and the hooks built on them), never a protocol's own module.
  *
- * Only the read side is declared: position reading and step builders are
- * added by the features that need them (My positions, Borrow execution).
+ * The read side and the borrow step builder (Borrow execution) are declared;
+ * position reading is added by the feature that needs it (My positions).
  */
 
 /** One deployment of a lending protocol on one chain. */
@@ -41,7 +42,8 @@ export type CollateralReserve = {
   /**
    * The wrapped native reserve (WETH), counted as supported because the
    * native token is delivered on its chain; it is supplied through Aave's
-   * gateway. The recipe is left to Borrow execution.
+   * gateway (`buildBorrowSteps` replaces approve and supply with one
+   * gateway deposit sent the native amount).
    */
   nativeDelivery?: boolean;
 };
@@ -73,6 +75,24 @@ export type MarketSnapshot = {
   borrowable: BorrowReserve[];
 };
 
+/** What a borrow's steps are built from: one supply, then one borrow. */
+export type BuildBorrowStepsInput = {
+  market: LendingMarket;
+  collateral: CollateralReserve;
+  borrow: BorrowReserve;
+  /**
+   * The collateral supplied, atomic. OPAQUE: it may be the
+   * `{MIN_AMOUNT_OUT}` placeholder, so it is templated, never inspected.
+   */
+  amount: string;
+  /** Borrowed, in borrow-token atomic units: always a literal. */
+  borrowAmount: string;
+  /** Who the position belongs to: the supply's and the debt's account. */
+  owner: string;
+  /** Who the borrowed tokens are sent to. */
+  recipient: string;
+};
+
 export interface LendingMarketAdapter {
   /** Such as `aave-v3`. */
   id: string;
@@ -80,4 +100,11 @@ export interface LendingMarketAdapter {
   name: string;
   listMarkets(): Promise<LendingMarket[]>;
   getMarketSnapshot(market: LendingMarket): Promise<MarketSnapshot>;
+  /**
+   * The steps the intermediary runs once the collateral has arrived: supply
+   * it for `owner`, borrow against it and send the borrowed tokens to
+   * `recipient`. The service's fee is the API key's fee configuration,
+   * never a step. Throws for a market the adapter does not serve.
+   */
+  buildBorrowSteps(input: BuildBorrowStepsInput): Step[];
 }
