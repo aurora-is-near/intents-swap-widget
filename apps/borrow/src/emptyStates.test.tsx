@@ -77,23 +77,20 @@ describe('New loan tab', () => {
     expect(wallet.connect).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the market cards’ figures and the summary for the BEST market', async () => {
+  it('shows the market card’s figures and the summary for the selected market', async () => {
     await renderApp('/');
 
     const markets = within(panel()).getByRole('region', { name: 'Markets' });
-    const base = await within(markets).findByRole('button', {
-      name: /Aave Base/,
+    const aave = await within(markets).findByRole('button', {
+      name: /\bAave 4\.41%/,
     });
 
-    expect(base).toHaveTextContent('4.85%');
-    expect(base).toHaveTextContent('Liq. 81% · $1.2B');
-    expect(
-      within(markets).getByRole('button', { name: /Aave Arbitrum/ }),
-    ).toHaveTextContent('4.41%');
+    expect(aave).toHaveTextContent('4.41%');
+    expect(aave).toHaveTextContent('Liq. 82.5% · $356M');
 
     const tiles = within(markets).getAllByRole('definition');
 
-    // Arbitrum (BEST) at the starting LTV of 50%, with no amount yet: no
+    // Aave on Arbitrum at the starting LTV of 50%, with no amount yet: no
     // liquidation price, its liquidation LTV beneath, health 82.5 ÷ 50.
     expect(tiles.map((tile) => tile.textContent)).toEqual([
       '50%',
@@ -111,7 +108,7 @@ describe('New loan tab', () => {
       within(panel()).getByRole('region', { name: 'Loan details' }),
     ).toBeInTheDocument();
 
-    await within(panel()).findByRole('button', { name: /Aave Base/ });
+    await within(panel()).findByRole('button', { name: /\bAave 4\.41%/ });
 
     expect(
       within(panel()).queryByRole('button', {

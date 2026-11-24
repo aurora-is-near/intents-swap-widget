@@ -485,13 +485,14 @@ export function NewLoanForm({
       </Card>
 
       <section aria-label="Markets" className="min-w-0 flex-[1.3_1_520px]">
-        {/* The live markets as `.mkc` cards (lines 344–363), for the
-            form's pair. */}
+        {/* The live markets as `.mkc` cards (lines 344–363), one per
+            provider, for the form's pair and loan size. */}
         <MarketList
           disabledIds={form.disabledMarketIds}
           layout="cards"
+          loanUsd={form.loanUsd}
           pair={form.pair}
-          selectedId={form.market?.id}
+          selectedId={form.market?.provider}
           onSelect={form.pickMarket}
         />
         {/* At an LTV no market fits, the figures stand in with the first

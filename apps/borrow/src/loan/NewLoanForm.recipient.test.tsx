@@ -54,8 +54,11 @@ const renderForm = async () => {
     </QueryClientProvider>,
   );
 
-  // Arbitrum, the BEST of the fake markets, is selected once they load.
-  await screen.findByRole('button', { name: /Aave Arbitrum/, pressed: true });
+  // Aave on Arbitrum, its chosen chain (4.41%), is selected once the markets load.
+  await screen.findByRole('button', {
+    name: /\bAave 4\.41%/,
+    pressed: true,
+  });
 };
 
 const checkbox = () =>
