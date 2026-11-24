@@ -6,6 +6,8 @@ type MockWallet = {
   isConnected: boolean;
   connect: () => unknown;
   disconnect: () => unknown;
+  /** The connection's family (`evm`, `sol`); unknown when left out. */
+  family?: 'evm' | 'sol' | null;
 };
 
 /**

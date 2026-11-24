@@ -458,9 +458,9 @@ function BorrowSection({ form }: { form: LoanForm }) {
  * `flex:1.3 1 520px`, gap 24, wrapping to one column on narrow screens.
  */
 export function NewLoanForm() {
-  const { isConnected } = useIntentsConnectWallet();
+  const { isConnected, family } = useIntentsConnectWallet();
   const connectWallet = useConnectWallet();
-  const form = useLoanForm({ connected: isConnected });
+  const form = useLoanForm({ connected: isConnected, walletFamily: family });
 
   return (
     <div className="flex flex-wrap items-start gap-[24px]">
@@ -480,6 +480,11 @@ export function NewLoanForm() {
         />
         <RecipientField
           enabled={form.recipientEnabled}
+          lockedReason={
+            form.recipientRequired
+              ? `Required: your wallet can't receive on ${form.figuresMarket?.chainLabel ?? 'EVM chains'}`
+              : undefined
+          }
           value={form.recipient}
           onEnabledChange={form.setRecipientEnabled}
           onValueChange={form.setRecipient}

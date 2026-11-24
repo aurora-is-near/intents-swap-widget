@@ -1,5 +1,5 @@
 import { Checkbox, TextField } from '@aurora-is-near/ui-kit';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { validateRecipient } from './model/recipient';
 
@@ -11,6 +11,12 @@ type RecipientFieldProps = {
   onEnabledChange: (enabled: boolean) => void;
   value: string;
   onValueChange: (value: string) => void;
+  /**
+   * Why a recipient is required, such as "Required: your wallet can't
+   * receive on Base". When set, the box is on and locked, and this line
+   * shows under it.
+   */
+  lockedReason?: string;
 };
 
 /**
@@ -20,14 +26,23 @@ type RecipientFieldProps = {
  * placeholder `0x…` (decided: no ENS). An invalid address shows its error
  * once the field is left or a full address's length is reached, so typing
  * one out is not flagged on its first character.
+ *
+ * With `lockedReason` (a non-EVM wallet, which can't receive on the market's
+ * chain), the box is checked and disabled, and the reason shows under it in
+ * 13px `mut`, the style of the field's error line. No artboard draws this
+ * state.
  */
 export function RecipientField({
   enabled,
   onEnabledChange,
   value,
   onValueChange,
+  lockedReason,
 }: RecipientFieldProps) {
   const [left, setLeft] = useState(false);
+  const reasonId = useId();
+  const locked = lockedReason !== undefined;
+  const open = enabled || locked;
   const check = validateRecipient(value);
   const showError =
     check.status === 'invalid' &&
@@ -36,14 +51,23 @@ export function RecipientField({
   return (
     <div className="mt-[20px] border-0 border-t border-solid border-bd pt-[16px]">
       <Checkbox
-        checked={enabled}
+        aria-describedby={locked ? reasonId : undefined}
+        checked={open}
+        disabled={locked}
         label="Send borrowed funds to another wallet"
         onCheckedChange={(checked) => {
           setLeft(false);
           onEnabledChange(checked);
         }}
       />
-      {enabled ? (
+      {locked ? (
+        <p
+          className="m-0 mt-[6px] font-sans text-[13px] text-mut"
+          id={reasonId}>
+          {lockedReason}
+        </p>
+      ) : null}
+      {open ? (
         <TextField
           className="mt-[12px]"
           error={showError ? 'Enter a valid EVM address (0x…)' : undefined}

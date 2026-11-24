@@ -3,7 +3,7 @@ import '../tests/pointerEvent';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { RecipientField } from './RecipientField';
 
@@ -104,6 +104,55 @@ describe('RecipientField', () => {
     expect(
       screen.queryByText('Enter a valid EVM address (0x…)'),
     ).not.toBeInTheDocument();
+  });
+
+  describe('locked, for a non-EVM wallet', () => {
+    const REASON = "Required: your wallet can't receive on Base";
+
+    const renderLocked = () => {
+      const onEnabledChange = vi.fn();
+
+      render(
+        <RecipientField
+          enabled={false}
+          lockedReason={REASON}
+          value=""
+          onEnabledChange={onEnabledChange}
+          onValueChange={() => {}}
+        />,
+      );
+
+      return { onEnabledChange };
+    };
+
+    it('is on and disabled, with the reason under it', () => {
+      renderLocked();
+
+      expect(checkbox()).toBeChecked();
+      expect(checkbox()).toHaveAttribute('aria-disabled', 'true');
+      expect(checkbox()).toHaveAccessibleDescription(REASON);
+      expect(screen.getByText(REASON)).toBeVisible();
+      expect(addressField()).toBeInTheDocument();
+    });
+
+    it('can not be turned off', async () => {
+      const user = userEvent.setup();
+      const { onEnabledChange } = renderLocked();
+
+      await user.click(checkbox());
+
+      expect(checkbox()).toBeChecked();
+      expect(onEnabledChange).not.toHaveBeenCalled();
+      expect(addressField()).toBeInTheDocument();
+    });
+  });
+
+  it('with an EVM wallet, is off, enabled and has no reason', () => {
+    render(<Harness />);
+
+    expect(checkbox()).not.toBeChecked();
+    expect(checkbox()).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByText(/^Required:/)).not.toBeInTheDocument();
   });
 
   it('hides and clears the address on uncheck', async () => {
