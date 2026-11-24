@@ -17,6 +17,9 @@ import {
 } from '../tests/fakeMarkets';
 import { MarketList, type MarketListProps } from './MarketList';
 
+/** The fake markets' pair. */
+const PAIR = { collateral: 'WETH', borrow: 'USDC' };
+
 const fakeAdapter = (
   getMarketSnapshot?: LendingMarketAdapter['getMarketSnapshot'],
 ) => createFakeAdapter({ getMarketSnapshot });
@@ -32,7 +35,7 @@ const renderList = (
     ...render(
       <QueryClientProvider client={queryClient}>
         <MarketAdaptersProvider adapters={[adapter]}>
-          <MarketList layout="cards" {...props} />
+          <MarketList layout="cards" pair={PAIR} {...props} />
         </MarketAdaptersProvider>
       </QueryClientProvider>,
     ),
@@ -251,6 +254,39 @@ describe('MarketList', () => {
     );
 
     expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('reads every row for the pair it is given', async () => {
+    renderList(
+      fakeAdapter(async (of) =>
+        of.id === BASE.id
+          ? snapshot(BASE, {
+              borrowable: [
+                usdc(),
+                usdc({ symbol: 'USDT', variableBorrowApr: 0.051 }),
+              ],
+            })
+          : snapshot(of),
+      ),
+      { pair: { collateral: 'WETH', borrow: 'USDT' } },
+    );
+
+    const base = await findCard('Base');
+
+    await waitFor(() =>
+      expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument(),
+    );
+
+    expect(base).toHaveTextContent('5.10%');
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('names the pair it is given when no market has it', async () => {
+    renderList(fakeAdapter(), { pair: { collateral: 'WETH', borrow: 'GHO' } });
+
+    expect(
+      await screen.findByText('No market offers WETH / GHO right now.'),
+    ).toBeInTheDocument();
   });
 
   it('says so when no market has the pair', async () => {

@@ -54,6 +54,14 @@ export const RPC_URL_ARB =
   readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB;
 
 /**
+ * The borrow fee the form shows, in basis points (30 = 0.30%), taken from
+ * the borrowed amount as the artboard draws it (Web-Borrow.dc.html line
+ * 1139). An estimate: the fee is an Intents Connect API-key fee, and Borrow
+ * execution reconciles it with the quote (decided in the plan review).
+ */
+export const BORROW_FEE_BPS = 30;
+
+/**
  * The app's one Intents Connect client. It carries no API key: the key lives
  * only on the server (`INTENTS_CONNECT_API_KEY`), and create calls reach it
  * through `apiKeyProxyUrl`.
