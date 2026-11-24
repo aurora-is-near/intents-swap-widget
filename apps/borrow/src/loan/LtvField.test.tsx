@@ -29,6 +29,10 @@ const slider = () =>
 const marker = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-slot="marker"]');
 
+/** The marker sits from the inline start, as the slider's thumb does. */
+const markerOffset = (container: HTMLElement) =>
+  marker(container)?.style.getPropertyValue('inset-inline-start') ?? '';
+
 describe('LtvField', () => {
   it('runs 0–90 in steps of 1, with four zones', async () => {
     const user = userEvent.setup();
@@ -94,7 +98,7 @@ describe('LtvField', () => {
     );
 
     expect(screen.getByText('liq. 81%')).toBeInTheDocument();
-    expect(marker(container)).toHaveStyle({ left: '90%' });
+    expect(markerOffset(container)).toBe('90%');
     expect(slider()).toHaveAccessibleDescription(
       'Loan to value · Moderate liq. 81%',
     );
@@ -106,7 +110,7 @@ describe('LtvField', () => {
     );
 
     expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
-    expect(marker(container)?.style.left).toMatch(/^91\.66/);
+    expect(markerOffset(container)).toMatch(/^91\.66/);
   });
 
   it('clamps a liquidation LTV past 90% to the track’s end', () => {
@@ -115,7 +119,7 @@ describe('LtvField', () => {
     );
 
     expect(screen.getByText('liq. 95%')).toBeInTheDocument();
-    expect(marker(container)).toHaveStyle({ left: '100%' });
+    expect(markerOffset(container)).toBe('100%');
   });
 
   it('shows no marker while no market is known', () => {
