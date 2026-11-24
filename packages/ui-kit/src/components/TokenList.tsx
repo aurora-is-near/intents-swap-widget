@@ -18,8 +18,15 @@ export type TokenOption = {
   mark: { label: string; bg?: string; fg?: string; src?: string };
   /** Such as `Ethereum · Base · Arbitrum`; ellipsised when too long. */
   chainsLabel: string;
-  /** Such as `$3,120.40`. */
+  /** Such as `$3,120.40`. Shown when there is no `balanceLabel`. */
   priceLabel: string;
+  /**
+   * A held balance, such as `1.25 ETH`. When set, the right-hand slot shows
+   * it (with `balanceUsdLabel` under it) in place of `priceLabel`.
+   */
+  balanceLabel?: string;
+  /** The balance's value, such as `$3,900.50`; only with `balanceLabel`. */
+  balanceUsdLabel?: string;
 };
 
 /**
@@ -49,6 +56,13 @@ const CHAINS = 'truncate text-[12px] text-mut2';
 /** Line 247: 14px / 600. */
 const PRICE = 'shrink-0 text-[14px] font-semibold';
 
+/**
+ * A balance in the price's place: the price's type, right-aligned, with its
+ * USD value under it in the chains line's type (12px `mut2`).
+ */
+const BALANCE = 'shrink-0 text-right leading-[1.25]';
+const BALANCE_USD = 'text-[12px] text-mut2';
+
 export type TokenListProps = HTMLAttributes<HTMLDivElement>;
 
 /**
@@ -74,8 +88,9 @@ export type TokenRowProps = Omit<
 
 /**
  * One token in a `TokenList`: a plain button (reached with Tab) showing the
- * mark, symbol, chains and price. Its accessible name is that text; the mark
- * is decorative.
+ * mark, symbol, chains and price, or the balance and its USD value when the
+ * option has a `balanceLabel`. Its accessible name is that text; the mark is
+ * decorative.
  */
 export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
   ({ option, selected = false, className, type = 'button', ...props }, ref) => (
@@ -100,7 +115,18 @@ export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
         <span className={cn('block', SYMBOL)}>{option.symbol}</span>
         <span className={cn('block', CHAINS)}>{option.chainsLabel}</span>
       </span>
-      <span className={PRICE}>{option.priceLabel}</span>
+      {option.balanceLabel === undefined ? (
+        <span className={PRICE}>{option.priceLabel}</span>
+      ) : (
+        <span className={BALANCE}>
+          <span className={cn('block', PRICE)}>{option.balanceLabel}</span>
+          {option.balanceUsdLabel === undefined ? null : (
+            <span className={cn('block', BALANCE_USD)}>
+              {option.balanceUsdLabel}
+            </span>
+          )}
+        </span>
+      )}
     </button>
   ),
 );

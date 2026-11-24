@@ -491,6 +491,47 @@ function TokenPicker() {
   );
 }
 
+/**
+ * The Supply picker with the wallet's balances in each row's right-hand
+ * slot, in place of the price. A row without a balance keeps its price.
+ */
+const HELD: Partial<
+  Record<string, Pick<TokenOption, 'balanceLabel' | 'balanceUsdLabel'>>
+> = {
+  eth: { balanceLabel: '1.25 ETH', balanceUsdLabel: '$3,750.00' },
+  usds: { balanceLabel: '1,200 USDS', balanceUsdLabel: '$1,200.00' },
+};
+
+const HELD_OPTIONS: TokenOption[] = SAMPLE_TOKENS.filter((token) =>
+  ['eth', 'usds', 'wbtc'].includes(token.id),
+).map((token) => ({ ...toOption(token), ...HELD[token.id] }));
+
+function HeldTokenPicker() {
+  const [value, setValue] = useState('eth');
+  const option =
+    HELD_OPTIONS.find((item) => item.id === value) ?? HELD_OPTIONS[0];
+
+  if (!option) {
+    return null;
+  }
+
+  return (
+    <TokenSelect
+      aria-label="Choose a token you hold"
+      className="w-[188px]"
+      onValueChange={setValue}
+      options={HELD_OPTIONS}
+      selected={{
+        symbol: option.symbol,
+        mark: option.mark,
+        chainName: CHAINS.eth.name,
+        chainColor: CHAINS.eth.color,
+      }}
+      value={value}
+    />
+  );
+}
+
 /** The artboard's LTV zones end at 50, 65, 80 and 90 (line 304). */
 const LTV_MAX = 90;
 const LTV_ZONES = [50, 65, 80, 90].map((upTo, index) => ({
@@ -776,6 +817,10 @@ function Components() {
 
       <Section title="TokenSelect and Chip">
         <TokenPicker />
+      </Section>
+
+      <Section title="TokenSelect with balances">
+        <HeldTokenPicker />
       </Section>
 
       <Section title="Slider">
