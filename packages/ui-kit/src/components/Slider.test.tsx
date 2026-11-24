@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -65,9 +64,6 @@ const ariaRangeOf = (slider: HTMLElement) => ({
   max: slider.getAttribute('aria-valuemax') ?? slider.getAttribute('max'),
   now: slider.getAttribute('aria-valuenow'),
 });
-
-const percentOf = (element: Element) =>
-  Number.parseFloat((element as HTMLElement).style.width);
 
 describe('Slider', () => {
   it('has role slider with its label, min, max and value', () => {
@@ -168,49 +164,20 @@ describe('Slider', () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  it('paints zone segments as wide as their share of the range', () => {
+  it('paints one hidden zone segment per zone', () => {
+    // The widths are pure maths, tested in lib/sliderGeometry.test.ts;
+    // where they land on the track is for a visual check, not jsdom.
     const { container } = render(
       <Slider aria-label={LABEL} max={90} value={40} zones={LTV_ZONES} />,
     );
 
-    const segments = [
-      ...container.querySelectorAll('[data-slot="zone"]'),
-    ] as HTMLElement[];
-
-    // 50, 15, 15 and 10 of 90.
-    expect(segments.map(percentOf).map((width) => width.toFixed(4))).toEqual(
-      [50 / 90, 15 / 90, 15 / 90, 10 / 90].map((share) =>
-        (share * 100).toFixed(4),
-      ),
+    expect(container.querySelector('[data-slot="zones"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
     );
-    expect(segments.map((segment) => segment.style.background)).toEqual([
-      'rgb(203, 234, 140)',
-      'rgb(243, 224, 138)',
-      'rgb(245, 182, 107)',
-      'rgb(229, 105, 79)',
-    ]);
-  });
-
-  it('measures zones from min and clamps them to max', () => {
-    const { container } = render(
-      <Slider
-        aria-label={LABEL}
-        max={60}
-        min={20}
-        value={30}
-        zones={[
-          { upTo: 30, color: RISK_ZONE_COLORS[0] },
-          { upTo: 50, color: RISK_ZONE_COLORS[1] },
-          { upTo: 90, color: RISK_ZONE_COLORS[2] },
-        ]}
-      />,
+    expect(container.querySelectorAll('[data-slot="zone"]')).toHaveLength(
+      LTV_ZONES.length,
     );
-
-    const widths = [...container.querySelectorAll('[data-slot="zone"]')].map(
-      percentOf,
-    );
-
-    expect(widths).toEqual([25, 50, 25]);
   });
 
   it('exports the four artboard risk zone colours', () => {
@@ -233,51 +200,24 @@ describe('Slider', () => {
     });
   });
 
-  it('places the marker at (value − min) / (max − min) of the track', () => {
+  it('draws the marker with its label', () => {
+    // Its position is markerPosition(toPercent(…)), tested in
+    // lib/sliderGeometry.test.ts.
     const { container } = render(
       <Slider
         aria-label={LABEL}
         marker={{ value: 83, label: 'liq. 83%' }}
         max={90}
-        min={20}
         value={40}
         zones={LTV_ZONES}
       />,
     );
 
-    const marker = container.querySelector<HTMLElement>('[data-slot="marker"]');
-
-    const label = screen.getByText('liq. 83%');
-    const expected = ((83 - 20) / (90 - 20)) * 100;
-
-    [marker, label].forEach((element) => {
-      const inset = element?.style.getPropertyValue('inset-inline-start') ?? '';
-
-      expect(Number.parseFloat(inset)).toBeCloseTo(expected);
-      expect(element?.style.getPropertyValue('translate')).toBe('-50% 0');
-    });
-  });
-
-  it('places the marker from the inline start in RTL, as the thumb', () => {
-    const { container } = render(
-      <DirectionProvider direction="rtl">
-        <div dir="rtl">
-          <Slider
-            aria-label={LABEL}
-            marker={{ value: 80, label: 'liq. 80%' }}
-            value={40}
-          />
-        </div>
-      </DirectionProvider>,
+    expect(container.querySelector('[data-slot="marker"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
     );
-
-    const marker = container.querySelector<HTMLElement>('[data-slot="marker"]');
-
-    [marker, screen.getByText('liq. 80%')].forEach((element) => {
-      expect(element?.style.getPropertyValue('inset-inline-start')).toBe('80%');
-      expect(element?.style.getPropertyValue('translate')).toBe('50% 0');
-      expect(element?.style.left).toBe('');
-    });
+    expect(screen.getByText('liq. 83%')).toBeInTheDocument();
   });
 
   it('describes the slider with the marker label', () => {

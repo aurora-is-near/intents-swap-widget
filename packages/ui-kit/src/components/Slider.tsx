@@ -2,6 +2,13 @@ import { useDirection } from '@base-ui/react/direction-provider';
 import { Slider as SliderPrimitive } from '@base-ui/react/slider';
 import { forwardRef, type ReactNode, useId } from 'react';
 
+import {
+  markerPosition,
+  type SliderZone,
+  toPercent,
+  zoneWidths,
+} from '../lib/sliderGeometry';
+
 /**
  * The loan-to-value risk zones (Web-Borrow.dc.html line 304), safe to
  * risky. None has a token on the artboards, and they are the same in both
@@ -61,12 +68,7 @@ const MARKER_LABEL =
 const THUMB =
   'box-border size-[24px] rounded-full border-4 border-solid border-ink bg-sf';
 
-export type SliderZone = {
-  /** Where the zone ends; it starts where the previous one ended, or at `min`. */
-  upTo: number;
-  /** Any CSS colour, such as one of `RISK_ZONE_COLORS`. */
-  color: string;
-};
+export type { SliderZone };
 
 export type SliderMarker = {
   value: number;
@@ -103,46 +105,6 @@ export type SliderProps = Omit<
   getAriaValueText?: SliderPrimitive.Thumb.Props['getAriaValueText'];
   className?: string;
 };
-
-const clamp = (value: number, low: number, high: number) =>
-  Math.min(high, Math.max(low, value));
-
-/**
- * Each zone with its width as a percentage of the track: its range over
- * `max − min`, clamped to the track. `upTo` values are ascending, so they
- * also serve as keys.
- */
-const zoneWidths = (
-  zones: readonly SliderZone[],
-  min: number,
-  max: number,
-): (SliderZone & { width: number })[] => {
-  const span = max - min;
-  let start = min;
-
-  return zones.map((zone) => {
-    const end = clamp(zone.upTo, start, max);
-    const width = span > 0 ? ((end - start) / span) * 100 : 0;
-
-    start = end;
-
-    return { ...zone, width };
-  });
-};
-
-const toPercent = (value: number, min: number, max: number) =>
-  max > min ? clamp(((value - min) / (max - min)) * 100, 0, 100) : 0;
-
-/**
- * Places the marker and its label as Base UI places the thumb: from the
- * inline start (the left in LTR, the right in RTL), centred by a
- * translation that flips in RTL. The zone strip is a flex row, so it
- * already runs from the inline start.
- */
-const markerPosition = (percent: number, rtl: boolean) => ({
-  insetInlineStart: `${percent}%`,
-  translate: `${rtl ? 50 : -50}% 0`,
-});
 
 /**
  * A single-value slider (role `slider`) on Base UI's `Slider`. Arrow keys

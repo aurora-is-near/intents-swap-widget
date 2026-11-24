@@ -18,11 +18,18 @@ const LIST = 'flex gap-[8px] data-[orientation=vertical]:flex-col';
  * is opacity .45 (line 102, used on line 902). The line-height is the
  * browser's button `normal`, after the font size (see Button). Focus ring
  * as on line 20.
+ *
+ * Pressed: the artboard has no pressed look, and Base UI selects on click,
+ * so an enabled, unselected tab (neither `data-active` nor
+ * `data-disabled`, which Base UI sets whether or not the button is natively
+ * disabled) takes the kit's `hov` fill (`.row:hover`,
+ * `.ibtn:hover`, lines 30 and 54) while it is held. Selected and disabled
+ * tabs keep their look.
  */
 const TAB = cn(
   `box-border inline-flex cursor-pointer items-center gap-[8px] font-sans font-bold ${FOCUS_RING}`,
   SEG_CLASSES,
-  'leading-[normal] data-active:border-ink data-active:bg-ink data-active:text-sf data-disabled:cursor-not-allowed data-disabled:opacity-45',
+  'leading-[normal] active:not-data-active:not-data-disabled:bg-hov data-active:border-ink data-active:bg-ink data-active:text-sf data-disabled:cursor-not-allowed data-disabled:opacity-45',
 );
 
 /**
