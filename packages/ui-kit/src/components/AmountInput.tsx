@@ -62,6 +62,27 @@ export type AmountInputProps = Omit<
 };
 
 /**
+ * Where the caret goes in `next` (the cleaned `raw`) when it was at `caret`
+ * in `raw`: the length of the text before the caret once cleaned.
+ *
+ * The text before the caret cleans the same way alone as inside the whole
+ * value, except for leading zeros: they collapse only when a digit follows,
+ * and that digit may be after the caret. So when the part before the caret
+ * is only zeros (it cleans to `0`) and the whole value lost them (`next`
+ * does not start with `0`), the caret goes to the start: `0|12` → `|12`.
+ */
+const caretAfterCleaning = (
+  raw: string,
+  caret: number,
+  next: string,
+  decimals: number | undefined,
+): number => {
+  const before = sanitizeAmountInput(raw.slice(0, caret), decimals);
+
+  return before === '0' && !next.startsWith('0') ? 0 : before.length;
+};
+
+/**
  * The big amount field. A text input with the decimal keypad
  * (`inputMode="decimal"`), not `type="number"`: the value stays a string, so
  * token amounts never round through a float. Each edit is cleaned by
@@ -141,8 +162,7 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
               caretRef.current =
                 selectionStart == null
                   ? null
-                  : sanitizeAmountInput(raw.slice(0, selectionStart), decimals)
-                      .length;
+                  : caretAfterCleaning(raw, selectionStart, next, decimals);
               setEdits((count) => count + 1);
 
               if (next !== value) {
