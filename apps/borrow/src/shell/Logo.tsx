@@ -1,18 +1,49 @@
-/**
- * The Aurora Intents word mark, copied from Web-Borrow-NotConnected.dc.html
- * line 185. The letters follow `--ink` (the artboard's `.lg-s`/`.lg-f`); the
- * lime triangle is the mark's own colour, which has no token. 200×20, and
- * 150px wide at ≤640px (line 106).
+type LogoProps = {
+  /**
+   * `ink` follows the theme (the header's, Web-Borrow-NotConnected.dc.html
+   * line 185); `light` is the footer's fixed #F5F6F4 on its dark band in
+   * both themes (line 1031).
+   */
+  tone?: 'ink' | 'light';
+};
+
+/*
+ * Per tone: size and the letters' colour. The header mark is 200×20, and
+ * 150px wide at ≤640px (line 106); the footer mark is 220×22 at every width.
+ * #F5F6F4 has no token: the footer is dark in both themes.
  */
-export function Logo() {
+const TONES = {
+  ink: {
+    width: 200,
+    height: 20,
+    svg: 'block mobile:h-auto mobile:w-[150px]',
+    stroke: 'stroke-ink',
+    fill: 'fill-ink',
+  },
+  light: {
+    width: 220,
+    height: 22,
+    svg: 'block',
+    stroke: 'stroke-[#F5F6F4]',
+    fill: 'fill-[#F5F6F4]',
+  },
+} as const;
+
+/**
+ * The Aurora Intents word mark, copied from the artboard. The lime triangle
+ * is the mark's own colour, which has no token.
+ */
+export function Logo({ tone = 'ink' }: LogoProps) {
+  const { width, height, svg, stroke, fill } = TONES[tone];
+
   return (
     <svg
       aria-label="Aurora Intents"
-      className="block mobile:h-auto mobile:w-[150px]"
-      height="20"
+      className={svg}
+      height={height}
       role="img"
       viewBox="0 0 300 30"
-      width="200">
+      width={width}>
       <path
         d="M13 6L5 22H21Z"
         fill="#CEEC98"
@@ -21,7 +52,7 @@ export function Logo() {
         strokeWidth="6"
       />
       <g
-        className="stroke-ink"
+        className={stroke}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -40,7 +71,7 @@ export function Logo() {
         <path d="M2 22L10 2L18 22" transform="translate(168 4)" />
       </g>
       <text
-        className="fill-ink"
+        className={fill}
         fontFamily="'Schibsted Grotesk',system-ui,sans-serif"
         fontSize="25"
         fontWeight="800"
