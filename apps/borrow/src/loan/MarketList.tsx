@@ -8,28 +8,14 @@ import {
 } from '@aurora-is-near/ui-kit';
 import { useState } from 'react';
 
-import {
-  formatApr,
-  formatBps,
-  formatCompactUsd,
-  tokenAmountToUsd,
-} from '../markets/format';
-import type { LendingMarket, MarketSnapshot } from '../markets/types';
+import { formatApr, formatBps, formatCompactUsd } from '../markets/format';
+import type { LendingMarket } from '../markets/types';
 import {
   type MarketListError,
   type MarketSnapshotResult,
   useMarketSnapshots,
 } from '../markets/useMarketSnapshots';
-
-/**
- * The pair every row is read for until the New loan form drives it: WETH
- * collateral and USDC borrow. The artboard's default is wstETH (line 1052),
- * but 1Click does not deliver wstETH on Base or Arbitrum, so no market had
- * the pair; WETH is delivered on both and is Aave collateral on both (decided
- * in the feature review). Matched against the reserve's symbol, in any case,
- * so Arbitrum's bridged `USDC.e` is not taken for USDC.
- */
-export const DEFAULT_PAIR = { collateral: 'WETH', borrow: 'USDC' } as const;
+import { bestOf, type MarketPair, type MarketRow, pairRow } from './marketRows';
 
 /**
  * Borrow's launch chains, Base and Arbitrum: the number of skeletons
@@ -87,65 +73,20 @@ const TAG_ROW = 'flex min-h-[18px] items-center';
 const BEST_TAG =
   'inline-flex items-center gap-[6px] text-[11px] tracking-[0.1em]';
 
-type MarketRow = {
-  market: LendingMarket;
-  apr: number;
-  maxLtvBps: number;
-  liquidationLtvBps: number;
-  liquidityUsd: number;
-};
-
 type Item =
   | { kind: 'loading'; key: string; market?: LendingMarket }
   | { kind: 'error'; key: string; market: LendingMarket; retry: () => void }
   | { kind: 'listError'; key: string; retry: () => void }
   | { kind: 'market'; key: string; row: MarketRow };
 
-const sameSymbol = (a: string, b: string) =>
-  a.toLowerCase() === b.toLowerCase();
-
-/**
- * The pair's figures in one snapshot: APR and liquidity from the borrow
- * reserve, the LTVs from the collateral reserve. `undefined` when the market
- * lacks either reserve, or either cannot take a new loan now.
- */
-const pairRow = (snapshot: MarketSnapshot): MarketRow | undefined => {
-  const collateral = snapshot.collateral.find(({ symbol }) =>
-    sameSymbol(symbol, DEFAULT_PAIR.collateral),
-  );
-
-  const borrow = snapshot.borrowable.find(({ symbol }) =>
-    sameSymbol(symbol, DEFAULT_PAIR.borrow),
-  );
-
-  if (
-    !collateral ||
-    !borrow ||
-    collateral.unavailable === true ||
-    borrow.unavailable === true
-  ) {
-    return undefined;
-  }
-
-  return {
-    market: snapshot.market,
-    apr: borrow.variableBorrowApr,
-    maxLtvBps: collateral.maxLtvBps,
-    liquidationLtvBps: collateral.liquidationLtvBps,
-    liquidityUsd: tokenAmountToUsd({
-      amount: borrow.availableLiquidity,
-      decimals: borrow.decimals,
-      priceBase: borrow.priceBase,
-      baseCurrencyUnit: snapshot.baseCurrencyUnit,
-    }),
-  };
-};
-
 /**
  * One item per market, in order. A failed read is an error whatever data
  * an earlier read left, so no number is shown for it.
  */
-const snapshotItem = (result: MarketSnapshotResult): Item | undefined => {
+const snapshotItem = (
+  result: MarketSnapshotResult,
+  pair: MarketPair,
+): Item | undefined => {
   const key = `${result.adapterId}:${result.market.id}`;
 
   if (result.status === 'error') {
@@ -156,7 +97,7 @@ const snapshotItem = (result: MarketSnapshotResult): Item | undefined => {
     return { kind: 'loading', key, market: result.market };
   }
 
-  const row = pairRow(result.data);
+  const row = pairRow(result.data, pair);
 
   return row ? { kind: 'market', key, row } : undefined;
 };
@@ -165,8 +106,9 @@ const listItems = (
   snapshots: MarketSnapshotResult[],
   listing: boolean,
   listErrors: MarketListError[],
+  pair: MarketPair,
 ): Item[] => {
-  const items = snapshots.flatMap((result) => snapshotItem(result) ?? []);
+  const items = snapshots.flatMap((result) => snapshotItem(result, pair) ?? []);
 
   const placeholders: Item[] =
     listing && snapshots.length === 0
@@ -184,13 +126,6 @@ const listItems = (
 
   return [...items, ...placeholders, ...errors];
 };
-
-/** The lowest APR among the markets that can be picked; the first on a tie. */
-const bestOf = (rows: MarketRow[]): MarketRow | undefined =>
-  rows.reduce<MarketRow | undefined>(
-    (best, row) => (!best || row.apr < best.apr ? row : best),
-    undefined,
-  );
 
 const marketTitle = (market: LendingMarket) =>
   `${market.name} on ${market.chainLabel}`;
@@ -448,6 +383,8 @@ export type MarketListLayout = 'cards' | 'table';
 export type MarketListProps = {
   /** `cards` (the artboard's default); `table` is the `.mgrid` rows. */
   layout: MarketListLayout;
+  /** The collateral and borrow symbols every row is read for. */
+  pair: MarketPair;
   /** The picked market, when the caller owns the selection. */
   selectedId?: string;
   /** Called with the market id the user picks. */
@@ -459,14 +396,14 @@ export type MarketListProps = {
 const NO_IDS: readonly string[] = [];
 
 /**
- * Every market's figures for the default pair (WETH / USDC), one card or
- * table row per market. BEST marks the lowest borrow APR among the markets
+ * Every market's figures for `pair`, one card or table row per market. BEST marks the lowest borrow APR among the markets
  * that can be picked, and the selection defaults to it. Each market loads and fails on
  * its own: a skeleton while it loads, a Banner with "Try again" when its read
  * fails. A market without the pair is left out.
  */
 export function MarketList({
   layout,
+  pair,
   selectedId,
   onSelect,
   disabledIds = NO_IDS,
@@ -474,7 +411,7 @@ export function MarketList({
   const { snapshots, listing, listErrors } = useMarketSnapshots();
   const [picked, setPicked] = useState<string>();
 
-  const items = listItems(snapshots, listing, listErrors);
+  const items = listItems(snapshots, listing, listErrors, pair);
   const rows = items.flatMap((item) =>
     item.kind === 'market' ? [item.row] : [],
   );
@@ -502,8 +439,7 @@ export function MarketList({
   if (items.length === 0) {
     return (
       <Card className="rounded-[18px] p-[16px] text-[14px] leading-[1.45] text-mut">
-        No market offers {DEFAULT_PAIR.collateral} / {DEFAULT_PAIR.borrow} right
-        now.
+        No market offers {pair.collateral} / {pair.borrow} right now.
       </Card>
     );
   }

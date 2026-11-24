@@ -82,10 +82,18 @@ yarn turbo run build typecheck lint test --filter=borrow
   adapter list, and `useMarketSnapshots` reads each market in its own query,
   so one chain failing leaves the other in place; `format.ts` formats APR,
   LTVs and compact dollars. `loan/MarketList.tsx` shows one card per market
-  (`layout` is `cards` or `table`; `table` draws the cards for now) for the
-  fixed default pair WETH collateral / USDC borrow until the loan form
-  drives it, with BEST on the lowest borrow APR, a skeleton per market
-  while loading and a "Try again" Banner per failed market.
+  (`layout` is `cards` or `table`) for the `pair` it is given (the New loan
+  tab passes the default WETH collateral / USDC borrow until the loan form
+  drives it), with BEST on the lowest borrow APR, a skeleton per market
+  while loading and a "Try again" Banner per failed market. The rows and
+  BEST come from `loan/marketRows.ts`, which the loan form shares.
+- **Loan form model** (`src/loan/model/`): pure, bigint, no React. The LTV
+  zones (`zones.ts`), the borrow amount, fee (`BORROW_FEE_BPS` in
+  `config.ts`), received amount, health and liquidation price
+  (`loanFigures.ts`), the collateral a held asset is supplied as
+  (`collateral.ts`), which markets fit the LTV and which is BEST
+  (`marketFit.ts`), the call-to-action state (`ctaState.ts`) and the
+  recipient check (`recipient.ts`). Not on screen until the form uses it.
 - **Vercel routing**: catch-all files in `api/` are not reliably routed
   outside Next.js, so `vercel.json` rewrites `/api/intents-connect/:path*`
   to `/api/intents-connect?path=:path*`, and the function restores the

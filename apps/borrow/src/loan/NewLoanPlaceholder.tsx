@@ -3,6 +3,16 @@ import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/
 
 import { useConnectWallet } from '../wallet/useConnectWallet';
 import { MarketList } from './MarketList';
+import type { MarketPair } from './marketRows';
+
+/**
+ * The pair the market list is read for until the New loan form drives it:
+ * WETH collateral and USDC borrow. The artboard's default is wstETH (line
+ * 1052), but 1Click does not deliver wstETH on Base or Arbitrum, so no market
+ * had the pair; WETH is delivered on both and is Aave collateral on both
+ * (decided in the feature review).
+ */
+const DEFAULT_PAIR: MarketPair = { collateral: 'WETH', borrow: 'USDC' };
 
 /**
  * A token picker and amount box stand-in: `.pick` is 188px wide with a 1.5px
@@ -59,7 +69,7 @@ export function NewLoanPlaceholder() {
       <section aria-label="Markets" className="min-w-0 flex-[1.3_1_520px]">
         {/* The live markets as `.mkc` cards (lines 344–363), for the
             default pair until the form drives it. */}
-        <MarketList layout="cards" />
+        <MarketList layout="cards" pair={DEFAULT_PAIR} />
         <dl className="m-0 mt-[16px] grid grid-cols-3 gap-[10px]">
           {STATS.map((label) => (
             <div
