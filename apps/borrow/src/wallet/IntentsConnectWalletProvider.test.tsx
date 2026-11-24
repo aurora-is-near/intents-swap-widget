@@ -1,3 +1,4 @@
+import { createIntentsApi } from '@aurora-is-near/intents-connect';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -46,6 +47,20 @@ describe('IntentsConnectWalletProvider', () => {
       api: mocks.api,
       wallet: null,
     });
+  });
+
+  it('passes the intents API client when given, for the account hooks', () => {
+    const intentsApi = createIntentsApi({ apiKey: 'borrow-key' });
+
+    mocks.wallet = null;
+
+    render(
+      <IntentsConnectWalletProvider intentsApi={intentsApi}>
+        <p>app</p>
+      </IntentsConnectWalletProvider>,
+    );
+
+    expect(mocks.providerProps.at(-1)?.intentsApi).toBe(intentsApi);
   });
 
   it('passes the connected wallet from useIntentsConnectWallet', () => {
