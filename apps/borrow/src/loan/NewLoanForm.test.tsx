@@ -538,7 +538,12 @@ describe('NewLoanForm', () => {
       expect(
         screen.getByText('Loan to value · Conservative'),
       ).toBeInTheDocument();
-      expect(screen.getByText('49%')).toBeInTheDocument();
+      // The form card's figure; the LTV summary tile shows it too.
+      expect(
+        within(screen.getByRole('region', { name: 'Loan details' })).getByText(
+          '49%',
+        ),
+      ).toBeInTheDocument();
       expect(received()).toHaveTextContent('2,931');
       expect(feeRow()).toHaveTextContent('−8.82 USDC');
     });
@@ -565,7 +570,12 @@ describe('NewLoanForm', () => {
       expect(
         screen.getByText('Loan to value · Near liquidation'),
       ).toBeInTheDocument();
-      expect(screen.getByText('82%')).toBeInTheDocument();
+      // The form card's figure; the LTV summary tile shows it too.
+      expect(
+        within(screen.getByRole('region', { name: 'Loan details' })).getByText(
+          '82%',
+        ),
+      ).toBeInTheDocument();
       // No market fits: the first one stands in (the artboard's `|| M[0]`),
       // Base, liquidation at 81%. 4,920 USDC, less 14.76.
       expect(screen.getByText('liq. 81%')).toBeInTheDocument();
@@ -618,6 +628,273 @@ describe('NewLoanForm', () => {
       await user.click(checkbox());
 
       expect(address()).toHaveValue('');
+    });
+  });
+
+  describe('market selection, summary and call to action', () => {
+    beforeEach(() => {
+      wallet.connect.mockReset().mockResolvedValue(undefined);
+    });
+
+    const ltvSlider = () =>
+      screen.getByRole('slider', { name: 'Loan to value, percent' });
+
+    const moveLtv = async (
+      user: ReturnType<typeof userEvent.setup>,
+      keys: string,
+    ) => {
+      ltvSlider().focus();
+      await user.keyboard(keys);
+    };
+
+    /** A summary tile's value, by its label. */
+    const tile = (label: string) =>
+      screen.getByText(label, { selector: 'dt' }).nextElementSibling;
+
+    const market = (chain: 'Base' | 'Arbitrum') =>
+      screen.getByRole('button', { name: new RegExp(`Aave ${chain}`) });
+
+    const cta = (name: string | RegExp) =>
+      within(screen.getByRole('region', { name: 'Markets' })).getByRole(
+        'button',
+        { name },
+      );
+
+    it('shows the selected market’s LTV, liquidation price and LTV, and health', async () => {
+      const user = userEvent.setup();
+
+      await renderForm();
+
+      // Nothing borrowed yet: no liquidation price.
+      expect(tile('LTV')).toHaveTextContent('50%');
+      expect(tile('Liquidation')).toHaveTextContent('—at 82.5% LTV');
+      expect(tile('Health')).toHaveTextContent('1.65');
+
+      await user.type(amountField(), '2');
+
+      // Arbitrum (BEST): 3,000 USDC against 2 WETH, liquidated at 82.5%,
+      // so when WETH is at $1,818.18; health 82.5 ÷ 50.
+      expect(tile('Liquidation')).toHaveTextContent('$1,818at 82.5% LTV');
+      expect(tile('Health')).toHaveTextContent('1.65');
+
+      await user.click(market('Base'));
+
+      // Base: liquidation at 81%, so at $1,851.85; health 81 ÷ 50.
+      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Arbitrum')).toHaveAttribute('aria-pressed', 'false');
+      expect(tile('Liquidation')).toHaveTextContent('$1,852at 81% LTV');
+      expect(tile('Health')).toHaveTextContent('1.62');
+    });
+
+    it('shows "—" for health at LTV 0', async () => {
+      const user = userEvent.setup();
+
+      await renderForm();
+      await moveLtv(user, '{Home}');
+
+      expect(tile('LTV')).toHaveTextContent('0%');
+      expect(tile('Health')).toHaveTextContent('—');
+    });
+
+    it('falls back to BEST when the picked market stops fitting the LTV', async () => {
+      const user = userEvent.setup();
+
+      await renderForm();
+      await user.click(market('Base'));
+
+      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
+
+      // 50 → 80: above Base's max of 79%, within Arbitrum's 80%.
+      await moveLtv(user, '{ArrowRight}'.repeat(30));
+
+      expect(market('Base')).toBeDisabled();
+      expect(market('Base')).toHaveTextContent('MAX 79%');
+      expect(market('Arbitrum')).toHaveAttribute('aria-pressed', 'true');
+      expect(market('Arbitrum')).toHaveTextContent('BEST');
+      expect(screen.getByText('liq. 82.5%')).toBeInTheDocument();
+      // 82.5 ÷ 80, rounded down.
+      expect(tile('Health')).toHaveTextContent('1.03');
+
+      // Back within Base's max: the pick holds again.
+      await moveLtv(user, '{ArrowLeft}');
+
+      expect(market('Base')).toHaveAttribute('aria-pressed', 'true');
+      expect(tile('Health')).toHaveTextContent('1.02');
+    });
+
+    it('selects nothing until every market has loaded, as the list does', async () => {
+      const user = userEvent.setup();
+      let loadArbitrum: () => void = () => {};
+      const arbitrumLoaded = new Promise<void>((resolve) => {
+        loadArbitrum = resolve;
+      });
+
+      const adapter = createFakeAdapter({
+        getMarketSnapshot: async (read) => {
+          const found = SNAPSHOTS[read.id];
+
+          if (!found) {
+            throw new Error(`no snapshot for ${read.id}`);
+          }
+
+          // Arbitrum, the cheaper market, answers last.
+          if (read.id === FAKE_ARB.id) {
+            await arbitrumLoaded;
+          }
+
+          return found;
+        },
+      });
+
+      render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <MarketAdaptersProvider adapters={[adapter]}>
+            <NewLoanForm />
+          </MarketAdaptersProvider>
+        </QueryClientProvider>,
+      );
+
+      await screen.findByRole('button', { name: /Aave Base/ });
+      await user.type(amountField(), '2');
+
+      // Base alone has loaded: no selection, so no figures from it yet.
+      expect(market('Base')).toHaveAttribute('aria-pressed', 'false');
+      expect(tile('Health')).toHaveTextContent('—');
+      expect(tile('Liquidation')).toHaveTextContent('—');
+      expect(received()).toHaveTextContent('0');
+
+      loadArbitrum();
+
+      // Then BEST, Arbitrum, everywhere at once.
+      expect(
+        await screen.findByRole('button', {
+          name: /Aave Arbitrum/,
+          pressed: true,
+        }),
+      ).toBeInTheDocument();
+      expect(tile('Liquidation')).toHaveTextContent('$1,818at 82.5% LTV');
+      expect(received()).toHaveTextContent('2,991');
+    });
+
+    describe('not connected', () => {
+      it('offers to connect on the selected market, and opens the wallet', async () => {
+        const user = userEvent.setup();
+
+        await renderForm();
+
+        const button = cta('Connect wallet to borrow on Aave');
+
+        expect(button).toBeEnabled();
+        // The lime market chip.
+        expect(within(button).getByText('Aave')).toBeInTheDocument();
+
+        await user.click(button);
+
+        expect(wallet.connect).toHaveBeenCalledOnce();
+      });
+    });
+
+    describe('connected', () => {
+      beforeEach(() => {
+        setConnected(true);
+        holdBalances();
+      });
+
+      it('asks for an amount', async () => {
+        await renderForm();
+
+        expect(cta('Enter an amount')).toBeDisabled();
+      });
+
+      it('says the balance is too low for an amount above it', async () => {
+        const user = userEvent.setup();
+
+        await renderForm();
+        // 1.5 ETH held.
+        await user.type(amountField(), '2');
+
+        expect(cta('Insufficient balance')).toBeDisabled();
+      });
+
+      it('does not say the balance is too low when the balances did not load', async () => {
+        const user = userEvent.setup();
+
+        balances.wallet = {
+          ...emptyBalances().wallet,
+          status: 'error',
+          error: new Error('tokens request failed'),
+        };
+
+        await renderForm();
+        await user.type(amountField(), '2');
+
+        expect(
+          screen.queryByRole('button', { name: 'Insufficient balance' }),
+        ).not.toBeInTheDocument();
+      });
+
+      it('disables every market and the CTA at an LTV above every market’s max', async () => {
+        const user = userEvent.setup();
+
+        await renderForm();
+        await user.type(amountField(), '1');
+        // 50 → 82, as Web-Borrow-HighLtv.
+        await moveLtv(user, '{ArrowRight}'.repeat(32));
+
+        expect(market('Base')).toBeDisabled();
+        expect(market('Arbitrum')).toBeDisabled();
+        expect(market('Base')).toHaveTextContent('MAX 79%');
+        expect(market('Arbitrum')).toHaveTextContent('MAX 80%');
+        expect(screen.queryByText('BEST')).not.toBeInTheDocument();
+        expect(cta('LTV too high')).toBeDisabled();
+        // The first market stands in for the figures (`|| M[0]`).
+        expect(tile('LTV')).toHaveTextContent('82%');
+        expect(tile('Health')).toHaveTextContent('0.98');
+      });
+
+      it('asks for a recipient while the address is empty or invalid', async () => {
+        const user = userEvent.setup();
+
+        await renderForm();
+        await user.type(amountField(), '1');
+        await user.click(
+          screen.getByRole('checkbox', {
+            name: 'Send borrowed funds to another wallet',
+          }),
+        );
+
+        expect(cta('Enter recipient address')).toBeDisabled();
+
+        const address = screen.getByRole('textbox', {
+          name: 'Recipient wallet address',
+        });
+
+        await user.type(address, '0x1234');
+
+        expect(cta('Enter recipient address')).toBeDisabled();
+
+        await user.clear(address);
+        await user.type(address, '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21');
+
+        expect(cta('Borrow 1,500 USDC on Aave')).toBeDisabled();
+      });
+
+      it('shows the loan it is ready to make, disabled until Borrow execution', async () => {
+        const user = userEvent.setup();
+
+        await renderForm();
+        // 1 ETH at $3,000, LTV 50%, on Arbitrum: 1,500 USDC.
+        await user.type(amountField(), '1');
+
+        const button = cta('Borrow 1,500 USDC on Aave');
+
+        expect(button).toBeDisabled();
+        expect(within(button).getByText('Aave')).toBeInTheDocument();
+
+        await user.click(button);
+
+        expect(wallet.connect).not.toHaveBeenCalled();
+      });
     });
   });
 });

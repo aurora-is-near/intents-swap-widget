@@ -27,7 +27,7 @@ export type LoanFiguresInput = {
   ltv: number;
 };
 
-type LoanFigures = {
+export type LoanFigures = {
   /** Borrowed, in borrow-token units: collateral USD × LTV ÷ borrow price. */
   borrowAmount: bigint;
   /** `BORROW_FEE_BPS` of the borrow amount, an estimate (as drawn). */

@@ -77,7 +77,7 @@ describe('New loan tab', () => {
     expect(wallet.connect).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the market cards’ figures while the summary tiles stay "—"', async () => {
+  it('shows the market cards’ figures and the summary for the BEST market', async () => {
     await renderApp('/');
 
     const markets = within(panel()).getByRole('region', { name: 'Markets' });
@@ -93,10 +93,16 @@ describe('New loan tab', () => {
 
     const tiles = within(markets).getAllByRole('definition');
 
-    expect(tiles.map((tile) => tile.textContent)).toEqual(['—', '—', '—']);
+    // Arbitrum (BEST) at the starting LTV of 50%, with no amount yet: no
+    // liquidation price, its liquidation LTV beneath, health 82.5 ÷ 50.
+    expect(tiles.map((tile) => tile.textContent)).toEqual([
+      '50%',
+      '—at 82.5% LTV',
+      '1.65',
+    ]);
   });
 
-  it('keeps the loan form without the CTA while connected', async () => {
+  it('keeps the loan form and asks for an amount while connected', async () => {
     setConnected(true);
 
     await renderApp('/');
@@ -112,6 +118,9 @@ describe('New loan tab', () => {
         name: 'Connect wallet to borrow on Aave',
       }),
     ).not.toBeInTheDocument();
+    expect(
+      within(panel()).getByRole('button', { name: 'Enter an amount' }),
+    ).toBeDisabled();
   });
 });
 

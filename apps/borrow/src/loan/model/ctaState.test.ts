@@ -46,6 +46,10 @@ describe('ctaState', () => {
     expect(kindOf({ amount: 2n * ETH })).toBe('ready');
   });
 
+  it('does not call an unread balance insufficient', () => {
+    expect(kindOf({ amount: 2n * ETH + 1n, balance: undefined })).toBe('ready');
+  });
+
   it('says the LTV is too high when no market fits it', () => {
     expect(kindOf({ market: undefined })).toBe('ltvTooHigh');
   });

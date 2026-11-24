@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatUnits, parseUnits } from 'viem';
+import { parseUnits } from 'viem';
 
 import type { FundingAsset } from '../balances/toFundingAssets';
 import {
@@ -16,8 +16,10 @@ import type {
 import { useMarketSnapshots } from '../markets/useMarketSnapshots';
 import { type MarketPair, type MarketRow, pairRow } from './marketRows';
 import { collateralFor } from './model/collateral';
-import { loanFigures } from './model/loanFigures';
+import { type CtaState, ctaState } from './model/ctaState';
+import { type LoanFigures, loanFigures } from './model/loanFigures';
 import { marketFit } from './model/marketFit';
+import { validateRecipient } from './model/recipient';
 import { sameSymbol } from './model/symbols';
 
 /**
@@ -53,8 +55,6 @@ type Funding = {
   decimals: number;
 };
 
-type LoanFigures = ReturnType<typeof loanFigures>;
-
 export type LoanForm = {
   connected: boolean;
   /** The wallet's balances; empty rows while not connected. */
@@ -88,19 +88,24 @@ export type LoanForm = {
   marketRows: MarketRow[];
   /**
    * The selected market, as `marketFit` gives it: the user's pick if it
-   * fits, else BEST; `undefined` when the LTV fits no market.
+   * fits, else BEST; `undefined` when the LTV fits no market. Until every
+   * market has settled, only a fitting pick, as the market list does.
    */
   market: LendingMarket | undefined;
   /**
    * The market the figures and the liquidation marker are read for: the
    * selection, or, when the LTV fits no market, the first market with the
    * pair, as the artboard's `|| M[0]` (line 1143). Not a selection.
+   * `undefined` while the markets load and nothing is picked.
    */
   figuresMarket: LendingMarket | undefined;
   /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
   liquidationLtvBps: number | undefined;
+  /** The markets the LTV is above the max LTV of: shown off, not pickable. */
+  disabledMarketIds: string[];
   /** True once every market's read has settled (loaded or failed). */
   marketsSettled: boolean;
+  /** Keeps the pick; while it does not fit the LTV, the selection is BEST. */
   pickMarket: (marketId: string) => void;
 
   recipientEnabled: boolean;
@@ -111,6 +116,14 @@ export type LoanForm = {
 
   /** The loan in `figuresMarket`; `undefined` until a market has the pair. */
   figures: LoanFigures | undefined;
+  /**
+   * `figures.liquidationPrice` in dollars per whole collateral token;
+   * `undefined` with no amount, no borrow or no market.
+   */
+  liquidationPriceUsd: number | undefined;
+
+  /** The call to action's state. */
+  cta: CtaState;
 };
 
 /** `parseUnits` for what `AmountInput` lets through; `0n` for a partial value. */
@@ -127,6 +140,10 @@ const rescale = (amount: bigint, from: number, to: number) =>
   to >= from
     ? amount * 10n ** BigInt(to - from)
     : amount / 10n ** BigInt(from - to);
+
+/** An amount in the oracle's base units in dollars, `unit` being one dollar. */
+const baseToUsd = (value: bigint, unit: bigint) =>
+  Number(value / unit) + Number(value % unit) / Number(unit);
 
 /** Dollars with 8 decimals, as the oracle's unit, for the bigint maths. */
 const USD_SCALE = 100_000_000;
@@ -352,15 +369,23 @@ export const useLoanForm = ({
   };
 
   const marketRows = ready.flatMap((snapshot) => pairRow(snapshot, pair) ?? []);
-  const { selectedId } = marketFit({
-    rows: marketRows,
-    ltv,
-    pickedId: pickedMarketId,
-  });
+  const fit = marketFit({ rows: marketRows, ltv, pickedId: pickedMarketId });
+  const { fits } = fit;
 
-  // The selection, or a stand-in when none fits, for the figures only.
+  // One rule with the market list: until every market has settled, BEST is
+  // not known, so only the user's own pick (when it fits) is a selection.
+  const fittingPick =
+    pickedMarketId !== undefined && fits.get(pickedMarketId) === true
+      ? pickedMarketId
+      : undefined;
+
+  const selectedId = marketsSettled ? fit.selectedId : fittingPick;
+
+  // The selection, or, once settled and none fits, a stand-in for the
+  // figures only; nothing while the markets still load.
   const figuresRow =
-    marketRows.find(({ market }) => market.id === selectedId) ?? marketRows[0];
+    marketRows.find(({ market }) => market.id === selectedId) ??
+    (marketsSettled ? marketRows[0] : undefined);
 
   const snapshot = ready.find(
     ({ market }) => market.id === figuresRow?.market.id,
@@ -408,6 +433,25 @@ export const useLoanForm = ({
         })
       : undefined;
 
+  const market = ready.find(({ market: { id } }) => id === selectedId)?.market;
+  const borrowDecimals = borrowReserve?.decimals ?? borrowAsset?.decimals ?? 6;
+
+  // No held row means a zero balance only once the balances have been read;
+  // while they load or after a failed read, the balance is unknown.
+  const balance =
+    held?.amount ?? (fundingAssets.status === 'ready' ? 0n : undefined);
+
+  const cta = ctaState({
+    connected,
+    amount: atomic,
+    balance,
+    borrowAmount: figures?.borrowAmount ?? 0n,
+    borrow: { symbol: pair.borrow, decimals: borrowDecimals },
+    market,
+    sendToOther: recipientEnabled,
+    recipient: validateRecipient(recipient),
+  });
+
   return {
     connected,
     fundingAssets,
@@ -422,18 +466,18 @@ export const useLoanForm = ({
       convertedFrom: converted ? fundingSymbol : undefined,
     },
     borrowAssets,
-    borrow: {
-      symbol: pair.borrow,
-      decimals: borrowReserve?.decimals ?? borrowAsset?.decimals ?? 6,
-    },
+    borrow: { symbol: pair.borrow, decimals: borrowDecimals },
     setBorrowSymbol,
     ltv,
     setLtv,
     pair,
     marketRows,
-    market: ready.find(({ market }) => market.id === selectedId)?.market,
+    market,
     figuresMarket: snapshot?.market,
     liquidationLtvBps: figuresRow?.liquidationLtvBps,
+    disabledMarketIds: marketRows.flatMap(({ market: { id } }) =>
+      fits.get(id) === true ? [] : [id],
+    ),
     marketsSettled,
     pickMarket: setPickedMarketId,
     recipientEnabled,
@@ -447,9 +491,10 @@ export const useLoanForm = ({
     recipient,
     setRecipient,
     figures,
+    liquidationPriceUsd:
+      figures && figures.liquidationPrice !== null && snapshot
+        ? baseToUsd(figures.liquidationPrice, snapshot.baseCurrencyUnit)
+        : undefined,
+    cta,
   };
 };
-
-/** A smallest-unit amount as a float, for display only. */
-export const toDisplayNumber = (amount: bigint, decimals: number) =>
-  Number(formatUnits(amount, decimals));
