@@ -247,7 +247,7 @@ describe('NewLoanPage: restoring a borrow', () => {
     });
     // The confirm dialog's rows, as shown.
     expect(record?.rows).toContainEqual(['Supply', '≈ 0.995 WETH · Base']);
-    expect(record?.rows).toContainEqual(['Borrow', '1,485 USDC · Base']);
+    expect(record?.rows).toContainEqual(['Borrow', '1,478 USDC · Base']);
     expect(record?.rows).toContainEqual([
       'Recipient',
       'Your wallet 0x7a3f…9c21',

@@ -80,7 +80,19 @@ export type BorrowFlowState =
       canSend: boolean;
     }
   | { kind: 'done'; executionId: string }
-  | { kind: 'error'; error: BorrowErrorKind; cause: unknown };
+  | {
+      kind: 'error';
+      error: BorrowErrorKind;
+      cause: unknown;
+      /**
+       * Where the borrow was when it failed, for the dialog's step marks:
+       * `null` before anything was signed (a pre-check, the dry run, creating
+       * the execution), every step waiting; a pending step for an
+       * unexplained error after signing. Absent, the kind's own step
+       * (`errorCopy`) is used.
+       */
+      step?: BorrowPendingStep | null;
+    };
 
 /** A steps-only retry's dry run, not a bridge-in's. */
 const isStepsPreview = (
@@ -374,11 +386,53 @@ export const useBorrowFlow = ({
     return executionRef.current;
   };
 
+  /**
+   * This run's execution was signed: by its events, which survive a wallet
+   * switch, or by the runner that ran it.
+   */
+  const isSigned = () =>
+    signedRef.current || executionRef.current?.hasSubmittedSignature === true;
+
+  /**
+   * The collateral arrived and the borrow step failed: a new bridge-in would
+   * spend the user's funds a second time.
+   */
+  const isFundsWaiting = () =>
+    waitingRef.current ||
+    (isSigned() && statusRef.current === 'OPERATION_FAILED');
+
+  /**
+   * Where an error of `kind` is drawn (`BorrowFlowState`'s error `step`).
+   * Before the signature nothing is marked, except a declined prompt: that
+   * is the signing step's own failure, drawn as its artboard does. After it,
+   * an unexplained error is drawn on the step the borrow had reached; the
+   * other kinds keep their artboard's step. While the collateral waits (a
+   * steps-only retry resets the run, so its signature is not counted), the
+   * deposit happened: the dialog draws it as a funds-waiting error.
+   */
+  const errorStepOf = (
+    kind: BorrowErrorKind,
+  ): Pick<Extract<BorrowFlowState, { kind: 'error' }>, 'step'> => {
+    if (isFundsWaiting()) {
+      return {};
+    }
+
+    if (!isSigned()) {
+      return kind === 'rejected' ? {} : { step: null };
+    }
+
+    return kind === 'unknown' ? { step: stepRef.current } : {};
+  };
+
   /** Classifies `error` into the error state; the borrow step is read afresh. */
   const fail = async (error: unknown) => {
     if (lastErrorRef.current === error && stateRef.current.kind === 'error') {
       return;
     }
+
+    // Unexpected errors land as `unknown`: logged, so they can be debugged.
+    // eslint-disable-next-line no-console
+    console.error('[Borrow] The borrow failed:', error);
 
     lastErrorRef.current = error;
     runningRef.current = false;
@@ -389,15 +443,12 @@ export const useBorrowFlow = ({
     let borrowStep: BorrowStepFailure | undefined;
     const input = inputRef.current;
     const borrowed = borrowRef.current;
+    const kind = classifyBorrowError(error, executionRef.current?.recovery, {
+      status,
+    });
 
     // Shown as `error` at once, refined once the market is read.
-    setFlow({
-      kind: 'error',
-      error: classifyBorrowError(error, executionRef.current?.recovery, {
-        status,
-      }),
-      cause: error,
-    });
+    setFlow({ kind: 'error', error: kind, cause: error, ...errorStepOf(kind) });
 
     if (status === 'OPERATION_FAILED' && input && borrowed) {
       try {
@@ -421,13 +472,17 @@ export const useBorrowFlow = ({
       }
 
       if (generation === generationRef.current && borrowStep) {
+        const refined = classifyBorrowError(
+          error,
+          executionRef.current?.recovery,
+          { status, borrowStep },
+        );
+
         setFlow({
           kind: 'error',
-          error: classifyBorrowError(error, executionRef.current?.recovery, {
-            status,
-            borrowStep,
-          }),
+          error: refined,
           cause: error,
+          ...errorStepOf(refined),
         });
       }
     }
@@ -520,13 +575,6 @@ export const useBorrowFlow = ({
   const execution = useExecution({ onEvent });
 
   executionRef.current = execution;
-
-  /**
-   * This run's execution was signed: by its events, which survive a wallet
-   * switch, or by the runner that ran it.
-   */
-  const isSigned = () =>
-    signedRef.current || executionRef.current?.hasSubmittedSignature === true;
 
   const { connect, isConnected } = useIntentsConnectWallet();
 
@@ -895,14 +943,7 @@ export const useBorrowFlow = ({
     void drive(() => requireExecution().resume(id));
   };
 
-  /**
-   * The collateral arrived and the borrow step failed: a new bridge-in would
-   * spend the user's funds a second time.
-   */
-  const isFundsWaiting = () =>
-    waitingRef.current ||
-    (isSigned() && statusRef.current === 'OPERATION_FAILED');
-
+  /** Shown on an error while the collateral waits (`isFundsWaiting`). */
   const fundsWaiting = state.kind === 'error' && isFundsWaiting();
 
   /** Where the collateral waits: the runner's execution, else the dry run's. */

@@ -22,6 +22,11 @@ export type ErrorCopyContext = {
    * step failed (`useBorrowFlow().fundsWaiting`).
    */
   fundsWaiting?: boolean;
+  /**
+   * The error came before anything was signed or sent (a pre-check, the dry
+   * run, or creating the execution): the dialog's steps are all waiting.
+   */
+  beforeSigning?: boolean;
 };
 
 export type ErrorCopy = {
@@ -33,8 +38,13 @@ export type ErrorCopy = {
   action: BorrowRecoveryAction;
   /** `warn` is a warning, not an error: the borrow is still tracked. */
   tone: 'error' | 'warn';
-  /** The step the error is drawn on (`errStep` of each artboard), 0-based. */
-  step: 0 | 1 | 2;
+  /**
+   * The step the error is drawn on (`errStep` of each artboard), 0-based:
+   * earlier steps are marked done and this one failed. `null` marks none,
+   * for an error before anything was signed. The flow overrides it with
+   * where the borrow really was (`useBorrowFlow`'s error `step`).
+   */
+  step: 0 | 1 | 2 | null;
 };
 
 export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
@@ -57,13 +67,42 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
     tone: 'error',
     step: 0,
   },
-  // `ltv` ("Collateral price moved"); its button refreshes the quote.
+  // No artboard: 1Click can't quote the amount, so the create call failed
+  // and nothing was sent; back to the form for another amount or asset.
+  noRoute: {
+    title: () => 'No route for this amount',
+    text: ({ collateralSymbol }) =>
+      `We couldn’t find a route to bring this amount in as ${collateralSymbol}, often because it is too small to cover the network fees. Nothing was sent. Try a larger amount, or another asset or chain.`,
+    button: 'Back to the form',
+    action: 'close',
+    tone: 'error',
+    step: null,
+  },
+  // No artboard: the two-pass dry run's minimum received fell by more than
+  // its buffer, before anything was signed. On a steps-only retry the
+  // collateral already arrived and is held (`fundsWaiting`); the dialog then
+  // draws it past the deposit.
+  quoteChanged: {
+    title: () => 'The quote changed',
+    text: ({ fundsWaiting }) =>
+      fundsWaiting
+        ? 'The fee changed while the borrow was being prepared, so it was not sent. Your collateral arrived and is held for this loan. Try again to borrow against it.'
+        : 'The quote changed while the loan was being prepared. Nothing was signed — review the new terms.',
+    button: 'Refresh quote',
+    action: 'refresh',
+    tone: 'error',
+    step: null,
+  },
+  // `ltv` ("Collateral price moved"); its button refreshes the quote. Only
+  // the borrow step failing after the collateral arrived (diagnosed above
+  // the max LTV at the market's prices now), or the SDK's `QUOTE_MOVED`
+  // guard, which refuses before anything is sent.
   priceMoved: {
     title: () => 'Collateral price moved',
     text: ({ collateralSymbol, marketName, fundsWaiting }) =>
       fundsWaiting
-        ? `${collateralSymbol} fell while the loan was opening, so it would now be above ${marketName}’s maximum LTV and the borrow did not go through. Your collateral arrived and is held for this loan.`
-        : `${collateralSymbol} fell while you were signing, so this loan would now open above ${marketName}’s maximum LTV. Nothing was sent. Review the new quote.`,
+        ? `${collateralSymbol}’s price moved while the loan was opening: at ${marketName}’s prices now it would be above the maximum LTV, so the borrow did not go through. Your collateral arrived and is held for this loan.`
+        : `The price of ${collateralSymbol} moved since this quote, so its terms no longer hold. Nothing was sent. Review the new quote.`,
     button: 'Refresh quote',
     action: 'refresh',
     tone: 'error',
@@ -91,11 +130,14 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
     tone: 'warn',
     step: 2,
   },
-  // No artboard: a generic fallback with a close action.
+  // No artboard: a generic fallback with a close action. Before signing
+  // nothing left the wallet, so it is not sent there to look.
   unknown: {
     title: () => 'Something went wrong',
-    text: () =>
-      'The loan could not be completed. Check your wallet for what was sent, then try again.',
+    text: ({ beforeSigning }) =>
+      beforeSigning
+        ? 'The loan could not be prepared, and nothing was sent from your wallet. Close this and try again.'
+        : 'The loan could not be completed. Check your wallet for what was sent, then try again.',
     button: 'Close',
     action: 'close',
     tone: 'error',

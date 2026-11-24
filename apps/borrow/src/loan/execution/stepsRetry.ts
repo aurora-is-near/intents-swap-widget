@@ -15,7 +15,7 @@ import type {
 import { loanFigures } from '../model/loanFigures';
 import { BorrowPreCheckError } from './classifyBorrowError';
 import { checkLiquidity } from './liquidity';
-import { BorrowPreviewError } from './preview';
+import { BorrowPreviewError, borrowTolerance } from './preview';
 import {
   aaveBorrowRecipe,
   type BorrowParams,
@@ -153,10 +153,12 @@ const freshReserves = (
  * 1. The market is read afresh (the price moved, or liquidity ran out, which
  *    is why the borrow failed), and the collateral waiting is read.
  * 2. A dry run at that amount gives `spendable`, what is supplied once the
- *    fee is carved out; the borrow is the chosen LTV of it at the fresh
- *    oracle prices; a second dry run builds the final steps with it.
- * 3. The final `spendable` must still cover that borrow, and the market must
- *    be able to lend it.
+ *    fee is carved out; the borrow is the chosen LTV of it less
+ *    `QUOTE_BUFFER_BPS` at the fresh oracle prices (`borrowTolerance`, as
+ *    `previewBorrow`); a second dry run builds the final steps with it.
+ * 3. The final `spendable` must still cover that borrow at the chosen LTV
+ *    (a drop within the buffer passes, a larger one is `quoteMoved`), and
+ *    the market must be able to lend it.
  */
 export const previewBorrowSteps = async ({
   adapter,
@@ -184,15 +186,12 @@ export const previewBorrowSteps = async ({
     );
   }
 
-  const borrowOn = (collateralAmount: bigint) =>
-    loanFigures({
-      collateralAmount,
-      collateral,
-      borrow,
-      ltv,
-      // `spendable` is already net of the service's fee.
-      feeBps: 0,
-    }).borrowAmount;
+  // `spendable` is already net of the service's fee.
+  const { sizeBorrow, quoteHeld } = borrowTolerance({
+    collateral,
+    borrow,
+    ltv,
+  });
 
   const planFor = (borrowAmount: bigint) =>
     buildBorrowStepsPlan({
@@ -206,8 +205,19 @@ export const previewBorrowSteps = async ({
     });
 
   // The first pass only learns the fee: its borrow is sized on the gross.
-  const first = await previewSteps(planFor(borrowOn(waiting)));
-  const borrowAmount = borrowOn(BigInt(first.spendable));
+  const first = await previewSteps(
+    planFor(
+      loanFigures({
+        collateralAmount: waiting,
+        collateral,
+        borrow,
+        ltv,
+        feeBps: 0,
+      }).borrowAmount,
+    ),
+  );
+
+  const borrowAmount = sizeBorrow(BigInt(first.spendable));
 
   if (borrowAmount <= 0n) {
     throw new BorrowPreviewError(
@@ -218,7 +228,7 @@ export const previewBorrowSteps = async ({
 
   const final = await previewSteps(planFor(borrowAmount));
 
-  if (borrowOn(BigInt(final.spendable)) < borrowAmount) {
+  if (!quoteHeld(BigInt(final.spendable), borrowAmount)) {
     throw new BorrowPreviewError(
       'quoteMoved',
       'The fee moved while preparing the loan; try again',

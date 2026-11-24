@@ -83,13 +83,45 @@ function errorEntry(
   label: string,
   error: BorrowErrorKind,
   action: BorrowRecoveryAction,
+  step?: null,
 ): Entry {
   return {
     label,
     sample: SAME_ASSET,
-    step: { kind: 'error', error, action, fundsWaiting: false },
+    step: {
+      kind: 'error',
+      error,
+      action,
+      fundsWaiting: false,
+      ...(step === undefined ? {} : { step }),
+    },
   };
 }
+
+/**
+ * Every error kind's entry, typed by `BorrowErrorKind` so a new kind can't
+ * be left out. The error artboards (`Web-/Mob-Borrow-Rejected`, `-NoGas`,
+ * `-PriceMoved`, `-NoMarketLiquidity`, `-Delayed`.dc.html), each with its
+ * own action; no route and the quote change have no artboard and reuse the
+ * error dialog, raised before anything was signed (`step: null`).
+ */
+const ERRORS: Record<
+  BorrowErrorKind,
+  { label: string; action: BorrowRecoveryAction; step?: null }
+> = {
+  rejected: { label: 'Error · rejected', action: 'retry' },
+  noGas: { label: 'Error · no gas', action: 'retry' },
+  priceMoved: { label: 'Error · price moved', action: 'refresh' },
+  noLiquidity: { label: 'Error · no liquidity', action: 'close' },
+  delayed: { label: 'Error · delayed', action: 'close' },
+  noRoute: { label: 'Error · no route', action: 'close', step: null },
+  quoteChanged: {
+    label: 'Error · quote changed',
+    action: 'refresh',
+    step: null,
+  },
+  unknown: { label: 'Error · unknown', action: 'close' },
+};
 
 const ENTRIES: Entry[] = [
   { label: 'Confirm', sample: SAME_ASSET, step: { kind: 'confirm' } },
@@ -115,13 +147,12 @@ const ENTRIES: Entry[] = [
     step: { kind: 'pending', step: 2 },
   },
   { label: 'Done', sample: SAME_ASSET, step: { kind: 'done' } },
-  // The error artboards (`Web-/Mob-Borrow-Rejected`, `-NoGas`, `-PriceMoved`,
-  // `-NoMarketLiquidity`, `-Delayed`.dc.html), each with its own action.
-  errorEntry('Error · rejected', 'rejected', 'retry'),
-  errorEntry('Error · no gas', 'noGas', 'retry'),
-  errorEntry('Error · price moved', 'priceMoved', 'refresh'),
-  errorEntry('Error · no liquidity', 'noLiquidity', 'close'),
-  errorEntry('Error · delayed', 'delayed', 'close'),
+  // One entry per error kind (`ERRORS`), then the unknown error raised
+  // before anything was signed: no step marked, nothing sent.
+  ...Object.entries(ERRORS).map(([error, { label, action, step }]) =>
+    errorEntry(label, error as BorrowErrorKind, action, step),
+  ),
+  errorEntry('Error · unknown before signing', 'unknown', 'close', null),
 ];
 
 /**

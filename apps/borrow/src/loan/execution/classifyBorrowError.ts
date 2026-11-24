@@ -4,6 +4,7 @@ import {
   type ExecutionRecovery,
   type ExecutionStatus,
   GuardError,
+  IntentsConnectApiError,
   isUserRejection,
   parseOriginAsset,
   RunnerDisposedError,
@@ -22,11 +23,17 @@ import { BorrowPreviewError } from './preview';
  * The borrow error states, one per error artboard (`Web-Borrow-Confirm
  * .dc.html` lines 1493–1505): signature rejected, not enough gas, collateral
  * price moved, market out of liquidity, delivery taking longer (a warning:
- * tracking continues), and anything else.
+ * tracking continues), and anything else. Two have no artboard and reuse
+ * the error dialog: no route for the amount (`noRoute`: 1Click can't quote
+ * it, so nothing is created), and the quote changed while the loan was
+ * being prepared (`quoteChanged`: a two-pass dry run, before anything new
+ * is signed; on a steps-only retry the collateral already waits).
  */
 export type BorrowErrorKind =
   | 'rejected'
   | 'noGas'
+  | 'noRoute'
+  | 'quoteChanged'
   | 'priceMoved'
   | 'noLiquidity'
   | 'delayed'
@@ -134,23 +141,67 @@ export const isInsufficientFunds = (value: unknown): boolean =>
   causeChainOf(value).some(saysInsufficientFunds);
 
 /**
+ * How the Intents Connect API words a quote it can't make: 1Click has no
+ * route (`IntentsConnectApiError: No liquidity available`), or the amount is
+ * too small, its 400 saying the estimated gas fee exceeds the minimum (or
+ * expected) output amount.
+ */
+const NO_ROUTE =
+  /no liquidity available|estimated gas fee\b.*\bexceeds\b.*\b(minimum|expected) output amount/i;
+
+const saysNoRoute = (value: unknown): boolean => {
+  if (typeof value === 'string') {
+    return NO_ROUTE.test(value);
+  }
+
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const { message, body } = value as { message?: unknown; body?: unknown };
+  const bodyMessage =
+    value instanceof IntentsConnectApiError && body && typeof body === 'object'
+      ? (body as { message?: unknown }).message
+      : undefined;
+
+  return (
+    (typeof message === 'string' && NO_ROUTE.test(message)) ||
+    (typeof bodyMessage === 'string' && NO_ROUTE.test(bodyMessage))
+  );
+};
+
+/**
+ * The quote for the amount could not be made, so the create call failed
+ * before anything was signed or sent. Not `noLiquidity`: that is the Aave
+ * reserve unable to lend.
+ */
+export const isNoRoute = (value: unknown): boolean =>
+  causeChainOf(value).some(saysNoRoute);
+
+/**
  * Which error state a failed borrow is, first match wins:
  *
  * 1. The user declined a wallet prompt (`isUserRejection`, the deposit
  *    transfer's cause included): `rejected`.
  * 2. The gas pre-check failed, or the wallet reports insufficient funds for
  *    the deposit transaction: `noGas`.
- * 3. The quote moved (the SDK's `QUOTE_MOVED` guard, from
- *    `quoteMustNotHaveMoved`, or the two-pass preview's `quoteMoved`), or
- *    the borrow step failed because the collateral's price moved:
+ * 3. The API could not quote the amount (`isNoRoute`, anywhere in the cause
+ *    chain): no liquidity for the route, or the estimated gas fee exceeds
+ *    the output: `noRoute`.
+ * 4. A two-pass preview's minimum received fell by more than its buffer
+ *    (`BorrowPreviewError` `quoteMoved`): `quoteChanged`. Nothing new was
+ *    signed; on a steps-only retry the collateral already waits, which the
+ *    copy and the dialog's step marks say (`fundsWaiting`).
+ * 5. The SDK's `QUOTE_MOVED` guard (`quoteMustNotHaveMoved`) refused the
+ *    run, or the borrow step failed because the collateral's price moved:
  *    `priceMoved`.
- * 4. The liquidity pre-check failed, or the borrow step failed for want of
+ * 6. The liquidity pre-check failed, or the borrow step failed for want of
  *    liquidity: `noLiquidity`.
- * 5. Polling stopped before a terminal status
+ * 7. Polling stopped before a terminal status
  *    (`ExecutionPollTimeoutError`), or the borrow has been pending longer
  *    than `BORROW_DELAYED_AFTER_MS`: `delayed`. A warning; the execution is
  *    still live.
- * 6. Anything else: `unknown`.
+ * 8. Anything else: `unknown`.
  *
  * `error` may be `undefined` for a borrow that is only slow.
  */
@@ -178,9 +229,16 @@ export const classifyBorrowError = (
     return 'noGas';
   }
 
+  if (error !== undefined && isNoRoute(error)) {
+    return 'noRoute';
+  }
+
+  if (error instanceof BorrowPreviewError && error.reason === 'quoteMoved') {
+    return 'quoteChanged';
+  }
+
   if (
     (error instanceof GuardError && error.code === 'QUOTE_MOVED') ||
-    (error instanceof BorrowPreviewError && error.reason === 'quoteMoved') ||
     (context.status === 'OPERATION_FAILED' &&
       context.borrowStep === 'priceMoved')
   ) {
@@ -211,11 +269,13 @@ export const classifyBorrowError = (
  * What an error state's button does, by the artboard's action names
  * (`Web-Borrow-Confirm.dc.html` lines 1493–1505 and 1513):
  * - `retry`: run again (rejected, no gas, unknown);
- * - `refresh`: re-quote and confirm again (the price moved);
+ * - `refresh`: re-quote and confirm again (the price moved, the quote
+ *   changed);
  * - `reconnect`: connect the wallet again (it left mid-borrow);
  * - `close`: close the dialog, tracking a live borrow on (delayed), or back
  *   to the form to borrow less or pick another market (no liquidity, the
- *   artboard's "Choose another market").
+ *   artboard's "Choose another market"), or to try a larger amount or
+ *   another asset or chain (no route).
  */
 export type BorrowRecoveryAction = 'retry' | 'refresh' | 'reconnect' | 'close';
 
@@ -232,7 +292,9 @@ export const borrowRecoveryAction = (
 
   switch (kind) {
     case 'priceMoved':
+    case 'quoteChanged':
       return 'refresh';
+    case 'noRoute':
     case 'noLiquidity':
     case 'delayed':
       return 'close';
