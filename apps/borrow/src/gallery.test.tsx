@@ -19,18 +19,34 @@ const renderAt = (path: string, dev: boolean) => {
   return history;
 };
 
+/**
+ * The route lazily imports the kit's gallery source, which is compiled on
+ * first use, and then renders every kit component in jsdom. Together that
+ * takes longer than the 1s `findBy*` default, more so with the whole suite
+ * running in parallel.
+ */
+const GALLERY_LOAD_TIMEOUT_MS = 10_000;
+
 describe('/gallery', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it('renders the real gallery under the app theme when DEV is true', async () => {
-    renderAt('/gallery', true);
+  it(
+    'renders the real gallery under the app theme when DEV is true',
+    async () => {
+      renderAt('/gallery', true);
 
-    expect(
-      await screen.findByRole('heading', { name: 'UI kit playground' }),
-    ).toBeInTheDocument();
-  });
+      expect(
+        await screen.findByRole(
+          'heading',
+          { name: 'UI kit playground' },
+          { timeout: GALLERY_LOAD_TIMEOUT_MS },
+        ),
+      ).toBeInTheDocument();
+    },
+    GALLERY_LOAD_TIMEOUT_MS + 5_000,
+  );
 
   it('is not a route when DEV is false: it redirects to /', async () => {
     const history = renderAt('/gallery', false);
