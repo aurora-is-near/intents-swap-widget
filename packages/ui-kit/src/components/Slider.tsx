@@ -16,12 +16,12 @@ export const RISK_ZONE_COLORS = [
 
 /**
  * `.ltvwrap` (lines 302, 44): 36px high, holding the track 12px from its
- * top, with `focus-within` outline 3px ink, offset 6px, radius 8. The
- * disabled look is `.go:disabled`'s opacity (line 57); the artboards have
- * no disabled slider.
+ * top. The artboard's `focus-within` outline was removed on purpose, so the
+ * slider shows no focus ring. The disabled look is `.go:disabled`'s opacity
+ * (line 57); the artboards have no disabled slider.
  */
 const CONTROL =
-  'relative box-border h-[36px] cursor-pointer touch-none rounded-[8px] pt-[12px] focus-within:outline-[3px] focus-within:outline-offset-[6px] focus-within:outline-ink focus-within:outline-solid data-disabled:cursor-not-allowed data-disabled:opacity-50';
+  'relative box-border h-[36px] cursor-pointer touch-none pt-[12px] data-disabled:cursor-not-allowed data-disabled:opacity-50';
 
 /**
  * The track (line 303): 10px high, radius 5. Base UI positions the thumb
