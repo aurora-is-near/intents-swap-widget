@@ -8,5 +8,5 @@
     "amount": "10000000000",
     "originAsset": "nep141:sol.omft.near"
   },
-  "errorContains": "invalid action input: cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH, WETH."
+  "errorContains": "invalid action input: cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH."
 }

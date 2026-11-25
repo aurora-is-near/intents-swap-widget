@@ -20,6 +20,7 @@ const BASE_POOL = '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5';
 const BASE_GATEWAY = '0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24';
 const BASE_WETH = '0x4200000000000000000000000000000000000006';
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+const BASE_CBBTC = '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf';
 const BASE_WSTETH = '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452';
 const BASE_GHO = '0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee';
 const ARB_POOL = '0x794a61358D6845594F94dc1DB02A252b5b4814aD';
@@ -68,11 +69,15 @@ const ctx: StepContext = {
 
 const PARAMS = { borrowAmount: '1500000000', recipient: RECIPIENT };
 
+/** Base's cbBTC reserve: the action's ERC-20 collateral. */
+const cbBtc = (asset: `0x${string}` = BASE_CBBTC) =>
+  weth({ asset, symbol: 'cbBTC', decimals: 8 });
+
 const input = (
   overrides: Partial<BorrowRecipeInput> = {},
 ): BorrowRecipeInput => ({
   market: BASE,
-  collateral: weth({ asset: BASE_WETH }),
+  collateral: cbBtc(),
   borrow: usdc({ asset: BASE_USDC }),
   flow: 'bridge-in',
   ...overrides,
@@ -88,21 +93,21 @@ describe('Aave V3 borrowRecipe', () => {
   it('is the action’s recipe for an ERC-20 reserve, matched by address in any case', () => {
     const recipe = adapter.borrowRecipe(
       input({
-        collateral: weth({ asset: BASE_WETH.toLowerCase() as `0x${string}` }),
+        collateral: cbBtc(BASE_CBBTC.toLowerCase() as `0x${string}`),
       }),
     );
 
     expect(recipe).toMatchObject({
-      id: 'aave-borrow:aave-v3:base:WETH:USDC',
+      id: 'aave-borrow:aave-v3:base:cbBTC:USDC',
       intent: 'aave_borrow',
-      title: 'Borrow USDC against WETH on Aave Base',
+      title: 'Borrow USDC against cbBTC on Aave Base',
       flow: 'bridge-in',
       type: 'evm',
       destination: {
         chain: 'base',
         assetId:
-          'nep141:base-0x4200000000000000000000000000000000000006.omft.near',
-        tokenAddress: BASE_WETH,
+          'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near',
+        tokenAddress: BASE_CBBTC,
       },
     });
     expect(
@@ -110,7 +115,7 @@ describe('Aave V3 borrowRecipe', () => {
         .buildSteps(ctx, PARAMS)
         .map(({ to, functionSignature }) => [to, functionSignature]),
     ).toEqual([
-      [BASE_WETH, 'approve(address,uint256)'],
+      [BASE_CBBTC, 'approve(address,uint256)'],
       [BASE_POOL, 'supply(address,uint256,address,uint16)'],
       [BASE_POOL, 'borrow(address,uint256,uint256,uint16,address)'],
       [BASE_USDC, 'transfer(address,uint256)'],
@@ -268,6 +273,14 @@ describe('Aave V3 borrowRecipe', () => {
       ),
     ).toThrow(
       `Aave V3 Base: the borrow action does not cover wstETH (${BASE_WSTETH}) as collateral`,
+    );
+  });
+
+  it('throws for the WETH reserve delivered as the ERC-20, which 1Click does not fill', () => {
+    expect(() =>
+      adapter.borrowRecipe(input({ collateral: weth({ asset: BASE_WETH }) })),
+    ).toThrow(
+      `Aave V3 Base: the borrow action does not cover WETH (${BASE_WETH}) as collateral`,
     );
   });
 

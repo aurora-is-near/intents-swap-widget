@@ -62,16 +62,16 @@ describe('aave-v3-borrow fixtures', () => {
   it('has the success and error cases the action promises', () => {
     expect(fixtures.map(({ name }) => name)).toEqual(
       expect.arrayContaining([
-        'base_bridge_in_weth.json',
         'base_bridge_in_eth.json',
         'steps_only.json',
-        'arb_usdt_against_weth.json',
+        'arb_usdt_against_eth.json',
         'zero_slippage.json',
         'usdt_on_base.json',
         'wbtc_on_base.json',
         'wbtc_on_arbitrum.json',
         'cbbtc_on_arbitrum.json',
         'usdc_collateral.json',
+        'weth_collateral.json',
         'zero_amount.json',
       ]),
     );

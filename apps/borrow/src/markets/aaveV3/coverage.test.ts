@@ -30,8 +30,7 @@ const ARB_USDC_E = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8';
 const ARB_WBTC = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f';
 
 describe('coversCollateral', () => {
-  it('covers WETH, natively delivered ETH and cbBTC on Base, in any case', () => {
-    expect(coversCollateral(BASE, { asset: BASE_WETH })).toBe(true);
+  it('covers the WETH reserve delivered as native ETH, and cbBTC, on Base, in any case', () => {
     expect(
       coversCollateral(BASE, { asset: BASE_WETH, nativeDelivery: true }),
     ).toBe(true);
@@ -50,6 +49,9 @@ describe('coversCollateral', () => {
     expect(coversCollateral(ARB, { asset: ARB_WBTC })).toBe(false);
     // Base's cbBTC is not Arbitrum's.
     expect(coversCollateral(ARB, { asset: BASE_CBBTC })).toBe(false);
+    // WETH delivered as the ERC-20: 1Click does not fill it, so only native
+    // delivery covers the reserve.
+    expect(coversCollateral(BASE, { asset: BASE_WETH })).toBe(false);
   });
 });
 
@@ -69,7 +71,7 @@ describe('coversBorrow', () => {
 
 describe('markCoverage', () => {
   it('keeps covered reserves as they are and marks the rest coming soon', () => {
-    const covered = weth({ asset: BASE_WETH });
+    const covered = weth({ asset: BASE_WETH, nativeDelivery: true });
     const capped = usdc({
       asset: BASE_USDC,
       unavailable: true,
@@ -113,15 +115,17 @@ describe('markCoverage', () => {
 });
 
 describe('the default pair', () => {
-  // The form's pair is read by the symbol 1Click delivers each reserve as,
-  // which is the tables' `label`: on every market, the action must hold an
-  // ERC-20 collateral and a borrow token by those labels.
+  // The form's default collateral is Aave's WETH reserve, which the adapter
+  // delivers as native ETH (the tables' native entry on that reserve); the
+  // borrow token is read by the tables' `label`.
   it.each(AAVE_V3_MARKETS.map((market) => [market.chainLabel, market]))(
     'is covered on %s',
     (_label, market) => {
+      expect(DEFAULT_PAIR.collateral).toBe('WETH');
+
       const table = AAVE_BORROW_MARKETS[market.chain];
       const collateral = Object.values(table.collateral).filter(
-        ({ label, native }) => label === DEFAULT_PAIR.collateral && !native,
+        ({ native }) => native,
       );
 
       const borrow = Object.values(table.borrow).filter(
@@ -132,7 +136,9 @@ describe('the default pair', () => {
       expect(borrow).toHaveLength(1);
 
       collateral.forEach(({ address }) =>
-        expect(coversCollateral(market, { asset: address })).toBe(true),
+        expect(
+          coversCollateral(market, { asset: address, nativeDelivery: true }),
+        ).toBe(true),
       );
       borrow.forEach(({ address }) =>
         expect(coversBorrow(market, { asset: address })).toBe(true),
