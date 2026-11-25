@@ -2,6 +2,7 @@ import '../../tests/pointerEvent';
 
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { IntentsConnectApiError } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
 import { BorrowDialog, type BorrowDialogLoan } from './BorrowDialog';
@@ -29,6 +30,13 @@ const LOAN: BorrowDialogLoan = {
   walletAddress: '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21',
 };
 
+const LOAN_CONTEXT = {
+  chainName: LOAN.paid.chainName,
+  collateralSymbol: LOAN.collateral.symbol,
+  borrowSymbol: LOAN.borrow.symbol,
+  marketName: LOAN.market.name,
+};
+
 const FIGURES: BorrowPreviewFigures = {
   collateralExpected: 996n * 10n ** 15n,
   minimumReceived: 986n * 10n ** 15n,
@@ -41,7 +49,12 @@ const FIGURES: BorrowPreviewFigures = {
 };
 
 const stateOf = (error: BorrowErrorKind) =>
-  ({ kind: 'error', error, cause: undefined }) as const;
+  ({
+    kind: 'error',
+    error,
+    cause: undefined,
+    step: errorCopy[error].step,
+  }) as const;
 
 const renderError = (error: BorrowErrorKind, withFigures = true) => {
   const handlers = {
@@ -70,7 +83,11 @@ const CASES: [
   'retry' | 'refresh' | 'close',
 ][] = [
   ['rejected', 'Signature rejected', 'Try again', 'retry'],
+  ['depositRejected', 'Deposit not sent', 'Send deposit', 'retry'],
+  ['cancelDeclined', 'Request still open', 'Confirm cancellation', 'retry'],
+  ['busy', 'A borrow is already in progress', 'Close', 'close'],
   ['noGas', 'Not enough for the network fee', 'Try again', 'retry'],
+  ['quoteMoved', 'Quote changed', 'Refresh quote', 'refresh'],
   ['priceMoved', 'Collateral price moved', 'Refresh quote', 'refresh'],
   [
     'noLiquidity',
@@ -113,6 +130,42 @@ describe('BorrowDialog error states', () => {
       expect(handlers.onAction).toHaveBeenCalledExactlyOnceWith(action);
     },
   );
+
+  it('pairUnsupported: says the pair is no longer supported, and closes', async () => {
+    const user = userEvent.setup();
+    const handlers = renderError('pairUnsupported');
+
+    const banner = screen.getByRole('alert');
+
+    expect(
+      within(banner).getByText('This pair is no longer supported'),
+    ).toBeInTheDocument();
+    expect(
+      within(banner).getByText(
+        'Borrow no longer opens Aave loans of USDC against WETH. Nothing was sent. Pick another pair.',
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Choose another pair' }),
+    );
+
+    expect(handlers.onAction).toHaveBeenCalledExactlyOnceWith('close');
+  });
+
+  it('pairUnsupported with the collateral waiting: says it is held and not retried', () => {
+    expect(
+      errorCopy.pairUnsupported.text({
+        chainName: 'Arbitrum',
+        collateralSymbol: 'WETH',
+        borrowSymbol: 'USDC',
+        marketName: 'Aave',
+        fundsWaiting: true,
+      }),
+    ).toBe(
+      'Borrow no longer opens Aave loans of USDC against WETH, so this borrow can’t be retried. Your collateral arrived and is held for this loan.',
+    );
+  });
 
   it('uses the warn tone only for delayed, and keeps its step running', () => {
     renderError('delayed');
@@ -217,6 +270,7 @@ describe('BorrowDialog error states', () => {
     expect(borrowDialogStep(stateOf('unknown'), 'retry')).toEqual({
       kind: 'error',
       error: 'unknown',
+      step: 0,
       action: 'close',
       fundsWaiting: false,
     });
@@ -258,5 +312,112 @@ describe('BorrowDialog error states', () => {
     expect(
       borrowDialogStep(stateOf('rejected'), 'retry', false, 'exec-1'),
     ).not.toHaveProperty('executionId');
+  });
+});
+
+describe("BorrowDialog: the API's own reason", () => {
+  const apiFailure = (body: unknown) =>
+    ({
+      kind: 'error',
+      error: 'unknown',
+      cause: new IntentsConnectApiError('Intents Connect API error', 400, body),
+      step: 0,
+    }) as const;
+
+  const renderStep = (step: ReturnType<typeof borrowDialogStep>) =>
+    render(
+      <BorrowDialog
+        figures={FIGURES}
+        loan={LOAN}
+        step={step}
+        onAction={vi.fn()}
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        onViewPosition={vi.fn()}
+      />,
+    );
+
+  it('shows the error the execution init answered with', () => {
+    renderStep(
+      borrowDialogStep(apiFailure({ error: 'No liquidity available' })),
+    );
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(
+      within(dialog).getByText('Something went wrong'),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText('No liquidity available'),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).queryByText(errorCopy.unknown.text(LOAN_CONTEXT)),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to the generic text when the body has no error', () => {
+    renderStep(borrowDialogStep(apiFailure('<html>502</html>')));
+
+    expect(
+      within(screen.getByRole('dialog')).getByText(
+        errorCopy.unknown.text(LOAN_CONTEXT),
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the latest reason while the dialog closes', () => {
+    const props = {
+      figures: FIGURES,
+      loan: LOAN,
+      onAction: vi.fn(),
+      onCancel: vi.fn(),
+      onConfirm: vi.fn(),
+      onViewPosition: vi.fn(),
+    };
+
+    const { rerender } = render(
+      <BorrowDialog
+        {...props}
+        step={borrowDialogStep(apiFailure({ error: 'First reason' }))}
+      />,
+    );
+
+    rerender(
+      <BorrowDialog
+        {...props}
+        step={borrowDialogStep(apiFailure({ error: 'Second reason' }))}
+      />,
+    );
+
+    expect(screen.getByText('Second reason')).toBeInTheDocument();
+
+    // An exit animation that never ends keeps the closing popup mounted,
+    // as a browser does while it animates out.
+    const pending = [
+      { finished: new Promise(() => {}) } as unknown as Animation,
+    ];
+
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () => pending,
+    });
+
+    try {
+      rerender(<BorrowDialog {...props} step={undefined} />);
+
+      expect(screen.getByText('Second reason')).toBeInTheDocument();
+      expect(screen.queryByText('First reason')).not.toBeInTheDocument();
+    } finally {
+      Reflect.deleteProperty(Element.prototype, 'getAnimations');
+    }
+  });
+
+  it("keeps a known kind's own copy", () => {
+    const step = borrowDialogStep({
+      ...apiFailure({ error: 'No liquidity available' }),
+      error: 'noLiquidity',
+    });
+
+    expect(step).not.toHaveProperty('detail');
   });
 });

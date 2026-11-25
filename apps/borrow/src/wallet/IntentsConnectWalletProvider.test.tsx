@@ -45,6 +45,8 @@ describe('IntentsConnectWalletProvider', () => {
     expect(screen.getByText('app')).toBeInTheDocument();
     expect(mocks.providerProps.at(-1)).toEqual({
       api: mocks.api,
+      // The borrow flow cancels a declined signature itself, explaining it.
+      autoCancelOnSignatureRejection: false,
       wallet: null,
     });
   });

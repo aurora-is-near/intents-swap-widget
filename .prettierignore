@@ -1,0 +1,3 @@
+# Intents Connect actions: the action hash covers the exact bytes of
+# definition.json and script.star, so they keep the actions repo's layout.
+packages/intents-connect-actions/actions/

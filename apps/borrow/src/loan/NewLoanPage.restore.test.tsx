@@ -44,6 +44,8 @@ const wallet = vi.hoisted(() => ({
 const sdk = vi.hoisted(() => ({
   result: null as UseExecutionResult | null,
   onEvent: undefined as ((event: RunnerEvent) => void) | undefined,
+  /** The wallet's open executions, before a borrow runs. */
+  open: [] as Execution[],
   /** What `useWalletExecutions` answers, and what it was asked. */
   executions: null as UseWalletExecutionsResult | null,
   executionsOptions: undefined as UseWalletExecutionsOptions | undefined,
@@ -59,6 +61,11 @@ vi.mock('../markets/aaveV3', async () =>
 
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) => ({
   ...(await importOriginal()),
+  // The borrow flow lists the wallet's open executions before it runs one.
+  useIntentsConnect: () => ({
+    api: { listExecutions: async () => sdk.open },
+    wallet: null,
+  }),
   useExecution: (options: UseExecutionOptions = {}) => {
     sdk.onEvent = options.onEvent;
 
@@ -206,6 +213,7 @@ beforeEach(() => {
   resume = deferred<Execution>();
   sdk.result = fakeExecution(run.promise, resume.promise);
   sdk.executions = walletExecutions([]);
+  sdk.open = [];
   sdk.executionsOptions = undefined;
 });
 
@@ -321,10 +329,13 @@ describe('NewLoanPage: restoring a borrow', () => {
       'In progress: Bridge the collateral',
       'Waiting: Open the loan and deliver USDC',
     ]);
-    // Pending: no way to close it.
+    // Named as the previous borrow, and nothing to do: it can be closed.
     expect(
-      screen.queryByRole('button', { name: 'Close' }),
-    ).not.toBeInTheDocument();
+      within(dialog).getByText('Your previous borrow is still in progress'),
+    ).toBeVisible();
+    expect(
+      within(dialog).getAllByRole('button', { name: 'Close' }).length,
+    ).toBeGreaterThan(0);
 
     // The resumed run's events move it on, and success clears the record.
     emit({ type: 'status', status: 'OPERATION_PROCESSING' });
@@ -341,27 +352,6 @@ describe('NewLoanPage: restoring a borrow', () => {
     expect(readPendingBorrow(WALLET)).toBeUndefined();
   });
 
-  it('keeps the deposit token with the record, and notes when the deposit was sent', async () => {
-    const user = userEvent.setup();
-
-    await user.click(await renderPage());
-    await user.click(
-      await screen.findByRole('button', { name: 'Confirm in wallet' }),
-    );
-
-    emit({ type: 'created', executionId: EXECUTION_ID });
-
-    expect(readPendingBorrow(WALLET)?.origin).toEqual({
-      chain: 'arb',
-      decimals: 6,
-    });
-    expect(readPendingBorrow(WALLET)?.depositSent).toBeUndefined();
-
-    emit({ type: 'deposit-sent', txHash: '0xtx' });
-
-    expect(readPendingBorrow(WALLET)?.depositSent).toBe(true);
-  });
-
   /** Signed, its deposit address known, and no deposit seen yet. */
   const awaitingDeposit = () => {
     const execution = inFlight();
@@ -373,14 +363,13 @@ describe('NewLoanPage: restoring a borrow', () => {
     });
   };
 
-  it('offers to send the deposit of a borrow signed before the reload but never funded', async () => {
+  it('waits for the deposit of a borrow signed before the reload, without prompting the wallet', async () => {
     const user = userEvent.setup();
 
     savePendingBorrow(WALLET, {
       executionId: EXECUTION_ID,
       rows: KEPT_ROWS,
       borrowSymbol: 'USDC',
-      origin: { chain: 'arb', decimals: 6, contractAddress: '0xaf88' },
     });
     sdk.executions = walletExecutions([awaitingDeposit()]);
 
@@ -388,38 +377,17 @@ describe('NewLoanPage: restoring a borrow', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
 
-    expect(within(dialog).getByText('Deposit not sent yet')).toBeVisible();
-    expect(rowValue(dialog, 'Deposit address')).toHaveTextContent('0xdeposit');
-    expect(sdk.result?.resume).not.toHaveBeenCalled();
-
-    await user.click(
-      within(dialog).getByRole('button', { name: 'Send deposit' }),
-    );
-
-    expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID, {
-      depositViaWallet: true,
-      originChain: 'arb',
-      originToken: { contractAddress: '0xaf88', decimals: 6 },
-    });
-    expect(stepTexts()[0]).toBe('In progress: Sign and deposit');
-  });
-
-  it('shows the deposit address, and can be closed, when the deposit token was not kept', async () => {
-    const user = userEvent.setup();
-
-    sdk.executions = walletExecutions([awaitingDeposit()]);
-
-    await renderPage();
-
-    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
-
+    // A plain resume watches it: never `depositViaWallet`, so no prompt.
     expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
-    expect(within(dialog).getByText('Waiting for your deposit')).toBeVisible();
-    expect(rowValue(dialog, 'Deposit address')).toHaveTextContent('0xdeposit');
+    expect(
+      within(dialog).getByText(/Waiting for your deposit to arrive\./),
+    ).toBeVisible();
+    expect(stepTexts()[0]).toBe('In progress: Sign and deposit');
     expect(
       within(dialog).queryByRole('button', { name: 'Send deposit' }),
     ).not.toBeInTheDocument();
 
+    // Nothing to do: it can be closed, and nothing is cancelled.
     await user.click(
       within(dialog).getAllByRole('button', { name: 'Close' }).at(-1) ?? dialog,
     );
@@ -427,8 +395,30 @@ describe('NewLoanPage: restoring a borrow', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Confirm loan' }),
     ).not.toBeInTheDocument();
-    // Signed: nothing is cancelled, and the record stays for the next visit.
     expect(sdk.result?.cancel).not.toHaveBeenCalled();
+  });
+
+  it('shows the previous borrow, named as such, when Borrow is clicked while it is on its way', async () => {
+    const user = userEvent.setup();
+
+    const cta = await renderPage();
+
+    // Nothing restored on mount; the previous borrow is found on Borrow.
+    sdk.open = [inFlight()];
+    await user.click(cta);
+
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText('Your previous borrow is still in progress'),
+    ).toBeVisible();
+    expect(rowValue(dialog, 'Execution')).toHaveTextContent('exec-r…0001');
+    expect(stepTexts()[1]).toBe('In progress: Bridge the collateral');
+    expect(sdk.result?.preview).not.toHaveBeenCalled();
+    expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
+    expect(
+      within(dialog).queryByRole('button', { name: 'Confirm in wallet' }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows generic rows from the execution when nothing was kept for it', async () => {
@@ -441,9 +431,8 @@ describe('NewLoanPage: restoring a borrow', () => {
     expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
     expect(rowValue(dialog, 'You pay')).toHaveTextContent('≈ $3,000');
     expect(rowValue(dialog, 'Supply')).toHaveTextContent('≈ $2,986');
-    expect(rowValue(dialog, 'Status')).toHaveTextContent(
-      'Bridging the collateral',
-    );
+    // No status row: read once, it would go stale; the steps say it.
+    expect(within(dialog).queryByText('Status')).not.toBeInTheDocument();
     expect(rowValue(dialog, 'Execution')).toHaveTextContent('exec-r…0001');
     expect(stepTexts()[2]).toBe('Waiting: Open the loan and deliver the funds');
   });
@@ -460,29 +449,34 @@ describe('NewLoanPage: restoring a borrow', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
 
-    expect(rowValue(dialog, 'Status')).toHaveTextContent(
-      'Bridging the collateral',
-    );
+    expect(rowValue(dialog, 'Execution')).toHaveTextContent('exec-r…0001');
     expect(within(dialog).queryByText('Borrow')).not.toBeInTheDocument();
     expect(readPendingBorrow(WALLET)).toBeUndefined();
   });
 
-  it('asks for the signature again when the borrow was created but not signed', async () => {
-    sdk.executions = walletExecutions([
-      inFlight({ status: 'CREATED', details: dryExecution().details }),
-    ]);
+  it.each<[string, Execution['status']]>([
+    ['created', 'CREATED'],
+    ['already awaiting its deposit', 'DEPOSIT_PENDING'],
+  ])(
+    'neither shows nor resumes a borrow %s but never signed',
+    async (_, status) => {
+      sdk.executions = walletExecutions([
+        inFlight({
+          status,
+          details: { ...dryExecution().details, messageSigned: false },
+        }),
+      ]);
 
-    await renderPage();
+      await renderPage();
+      await act(async () => {});
 
-    await screen.findByRole('dialog', { name: 'Confirm loan' });
-
-    expect(sdk.result?.resume).toHaveBeenCalledExactlyOnceWith(EXECUTION_ID);
-    expect(stepTexts()).toEqual([
-      'In progress: Sign and deposit',
-      'Waiting: Bridge the collateral',
-      'Waiting: Open the loan and deliver the funds',
-    ]);
-  });
+      expect(
+        screen.queryByRole('dialog', { name: 'Confirm loan' }),
+      ).not.toBeInTheDocument();
+      expect(sdk.result?.resume).not.toHaveBeenCalled();
+      expect(sdk.result?.cancel).not.toHaveBeenCalled();
+    },
+  );
 
   it('leaves another app’s in-flight execution alone and forgets a stale record', async () => {
     savePendingBorrow(WALLET, {

@@ -1,13 +1,14 @@
 import type { SupportedToken } from '@aurora-is-near/intents-connect';
+import { aaveBorrowRecipe } from '@aurora-is-near/intents-connect-actions/sdk';
 
 import type {
   LendingMarket,
   LendingMarketAdapter,
   MarketSnapshot,
 } from '../types';
+import { actionPairOf, markCoverage } from './coverage';
 import { AAVE_V3_MARKETS, type AaveMarket } from './registry';
 import { type AaveReadClient, readAaveReserves } from './reserves';
-import { buildAaveBorrowSteps } from './steps';
 import {
   intersectSupported,
   listDeliveredTokens,
@@ -51,7 +52,8 @@ const aaveMarketOf = (market: LendingMarket): AaveMarket => {
 /**
  * Aave V3 on Borrow's launch chains (Base and Arbitrum). A snapshot is the
  * reserves 1Click can deliver: the supported token list first (a failed list
- * rejects), then one pinned read of only those reserves. Caching is left to
+ * rejects), then one pinned read of only those reserves. Those the borrow
+ * action does not cover stay listed, marked `coming-soon`. Caching is left to
  * the caller (react-query in `useMarketSnapshots`); snapshots read at the same
  * time share one token list request, which is dropped once it settles, so a
  * failure is never reused.
@@ -87,11 +89,21 @@ export const createAaveV3Adapter = ({
         market: toLendingMarket(aave),
         blockNumber: reserves.blockNumber,
         baseCurrencyUnit: reserves.baseCurrencyUnit,
-        ...withDeliveredAssets(reserves, supported),
+        ...markCoverage(aave, withDeliveredAssets(reserves, supported)),
       };
     },
 
-    buildBorrowSteps: ({ market, ...input }) =>
-      buildAaveBorrowSteps(aaveMarketOf(market), input),
+    // The `aave-v3-borrow` action's own recipe: the reserves are mapped to
+    // its table symbols by chain and address (or native delivery), and a
+    // reserve it does not cover throws.
+    borrowRecipe: ({ market, collateral, borrow, flow }) => {
+      const aave = aaveMarketOf(market);
+
+      return aaveBorrowRecipe({
+        chain: aave.chain,
+        ...actionPairOf(aave, collateral, borrow),
+        flow,
+      });
+    },
   };
 };

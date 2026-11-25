@@ -295,7 +295,9 @@ describe('readAaveReserves', () => {
       ]);
 
       expect(capped.collateral[0]?.unavailable).toBe(true);
+      expect(capped.collateral[0]?.unavailableReason).toBe('cap-reached');
       expect(below.collateral[0]?.unavailable).toBeUndefined();
+      expect(below.collateral[0]?.unavailableReason).toBeUndefined();
     });
   });
 
@@ -326,6 +328,8 @@ describe('readAaveReserves', () => {
       ]);
 
       expect(result.borrowable[0]?.availableLiquidity).toBe(5_000_000n);
+      expect(result.borrowable[0]?.unavailable).toBeUndefined();
+      expect(result.borrowable[0]?.unavailableReason).toBeUndefined();
     });
 
     it('floors at 0 when debt is above the cap', async () => {
@@ -335,6 +339,7 @@ describe('readAaveReserves', () => {
 
       expect(result.borrowable[0]?.availableLiquidity).toBe(0n);
       expect(result.borrowable[0]?.unavailable).toBe(true);
+      expect(result.borrowable[0]?.unavailableReason).toBe('cap-reached');
     });
   });
 

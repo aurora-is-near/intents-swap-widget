@@ -5,6 +5,7 @@ import {
 } from '@aurora-is-near/intents-connect';
 
 import { RPC_URL_ARB, RPC_URL_BASE } from '../../config';
+import { isComingSoon } from '../../markets/availability';
 import type {
   BorrowReserve,
   CollateralReserve,
@@ -16,11 +17,7 @@ import { loanFigures } from '../model/loanFigures';
 import { BorrowPreCheckError } from './classifyBorrowError';
 import { checkLiquidity } from './liquidity';
 import { BorrowPreviewError } from './preview';
-import {
-  aaveBorrowRecipe,
-  type BorrowParams,
-  collateralDestination,
-} from './recipe';
+import { type BorrowParams, collateralDestination } from './recipe';
 
 /*
  * The retry of a borrow whose borrow step failed after the collateral had
@@ -67,7 +64,7 @@ export const readWaitingCollateral = async ({
 };
 
 export type BorrowStepsPlanInput = {
-  adapter: Pick<LendingMarketAdapter, 'buildBorrowSteps'>;
+  adapter: Pick<LendingMarketAdapter, 'borrowRecipe'>;
   market: LendingMarket;
   collateral: CollateralReserve;
   borrow: BorrowReserve;
@@ -93,7 +90,12 @@ export const buildBorrowStepsPlan = ({
   borrowAmount,
   recipient,
 }: BorrowStepsPlanInput): StepsPlan<BorrowParams> => ({
-  recipe: aaveBorrowRecipe(adapter, market, collateral, borrow, 'steps-only'),
+  recipe: adapter.borrowRecipe({
+    market,
+    collateral,
+    borrow,
+    flow: 'steps-only',
+  }),
   params: {
     borrowAmount: borrowAmount.toString(),
     recipient: recipient === '' ? undefined : recipient,
@@ -104,7 +106,7 @@ export const buildBorrowStepsPlan = ({
 
 export type PreviewBorrowStepsInput = {
   /** Builds the steps, and reads the market afresh. */
-  adapter: Pick<LendingMarketAdapter, 'buildBorrowSteps' | 'getMarketSnapshot'>;
+  adapter: Pick<LendingMarketAdapter, 'borrowRecipe' | 'getMarketSnapshot'>;
   market: LendingMarket;
   collateral: CollateralReserve;
   borrow: BorrowReserve;
@@ -151,7 +153,9 @@ const freshReserves = (
  * The steps-only dry run, in two passes as `previewBorrow`, because the
  * borrow amount is a literal and the fee is only known from a dry run:
  * 1. The market is read afresh (the price moved, or liquidity ran out, which
- *    is why the borrow failed), and the collateral waiting is read.
+ *    is why the borrow failed), and the collateral waiting is read. A pair
+ *    the borrow action no longer covers (`coming-soon`) is refused first:
+ *    its steps can't be built.
  * 2. A dry run at that amount gives `spendable`, what is supplied once the
  *    fee is carved out; the borrow is the chosen LTV of it at the fresh
  *    oracle prices; a second dry run builds the final steps with it.
@@ -174,6 +178,13 @@ export const previewBorrowSteps = async ({
     reserves.collateral,
     reserves.borrow,
   );
+
+  if (isComingSoon(collateral) || isComingSoon(borrow)) {
+    throw new BorrowPreviewError(
+      'pairUnsupported',
+      `${market.name} on ${market.chainLabel} no longer opens loans of ${borrow.symbol} against ${collateral.symbol}`,
+    );
+  }
 
   const waiting = await readWaiting({ intermediary, market, collateral });
 

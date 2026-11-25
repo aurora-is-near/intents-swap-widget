@@ -118,19 +118,34 @@ describe('borrowDialogStep', () => {
     expect(borrowDialogStep({ kind: 'signing' })).toEqual({
       kind: 'pending',
       step: 0,
+      note: 'sign',
     });
-    expect(borrowDialogStep({ kind: 'pending', step: 2 })).toEqual({
-      kind: 'pending',
-      step: 2,
-    });
+    expect(
+      borrowDialogStep({ kind: 'pending', step: 0, waitingForDeposit: false }),
+    ).toEqual({ kind: 'pending', step: 0, note: 'deposit' });
+    expect(
+      borrowDialogStep({ kind: 'pending', step: 0, waitingForDeposit: true }),
+    ).toEqual({ kind: 'pending', step: 0, note: 'awaitingDeposit' });
+    expect(
+      borrowDialogStep({ kind: 'pending', step: 2, waitingForDeposit: false }),
+    ).toEqual({ kind: 'pending', step: 2, note: 'opening' });
+    expect(
+      borrowDialogStep({ kind: 'cancelling', reason: 'declined' }),
+    ).toEqual({ kind: 'cancelling', reason: 'declined' });
     expect(borrowDialogStep({ kind: 'done', executionId: 'e' })).toEqual({
       kind: 'done',
     });
     expect(
-      borrowDialogStep({ kind: 'error', error: 'rejected', cause: undefined }),
+      borrowDialogStep({
+        kind: 'error',
+        error: 'rejected',
+        cause: undefined,
+        step: 0,
+      }),
     ).toEqual({
       kind: 'error',
       error: 'rejected',
+      step: 0,
       action: 'retry',
       fundsWaiting: false,
     });
@@ -223,7 +238,9 @@ describe('BorrowDialog', () => {
 
   describe('pending', () => {
     it('moves through the three steps', async () => {
-      const { rerender } = renderDialog({ step: { kind: 'pending', step: 0 } });
+      const { rerender } = renderDialog({
+        step: { kind: 'pending', step: 0, note: 'sign' },
+      });
 
       await screen.findByRole('dialog', { name: 'Confirm loan' });
 
@@ -233,13 +250,23 @@ describe('BorrowDialog', () => {
         'Waiting: Open the loan and deliver USDC',
       ]);
       expect(screen.getByRole('status')).toHaveTextContent(
-        'Check your wallet to sign. Don’t close this window.',
+        'Sign the request in your wallet.',
       );
       expect(
         screen.queryByRole('button', { name: 'Confirm in wallet' }),
       ).not.toBeInTheDocument();
 
-      rerender({ kind: 'pending', step: 1 });
+      rerender({ kind: 'pending', step: 0, note: 'deposit' });
+
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Now confirm the deposit transaction in your wallet.',
+      );
+
+      rerender({ kind: 'pending', step: 1, note: 'bridging' });
+
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Your deposit left your wallet.',
+      );
 
       expect(stepTexts()).toEqual([
         'Done: Sign and deposit',
@@ -247,7 +274,11 @@ describe('BorrowDialog', () => {
         'Waiting: Open the loan and deliver USDC',
       ]);
 
-      rerender({ kind: 'pending', step: 2 });
+      rerender({ kind: 'pending', step: 2, note: 'opening' });
+
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Opening the loan and sending USDC to your wallet.',
+      );
 
       expect(stepTexts()).toEqual([
         'Done: Sign and deposit',
@@ -258,7 +289,9 @@ describe('BorrowDialog', () => {
 
     it('cannot be closed: no close button or Cancel, and Escape or an outside press do nothing', async () => {
       const user = userEvent.setup();
-      const { onCancel } = renderDialog({ step: { kind: 'pending', step: 1 } });
+      const { onCancel } = renderDialog({
+        step: { kind: 'pending', step: 1, note: 'bridging' },
+      });
 
       const dialog = await screen.findByRole('dialog', {
         name: 'Confirm loan',

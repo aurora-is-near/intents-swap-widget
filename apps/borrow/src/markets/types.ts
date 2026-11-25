@@ -1,11 +1,12 @@
-import type { Step } from '@aurora-is-near/intents-connect';
+import type { Recipe } from '@aurora-is-near/intents-connect';
+import type { BorrowParams } from '@aurora-is-near/intents-connect-actions/sdk';
 import type { Address } from 'viem';
 
 /**
  * The boundary between screens and lending protocols. Screens import only
  * these types (and the hooks built on them), never a protocol's own module.
  *
- * The read side and the borrow step builder (Borrow execution) are declared;
+ * The read side and the borrow recipe (Borrow execution) are declared;
  * position reading is added by the feature that needs it (My positions).
  */
 
@@ -24,6 +25,16 @@ export type LendingMarket = {
   chainLabel: string;
 };
 
+/**
+ * Why a listed reserve cannot take a new loan now:
+ * - `cap-reached`: its supply cap (collateral) or borrow cap (borrow) is
+ *   reached; it comes back once there is room.
+ * - `coming-soon`: the borrow action (`aave-v3-borrow` in
+ *   `@aurora-is-near/intents-connect-actions`) does not cover it yet. Takes
+ *   the place of `cap-reached` when both hold.
+ */
+export type ReserveUnavailableReason = 'cap-reached' | 'coming-soon';
+
 /** A reserve that can be supplied as collateral. */
 export type CollateralReserve = {
   asset: Address;
@@ -39,10 +50,12 @@ export type CollateralReserve = {
   priceBase: bigint;
   /** Listed but not suppliable now, such as when the supply cap is reached. */
   unavailable?: boolean;
+  /** Why it is `unavailable`, when the adapter knows. */
+  unavailableReason?: ReserveUnavailableReason;
   /**
    * The wrapped native reserve (WETH), counted as supported because the
    * native token is delivered on its chain; it is supplied through Aave's
-   * gateway (`buildBorrowSteps` replaces approve and supply with one
+   * gateway (the borrow recipe replaces approve and supply with one
    * gateway deposit sent the native amount).
    */
   nativeDelivery?: boolean;
@@ -63,6 +76,8 @@ export type BorrowReserve = {
   priceBase: bigint;
   /** Listed but not borrowable now, such as when the borrow cap is reached. */
   unavailable?: boolean;
+  /** Why it is `unavailable`, when the adapter knows. */
+  unavailableReason?: ReserveUnavailableReason;
 };
 
 /** One market's reserves, all read at the same block. */
@@ -75,22 +90,17 @@ export type MarketSnapshot = {
   borrowable: BorrowReserve[];
 };
 
-/** What a borrow's steps are built from: one supply, then one borrow. */
-export type BuildBorrowStepsInput = {
+/** What a borrow's recipe is built from: one pair on one market. */
+export type BorrowRecipeInput = {
   market: LendingMarket;
   collateral: CollateralReserve;
   borrow: BorrowReserve;
   /**
-   * The collateral supplied, atomic. OPAQUE: it may be the
-   * `{MIN_AMOUNT_OUT}` placeholder, so it is templated, never inspected.
+   * `bridge-in` bridges the user's funds into the collateral first;
+   * `steps-only` spends collateral already waiting at the intermediary (a
+   * borrow whose borrow step failed after the collateral arrived).
    */
-  amount: string;
-  /** Borrowed, in borrow-token atomic units: always a literal. */
-  borrowAmount: string;
-  /** Who the position belongs to: the supply's and the debt's account. */
-  owner: string;
-  /** Who the borrowed tokens are sent to. */
-  recipient: string;
+  flow: 'bridge-in' | 'steps-only';
 };
 
 export interface LendingMarketAdapter {
@@ -101,10 +111,13 @@ export interface LendingMarketAdapter {
   listMarkets(): Promise<LendingMarket[]>;
   getMarketSnapshot(market: LendingMarket): Promise<MarketSnapshot>;
   /**
-   * The steps the intermediary runs once the collateral has arrived: supply
-   * it for `owner`, borrow against it and send the borrowed tokens to
-   * `recipient`. The service's fee is the API key's fee configuration,
-   * never a step. Throws for a market the adapter does not serve.
+   * The borrow as an Intents Connect recipe, which owns its id, intent,
+   * title, destination and steps: once the collateral has arrived, the
+   * intermediary supplies it for itself, borrows `params.borrowAmount`
+   * against it and sends that to `params.recipient` (the connected wallet
+   * when unset). The service's fee is the API key's fee configuration,
+   * never a step. Throws for a market the adapter does not serve, or a pair
+   * it cannot borrow.
    */
-  buildBorrowSteps(input: BuildBorrowStepsInput): Step[];
+  borrowRecipe(input: BorrowRecipeInput): Recipe<BorrowParams>;
 }

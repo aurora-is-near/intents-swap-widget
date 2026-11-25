@@ -175,9 +175,13 @@ export const availableLiquidity = ({
  *
  * - Collateral: active, not frozen, not paused, usable as collateral, LTV
  *   above 0 and no debt ceiling (isolation mode is excluded). A reached supply
- *   cap marks it `unavailable`.
+ *   cap marks it `unavailable` (`cap-reached`).
  * - Borrowable: active, not frozen, not paused, borrowing enabled. A reached
- *   borrow cap marks it `unavailable`.
+ *   borrow cap marks it `unavailable` (`cap-reached`).
+ *
+ * Whether the borrow action covers a reserve (`coming-soon`) is marked later,
+ * by `markCoverage`, once the 1Click intersection knows which reserve is
+ * delivered as the native token.
  */
 export const readAaveReserves = async (
   client: AaveReadClient,
@@ -319,7 +323,10 @@ export const readAaveReserves = async (
         ...asset,
         maxLtvBps: Number(ltv),
         liquidationLtvBps: Number(liquidationThreshold),
-        ...(supplyCapReached && { unavailable: true }),
+        ...(supplyCapReached && {
+          unavailable: true,
+          unavailableReason: 'cap-reached' as const,
+        }),
       });
     }
 
@@ -335,7 +342,10 @@ export const readAaveReserves = async (
           totalDebt,
           decimals,
         }),
-        ...(borrowCapReached && { unavailable: true }),
+        ...(borrowCapReached && {
+          unavailable: true,
+          unavailableReason: 'cap-reached' as const,
+        }),
       });
     }
   });

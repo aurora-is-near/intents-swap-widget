@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { FAKE_BASE, pairSnapshot, usdc, weth } from '../../tests/fakeMarkets';
 import {
+  apiErrorMessage,
   BORROW_DELAYED_AFTER_MS,
   type BorrowErrorContext,
   type BorrowErrorKind,
@@ -60,7 +61,17 @@ describe('classifyBorrowError', () => {
       new DepositTransferError('exec-1', { cause: EIP1193_REJECTION }),
       transferRecovery(new Error('User rejected the request.')),
       {},
-      'rejected',
+      'depositRejected',
+    ],
+    // busy
+    [
+      'the wallet-lock guard',
+      new GuardError('EXECUTION_IN_FLIGHT', 'another execution is live', {
+        executionId: 'exec-0',
+      }),
+      undefined,
+      {},
+      'busy',
     ],
     // noGas
     [
@@ -86,21 +97,22 @@ describe('classifyBorrowError', () => {
       {},
       'noGas',
     ],
-    // priceMoved
+    // quoteMoved: before anything was signed
     [
       'the QUOTE_MOVED guard',
       new GuardError('QUOTE_MOVED', 'quote moved'),
       undefined,
       {},
-      'priceMoved',
+      'quoteMoved',
     ],
     [
       "the two-pass preview's moved quote",
       new BorrowPreviewError('quoteMoved', 'moved'),
       undefined,
       {},
-      'priceMoved',
+      'quoteMoved',
     ],
+    // priceMoved: the borrow step, after the collateral arrived
     [
       'a borrow step failed on price',
       new Error('execution OPERATION_FAILED'),
@@ -189,6 +201,33 @@ describe('classifyBorrowError', () => {
   });
 });
 
+describe('classifyBorrowError: a pair the borrow action no longer covers', () => {
+  it('is pairUnsupported when the steps-only retry refused the pair', () => {
+    expect(
+      classifyBorrowError(
+        new BorrowPreviewError('pairUnsupported', 'gone'),
+        undefined,
+        { status: 'OPERATION_FAILED' },
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is pairUnsupported when the borrow step failed on such a pair', () => {
+    expect(
+      classifyBorrowError(new Error('execution OPERATION_FAILED'), undefined, {
+        status: 'OPERATION_FAILED',
+        borrowStep: 'pairUnsupported',
+      }),
+    ).toBe('pairUnsupported');
+  });
+
+  it('offers to close, never to retry', () => {
+    expect(borrowRecoveryAction('pairUnsupported', new Error('x'))).toBe(
+      'close',
+    );
+  });
+});
+
 describe('isInsufficientFunds', () => {
   it.each([
     [{ name: 'InsufficientFundsError', message: 'x' }, true],
@@ -214,7 +253,11 @@ describe('isInsufficientFunds', () => {
 describe('borrowRecoveryAction', () => {
   it.each<[BorrowErrorKind, string]>([
     ['rejected', 'retry'],
+    ['depositRejected', 'retry'],
+    ['cancelDeclined', 'retry'],
+    ['busy', 'close'],
     ['noGas', 'retry'],
+    ['quoteMoved', 'refresh'],
     ['priceMoved', 'refresh'],
     ['noLiquidity', 'close'],
     ['delayed', 'close'],
@@ -273,6 +316,58 @@ describe('diagnoseBorrowStep', () => {
         ),
       ),
     ).toBe('priceMoved');
+  });
+});
+
+describe('diagnoseBorrowStep: a pair the borrow action no longer covers', () => {
+  const input = (snapshot: ReturnType<typeof pairSnapshot>) => ({
+    snapshot,
+    collateral: weth(),
+    borrow: usdc(),
+    collateralAmount: 10n ** 18n,
+    borrowAmount: 1_500_000_000n,
+  });
+
+  it('is pairUnsupported, not noLiquidity, for a coming-soon borrow token', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            borrowable: [
+              usdc({ unavailable: true, unavailableReason: 'coming-soon' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is pairUnsupported for a coming-soon collateral', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            collateral: [
+              weth({ unavailable: true, unavailableReason: 'coming-soon' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is still noLiquidity for a borrow token whose cap is reached', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            borrowable: [
+              usdc({ unavailable: true, unavailableReason: 'cap-reached' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('noLiquidity');
   });
 });
 
@@ -336,5 +431,50 @@ describe('checkOriginGas', () => {
         amount: 10n,
       }),
     ).toBe('unknown');
+  });
+});
+
+describe('apiErrorMessage', () => {
+  const apiError = (body: unknown) =>
+    new IntentsConnectApiError('Intents Connect API error', 400, body);
+
+  it("reads the API's error reason", () => {
+    expect(apiErrorMessage(apiError({ error: 'No liquidity available' }))).toBe(
+      'No liquidity available',
+    );
+  });
+
+  it('reads it through a wrapping error', () => {
+    expect(
+      apiErrorMessage(
+        new Error('wrapped', {
+          cause: apiError({ error: 'No liquidity available' }),
+        }),
+      ),
+    ).toBe('No liquidity available');
+  });
+
+  it.each([
+    ['a non-JSON body', '<html>502 Bad Gateway</html>'],
+    ['no body', undefined],
+    ['no error field', { message: 'nope' }],
+    ['an empty error', { error: '  ' }],
+    ['a non-string error', { error: 42 }],
+  ])('is undefined for %s', (_, body) => {
+    expect(apiErrorMessage(apiError(body))).toBeUndefined();
+  });
+
+  it('is undefined for an error that is not from the API', () => {
+    expect(
+      apiErrorMessage(new Error('No liquidity available')),
+    ).toBeUndefined();
+    expect(apiErrorMessage(undefined)).toBeUndefined();
+  });
+
+  it('cuts a very long reason', () => {
+    const reason = apiErrorMessage(apiError({ error: 'x'.repeat(1000) }));
+
+    expect(reason).toHaveLength(301);
+    expect(reason?.endsWith('…')).toBe(true);
   });
 });

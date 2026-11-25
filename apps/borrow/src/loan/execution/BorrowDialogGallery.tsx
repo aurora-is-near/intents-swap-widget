@@ -5,6 +5,7 @@ import {
   BorrowDialog,
   type BorrowDialogLoan,
   type BorrowDialogStep,
+  type RestoredBorrowSummary,
 } from './BorrowDialog';
 import type {
   BorrowErrorKind,
@@ -77,6 +78,18 @@ type Entry = {
   label: string;
   sample: typeof SAME_ASSET;
   step: BorrowDialogStep;
+  /** A borrow the user did not just confirm, shown by its summary. */
+  restored?: RestoredBorrowSummary;
+};
+
+/** The previous borrow, as Borrow finds it with nothing kept for it. */
+const PREVIOUS: RestoredBorrowSummary = {
+  executionId: 'c4911431-8f2e-4b7a-9d1c-5e6f7a8b7841',
+  rows: [
+    ['You pay', '≈ $5.06'],
+    ['Supply', '≈ $5.05'],
+    ['Execution', 'c49114…7841'],
+  ],
 };
 
 function errorEntry(
@@ -101,24 +114,54 @@ const ENTRIES: Entry[] = [
   {
     label: 'Pending · signing',
     sample: SAME_ASSET,
-    step: { kind: 'pending', step: 0 },
+    step: { kind: 'pending', step: 0, note: 'sign' },
+  },
+  {
+    label: 'Pending · deposit',
+    sample: SAME_ASSET,
+    step: { kind: 'pending', step: 0, note: 'deposit' },
+  },
+  {
+    label: 'Pending · awaiting deposit',
+    sample: SAME_ASSET,
+    step: { kind: 'pending', step: 0, note: 'awaitingDeposit' },
   },
   // The artboard's pending state (`phase: 1`).
   {
     label: 'Pending · step 2',
     sample: SAME_ASSET,
-    step: { kind: 'pending', step: 1 },
+    step: { kind: 'pending', step: 1, note: 'bridging' },
   },
   {
     label: 'Pending · step 3',
     sample: SAME_ASSET,
-    step: { kind: 'pending', step: 2 },
+    step: { kind: 'pending', step: 2, note: 'opening' },
+  },
+  {
+    label: 'Pending · previous borrow',
+    sample: SAME_ASSET,
+    step: { kind: 'pending', step: 2, note: 'opening' },
+    restored: PREVIOUS,
+  },
+  {
+    label: 'Cancelling · declined',
+    sample: SAME_ASSET,
+    step: { kind: 'cancelling', reason: 'declined' },
+  },
+  {
+    label: 'Cancelling · previous',
+    sample: SAME_ASSET,
+    step: { kind: 'cancelling', reason: 'previous' },
   },
   { label: 'Done', sample: SAME_ASSET, step: { kind: 'done' } },
   // The error artboards (`Web-/Mob-Borrow-Rejected`, `-NoGas`, `-PriceMoved`,
   // `-NoMarketLiquidity`, `-Delayed`.dc.html), each with its own action.
   errorEntry('Error · rejected', 'rejected', 'retry'),
+  errorEntry('Error · deposit rejected', 'depositRejected', 'retry'),
+  errorEntry('Error · cancel declined', 'cancelDeclined', 'retry'),
+  errorEntry('Error · busy', 'busy', 'close'),
   errorEntry('Error · no gas', 'noGas', 'retry'),
+  errorEntry('Error · quote moved', 'quoteMoved', 'refresh'),
   errorEntry('Error · price moved', 'priceMoved', 'refresh'),
   errorEntry('Error · no liquidity', 'noLiquidity', 'close'),
   errorEntry('Error · delayed', 'delayed', 'close'),
@@ -132,9 +175,11 @@ export function BorrowDialogGallery() {
   const [open, setOpen] = useState<{
     sample: typeof SAME_ASSET;
     step: BorrowDialogStep;
+    restored?: RestoredBorrowSummary;
   }>();
 
-  const pending = open?.step.kind === 'pending';
+  const pending =
+    open?.step.kind === 'pending' || open?.step.kind === 'cancelling';
 
   useEffect(() => {
     if (!pending) {
@@ -160,25 +205,29 @@ export function BorrowDialogGallery() {
         Borrow dialogs
       </h2>
       <div className="flex flex-wrap gap-3">
-        {ENTRIES.map(({ label, sample, step }) => (
+        {ENTRIES.map(({ label, sample, step, restored }) => (
           <Button
             key={label}
             size="md"
             variant="secondary"
-            onClick={() => setOpen({ sample, step })}>
+            onClick={() => setOpen({ sample, step, restored })}>
             {label}
           </Button>
         ))}
       </div>
       <BorrowDialog
-        figures={open?.sample.figures}
-        loan={open?.sample.loan}
+        figures={open?.restored ? undefined : open?.sample.figures}
+        loan={open?.restored ? undefined : open?.sample.loan}
+        restored={open?.restored}
         step={open?.step}
         onCancel={close}
         onConfirm={() =>
           setOpen(
             (current) =>
-              current && { ...current, step: { kind: 'pending', step: 0 } },
+              current && {
+                ...current,
+                step: { kind: 'pending', step: 0, note: 'sign' },
+              },
           )
         }
         onViewPosition={close}
@@ -193,7 +242,7 @@ export function BorrowDialogGallery() {
               ...current,
               step:
                 action === 'retry'
-                  ? { kind: 'pending', step: 0 }
+                  ? { kind: 'pending', step: 0, note: 'sign' }
                   : { kind: 'confirm' },
             };
           })

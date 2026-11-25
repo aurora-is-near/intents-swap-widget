@@ -9,7 +9,7 @@ import type {
   LendingMarket,
   LendingMarketAdapter,
 } from '../../markets/types';
-import { aaveBorrowRecipe, type BorrowParams } from './recipe';
+import type { BorrowParams } from './recipe';
 
 /** Basis points the bridge may slip by. */
 export const BORROW_SLIPPAGE_BPS = 100;
@@ -26,7 +26,7 @@ export type BorrowOrigin = {
 };
 
 export type BorrowPlanInput = {
-  adapter: Pick<LendingMarketAdapter, 'buildBorrowSteps'>;
+  adapter: Pick<LendingMarketAdapter, 'borrowRecipe'>;
   market: LendingMarket;
   collateral: CollateralReserve;
   borrow: BorrowReserve;
@@ -42,7 +42,7 @@ export type BorrowPlanInput = {
 /**
  * A plan that bridges `amount` of the user's token into the collateral on
  * the market's chain, where the intermediary supplies it and borrows, as
- * `aaveBorrowRecipe` says. Modelled on the Aave extension's
+ * the adapter's borrow recipe says. Modelled on the Aave extension's
  * `buildAaveSupplyPlan`.
  */
 export const buildBorrowPlan = ({
@@ -55,7 +55,12 @@ export const buildBorrowPlan = ({
   borrowAmount,
   recipient,
 }: BorrowPlanInput): ExecutionPlan<BorrowParams> => ({
-  recipe: aaveBorrowRecipe(adapter, market, collateral, borrow),
+  recipe: adapter.borrowRecipe({
+    market,
+    collateral,
+    borrow,
+    flow: 'bridge-in',
+  }),
   params: {
     borrowAmount: borrowAmount.toString(),
     recipient: recipient === '' ? undefined : recipient,

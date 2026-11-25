@@ -46,6 +46,12 @@ export type BorrowPreviewErrorReason =
    */
   | 'nothingWaiting'
   /**
+   * A steps-only retry found the pair no longer borrowable through the
+   * borrow action (`coming-soon`): a borrow started before the action
+   * covered only its tables. Its steps can't be built, so it is not retried.
+   */
+  | 'pairUnsupported'
+  /**
    * The final dry run's minimum received is lower than the first's, so the
    * borrow sized on the first would exceed the chosen LTV.
    */

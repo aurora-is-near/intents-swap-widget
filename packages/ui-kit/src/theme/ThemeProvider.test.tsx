@@ -237,3 +237,22 @@ describe('useTheme', () => {
     }
   });
 });
+
+describe('ThemeProvider: a second instance of the kit', () => {
+  it('shares one context, so useTheme from another module copy finds the provider', async () => {
+    vi.resetModules();
+
+    const other = await import('./ThemeProvider');
+
+    // A fresh module evaluation, as a rebuilt dist or the source copy is.
+    expect(other.useTheme).not.toBe(useTheme);
+
+    const { result } = renderHook(() => other.useTheme(), {
+      wrapper: ({ children }) => (
+        <ThemeProvider defaultPreference="dark">{children}</ThemeProvider>
+      ),
+    });
+
+    expect(result.current.theme).toBe('dark');
+  });
+});

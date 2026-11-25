@@ -14,6 +14,7 @@ import { formatApr, formatBps } from '../../markets/format';
 import { formatAddress } from '../../wallet/formatAddress';
 import { formatAmount, toDisplayNumber } from '../loanFormat';
 import {
+  apiErrorMessage,
   type BorrowErrorKind,
   type BorrowRecoveryAction,
   borrowRecoveryAction,
@@ -26,7 +27,11 @@ import {
   WARN_SECONDARY_LABEL,
 } from './errorCopy';
 import type { BorrowPreviewFigures } from './previewFigures';
-import type { BorrowFlowState, BorrowPendingStep } from './useBorrowFlow';
+import type {
+  BorrowCancelReason,
+  BorrowFlowState,
+  BorrowPendingStep,
+} from './useBorrowFlow';
 
 /*
  * The borrow modal (Web-Borrow-Confirm.dc.html lines 965–1025; the borrow
@@ -37,27 +42,61 @@ import type { BorrowFlowState, BorrowPendingStep } from './useBorrowFlow';
  * the rows here are the dry run's.
  */
 
+/**
+ * What a pending borrow waits for, and so what the user is told to do:
+ * - `sign`: the wallet prompt for the intent's signature;
+ * - `deposit`: the wallet prompt for the deposit transaction;
+ * - `awaitingDeposit`: nothing to do; a deposit that may have been sent
+ *   before a reload is waited for;
+ * - `bridging`: nothing to do; the deposit left the wallet;
+ * - `opening`: nothing to do; the loan is opening on the market.
+ */
+type BorrowPendingNote =
+  | 'sign'
+  | 'deposit'
+  | 'awaitingDeposit'
+  | 'bridging'
+  | 'opening';
+
 /** Which of the borrow dialogs is shown. */
 export type BorrowDialogStep =
   | { kind: 'confirm' }
-  | { kind: 'pending'; step: BorrowPendingStep }
-  | { kind: 'done' }
+  | { kind: 'pending'; step: BorrowPendingStep; note: BorrowPendingNote }
   | {
-      /** Signed; the deposit is still to be sent (`useBorrowFlow`'s `deposit`). */
-      kind: 'deposit';
-      depositAddress: string | undefined;
-      /** "Send deposit" is offered; else only the address is shown. */
-      canSend: boolean;
+      /** The wallet prompt to cancel an open execution is up. */
+      kind: 'cancelling';
+      reason: BorrowCancelReason;
     }
+  | { kind: 'done' }
   | {
       kind: 'error';
       error: BorrowErrorKind;
+      /**
+       * The step the borrow had reached, drawn as failed (or active, for a
+       * warning); the kind's own step when not known.
+       */
+      step?: BorrowPendingStep;
       action: BorrowRecoveryAction;
       /** The collateral arrived and waits; the borrow step failed. */
       fundsWaiting: boolean;
       /** While `fundsWaiting`: the execution, so the collateral can be found. */
       executionId?: string;
+      /**
+       * An `unknown` error's reason from the Intents Connect API (such as
+       * "No liquidity available"), shown instead of the generic text.
+       */
+      detail?: string;
     };
+
+/** A pending step's note: step 0 is the deposit prompt, or waiting for it. */
+const PENDING_NOTE_AT: Record<
+  BorrowPendingStep,
+  (waitingForDeposit: boolean) => BorrowPendingNote
+> = {
+  0: (waitingForDeposit) => (waitingForDeposit ? 'awaitingDeposit' : 'deposit'),
+  1: () => 'bridging',
+  2: () => 'opening',
+};
 
 /**
  * The dialog for a flow state. Signing is the artboard's first pending
@@ -75,22 +114,28 @@ export const borrowDialogStep = (
     case 'confirm':
       return { kind: 'confirm' };
     case 'signing':
-      return { kind: 'pending', step: 0 };
+      return { kind: 'pending', step: 0, note: 'sign' };
+    case 'cancelling':
+      return { kind: 'cancelling', reason: state.reason };
     case 'pending':
-      return { kind: 'pending', step: state.step };
+      return {
+        kind: 'pending',
+        step: state.step,
+        note: PENDING_NOTE_AT[state.step](state.waitingForDeposit),
+      };
     case 'done':
       return { kind: 'done' };
-    case 'deposit':
-      return {
-        kind: 'deposit',
-        depositAddress: state.depositAddress,
-        canSend: state.canSend,
-      };
-    case 'error':
+
+    case 'error': {
+      const detail =
+        state.error === 'unknown' ? apiErrorMessage(state.cause) : undefined;
+
       return {
         kind: 'error',
         error: state.error,
+        step: state.step,
         fundsWaiting,
+        ...(detail ? { detail } : {}),
         ...(fundsWaiting && fundsWaitingExecutionId
           ? { executionId: fundsWaitingExecutionId }
           : {}),
@@ -99,6 +144,7 @@ export const borrowDialogStep = (
             ? 'close'
             : (action ?? borrowRecoveryAction(state.error, state.cause)),
       };
+    }
     default:
       return undefined;
   }
@@ -129,24 +175,56 @@ const SUBTITLE = 'Review the terms, then sign once in your wallet.';
 const DONE_TITLE = 'Loan opened';
 const DONE_BUTTON = 'View position';
 
-/** Line 1020. */
-const PENDING_NOTE = 'Check your wallet to sign. Don’t close this window.';
+/**
+ * Line 1020's note, per pending stage: what the borrow waits for and what,
+ * if anything, the user has to do.
+ */
+const pendingNote = (
+  note: BorrowPendingNote,
+  borrowSymbol: string | undefined,
+): string => {
+  switch (note) {
+    case 'sign':
+      return 'Sign the request in your wallet. Nothing is sent until you also confirm the deposit.';
+    case 'deposit':
+      return 'Request signed. Now confirm the deposit transaction in your wallet. Don’t close this window.';
+    case 'awaitingDeposit':
+      return 'Waiting for your deposit to arrive. If you already sent it, it’s picked up here; if you didn’t, the request expires on its own.';
+    case 'bridging':
+      return 'Your deposit left your wallet. The collateral is bridging, which usually takes about a minute. Nothing to do but wait.';
+    default:
+      return `Opening the loan and sending ${borrowSymbol ?? 'the funds'} to your wallet. Nothing to do but wait.`;
+  }
+};
 
 /*
- * A signed borrow whose deposit was not sent (a reload or a reconnect came
- * first). No artboard draws it: the warning banner and buttons of the error
- * dialogs (lines 984–995, 1016–1019), with this copy.
+ * The wallet prompt to cancel an open execution (`useBorrowFlow`'s
+ * `cancelling`). No artboard draws it: the warning banner of the error
+ * dialogs (lines 984–995), with this copy.
  */
-const DEPOSIT_TITLE = 'Deposit not sent yet';
-const DEPOSIT_TEXT =
-  'Your intent is signed, but the deposit wasn’t sent from your wallet. Send it to open the loan.';
+const CANCEL_COPY: Record<BorrowCancelReason, { title: string; text: string }> =
+  {
+    declined: {
+      title: 'Cancel the unsigned request',
+      text: 'You didn’t approve the request, but it was already created and blocks new borrows from this wallet until it’s cancelled. Confirm the cancellation in your wallet. Nothing was sent.',
+    },
+    previous: {
+      title: 'Cancel your earlier request first',
+      text: 'An earlier borrow request from this wallet was never completed and blocks this one. Confirm its cancellation in your wallet, then sign the new request. Nothing was sent for it.',
+    },
+  };
 
-const DEPOSIT_ADDRESS_TITLE = 'Waiting for your deposit';
-const DEPOSIT_ADDRESS_TEXT =
-  'Your intent is signed. A deposit already sent is picked up here. If you haven’t sent it, send the amount you confirmed to the deposit address below.';
+const CANCEL_NOTE = 'Confirm the cancellation in your wallet.';
 
-const SEND_DEPOSIT = 'Send deposit';
 const CLOSE = 'Close';
+
+/*
+ * A borrow the user did not just confirm (`Summary.earlier`), still on its
+ * way. No artboard draws it: the warning banner of the error dialogs.
+ */
+const EARLIER_TITLE = 'Your previous borrow is still in progress';
+const EARLIER_TEXT =
+  'This is the borrow you started earlier, not a new one. You can start a new borrow once it finishes.';
 
 /**
  * The three steps (`n: 3`, line 1453), worded in the order the borrow runs
@@ -177,13 +255,18 @@ const steps = (
       return { label, status: 'waiting' };
     }
 
-    if (dialog.kind === 'deposit') {
-      // The deposit is the rest of the first step.
-      return { label, status: index === 0 ? 'active' : 'waiting' };
+    if (dialog.kind === 'cancelling') {
+      // A declined signature failed the first step; an earlier request's
+      // cancellation comes before this borrow's steps.
+      return {
+        label,
+        status:
+          index === 0 && dialog.reason === 'declined' ? 'failed' : 'waiting',
+      };
     }
 
     if (dialog.kind === 'error') {
-      const at = errorCopy[dialog.error].step;
+      const at = dialog.step ?? errorCopy[dialog.error].step;
       const warn = errorCopy[dialog.error].tone === 'warn';
 
       if (index < at) {
@@ -329,6 +412,11 @@ type Summary = {
   errorContext: Omit<ErrorCopyContext, 'fundsWaiting'>;
   /** Done's line (line 974). */
   doneText: string;
+  /**
+   * A borrow the user did not just confirm: restored after a reload, or the
+   * previous one, still on its way, shown when Borrow was clicked.
+   */
+  earlier: boolean;
 };
 
 /** A restored borrow's error copy names nothing it doesn't know. */
@@ -355,6 +443,7 @@ const summaryOf = (
         marketName: loan.market.name,
       },
       doneText: `${figures ? amountOf(figures.borrowAmount, loan.borrow.decimals) : ''} ${loan.borrow.symbol} is on its way to ${loan.recipient ?? 'your wallet'}.`,
+      earlier: false,
     };
   }
 
@@ -370,6 +459,7 @@ const summaryOf = (
       },
       // The amount and the recipient are in the rows, if at all.
       doneText: `The borrowed ${borrowSymbol ?? 'funds'} ${borrowSymbol ? 'is' : 'are'} on the way.`,
+      earlier: true,
     };
   }
 
@@ -377,14 +467,10 @@ const summaryOf = (
 };
 
 /**
- * Rows the step adds: the deposit address to send to, or the execution whose
- * collateral waits, in full, so it can be looked up.
+ * Rows the step adds: the execution whose collateral waits, in full, so it
+ * can be looked up.
  */
 const extraRows = (step: BorrowDialogStep): [string, string][] => {
-  if (step.kind === 'deposit' && step.depositAddress) {
-    return [['Deposit address', step.depositAddress]];
-  }
-
   if (step.kind === 'error' && step.executionId) {
     return [['Execution', step.executionId]];
   }
@@ -397,10 +483,13 @@ function ErrorBanner({
   error,
   fundsWaiting,
   errorContext,
+  detail,
 }: {
   error: BorrowErrorKind;
   fundsWaiting: boolean;
   errorContext: Summary['errorContext'];
+  /** The API's own reason, shown instead of the kind's text. */
+  detail?: string;
 }) {
   const copy = errorCopy[error];
   const context = { ...errorContext, fundsWaiting };
@@ -410,7 +499,7 @@ function ErrorBanner({
       className="mt-[16px]"
       title={copy.title(context)}
       tone={copy.tone === 'warn' ? 'warning' : 'danger'}>
-      {copy.text(context)}
+      {detail ?? copy.text(context)}
     </Banner>
   );
 }
@@ -472,23 +561,22 @@ type BorrowDialogProps = {
   onViewPosition: () => void;
   /** The error dialog's button: the step's `action` (`retry`, …). */
   onAction: (action: BorrowRecoveryAction) => void;
-  /** "Send deposit" on the deposit dialog. */
-  onSendDeposit?: () => void;
 };
 
 const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
   a.kind === b.kind &&
-  (a.kind !== 'pending' || (b.kind === 'pending' && a.step === b.step)) &&
-  (a.kind !== 'deposit' ||
-    (b.kind === 'deposit' &&
-      a.depositAddress === b.depositAddress &&
-      a.canSend === b.canSend)) &&
+  (a.kind !== 'pending' ||
+    (b.kind === 'pending' && a.step === b.step && a.note === b.note)) &&
+  (a.kind !== 'cancelling' ||
+    (b.kind === 'cancelling' && a.reason === b.reason)) &&
   (a.kind !== 'error' ||
     (b.kind === 'error' &&
       a.error === b.error &&
+      a.step === b.step &&
       a.action === b.action &&
       a.fundsWaiting === b.fundsWaiting &&
-      a.executionId === b.executionId));
+      a.executionId === b.executionId &&
+      a.detail === b.detail));
 
 type Shown = {
   step: BorrowDialogStep;
@@ -502,13 +590,16 @@ type Shown = {
  * The confirm, pending and done dialogs of a borrow:
  * - Confirm: the dry run's rows, the three steps waiting, "Confirm in
  *   wallet" and Cancel; it closes like any dialog.
- * - Pending: the rows and the steps as the runner moves them, and the note
- *   to keep the window open. It cannot be closed (line 1625).
+ * - Pending: the rows and the steps as the runner moves them, and a note
+ *   saying what the borrow waits for and what the user has to do. It
+ *   cannot be closed (line 1625), except while it only waits for a deposit
+ *   sent before a reload, or follows a borrow the user did not just confirm
+ *   (restored, or the previous one), which a banner names: then nothing is
+ *   asked of the user.
+ * - Cancelling: why a wallet prompt to cancel an open request is up, the
+ *   steps, and the note to confirm it. It cannot be closed either.
  * - Done: "Loan opened" and "View position". No close button (the artboard
  *   draws none), but Escape and an outside press close it (line 1625).
- * - Deposit: signed, the deposit not sent; "Send deposit" when it can be
- *   sent from here, and the deposit address. It closes like any dialog: the
- *   borrow is restored again on the next visit.
  */
 export function BorrowDialog({
   step,
@@ -519,7 +610,6 @@ export function BorrowDialog({
   onCancel,
   onViewPosition,
   onAction,
-  onSendDeposit,
 }: BorrowDialogProps) {
   // An error before the dry run finished (a pre-check) has no figures. A
   // restored borrow has its rows instead, and is never confirmed here.
@@ -553,6 +643,15 @@ export function BorrowDialog({
   const kind = content?.step.kind;
 
   const step_ = content?.step;
+  // Waiting for a deposit sent before a reload, or following a borrow the
+  // user did not just confirm: nothing is asked of the user, so it closes.
+  const earlierPending =
+    step_?.kind === 'pending' && content?.summary.earlier === true;
+
+  const closableWait =
+    earlierPending ||
+    (step_?.kind === 'pending' && step_.note === 'awaitingDeposit');
+
   let footer: ReactNode = null;
 
   if (step_?.kind === 'confirm') {
@@ -581,38 +680,32 @@ export function BorrowDialog({
         onViewPosition={onViewPosition}
       />
     );
-  } else if (step_?.kind === 'deposit') {
-    footer = step_.canSend ? (
-      <>
-        <Button className="mt-[20px]" onClick={onSendDeposit}>
-          {SEND_DEPOSIT}
-        </Button>
-        <div className="mt-[12px] text-center">
-          <Button variant="link" onClick={onCancel}>
-            {CLOSE}
-          </Button>
-        </div>
-      </>
-    ) : (
-      <Button className="mt-[20px]" onClick={onCancel}>
-        {CLOSE}
-      </Button>
-    );
-  } else if (step_?.kind === 'pending') {
+  } else if (step_?.kind === 'pending' || step_?.kind === 'cancelling') {
     // Line 1020: 14px `mut2`, centred, 20px above.
     footer = (
-      <p
-        className="m-0 mt-[20px] text-center text-[14px] leading-[normal] text-mut2"
-        role="status">
-        {PENDING_NOTE}
-      </p>
+      <>
+        <p
+          className="m-0 mt-[20px] text-center text-[14px] leading-[normal] text-mut2"
+          role="status">
+          {step_.kind === 'pending'
+            ? pendingNote(step_.note, content?.summary.borrowSymbol)
+            : CANCEL_NOTE}
+        </p>
+        {closableWait ? (
+          <Button className="mt-[20px]" onClick={onCancel}>
+            {CLOSE}
+          </Button>
+        ) : null}
+      </>
     );
   }
 
   return (
     <Dialog
-      closeButton={kind === 'confirm' || kind === 'error' || kind === 'deposit'}
-      dismissible={kind !== 'pending'}
+      closeButton={kind === 'confirm' || kind === 'error' || closableWait}
+      dismissible={
+        closableWait || (kind !== 'pending' && kind !== 'cancelling')
+      }
       open={open}
       onOpenChange={(next) => {
         if (!next) {
@@ -654,19 +747,26 @@ export function BorrowDialog({
               <DialogDescription>{SUBTITLE}</DialogDescription>
               {content.step.kind === 'error' ? (
                 <ErrorBanner
+                  detail={content.step.detail}
                   error={content.step.error}
                   errorContext={content.summary.errorContext}
                   fundsWaiting={content.step.fundsWaiting}
                 />
               ) : null}
-              {content.step.kind === 'deposit' ? (
+              {earlierPending ? (
                 <Banner
                   className="mt-[16px]"
-                  title={
-                    content.step.canSend ? DEPOSIT_TITLE : DEPOSIT_ADDRESS_TITLE
-                  }
+                  title={EARLIER_TITLE}
                   tone="warning">
-                  {content.step.canSend ? DEPOSIT_TEXT : DEPOSIT_ADDRESS_TEXT}
+                  {EARLIER_TEXT}
+                </Banner>
+              ) : null}
+              {content.step.kind === 'cancelling' ? (
+                <Banner
+                  className="mt-[16px]"
+                  title={CANCEL_COPY[content.step.reason].title}
+                  tone="warning">
+                  {CANCEL_COPY[content.step.reason].text}
                 </Banner>
               ) : null}
               {content.summary.rows ? (
