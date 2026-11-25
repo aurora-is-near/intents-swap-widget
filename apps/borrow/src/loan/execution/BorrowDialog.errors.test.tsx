@@ -354,6 +354,53 @@ describe("BorrowDialog: the API's own reason", () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps the latest reason while the dialog closes', () => {
+    const props = {
+      figures: FIGURES,
+      loan: LOAN,
+      onAction: vi.fn(),
+      onCancel: vi.fn(),
+      onConfirm: vi.fn(),
+      onViewPosition: vi.fn(),
+    };
+
+    const { rerender } = render(
+      <BorrowDialog
+        {...props}
+        step={borrowDialogStep(apiFailure({ error: 'First reason' }))}
+      />,
+    );
+
+    rerender(
+      <BorrowDialog
+        {...props}
+        step={borrowDialogStep(apiFailure({ error: 'Second reason' }))}
+      />,
+    );
+
+    expect(screen.getByText('Second reason')).toBeInTheDocument();
+
+    // An exit animation that never ends keeps the closing popup mounted,
+    // as a browser does while it animates out.
+    const pending = [
+      { finished: new Promise(() => {}) } as unknown as Animation,
+    ];
+
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () => pending,
+    });
+
+    try {
+      rerender(<BorrowDialog {...props} step={undefined} />);
+
+      expect(screen.getByText('Second reason')).toBeInTheDocument();
+      expect(screen.queryByText('First reason')).not.toBeInTheDocument();
+    } finally {
+      Reflect.deleteProperty(Element.prototype, 'getAnimations');
+    }
+  });
+
   it("keeps a known kind's own copy", () => {
     const step = borrowDialogStep({
       ...apiFailure({ error: 'No liquidity available' }),

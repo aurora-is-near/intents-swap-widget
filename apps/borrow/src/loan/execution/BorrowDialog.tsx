@@ -503,7 +503,8 @@ const sameStep = (a: BorrowDialogStep, b: BorrowDialogStep) =>
       a.error === b.error &&
       a.action === b.action &&
       a.fundsWaiting === b.fundsWaiting &&
-      a.executionId === b.executionId));
+      a.executionId === b.executionId &&
+      a.detail === b.detail));
 
 type Shown = {
   step: BorrowDialogStep;
