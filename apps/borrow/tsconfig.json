@@ -1,9 +1,7 @@
 {
   "include": [
     "src",
-    "server",
-    "api",
-    "plugins",
+    "vite-plugins",
     "vite.config.ts",
     "vitest.config.ts"
   ],
@@ -22,6 +20,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "paths": {
+        "@/*": ["./src/*"],
+    },
   }
 }

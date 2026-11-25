@@ -5,8 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_REOWN_PROJECT_ID?: string;
   /** Intents Connect API; the alpha API when unset. */
   readonly VITE_INTENTS_CONNECT_API_URL?: string;
-  /** The API-key proxy for create calls; `/api/intents-connect` when unset. */
-  readonly VITE_INTENTS_CONNECT_API_KEY_PROXY_URL?: string;
+  /** Intents Connect API key (client-side) for the SDK's create calls. */
+  readonly VITE_INTENTS_CONNECT_API_KEY?: string;
   /** Base JSON-RPC for Aave market reads; publicnode when unset. */
   readonly VITE_RPC_URL_BASE?: string;
   /** Arbitrum One JSON-RPC for Aave market reads; publicnode when unset. */

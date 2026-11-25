@@ -17,6 +17,30 @@ const loadConfig = async () => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
+
+describe('missing Intents Connect API key', () => {
+  it('is reported once at start-up', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    vi.stubEnv('VITE_INTENTS_CONNECT_API_KEY', ' ');
+
+    const { MISSING_INTENTS_CONNECT_API_KEY_MESSAGE } = await loadConfig();
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(MISSING_INTENTS_CONNECT_API_KEY_MESSAGE);
+  });
+
+  it('is not reported when the key is set', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    vi.stubEnv('VITE_INTENTS_CONNECT_API_KEY', 'client-key');
+
+    await loadConfig();
+
+    expect(error).not.toHaveBeenCalled();
+  });
 });
 
 describe('REOWN_PROJECT_ID', () => {
@@ -56,9 +80,9 @@ describe('RPC URLs', () => {
 });
 
 describe('intentsConnectApi', () => {
-  it('sends create calls through the same-origin proxy by default, with no key', async () => {
+  it('uses the alpha API and no key by default', async () => {
     vi.stubEnv('VITE_INTENTS_CONNECT_API_URL', '');
-    vi.stubEnv('VITE_INTENTS_CONNECT_API_KEY_PROXY_URL', '');
+    vi.stubEnv('VITE_INTENTS_CONNECT_API_KEY', '');
 
     const { intentsConnectApi } = await loadConfig();
 
@@ -68,18 +92,14 @@ describe('intentsConnectApi', () => {
 
     expect(options).toEqual({
       baseUrl: 'https://intents-connect-alpha-api.aurora.dev',
-      apiKeyProxyUrl: `${window.location.origin}/api/intents-connect`,
+      apiKey: undefined,
     });
-    expect(options).not.toHaveProperty('apiKey');
     expect(intentsConnectApi).toEqual({ options });
   });
 
-  it('reads both URLs from the environment', async () => {
+  it('reads the URL and the client-side key from the environment', async () => {
     vi.stubEnv('VITE_INTENTS_CONNECT_API_URL', 'https://api.example');
-    vi.stubEnv(
-      'VITE_INTENTS_CONNECT_API_KEY_PROXY_URL',
-      'https://proxy.example/keyed',
-    );
+    vi.stubEnv('VITE_INTENTS_CONNECT_API_KEY', ' client-key ');
 
     await loadConfig();
 
@@ -87,8 +107,8 @@ describe('intentsConnectApi', () => {
 
     expect(options).toEqual({
       baseUrl: 'https://api.example',
-      apiKeyProxyUrl: 'https://proxy.example/keyed',
+      apiKey: 'client-key',
     });
-    expect(options).not.toHaveProperty('apiKey');
+    expect(options).not.toHaveProperty('apiKeyProxyUrl');
   });
 });

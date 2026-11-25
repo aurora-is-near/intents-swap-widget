@@ -56,21 +56,14 @@ yarn turbo run build typecheck lint test --filter=borrow
 - **CSS** (`src/index.css`): Tailwind, then the kit's stylesheet. `#root`
   has `isolation: isolate`, so the kit's portalled popups stack above the
   app. The `mobile:` variant is the artboards' `max-width: 640px` block.
-- **Intents Connect** (`src/config.ts`, `src/wallet/`): one API client with
-  no key; `IntentsConnectProvider` gets it and the AppKit wallet (`null`
+- **Intents Connect** (`src/config.ts`, `src/wallet/`): one API client,
+  keyed with the client-side `VITE_INTENTS_CONNECT_API_KEY` (the SDK adds
+  `x-api-key` to its two create calls); `IntentsConnectProvider` gets it and the AppKit wallet (`null`
   while disconnected), under a `QueryClientProvider`. `src/intentsApi.ts`
   is the intents API client the SDK's balance hooks need, passed to the
   provider from `App.tsx`. Its key, `VITE_INTENTS_API_KEY`, is **required**
   and public (it travels in the URL path); unset, the app logs a
   configuration error at start-up and no balances load.
-- **API-key proxy** (`server/intentsConnectProxy.ts`): the SDK's two create
-  calls (`POST api/v1/executions/:wallet` and `…/:wallet/steps`) go to
-  `/api/intents-connect`, which adds `x-api-key` from the server-only
-  `INTENTS_CONNECT_API_KEY` and forwards them; any other path or method is
-  refused. `plugins/intentsConnectProxy.ts` mounts it in `vite dev` and
-  `vite preview`, and the Vercel Edge Function `api/intents-connect.ts` in
-  production. Put the key in `.env.local` (see `.env.example`); never prefix
-  it with `VITE_`.
 - **Markets** (`src/markets/`): screens see lending protocols only through
   `types.ts` (`LendingMarketAdapter`, markets, reserves, snapshots).
   `aaveV3/registry.ts` holds the Aave V3 Pool, data provider and oracle for
@@ -130,13 +123,6 @@ yarn turbo run build typecheck lint test --filter=borrow
   (`marketFit.ts`), the call-to-action state (`ctaState.ts`) and the
   recipient check (`recipient.ts`). `useLoanForm` derives the form's
   figures through it.
-- **Vercel routing**: catch-all files in `api/` are not reliably routed
-  outside Next.js, so `vercel.json` rewrites `/api/intents-connect/:path*`
-  to `/api/intents-connect?path=:path*`, and the function restores the
-  original path before the handler checks it. Keep that rewrite (first) when
-  the deployment adds the SPA rewrite to `index.html`, and check on a preview
-  deploy that `POST /api/intents-connect/api/v1/executions/0xabc/steps`
-  reaches the function.
 
 ## The borrow flow
 
@@ -294,12 +280,10 @@ whether its deposit left the wallet; after a reload only the API is known.
 
 The borrow needs, besides the wallet's `VITE_REOWN_PROJECT_ID`:
 
-- `INTENTS_CONNECT_API_KEY` (server-only, never `VITE_`): the proxy adds it
-  to the two create calls. Without it every borrow fails at creation. Its
-  fee configuration is the borrow fee.
-- `VITE_INTENTS_CONNECT_API_URL` (optional, public) and
-  `INTENTS_CONNECT_API_URL` (optional, the proxy's target);
-  `VITE_INTENTS_CONNECT_API_KEY_PROXY_URL` (default `/api/intents-connect`).
+- `VITE_INTENTS_CONNECT_API_KEY` (public, client-side): the SDK sends it on
+  the two create calls. Without it every borrow fails at creation. Its fee
+  configuration is the borrow fee.
+- `VITE_INTENTS_CONNECT_API_URL` (optional, public).
 - `VITE_INTENTS_API_KEY` (required, public): balances and the token list.
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
   liquidity pre-check and the failed-step diagnosis.

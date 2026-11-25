@@ -1,9 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    {
-      "source": "/api/intents-connect/:path*",
-      "destination": "/api/intents-connect?path=:path*"
-    }
-  ]
-}

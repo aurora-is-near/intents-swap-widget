@@ -1,10 +1,6 @@
 import { createIntentsConnectApi } from '@aurora-is-near/intents-connect';
 
 import { readEnv } from './env';
-import {
-  DEFAULT_INTENTS_CONNECT_API_URL,
-  INTENTS_CONNECT_PROXY_PATH,
-} from './intentsConnectUrls';
 
 /**
  * The Reown (WalletConnect Cloud) project id, from `VITE_REOWN_PROJECT_ID`.
@@ -20,21 +16,33 @@ export const REOWN_PROJECT_ID: string | undefined = readEnv(
   import.meta.env.VITE_REOWN_PROJECT_ID,
 );
 
-/** The Intents Connect API every call without a key goes to. */
+/** The Intents Connect API used when no URL is configured. */
+export const DEFAULT_INTENTS_CONNECT_API_URL =
+  'https://intents-connect-alpha-api.aurora.dev';
+
+/** The Intents Connect API, from `VITE_INTENTS_CONNECT_API_URL`. */
 export const INTENTS_CONNECT_API_URL =
   readEnv(import.meta.env.VITE_INTENTS_CONNECT_API_URL) ??
   DEFAULT_INTENTS_CONNECT_API_URL;
 
 /**
- * Where the SDK sends its create calls: our own proxy, which adds the
- * server-side `x-api-key`. Resolved against the page's origin because the SDK
- * joins paths with `new URL`, which rejects a relative base.
+ * The Intents Connect API key, from `VITE_INTENTS_CONNECT_API_KEY`. A
+ * client-side key: it ships in the bundle, and the SDK sends it as
+ * `x-api-key` on its two create calls.
  */
-export const INTENTS_CONNECT_API_KEY_PROXY_URL = new URL(
-  readEnv(import.meta.env.VITE_INTENTS_CONNECT_API_KEY_PROXY_URL) ??
-    INTENTS_CONNECT_PROXY_PATH,
-  window.location.origin,
-).toString();
+export const INTENTS_CONNECT_API_KEY = readEnv(
+  import.meta.env.VITE_INTENTS_CONNECT_API_KEY,
+);
+
+/** What is reported when the key is missing, so the cause is plain. */
+export const MISSING_INTENTS_CONNECT_API_KEY_MESSAGE =
+  '[Borrow] VITE_INTENTS_CONNECT_API_KEY is not set: every borrow will fail at creation. Add it to apps/borrow/.env.local (or the deployment environment; it was INTENTS_CONNECT_API_KEY before) and rebuild.';
+
+if (!INTENTS_CONNECT_API_KEY) {
+  // A configuration error, reported once at start-up like the intents API
+  // key in `intentsApi.ts`; the app still runs, but cannot create borrows.
+  console.error(MISSING_INTENTS_CONNECT_API_KEY_MESSAGE);
+}
 
 /**
  * Default read RPCs for the Aave markets: the publicnode endpoints the wallet
@@ -63,12 +71,8 @@ export const RPC_URL_ARB =
  */
 export const BORROW_FEE_BPS = 30;
 
-/**
- * The app's one Intents Connect client. It carries no API key: the key lives
- * only on the server (`INTENTS_CONNECT_API_KEY`), and create calls reach it
- * through `apiKeyProxyUrl`.
- */
+/** The app's one Intents Connect client. */
 export const intentsConnectApi = createIntentsConnectApi({
   baseUrl: INTENTS_CONNECT_API_URL,
-  apiKeyProxyUrl: INTENTS_CONNECT_API_KEY_PROXY_URL,
+  apiKey: INTENTS_CONNECT_API_KEY,
 });
