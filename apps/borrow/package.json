@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@aurora-is-near/intents-connect": "*",
+    "@aurora-is-near/intents-connect-actions": "*",
     "@aurora-is-near/intents-connect-wallet": "*",
     "@aurora-is-near/ui-kit": "*",
     "@reown/appkit": "1.8.11",

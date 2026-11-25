@@ -6,6 +6,7 @@ import {
   type FundingAssets,
   useFundingAssets,
 } from '../balances/useFundingAssets';
+import { isComingSoon, isReserveAvailable } from '../markets/availability';
 import { tokenAmountToUsd } from '../markets/format';
 import type {
   BorrowReserve,
@@ -34,9 +35,10 @@ import { sameSymbol } from './model/symbols';
  * not connected: WETH collateral and USDC borrow. The artboard's default is
  * wstETH (line 1052), but 1Click does not deliver wstETH on Base or
  * Arbitrum; WETH is delivered on both and is Aave collateral on both
- * (decided in the feature review).
+ * (decided in the feature review). Both are in the borrow action's tables
+ * on every chain, so the pair is never "Coming soon" (tested).
  */
-const DEFAULT_PAIR: MarketPair = { collateral: 'WETH', borrow: 'USDC' };
+export const DEFAULT_PAIR: MarketPair = { collateral: 'WETH', borrow: 'USDC' };
 
 /** The slider's starting loan-to-value, in whole percent (line 1053). */
 const DEFAULT_LTV = 50;
@@ -52,6 +54,11 @@ export type ReserveAsset = {
   markets: LendingMarket[];
   /** One whole token in dollars, from the first listing market's oracle. */
   priceUsd: number;
+  /**
+   * The borrow action covers it on no chain: listed, but not pickable.
+   * `markets` are then the markets listing it.
+   */
+  comingSoon?: true;
 };
 
 /** What the Supply picker funds the loan with. */
@@ -77,7 +84,10 @@ export type LoanForm = {
   funding: Funding;
   /** Picks a wallet balance (by asset id) or, not connected, a collateral symbol. */
   pickFunding: (id: string) => void;
-  /** The collateral reserves across the markets, for the picker while not connected. */
+  /**
+   * The collateral reserves across the markets, for the picker while not
+   * connected; those `comingSoon` last.
+   */
   collateralAssets: ReserveAsset[];
 
   /** The amount as typed, in the funding asset. */
@@ -89,7 +99,10 @@ export type LoanForm = {
   /** The collateral the funding asset is supplied as, in the selected market. */
   collateral: { symbol: string; decimals: number; convertedFrom?: string };
 
-  /** The borrowable reserves across the markets, less the collateral's symbol. */
+  /**
+   * The borrowable reserves across the markets, less the collateral's
+   * symbol; those `comingSoon` last.
+   */
   borrowAssets: ReserveAsset[];
   borrow: { symbol: string; decimals: number };
   setBorrowSymbol: (symbol: string) => void;
@@ -203,45 +216,76 @@ const USD_SCALE = 100_000_000;
 
 /**
  * The reserves of one kind across the snapshots, once per symbol (matched in
- * any case), skipping those that cannot take a new loan now.
+ * any case), with the markets that can take a new loan in it now. A symbol
+ * the borrow action covers on no chain follows, marked `comingSoon`, with
+ * the markets listing it. A symbol only unavailable for a reached cap is
+ * left out, as before.
  */
 const reserveAssets = (
   snapshots: readonly MarketSnapshot[],
   reservesOf: (
     snapshot: MarketSnapshot,
   ) => readonly (CollateralReserve | BorrowReserve)[],
-): ReserveAsset[] =>
-  snapshots.reduce<ReserveAsset[]>((assets, snapshot) => {
-    reservesOf(snapshot).forEach((reserve) => {
-      if (reserve.unavailable === true) {
-        return;
-      }
+): ReserveAsset[] => {
+  const assets: ReserveAsset[] = [];
 
-      const known = assets.find(({ symbol }) =>
-        sameSymbol(symbol, reserve.symbol),
-      );
+  const add = (
+    snapshot: MarketSnapshot,
+    reserve: CollateralReserve | BorrowReserve,
+    comingSoon: boolean,
+  ) => {
+    const known = assets.find(({ symbol }) =>
+      sameSymbol(symbol, reserve.symbol),
+    );
 
-      if (known) {
-        known.markets.push(snapshot.market);
+    if (known) {
+      known.markets.push(snapshot.market);
 
-        return;
-      }
+      return;
+    }
 
-      assets.push({
-        symbol: reserve.symbol,
+    assets.push({
+      symbol: reserve.symbol,
+      decimals: reserve.decimals,
+      markets: [snapshot.market],
+      priceUsd: tokenAmountToUsd({
+        amount: 10n ** BigInt(reserve.decimals),
         decimals: reserve.decimals,
-        markets: [snapshot.market],
-        priceUsd: tokenAmountToUsd({
-          amount: 10n ** BigInt(reserve.decimals),
-          decimals: reserve.decimals,
-          priceBase: reserve.priceBase,
-          baseCurrencyUnit: snapshot.baseCurrencyUnit,
-        }),
-      });
+        priceBase: reserve.priceBase,
+        baseCurrencyUnit: snapshot.baseCurrencyUnit,
+      }),
+      ...(comingSoon && { comingSoon: true as const }),
     });
+  };
 
-    return assets;
-  }, []);
+  snapshots.forEach((snapshot) => {
+    reservesOf(snapshot).forEach((reserve) => {
+      if (isReserveAvailable(reserve)) {
+        add(snapshot, reserve, false);
+      }
+    });
+  });
+
+  // Covered somewhere, even if capped there: never "Coming soon".
+  const covered = snapshots.flatMap((snapshot) =>
+    reservesOf(snapshot).flatMap((reserve) =>
+      isComingSoon(reserve) ? [] : [reserve.symbol],
+    ),
+  );
+
+  snapshots.forEach((snapshot) => {
+    reservesOf(snapshot).forEach((reserve) => {
+      if (
+        isComingSoon(reserve) &&
+        !covered.some((symbol) => sameSymbol(symbol, reserve.symbol))
+      ) {
+        add(snapshot, reserve, true);
+      }
+    });
+  });
+
+  return assets;
+};
 
 /**
  * The collateral symbol a funding asset is read for across the markets: the
@@ -414,13 +458,17 @@ export const useLoanForm = ({
     ({ borrowable }) => borrowable,
   ).filter(({ symbol }) => !sameSymbol(symbol, collateralSymbol));
 
+  const pickableBorrow = borrowAssets.filter(
+    ({ comingSoon }) => comingSoon !== true,
+  );
+
   const bySymbol = (wanted: string) =>
-    borrowAssets.find(({ symbol }) => sameSymbol(symbol, wanted));
+    pickableBorrow.find(({ symbol }) => sameSymbol(symbol, wanted));
 
   const borrowAsset =
     bySymbol(borrowSymbol) ??
     (sameSymbol(borrowSymbol, collateralSymbol)
-      ? (bySymbol(DEFAULT_PAIR.borrow) ?? borrowAssets[0])
+      ? (bySymbol(DEFAULT_PAIR.borrow) ?? pickableBorrow[0])
       : undefined);
 
   const pair: MarketPair = {

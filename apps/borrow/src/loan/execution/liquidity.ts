@@ -1,3 +1,4 @@
+import { isReserveAvailable } from '../../markets/availability';
 import type { BorrowReserve, MarketSnapshot } from '../../markets/types';
 
 export type LiquidityCheck = 'ok' | 'noLiquidity';
@@ -17,7 +18,7 @@ export const checkLiquidity = (
   );
 
   return reserve &&
-    reserve.unavailable !== true &&
+    isReserveAvailable(reserve) &&
     reserve.availableLiquidity >= borrowAmount
     ? 'ok'
     : 'noLiquidity';

@@ -1,3 +1,4 @@
+import { isReserveAvailable } from '../../markets/availability';
 import type { CollateralReserve, MarketSnapshot } from '../../markets/types';
 import { sameSymbol } from './symbols';
 
@@ -21,7 +22,7 @@ type CollateralChoice = {
 const listed = (market: MarketSnapshot, symbol: string) =>
   market.collateral.find(
     (reserve) =>
-      sameSymbol(reserve.symbol, symbol) && reserve.unavailable !== true,
+      sameSymbol(reserve.symbol, symbol) && isReserveAvailable(reserve),
   );
 
 /**

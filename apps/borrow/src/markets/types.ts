@@ -24,6 +24,16 @@ export type LendingMarket = {
   chainLabel: string;
 };
 
+/**
+ * Why a listed reserve cannot take a new loan now:
+ * - `cap-reached`: its supply cap (collateral) or borrow cap (borrow) is
+ *   reached; it comes back once there is room.
+ * - `coming-soon`: the borrow action (`aave-v3-borrow` in
+ *   `@aurora-is-near/intents-connect-actions`) does not cover it yet. Takes
+ *   the place of `cap-reached` when both hold.
+ */
+export type ReserveUnavailableReason = 'cap-reached' | 'coming-soon';
+
 /** A reserve that can be supplied as collateral. */
 export type CollateralReserve = {
   asset: Address;
@@ -39,6 +49,8 @@ export type CollateralReserve = {
   priceBase: bigint;
   /** Listed but not suppliable now, such as when the supply cap is reached. */
   unavailable?: boolean;
+  /** Why it is `unavailable`, when the adapter knows. */
+  unavailableReason?: ReserveUnavailableReason;
   /**
    * The wrapped native reserve (WETH), counted as supported because the
    * native token is delivered on its chain; it is supplied through Aave's
@@ -63,6 +75,8 @@ export type BorrowReserve = {
   priceBase: bigint;
   /** Listed but not borrowable now, such as when the borrow cap is reached. */
   unavailable?: boolean;
+  /** Why it is `unavailable`, when the adapter knows. */
+  unavailableReason?: ReserveUnavailableReason;
 };
 
 /** One market's reserves, all read at the same block. */

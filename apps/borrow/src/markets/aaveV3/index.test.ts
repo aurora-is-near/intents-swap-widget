@@ -135,7 +135,16 @@ describe('createAaveV3Adapter', () => {
       market,
       blockNumber: 999n,
       baseCurrencyUnit: 100_000_000n,
-      collateral: [{ ...read.collateral[0], assetId: usdcToken.assetId }],
+      // USDC is not collateral in the borrow action's tables: still listed,
+      // marked coming soon.
+      collateral: [
+        {
+          ...read.collateral[0],
+          assetId: usdcToken.assetId,
+          unavailable: true,
+          unavailableReason: 'coming-soon',
+        },
+      ],
       borrowable: [{ ...read.borrowable[0], assetId: usdcToken.assetId }],
     });
   });

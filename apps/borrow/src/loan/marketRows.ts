@@ -1,3 +1,4 @@
+import { isReserveAvailable } from '../markets/availability';
 import { tokenAmountToUsd } from '../markets/format';
 import type { LendingMarket, MarketSnapshot } from '../markets/types';
 import { sameSymbol } from './model/symbols';
@@ -26,7 +27,8 @@ export type MarketRow = {
 /**
  * The pair's figures in one snapshot: APR and liquidity from the borrow
  * reserve, the LTVs from the collateral reserve. `undefined` when the market
- * lacks either reserve, or either cannot take a new loan now. Symbols are
+ * lacks either reserve, or either cannot take a new loan now (cap reached
+ * or coming soon). Symbols are
  * matched in any case, so Arbitrum's bridged `USDC.e` is not taken for USDC.
  */
 export const pairRow = (
@@ -44,8 +46,8 @@ export const pairRow = (
   if (
     !collateral ||
     !borrow ||
-    collateral.unavailable === true ||
-    borrow.unavailable === true
+    !isReserveAvailable(collateral) ||
+    !isReserveAvailable(borrow)
   ) {
     return undefined;
   }

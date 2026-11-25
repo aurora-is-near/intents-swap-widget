@@ -5,6 +5,7 @@ import type {
   LendingMarketAdapter,
   MarketSnapshot,
 } from '../types';
+import { markCoverage } from './coverage';
 import { AAVE_V3_MARKETS, type AaveMarket } from './registry';
 import { type AaveReadClient, readAaveReserves } from './reserves';
 import { buildAaveBorrowSteps } from './steps';
@@ -51,7 +52,8 @@ const aaveMarketOf = (market: LendingMarket): AaveMarket => {
 /**
  * Aave V3 on Borrow's launch chains (Base and Arbitrum). A snapshot is the
  * reserves 1Click can deliver: the supported token list first (a failed list
- * rejects), then one pinned read of only those reserves. Caching is left to
+ * rejects), then one pinned read of only those reserves. Those the borrow
+ * action does not cover stay listed, marked `coming-soon`. Caching is left to
  * the caller (react-query in `useMarketSnapshots`); snapshots read at the same
  * time share one token list request, which is dropped once it settles, so a
  * failure is never reused.
@@ -87,7 +89,7 @@ export const createAaveV3Adapter = ({
         market: toLendingMarket(aave),
         blockNumber: reserves.blockNumber,
         baseCurrencyUnit: reserves.baseCurrencyUnit,
-        ...withDeliveredAssets(reserves, supported),
+        ...markCoverage(aave, withDeliveredAssets(reserves, supported)),
       };
     },
 

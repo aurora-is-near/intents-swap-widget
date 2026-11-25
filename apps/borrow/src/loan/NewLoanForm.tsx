@@ -117,13 +117,24 @@ const fundingOption = (asset: FundingAsset): TokenOption => ({
   unavailableReason: asset.unavailableReason,
 });
 
-/** A reserve as a picker row: the chains of its markets and its price. */
+/**
+ * Why a reserve row can't be picked: the borrow action does not cover it
+ * yet. The artboards draw no such row, so it takes the funding picker's
+ * disabled-with-reason treatment ("Not supported yet").
+ */
+const COMING_SOON_REASON = 'Coming soon';
+
+/**
+ * A reserve as a picker row: the chains of its markets and its price;
+ * disabled, "Coming soon", when the borrow action does not cover it.
+ */
 const reserveOption = (asset: ReserveAsset): TokenOption => ({
   id: asset.symbol,
   symbol: asset.symbol,
   mark: markOf(asset.symbol),
   chainsLabel: asset.markets.map(({ chainLabel }) => chainLabel).join(' · '),
   priceLabel: `$${(asset.priceUsd > 10 ? USD_ROUND : USD_CENTS).format(asset.priceUsd)}`,
+  unavailableReason: asset.comingSoon ? COMING_SOON_REASON : undefined,
 });
 
 type FilterValue = { group: Group; chain: string };
