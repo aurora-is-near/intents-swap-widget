@@ -27,6 +27,10 @@ INTENTS_CONNECT_API_KEY=<your key> \
 
 The key is read from the environment only. The test never logs it, writes it to a file or puts it in an error message; keep it that way when you change the test. `INTENTS_CONNECT_API_URL` overrides the API base URL (default `https://intents-connect-api.aurora.dev`). Each case prints one JSON line (chain, collateral, status, quote, network fee) without the key: paste those lines into the PR body. A collateral that fails to quote must be dropped from the tables, which makes the Borrow app show it as "Coming soon".
 
+### Open follow-up: the dry run has not been run yet
+
+No API key was available when the action was built, so the dry-run check above has never run against the API. The 1Click asset ids in `constants.ts` and `script.star` were checked against the token list only, and whether 1Click delivers cbBTC on Base is still unproven. The API may also reject a dry bridge-in whose steps carry `{MIN_AMOUNT_OUT}`; if it does, change the test to send empty steps. Before the action is deployed, a person with a key runs the check and pastes the five JSON lines into the PR. If an entry fails to quote, drop it from `constants.ts`, `script.star`, the `collateral` enum in `definition.json` and the action README's tables.
+
 ## Hand-over to the actions repo
 
 A person copies the action after the feature is merged:

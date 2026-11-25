@@ -103,16 +103,15 @@ describe.skipIf(!process.env.INTENTS_CONNECT_API_KEY)(
         }
 
         // The response holds no key. Paste this output into the PR.
-        // eslint-disable-next-line no-console
-        console.info(
-          JSON.stringify({
+        process.stdout.write(
+          `${JSON.stringify({
             chain,
             collateral,
             status: response.status,
             quote: body.result?.quote,
             networkFee: body.result?.details?.networkFee,
             error: body.error,
-          }),
+          })}\n`,
         );
 
         // Only the status and the API's own error text: never the request headers.
