@@ -1,6 +1,10 @@
 import '../tests/pointerEvent';
 
-import type { Execution, RunnerEvent } from '@aurora-is-near/intents-connect';
+import {
+  type Execution,
+  IntentsConnectApiError,
+  type RunnerEvent,
+} from '@aurora-is-near/intents-connect';
 import type {
   UseExecutionOptions,
   UseExecutionResult,
@@ -102,11 +106,13 @@ const EXECUTION_ID = 'exec-1';
 /** A promise to settle from the test. */
 const deferred = <T,>() => {
   let resolve: (value: T) => void = () => {};
-  const promise = new Promise<T>((res) => {
+  let reject: (reason: unknown) => void = () => {};
+  const promise = new Promise<T>((res, rej) => {
     resolve = res;
+    reject = rej;
   });
 
-  return { promise, resolve };
+  return { promise, resolve, reject };
 };
 
 const fakeExecution = (run: Promise<Execution>): UseExecutionResult => ({
@@ -355,5 +361,57 @@ describe('NewLoanPage', () => {
         await screen.findByRole('dialog', { name: 'Loan opened' }),
       ).toHaveAccessibleDescription('1,485 USDC is on its way to your wallet.');
     });
+  });
+});
+
+describe('NewLoanPage: the API refuses the borrow', () => {
+  const noLiquidity = () =>
+    new IntentsConnectApiError('Intents Connect API error', 400, {
+      error: 'No liquidity available',
+    });
+
+  it('shows the error dialog when the run is refused, without crashing the page', async () => {
+    const user = userEvent.setup();
+    const { cta } = await renderPage();
+
+    await user.click(cta);
+    await user.click(
+      await screen.findByRole('button', { name: 'Confirm in wallet' }),
+    );
+
+    await act(async () => {
+      run.reject(noLiquidity());
+    });
+
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText('No liquidity available'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/useTheme must be used/)).not.toBeInTheDocument();
+    // The page behind the dialog still renders: the header's theme switch.
+    expect(
+      screen.getByRole('button', { name: /theme/, hidden: true }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the error dialog when the preview is refused, without crashing the page', async () => {
+    const user = userEvent.setup();
+
+    sdk.result = {
+      ...fakeExecution(run.promise),
+      preview: vi.fn().mockRejectedValue(noLiquidity()),
+    };
+
+    const { cta } = await renderPage();
+
+    await user.click(cta);
+
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm loan' });
+
+    expect(
+      within(dialog).getByText('No liquidity available'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/useTheme must be used/)).not.toBeInTheDocument();
   });
 });

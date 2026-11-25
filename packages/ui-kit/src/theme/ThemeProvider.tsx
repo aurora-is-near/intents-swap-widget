@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import type { ReactNode } from 'react';
+import type { Context, ReactNode } from 'react';
 
 import { DEFAULT_THEME_STORAGE_KEY } from './themeInitScript';
 
@@ -32,7 +32,24 @@ export type ThemeProviderProps = {
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 const PREFERENCES: readonly ThemePreference[] = ['system', 'light', 'dark'];
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+/**
+ * One context per page, kept on `globalThis` under a registered symbol. A
+ * second instance of this module (the kit's `dist` beside its source, as the
+ * app's dev gallery loads it, or a `dist` rebuilt under a running dev server)
+ * then shares the provider's context instead of creating an empty one, which
+ * would make `useTheme` throw although a `ThemeProvider` is mounted.
+ */
+const THEME_CONTEXT_KEY = Symbol.for('@aurora-is-near/ui-kit/ThemeContext');
+
+type ThemeContextHolder = typeof globalThis & {
+  [THEME_CONTEXT_KEY]?: Context<ThemeContextValue | null>;
+};
+
+const holder = globalThis as ThemeContextHolder;
+
+holder[THEME_CONTEXT_KEY] ??= createContext<ThemeContextValue | null>(null);
+
+const ThemeContext = holder[THEME_CONTEXT_KEY];
 
 // useLayoutEffect writes data-theme before paint; it warns during SSR, so
 // fall back to useEffect where there is no window.
