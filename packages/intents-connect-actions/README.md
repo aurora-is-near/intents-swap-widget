@@ -21,11 +21,11 @@ yarn workspace @aurora-is-near/intents-connect-actions lint
 `src/aaveBorrow/dryRun.test.ts` posts one dry bridge-in execution per chain and collateral in the tables to `POST /api/v1/executions/{wallet}` and asserts a quote comes back. It proves each 1Click asset id. It is skipped when `INTENTS_CONNECT_API_KEY` is unset, so the default run stays offline.
 
 ```sh
-INTENTS_CONNECT_API_KEY=<your key> \
+INTENTS_CONNECT_API_KEY='your-api-key' \
   yarn workspace @aurora-is-near/intents-connect-actions test dryRun
 ```
 
-The key is read from the environment only. The test never logs it, writes it to a file or puts it in an error message; keep it that way when you change the test. `INTENTS_CONNECT_API_URL` overrides the API base URL (default `https://intents-connect-api.aurora.dev`). Each case prints one JSON line (chain, collateral, status, quote, network fee) without the key: paste those lines into the PR body. A collateral that fails to quote must be dropped from the tables, which makes the Borrow app show it as "Coming soon".
+Replace `your-api-key` with your Intents Connect API key, keeping the quotes. The key is read from the environment only. The test never logs it, writes it to a file or puts it in an error message; keep it that way when you change the test. `INTENTS_CONNECT_API_URL` overrides the API base URL (default `https://intents-connect-api.aurora.dev`). Each case prints one JSON line (chain, collateral, status, quote, network fee) without the key: paste those lines into the PR body. A collateral that fails to quote must be dropped from the tables, which makes the Borrow app show it as "Coming soon".
 
 ### Open follow-up: the dry run has not been run yet
 
