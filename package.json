@@ -82,7 +82,7 @@
     "puppeteer": "^24.31.0",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
-    "semantic-release": "^24.0.0",
+    "semantic-release": "^25.0.0",
     "tailwindcss": "^4.1.12",
     "ts-jest": "^29.4.5",
     "turbo": "^2.5.8",
