@@ -1473,7 +1473,8 @@ describe('useBorrowFlow', () => {
       });
 
       it('is not rejected when the cancel was declined and the wallet lock refuses the next borrow', async () => {
-        const { result } = renderFlow();
+        const onSettled = vi.fn();
+        const { result } = renderFlow({ onSettled });
 
         await depositRejected(result);
         await act(() => result.current.close());
@@ -1487,6 +1488,8 @@ describe('useBorrowFlow', () => {
         );
 
         expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
+        // Still open: its kept record stays, for a reload to restore it.
+        expect(onSettled).not.toHaveBeenCalled();
         expect(result.current.state).toMatchObject({
           kind: 'error',
           error: 'unknown',

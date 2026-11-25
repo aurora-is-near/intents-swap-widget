@@ -609,7 +609,8 @@ export const useBorrowFlow = ({
 
   /**
    * Cancels the signed run the user abandoned, so the next borrow is not
-   * refused by its in-flight lock, and drops what `onCreated` kept for it.
+   * refused by its in-flight lock, and, once cancelled, drops what
+   * `onCreated` kept for it.
    * Done when the next borrow starts, never on leaving: the cancel prompts
    * the wallet for a `delete_execution` signature.
    *
@@ -637,7 +638,9 @@ export const useBorrowFlow = ({
     try {
       await current.cancel(executionId);
     } catch {
-      // Declined, already gone, or the lock is released when it expires.
+      // Declined or failed: the execution is still open and holds the lock
+      // until it expires. Its kept record stays, so a reload restores it.
+      return;
     }
 
     settled(executionId);
