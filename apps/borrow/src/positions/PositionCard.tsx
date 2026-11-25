@@ -12,7 +12,7 @@ import {
   formatOptionalApr,
   formatUsdCents,
   healthTone,
-  largestReserve,
+  pairLabel,
   pillLabel,
   reservesLabel,
   riskText,
@@ -41,11 +41,7 @@ const toBps = (fraction: number) => Math.round(fraction * 10_000);
 
 /** The loan's name for assistive technology: "WETH → USDC, Aave V3 on Base". */
 const loanName = (position: LoanPosition) => {
-  const pair = [position.collateral, position.debt]
-    .map((assets) => largestReserve(assets)?.symbol)
-    .filter((symbol) => symbol !== undefined)
-    .join(' → ');
-
+  const pair = pairLabel(position);
   const market = `${position.marketName} on ${position.chainLabel}`;
 
   return pair ? `${pair}, ${market}` : market;

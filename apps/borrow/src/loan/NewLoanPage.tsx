@@ -3,6 +3,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 
 import { useMarketAdapters } from '../markets/MarketAdaptersProvider';
+import { PositionsSummary } from '../positions/PositionsSummary';
+import { usePositions } from '../positions/usePositions';
+import { useFocusTab } from '../shell/tabFocus';
 import { chainOf } from './chains';
 import {
   BorrowDialog,
@@ -44,6 +47,39 @@ const dialogLoan = (
   recipient,
   walletAddress,
 });
+
+/**
+ * The wallet's loans above the form, once it has any: the positions summary
+ * of My positions (Web-Positions-Multi.dc.html lines 380–391, 18px above
+ * what follows; no artboard draws it on New loan). Picking a card opens that
+ * loan on My positions, and focus moves to the My positions tab, since the
+ * card unmounts with the panel.
+ */
+function NewLoanPositions() {
+  const { positions } = usePositions();
+  const navigate = useNavigate();
+  const focusTab = useFocusTab();
+
+  if (positions.length === 0) {
+    return null;
+  }
+
+  return (
+    <PositionsSummary
+      className="mb-[18px]"
+      positions={positions}
+      onSelect={(id) => {
+        void navigate({
+          to: '/positions',
+          search: { position: id },
+          resetScroll: false,
+        }).then(() => {
+          focusTab('/positions');
+        });
+      }}
+    />
+  );
+}
 
 /**
  * The New loan tab: the form, and the borrow it starts. The ready call to
@@ -163,6 +199,7 @@ export function NewLoanPage() {
 
   return (
     <>
+      <NewLoanPositions />
       <NewLoanForm
         borrowing={state.kind === 'previewing' || tracked}
         onBorrow={onBorrow}

@@ -4,6 +4,8 @@ import {
   createRouter,
   Outlet,
   redirect,
+  useNavigate,
+  useSearch,
 } from '@tanstack/react-router';
 import type { RouterHistory } from '@tanstack/react-router';
 import { useTheme } from '@aurora-is-near/ui-kit';
@@ -32,14 +34,47 @@ const newLoanRoute = createRoute({
   component: NewLoanPage,
 });
 
+/** `/positions?position=<id>`: the loan shown, by its `LoanPosition` id. */
+export type PositionsSearch = { position?: string };
+
+const validatePositionsSearch = (
+  search: Record<string, unknown>,
+): PositionsSearch =>
+  typeof search.position === 'string' && search.position !== ''
+    ? { position: search.position }
+    : {};
+
+/** `PositionsPage` driven by the route's `position` search param. */
+function PositionsRoute() {
+  const { position } = useSearch({ strict: false });
+  const navigate = useNavigate();
+
+  return (
+    <PositionsPage
+      selectedId={position}
+      onSelect={(id) => {
+        void navigate({
+          to: '/positions',
+          search: { position: id },
+          replace: true,
+          resetScroll: false,
+        });
+      }}
+    />
+  );
+}
+
 /**
  * The My positions tab: the user's loans, or the empty, loading and error
- * states.
+ * states. The `position` search param picks the loan shown; picking another
+ * replaces the history entry, so Back leaves the tab rather than stepping
+ * through picks.
  */
 const positionsRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/positions',
-  component: PositionsPage,
+  validateSearch: validatePositionsSearch,
+  component: PositionsRoute,
 });
 
 /**
@@ -84,12 +119,20 @@ const createGalleryRoutes = () => {
     })),
   );
 
+  // The My positions states, from fixtures.
+  const LazyPositionsGallery = lazy(() =>
+    import('./positions/PositionsGallery').then((m) => ({
+      default: m.PositionsGallery,
+    })),
+  );
+
   // The theme comes from the app's kit copy (`dist`), the one its provider
   // belongs to; the gallery's source copy has its own, empty, context.
   const Gallery = () => (
     <>
       <LazyGallery theme={useTheme()} />
       <LazyBorrowGallery />
+      <LazyPositionsGallery />
     </>
   );
 

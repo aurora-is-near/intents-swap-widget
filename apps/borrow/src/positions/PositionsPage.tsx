@@ -3,6 +3,9 @@ import { useId } from 'react';
 
 import { PositionCard } from './PositionCard';
 import { PositionsEmptyState } from './PositionsEmptyState';
+import { PositionsSummary } from './PositionsSummary';
+import { selectPosition } from './selection';
+import type { LoanPosition } from './types';
 import { type PositionsReadError, usePositions } from './usePositions';
 
 /** "0x7a3f…9c21". */
@@ -115,42 +118,96 @@ function PositionsNotice({
   );
 }
 
+type PositionsViewProps = {
+  positions: readonly LoanPosition[];
+  isLoading: boolean;
+  errors: readonly PositionsReadError[];
+  onRetry: () => void;
+  /** The `position` search param; the default position when unset. */
+  selectedId?: string;
+  onSelect: (id: string) => void;
+  /** Overrides the wallet's state in the empty state, for the gallery. */
+  connected?: boolean;
+};
+
 /**
- * The My positions tab:
+ * The My positions tab's content, from what was read:
  * - no accounts to read, or nothing found: the empty state, which asks to
  *   connect while disconnected and points to New loan once connected;
  * - on the first read: placeholders;
  * - nothing loaded and a read failed: an error card with Retry;
- * - otherwise one card per loan, with a notice and Retry above them while a
- *   read fails (what loaded, or loaded before, stays).
+ * - otherwise the selected loan's card, under the summary when there are two
+ *   or more (Web-Position-Two.dc.html lines 380–391, 18px above the card),
+ *   with a notice and Retry above while a read fails (what loaded, or loaded
+ *   before, stays).
  */
-export function PositionsPage() {
-  const { positions, isLoading, errors, refetch } = usePositions();
+export function PositionsView({
+  positions,
+  isLoading,
+  errors,
+  onRetry,
+  selectedId,
+  onSelect,
+  connected,
+}: PositionsViewProps) {
+  const selected = selectPosition(positions, selectedId);
 
-  if (positions.length === 0) {
+  if (!selected) {
     if (isLoading) {
       return <PositionsLoading />;
     }
 
     if (errors.length > 0) {
-      return <PositionsError errors={errors} onRetry={refetch} />;
+      return <PositionsError errors={errors} onRetry={onRetry} />;
     }
 
-    return <PositionsEmptyState />;
+    return <PositionsEmptyState connected={connected} />;
   }
 
   return (
     <div className="flex flex-col gap-[24px]">
       {errors.length > 0 ? (
-        <PositionsNotice errors={errors} onRetry={refetch} />
+        <PositionsNotice errors={errors} onRetry={onRetry} />
       ) : null}
-      {positions.map((position) => (
-        <div
-          key={position.id}
-          className="flex flex-wrap items-start gap-[24px]">
-          <PositionCard position={position} />
+      <div>
+        {positions.length > 1 ? (
+          <PositionsSummary
+            className="mb-[18px]"
+            positions={positions}
+            selectedId={selected.id}
+            onSelect={onSelect}
+          />
+        ) : null}
+        <div className="flex flex-wrap items-start gap-[24px]">
+          <PositionCard key={selected.id} position={selected} />
         </div>
-      ))}
+      </div>
     </div>
+  );
+}
+
+type PositionsPageProps = {
+  /**
+   * The position picked, from the route's `position` search param; the
+   * default position when unset.
+   */
+  selectedId: string | undefined;
+  /** Picks a position: sets the search param. */
+  onSelect: (id: string) => void;
+};
+
+/** The My positions tab: the wallet's loans (`usePositions`). */
+export function PositionsPage({ selectedId, onSelect }: PositionsPageProps) {
+  const { positions, isLoading, errors, refetch } = usePositions();
+
+  return (
+    <PositionsView
+      errors={errors}
+      isLoading={isLoading}
+      positions={positions}
+      selectedId={selectedId}
+      onRetry={refetch}
+      onSelect={onSelect}
+    />
   );
 }

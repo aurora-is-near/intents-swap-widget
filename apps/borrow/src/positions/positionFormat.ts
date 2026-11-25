@@ -1,5 +1,10 @@
 import { formatApr } from '../markets/format';
-import { formatAmount, formatUsd, USD_CENTS } from '../loan/loanFormat';
+import {
+  formatAmount,
+  formatUsd,
+  USD_CENTS,
+  USD_ROUND,
+} from '../loan/loanFormat';
 import type { LoanPosition, PositionAsset } from './types';
 
 /**
@@ -58,6 +63,35 @@ export const largestReserve = (assets: readonly PositionAsset[]) =>
       best === undefined || (asset.usd ?? -1) > (best.usd ?? -1) ? asset : best,
     undefined,
   );
+
+/**
+ * "WETH → USDC": the largest collateral and debt reserves; one side alone
+ * when the other is empty (a repaid loan has no debt).
+ */
+export const pairLabel = (position: LoanPosition) =>
+  [position.collateral, position.debt]
+    .map((assets) => largestReserve(assets)?.symbol)
+    .filter((symbol) => symbol !== undefined)
+    .join(' → ');
+
+/** "$1,500": whole dollars, as the summary's figures (lines 1619–1621). */
+export const formatUsdWhole = (usd: number) => `$${USD_ROUND.format(usd)}`;
+
+/**
+ * A summary card's status tag (script line 1621): "At risk" in the kit's
+ * `risk` tone, "Active" and "Repaid" in `positive`.
+ */
+const STATUS_TAGS = {
+  active: { label: 'Active', tone: 'positive' },
+  'at-risk': { label: 'At risk', tone: 'risk' },
+  repaid: { label: 'Repaid', tone: 'positive' },
+} as const satisfies Record<
+  LoanPosition['status'],
+  { label: string; tone: 'positive' | 'risk' }
+>;
+
+export const statusTag = (status: LoanPosition['status']) =>
+  STATUS_TAGS[status];
 
 /**
  * A Collateral or Debt tile's figure: the largest reserve by dollar value,

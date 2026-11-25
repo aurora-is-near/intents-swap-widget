@@ -54,7 +54,8 @@ const AT_RISK = loanPosition({
 
 /**
  * The page on its own, with no retries, so a failed read shows at once. With
- * no market adapters (the default), only the wallet-wide reads run.
+ * no market adapters (the default), only the wallet-wide reads run. No
+ * position is picked; picking goes through the route (`renderAppAt`).
  */
 const renderPage = (
   reader: FakePositionsReader,
@@ -71,7 +72,12 @@ const renderPage = (
     </QueryClientProvider>
   );
 
-  return { queryClient, ...render(<PositionsPage />, { wrapper }) };
+  return {
+    queryClient,
+    ...render(<PositionsPage selectedId={undefined} onSelect={() => {}} />, {
+      wrapper,
+    }),
+  };
 };
 
 /** The whole app on `/positions`, for the states that link elsewhere. */
@@ -172,7 +178,7 @@ describe('PositionsPage', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('lists one card per loan', async () => {
+  it('shows the summary and, under it, the at-risk loan first', async () => {
     renderPage(
       createFakePositionsReader({
         readOwnerPositions: async (owner) =>
@@ -180,18 +186,106 @@ describe('PositionsPage', () => {
       }),
     );
 
-    expect(
-      await screen.findByRole('region', {
-        name: 'WETH → USDC, Aave V3 on Base',
-      }),
-    ).toBeInTheDocument();
+    const summary = await screen.findByRole('region', {
+      name: '2 POSITIONS',
+    });
+
+    expect(summary).toHaveTextContent('Total debt $3,000 · collateral $6,000');
     expect(
       await screen.findByRole('region', {
         name: 'WETH → USDC, Aave V3 on Arbitrum',
       }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: 'WETH → USDC, Aave V3 on Base' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('Close to liquidation');
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('has no summary with one loan', async () => {
+    renderPage(
+      createFakePositionsReader({
+        readOwnerPositions: async (owner) =>
+          owner === INTERMEDIARY ? [ACTIVE] : [],
+      }),
+    );
+
+    await screen.findByRole('region', {
+      name: 'WETH → USDC, Aave V3 on Base',
+    });
+
+    expect(screen.queryByText(/POSITION/)).not.toBeInTheDocument();
+  });
+
+  describe('the position search param', () => {
+    const reader = () =>
+      createFakePositionsReader({
+        readOwnerPositions: async (owner) =>
+          owner === INTERMEDIARY ? [ACTIVE] : [AT_RISK],
+      });
+
+    const renderAppAt = async (path: string) => {
+      const history = createMemoryHistory({ initialEntries: [path] });
+
+      render(
+        <App positionsReader={reader()} router={createAppRouter(history)} />,
+      );
+      await screen.findByRole('tablist', { name: 'Borrow views' });
+
+      return history;
+    };
+
+    it('selects the loan it names', async () => {
+      await renderAppAt(`/positions?position=${encodeURIComponent(ACTIVE.id)}`);
+
+      expect(
+        await screen.findByRole('region', {
+          name: 'WETH → USDC, Aave V3 on Base',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Aave V3 · Base/ }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        screen.getByRole('button', { name: /Aave V3 · Arbitrum/ }),
+      ).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('falls back to the at-risk loan when it names none', async () => {
+      await renderAppAt('/positions?position=gone');
+
+      expect(
+        await screen.findByRole('button', { name: /Aave V3 · Arbitrum/ }),
+      ).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('is set by picking a card, which shows that loan, and aria-pressed follows it', async () => {
+      const user = userEvent.setup();
+      const history = await renderAppAt('/positions');
+
+      await user.click(
+        await screen.findByRole('button', { name: /Aave V3 · Base/ }),
+      );
+
+      await waitFor(() =>
+        expect(
+          new URLSearchParams(history.location.search).get('position'),
+        ).toBe(ACTIVE.id),
+      );
+
+      expect(
+        await screen.findByRole('region', {
+          name: 'WETH → USDC, Aave V3 on Base',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Aave V3 · Base/ }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        screen.getByRole('button', { name: /Aave V3 · Arbitrum/ }),
+      ).toHaveAttribute('aria-pressed', 'false');
+    });
   });
 
   it('keeps what loaded under a notice with Retry when one read fails', async () => {

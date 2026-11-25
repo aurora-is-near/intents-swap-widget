@@ -20,8 +20,14 @@ import { useConnectWallet } from '../wallet/useConnectWallet';
  * focus moves to the New loan tab, since this button unmounts with the panel.
  * Copy as drawn (decided; revisit before launch).
  */
-export function PositionsEmptyState() {
-  const { isConnected } = useIntentsConnectWallet();
+export function PositionsEmptyState({
+  connected,
+}: {
+  /** Overrides the wallet's state, for the gallery. */
+  connected?: boolean;
+} = {}) {
+  const wallet = useIntentsConnectWallet();
+  const isConnected = connected ?? wallet.isConnected;
   const connectWallet = useConnectWallet();
   const navigate = useNavigate();
   const focusTab = useFocusTab();
