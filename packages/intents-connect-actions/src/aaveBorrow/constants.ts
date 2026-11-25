@@ -42,7 +42,7 @@ export const AAVE_BORROW_ASSETS = ['USDC', 'USDT'] as const;
 export type AaveBorrowAsset = (typeof AAVE_BORROW_ASSETS)[number];
 
 /** The action's `collateral` input: every collateral table's symbols. */
-export const AAVE_COLLATERAL_ASSETS = ['ETH', 'WETH', 'cbBTC'] as const;
+export const AAVE_COLLATERAL_ASSETS = ['ETH', 'cbBTC'] as const;
 export type AaveCollateralAsset = (typeof AAVE_COLLATERAL_ASSETS)[number];
 
 export type AaveBorrowToken = {
@@ -114,14 +114,6 @@ export const AAVE_BORROW_MARKETS: Readonly<
         native: true,
         assetId: 'nep141:base.omft.near',
       },
-      WETH: {
-        label: 'WETH',
-        address: BASE_WETH,
-        decimals: 18,
-        native: false,
-        assetId:
-          'nep141:base-0x4200000000000000000000000000000000000006.omft.near',
-      },
       cbBTC: {
         label: 'cbBTC',
         address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
@@ -155,14 +147,6 @@ export const AAVE_BORROW_MARKETS: Readonly<
         decimals: 18,
         native: true,
         assetId: 'nep141:arb.omft.near',
-      },
-      WETH: {
-        label: 'WETH',
-        address: ARB_WETH,
-        decimals: 18,
-        native: false,
-        assetId:
-          'nep141:arb-0x82af49447d8a07e3bd95bd0d56f35241523fbab1.omft.near',
       },
     },
   },

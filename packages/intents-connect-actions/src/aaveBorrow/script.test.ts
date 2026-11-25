@@ -202,7 +202,7 @@ describe('script.star run through starlark-go (WebAssembly)', () => {
       ...base,
       chain: 'eth',
       borrowAsset: 'USDC',
-      collateral: 'WETH',
+      collateral: 'ETH',
       slippageTolerance: 100,
       dry: false,
       publicKey: '',

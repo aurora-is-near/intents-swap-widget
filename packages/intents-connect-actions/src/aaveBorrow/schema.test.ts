@@ -20,7 +20,7 @@ const validate = compileInputs<AaveBorrowInputs>(definition);
 const VALID = {
   chain: 'base',
   borrowAsset: 'USDC',
-  collateral: 'WETH',
+  collateral: 'ETH',
   borrowAmount: '1500000000',
   recipient: '0x1111111111111111111111111111111111111111',
   amount: '10000000000',
@@ -119,6 +119,7 @@ describe('aave-v3-borrow inputs', () => {
     ['an unknown borrow symbol', { borrowAsset: 'DAI' }, '/borrowAsset'],
     ['an unknown collateral symbol', { collateral: 'wstETH' }, '/collateral'],
     ['a dropped collateral symbol', { collateral: 'WBTC' }, '/collateral'],
+    ['WETH, which 1Click does not fill', { collateral: 'WETH' }, '/collateral'],
     ['USDC as collateral (Aave LTV 0)', { collateral: 'USDC' }, '/collateral'],
     ['a lower-case symbol', { borrowAsset: 'usdc' }, '/borrowAsset'],
     ['an empty originAsset', { originAsset: '' }, '/originAsset'],

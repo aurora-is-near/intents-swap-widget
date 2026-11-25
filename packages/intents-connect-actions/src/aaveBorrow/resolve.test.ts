@@ -11,7 +11,7 @@ import {
 
 const BASE_POOL = '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5';
 const BASE_GATEWAY = '0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24';
-const BASE_WETH = '0x4200000000000000000000000000000000000006';
+const BASE_CBBTC = '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf';
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const ARB_POOL = '0x794a61358D6845594F94dc1DB02A252b5b4814aD';
 const ARB_GATEWAY = '0x5283BEcEd7ADF6D003225C13896E536f2D4264FF';
@@ -23,7 +23,7 @@ const RECIPIENT = '0x00000000000000000000000000000000000000bb';
 const INPUTS: AaveBorrowInputs = {
   chain: 'base',
   borrowAsset: 'USDC',
-  collateral: 'WETH',
+  collateral: 'cbBTC',
   borrowAmount: '1500000000',
   recipient: RECIPIENT,
   amount: '10000000000',
@@ -60,7 +60,7 @@ const borrowAndSend = (pool: string, asset: string, amount: string) => [
 describe('buildAaveBorrowSteps', () => {
   const input = {
     chain: 'base',
-    collateral: 'WETH',
+    collateral: 'cbBTC',
     borrowAsset: 'USDC',
     collateralAmount: '{MIN_AMOUNT_OUT}',
     borrowAmount: '1500000000',
@@ -71,7 +71,7 @@ describe('buildAaveBorrowSteps', () => {
   it('approves and supplies ERC-20 collateral, borrows and sends: the app’s calls', () => {
     expect(calls(buildAaveBorrowSteps(input))).toEqual([
       {
-        to: BASE_WETH,
+        to: BASE_CBBTC,
         functionSignature: 'approve(address,uint256)',
         parameters: [BASE_POOL, '{MIN_AMOUNT_OUT}'],
         value: '0',
@@ -79,7 +79,7 @@ describe('buildAaveBorrowSteps', () => {
       {
         to: BASE_POOL,
         functionSignature: 'supply(address,uint256,address,uint16)',
-        parameters: [BASE_WETH, '{MIN_AMOUNT_OUT}', INTERMEDIARY, '0'],
+        parameters: [BASE_CBBTC, '{MIN_AMOUNT_OUT}', INTERMEDIARY, '0'],
         value: '0',
       },
       ...borrowAndSend(BASE_POOL, BASE_USDC, '1500000000'),
@@ -142,7 +142,7 @@ describe('buildAaveBorrowSteps', () => {
 
 describe('lookupAaveBorrowPair', () => {
   it('takes Arbitrum’s native USDC, not USDC.e', () => {
-    const pair = lookupAaveBorrowPair('arb', 'WETH', 'USDC');
+    const pair = lookupAaveBorrowPair('arb', 'ETH', 'USDC');
 
     expect(pair).toMatchObject({ borrow: { address: ARB_USDC_NATIVE } });
     expect(JSON.stringify(AAVE_BORROW_MARKETS).toLowerCase()).not.toContain(
@@ -152,7 +152,7 @@ describe('lookupAaveBorrowPair', () => {
 
   it('has no USDT to borrow on Base', () => {
     expect(AAVE_BORROW_MARKETS.base.borrow.USDT).toBeUndefined();
-    expect(lookupAaveBorrowPair('base', 'WETH', 'USDT')).toEqual({
+    expect(lookupAaveBorrowPair('base', 'ETH', 'USDT')).toEqual({
       error: 'USDT cannot be borrowed on Base. Choose one of: USDC.',
     });
   });
@@ -160,8 +160,13 @@ describe('lookupAaveBorrowPair', () => {
   it('has no cbBTC collateral on Arbitrum', () => {
     expect(lookupAaveBorrowPair('arb', 'cbBTC', 'USDC')).toEqual({
       error:
-        'cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH, WETH.',
+        'cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH.',
     });
+  });
+
+  it('offers no WETH collateral: 1Click does not fill it, ETH is supplied as WETH', () => {
+    expect(AAVE_BORROW_MARKETS.base.collateral).not.toHaveProperty('WETH');
+    expect(AAVE_BORROW_MARKETS.arb.collateral).not.toHaveProperty('WETH');
   });
 
   it('offers no USDC collateral on either chain (Aave LTV 0)', () => {
@@ -173,7 +178,7 @@ describe('lookupAaveBorrowPair', () => {
     // A TypeScript caller that skipped the schema.
     const chain = JSON.parse('"eth"') as 'base';
 
-    expect(lookupAaveBorrowPair(chain, 'WETH', 'USDC')).toEqual({
+    expect(lookupAaveBorrowPair(chain, 'ETH', 'USDC')).toEqual({
       error: 'Aave V3 is not available on eth.',
     });
   });
@@ -192,7 +197,7 @@ describe('resolveAaveBorrow', () => {
       execution: {
         metadata: {
           intent: AAVE_BORROW_INTENT,
-          title: 'Borrow USDC against WETH on Aave Base',
+          title: 'Borrow USDC against cbBTC on Aave Base',
         },
       },
     });
@@ -231,7 +236,7 @@ describe('resolveAaveBorrow', () => {
     expect(result).toEqual({
       execution: expect.objectContaining({
         destinationAsset:
-          'nep141:base-0x4200000000000000000000000000000000000006.omft.near',
+          'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near',
       }),
     });
     expect(result).not.toHaveProperty('execution.quote');
@@ -240,7 +245,7 @@ describe('resolveAaveBorrow', () => {
       execution: {
         steps: [
           { parameters: [BASE_POOL, '10000000000'] },
-          { parameters: [BASE_WETH, '10000000000', '{INTERMEDIARY}', '0'] },
+          { parameters: [BASE_CBBTC, '10000000000', '{INTERMEDIARY}', '0'] },
           {},
           {},
         ],
@@ -253,7 +258,7 @@ describe('resolveAaveBorrow', () => {
       resolveAaveBorrow({ ...INPUTS, chain: 'arb', collateral: 'cbBTC' }),
     ).toEqual({
       error:
-        'cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH, WETH.',
+        'cbBTC cannot be supplied as collateral on Arbitrum. Choose one of: ETH.',
     });
   });
 });

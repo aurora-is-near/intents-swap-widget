@@ -42,7 +42,6 @@
         "description": "Token the bridge delivers and the intermediary supplies to Aave. ETH is supplied through Aave's WETH gateway. cbBTC is available on Base only.",
         "enum": [
           "ETH",
-          "WETH",
           "cbBTC"
         ]
       },

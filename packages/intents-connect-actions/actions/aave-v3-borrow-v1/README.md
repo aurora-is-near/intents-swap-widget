@@ -8,7 +8,7 @@ Version 1 bridges any asset into collateral on Base or Arbitrum, supplies it to 
 |---|---|---|
 | `chain` | `base` or `arb`, required | The Aave V3 market. It picks the Pool, the WETH gateway and the token tables below. |
 | `borrowAsset` | `USDC` or `USDT`, required | The token to borrow, from the chain's borrow table. |
-| `collateral` | `ETH`, `WETH` or `cbBTC`, required | The token the bridge delivers and the intermediary supplies, from the chain's collateral table. |
+| `collateral` | `ETH` or `cbBTC`, required | The token the bridge delivers and the intermediary supplies, from the chain's collateral table. |
 | `borrowAmount` | positive decimal string, required | Atomic units of the borrowed token, used as given. USDC and USDT have six decimals, so `"1000000"` is 1. See [Sizing `borrowAmount`](#sizing-borrowamount). |
 | `recipient` | EVM address, required | Receives the borrowed tokens on `chain`. |
 | `amount` | positive decimal string, required | With `originAsset`: origin-asset atomic units to bridge. Without it: collateral atomic units the intermediary already holds. |
@@ -34,7 +34,6 @@ Pool `0xA238Dd80C259a72e81d7e4664a9801593F98d1c5`, WETH gateway `0xa0d9C1E9E48Ca
 |---|---|---|---|---|
 | Borrow | `USDC` | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | `nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near` |
 | Collateral | `ETH` | native, supplied as WETH `0x4200000000000000000000000000000000000006` through the gateway | 18 | `nep141:base.omft.near` |
-| Collateral | `WETH` | `0x4200000000000000000000000000000000000006` | 18 | `nep141:base-0x4200000000000000000000000000000000000006.omft.near` |
 | Collateral | `cbBTC` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 | `nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near` |
 
 ### Arbitrum
@@ -46,13 +45,13 @@ Pool `0x794a61358D6845594F94dc1DB02A252b5b4814aD`, WETH gateway `0x5283BEcEd7ADF
 | Borrow | `USDC` | native USDC `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | `nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near` |
 | Borrow | `USDT` | USDT0 `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | `nep141:arb-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9.omft.near` |
 | Collateral | `ETH` | native, supplied as WETH `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1` through the gateway | 18 | `nep141:arb.omft.near` |
-| Collateral | `WETH` | `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1` | 18 | `nep141:arb-0x82af49447d8a07e3bd95bd0d56f35241523fbab1.omft.near` |
 
 Addresses come from `@bgd-labs/aave-address-book` 4.44.22 (`AaveV3Base`, `AaveV3Arbitrum`; Arbitrum's USDC is the book's `USDCn`, not bridged USDC.e). Asset IDs come from the 1Click token list. Left out:
 
 - USDT on Base: Aave V3 on Base has no USDT reserve.
 - WBTC on Arbitrum: an Aave reserve, but 1Click does not deliver it.
 - USDC as collateral: Aave gives it an LTV of 0 on both chains, so it backs no borrow. USDC stays borrowable.
+- WETH as its own collateral: 1Click quotes no liquidity into WETH on Base or Arbitrum. `ETH` covers the same Aave reserve: it is delivered native and supplied as WETH through the gateway.
 
 ## The steps
 
@@ -85,7 +84,7 @@ The action adds no fee step. The 0.30% Borrow fee is the API key's fee configura
 
 ## Example
 
-From [the WETH bridge-in fixture](tests/base_bridge_in_weth.json): bridge SOL into WETH on Base, supply it, and borrow 1,500 USDC. `POST /api/v1/actions/aave-v3-borrow/resolve` with:
+From [the ETH bridge-in fixture](tests/base_bridge_in_eth.json): bridge SOL into ETH on Base, supply it as WETH through the gateway, and borrow 2,000 USDC, as a dry preview. `POST /api/v1/actions/aave-v3-borrow/resolve` with:
 
 ```json
 {
@@ -93,11 +92,14 @@ From [the WETH bridge-in fixture](tests/base_bridge_in_weth.json): bridge SOL in
   "inputs": {
     "chain": "base",
     "borrowAsset": "USDC",
-    "collateral": "WETH",
-    "borrowAmount": "1500000000",
-    "recipient": "0x1111111111111111111111111111111111111111",
-    "amount": "10000000000",
-    "originAsset": "nep141:sol.omft.near"
+    "collateral": "ETH",
+    "borrowAmount": "2000000000",
+    "recipient": "0x2222222222222222222222222222222222222222",
+    "amount": "5000000000",
+    "originAsset": "nep141:sol.omft.near",
+    "slippageTolerance": 50,
+    "deadline": "2026-12-01T00:00:00Z",
+    "dry": true
   }
 }
 ```
@@ -109,45 +111,32 @@ returns `executionChain: "base"` and this `result.execution`:
   "version": "1.0",
   "type": "evm",
   "outOperation": false,
-  "dry": false,
+  "dry": true,
   "metadata": {
     "intent": "aave_borrow",
-    "title": "Borrow USDC against WETH on Aave Base"
+    "title": "Borrow USDC against ETH on Aave Base"
   },
   "quote": {
     "originAsset": "nep141:sol.omft.near",
-    "destinationAsset": "nep141:base-0x4200000000000000000000000000000000000006.omft.near",
-    "amount": "10000000000",
+    "destinationAsset": "nep141:base.omft.near",
+    "amount": "5000000000",
     "swapType": "EXACT_INPUT",
-    "slippageTolerance": 100
+    "slippageTolerance": 50,
+    "deadline": "2026-12-01T00:00:00Z"
   },
   "steps": [
     {
-      "to": "0x4200000000000000000000000000000000000006",
-      "functionSignature": "approve(address,uint256)",
+      "to": "0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24",
+      "functionSignature": "depositETH(address,address,uint16)",
       "parameters": [
         "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-        "{MIN_AMOUNT_OUT}"
-      ],
-      "value": "0",
-      "metadata": {
-        "name": "Approve WETH",
-        "description": "Allow the Aave V3 Pool to take the WETH collateral"
-      }
-    },
-    {
-      "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
-      "functionSignature": "supply(address,uint256,address,uint16)",
-      "parameters": [
-        "0x4200000000000000000000000000000000000006",
-        "{MIN_AMOUNT_OUT}",
         "{INTERMEDIARY}",
         "0"
       ],
-      "value": "0",
+      "value": "{MIN_AMOUNT_OUT}",
       "metadata": {
-        "name": "Supply WETH",
-        "description": "Supply WETH to Aave V3 as collateral"
+        "name": "Supply ETH",
+        "description": "Supply ETH to Aave V3 as collateral through the WETH gateway"
       }
     },
     {
@@ -155,7 +144,7 @@ returns `executionChain: "base"` and this `result.execution`:
       "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
       "parameters": [
         "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-        "1500000000",
+        "2000000000",
         "2",
         "0",
         "{INTERMEDIARY}"
@@ -170,8 +159,8 @@ returns `executionChain: "base"` and this `result.execution`:
       "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "functionSignature": "transfer(address,uint256)",
       "parameters": [
-        "0x1111111111111111111111111111111111111111",
-        "1500000000"
+        "0x2222222222222222222222222222222222222222",
+        "2000000000"
       ],
       "value": "0",
       "metadata": {
@@ -183,4 +172,4 @@ returns `executionChain: "base"` and this `result.execution`:
 }
 ```
 
-The other fixtures cover [ETH through the gateway](tests/base_bridge_in_eth.json), [steps-only](tests/steps_only.json), [USDT against WETH on Arbitrum](tests/arb_usdt_against_weth.json) and the rejected inputs.
+The other fixtures cover [cbBTC steps-only](tests/steps_only.json), [USDT0 against ETH on Arbitrum](tests/arb_usdt_against_eth.json) and the rejected inputs, among them [WETH as collateral](tests/weth_collateral.json).

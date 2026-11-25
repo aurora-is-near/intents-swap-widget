@@ -27,13 +27,6 @@ MARKETS = {
                 "native": True,
                 "assetId": "nep141:base.omft.near",
             },
-            "WETH": {
-                "label": "WETH",
-                "address": "0x4200000000000000000000000000000000000006",
-                "decimals": 18,
-                "native": False,
-                "assetId": "nep141:base-0x4200000000000000000000000000000000000006.omft.near",
-            },
             "cbBTC": {
                 "label": "cbBTC",
                 "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
@@ -71,13 +64,6 @@ MARKETS = {
                 "decimals": 18,
                 "native": True,
                 "assetId": "nep141:arb.omft.near",
-            },
-            "WETH": {
-                "label": "WETH",
-                "address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
-                "decimals": 18,
-                "native": False,
-                "assetId": "nep141:arb-0x82af49447d8a07e3bd95bd0d56f35241523fbab1.omft.near",
             },
         },
     },

@@ -7,7 +7,7 @@ import { AAVE_BORROW_INTENT, aaveBorrowRecipe } from './sdk';
 
 const BASE_POOL = '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5';
 const BASE_GATEWAY = '0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24';
-const BASE_WETH = '0x4200000000000000000000000000000000000006';
+const BASE_CBBTC = '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf';
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const ARB_POOL = '0x794a61358D6845594F94dc1DB02A252b5b4814aD';
 const ARB_GATEWAY = '0x5283BEcEd7ADF6D003225C13896E536f2D4264FF';
@@ -50,13 +50,13 @@ describe('aaveBorrowRecipe', () => {
     expect(
       aaveBorrowRecipe({
         chain: 'base',
-        collateral: 'WETH',
+        collateral: 'cbBTC',
         borrowAsset: 'USDC',
       }),
     ).toMatchObject({
-      id: 'aave-borrow:aave-v3:base:WETH:USDC',
+      id: 'aave-borrow:aave-v3:base:cbBTC:USDC',
       intent: 'aave_borrow',
-      title: 'Borrow USDC against WETH on Aave Base',
+      title: 'Borrow USDC against cbBTC on Aave Base',
       flow: 'bridge-in',
       type: 'evm',
     });
@@ -79,14 +79,14 @@ describe('aaveBorrowRecipe', () => {
     expect(
       aaveBorrowRecipe({
         chain: 'base',
-        collateral: 'WETH',
+        collateral: 'cbBTC',
         borrowAsset: 'USDC',
       }).destination,
     ).toEqual({
       chain: 'base',
       assetId:
-        'nep141:base-0x4200000000000000000000000000000000000006.omft.near',
-      tokenAddress: BASE_WETH,
+        'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near',
+      tokenAddress: BASE_CBBTC,
     });
   });
 
@@ -105,7 +105,7 @@ describe('aaveBorrowRecipe', () => {
     expect(
       aaveBorrowRecipe({
         chain: 'base',
-        collateral: 'WETH',
+        collateral: 'cbBTC',
         borrowAsset: 'USDC',
         flow: 'steps-only',
       }).flow,
@@ -115,13 +115,13 @@ describe('aaveBorrowRecipe', () => {
   it('approves and supplies ERC-20 collateral for the intermediary, borrows at the variable rate and sends it on', () => {
     const recipe = aaveBorrowRecipe({
       chain: 'base',
-      collateral: 'WETH',
+      collateral: 'cbBTC',
       borrowAsset: 'USDC',
     });
 
     expect(callsOf(recipe.buildSteps(ctx, PARAMS))).toEqual([
       {
-        to: BASE_WETH,
+        to: BASE_CBBTC,
         functionSignature: 'approve(address,uint256)',
         parameters: [BASE_POOL, '{MIN_AMOUNT_OUT}'],
         value: '0',
@@ -129,7 +129,7 @@ describe('aaveBorrowRecipe', () => {
       {
         to: BASE_POOL,
         functionSignature: 'supply(address,uint256,address,uint16)',
-        parameters: [BASE_WETH, '{MIN_AMOUNT_OUT}', INTERMEDIARY, '0'],
+        parameters: [BASE_CBBTC, '{MIN_AMOUNT_OUT}', INTERMEDIARY, '0'],
         value: '0',
       },
       ...borrowAndSend(BASE_POOL, BASE_USDC),
@@ -186,7 +186,7 @@ describe('aaveBorrowRecipe', () => {
   it('sends to the connected wallet when no recipient is given', () => {
     const recipe = aaveBorrowRecipe({
       chain: 'base',
-      collateral: 'WETH',
+      collateral: 'cbBTC',
       borrowAsset: 'USDC',
     });
 
@@ -214,7 +214,7 @@ describe('aaveBorrowRecipe', () => {
     expect(() =>
       aaveBorrowRecipe({
         chain: 'base',
-        collateral: 'WETH',
+        collateral: 'cbBTC',
         borrowAsset: 'USDT',
       }),
     ).toThrow('aave-v3-borrow: USDT cannot be borrowed on Base');

@@ -20,8 +20,12 @@ const API_URL =
   process.env.INTENTS_CONNECT_API_URL ??
   'https://intents-connect-api.aurora.dev';
 
-/** Any valid EVM address: a dry run creates nothing for it. */
-const PLACEHOLDER_WALLET = '0x000000000000000000000000000000000000dEaD';
+/**
+ * Any ordinary EVM address: a dry run creates nothing for it. It is also the
+ * quote's refund address, so not a burn address such as `0x…dEaD`, which the
+ * API refuses as `refundTo`.
+ */
+const PLACEHOLDER_WALLET = '0x1111111111111111111111111111111111111111';
 
 /** 100 USDC, bridged in from the other chain's native USDC. */
 const ORIGIN_AMOUNT = '100000000';

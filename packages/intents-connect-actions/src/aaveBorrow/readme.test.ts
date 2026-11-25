@@ -8,7 +8,7 @@ import { loadFixtures, readActionFile } from '../tests/actionHarness';
  */
 
 const ACTION = 'aave-v3-borrow-v1';
-const FIXTURE = 'base_bridge_in_weth.json';
+const FIXTURE = 'base_bridge_in_eth.json';
 
 const readme = readActionFile(ACTION, 'README.md');
 
