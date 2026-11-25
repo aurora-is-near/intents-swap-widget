@@ -224,6 +224,62 @@ describe('NewLoanForm', () => {
     });
   });
 
+  describe('with WETH delivered as native ETH', () => {
+    /**
+     * The fake markets, each WETH reserve delivered natively as its own
+     * chain's gas token, as Aave's are.
+     */
+    const NATIVE_SNAPSHOTS: Readonly<Record<string, MarketSnapshot>> =
+      Object.fromEntries(
+        Object.entries(SNAPSHOTS).map(([id, snapshot]) => [
+          id,
+          {
+            ...snapshot,
+            collateral: snapshot.collateral.map((reserve) => ({
+              ...reserve,
+              assetId: `nep141:${snapshot.market.chain}.omft.near`,
+              nativeDelivery: true,
+            })),
+          },
+        ]),
+      );
+
+    it('still lists the collateral once, as WETH', async () => {
+      const user = userEvent.setup();
+
+      await renderForm({ snapshots: NATIVE_SNAPSHOTS });
+
+      expect(supplyPicker()).toHaveAccessibleName('SUPPLY WETH Arbitrum');
+
+      const list = await openSupply(user);
+
+      expect(
+        list.getByRole('button', { name: 'WETH Base · Arbitrum $3,000' }),
+      ).toBeInTheDocument();
+      expect(
+        list.queryByRole('button', { name: /^ETH / }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('says "Supplied as WETH" for an asset converted to it', async () => {
+      setConnected(true);
+      holdBalances();
+
+      const user = userEvent.setup();
+
+      await renderForm({ snapshots: NATIVE_SNAPSHOTS });
+
+      // ETH is supplied as WETH itself: no note.
+      expect(screen.queryByText(/^Supplied as/)).not.toBeInTheDocument();
+
+      const list = await openSupply(user);
+
+      await user.click(list.getByRole('button', { name: /^USDT / }));
+
+      expect(screen.getByText('Supplied as WETH')).toBeInTheDocument();
+    });
+  });
+
   describe('connected', () => {
     beforeEach(() => {
       setConnected(true);

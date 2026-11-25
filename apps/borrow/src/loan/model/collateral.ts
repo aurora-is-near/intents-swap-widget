@@ -4,9 +4,10 @@ import { sameSymbol } from './symbols';
 
 /**
  * Which Aave collateral a held asset funds (decided in the plan review): the
- * same asset when the market lists it as collateral, native ETH counting as
- * WETH (supplied through Aave's gateway); any other asset is converted to
- * WETH, and the form says "Supplied as WETH".
+ * same asset when the market lists it as collateral, ETH and WETH both
+ * counting as the wrapped-native reserve (WETH, or the reserve delivered
+ * natively and supplied through Aave's gateway); any other asset is
+ * converted to that reserve, and the form says "Supplied as WETH".
  */
 
 const NATIVE = 'ETH';
@@ -26,6 +27,20 @@ const listed = (market: MarketSnapshot, symbol: string) =>
   );
 
 /**
+ * The wrapped-native collateral (WETH) listed and suppliable now: the
+ * reserve delivered natively (supplied through Aave's gateway, whatever
+ * symbol it carries) or else the one named WETH.
+ */
+const wrappedNative = (market: MarketSnapshot) => {
+  const available = market.collateral.filter(isReserveAvailable);
+
+  return (
+    available.find(({ nativeDelivery }) => nativeDelivery === true) ??
+    available.find(({ symbol }) => sameSymbol(symbol, WRAPPED_NATIVE))
+  );
+};
+
+/**
  * The collateral `fundingSymbol` is supplied as in `market`. A reserve the
  * market lists but cannot take now counts as unlisted. `undefined` when the
  * market cannot take WETH either, so the asset cannot fund a loan there.
@@ -34,17 +49,17 @@ export const collateralFor = (
   fundingSymbol: string,
   market: MarketSnapshot,
 ): CollateralChoice | undefined => {
-  const symbol = sameSymbol(fundingSymbol, NATIVE)
-    ? WRAPPED_NATIVE
-    : fundingSymbol;
+  const wrapped = wrappedNative(market);
 
-  const same = listed(market, symbol);
+  const same =
+    sameSymbol(fundingSymbol, NATIVE) ||
+    sameSymbol(fundingSymbol, WRAPPED_NATIVE)
+      ? wrapped
+      : listed(market, fundingSymbol);
 
   if (same) {
     return { reserve: same };
   }
-
-  const wrapped = listed(market, WRAPPED_NATIVE);
 
   return wrapped
     ? { reserve: wrapped, convertedFrom: fundingSymbol }

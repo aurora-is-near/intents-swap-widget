@@ -4,7 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { nativeEth, usdc, weth } from '../../tests/fakeMarkets';
 import type { BorrowRecipeInput, LendingMarket } from '../types';
 import { createAaveV3Adapter } from '.';
+import { AAVE_V3_MARKETS } from './registry';
 import type { AaveReadClient } from './reserves';
+import { intersectSupported, withDeliveredAssets } from './supported';
 
 /**
  * The Aave adapter's borrow recipe: the `aave-v3-borrow` action's own
@@ -129,6 +131,74 @@ describe('Aave V3 borrowRecipe', () => {
       [BASE_USDC, 'transfer(address,uint256)'],
     ]);
   });
+
+  it.each([
+    ['Base', BASE, BASE_WETH, BASE_GATEWAY, BASE_POOL, BASE_USDC],
+    ['Arbitrum', ARB, ARB_WETH, ARB_GATEWAY, ARB_POOL, ARB_USDT],
+  ] as const)(
+    'supplies the WETH reserve read on %s natively when 1Click lists ETH and WETH',
+    (_label, market, wrapped, gateway, pool, borrowed) => {
+      const aave = AAVE_V3_MARKETS.find(({ chain }) => chain === market.chain);
+
+      if (!aave) {
+        throw new Error(`no Aave market on ${market.chain}`);
+      }
+
+      const nativeAssetId = `nep141:${market.chain}.omft.near`;
+
+      const [read] = withDeliveredAssets(
+        { collateral: [weth({ asset: wrapped })], borrowable: [] },
+        intersectSupported(
+          [
+            {
+              blockchain: market.chain,
+              contractAddress: wrapped.toLowerCase(),
+              assetId: `nep141:${market.chain}-${wrapped.toLowerCase()}.omft.near`,
+              symbol: 'WETH',
+              decimals: 18,
+            },
+            {
+              blockchain: market.chain,
+              contractAddress: '',
+              assetId: nativeAssetId,
+              symbol: 'ETH',
+              decimals: 18,
+            },
+          ],
+          aave,
+        ),
+      ).collateral;
+
+      if (!read) {
+        throw new Error('the WETH reserve was not delivered');
+      }
+
+      expect(read.symbol).toBe('WETH');
+
+      const recipeInput = input({
+        market,
+        collateral: read,
+        borrow: usdc({ asset: borrowed }),
+      });
+
+      expect(adapter.borrowRecipe(recipeInput).destination).toEqual({
+        chain: market.chain,
+        assetId: nativeAssetId,
+        tokenAddress: undefined,
+      });
+
+      const steps = adapter.borrowRecipe(recipeInput).buildSteps(ctx, PARAMS);
+
+      expect(
+        steps.map(({ to, functionSignature }) => [to, functionSignature]),
+      ).toEqual([
+        [gateway, 'depositETH(address,address,uint16)'],
+        [pool, 'borrow(address,uint256,uint256,uint16,address)'],
+        [borrowed, 'transfer(address,uint256)'],
+      ]);
+      expect(steps[0]?.value).toBe('{MIN_AMOUNT_OUT}');
+    },
+  );
 
   it("uses the market's own Pool, gateway and tokens", () => {
     const recipeInput = input({

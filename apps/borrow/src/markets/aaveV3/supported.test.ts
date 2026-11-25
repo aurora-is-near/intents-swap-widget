@@ -1,7 +1,7 @@
 import type { SupportedToken } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AAVE_V3_MARKETS, type AaveMarket } from './registry';
+import { AAVE_V3_MARKETS } from './registry';
 import type {
   AaveBorrowReserve,
   AaveCollateralReserve,
@@ -13,14 +13,18 @@ import {
   withDeliveredAssets,
 } from './supported';
 
-const market = AAVE_V3_MARKETS.find(({ chain }) => chain === 'base');
+const marketOf = (chain: string) => {
+  const found = AAVE_V3_MARKETS.find((entry) => entry.chain === chain);
 
-if (!market?.native) {
-  throw new Error('No Base market with a wrapped native reserve');
-}
+  if (!found?.native) {
+    throw new Error(`No ${chain} market with a wrapped native reserve`);
+  }
 
-const base: AaveMarket = market;
-const WETH = market.native.reserve;
+  return { market: found, wrapped: found.native.reserve };
+};
+
+const { market: base, wrapped: WETH } = marketOf('base');
+const { market: arb, wrapped: ARB_WETH } = marketOf('arb');
 const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 
 const usdcToken: SupportedToken = {
@@ -205,11 +209,11 @@ describe('intersectSupported', () => {
       supported,
     );
 
+    // The reserve keeps its own symbol: Aave holds WETH, the form says so.
     expect(result.collateral).toEqual([
       {
         ...collateral(weth),
         assetId: ethToken.assetId,
-        symbol: 'ETH',
         nativeDelivery: true,
       },
     ]);
@@ -217,11 +221,76 @@ describe('intersectSupported', () => {
     expect(result.borrowable).toEqual([]);
   });
 
-  it('uses the listed WETH, not native delivery, when both are listed', () => {
-    const supported = intersectSupported([ethToken, wethToken], base);
+  it('delivers WETH collateral as native ETH when both are listed, reading WETH once', () => {
+    const supported = intersectSupported([wethToken, ethToken], base);
+
+    expect(supported.native).toEqual({
+      assetId: ethToken.assetId,
+      symbol: 'ETH',
+      reserve: WETH,
+    });
+    expect(supported.assets).toEqual([WETH.toLowerCase()]);
+
+    const weth = { asset: WETH, symbol: 'WETH', decimals: 18 };
+    const result = withDeliveredAssets(
+      reserves({
+        collateral: [collateral(weth), collateral()],
+        borrowable: [borrowable(weth)],
+      }),
+      supported,
+    );
+
+    expect(result.collateral).toEqual([
+      {
+        ...collateral(weth),
+        assetId: 'nep141:base.omft.near',
+        nativeDelivery: true,
+      },
+    ]);
+    // Borrowing WETH still takes the listed ERC-20.
+    expect(result.borrowable).toEqual([
+      { ...borrowable(weth), assetId: wethToken.assetId },
+    ]);
+  });
+
+  it('delivers WETH collateral as native ETH on Arbitrum too', () => {
+    const arbEth: SupportedToken = {
+      ...ethToken,
+      blockchain: 'arb',
+      assetId: 'nep141:arb.omft.near',
+    };
+
+    const arbWeth: SupportedToken = {
+      ...wethToken,
+      blockchain: 'arb',
+      contractAddress: ARB_WETH.toLowerCase(),
+      assetId: `nep141:arb-${ARB_WETH.toLowerCase()}.omft.near`,
+    };
+
+    const supported = intersectSupported([arbEth, arbWeth], arb);
+
+    expect(supported.assets).toEqual([ARB_WETH.toLowerCase()]);
+
+    const weth = { asset: ARB_WETH, symbol: 'WETH', decimals: 18 };
+    const result = withDeliveredAssets(
+      reserves({ collateral: [collateral(weth)], borrowable: [] }),
+      supported,
+    );
+
+    expect(result.collateral).toEqual([
+      {
+        ...collateral(weth),
+        assetId: 'nep141:arb.omft.near',
+        nativeDelivery: true,
+      },
+    ]);
+  });
+
+  it('keeps WETH as a token delivery when native ETH is not listed', () => {
+    const supported = intersectSupported([wethToken, usdcToken], base);
 
     expect(supported.native).toBeUndefined();
-    expect(supported.assets).toEqual([WETH.toLowerCase()]);
+    expect(supported.assets).toEqual([WETH.toLowerCase(), USDC.toLowerCase()]);
 
     const weth = { asset: WETH, symbol: 'WETH', decimals: 18 };
     const result = withDeliveredAssets(

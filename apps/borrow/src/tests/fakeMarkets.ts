@@ -49,8 +49,10 @@ export const weth = (
 });
 
 /**
- * Native ETH delivered and supplied as WETH through Aave's gateway, as the
- * Aave adapter reads Base's and Arbitrum's wrapped-native reserve.
+ * Native ETH delivered and supplied as WETH through Aave's gateway, under the
+ * symbol ETH. The Aave adapter reads Base's and Arbitrum's wrapped-native
+ * reserve this way but keeps the symbol WETH:
+ * `weth({ nativeDelivery: true })`.
  */
 export const nativeEth = (
   overrides: Partial<CollateralReserve> = {},

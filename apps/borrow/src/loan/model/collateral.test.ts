@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { FAKE_BASE, pairSnapshot, weth } from '../../tests/fakeMarkets';
+import {
+  FAKE_BASE,
+  nativeEth,
+  pairSnapshot,
+  weth,
+} from '../../tests/fakeMarkets';
 import { collateralFor } from './collateral';
 
 const WSTETH = weth({
@@ -50,5 +55,59 @@ describe('collateralFor', () => {
 
     expect(collateralFor('USDC', noWeth)).toBeUndefined();
     expect(collateralFor('ETH', noWeth)).toBeUndefined();
+  });
+
+  describe('with WETH delivered as native ETH', () => {
+    // As the Aave adapter reads it: the WETH reserve, delivered natively.
+    const nativeWeth = weth({
+      assetId: 'nep141:base.omft.near',
+      nativeDelivery: true,
+    });
+
+    const native = pairSnapshot(FAKE_BASE, {
+      collateral: [nativeWeth, WSTETH],
+    });
+
+    it.each(['ETH', 'WETH', 'eth'])(
+      'supplies %s as the natively delivered reserve',
+      (symbol) => {
+        expect(collateralFor(symbol, native)).toEqual({ reserve: nativeWeth });
+      },
+    );
+
+    it('converts an unlisted asset to the natively delivered reserve', () => {
+      expect(collateralFor('USDC', native)).toEqual({
+        reserve: nativeWeth,
+        convertedFrom: 'USDC',
+      });
+    });
+
+    it('still supplies another listed asset as itself', () => {
+      expect(collateralFor('wstETH', native)).toEqual({ reserve: WSTETH });
+    });
+
+    it('finds the natively delivered reserve whatever its symbol', () => {
+      const eth = nativeEth();
+      const bySymbol = pairSnapshot(FAKE_BASE, { collateral: [eth] });
+
+      expect(collateralFor('ETH', bySymbol)).toEqual({ reserve: eth });
+      expect(collateralFor('WETH', bySymbol)).toEqual({ reserve: eth });
+      expect(collateralFor('USDC', bySymbol)).toEqual({
+        reserve: eth,
+        convertedFrom: 'USDC',
+      });
+    });
+
+    it('gives nothing when the market has no wrapped-native reserve', () => {
+      const neither = pairSnapshot(FAKE_BASE, {
+        collateral: [{ ...nativeWeth, unavailable: true }, WSTETH],
+      });
+
+      expect(collateralFor('USDC', neither)).toBeUndefined();
+      expect(collateralFor('ETH', neither)).toBeUndefined();
+      expect(
+        collateralFor('USDC', pairSnapshot(FAKE_BASE, { collateral: [] })),
+      ).toBeUndefined();
+    });
   });
 });

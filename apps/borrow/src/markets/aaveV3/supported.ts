@@ -24,12 +24,16 @@ export type SupportedAssets = {
   /** ERC-20 tokens delivered on the market's chain, by lower-case address. */
   tokens: ReadonlyMap<string, DeliveredAsset>;
   /**
-   * The native token, when it is delivered on the market's chain but the
-   * wrapped-native reserve (WETH) is not: that reserve then counts as
-   * collateral, supplied from the native token.
+   * The native token, when it is delivered on the market's chain: the
+   * wrapped-native reserve (WETH) is then collateral supplied from the
+   * native token through Aave's gateway, even when 1Click lists WETH too
+   * (no solver fills into Base WETH, so the native route is preferred).
    */
   native?: DeliveredAsset & { reserve: Address };
-  /** The addresses to read: every delivered token and `native`'s reserve. */
+  /**
+   * The addresses to read, each once: every delivered token and `native`'s
+   * reserve.
+   */
   assets: Address[];
 };
 
@@ -68,8 +72,9 @@ const deliveredAsset = (token: SupportedToken): DeliveredAsset | undefined =>
  * tokens share an address, the first listed wins.
  *
  * A chain's native token is listed with an empty contract address. When it is
- * listed (by the registry's native symbol) and the wrapped-native reserve is
- * not, that reserve is read too and counts as collateral delivered natively.
+ * listed (by the registry's native symbol), the wrapped-native reserve is read
+ * too and counts as collateral delivered natively, whether or not 1Click also
+ * lists the wrapped token.
  */
 export const intersectSupported = (
   tokens: readonly SupportedToken[],
@@ -122,23 +127,27 @@ export const intersectSupported = (
   });
 
   const native =
-    market.native &&
-    nativeToken &&
-    !delivered.has(market.native.reserve.toLowerCase())
+    market.native && nativeToken
       ? { ...nativeToken, reserve: market.native.reserve }
       : undefined;
 
   return {
     tokens: delivered,
     ...(native && { native }),
-    assets: native ? [...assets, native.reserve] : assets,
+    assets:
+      native && !delivered.has(native.reserve.toLowerCase())
+        ? [...assets, native.reserve]
+        : assets,
   };
 };
 
 /**
  * The read reserves with the 1Click asset id and symbol they are delivered
- * as; reserves 1Click cannot deliver are dropped. The wrapped-native reserve
- * delivered natively is collateral only, marked `nativeDelivery`.
+ * as; reserves 1Click cannot deliver are dropped. As collateral, the
+ * wrapped-native reserve goes natively whenever the native token is
+ * delivered, marked `nativeDelivery`: it keeps the reserve's own symbol
+ * (WETH), since that is what Aave holds and what the form shows, and is
+ * delivered as the native asset id. As a borrow it stays the ERC-20.
  */
 export const withDeliveredAssets = (
   reserves: Pick<AaveReserves, 'collateral' | 'borrowable'>,
@@ -148,24 +157,13 @@ export const withDeliveredAssets = (
 
   const collateral = reserves.collateral.flatMap(
     (reserve): CollateralReserve[] => {
+      if (native && isAddressEqual(reserve.asset, native.reserve)) {
+        return [{ ...reserve, assetId: native.assetId, nativeDelivery: true }];
+      }
+
       const token = tokens.get(reserve.asset.toLowerCase());
 
-      if (token) {
-        return [{ ...reserve, ...token }];
-      }
-
-      if (native && isAddressEqual(reserve.asset, native.reserve)) {
-        return [
-          {
-            ...reserve,
-            assetId: native.assetId,
-            symbol: native.symbol,
-            nativeDelivery: true,
-          },
-        ];
-      }
-
-      return [];
+      return token ? [{ ...reserve, ...token }] : [];
     },
   );
 
