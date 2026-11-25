@@ -21441,6 +21441,11 @@ stackback@0.0.2:
   resolved "https://registry.yarnpkg.com/stackback/-/stackback-0.0.2.tgz#1ac8a0d9483848d1695e418b6d031a3c3ce68e3b"
   integrity sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==
 
+starlark-wasm@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/starlark-wasm/-/starlark-wasm-0.0.4.tgz#279934de743406e48cb6cda5313ea3dcb519ad73"
+  integrity sha512-MBEXRyAt+RC+fxBMwPYlQI3YhOVBcCfzQISYbbkG3WjcErW4pG0W+2Ccox6GDV9g+BHoD8hEIbZH3a96tmHyWA==
+
 "statuses@>= 1.5.0 < 2":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
