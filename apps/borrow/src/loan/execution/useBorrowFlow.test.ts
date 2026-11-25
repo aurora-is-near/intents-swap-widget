@@ -13,7 +13,9 @@ import type {
   UseExecutionOptions,
   UseExecutionResult,
 } from '@aurora-is-near/intents-connect/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { dryExecution, dryPreview } from '../../tests/executionFixtures';
@@ -1336,6 +1338,94 @@ describe('useBorrowFlow', () => {
       await act(() => result.current.leave());
 
       expect(result.current.figures).toBeUndefined();
+    });
+  });
+
+  describe('positions', () => {
+    /** The flow inside a query client, whose invalidations are counted. */
+    const renderWithQueryClient = () => {
+      const queryClient = new QueryClient();
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client: queryClient }, children);
+
+      return {
+        invalidate,
+        ...renderHook(() => useBorrowFlow(), { wrapper }),
+      };
+    };
+
+    const positionsInvalidations = (
+      invalidate: ReturnType<typeof renderWithQueryClient>['invalidate'],
+    ) =>
+      invalidate.mock.calls.filter(
+        ([filters]) => filters?.queryKey?.[0] === 'positions',
+      ).length;
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('reads the positions again when a borrow is done, then at ~10 s and ~30 s', async () => {
+      const { result, invalidate } = renderWithQueryClient();
+
+      await startFlow(result);
+
+      expect(positionsInvalidations(invalidate)).toBe(0);
+
+      await act(() => result.current.confirm());
+
+      expect(result.current.state).toEqual({
+        kind: 'done',
+        executionId: EXECUTION_ID,
+      });
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ['positions'] });
+      expect(positionsInvalidations(invalidate)).toBe(1);
+
+      act(() => {
+        vi.advanceTimersByTime(10_000);
+      });
+
+      expect(positionsInvalidations(invalidate)).toBe(2);
+
+      act(() => {
+        vi.advanceTimersByTime(20_000);
+      });
+
+      expect(positionsInvalidations(invalidate)).toBe(3);
+    });
+
+    it('reads the positions again when a restored borrow is done', async () => {
+      const { result, invalidate } = renderWithQueryClient();
+
+      await act(async () => {
+        result.current.restore({
+          ...dryExecution(),
+          id: EXECUTION_ID,
+          status: 'OPERATION_PROCESSING',
+          details: { ...dryExecution().details, messageSigned: true },
+        });
+      });
+
+      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
+      expect(result.current.state).toEqual({
+        kind: 'done',
+        executionId: EXECUTION_ID,
+      });
+      expect(positionsInvalidations(invalidate)).toBe(1);
+    });
+
+    it('does not read the positions again when a borrow fails', async () => {
+      const { result, invalidate } = renderWithQueryClient();
+
+      await confirmFailing(result, EIP1193_REJECTION);
+
+      expect(result.current.state).toMatchObject({ kind: 'error' });
+      expect(positionsInvalidations(invalidate)).toBe(0);
     });
   });
 });

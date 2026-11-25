@@ -15,6 +15,7 @@ import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { LendingMarketAdapter } from '../../markets/types';
+import { usePositionsRefresh } from '../../positions/refreshPositions';
 import {
   BORROW_DELAYED_AFTER_MS,
   type BorrowErrorKind,
@@ -291,6 +292,9 @@ export const useBorrowFlow = ({
   onSettledRef.current = onSettled;
   onDepositSentRef.current = onDepositSent;
 
+  /** A new loan: the positions are read again, now and at ~10 s and ~30 s. */
+  const refreshPositions = usePositionsRefresh();
+
   /** The execution is over: what was kept for it can go. */
   const settled = (executionId: string | undefined) => {
     if (executionId !== undefined) {
@@ -360,6 +364,7 @@ export const useBorrowFlow = ({
     if (executionId) {
       settled(executionId);
       setFlow({ kind: 'done', executionId });
+      refreshPositions();
     }
   };
 

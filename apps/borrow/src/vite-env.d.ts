@@ -13,6 +13,11 @@ interface ImportMetaEnv {
   readonly VITE_RPC_URL_ARB?: string;
   /** The intents API key (public) for the SDK's balance hooks. */
   readonly VITE_INTENTS_API_KEY?: string;
+  /**
+   * Development only: an EVM address whose positions My positions reads
+   * instead of the wallet's. Ignored unless `import.meta.env.DEV`.
+   */
+  readonly VITE_DEBUG_POSITIONS_OWNER?: string;
 }
 
 interface ImportMeta {

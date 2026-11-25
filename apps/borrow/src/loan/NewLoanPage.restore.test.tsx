@@ -7,6 +7,7 @@ import type {
   UseWalletExecutionsOptions,
   UseWalletExecutionsResult,
 } from '@aurora-is-near/intents-connect/react';
+import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -550,6 +551,64 @@ describe('NewLoanPage: restoring a borrow', () => {
 
     expect(sdk.result?.resume).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('reads the positions again when the kept borrow ended while the app was closed', async () => {
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+
+    savePendingBorrow(WALLET, {
+      executionId: EXECUTION_ID,
+      rows: KEPT_ROWS,
+    });
+    sdk.executions = walletExecutions([]);
+
+    await renderPage();
+
+    await act(async () => {});
+
+    expect(readPendingBorrow(WALLET)).toBeUndefined();
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['positions'] });
+
+    invalidate.mockRestore();
+  });
+
+  it('does not read the positions again when no borrow was kept', async () => {
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+
+    sdk.executions = walletExecutions([]);
+
+    await renderPage();
+
+    await act(async () => {});
+
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['positions'] });
+
+    invalidate.mockRestore();
+  });
+
+  it('reads the positions again when the restored borrow is done', async () => {
+    const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
+
+    savePendingBorrow(WALLET, {
+      executionId: EXECUTION_ID,
+      rows: KEPT_ROWS,
+      borrowSymbol: 'USDC',
+    });
+    sdk.executions = walletExecutions([inFlight()]);
+
+    await renderPage();
+
+    await screen.findByRole('dialog');
+
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['positions'] });
+
+    await act(async () => {
+      resume.resolve(inFlight({ status: 'SUCCESS' }));
+    });
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['positions'] });
+
+    invalidate.mockRestore();
   });
 
   it('looks for nothing without a connected wallet', async () => {

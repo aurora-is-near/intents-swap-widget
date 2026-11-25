@@ -6,6 +6,7 @@ import {
 import { useWalletExecutions } from '@aurora-is-near/intents-connect/react';
 import { useEffect, useRef } from 'react';
 
+import { usePositionsRefresh } from '../../positions/refreshPositions';
 import { formatAddress } from '../../wallet/formatAddress';
 import { formatUsd } from '../loanFormat';
 import type { RestoredBorrowSummary } from './BorrowDialog';
@@ -72,7 +73,10 @@ export type UseRestoreBorrowOptions = {
  * After a reload, looks once per connected wallet for an in-flight borrow
  * (an `IN_FLIGHT_STATUSES` execution with `intent === AAVE_BORROW_INTENT`),
  * as the Aave extension's `InFlightCheck` does, and hands it to `onRestore`.
- * A kept record no in-flight borrow matches is stale and dropped.
+ * A kept record no in-flight borrow matches is stale and dropped. A kept
+ * borrow that is no longer in flight ended while the app was closed, so the
+ * positions are read again (a restored borrow that reaches done here
+ * refreshes them through `useBorrowFlow`).
  *
  * Only a list fetched after this mount is trusted: the SDK keeps the last
  * list per wallet at provider level, so on a remount (switching tabs) the
@@ -85,6 +89,7 @@ export const useRestoreBorrow = ({
   idle,
   onRestore,
 }: UseRestoreBorrowOptions) => {
+  const refreshPositions = usePositionsRefresh();
   const found = useWalletExecutions({
     status: IN_FLIGHT_STATUSES,
     refreshIntervalMs: 0,
@@ -95,11 +100,13 @@ export const useRestoreBorrow = ({
   const idleRef = useRef(idle);
   const onRestoreRef = useRef(onRestore);
   const refreshRef = useRef(found.refresh);
+  const refreshPositionsRef = useRef(refreshPositions);
 
   addressRef.current = address;
   idleRef.current = idle;
   onRestoreRef.current = onRestore;
   refreshRef.current = found.refresh;
+  refreshPositionsRef.current = refreshPositions;
 
   // `idle` while the SDK has no wallet to list for yet.
   const listable = found.status !== 'idle';
@@ -127,6 +134,10 @@ export const useRestoreBorrow = ({
       const record = readPendingBorrow(address);
 
       if (!execution) {
+        if (record) {
+          refreshPositionsRef.current();
+        }
+
         clearPendingBorrow(address);
 
         return;

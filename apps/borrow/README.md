@@ -277,6 +277,9 @@ The borrow needs, besides the wallet's `VITE_REOWN_PROJECT_ID`:
   target, default `https://api.vaults.fyi`.
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
   liquidity pre-check and the failed-step diagnosis.
+- `VITE_DEBUG_POSITIONS_OWNER` (development only): an EVM address whose
+  positions are read instead of the connected wallet's. Ignored unless
+  `import.meta.env.DEV`, so a production build never honours it.
 
 See `.env.example` for each.
 
