@@ -13,14 +13,14 @@ import { AAVE_V3_MARKETS } from '../../markets/aaveV3/registry';
 import type { LendingMarket } from '../../markets/types';
 import { usdc, weth } from '../../tests/fakeMarkets';
 import golden from './recipe.golden.json';
-import { aaveBorrowRecipe, type BorrowParams } from './recipe';
+import type { BorrowParams } from './recipe';
 
 /**
- * The borrow recipe as the app built it before its steps came from the
+ * The borrow recipe as the app built it before it came from the
  * `aave-v3-borrow` action (`recipe.golden.json`, captured from the app's own
- * step builder): for every pair in the action's tables, on both chains and in
- * both flows, the recipe and its steps must stay the same. Step `metadata` is
- * the only addition.
+ * recipe and step builder): for every pair in the action's tables, on both
+ * chains and in both flows, the Aave adapter's recipe (`borrowRecipe`) and
+ * its steps must stay the same. Step `metadata` is the only addition.
  */
 
 const INTERMEDIARY = '0x00000000000000000000000000000000000000aa';
@@ -76,13 +76,12 @@ const casesOf = (markets: LendingMarket[]): Case[] =>
       Object.entries(table.borrow).flatMap(([borrowed, borrow]) =>
         FLOWS.map((flow) => ({
           key: `${chain}:${collateral}:${borrowed}:${flow}`,
-          recipe: aaveBorrowRecipe(
-            adapter,
+          recipe: adapter.borrowRecipe({
             market,
-            collateralOf(supplied),
-            borrowOf(borrow),
+            collateral: collateralOf(supplied),
+            borrow: borrowOf(borrow),
             flow,
-          ),
+          }),
           action: actionRecipe({
             chain,
             collateral: collateral as AaveCollateralAsset,
@@ -127,7 +126,7 @@ const recordOf = ({
     })),
 });
 
-describe('aaveBorrowRecipe golden', async () => {
+describe('the Aave borrow recipe, golden', async () => {
   const markets = await adapter.listMarkets();
   const cases = casesOf(markets);
 

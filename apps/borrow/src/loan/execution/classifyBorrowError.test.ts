@@ -189,6 +189,33 @@ describe('classifyBorrowError', () => {
   });
 });
 
+describe('classifyBorrowError: a pair the borrow action no longer covers', () => {
+  it('is pairUnsupported when the steps-only retry refused the pair', () => {
+    expect(
+      classifyBorrowError(
+        new BorrowPreviewError('pairUnsupported', 'gone'),
+        undefined,
+        { status: 'OPERATION_FAILED' },
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is pairUnsupported when the borrow step failed on such a pair', () => {
+    expect(
+      classifyBorrowError(new Error('execution OPERATION_FAILED'), undefined, {
+        status: 'OPERATION_FAILED',
+        borrowStep: 'pairUnsupported',
+      }),
+    ).toBe('pairUnsupported');
+  });
+
+  it('offers to close, never to retry', () => {
+    expect(borrowRecoveryAction('pairUnsupported', new Error('x'))).toBe(
+      'close',
+    );
+  });
+});
+
 describe('isInsufficientFunds', () => {
   it.each([
     [{ name: 'InsufficientFundsError', message: 'x' }, true],
@@ -273,6 +300,58 @@ describe('diagnoseBorrowStep', () => {
         ),
       ),
     ).toBe('priceMoved');
+  });
+});
+
+describe('diagnoseBorrowStep: a pair the borrow action no longer covers', () => {
+  const input = (snapshot: ReturnType<typeof pairSnapshot>) => ({
+    snapshot,
+    collateral: weth(),
+    borrow: usdc(),
+    collateralAmount: 10n ** 18n,
+    borrowAmount: 1_500_000_000n,
+  });
+
+  it('is pairUnsupported, not noLiquidity, for a coming-soon borrow token', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            borrowable: [
+              usdc({ unavailable: true, unavailableReason: 'coming-soon' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is pairUnsupported for a coming-soon collateral', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            collateral: [
+              weth({ unavailable: true, unavailableReason: 'coming-soon' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('pairUnsupported');
+  });
+
+  it('is still noLiquidity for a borrow token whose cap is reached', () => {
+    expect(
+      diagnoseBorrowStep(
+        input(
+          pairSnapshot(FAKE_BASE, {
+            borrowable: [
+              usdc({ unavailable: true, unavailableReason: 'cap-reached' }),
+            ],
+          }),
+        ),
+      ),
+    ).toBe('noLiquidity');
   });
 });
 

@@ -15,7 +15,9 @@ import {
 /**
  * The `aave-v3-borrow` action as an `@aurora-is-near/intents-connect` recipe,
  * for callers that run it through the SDK's runner instead of the hosted
- * action. A separate entry (`@aurora-is-near/intents-connect-actions/sdk`):
+ * action. The Borrow app's Aave adapter returns it as its borrow recipe
+ * (`LendingMarketAdapter.borrowRecipe`), so it alone owns the id, intent,
+ * title, destination and steps of the app's Aave borrows. A separate entry (`@aurora-is-near/intents-connect-actions/sdk`):
  * the resolver and its tables (the main entry) stay free of the SDK.
  */
 

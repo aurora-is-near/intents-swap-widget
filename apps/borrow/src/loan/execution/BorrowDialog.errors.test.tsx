@@ -114,6 +114,42 @@ describe('BorrowDialog error states', () => {
     },
   );
 
+  it('pairUnsupported: says the pair is no longer supported, and closes', async () => {
+    const user = userEvent.setup();
+    const handlers = renderError('pairUnsupported');
+
+    const banner = screen.getByRole('alert');
+
+    expect(
+      within(banner).getByText('This pair is no longer supported'),
+    ).toBeInTheDocument();
+    expect(
+      within(banner).getByText(
+        'Borrow no longer opens Aave loans of USDC against WETH. Nothing was sent. Pick another pair.',
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Choose another pair' }),
+    );
+
+    expect(handlers.onAction).toHaveBeenCalledExactlyOnceWith('close');
+  });
+
+  it('pairUnsupported with the collateral waiting: says it is held and not retried', () => {
+    expect(
+      errorCopy.pairUnsupported.text({
+        chainName: 'Arbitrum',
+        collateralSymbol: 'WETH',
+        borrowSymbol: 'USDC',
+        marketName: 'Aave',
+        fundsWaiting: true,
+      }),
+    ).toBe(
+      'Borrow no longer opens Aave loans of USDC against WETH, so this borrow can’t be retried. Your collateral arrived and is held for this loan.',
+    );
+  });
+
   it('uses the warn tone only for delayed, and keeps its step running', () => {
     renderError('delayed');
 

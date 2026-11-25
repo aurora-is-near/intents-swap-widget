@@ -263,8 +263,8 @@ const stepsOf = (
 /**
  * Supply the collateral for `owner`, borrow `borrowAmount` at the variable
  * rate on `owner`'s account, and send it to `recipient`, each step with
- * metadata. The Borrow app's Aave adapter and `aaveBorrowRecipe` (`sdk.ts`)
- * build their steps with it, from real values. `owner` must
+ * metadata. `aaveBorrowRecipe` (`sdk.ts`), the Borrow app's Aave borrow
+ * recipe, builds its steps with it from real values. `owner` must
  * be the account running the steps (the intermediary): Aave lets an account
  * borrow only against its own collateral unless credit is delegated.
  *
