@@ -1,15 +1,16 @@
+import type { StepContext } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
 import { nativeEth, usdc, weth } from '../../tests/fakeMarkets';
-import type { BuildBorrowStepsInput, LendingMarket } from '../types';
+import type { BorrowRecipeInput, LendingMarket } from '../types';
 import { createAaveV3Adapter } from '.';
 import type { AaveReadClient } from './reserves';
 
 /**
- * The adapter's side of the borrow steps: picking the market and mapping its
- * reserves to the `aave-v3-borrow` action's table symbols. The calls
- * themselves are the action's, tested in `@aurora-is-near/intents-connect-actions`
- * (`sdk.test.ts`, `resolve.test.ts`) and pinned for every pair by
+ * The Aave adapter's borrow recipe: the `aave-v3-borrow` action's own
+ * recipe, for the market's chain and the action's symbols of the reserves.
+ * The recipe itself is tested in `@aurora-is-near/intents-connect-actions`
+ * (`sdk.test.ts`) and pinned for every pair by
  * `loan/execution/recipe.golden.test.ts`.
  */
 
@@ -25,6 +26,7 @@ const ARB_WETH = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1';
 const ARB_USDT = '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9';
 const INTERMEDIARY = '0x00000000000000000000000000000000000000aa';
 const RECIPIENT = '0x00000000000000000000000000000000000000bb';
+const USER = '0x00000000000000000000000000000000000000cc';
 
 const BASE: LendingMarket = {
   id: 'aave-v3:base',
@@ -56,32 +58,55 @@ const adapter = createAaveV3Adapter({
   getClient,
 });
 
+const ctx: StepContext = {
+  intermediary: INTERMEDIARY,
+  userAddress: USER,
+  amount: '{MIN_AMOUNT_OUT}',
+};
+
+const PARAMS = { borrowAmount: '1500000000', recipient: RECIPIENT };
+
 const input = (
-  overrides: Partial<BuildBorrowStepsInput> = {},
-): BuildBorrowStepsInput => ({
+  overrides: Partial<BorrowRecipeInput> = {},
+): BorrowRecipeInput => ({
   market: BASE,
   collateral: weth({ asset: BASE_WETH }),
   borrow: usdc({ asset: BASE_USDC }),
-  amount: '{MIN_AMOUNT_OUT}',
-  borrowAmount: '1500000000',
-  owner: INTERMEDIARY,
-  recipient: RECIPIENT,
+  flow: 'bridge-in',
   ...overrides,
 });
 
-const callsOf = (stepsInput: BuildBorrowStepsInput) =>
+const callsOf = (recipeInput: BorrowRecipeInput) =>
   adapter
-    .buildBorrowSteps(stepsInput)
+    .borrowRecipe(recipeInput)
+    .buildSteps(ctx, PARAMS)
     .map(({ to, functionSignature }) => [to, functionSignature]);
 
-describe('Aave V3 buildBorrowSteps', () => {
-  it('maps an ERC-20 reserve by address, in any case, to approve and supply', () => {
+describe('Aave V3 borrowRecipe', () => {
+  it('is the action’s recipe for an ERC-20 reserve, matched by address in any case', () => {
+    const recipe = adapter.borrowRecipe(
+      input({
+        collateral: weth({ asset: BASE_WETH.toLowerCase() as `0x${string}` }),
+      }),
+    );
+
+    expect(recipe).toMatchObject({
+      id: 'aave-borrow:aave-v3:base:WETH:USDC',
+      intent: 'aave_borrow',
+      title: 'Borrow USDC against WETH on Aave Base',
+      flow: 'bridge-in',
+      type: 'evm',
+      destination: {
+        chain: 'base',
+        assetId:
+          'nep141:base-0x4200000000000000000000000000000000000006.omft.near',
+        tokenAddress: BASE_WETH,
+      },
+    });
     expect(
-      callsOf(
-        input({
-          collateral: weth({ asset: BASE_WETH.toLowerCase() as `0x${string}` }),
-        }),
-      ),
+      recipe
+        .buildSteps(ctx, PARAMS)
+        .map(({ to, functionSignature }) => [to, functionSignature]),
     ).toEqual([
       [BASE_WETH, 'approve(address,uint256)'],
       [BASE_POOL, 'supply(address,uint256,address,uint16)'],
@@ -90,10 +115,15 @@ describe('Aave V3 buildBorrowSteps', () => {
     ]);
   });
 
-  it('maps a natively delivered reserve to the gateway deposit', () => {
-    expect(
-      callsOf(input({ collateral: nativeEth({ asset: BASE_WETH }) })),
-    ).toEqual([
+  it('maps a natively delivered reserve to the gateway deposit, delivered as the gas token', () => {
+    const recipeInput = input({ collateral: nativeEth({ asset: BASE_WETH }) });
+
+    expect(adapter.borrowRecipe(recipeInput).destination).toEqual({
+      chain: 'base',
+      assetId: 'nep141:base.omft.near',
+      tokenAddress: undefined,
+    });
+    expect(callsOf(recipeInput)).toEqual([
       [BASE_GATEWAY, 'depositETH(address,address,uint16)'],
       [BASE_POOL, 'borrow(address,uint256,uint256,uint16,address)'],
       [BASE_USDC, 'transfer(address,uint256)'],
@@ -101,27 +131,36 @@ describe('Aave V3 buildBorrowSteps', () => {
   });
 
   it("uses the market's own Pool, gateway and tokens", () => {
-    expect(
-      callsOf(
-        input({
-          market: ARB,
-          collateral: nativeEth({ asset: ARB_WETH }),
-          borrow: usdc({ asset: ARB_USDT, symbol: 'USDT0' }),
-        }),
-      ),
-    ).toEqual([
+    const recipeInput = input({
+      market: ARB,
+      collateral: nativeEth({ asset: ARB_WETH }),
+      borrow: usdc({ asset: ARB_USDT, symbol: 'USDT0' }),
+    });
+
+    expect(adapter.borrowRecipe(recipeInput).id).toBe(
+      'aave-borrow:aave-v3:arb:ETH:USDT0',
+    );
+    expect(callsOf(recipeInput)).toEqual([
       [ARB_GATEWAY, 'depositETH(address,address,uint16)'],
       [ARB_POOL, 'borrow(address,uint256,uint256,uint16,address)'],
       [ARB_USDT, 'transfer(address,uint256)'],
     ]);
   });
 
-  it('passes the amount, owner and recipient through', () => {
-    const [deposit, borrow, send] = adapter.buildBorrowSteps(
-      input({
-        collateral: nativeEth({ asset: BASE_WETH }),
-        amount: '987654321',
-      }),
+  it('runs steps-only when asked', () => {
+    expect(adapter.borrowRecipe(input({ flow: 'steps-only' })).flow).toBe(
+      'steps-only',
+    );
+  });
+
+  it('supplies the context’s amount for the intermediary and sends to the recipient, else the connected wallet', () => {
+    const recipe = adapter.borrowRecipe(
+      input({ collateral: nativeEth({ asset: BASE_WETH }) }),
+    );
+
+    const [deposit, borrow, send] = recipe.buildSteps(
+      { ...ctx, amount: '987654321' },
+      PARAMS,
     );
 
     expect(deposit?.value).toBe('987654321');
@@ -134,10 +173,13 @@ describe('Aave V3 buildBorrowSteps', () => {
       INTERMEDIARY,
     ]);
     expect(send?.parameters).toEqual([RECIPIENT, '1500000000']);
+    expect(
+      recipe.buildSteps(ctx, { borrowAmount: '1' }).at(-1)?.parameters,
+    ).toEqual([USER, '1']);
   });
 
-  it('reads nothing to build the steps', () => {
-    adapter.buildBorrowSteps(input());
+  it('reads nothing to build the recipe', () => {
+    adapter.borrowRecipe(input()).buildSteps(ctx, PARAMS);
 
     expect(listSupportedTokens).not.toHaveBeenCalled();
     expect(getClient).not.toHaveBeenCalled();
@@ -145,15 +187,13 @@ describe('Aave V3 buildBorrowSteps', () => {
 
   it('rejects a market it does not serve', () => {
     expect(() =>
-      adapter.buildBorrowSteps(
-        input({ market: { ...BASE, id: 'aave-v3:eth' } }),
-      ),
+      adapter.borrowRecipe(input({ market: { ...BASE, id: 'aave-v3:eth' } })),
     ).toThrow('unknown market aave-v3:eth');
   });
 
   it('throws for collateral the action does not cover', () => {
     expect(() =>
-      adapter.buildBorrowSteps(
+      adapter.borrowRecipe(
         input({ collateral: weth({ asset: BASE_WSTETH, symbol: 'wstETH' }) }),
       ),
     ).toThrow(
@@ -163,7 +203,7 @@ describe('Aave V3 buildBorrowSteps', () => {
 
   it("throws for a reserve of another chain's table", () => {
     expect(() =>
-      adapter.buildBorrowSteps(
+      adapter.borrowRecipe(
         input({ market: ARB, collateral: nativeEth({ asset: BASE_WETH }) }),
       ),
     ).toThrow('does not cover ETH');
@@ -171,7 +211,7 @@ describe('Aave V3 buildBorrowSteps', () => {
 
   it('throws for a borrow token the action does not cover', () => {
     expect(() =>
-      adapter.buildBorrowSteps(
+      adapter.borrowRecipe(
         input({ borrow: usdc({ asset: BASE_GHO, symbol: 'GHO' }) }),
       ),
     ).toThrow(

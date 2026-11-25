@@ -56,6 +56,19 @@ describe('buildBorrowPlan', () => {
     });
   });
 
+  it("runs the market adapter's bridge-in recipe for the pair", () => {
+    const adapter = createFakeAdapter();
+    const plan = buildBorrowPlan(input({ adapter }));
+
+    expect(adapter.borrowRecipe).toHaveBeenCalledWith({
+      market: FAKE_BASE,
+      collateral: weth(),
+      borrow: usdc(),
+      flow: 'bridge-in',
+    });
+    expect(plan.recipe).toBe(adapter.borrowRecipe.mock.results[0]?.value);
+  });
+
   it('leaves the recipient to the connected wallet when it is empty', () => {
     expect(buildBorrowPlan(input({ recipient: '' })).params.recipient).toBe(
       undefined,

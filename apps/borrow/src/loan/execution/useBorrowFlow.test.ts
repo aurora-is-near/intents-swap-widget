@@ -501,6 +501,25 @@ describe('useBorrowFlow', () => {
         expect(result.current.action).toBe('retry');
       });
 
+      it('is pairUnsupported when the borrow action no longer covers the pair, and offers no retry', async () => {
+        const { result } = renderFlow();
+
+        await operationFailed(
+          result,
+          pairSnapshot(FAKE_BASE, {
+            borrowable: [
+              usdc({ unavailable: true, unavailableReason: 'coming-soon' }),
+            ],
+          }),
+        );
+
+        expect(result.current.state).toMatchObject({
+          error: 'pairUnsupported',
+        });
+        expect(result.current.fundsWaiting).toBe(true);
+        expect(result.current.action).toBe('close');
+      });
+
       it('retries steps-only from the waiting collateral, re-sized at the fresh price, without a new bridge-in', async () => {
         const { result } = renderFlow();
 

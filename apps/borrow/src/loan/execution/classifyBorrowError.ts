@@ -9,6 +9,7 @@ import {
   RunnerDisposedError,
 } from '@aurora-is-near/intents-connect';
 
+import { isComingSoon } from '../../markets/availability';
 import { loanValues, ltvBps } from '../../markets/math';
 import type {
   BorrowReserve,
@@ -22,7 +23,8 @@ import { BorrowPreviewError } from './preview';
  * The borrow error states, one per error artboard (`Web-Borrow-Confirm
  * .dc.html` lines 1493–1505): signature rejected, not enough gas, collateral
  * price moved, market out of liquidity, delivery taking longer (a warning:
- * tracking continues), and anything else.
+ * tracking continues), and anything else; plus a pair the borrow action no
+ * longer covers (no artboard).
  */
 export type BorrowErrorKind =
   | 'rejected'
@@ -30,6 +32,7 @@ export type BorrowErrorKind =
   | 'priceMoved'
   | 'noLiquidity'
   | 'delayed'
+  | 'pairUnsupported'
   | 'unknown';
 
 /**
@@ -56,7 +59,11 @@ export class BorrowPreCheckError extends Error {
 }
 
 /** Why the borrow step failed after the collateral arrived, read afresh. */
-export type BorrowStepFailure = 'priceMoved' | 'noLiquidity';
+export type BorrowStepFailure =
+  | 'priceMoved'
+  | 'noLiquidity'
+  /** The pair is `coming-soon` now: the borrow action does not cover it. */
+  | 'pairUnsupported';
 
 export type BorrowErrorContext = {
   /** The execution's last server status, when one was created. */
@@ -146,11 +153,13 @@ export const isInsufficientFunds = (value: unknown): boolean =>
  *    `priceMoved`.
  * 4. The liquidity pre-check failed, or the borrow step failed for want of
  *    liquidity: `noLiquidity`.
- * 5. Polling stopped before a terminal status
+ * 5. A steps-only retry found the pair no longer covered by the borrow
+ *    action, or the borrow step failed on such a pair: `pairUnsupported`.
+ * 6. Polling stopped before a terminal status
  *    (`ExecutionPollTimeoutError`), or the borrow has been pending longer
  *    than `BORROW_DELAYED_AFTER_MS`: `delayed`. A warning; the execution is
  *    still live.
- * 6. Anything else: `unknown`.
+ * 7. Anything else: `unknown`.
  *
  * `error` may be `undefined` for a borrow that is only slow.
  */
@@ -196,6 +205,15 @@ export const classifyBorrowError = (
   }
 
   if (
+    (error instanceof BorrowPreviewError &&
+      error.reason === 'pairUnsupported') ||
+    (context.status === 'OPERATION_FAILED' &&
+      context.borrowStep === 'pairUnsupported')
+  ) {
+    return 'pairUnsupported';
+  }
+
+  if (
     error instanceof ExecutionPollTimeoutError ||
     (error === undefined &&
       context.pendingMs !== undefined &&
@@ -215,7 +233,7 @@ export const classifyBorrowError = (
  * - `reconnect`: connect the wallet again (it left mid-borrow);
  * - `close`: close the dialog, tracking a live borrow on (delayed), or back
  *   to the form to borrow less or pick another market (no liquidity, the
- *   artboard's "Choose another market").
+ *   artboard's "Choose another market") or another pair (pair unsupported).
  */
 export type BorrowRecoveryAction = 'retry' | 'refresh' | 'reconnect' | 'close';
 
@@ -235,6 +253,7 @@ export const borrowRecoveryAction = (
       return 'refresh';
     case 'noLiquidity':
     case 'delayed':
+    case 'pairUnsupported':
       return 'close';
     default:
       return 'retry';
@@ -255,10 +274,11 @@ export type DiagnoseBorrowStepInput = {
 const sameAsset = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /**
- * Why a borrow step most likely failed, from a fresh snapshot: the market
- * can no longer lend the amount (`noLiquidity`), or at the oracle's prices
- * now the loan is above the collateral's max LTV (`priceMoved`).
- * `undefined` when neither explains it.
+ * Why a borrow step most likely failed, from a fresh snapshot: the borrow
+ * action no longer covers the pair (`pairUnsupported`, checked first, so it
+ * is not read as a lack of liquidity), the market can no longer lend the
+ * amount (`noLiquidity`), or at the oracle's prices now the loan is above
+ * the collateral's max LTV (`priceMoved`). `undefined` when none explains it.
  */
 export const diagnoseBorrowStep = ({
   snapshot,
@@ -267,10 +287,6 @@ export const diagnoseBorrowStep = ({
   collateralAmount,
   borrowAmount,
 }: DiagnoseBorrowStepInput): BorrowStepFailure | undefined => {
-  if (checkLiquidity(snapshot, borrow, borrowAmount) === 'noLiquidity') {
-    return 'noLiquidity';
-  }
-
   const supplied = snapshot.collateral.find(({ asset }) =>
     sameAsset(asset, collateral.asset),
   );
@@ -278,6 +294,18 @@ export const diagnoseBorrowStep = ({
   const borrowed = snapshot.borrowable.find(({ asset }) =>
     sameAsset(asset, borrow.asset),
   );
+
+  if (
+    [supplied, borrowed].some(
+      (reserve) => reserve !== undefined && isComingSoon(reserve),
+    )
+  ) {
+    return 'pairUnsupported';
+  }
+
+  if (checkLiquidity(snapshot, borrow, borrowAmount) === 'noLiquidity') {
+    return 'noLiquidity';
+  }
 
   if (!supplied || !borrowed) {
     return undefined;

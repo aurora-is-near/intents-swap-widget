@@ -91,6 +91,20 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
     tone: 'warn',
     step: 2,
   },
+  // No artboard: a borrow started on a pair the borrow action no longer
+  // covers (`coming-soon`). Its steps can't be built, so it is never
+  // retried; the form offers only covered pairs.
+  pairUnsupported: {
+    title: () => 'This pair is no longer supported',
+    text: ({ marketName, collateralSymbol, borrowSymbol, fundsWaiting }) =>
+      fundsWaiting
+        ? `Borrow no longer opens ${marketName} loans of ${borrowSymbol} against ${collateralSymbol}, so this borrow can’t be retried. Your collateral arrived and is held for this loan.`
+        : `Borrow no longer opens ${marketName} loans of ${borrowSymbol} against ${collateralSymbol}. Nothing was sent. Pick another pair.`,
+    button: 'Choose another pair',
+    action: 'close',
+    tone: 'error',
+    step: 1,
+  },
   // No artboard: a generic fallback with a close action.
   unknown: {
     title: () => 'Something went wrong',

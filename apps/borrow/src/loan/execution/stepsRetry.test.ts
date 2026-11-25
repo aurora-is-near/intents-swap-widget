@@ -17,6 +17,7 @@ import {
 } from '../../tests/fakeMarkets';
 import { BorrowPreCheckError } from './classifyBorrowError';
 import { BorrowPreviewError } from './preview';
+import type { MarketSnapshot } from '../../markets/types';
 import type { BorrowParams } from './recipe';
 import {
   buildBorrowStepsPlan,
@@ -90,6 +91,26 @@ describe('buildBorrowStepsPlan', () => {
     expect(plan.recipe.flow).toBe('steps-only');
     expect(plan.recipe.intent).toBe('aave_borrow');
   });
+
+  it("runs the market adapter's steps-only recipe for the pair", () => {
+    const adapter = createFakeAdapter();
+    const plan = buildBorrowStepsPlan({
+      adapter,
+      market: FAKE_BASE,
+      collateral: weth(),
+      borrow: usdc(),
+      amount: 1n,
+      borrowAmount: 1n,
+    });
+
+    expect(adapter.borrowRecipe).toHaveBeenCalledWith({
+      market: FAKE_BASE,
+      collateral: weth(),
+      borrow: usdc(),
+      flow: 'steps-only',
+    });
+    expect(plan.recipe).toBe(adapter.borrowRecipe.mock.results[0]?.value);
+  });
 });
 
 describe('previewBorrowSteps', () => {
@@ -112,6 +133,61 @@ describe('previewBorrowSteps', () => {
       '980000000',
     );
     expect(previewed.steps.spendable).toBe((98n * 10n ** 16n).toString());
+  });
+
+  it.each<[string, Partial<Pick<MarketSnapshot, 'collateral' | 'borrowable'>>]>(
+    [
+      [
+        'collateral',
+        {
+          collateral: [
+            weth({ unavailable: true, unavailableReason: 'coming-soon' }),
+          ],
+        },
+      ],
+      [
+        'borrow token',
+        {
+          borrowable: [
+            usdc({ unavailable: true, unavailableReason: 'coming-soon' }),
+          ],
+        },
+      ],
+    ],
+  )(
+    'refuses a %s the borrow action no longer covers, before reading or building anything',
+    async (_side, reserves) => {
+      const readWaiting = vi.fn(async () => 99n * 10n ** 16n);
+      const adapter = createFakeAdapter({
+        getMarketSnapshot: async () => pairSnapshot(FAKE_BASE, reserves),
+      });
+
+      await expect(
+        previewBorrowSteps(input({ adapter, readWaiting })),
+      ).rejects.toMatchObject({
+        constructor: BorrowPreviewError,
+        reason: 'pairUnsupported',
+        message: 'Aave on Base no longer opens loans of USDC against WETH',
+      });
+      expect(readWaiting).not.toHaveBeenCalled();
+      expect(adapter.borrowRecipe).not.toHaveBeenCalled();
+      expect(previewSteps).not.toHaveBeenCalled();
+    },
+  );
+
+  it('still retries a pair whose cap is reached: only coming soon is refused', async () => {
+    const adapter = createFakeAdapter({
+      getMarketSnapshot: async () =>
+        pairSnapshot(FAKE_BASE, {
+          collateral: [
+            weth({ unavailable: true, unavailableReason: 'cap-reached' }),
+          ],
+        }),
+    });
+
+    await expect(previewBorrowSteps(input({ adapter }))).resolves.toMatchObject(
+      { borrowAmount: expect.any(BigInt) },
+    );
   });
 
   it('refuses when nothing waits', async () => {

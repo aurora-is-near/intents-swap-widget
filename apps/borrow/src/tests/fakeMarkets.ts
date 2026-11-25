@@ -1,3 +1,4 @@
+import { AAVE_BORROW_INTENT } from '@aurora-is-near/intents-connect-actions/sdk';
 import { QueryClient } from '@tanstack/react-query';
 import { type Mock, vi } from 'vitest';
 
@@ -121,32 +122,57 @@ export const readFakeSnapshot = async (
 export type FakeAdapter = LendingMarketAdapter & {
   listMarkets: Mock<LendingMarketAdapter['listMarkets']>;
   getMarketSnapshot: Mock<LendingMarketAdapter['getMarketSnapshot']>;
-  buildBorrowSteps: Mock<LendingMarketAdapter['buildBorrowSteps']>;
+  borrowRecipe: Mock<LendingMarketAdapter['borrowRecipe']>;
 };
 
 type FakeAdapterOptions = {
   id?: string;
   listMarkets?: LendingMarketAdapter['listMarkets'];
   getMarketSnapshot?: LendingMarketAdapter['getMarketSnapshot'];
-  buildBorrowSteps?: LendingMarketAdapter['buildBorrowSteps'];
+  borrowRecipe?: LendingMarketAdapter['borrowRecipe'];
 };
 
 /**
+ * A borrow recipe for any pair, filed as a borrow (`AAVE_BORROW_INTENT`) so
+ * the flow and restore treat it as one, with no steps. The real one is the
+ * Aave adapter's (the `aave-v3-borrow` action's recipe).
+ */
+export const fakeBorrowRecipe: LendingMarketAdapter['borrowRecipe'] = ({
+  market,
+  collateral,
+  borrow,
+  flow,
+}) => ({
+  id: `fake-borrow:${market.id}:${collateral.symbol}:${borrow.symbol}`,
+  intent: AAVE_BORROW_INTENT,
+  title: `Borrow ${borrow.symbol} against ${collateral.symbol} on ${market.name} ${market.chainLabel}`,
+  flow,
+  type: 'evm',
+  destination: {
+    chain: market.chain,
+    assetId: collateral.assetId,
+    tokenAddress:
+      collateral.nativeDelivery === true ? undefined : collateral.asset,
+  },
+  buildSteps: () => [],
+});
+
+/**
  * An adapter listing Base and Arbitrum and reading `FAKE_SNAPSHOTS`, unless
- * told otherwise; it builds no borrow steps. Every method is a mock, so a
+ * told otherwise; its borrow recipe has no steps. Every method is a mock, so a
  * test can count or replace the calls.
  */
 export const createFakeAdapter = ({
   id = 'fake',
   listMarkets = () => Promise.resolve([FAKE_BASE, FAKE_ARB]),
   getMarketSnapshot = readFakeSnapshot,
-  buildBorrowSteps = () => [],
+  borrowRecipe = fakeBorrowRecipe,
 }: FakeAdapterOptions = {}): FakeAdapter => ({
   id,
   name: 'Aave',
   listMarkets: vi.fn(listMarkets),
   getMarketSnapshot: vi.fn(getMarketSnapshot),
-  buildBorrowSteps: vi.fn(buildBorrowSteps),
+  borrowRecipe: vi.fn(borrowRecipe),
 });
 
 /**

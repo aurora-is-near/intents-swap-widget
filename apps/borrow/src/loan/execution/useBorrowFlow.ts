@@ -105,7 +105,7 @@ export type BorrowFlowInput = Omit<
   'preview' | 'adapter'
 > & {
   /** Builds the steps, and reads the market afresh for the liquidity check. */
-  adapter: Pick<LendingMarketAdapter, 'buildBorrowSteps' | 'getMarketSnapshot'>;
+  adapter: Pick<LendingMarketAdapter, 'borrowRecipe' | 'getMarketSnapshot'>;
   /**
    * The wallet's balances (`useFundingAssets().rows`) for the gas
    * pre-check; `undefined` while not read, which skips it.
@@ -1174,10 +1174,13 @@ export const useBorrowFlow = ({
 
   if (fundsWaiting && state.kind === 'error') {
     // Only the steps-only retry is offered: every other action would bridge
-    // the funds in again. Restored without the form, or unexplained (such
-    // as nothing waiting any more), it only closes.
+    // the funds in again. Restored without the form, unexplained (such as
+    // nothing waiting any more), or on a pair the borrow action no longer
+    // covers (its steps can't be built), it only closes.
     action =
-      inputRef.current !== undefined && state.error !== 'unknown'
+      inputRef.current !== undefined &&
+      state.error !== 'unknown' &&
+      state.error !== 'pairUnsupported'
         ? 'retry'
         : 'close';
   } else if (state.kind === 'error') {
