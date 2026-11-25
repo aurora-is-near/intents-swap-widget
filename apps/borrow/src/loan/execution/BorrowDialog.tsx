@@ -12,6 +12,7 @@ import { type ReactNode, useState } from 'react';
 
 import { formatApr, formatBps } from '../../markets/format';
 import { formatAddress } from '../../wallet/formatAddress';
+import { DoneMark } from '../DoneMark';
 import { formatAmount, toDisplayNumber } from '../loanFormat';
 import {
   type BorrowErrorKind,
@@ -286,28 +287,6 @@ function Rows({ rows }: { rows: [string, string][] }) {
         </div>
       ))}
     </dl>
-  );
-}
-
-/** Line 972: the 68px badge circle with the lime tick, as the step icons. */
-function DoneMark() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="mx-auto block"
-      height="68"
-      viewBox="0 0 68 68"
-      width="68">
-      <circle className="fill-badge" cx="34" cy="34" r="34" />
-      <path
-        className="stroke-accent"
-        d="M20 35l10 10 18-19"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="5"
-      />
-    </svg>
   );
 }
 
@@ -633,7 +612,7 @@ export function BorrowDialog({
             <>
               {/* Line 971: centred, padding 14px 0 6px. */}
               <div className="pt-[14px] pb-[6px] text-center">
-                <DoneMark />
+                <DoneMark className="mx-auto block" size={68} />
                 {/* Line 973: 28px / 800, 18px above. */}
                 <DialogTitle className="mt-[18px] text-[28px]">
                   {DONE_TITLE}

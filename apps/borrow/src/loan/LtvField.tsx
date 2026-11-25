@@ -1,30 +1,8 @@
-import {
-  RISK_ZONE_COLORS,
-  Slider,
-  type SliderZone,
-} from '@aurora-is-near/ui-kit';
+import { Slider } from '@aurora-is-near/ui-kit';
 import { useId } from 'react';
 
-import { formatBps } from '../markets/format';
-import { LTV_MAX, LTV_MIN, LTV_STEP, LTV_ZONES, zoneOf } from './model/zones';
-
-/** Each zone's colour from the kit's risk colours, safe to risky (line 304). */
-const ZONE_COLORS = {
-  Conservative: RISK_ZONE_COLORS[0],
-  Moderate: RISK_ZONE_COLORS[1],
-  Aggressive: RISK_ZONE_COLORS[2],
-  'Near liquidation': RISK_ZONE_COLORS[3],
-} as const;
-
-/** The model's four zones, painted on the track. */
-const ZONES: readonly SliderZone[] = LTV_ZONES.map(({ name, upTo }) => ({
-  upTo,
-  color: ZONE_COLORS[name],
-}));
-
-/** "liq. 81%", "liq. 82.5%": the marker's label (script line 1574). */
-const liquidationLabel = (liquidationLtvBps: number) =>
-  `liq. ${formatBps(liquidationLtvBps)}`;
+import { liquidationLabel, LTV_ZONE_STYLES } from './ltvZoneStyles';
+import { LTV_MAX, LTV_MIN, LTV_STEP, zoneOf } from './model/zones';
 
 type LtvFieldProps = {
   /** Loan-to-value in whole percent. */
@@ -80,7 +58,7 @@ export function LtvField({
         min={LTV_MIN}
         step={LTV_STEP}
         value={ltv}
-        zones={ZONES}
+        zones={LTV_ZONE_STYLES}
         onValueChange={onLtvChange}
       />
     </>

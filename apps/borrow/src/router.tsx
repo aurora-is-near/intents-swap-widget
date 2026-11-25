@@ -10,7 +10,7 @@ import { useTheme } from '@aurora-is-near/ui-kit';
 import { lazy } from 'react';
 
 import { NewLoanPage } from './loan/NewLoanPage';
-import { PositionsEmptyState } from './positions/PositionsEmptyState';
+import { PositionsPage } from './positions/PositionsPage';
 import { Shell } from './shell/Shell';
 
 const rootRoute = createRootRoute({ component: Outlet });
@@ -32,11 +32,14 @@ const newLoanRoute = createRoute({
   component: NewLoanPage,
 });
 
-/** The My positions tab: the empty state until positions are read. */
+/**
+ * The My positions tab: the user's loans, or the empty, loading and error
+ * states.
+ */
 const positionsRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/positions',
-  component: PositionsEmptyState,
+  component: PositionsPage,
 });
 
 /**
