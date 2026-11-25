@@ -103,7 +103,7 @@ const isAllowedPath = (path: string) =>
 /**
  * The upstream URL for an allow-listed path with only the allowed query
  * parameters, keeping any path prefix the API URL has; `undefined` when the
- * configured URL is not http(s).
+ * configured URL is not https.
  */
 const upstreamFor = (
   upstreamUrl: string,
@@ -118,7 +118,8 @@ const upstreamFor = (
     return undefined;
   }
 
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+  // HTTPS only: the request carries the key in `x-api-key`.
+  if (url.protocol !== 'https:') {
     return undefined;
   }
 
@@ -212,7 +213,7 @@ export const handleVaultsFyiProxy = async (
   const upstream = upstreamFor(upstreamUrl, path, searchParams);
 
   if (!upstream) {
-    console.error('vaults.fyi proxy: VAULTS_FYI_API_URL is not an http(s) URL');
+    console.error('vaults.fyi proxy: VAULTS_FYI_API_URL must be an https URL');
 
     return jsonResponse(500, { error: 'Internal server error' });
   }

@@ -271,9 +271,10 @@ The borrow needs, besides the wallet's `VITE_REOWN_PROJECT_ID`:
 - `VITE_INTENTS_API_KEY` (required, public): balances and the token list.
 - `VAULTS_FYI_API_KEY` (server-only, never `VITE_`): the `/api/vaults-fyi`
   proxy (Vite middleware in dev, Edge Function `api/vaults-fyi.ts` on Vercel)
-  adds it as `x-api-key` to the vaults.fyi borrow calls behind My positions.
-  Without it the proxy answers 503. `VAULTS_FYI_API_URL` (optional) is the
-  proxy's target, default `https://api.vaults.fyi`.
+  adds it as `x-api-key` to vaults.fyi borrow calls, for the planned My
+  positions reader (no client calls the proxy yet). Without it the proxy
+  answers 503. `VAULTS_FYI_API_URL` (optional, https only) is the proxy's
+  target, default `https://api.vaults.fyi`.
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
   liquidity pre-check and the failed-step diagnosis.
 

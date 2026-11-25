@@ -227,16 +227,19 @@ describe('handleVaultsFyiProxy', () => {
     expect(fetchStub).not.toHaveBeenCalled();
   });
 
-  it('answers a generic 500 when the upstream URL is not http(s)', async () => {
-    const response = await handleVaultsFyiProxy(
-      proxyRequest('/beta/borrow/markets/base'),
-      { apiKey: API_KEY, upstreamUrl: 'file:///etc' },
-    );
+  it.each(['file:///etc', 'http://upstream.example', 'not a url'])(
+    'answers a generic 500 without sending the key when the upstream URL is %s',
+    async (upstreamUrl) => {
+      const response = await handleVaultsFyiProxy(
+        proxyRequest('/beta/borrow/markets/base'),
+        { apiKey: API_KEY, upstreamUrl },
+      );
 
-    expect(response.status).toBe(500);
-    expect(await response.text()).not.toContain(API_KEY);
-    expect(fetchStub).not.toHaveBeenCalled();
-  });
+      expect(response.status).toBe(500);
+      expect(await response.text()).not.toContain(API_KEY);
+      expect(fetchStub).not.toHaveBeenCalled();
+    },
+  );
 
   it.each([
     [401, { error: 'Unauthorized' }],
