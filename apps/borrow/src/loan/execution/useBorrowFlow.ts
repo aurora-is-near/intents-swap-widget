@@ -1,5 +1,6 @@
 import {
   DepositTransferError,
+  deriveExecutionRecovery,
   type Execution,
   ExecutionCancelledError,
   ExecutionPollTimeoutError,
@@ -178,7 +179,9 @@ export type UseBorrowFlowResult = {
   close: () => Promise<void>;
   /**
    * Back to `idle`. A created execution that was not signed is cancelled, so
-   * it does not hold the wallet's in-flight lock.
+   * it does not hold the wallet's in-flight lock. A signed one stopped before
+   * its deposit was sent is kept, and cancelled when the next borrow starts:
+   * leaving never prompts the wallet.
    */
   leave: () => Promise<void>;
   /**
@@ -227,6 +230,16 @@ export const useBorrowFlow = ({
   const [state, setState] = useState<BorrowFlowState>({ kind: 'idle' });
   const [figures, setFigures] = useState<BorrowPreviewFigures>();
   const stateRef = useRef(state);
+  const {
+    address: walletAddress,
+    connect,
+    isConnected,
+  } = useIntentsConnectWallet();
+
+  /** The connected wallet, read when a callback runs rather than rendered. */
+  const addressRef = useRef(walletAddress);
+
+  addressRef.current = walletAddress;
 
   /** The latest input, for a retry or a refresh. */
   const inputRef = useRef<BorrowFlowInput | undefined>(undefined);
@@ -240,6 +253,8 @@ export const useBorrowFlow = ({
   /** A run, retry or resume is driving the runner: its events are ours. */
   const runningRef = useRef(false);
   const createdIdRef = useRef<string | undefined>(undefined);
+  /** The wallet connected when this run's execution was created, or restored. */
+  const createdOwnerRef = useRef<string | undefined>(undefined);
   const statusRef = useRef<ExecutionStatus | undefined>(undefined);
   const stepRef = useRef<BorrowPendingStep>(0);
   const lastErrorRef = useRef<unknown>(undefined);
@@ -283,6 +298,16 @@ export const useBorrowFlow = ({
   const waitingExecutionIdRef = useRef<string | undefined>(undefined);
   /** The deposit address the runner surfaced for this run. */
   const depositAddressRef = useRef<string | undefined>(undefined);
+  /**
+   * A signed run the user left before its deposit was sent (a rejected
+   * deposit transfer, say): it still holds the wallet's in-flight lock, so
+   * the next borrow cancels it (`releaseAbandoned()`) before it runs. With
+   * the wallet that owns it: only that wallet can cancel it.
+   */
+  const abandonedRef = useRef<
+    { id: string; owner: string | undefined } | undefined
+  >(undefined);
+
   const onCreatedRef = useRef(onCreated);
   const onSettledRef = useRef(onSettled);
   const onDepositSentRef = useRef(onDepositSent);
@@ -389,13 +414,15 @@ export const useBorrowFlow = ({
     let borrowStep: BorrowStepFailure | undefined;
     const input = inputRef.current;
     const borrowed = borrowRef.current;
+    // This error's own recovery: the hook's `recovery` is the previous
+    // render's, which may still describe an earlier error (a rejected
+    // deposit, say) and misread this one.
+    const recovery = deriveExecutionRecovery(error);
 
     // Shown as `error` at once, refined once the market is read.
     setFlow({
       kind: 'error',
-      error: classifyBorrowError(error, executionRef.current?.recovery, {
-        status,
-      }),
+      error: classifyBorrowError(error, recovery, { status }),
       cause: error,
     });
 
@@ -423,10 +450,7 @@ export const useBorrowFlow = ({
       if (generation === generationRef.current && borrowStep) {
         setFlow({
           kind: 'error',
-          error: classifyBorrowError(error, executionRef.current?.recovery, {
-            status,
-            borrowStep,
-          }),
+          error: classifyBorrowError(error, recovery, { status, borrowStep }),
           cause: error,
         });
       }
@@ -478,6 +502,7 @@ export const useBorrowFlow = ({
 
       case 'created':
         createdIdRef.current = event.executionId;
+        createdOwnerRef.current = addressRef.current;
         onCreatedRef.current?.(event.executionId);
         break;
 
@@ -528,7 +553,13 @@ export const useBorrowFlow = ({
   const isSigned = () =>
     signedRef.current || executionRef.current?.hasSubmittedSignature === true;
 
-  const { connect, isConnected } = useIntentsConnectWallet();
+  /**
+   * The collateral arrived and the borrow step failed: a new bridge-in would
+   * spend the user's funds a second time.
+   */
+  const isFundsWaiting = () =>
+    waitingRef.current ||
+    (isSigned() && statusRef.current === 'OPERATION_FAILED');
 
   /**
    * Cancels a created execution that was never signed: until then it holds
@@ -559,11 +590,65 @@ export const useBorrowFlow = ({
     settled(executionId);
   };
 
+  /**
+   * The run is signed but abandoned: stopped (not driving the runner), its
+   * deposit never sent, still awaiting funds, and nothing waiting at the
+   * intermediary. Never one whose deposit went out or whose funds wait.
+   */
+  const isAbandoned = () => {
+    const status = statusRef.current;
+
+    return (
+      isSigned() &&
+      !runningRef.current &&
+      !depositSentRef.current &&
+      (status === undefined || AWAITING_FUNDS.has(status)) &&
+      !isFundsWaiting()
+    );
+  };
+
+  /**
+   * Cancels the signed run the user abandoned, so the next borrow is not
+   * refused by its in-flight lock, and drops what `onCreated` kept for it.
+   * Done when the next borrow starts, never on leaving: the cancel prompts
+   * the wallet for a `delete_execution` signature.
+   *
+   * Only while the wallet that left it is connected: another wallet would be
+   * prompted for an execution it does not own, the delete refused, and the
+   * owner's kept record dropped while its lock still holds. Then it is only
+   * forgotten; a restore with the owner's wallet finds it again.
+   */
+  const releaseAbandoned = async () => {
+    const { current } = executionRef;
+    const abandoned = abandonedRef.current;
+
+    if (!current || abandoned === undefined) {
+      return;
+    }
+
+    abandonedRef.current = undefined;
+
+    const { id: executionId, owner } = abandoned;
+
+    if (owner === undefined || owner !== addressRef.current) {
+      return;
+    }
+
+    try {
+      await current.cancel(executionId);
+    } catch {
+      // Declined, already gone, or the lock is released when it expires.
+    }
+
+    settled(executionId);
+  };
+
   /** A fresh run's bookkeeping. */
   const resetRun = () => {
     clearDelayTimer();
     runningRef.current = false;
     createdIdRef.current = undefined;
+    createdOwnerRef.current = undefined;
     statusRef.current = undefined;
     stepRef.current = 0;
     lastErrorRef.current = undefined;
@@ -667,6 +752,18 @@ export const useBorrowFlow = ({
 
   const leave = async () => {
     generationRef.current += 1;
+
+    const executionId = createdIdRef.current;
+
+    // Kept for the next borrow to cancel: cancelling here would open a
+    // wallet prompt as the dialog closes.
+    if (executionId !== undefined && isAbandoned()) {
+      abandonedRef.current = {
+        id: executionId,
+        owner: createdOwnerRef.current,
+      };
+    }
+
     await releaseUnsigned();
     resetRun();
     reconnectingRef.current = false;
@@ -697,8 +794,10 @@ export const useBorrowFlow = ({
     const generation = generationRef.current;
 
     setFlow({ kind: 'previewing' });
-    // An earlier run's unsigned execution would hold the wallet's lock.
+    // An earlier run's unsigned execution would hold the wallet's lock, and
+    // so would a signed one the user abandoned before its deposit.
     await releaseUnsigned();
+    await releaseAbandoned();
     resetRun();
 
     let next: Awaited<ReturnType<typeof previewFor>>;
@@ -860,6 +959,15 @@ export const useBorrowFlow = ({
     depositOriginRef.current = saved?.origin;
     depositSentRef.current = saved?.depositSent === true;
     createdIdRef.current = found.id;
+    // Restored for the wallet connected now, which the record was kept for.
+    createdOwnerRef.current = addressRef.current;
+
+    // Picked up again: it is no longer abandoned. Another one stays
+    // remembered, for the next borrow to release.
+    if (abandonedRef.current?.id === found.id) {
+      abandonedRef.current = undefined;
+    }
+
     statusRef.current = found.status;
     // It was confirmed before the reload. Past CREATED, or with the message
     // signed, the service has the signature; else resuming prompts for it.
@@ -894,14 +1002,6 @@ export const useBorrowFlow = ({
 
     void drive(() => requireExecution().resume(id));
   };
-
-  /**
-   * The collateral arrived and the borrow step failed: a new bridge-in would
-   * spend the user's funds a second time.
-   */
-  const isFundsWaiting = () =>
-    waitingRef.current ||
-    (isSigned() && statusRef.current === 'OPERATION_FAILED');
 
   const fundsWaiting = state.kind === 'error' && isFundsWaiting();
 

@@ -194,7 +194,10 @@ export const apiErrorMessage = (error: unknown): string | undefined => {
  *    still live.
  * 7. Anything else: `unknown`.
  *
- * `error` may be `undefined` for a borrow that is only slow.
+ * `error` may be `undefined` for a borrow that is only slow. `recovery` must
+ * describe `error` itself (`deriveExecutionRecovery(error)`), never an
+ * earlier error's: a stale `retry-transfer` with a rejected cause would make
+ * any later failure `rejected`.
  */
 export const classifyBorrowError = (
   error: unknown,
