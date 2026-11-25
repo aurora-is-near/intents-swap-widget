@@ -29,7 +29,11 @@ import { BorrowPreviewError } from './preview';
  */
 export type BorrowErrorKind =
   | 'rejected'
+  | 'depositRejected'
+  | 'cancelDeclined'
+  | 'busy'
   | 'noGas'
+  | 'quoteMoved'
   | 'priceMoved'
   | 'noLiquidity'
   | 'delayed'
@@ -176,23 +180,32 @@ export const apiErrorMessage = (error: unknown): string | undefined => {
 /**
  * Which error state a failed borrow is, first match wins:
  *
- * 1. The user declined a wallet prompt (`isUserRejection`, the deposit
- *    transfer's cause included): `rejected`.
- * 2. The gas pre-check failed, or the wallet reports insufficient funds for
+ * 1. The user declined the deposit transfer, after signing
+ *    (`DepositTransferError`, or a `retry-transfer` recovery, with a
+ *    rejected cause): `depositRejected`.
+ * 2. The user declined another wallet prompt (`isUserRejection`):
+ *    `rejected`.
+ * 3. Another execution holds the wallet's in-flight lock (the SDK's
+ *    `EXECUTION_IN_FLIGHT` guard): `busy`.
+ * 4. The gas pre-check failed, or the wallet reports insufficient funds for
  *    the deposit transaction: `noGas`.
- * 3. The quote moved (the SDK's `QUOTE_MOVED` guard, from
- *    `quoteMustNotHaveMoved`, or the two-pass preview's `quoteMoved`), or
- *    the borrow step failed because the collateral's price moved:
+ * 5. The bridge quote moved before anything was signed (the SDK's
+ *    `QUOTE_MOVED` guard, or the two-pass preview's `quoteMoved`):
+ *    `quoteMoved`.
+ * 6. The borrow step failed because the collateral's price moved:
  *    `priceMoved`.
- * 4. The liquidity pre-check failed, or the borrow step failed for want of
+ * 7. The liquidity pre-check failed, or the borrow step failed for want of
  *    liquidity: `noLiquidity`.
- * 5. A steps-only retry found the pair no longer covered by the borrow
+ * 8. A steps-only retry found the pair no longer covered by the borrow
  *    action, or the borrow step failed on such a pair: `pairUnsupported`.
- * 6. Polling stopped before a terminal status
+ * 9. Polling stopped before a terminal status
  *    (`ExecutionPollTimeoutError`), or the borrow has been pending longer
  *    than `BORROW_DELAYED_AFTER_MS`: `delayed`. A warning; the execution is
  *    still live.
- * 7. Anything else: `unknown`.
+ * 10. Anything else: `unknown`.
+ *
+ * `cancelDeclined` is never classified: the hook sets it when the user
+ * declines the cancellation of an execution that blocks the next borrow.
  *
  * `error` may be `undefined` for a borrow that is only slow. `recovery` must
  * describe `error` itself (`deriveExecutionRecovery(error)`), never an
@@ -208,11 +221,18 @@ export const classifyBorrowError = (
     recovery?.kind === 'retry-transfer' ? recovery.cause : undefined;
 
   if (
-    (error !== undefined && isUserRejection(error)) ||
     (transferCause !== undefined && isUserRejection(transferCause)) ||
     (error instanceof DepositTransferError && isUserRejection(error.cause))
   ) {
+    return 'depositRejected';
+  }
+
+  if (error !== undefined && isUserRejection(error)) {
     return 'rejected';
+  }
+
+  if (error instanceof GuardError && error.code === 'EXECUTION_IN_FLIGHT') {
+    return 'busy';
   }
 
   if (
@@ -225,9 +245,14 @@ export const classifyBorrowError = (
 
   if (
     (error instanceof GuardError && error.code === 'QUOTE_MOVED') ||
-    (error instanceof BorrowPreviewError && error.reason === 'quoteMoved') ||
-    (context.status === 'OPERATION_FAILED' &&
-      context.borrowStep === 'priceMoved')
+    (error instanceof BorrowPreviewError && error.reason === 'quoteMoved')
+  ) {
+    return 'quoteMoved';
+  }
+
+  if (
+    context.status === 'OPERATION_FAILED' &&
+    context.borrowStep === 'priceMoved'
   ) {
     return 'priceMoved';
   }
@@ -264,12 +289,14 @@ export const classifyBorrowError = (
 /**
  * What an error state's button does, by the artboard's action names
  * (`Web-Borrow-Confirm.dc.html` lines 1493–1505 and 1513):
- * - `retry`: run again (rejected, no gas, unknown);
- * - `refresh`: re-quote and confirm again (the price moved);
+ * - `retry`: run again (rejected, no gas, unknown), send the declined
+ *   deposit again, or confirm the declined cancellation again;
+ * - `refresh`: re-quote and confirm again (the quote or the price moved);
  * - `reconnect`: connect the wallet again (it left mid-borrow);
  * - `close`: close the dialog, tracking a live borrow on (delayed), or back
  *   to the form to borrow less or pick another market (no liquidity, the
- *   artboard's "Choose another market") or another pair (pair unsupported).
+ *   artboard's "Choose another market") or another pair (pair unsupported),
+ *   or to wait for the borrow already on its way (busy).
  */
 export type BorrowRecoveryAction = 'retry' | 'refresh' | 'reconnect' | 'close';
 
@@ -286,10 +313,12 @@ export const borrowRecoveryAction = (
 
   switch (kind) {
     case 'priceMoved':
+    case 'quoteMoved':
       return 'refresh';
     case 'noLiquidity':
     case 'delayed':
     case 'pairUnsupported':
+    case 'busy':
       return 'close';
     default:
       return 'retry';

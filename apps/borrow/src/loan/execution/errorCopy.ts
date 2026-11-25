@@ -33,7 +33,11 @@ export type ErrorCopy = {
   action: BorrowRecoveryAction;
   /** `warn` is a warning, not an error: the borrow is still tracked. */
   tone: 'error' | 'warn';
-  /** The step the error is drawn on (`errStep` of each artboard), 0-based. */
+  /**
+   * The step the error is drawn on (`errStep` of each artboard), 0-based,
+   * when the flow does not say how far the borrow got (`useBorrowFlow`'s
+   * error `step` wins).
+   */
   step: 0 | 1 | 2;
 };
 
@@ -44,6 +48,51 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
     text: () => 'You declined the request in your wallet. Nothing was spent.',
     button: 'Try again',
     action: 'retry',
+    tone: 'error',
+    step: 0,
+  },
+  // No artboard: signed, then the deposit transaction was declined. The
+  // signed execution holds the wallet until the deposit is sent, or the next
+  // borrow cancels it.
+  depositRejected: {
+    title: () => 'Deposit not sent',
+    text: () =>
+      'You signed the request but declined the deposit transaction, so nothing left your wallet. Send the deposit to open the loan, or cancel and start again later.',
+    button: 'Send deposit',
+    action: 'retry',
+    tone: 'error',
+    step: 0,
+  },
+  // No artboard: the cancellation of an open, unsigned (or never funded)
+  // request was declined, so it still holds the wallet.
+  cancelDeclined: {
+    title: () => 'Request still open',
+    text: () =>
+      'You declined the cancellation, so the earlier request still blocks new borrows from this wallet. Nothing was sent. Confirm the cancellation in your wallet to continue, or wait about 10 minutes for it to expire.',
+    button: 'Confirm cancellation',
+    action: 'retry',
+    tone: 'error',
+    step: 0,
+  },
+  // No artboard: another borrow from this wallet is on its way (its deposit
+  // left the wallet, or may have), so a new one can't start yet.
+  busy: {
+    title: () => 'A borrow is already in progress',
+    text: () =>
+      'A previous borrow from this wallet is still on its way. Wait for it to finish before starting a new one; nothing was sent for this one.',
+    button: 'Close',
+    action: 'close',
+    tone: 'error',
+    step: 0,
+  },
+  // No artboard: the bridge quote changed between the dry run and the
+  // signature.
+  quoteMoved: {
+    title: () => 'Quote changed',
+    text: () =>
+      'The bridge quote changed before you signed. Nothing was sent. Review the new quote.',
+    button: 'Refresh quote',
+    action: 'refresh',
     tone: 'error',
     step: 0,
   },
@@ -63,11 +112,11 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
     text: ({ collateralSymbol, marketName, fundsWaiting }) =>
       fundsWaiting
         ? `${collateralSymbol} fell while the loan was opening, so it would now be above ${marketName}’s maximum LTV and the borrow did not go through. Your collateral arrived and is held for this loan.`
-        : `${collateralSymbol} fell while you were signing, so this loan would now open above ${marketName}’s maximum LTV. Nothing was sent. Review the new quote.`,
+        : `${collateralSymbol} fell while the loan was opening, so it would now be above ${marketName}’s maximum LTV and the borrow did not go through.`,
     button: 'Refresh quote',
     action: 'refresh',
     tone: 'error',
-    step: 1,
+    step: 2,
   },
   // `mktliq`; the artboard's "edit" is leaving to the form, i.e. `close`.
   noLiquidity: {

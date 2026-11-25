@@ -40,6 +40,8 @@ const wallet = vi.hoisted(() => ({
 const sdk = vi.hoisted(() => ({
   result: null as UseExecutionResult | null,
   onEvent: undefined as ((event: RunnerEvent) => void) | undefined,
+  /** The wallet's open executions, before a borrow runs. */
+  open: [] as Execution[],
 }));
 
 vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
@@ -52,6 +54,11 @@ vi.mock('../markets/aaveV3', async () =>
 
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) => ({
   ...(await importOriginal()),
+  // The borrow flow lists the wallet's open executions before it runs one.
+  useIntentsConnect: () => ({
+    api: { listExecutions: async () => sdk.open },
+    wallet: null,
+  }),
   useExecution: (options: UseExecutionOptions = {}) => {
     sdk.onEvent = options.onEvent;
 
@@ -154,6 +161,7 @@ let run = deferred<Execution>();
 beforeEach(() => {
   run = deferred<Execution>();
   sdk.result = fakeExecution(run.promise);
+  sdk.open = [];
 });
 
 const renderPage = async () => {

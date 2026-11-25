@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   clearPendingBorrow,
-  markPendingDepositSent,
   PENDING_BORROW_STORAGE_KEY,
   type PendingBorrowRecord,
   readPendingBorrow,
@@ -133,34 +132,14 @@ describe('pendingBorrowStore', () => {
     setItem.mockRestore();
   });
 
-  it('keeps the deposit origin, and notes a sent deposit for that execution only', () => {
-    const origin = { chain: 'arb', decimals: 6, contractAddress: '0xaf88' };
-
-    savePendingBorrow(ALICE, { ...record('exec-a'), origin });
-
-    expect(readPendingBorrow(ALICE)).toEqual({ ...record('exec-a'), origin });
-
-    markPendingDepositSent(ALICE, 'exec-other');
-
-    expect(readPendingBorrow(ALICE)?.depositSent).toBeUndefined();
-
-    markPendingDepositSent(ALICE.toLowerCase(), 'exec-a');
-
-    expect(readPendingBorrow(ALICE)).toEqual({
-      ...record('exec-a'),
-      origin,
-      depositSent: true,
-    });
-  });
-
-  it('drops a malformed origin but keeps the rest of the record', () => {
+  it('drops fields it no longer keeps but keeps the rest of the record', () => {
     window.localStorage.setItem(
       PENDING_BORROW_STORAGE_KEY,
       JSON.stringify({
         [ALICE.toLowerCase()]: {
           ...record('exec-a'),
-          origin: { chain: 'arb', decimals: '6' },
-          depositSent: 'yes',
+          origin: { chain: 'arb', decimals: 6 },
+          depositSent: true,
         },
       }),
     );

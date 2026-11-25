@@ -61,7 +61,17 @@ describe('classifyBorrowError', () => {
       new DepositTransferError('exec-1', { cause: EIP1193_REJECTION }),
       transferRecovery(new Error('User rejected the request.')),
       {},
-      'rejected',
+      'depositRejected',
+    ],
+    // busy
+    [
+      'the wallet-lock guard',
+      new GuardError('EXECUTION_IN_FLIGHT', 'another execution is live', {
+        executionId: 'exec-0',
+      }),
+      undefined,
+      {},
+      'busy',
     ],
     // noGas
     [
@@ -87,21 +97,22 @@ describe('classifyBorrowError', () => {
       {},
       'noGas',
     ],
-    // priceMoved
+    // quoteMoved: before anything was signed
     [
       'the QUOTE_MOVED guard',
       new GuardError('QUOTE_MOVED', 'quote moved'),
       undefined,
       {},
-      'priceMoved',
+      'quoteMoved',
     ],
     [
       "the two-pass preview's moved quote",
       new BorrowPreviewError('quoteMoved', 'moved'),
       undefined,
       {},
-      'priceMoved',
+      'quoteMoved',
     ],
+    // priceMoved: the borrow step, after the collateral arrived
     [
       'a borrow step failed on price',
       new Error('execution OPERATION_FAILED'),
@@ -242,7 +253,11 @@ describe('isInsufficientFunds', () => {
 describe('borrowRecoveryAction', () => {
   it.each<[BorrowErrorKind, string]>([
     ['rejected', 'retry'],
+    ['depositRejected', 'retry'],
+    ['cancelDeclined', 'retry'],
+    ['busy', 'close'],
     ['noGas', 'retry'],
+    ['quoteMoved', 'refresh'],
     ['priceMoved', 'refresh'],
     ['noLiquidity', 'close'],
     ['delayed', 'close'],

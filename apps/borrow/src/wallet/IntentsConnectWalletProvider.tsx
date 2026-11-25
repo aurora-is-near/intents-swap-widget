@@ -16,6 +16,10 @@ type IntentsConnectWalletProviderProps = {
  * API-key proxy) and the AppKit wallet, `null` while disconnected. Must sit
  * inside `WalletProvider`, whose AppKit the wallet hook reads. With
  * `intentsApi`, the account hooks (`useWalletBalances`) work too.
+ *
+ * The runner's auto-cancel on a declined signature is off: `useBorrowFlow`
+ * cancels the execution itself, so its dialog can explain the second wallet
+ * prompt before it opens.
  */
 export function IntentsConnectWalletProvider({
   children,
@@ -26,6 +30,7 @@ export function IntentsConnectWalletProvider({
   return (
     <IntentsConnectProvider
       api={intentsConnectApi}
+      autoCancelOnSignatureRejection={false}
       wallet={wallet ?? null}
       {...(intentsApi ? { intentsApi } : {})}>
       {children}

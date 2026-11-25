@@ -1,29 +1,16 @@
 import {
   type Execution,
-  type ExecutionStatus,
   IN_FLIGHT_STATUSES,
 } from '@aurora-is-near/intents-connect';
 import { useWalletExecutions } from '@aurora-is-near/intents-connect/react';
 import { useEffect, useRef } from 'react';
 
 import { formatAddress } from '../../wallet/formatAddress';
+import { isOngoingExecution, progressOf } from './executionProgress';
 import { formatUsd } from '../loanFormat';
 import type { RestoredBorrowSummary } from './BorrowDialog';
-import {
-  clearPendingBorrow,
-  type PendingBorrowRecord,
-  readPendingBorrow,
-} from './pendingBorrowStore';
+import { clearPendingBorrow, readPendingBorrow } from './pendingBorrowStore';
 import { AAVE_BORROW_INTENT } from './recipe';
-
-/** Where an in-flight execution is, in the dialog's words. */
-const STATUS_LABEL: Partial<Record<ExecutionStatus, string>> = {
-  CREATED: 'Waiting for your signature',
-  DEPOSIT_PENDING: 'Waiting for the deposit',
-  DEPOSIT_PROCESSING: 'Bridging the collateral',
-  OPERATION_PENDING: 'Opening the loan',
-  OPERATION_PROCESSING: 'Opening the loan',
-};
 
 const usdRow = (label: string, usd: string | undefined) => {
   const value = usd === undefined ? NaN : Number(usd);
@@ -37,19 +24,53 @@ const usdRow = (label: string, usd: string | undefined) => {
  * Rows for a restored borrow when nothing was kept for it (another browser,
  * cleared storage): only what the execution itself says. Its token amounts
  * can't be named without their tokens, so the quote's dollar values stand in.
+ * No status row: read once, it would go stale while the steps move on.
  */
 export const genericBorrowRows = (
-  execution: Pick<Execution, 'id' | 'status' | 'quote'>,
+  execution: Pick<Execution, 'id' | 'quote'>,
 ): [string, string][] => [
   ...usdRow('You pay', execution.quote?.amountInUsd),
   ...usdRow('Supply', execution.quote?.amountOutUsd),
-  ['Status', STATUS_LABEL[execution.status] ?? execution.status],
   ['Execution', formatAddress(execution.id)],
 ];
 
+/**
+ * What the dialog shows for a borrow it did not just start (restored, or
+ * the previous one still on its way): the rows kept for it when the
+ * wallet's record is this execution's, else generic ones. A record of
+ * another execution is stale and dropped.
+ */
+export const earlierBorrowSummary = (
+  execution: Execution,
+  address: string | undefined,
+): RestoredBorrowSummary => {
+  const record = address === undefined ? undefined : readPendingBorrow(address);
+  const kept = record?.executionId === execution.id ? record : undefined;
+
+  if (address !== undefined && record && !kept) {
+    clearPendingBorrow(address, record.executionId);
+  }
+
+  return {
+    executionId: execution.id,
+    rows: kept?.rows ?? genericBorrowRows(execution),
+    ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
+  };
+};
+
 /** One of this app's borrows: another app's runs share the wallet's lock. */
-export const isBorrowExecution = (execution: Execution) =>
+const isBorrowExecution = (execution: Execution) =>
   execution.metadata?.intent === AAVE_BORROW_INTENT;
+
+/**
+ * A borrow to pick up for `wallet`: one of this app's, on its way
+ * (`isOngoingExecution`). One never signed, or signed and never funded as
+ * this session saw, is not shown: resuming it would prompt the wallet, so it
+ * is left to expire, or cancelled when the next borrow is confirmed.
+ */
+const isRestorableBorrow = (execution: Execution, wallet: string) =>
+  isBorrowExecution(execution) &&
+  isOngoingExecution(execution, progressOf(wallet, execution.id));
 
 export type UseRestoreBorrowOptions = {
   /** The connected wallet; nothing is looked up without one. */
@@ -57,22 +78,17 @@ export type UseRestoreBorrowOptions = {
   /** No borrow is under way here, so a found one can be shown. */
   idle: boolean;
   /**
-   * Called once per wallet with its in-flight borrow and the rows to show:
-   * the kept record's when it is this execution's, else generic ones. `kept`
-   * is that record (its deposit origin and whether the deposit was sent).
+   * Called once per wallet with its borrow on its way and the rows to show:
+   * the kept record's when it is this execution's, else generic ones.
    */
-  onRestore: (
-    execution: Execution,
-    summary: RestoredBorrowSummary,
-    kept: PendingBorrowRecord | undefined,
-  ) => void;
+  onRestore: (execution: Execution, summary: RestoredBorrowSummary) => void;
 };
 
 /**
- * After a reload, looks once per connected wallet for an in-flight borrow
- * (an `IN_FLIGHT_STATUSES` execution with `intent === AAVE_BORROW_INTENT`),
- * as the Aave extension's `InFlightCheck` does, and hands it to `onRestore`.
- * A kept record no in-flight borrow matches is stale and dropped.
+ * After a reload, looks once per connected wallet for a borrow on its way
+ * (an `IN_FLIGHT_STATUSES` execution of this app, `isRestorableBorrow`), as
+ * the Aave extension's `InFlightCheck` does, and hands it to `onRestore`.
+ * A kept record no such borrow matches is stale and dropped.
  *
  * Only a list fetched after this mount is trusted: the SDK keeps the last
  * list per wallet at provider level, so on a remount (switching tabs) the
@@ -122,9 +138,9 @@ export const useRestoreBorrow = ({
         return;
       }
 
-      const execution: Execution | undefined = fresh.find(isBorrowExecution);
-
-      const record = readPendingBorrow(address);
+      const execution: Execution | undefined = fresh.find((candidate) =>
+        isRestorableBorrow(candidate, address),
+      );
 
       if (!execution) {
         clearPendingBorrow(address);
@@ -132,21 +148,7 @@ export const useRestoreBorrow = ({
         return;
       }
 
-      const kept = record?.executionId === execution.id ? record : undefined;
-
-      if (record && !kept) {
-        clearPendingBorrow(address, record.executionId);
-      }
-
-      onRestoreRef.current(
-        execution,
-        {
-          executionId: execution.id,
-          rows: kept?.rows ?? genericBorrowRows(execution),
-          ...(kept?.borrowSymbol ? { borrowSymbol: kept.borrowSymbol } : {}),
-        },
-        kept,
-      );
+      onRestoreRef.current(execution, earlierBorrowSummary(execution, address));
     });
   }, [address, listable]);
 };

@@ -160,9 +160,11 @@ chain, where the execution's intermediary runs the steps.
    the borrow arrives whole); LTV against the minimum received; recipient.
    "Confirm in wallet" runs that preview's plan as it is (`run(plan)`
    reuses its prepared steps).
-3. **Sign** (pending step 1, "Sign and deposit"). The runner creates the
-   execution (the `created` event; see restore below) and asks the wallet
-   to sign the intent.
+3. **Sign** (pending step 1, "Sign and deposit"). Before anything is
+   created, the wallet's open executions are listed to clear its in-flight
+   lock (see "The wallet's in-flight lock" below). The runner then creates
+   the execution (the `created` event; see restore below) and asks the
+   wallet to sign the intent.
 4. **Deposit** (still pending step 1). An EVM origin then sends the deposit transaction from the
    wallet: this is where "not enough gas" arises.
 5. **Steps** (pending step 2, "Bridge the collateral", then step 3, "Open
@@ -194,16 +196,21 @@ recovery action:
 
 | Error | When | Action |
 |---|---|---|
-| Signature rejected | The wallet declined | Try again: previews afresh, then runs |
+| Signature rejected | The wallet declined the signature (the created execution was cancelled first) | Try again: previews afresh, then runs |
+| Deposit not sent | Signed, then the wallet declined the deposit transaction | Send deposit: only the transfer is prompted again (`retryDeposit`) |
+| Request still open | The cancellation of an open execution was declined | Confirm cancellation: asks again |
+| A borrow is already in progress | An open execution of the wallet is on its way | Close |
 | Not enough for the network fee | Gas pre-check, or the wallet's insufficient-funds error | Try again; after a failed deposit transfer, only the transfer is prompted again (`retryDeposit`) |
-| Collateral price moved | The quote moved, or the borrow step failed over the max LTV | Refresh quote: back to confirm |
+| Quote changed | The bridge quote moved before signing (`QUOTE_MOVED`) | Refresh quote: back to confirm |
+| Collateral price moved | The borrow step failed over the max LTV | Refresh quote (steps-only, see below) |
 | Not enough to borrow in the market | Liquidity pre-check, or the borrow step failed for liquidity | Choose another market: closes to the form |
 | Taking longer than usual | Pending over 5 minutes, or polling timed out | Close and keep tracking: the borrow stays tracked |
 
-- Leaving a created execution that was never signed cancels it, so it does
-  not hold the wallet's in-flight lock.
-- A wallet that disconnects mid-borrow gets "Reconnect wallet": a signed
-  execution is resumed from the new connection, an unsigned one re-quoted.
+- An error is drawn on the step the borrow had reached, not a fixed one per
+  error.
+- A wallet that disconnects mid-borrow gets "Reconnect wallet": an
+  execution whose deposit left the wallet is resumed from the new
+  connection; anything else is re-quoted.
 - If the borrow step fails after the collateral arrived
   (`OPERATION_FAILED`), the collateral waits at the intermediary. The error
   dialog says so and shows the execution id in full, and its action is
@@ -219,38 +226,61 @@ recovery action:
 - After Close, or a reload, nothing in the app lists the waiting
   collateral yet; the execution id in the dialog is how to find it.
 
+### The wallet's in-flight lock
+
+Intents Connect allows one open execution per wallet, and deleting one
+takes a wallet signature (`delete_execution:<id>`). The API's status alone
+can't say what happened to one: an unsigned execution may already read
+`DEPOSIT_PENDING`. So this session records, in memory only
+(`executionProgress.ts`), whether each execution it created was signed and
+whether its deposit left the wallet; after a reload only the API is known.
+
+- **A declined signature** cancels the execution at once. The runner's own
+  auto-cancel is off (`autoCancelOnSignatureRejection: false` in
+  `IntentsConnectWalletProvider`) so the dialog first says why a second
+  prompt opens ("Cancel the unsigned request"). Declining that too shows
+  "Request still open", whose button asks again.
+- **Clicking Borrow** (and again at Confirm) lists the wallet's open
+  executions first. One on its way (`isOngoingExecution`: deposit seen,
+  deposit sent this session, or signed with nothing known, as after a
+  reload) is shown and tracked instead of quoting a new borrow, with the
+  banner "Your previous borrow is still in progress"; that dialog can be
+  closed. At Confirm, any other open execution (never signed, or signed
+  and never funded this session) is cancelled first, with "Cancel your
+  earlier request first", then the new one is created.
+- **Leaving or closing never prompts the wallet.** An abandoned execution
+  stays open until the next borrow cancels it, or it expires with its
+  quote (about 10 minutes).
+
 ### Restore after a reload
 
 - On `created`, `NewLoanPage` keeps a record in `localStorage` under one
   key, `aurora-borrow-pending`, per wallet address
-  (`pendingBorrowStore.ts`): the execution id, the confirm dialog's rows
-  and the token the deposit is paid in (chain, contract, decimals). The
-  runner's `deposit-sent` marks it `depositSent`. It is cleared on a
-  terminal status (`SUCCESS`, `DEPOSIT_FAILED`, `OPERATION_FAILED`) or a
-  cancel. Malformed stored data is ignored.
+  (`pendingBorrowStore.ts`): the execution id and the confirm dialog's
+  rows, for display only. It is cleared on a terminal status (`SUCCESS`,
+  `DEPOSIT_FAILED`, `OPERATION_FAILED`) or a cancel. Malformed stored data
+  is ignored.
 - On mount with a connected wallet, `useRestoreBorrow` looks once for the
   wallet's in-flight executions (`useWalletExecutions` with
   `IN_FLIGHT_STATUSES`) and takes the one whose `metadata.intent` is
-  `aave_borrow` (`AAVE_BORROW_INTENT`); another app's runs are left alone.
-  `useBorrowFlow().restore` calls `resume(executionId)` and reopens the
-  pending dialog at the execution's step (or at signing, if it was never
-  signed).
-- A signed `DEPOSIT_PENDING` borrow whose deposit is not known to be sent
-  is not resumed plainly: across sessions the runner can't tell a deposit
-  never sent from one not yet seen, so it would only surface the address
-  and no wallet prompt would come. Instead the dialog says the deposit
-  wasn't sent and offers "Send deposit", which resumes with
-  `depositViaWallet: true` and the kept token (`ResumeDepositOptions`).
-  Without the token kept, it shows the deposit address while the runner
-  watches for a deposit. Both can be closed; the borrow is restored again
-  on the next visit. A deposit marked sent resumes past the deposit step.
-  A reconnect after the signature but before the deposit does the same.
+  `aave_borrow` (`AAVE_BORROW_INTENT`) and is on its way
+  (`isOngoingExecution`); another app's runs are left alone. An unsigned
+  one is never restored: resuming it would prompt the wallet on page load.
+  `useBorrowFlow().restore` watches it with a plain `resume(executionId)`,
+  which never prompts the wallet for a signed execution it didn't create,
+  and reopens the pending dialog at the execution's step.
+- A signed `DEPOSIT_PENDING` borrow is treated as a deposit on its way:
+  the dialog says it waits for the deposit to arrive. Its arrival moves it
+  on. Until it settles or expires, Borrow shows it rather than a new one.
+- A restored borrow carries the same "previous borrow" banner, and its
+  dialog can be closed.
 - A restored borrow never has a form input: a retry that would quote again
   closes it instead of quoting an earlier borrow's input.
 - The dialog shows the kept rows when the record is this execution's.
   Without one (another browser, cleared storage) it shows generic rows from
-  the execution: the paid and supplied values in dollars, its status and
-  id. A record no in-flight borrow matches is dropped.
+  the execution: the paid and supplied values in dollars and its id (no
+  status row: the steps show where it is). A record no in-flight borrow
+  matches is dropped.
 
 ### Open
 

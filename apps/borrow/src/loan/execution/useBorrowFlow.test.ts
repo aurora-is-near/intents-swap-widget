@@ -26,6 +26,12 @@ import {
   weth,
 } from '../../tests/fakeMarkets';
 import { BORROW_DELAYED_AFTER_MS } from './classifyBorrowError';
+import {
+  clearAllProgress,
+  markCreated,
+  markDepositSent,
+  markSigned,
+} from './executionProgress';
 import type { BorrowParams } from './recipe';
 import { type BorrowFlowInput, useBorrowFlow } from './useBorrowFlow';
 
@@ -43,6 +49,9 @@ const wallet = vi.hoisted(() => ({
 const sdk = vi.hoisted(() => ({
   result: null as UseExecutionResult | null,
   onEvent: undefined as ((event: RunnerEvent) => void) | undefined,
+  /** The wallet's open executions, as `api.listExecutions` lists them. */
+  open: [] as Execution[],
+  listExecutions: vi.fn(),
 }));
 
 // The collateral waiting at the intermediary, for the steps-only retry.
@@ -56,6 +65,10 @@ vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
 );
 
 vi.mock('@aurora-is-near/intents-connect/react', () => ({
+  useIntentsConnect: () => ({
+    api: { listExecutions: sdk.listExecutions },
+    wallet: null,
+  }),
   useExecution: (options: UseExecutionOptions = {}) => {
     sdk.onEvent = options.onEvent;
 
@@ -74,6 +87,18 @@ const succeeded = (): Execution => ({
   id: EXECUTION_ID,
   status: 'SUCCESS',
 });
+
+/**
+ * Lets the pre-run lock check (`api.listExecutions`) settle, so a run held
+ * open by the test has been called.
+ */
+const flushGate = async () => {
+  // Microtasks only, so it works under fake timers too.
+  for (let tick = 0; tick < 10; tick += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.resolve();
+  }
+};
 
 /** A promise to settle from the test. */
 const deferred = <T>() => {
@@ -176,8 +201,9 @@ const confirmHeld = async (flow: Flow) => {
 
   let confirmed: Promise<void> = Promise.resolve();
 
-  act(() => {
+  await act(async () => {
     confirmed = flow.current.confirm();
+    await flushGate();
   });
 
   return { run, confirmed };
@@ -198,6 +224,10 @@ const userRejection = () =>
 
 beforeEach(() => {
   sdk.result = fakeExecution();
+  sdk.open = [];
+  sdk.listExecutions.mockReset();
+  sdk.listExecutions.mockImplementation(async () => sdk.open);
+  clearAllProgress();
   vi.mocked(getIntermediaryBalance).mockResolvedValue('990000000000000000');
   wallet.address = WALLET_A;
   wallet.isConnected = true;
@@ -289,6 +319,7 @@ describe('useBorrowFlow', () => {
         kind: 'pending',
         step: 0,
         executionId: EXECUTION_ID,
+        waitingForDeposit: false,
       });
 
       await emit(
@@ -369,6 +400,7 @@ describe('useBorrowFlow', () => {
         kind: 'error',
         error: 'rejected',
         cause: EIP1193_REJECTION,
+        step: 0,
       });
       expect(result.current.action).toBe('retry');
     });
@@ -426,12 +458,15 @@ describe('useBorrowFlow', () => {
       expect(result.current.action).toBe('close');
     });
 
-    it('is priceMoved when the quote moved, and offers a refresh', async () => {
+    it('is quoteMoved when the bridge quote moved before signing, and offers a refresh', async () => {
       const { result } = renderFlow();
 
       await confirmFailing(result, new GuardError('QUOTE_MOVED', 'moved'));
 
-      expect(result.current.state).toMatchObject({ error: 'priceMoved' });
+      expect(result.current.state).toMatchObject({
+        error: 'quoteMoved',
+        step: 0,
+      });
       expect(result.current.action).toBe('refresh');
     });
 
@@ -443,7 +478,7 @@ describe('useBorrowFlow', () => {
       expect(result.current.state).toMatchObject({ error: 'unknown' });
     });
 
-    it('classifies a wallet-lock guard by its own recovery, not an earlier rejected deposit’s', async () => {
+    it('is busy for a wallet-lock guard, by its own recovery, not an earlier rejected deposit’s', async () => {
       const { result } = renderFlow();
 
       // The previous render's recovery: an earlier deposit transfer the user
@@ -463,8 +498,9 @@ describe('useBorrowFlow', () => {
 
       expect(result.current.state).toMatchObject({
         kind: 'error',
-        error: 'unknown',
+        error: 'busy',
       });
+      expect(result.current.action).toBe('close');
     });
 
     describe('when the borrow step failed after the collateral arrived', () => {
@@ -484,8 +520,9 @@ describe('useBorrowFlow', () => {
 
         let confirmed: Promise<void> = Promise.resolve();
 
-        act(() => {
+        await act(async () => {
           confirmed = flow.current.confirm();
+          await flushGate();
         });
 
         adapter.getMarketSnapshot.mockResolvedValue(after);
@@ -684,6 +721,7 @@ describe('useBorrowFlow', () => {
           kind: 'error',
           error: 'delayed',
           cause: undefined,
+          step: 1,
         });
         expect(result.current.action).toBe('close');
 
@@ -695,6 +733,7 @@ describe('useBorrowFlow', () => {
           kind: 'pending',
           step: 2,
           executionId: EXECUTION_ID,
+          waitingForDeposit: false,
         });
 
         // Not shown again once closed.
@@ -743,6 +782,7 @@ describe('useBorrowFlow', () => {
           kind: 'pending',
           step: 0,
           executionId: EXECUTION_ID,
+          waitingForDeposit: false,
         });
 
         await act(async () => {
@@ -769,8 +809,9 @@ describe('useBorrowFlow', () => {
 
       let confirmed: Promise<void> = Promise.resolve();
 
-      act(() => {
+      await act(async () => {
         confirmed = result.current.confirm();
+        await flushGate();
       });
 
       await emit(
@@ -802,8 +843,9 @@ describe('useBorrowFlow', () => {
 
       let retrying: Promise<void> = Promise.resolve();
 
-      act(() => {
+      await act(async () => {
         retrying = result.current.retry();
+        await flushGate();
       });
 
       // Back to tracking while the transfer is prompted again.
@@ -811,6 +853,7 @@ describe('useBorrowFlow', () => {
         kind: 'pending',
         step: 0,
         executionId: EXECUTION_ID,
+        waitingForDeposit: false,
       });
 
       await emit({ type: 'deposit-sent', txHash: '0xtx' });
@@ -831,7 +874,7 @@ describe('useBorrowFlow', () => {
       });
     });
 
-    it('previews afresh and runs when nothing was signed, releasing the unsigned execution', async () => {
+    it('previews afresh and runs when nothing was signed, cancelling the unsigned execution first', async () => {
       const { result } = renderFlow();
       const run = deferred<Execution>();
 
@@ -840,8 +883,9 @@ describe('useBorrowFlow', () => {
 
       let confirmed: Promise<void> = Promise.resolve();
 
-      act(() => {
+      await act(async () => {
         confirmed = result.current.confirm();
+        await flushGate();
       });
 
       await emit(
@@ -855,7 +899,11 @@ describe('useBorrowFlow', () => {
       });
 
       expect(result.current.state).toMatchObject({ error: 'unknown' });
+      // Nothing is cancelled until the next borrow runs.
+      expect(exec().cancel).not.toHaveBeenCalled();
 
+      // It still holds the wallet's lock.
+      sdk.open = [{ ...dryExecution(), id: EXECUTION_ID, status: 'CREATED' }];
       await act(() => result.current.retry());
 
       expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
@@ -892,8 +940,9 @@ describe('useBorrowFlow', () => {
 
       let retrying: Promise<void> = Promise.resolve();
 
-      act(() => {
+      await act(async () => {
         retrying = result.current.retry();
+        await flushGate();
       });
 
       // It runs at once, without going back to confirm.
@@ -988,24 +1037,6 @@ describe('useBorrowFlow', () => {
       expect(result.current.state.kind).toBe('confirm');
     });
 
-    it('does not cancel an execution the runner already cancelled', async () => {
-      const { result } = renderFlow();
-
-      vi.mocked(exec().run).mockImplementationOnce(async () => {
-        sdk.onEvent?.({ type: 'created', executionId: EXECUTION_ID });
-        exec().phase = 'cancelled';
-        throw EIP1193_REJECTION;
-      });
-      await startFlow(result);
-      await act(() => result.current.confirm());
-
-      expect(result.current.state).toMatchObject({ error: 'rejected' });
-
-      await act(() => result.current.retry());
-
-      expect(exec().cancel).not.toHaveBeenCalled();
-    });
-
     it('re-quotes and goes back to confirm on refresh', async () => {
       const { result } = renderFlow();
 
@@ -1053,7 +1084,7 @@ describe('useBorrowFlow', () => {
       expect(result.current.state.kind).toBe('confirm');
     });
 
-    it('offers to send the deposit of a signed execution after reconnecting, without cancelling it', async () => {
+    it('re-quotes after reconnecting when the signed deposit was never sent, leaving it for the next borrow', async () => {
       wallet.connect.mockResolvedValue(undefined);
 
       const { result, rerender } = renderFlow();
@@ -1081,11 +1112,8 @@ describe('useBorrowFlow', () => {
         result.current.reconnect();
       });
 
-      // The wallet is back, with a new runner that knows nothing of it.
-      const resumed = deferred<Execution>();
       const fresh = fakeExecution();
 
-      vi.mocked(fresh.resume).mockReturnValueOnce(resumed.promise);
       wallet.isConnected = true;
       sdk.result = fresh;
 
@@ -1093,44 +1121,439 @@ describe('useBorrowFlow', () => {
         rerender();
       });
 
-      // The deposit was never sent: a plain resume on the new runner would
-      // only surface the address, so the user is asked to send it.
+      // Never funded: abandoned, so it is quoted again rather than resumed.
       expect(fresh.resume).not.toHaveBeenCalled();
-      expect(fresh.preview).not.toHaveBeenCalled();
       expect(fresh.cancel).not.toHaveBeenCalled();
-      expect(result.current.state).toEqual({
-        kind: 'deposit',
-        executionId: EXECUTION_ID,
-        depositAddress: undefined,
-        canSend: true,
+      expect(fresh.preview).toHaveBeenCalled();
+      expect(result.current.state.kind).toBe('confirm');
+    });
+
+    it('resumes after reconnecting when the deposit was sent', async () => {
+      wallet.connect.mockResolvedValue(undefined);
+
+      const { result, rerender } = renderFlow();
+      const { run, confirmed } = await confirmHeld(result);
+
+      await emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+        { type: 'phase', phase: 'awaiting-deposit' },
+        { type: 'deposit-sent', txHash: '0xtx' },
+      );
+
+      await act(async () => {
+        run.reject(new GuardError('WALLET_NOT_CONNECTED', 'the wallet left'));
+        await confirmed;
       });
 
-      let sent: Promise<void> = Promise.resolve();
+      wallet.isConnected = false;
+      rerender();
 
       act(() => {
-        sent = result.current.sendDeposit();
+        result.current.reconnect();
       });
 
-      expect(fresh.resume).toHaveBeenCalledWith(EXECUTION_ID, {
-        depositViaWallet: true,
-        originChain: 'arb',
-        originToken: { contractAddress: undefined, decimals: 6 },
+      const fresh = fakeExecution();
+
+      wallet.isConnected = true;
+      sdk.result = fresh;
+
+      await act(async () => {
+        rerender();
       });
+
+      expect(fresh.resume).toHaveBeenCalledWith(EXECUTION_ID);
+      expect(fresh.preview).not.toHaveBeenCalled();
+      expect(result.current.state.kind).toBe('done');
+    });
+  });
+
+  describe('a declined signature', () => {
+    /** Created, with the wallet prompt for its signature open. */
+    const created = async (flow: Flow) => {
+      const held = await confirmHeld(flow);
+
+      await emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'awaiting-signature' },
+      );
+
+      return held;
+    };
+
+    it('cancels the created execution at once, saying why, then is rejected', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await created(result);
+      const cancelled = deferred<void>();
+
+      vi.mocked(exec().cancel).mockReturnValueOnce(cancelled.promise);
+
+      await act(async () => {
+        run.reject(EIP1193_REJECTION);
+        await flushGate();
+      });
+
+      expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
       expect(result.current.state).toEqual({
-        kind: 'pending',
-        step: 0,
-        executionId: EXECUTION_ID,
+        kind: 'cancelling',
+        reason: 'declined',
       });
 
       await act(async () => {
-        resumed.resolve(succeeded());
-        await sent;
+        cancelled.resolve();
+        await confirmed;
       });
 
       expect(result.current.state).toEqual({
-        kind: 'done',
-        executionId: EXECUTION_ID,
+        kind: 'error',
+        error: 'rejected',
+        cause: EIP1193_REJECTION,
+        step: 0,
       });
+      expect(result.current.action).toBe('retry');
+    });
+
+    it('cancels it once, when the runner reports the rejection before run() rejects', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await created(result);
+
+      await act(async () => {
+        sdk.onEvent?.({ type: 'error', error: userRejection() });
+        await flushGate();
+        run.reject(userRejection());
+        await confirmed;
+      });
+
+      expect(exec().cancel).toHaveBeenCalledTimes(1);
+      expect(result.current.state).toMatchObject({ error: 'rejected' });
+    });
+
+    it('is cancelDeclined when the cancellation is declined too, and asks again on retry', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await created(result);
+
+      vi.mocked(exec().cancel).mockRejectedValueOnce(userRejection());
+
+      await act(async () => {
+        run.reject(EIP1193_REJECTION);
+        await confirmed;
+      });
+
+      expect(result.current.state).toMatchObject({
+        kind: 'error',
+        error: 'cancelDeclined',
+        step: 0,
+      });
+      expect(result.current.action).toBe('retry');
+
+      await act(() => result.current.retry());
+
+      expect(exec().cancel).toHaveBeenCalledTimes(2);
+      expect(exec().cancel).toHaveBeenLastCalledWith(EXECUTION_ID);
+      expect(result.current.state).toMatchObject({ error: 'rejected' });
+      // Asking again for the cancellation never runs a new borrow.
+      expect(exec().run).toHaveBeenCalledTimes(1);
+    });
+
+    it('runs a fresh borrow on retry, with nothing left to cancel', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await created(result);
+
+      await act(async () => {
+        run.reject(EIP1193_REJECTION);
+        await confirmed;
+      });
+
+      await act(() => result.current.retry());
+
+      expect(exec().cancel).toHaveBeenCalledTimes(1);
+      expect(exec().preview).toHaveBeenCalledTimes(4);
+      expect(exec().run).toHaveBeenCalledTimes(2);
+      expect(result.current.state.kind).toBe('done');
+    });
+
+    it('is rejected, with nothing to cancel, when no execution was created', async () => {
+      const { result } = renderFlow();
+
+      await confirmFailing(result, EIP1193_REJECTION);
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({ error: 'rejected' });
+    });
+
+    it('is depositRejected, without cancelling, when the deposit is declined after signing', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await created(result);
+
+      await emit(
+        { type: 'phase', phase: 'submitting' },
+        { type: 'phase', phase: 'awaiting-deposit' },
+      );
+
+      await act(async () => {
+        run.reject(
+          new DepositTransferError(EXECUTION_ID, { cause: userRejection() }),
+        );
+        await confirmed;
+      });
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({
+        error: 'depositRejected',
+        step: 0,
+      });
+      expect(result.current.action).toBe('retry');
+    });
+  });
+
+  describe('the wallet lock, when a borrow is confirmed', () => {
+    const OTHER_ID = 'exec-0';
+
+    /** An open execution of the wallet, as `listExecutions` lists it. */
+    const open = (
+      status: Execution['status'],
+      messageSigned: boolean,
+    ): Execution => {
+      const base = dryExecution();
+
+      return {
+        ...base,
+        id: OTHER_ID,
+        status,
+        details: { ...base.details, messageSigned },
+      };
+    };
+
+    const confirmWith = async (flow: Flow, blocking: Execution) => {
+      sdk.open = [blocking];
+      await startFlow(flow);
+      await act(() => flow.current.confirm());
+    };
+
+    it('runs at once when nothing is open', async () => {
+      const { result } = renderFlow();
+
+      await startFlow(result);
+      await act(() => result.current.confirm());
+
+      expect(sdk.listExecutions).toHaveBeenCalledWith(
+        WALLET_A,
+        expect.objectContaining({ status: expect.any(Array) }),
+      );
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state.kind).toBe('done');
+    });
+
+    it('cancels an unsigned one, whatever its status reads, saying why, then runs', async () => {
+      const { result } = renderFlow();
+      const cancelled = deferred<void>();
+
+      vi.mocked(exec().cancel).mockReturnValueOnce(cancelled.promise);
+      sdk.open = [open('DEPOSIT_PENDING', false)];
+      await startFlow(result);
+
+      let confirmed: Promise<void> = Promise.resolve();
+
+      await act(async () => {
+        confirmed = result.current.confirm();
+        await flushGate();
+      });
+
+      expect(exec().cancel).toHaveBeenCalledWith(OTHER_ID);
+      expect(exec().run).not.toHaveBeenCalled();
+      expect(result.current.state).toEqual({
+        kind: 'cancelling',
+        reason: 'previous',
+      });
+
+      await act(async () => {
+        cancelled.resolve();
+        await confirmed;
+      });
+
+      expect(exec().run).toHaveBeenCalledTimes(1);
+      expect(result.current.state.kind).toBe('done');
+    });
+
+    it('cancels a signed one this session saw never funded, then runs', async () => {
+      const { result } = renderFlow();
+
+      markCreated(WALLET_A, OTHER_ID);
+      markSigned(WALLET_A, OTHER_ID);
+      await confirmWith(result, open('DEPOSIT_PENDING', true));
+
+      expect(exec().cancel).toHaveBeenCalledWith(OTHER_ID);
+      expect(exec().run).toHaveBeenCalledTimes(1);
+    });
+
+    it('waits for one whose deposit this session saw sent', async () => {
+      const { result } = renderFlow();
+
+      markDepositSent(WALLET_A, OTHER_ID);
+      await confirmWith(result, open('DEPOSIT_PENDING', true));
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(exec().run).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({
+        kind: 'error',
+        error: 'busy',
+      });
+      expect(result.current.action).toBe('close');
+    });
+
+    it('waits for a signed one this session knows nothing of (a reload)', async () => {
+      const { result } = renderFlow();
+
+      await confirmWith(result, open('DEPOSIT_PENDING', true));
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({ error: 'busy' });
+    });
+
+    it('waits for one whose deposit was seen', async () => {
+      const { result } = renderFlow();
+
+      await confirmWith(result, open('DEPOSIT_PROCESSING', false));
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({ error: 'busy' });
+    });
+
+    it('shows the previous borrow on its way when Borrow is clicked, instead of quoting', async () => {
+      const onPrevious = vi.fn();
+      const { result } = renderFlow({ onPrevious });
+      const previous = open('DEPOSIT_PROCESSING', true);
+
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+      sdk.open = [previous];
+      await startFlow(result);
+
+      expect(onPrevious).toHaveBeenCalledWith(previous);
+      expect(exec().preview).not.toHaveBeenCalled();
+      expect(exec().resume).toHaveBeenCalledWith(OTHER_ID);
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: OTHER_ID,
+        waitingForDeposit: false,
+      });
+    });
+
+    it('shows the previous borrow when it is found only at Confirm', async () => {
+      const onPrevious = vi.fn();
+      const { result } = renderFlow({ onPrevious });
+
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+      await startFlow(result);
+
+      // It started in another tab meanwhile.
+      sdk.open = [open('OPERATION_PENDING', true)];
+      await act(() => result.current.confirm());
+
+      expect(onPrevious).toHaveBeenCalledTimes(1);
+      expect(exec().run).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({
+        kind: 'pending',
+        step: 2,
+        executionId: OTHER_ID,
+      });
+    });
+
+    it('follows the runner it still drives, rather than resuming it again', async () => {
+      const onPrevious = vi.fn();
+      const { result } = renderFlow({ onPrevious });
+
+      // The dialog was closed while this runner kept watching it.
+      exec().isBusy = true;
+      exec().executionId = OTHER_ID;
+      sdk.open = [open('DEPOSIT_PROCESSING', true)];
+      await startFlow(result);
+
+      expect(exec().resume).not.toHaveBeenCalled();
+
+      await emit({ type: 'status', status: 'SUCCESS' });
+
+      expect(result.current.state).toEqual({
+        kind: 'done',
+        executionId: OTHER_ID,
+      });
+    });
+
+    it('still shows a restored borrow as the previous one after its dialog was closed', async () => {
+      const onPrevious = vi.fn();
+      const { result } = renderFlow({ onPrevious });
+      const restored = open('DEPOSIT_PENDING', true);
+
+      vi.mocked(exec().resume).mockReturnValue(deferred<Execution>().promise);
+
+      // Restored after a reload; the runner surfaces its deposit address.
+      act(() => {
+        result.current.restore(restored);
+      });
+      await emit(
+        { type: 'phase', phase: 'awaiting-deposit' },
+        { type: 'deposit-address', address: '0xdeposit', memo: null },
+      );
+      await act(() => result.current.leave());
+
+      // Borrow again while it is still DEPOSIT_PENDING.
+      sdk.open = [restored];
+      await startFlow(result);
+
+      expect(onPrevious).toHaveBeenCalledWith(restored);
+      expect(exec().preview).not.toHaveBeenCalled();
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({
+        kind: 'pending',
+        executionId: OTHER_ID,
+      });
+    });
+
+    it('asks again for a declined cancellation, then runs the borrow quoted afresh', async () => {
+      const { result } = renderFlow();
+
+      vi.mocked(exec().cancel).mockRejectedValueOnce(userRejection());
+      await confirmWith(result, open('CREATED', false));
+
+      expect(result.current.state).toMatchObject({ error: 'cancelDeclined' });
+      expect(exec().run).not.toHaveBeenCalled();
+
+      sdk.open = [];
+      await act(() => result.current.retry());
+
+      expect(exec().cancel).toHaveBeenCalledTimes(2);
+      expect(exec().preview).toHaveBeenCalledTimes(4);
+      expect(exec().run).toHaveBeenCalledTimes(1);
+      expect(result.current.state.kind).toBe('done');
+    });
+
+    it('remembers a deposit it sent, so the next borrow waits for it', async () => {
+      const { result } = renderFlow();
+      const { run, confirmed } = await confirmHeld(result);
+
+      await emit(
+        { type: 'created', executionId: EXECUTION_ID },
+        { type: 'phase', phase: 'submitting' },
+        { type: 'phase', phase: 'awaiting-deposit' },
+        { type: 'deposit-sent', txHash: '0xtx' },
+      );
+
+      await act(async () => {
+        run.reject(new ExecutionPollTimeoutError(EXECUTION_ID, 'timed out'));
+        await confirmed;
+      });
+      await act(() => result.current.leave());
+
+      sdk.open = [{ ...open('DEPOSIT_PENDING', true), id: EXECUTION_ID }];
+      await startFlow(result);
+      await act(() => result.current.confirm());
+
+      expect(exec().cancel).not.toHaveBeenCalled();
+      expect(result.current.state).toMatchObject({ error: 'busy' });
     });
   });
 
@@ -1138,7 +1561,7 @@ describe('useBorrowFlow', () => {
     /** An in-flight execution found after a reload. */
     const found = (
       status: Execution['status'],
-      messageSigned: boolean,
+      messageSigned = true,
     ): Execution => {
       const base = dryExecution();
 
@@ -1151,7 +1574,89 @@ describe('useBorrowFlow', () => {
       };
     };
 
-    const ORIGIN = { chain: 'arb', decimals: 6, contractAddress: '0xaf88' };
+    it('waits for the deposit of a signed DEPOSIT_PENDING borrow, without prompting the wallet', async () => {
+      const { result } = renderFlow();
+      const resumed = deferred<Execution>();
+
+      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
+
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING'));
+      });
+
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 0,
+        executionId: EXECUTION_ID,
+        waitingForDeposit: true,
+      });
+      // A plain resume: never `depositViaWallet`, so nothing is prompted.
+      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
+
+      // The runner surfaces the address while it watches: still waiting.
+      await emit(
+        { type: 'phase', phase: 'awaiting-deposit' },
+        { type: 'deposit-address', address: '0xdeposit', memo: null },
+      );
+
+      expect(result.current.state).toMatchObject({
+        step: 0,
+        waitingForDeposit: true,
+      });
+
+      await emit({ type: 'status', status: 'DEPOSIT_PROCESSING' });
+
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: EXECUTION_ID,
+        waitingForDeposit: false,
+      });
+
+      await act(async () => {
+        resumed.resolve(succeeded());
+      });
+
+      expect(result.current.state.kind).toBe('done');
+    });
+
+    it('shows a borrow whose deposit this session saw sent past the deposit step', async () => {
+      const { result } = renderFlow();
+
+      markDepositSent(WALLET_A, EXECUTION_ID);
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+
+      act(() => {
+        result.current.restore(found('DEPOSIT_PENDING'));
+      });
+
+      expect(result.current.state).toEqual({
+        kind: 'pending',
+        step: 1,
+        executionId: EXECUTION_ID,
+        waitingForDeposit: false,
+      });
+    });
+
+    it('shows a borrow past the deposit at its step', async () => {
+      const { result } = renderFlow();
+
+      vi.mocked(exec().resume).mockReturnValueOnce(
+        deferred<Execution>().promise,
+      );
+
+      act(() => {
+        result.current.restore(found('OPERATION_PENDING'));
+      });
+
+      expect(result.current.state).toMatchObject({
+        kind: 'pending',
+        step: 2,
+        waitingForDeposit: false,
+      });
+    });
 
     it('never quotes or runs an earlier form input for a restored borrow', async () => {
       const { result } = renderFlow();
@@ -1160,487 +1665,35 @@ describe('useBorrowFlow', () => {
       await startFlow(result);
       await act(() => result.current.leave());
 
-      vi.mocked(exec().resume).mockRejectedValueOnce(EIP1193_REJECTION);
+      vi.mocked(exec().resume).mockRejectedValueOnce(new Error('offline'));
       await act(async () => {
-        result.current.restore(found('CREATED', false));
+        result.current.restore(found('DEPOSIT_PENDING'));
       });
 
-      expect(result.current.state).toMatchObject({ error: 'rejected' });
+      expect(result.current.state).toMatchObject({ error: 'unknown' });
 
-      await act(() => result.current.retry());
+      await act(() => result.current.refresh());
 
       // Only the two dry runs of the earlier start.
       expect(exec().preview).toHaveBeenCalledTimes(2);
       expect(exec().run).not.toHaveBeenCalled();
       expect(result.current.state).toEqual({ kind: 'idle' });
     });
-
-    it('offers to send the deposit of a signed DEPOSIT_PENDING borrow whose deposit was not sent', async () => {
-      const { result } = renderFlow();
-
-      act(() => {
-        result.current.restore(found('DEPOSIT_PENDING', true), {
-          origin: ORIGIN,
-        });
-      });
-
-      expect(result.current.state).toEqual({
-        kind: 'deposit',
-        executionId: EXECUTION_ID,
-        depositAddress: '0xdeposit',
-        canSend: true,
-      });
-      // No runner flow yet: it would refuse the one sendDeposit() starts.
-      expect(exec().resume).not.toHaveBeenCalled();
-
-      await act(() => result.current.sendDeposit());
-
-      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID, {
-        depositViaWallet: true,
-        originChain: 'arb',
-        originToken: { contractAddress: '0xaf88', decimals: 6 },
-      });
-      expect(result.current.state).toEqual({
-        kind: 'done',
-        executionId: EXECUTION_ID,
-      });
-    });
-
-    it('shows the deposit address, and watches for it, when the deposit token is not known', async () => {
-      const { result } = renderFlow();
-      const resumed = deferred<Execution>();
-
-      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
-      act(() => {
-        result.current.restore(found('DEPOSIT_PENDING', true));
-      });
-
-      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
-      expect(result.current.state).toMatchObject({
-        kind: 'deposit',
-        canSend: false,
-      });
-
-      await emit(
-        { type: 'phase', phase: 'awaiting-deposit' },
-        { type: 'deposit-address', address: '0xsurfaced', memo: null },
-        { type: 'status', status: 'DEPOSIT_PENDING' },
-      );
-
-      expect(result.current.state).toEqual({
-        kind: 'deposit',
-        executionId: EXECUTION_ID,
-        depositAddress: '0xsurfaced',
-        canSend: false,
-      });
-
-      // sendDeposit() can't send it without the token.
-      await act(() => result.current.sendDeposit());
-
-      expect(exec().resume).toHaveBeenCalledTimes(1);
-
-      await emit({ type: 'status', status: 'DEPOSIT_PROCESSING' });
-
-      expect(result.current.state).toEqual({
-        kind: 'pending',
-        step: 1,
-        executionId: EXECUTION_ID,
-      });
-    });
-
-    it('resumes a borrow whose deposit was sent before the reload past the deposit step', async () => {
-      const { result } = renderFlow();
-      const resumed = deferred<Execution>();
-
-      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
-      act(() => {
-        result.current.restore(found('DEPOSIT_PENDING', true), {
-          origin: ORIGIN,
-          depositSent: true,
-        });
-      });
-
-      expect(exec().resume).toHaveBeenCalledWith(EXECUTION_ID);
-
-      await emit({
-        type: 'deposit-address',
-        address: '0xsurfaced',
-        memo: null,
-      });
-
-      expect(result.current.state).toEqual({
-        kind: 'pending',
-        step: 1,
-        executionId: EXECUTION_ID,
-      });
-    });
-
-    it('reports a deposit sent through onDepositSent', async () => {
-      const onDepositSent = vi.fn();
-      const { result } = renderFlow({ onDepositSent });
-
-      act(() => {
-        result.current.restore(found('DEPOSIT_PENDING', true), {
-          origin: ORIGIN,
-        });
-      });
-
-      const resumed = deferred<Execution>();
-
-      vi.mocked(exec().resume).mockReturnValueOnce(resumed.promise);
-
-      act(() => {
-        void result.current.sendDeposit();
-      });
-
-      await emit({ type: 'deposit-sent', txHash: '0xtx' });
-
-      expect(onDepositSent).toHaveBeenCalledWith(EXECUTION_ID);
-      expect(result.current.state).toMatchObject({ kind: 'pending', step: 1 });
-    });
   });
 
   describe('leaving', () => {
-    /** Created, with the wallet prompt open. */
-    const created = async (flow: Flow) => {
-      const held = await confirmHeld(flow);
+    it('never prompts the wallet for an unsigned execution, on leave or unmount', async () => {
+      const { result, unmount } = renderFlow();
 
+      await confirmHeld(result);
       await emit(
         { type: 'created', executionId: EXECUTION_ID },
         { type: 'phase', phase: 'awaiting-signature' },
       );
-
-      return held;
-    };
-
-    it('cancels a created, unsigned execution to release the wallet lock', async () => {
-      const { result } = renderFlow();
-
-      await created(result);
-      await act(() => result.current.leave());
-
-      expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-      expect(result.current.state).toEqual({ kind: 'idle' });
-    });
-
-    it('cancels it when submitting the signature failed', async () => {
-      const { result } = renderFlow();
-      const { run, confirmed } = await created(result);
-
-      // The runner enters `submitting` before the submit call, which fails:
-      // the execution stays CREATED and unsigned.
-      await emit({ type: 'phase', phase: 'submitting' });
-
-      expect(result.current.state).toEqual({ kind: 'signing' });
-
-      await act(async () => {
-        run.reject(new Error('network error'));
-        await confirmed;
-      });
-
-      expect(exec().hasSubmittedSignature).toBe(false);
-      expect(result.current.state).toMatchObject({ error: 'unknown' });
-
-      await act(() => result.current.leave());
-
-      expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-    });
-
-    it('cancels it when the hook unmounts', async () => {
-      const { result, unmount } = renderFlow();
-
-      await created(result);
-      unmount();
-
-      expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-    });
-
-    it('leaves a signed execution alone', async () => {
-      const { result, unmount } = renderFlow();
-
-      await created(result);
-      exec().hasSubmittedSignature = true;
       await act(() => result.current.leave());
       unmount();
 
       expect(exec().cancel).not.toHaveBeenCalled();
-    });
-
-    describe('a signed borrow the user abandoned', () => {
-      const NEXT_ID = 'exec-2';
-
-      /**
-       * Signed, the deposit prompted and rejected in the wallet: the
-       * runner reports the error, and its recovery, before `run()` rejects.
-       */
-      const depositRejected = async (flow: Flow) => {
-        const { run, confirmed } = await confirmHeld(flow);
-
-        await emit(
-          { type: 'created', executionId: EXECUTION_ID },
-          { type: 'phase', phase: 'awaiting-signature' },
-          { type: 'phase', phase: 'submitting' },
-          { type: 'phase', phase: 'awaiting-deposit' },
-          { type: 'status', status: 'DEPOSIT_PENDING' },
-        );
-        exec().hasSubmittedSignature = true;
-
-        const failure = new DepositTransferError(EXECUTION_ID, {
-          cause: userRejection(),
-        });
-
-        exec().recovery = {
-          kind: 'retry-transfer',
-          executionId: EXECUTION_ID,
-          cause: failure.cause as Error,
-        };
-
-        await emit({ type: 'error', error: failure });
-        await act(async () => {
-          run.reject(failure);
-          await confirmed;
-        });
-      };
-
-      /** The runner's own cancel: it resets to idle and clears the error. */
-      const cancelResets = () => {
-        vi.mocked(exec().cancel).mockImplementation(async () => {
-          exec().hasSubmittedSignature = false;
-          exec().recovery = undefined;
-        });
-      };
-
-      it('cancels it before the next borrow runs, which signs instead of failing as rejected', async () => {
-        const onSettled = vi.fn();
-        const { result } = renderFlow({ onSettled });
-
-        cancelResets();
-        await depositRejected(result);
-
-        expect(result.current.state).toMatchObject({
-          kind: 'error',
-          error: 'rejected',
-        });
-
-        // Closing opens no wallet prompt.
-        await act(() => result.current.close());
-
-        expect(result.current.state).toEqual({ kind: 'idle' });
-        expect(exec().cancel).not.toHaveBeenCalled();
-        expect(onSettled).not.toHaveBeenCalled();
-
-        const { run, confirmed } = await confirmHeld(result);
-
-        expect(exec().cancel).toHaveBeenCalledTimes(1);
-        expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-        expect(onSettled).toHaveBeenCalledWith(EXECUTION_ID);
-
-        const cancelled = vi.mocked(exec().cancel).mock.invocationCallOrder[0];
-        const ran = vi.mocked(exec().run).mock.invocationCallOrder[1];
-
-        expect(cancelled).toBeLessThan(ran ?? 0);
-        expect(result.current.state).toEqual({ kind: 'signing' });
-
-        await emit(
-          { type: 'created', executionId: NEXT_ID },
-          { type: 'phase', phase: 'awaiting-signature' },
-        );
-
-        expect(result.current.state).toEqual({ kind: 'signing' });
-
-        await emit(
-          { type: 'phase', phase: 'submitting' },
-          { type: 'phase', phase: 'awaiting-deposit' },
-        );
-
-        expect(result.current.state).toEqual({
-          kind: 'pending',
-          step: 0,
-          executionId: NEXT_ID,
-        });
-
-        await act(async () => {
-          run.resolve({ ...succeeded(), id: NEXT_ID });
-          await confirmed;
-        });
-
-        expect(result.current.state).toEqual({
-          kind: 'done',
-          executionId: NEXT_ID,
-        });
-        // Released once only.
-        expect(exec().cancel).toHaveBeenCalledTimes(1);
-      });
-
-      it('is not rejected when the cancel was declined and the wallet lock refuses the next borrow', async () => {
-        const { result } = renderFlow();
-
-        await depositRejected(result);
-        await act(() => result.current.close());
-
-        vi.mocked(exec().cancel).mockRejectedValueOnce(EIP1193_REJECTION);
-        await confirmFailing(
-          result,
-          new GuardError('EXECUTION_IN_FLIGHT', 'another execution is live', {
-            executionId: EXECUTION_ID,
-          }),
-        );
-
-        expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-        expect(result.current.state).toMatchObject({
-          kind: 'error',
-          error: 'unknown',
-        });
-      });
-
-      it('leaves it to its own wallet when another wallet starts the next borrow', async () => {
-        const onSettled = vi.fn();
-        const { result, rerender } = renderFlow({ onSettled });
-
-        await depositRejected(result);
-        await act(() => result.current.close());
-
-        // The user switches wallets in the header, then starts a borrow.
-        wallet.address = '0x00000000000000000000000000000000000000bb';
-        rerender();
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-        expect(onSettled).not.toHaveBeenCalled();
-        expect(result.current.state.kind).toBe('confirm');
-
-        // Nor is it cancelled later, by the owner's wallet back.
-        wallet.address = WALLET_A;
-        rerender();
-        await act(() => result.current.leave());
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-        expect(onSettled).not.toHaveBeenCalled();
-      });
-
-      it('forgets it once a reload picks it up again', async () => {
-        const { result } = renderFlow();
-
-        await depositRejected(result);
-        await act(() => result.current.close());
-
-        const base = dryExecution();
-
-        act(() => {
-          result.current.restore(
-            {
-              ...base,
-              id: EXECUTION_ID,
-              status: 'DEPOSIT_PENDING',
-              details: { ...base.details, messageSigned: true },
-            },
-            { origin: { chain: 'arb', decimals: 6 } },
-          );
-        });
-
-        expect(result.current.state).toMatchObject({ kind: 'deposit' });
-
-        // The user sends it this time.
-        await act(() => result.current.sendDeposit());
-
-        expect(result.current.state.kind).toBe('done');
-
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-      });
-
-      it('still releases it after another borrow was restored', async () => {
-        const { result } = renderFlow();
-
-        await depositRejected(result);
-        await act(() => result.current.close());
-
-        const base = dryExecution();
-
-        await act(async () => {
-          result.current.restore({
-            ...base,
-            id: NEXT_ID,
-            status: 'OPERATION_PROCESSING',
-          });
-        });
-
-        expect(result.current.state.kind).toBe('done');
-        expect(exec().cancel).not.toHaveBeenCalled();
-
-        await startFlow(result);
-
-        expect(exec().cancel).toHaveBeenCalledWith(EXECUTION_ID);
-      });
-
-      it('never cancels a borrow whose deposit was sent', async () => {
-        const { result } = renderFlow();
-        const { run, confirmed } = await confirmHeld(result);
-
-        await emit(
-          { type: 'created', executionId: EXECUTION_ID },
-          { type: 'phase', phase: 'submitting' },
-          { type: 'phase', phase: 'awaiting-deposit' },
-          { type: 'status', status: 'DEPOSIT_PENDING' },
-          { type: 'deposit-sent', txHash: '0xtx' },
-        );
-        exec().hasSubmittedSignature = true;
-
-        await act(async () => {
-          run.reject(new Error('network error'));
-          await confirmed;
-        });
-
-        expect(result.current.state).toMatchObject({ error: 'unknown' });
-
-        await act(() => result.current.close());
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-      });
-
-      it('never cancels a borrow whose collateral waits at the intermediary', async () => {
-        const { result } = renderFlow();
-        const { run, confirmed } = await confirmHeld(result);
-
-        await emit(
-          { type: 'created', executionId: EXECUTION_ID },
-          { type: 'phase', phase: 'submitting' },
-        );
-        exec().hasSubmittedSignature = true;
-        await emit({ type: 'status', status: 'OPERATION_FAILED' });
-
-        await act(async () => {
-          run.reject(new Error('execution OPERATION_FAILED'));
-          await confirmed;
-        });
-
-        expect(result.current.fundsWaiting).toBe(true);
-
-        await act(() => result.current.close());
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-      });
-
-      it('never cancels a signed borrow left while it still runs', async () => {
-        const { result } = renderFlow();
-
-        await confirmHeld(result);
-        await emit(
-          { type: 'created', executionId: EXECUTION_ID },
-          { type: 'phase', phase: 'submitting' },
-          { type: 'phase', phase: 'awaiting-deposit' },
-        );
-        exec().hasSubmittedSignature = true;
-
-        await act(() => result.current.leave());
-        await startFlow(result);
-
-        expect(exec().cancel).not.toHaveBeenCalled();
-      });
     });
 
     it('closes the confirm dialog back to idle', async () => {

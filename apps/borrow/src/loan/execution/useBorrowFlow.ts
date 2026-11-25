@@ -5,12 +5,15 @@ import {
   ExecutionCancelledError,
   ExecutionPollTimeoutError,
   type ExecutionStatus,
+  IN_FLIGHT_STATUSES,
+  isUserRejection,
   type RunnerEvent,
   TERMINAL_STATUSES,
 } from '@aurora-is-near/intents-connect';
 import {
   useExecution,
   type UseExecutionResult,
+  useIntentsConnect,
 } from '@aurora-is-near/intents-connect/react';
 import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -28,8 +31,15 @@ import {
   diagnoseBorrowStep,
   type GasPreCheckInput,
 } from './classifyBorrowError';
+import {
+  forgetProgress,
+  isOngoingExecution,
+  markCreated,
+  markDepositSent,
+  markSigned,
+  progressOf,
+} from './executionProgress';
 import { checkLiquidity } from './liquidity';
-import type { BorrowOrigin } from './plan';
 import {
   type BorrowPreview,
   previewBorrow,
@@ -46,22 +56,32 @@ import { type BorrowStepsPreview, previewBorrowSteps } from './stepsRetry';
 export type BorrowPendingStep = 0 | 1 | 2;
 
 /**
+ * Why an open execution is being cancelled:
+ * - `declined`: the user declined its signature just now; it was created
+ *   and holds the wallet's in-flight lock, so it is cancelled at once.
+ * - `previous`: an earlier one, never signed or never funded, blocks the
+ *   borrow being confirmed; it is cancelled before the new one is created.
+ */
+export type BorrowCancelReason = 'declined' | 'previous';
+
+/**
  * Where a borrow is, for its dialogs:
  * - `idle`: nothing started, or the user left.
  * - `previewing`: the pre-checks and the two-pass dry run are running.
  * - `confirm`: the dry run to confirm, and the figures the dialog shows.
- * - `signing`: confirmed; the execution is created and the wallet prompt is
- *   open, until the service has accepted the signature.
- * - `pending`: signed. Step 0: the deposit is being sent; 1: the collateral
- *   is bridging to the market's chain; 2: it is being supplied, the loan
- *   opened and the borrowed funds delivered (the operation).
- * - `deposit`: signed, but this session can't tell that the deposit was sent
- *   (a reload, or a reconnect, before it was): it waits for the user to send
- *   it (`canSend`, `sendDeposit()`), or, without the token to send it in,
- *   shows the deposit address while the runner watches for it.
+ * - `signing`: confirmed; the execution is created and the wallet prompt
+ *   for its intent is open, until the service has accepted the signature.
+ * - `cancelling`: the wallet prompt for a `delete_execution` signature is
+ *   open (see `BorrowCancelReason`).
+ * - `pending`: signed. Step 0: the wallet is asked for the deposit
+ *   transaction, or (`waitingForDeposit`, a borrow restored after a reload)
+ *   the deposit is waited for, with no prompt; 1: the deposit left the
+ *   wallet and the collateral is bridging to the market's chain; 2: it is
+ *   being supplied, the loan opened and the borrowed funds delivered.
  * - `done`: the borrow succeeded.
- * - `error`: one of the error states (`classifyBorrowError`); `delayed` is a
- *   warning, and the borrow is still tracked.
+ * - `error`: one of the error states (`classifyBorrowError`), drawn on
+ *   `step`, the step the borrow had reached; `delayed` is a warning, and
+ *   the borrow is still tracked.
  */
 export type BorrowFlowState =
   | { kind: 'idle' }
@@ -73,28 +93,25 @@ export type BorrowFlowState =
       figures: BorrowPreviewFigures;
     }
   | { kind: 'signing' }
-  | { kind: 'pending'; step: BorrowPendingStep; executionId?: string }
+  | { kind: 'cancelling'; reason: BorrowCancelReason }
   | {
-      kind: 'deposit';
-      executionId: string;
-      depositAddress: string | undefined;
-      canSend: boolean;
+      kind: 'pending';
+      step: BorrowPendingStep;
+      executionId?: string;
+      waitingForDeposit: boolean;
     }
   | { kind: 'done'; executionId: string }
-  | { kind: 'error'; error: BorrowErrorKind; cause: unknown };
+  | {
+      kind: 'error';
+      error: BorrowErrorKind;
+      cause: unknown;
+      step: BorrowPendingStep;
+    };
 
 /** A steps-only retry's dry run, not a bridge-in's. */
 const isStepsPreview = (
   preview: BorrowPreview | BorrowStepsPreview,
 ): preview is BorrowStepsPreview => 'steps' in preview;
-
-/** What a restored borrow's kept record says about its deposit. */
-export type RestoredDeposit = {
-  /** The token the deposit is paid in: with it, `sendDeposit()` can send it. */
-  origin?: BorrowOrigin | Omit<BorrowOrigin, 'assetId'>;
-  /** The wallet broadcast it before the reload. */
-  depositSent?: boolean;
-};
 
 /** A restored execution: what `restore()` reads of it. */
 export type RestorableExecution = Pick<Execution, 'id' | 'status' | 'details'> &
@@ -121,16 +138,18 @@ export type UseBorrowFlowOptions = {
    */
   onCreated?: (executionId: string) => void;
   /**
+   * Called when Borrow (or Confirm) finds an earlier execution of the wallet
+   * still on its way (`isOngoingExecution`): the flow then shows and tracks
+   * that one instead of starting a new borrow, so the dialog can name it as
+   * the previous borrow. Without it, the flow stops at `busy`.
+   */
+  onPrevious?: (execution: Execution) => void;
+  /**
    * Called once the execution is over: a terminal status (`SUCCESS`,
    * `DEPOSIT_FAILED`, `OPERATION_FAILED`), or it was cancelled. What
    * `onCreated` kept for it can go.
    */
   onSettled?: (executionId: string) => void;
-  /**
-   * Called once the wallet broadcast the deposit (the runner's
-   * `deposit-sent`), so a reload does not offer to send it again.
-   */
-  onDepositSent?: (executionId: string) => void;
 };
 
 export type UseBorrowFlowResult = {
@@ -148,24 +167,20 @@ export type UseBorrowFlowResult = {
   /** Runs the confirmed dry run's plan as it is. */
   confirm: () => Promise<void>;
   /**
-   * Picks up an in-flight borrow found after a reload: `resume()`s it and
-   * shows it as `pending` (or `signing` while it still waits for the
-   * signature). A signed `DEPOSIT_PENDING` one whose deposit is not known to
-   * be sent shows `deposit` instead. It never has a form input: a retry
-   * that would quote again leaves it. Ignored unless `idle`.
+   * Picks up a borrow on its way found after a reload (signed, see
+   * `isOngoingExecution`): watches it with `resume()`, which never prompts
+   * the wallet for a signed execution it did not create, and shows it as
+   * `pending`; a `DEPOSIT_PENDING` one waits for its deposit. It never has a
+   * form input: a retry that would quote again leaves it. Ignored unless
+   * `idle`.
    */
-  restore: (execution: RestorableExecution, saved?: RestoredDeposit) => void;
-  /**
-   * From `deposit` with `canSend`: resumes with `depositViaWallet: true`, so
-   * the wallet is prompted for the deposit transfer.
-   */
-  sendDeposit: () => Promise<void>;
+  restore: (execution: RestorableExecution) => void;
   /** The error state's action, as the artboard names it. */
   action: BorrowRecoveryAction | undefined;
   /**
-   * Re-runs: re-prompts the deposit transfer after a `DepositTransferError`,
-   * previews afresh and runs when nothing was signed, else keeps watching the
-   * signed execution.
+   * Re-runs: asks again for a declined cancellation, re-prompts the deposit
+   * transfer after a `DepositTransferError`, previews afresh and runs when
+   * nothing was signed, else keeps watching the signed execution.
    */
   retry: () => Promise<void>;
   /** Re-quotes and goes back to `confirm`. */
@@ -178,10 +193,9 @@ export type UseBorrowFlowResult = {
    */
   close: () => Promise<void>;
   /**
-   * Back to `idle`. A created execution that was not signed is cancelled, so
-   * it does not hold the wallet's in-flight lock. A signed one stopped before
-   * its deposit was sent is kept, and cancelled when the next borrow starts:
-   * leaving never prompts the wallet.
+   * Back to `idle`. Leaving never prompts the wallet: an execution that was
+   * not signed, or not funded, is left open and cancelled when the next
+   * borrow is confirmed (or it expires).
    */
   leave: () => Promise<void>;
   /**
@@ -221,11 +235,22 @@ const SIGNING_PHASES = new Set([
  * A borrow from the confirm dialog to done or an error, over the SDK's
  * `useExecution({ onEvent })`: one state union for the dialogs, driven by
  * the runner's events, and the recovery actions the error artboards name.
+ *
+ * The wallet's in-flight lock (one open execution per wallet):
+ * - A declined signature cancels the execution at once (`cancelling`,
+ *   `declined`), with a second wallet prompt the dialog explains. The SDK's
+ *   own auto-cancel is off (`IntentsConnectWalletProvider`), so the dialog
+ *   can say what the prompt is for before it opens.
+ * - Confirming a borrow first looks for an open execution of the wallet: one
+ *   on its way (`isOngoingExecution`) is waited for (`busy`); one never
+ *   signed, or signed and never funded, is cancelled (`cancelling`,
+ *   `previous`) and the new one created after.
+ * - Leaving or closing never prompts the wallet.
  */
 export const useBorrowFlow = ({
   onCreated,
+  onPrevious,
   onSettled,
-  onDepositSent,
 }: UseBorrowFlowOptions = {}): UseBorrowFlowResult => {
   const [state, setState] = useState<BorrowFlowState>({ kind: 'idle' });
   const [figures, setFigures] = useState<BorrowPreviewFigures>();
@@ -235,6 +260,11 @@ export const useBorrowFlow = ({
     connect,
     isConnected,
   } = useIntentsConnectWallet();
+
+  const { api } = useIntentsConnect();
+  const apiRef = useRef(api);
+
+  apiRef.current = api;
 
   /** The connected wallet, read when a callback runs rather than rendered. */
   const addressRef = useRef(walletAddress);
@@ -267,7 +297,9 @@ export const useBorrowFlow = ({
   /**
    * This run's signature was submitted. Kept by the hook rather than read
    * from the runner: after a wallet switch the new runner reports
-   * `hasSubmittedSignature: false` for an execution that was signed.
+   * `hasSubmittedSignature: false` for an execution that was signed. Never
+   * inferred from the status: an unsigned execution may read
+   * `DEPOSIT_PENDING`.
    */
   const signedRef = useRef(false);
   /**
@@ -281,12 +313,10 @@ export const useBorrowFlow = ({
   /** This run's deposit was broadcast (`deposit-sent`): never send it again. */
   const depositSentRef = useRef(false);
   /**
-   * In `deposit`, the runner watches for a deposit it was not asked to send:
-   * its `deposit-address` and awaiting-funds events keep the dialog there.
+   * A restored borrow waits for its deposit, which this session did not
+   * send: only its arrival (step 1 on) moves the dialog on.
    */
-  const awaitingDepositRef = useRef(false);
-  /** The token a signed, unsent deposit is sent in (`sendDeposit()`). */
-  const depositOriginRef = useRef<RestoredDeposit['origin']>(undefined);
+  const waitingForDepositRef = useRef(false);
   /**
    * The collateral of this borrow waits at the intermediary: until the user
    * leaves, every retry runs steps-only from it, never a new bridge-in.
@@ -296,25 +326,22 @@ export const useBorrowFlow = ({
   const intermediaryRef = useRef<string | undefined>(undefined);
   /** The execution whose collateral waits: shown so it can be found. */
   const waitingExecutionIdRef = useRef<string | undefined>(undefined);
-  /** The deposit address the runner surfaced for this run. */
-  const depositAddressRef = useRef<string | undefined>(undefined);
   /**
-   * A signed run the user left before its deposit was sent (a rejected
-   * deposit transfer, say): it still holds the wallet's in-flight lock, so
-   * the next borrow cancels it (`releaseAbandoned()`) before it runs. With
-   * the wallet that owns it: only that wallet can cancel it.
+   * The cancellation the user declined (`cancelDeclined`), for `retry()` to
+   * ask again; `previous` goes on to run the confirmed borrow once it is
+   * cancelled.
    */
-  const abandonedRef = useRef<
-    { id: string; owner: string | undefined } | undefined
+  const declinedCancelRef = useRef<
+    { id: string; reason: BorrowCancelReason } | undefined
   >(undefined);
 
   const onCreatedRef = useRef(onCreated);
+  const onPreviousRef = useRef(onPrevious);
   const onSettledRef = useRef(onSettled);
-  const onDepositSentRef = useRef(onDepositSent);
 
   onCreatedRef.current = onCreated;
+  onPreviousRef.current = onPrevious;
   onSettledRef.current = onSettled;
-  onDepositSentRef.current = onDepositSent;
 
   /** The execution is over: what was kept for it can go. */
   const settled = (executionId: string | undefined) => {
@@ -333,17 +360,22 @@ export const useBorrowFlow = ({
     delayTimerRef.current = undefined;
   };
 
+  /** Records this run's signature, here and in the session's progress. */
+  const noteSigned = () => {
+    signedRef.current = true;
+
+    if (createdIdRef.current !== undefined) {
+      markSigned(createdOwnerRef.current, createdIdRef.current);
+    }
+  };
+
   const toPending = (step: BorrowPendingStep) => {
     const { current } = stateRef;
 
-    // Waiting for a deposit nobody was asked to send: only its arrival
+    // Waiting for a deposit this session did not send: only its arrival
     // (step 1 on) moves the dialog on.
-    if (awaitingDepositRef.current) {
-      if (step === 0) {
-        return;
-      }
-
-      awaitingDepositRef.current = false;
+    if (waitingForDepositRef.current && step > 0) {
+      waitingForDepositRef.current = false;
     }
 
     stepRef.current = Math.max(stepRef.current, step) as BorrowPendingStep;
@@ -366,6 +398,7 @@ export const useBorrowFlow = ({
               pendingMs: BORROW_DELAYED_AFTER_MS + 1,
             }),
             cause: undefined,
+            step: stepRef.current,
           });
         }
       }, BORROW_DELAYED_AFTER_MS);
@@ -375,6 +408,7 @@ export const useBorrowFlow = ({
       kind: 'pending',
       step: stepRef.current,
       executionId: createdIdRef.current,
+      waitingForDeposit: waitingForDepositRef.current,
     });
   };
 
@@ -383,6 +417,7 @@ export const useBorrowFlow = ({
     clearDelayTimer();
 
     if (executionId) {
+      forgetProgress(createdOwnerRef.current, executionId);
       settled(executionId);
       setFlow({ kind: 'done', executionId });
     }
@@ -399,9 +434,71 @@ export const useBorrowFlow = ({
     return executionRef.current;
   };
 
+  /**
+   * This run's execution was signed: by its events, which survive a wallet
+   * switch, or by the runner that ran it.
+   */
+  const isSigned = () =>
+    signedRef.current || executionRef.current?.hasSubmittedSignature === true;
+
+  /**
+   * Cancels an open execution with the wallet's `delete_execution`
+   * signature, in `cancelling` so the dialog says why the prompt opened.
+   * `true` once it is gone and this is still the current borrow. Declined,
+   * it is `cancelDeclined`, and `retry()` asks again. Any other failure
+   * (already gone, expired) counts as released: a run it still blocks is
+   * then refused as `busy`.
+   */
+  const cancelOpen = async (
+    executionId: string,
+    reason: BorrowCancelReason,
+  ): Promise<boolean> => {
+    const generation = generationRef.current;
+    const owner = addressRef.current;
+
+    runningRef.current = false;
+    clearDelayTimer();
+    declinedCancelRef.current = undefined;
+    setFlow({ kind: 'cancelling', reason });
+
+    try {
+      await requireExecution().cancel(executionId);
+    } catch (error) {
+      if (generation !== generationRef.current) {
+        return false;
+      }
+
+      if (isUserRejection(error)) {
+        declinedCancelRef.current = { id: executionId, reason };
+        setFlow({
+          kind: 'error',
+          error: 'cancelDeclined',
+          cause: error,
+          step: 0,
+        });
+
+        return false;
+      }
+    }
+
+    forgetProgress(owner, executionId);
+    settled(executionId);
+
+    if (createdIdRef.current === executionId) {
+      createdIdRef.current = undefined;
+    }
+
+    return generation === generationRef.current;
+  };
+
   /** Classifies `error` into the error state; the borrow step is read afresh. */
   const fail = async (error: unknown) => {
-    if (lastErrorRef.current === error && stateRef.current.kind === 'error') {
+    const { kind } = stateRef.current;
+
+    if (
+      lastErrorRef.current === error &&
+      (kind === 'error' || kind === 'cancelling')
+    ) {
       return;
     }
 
@@ -409,8 +506,26 @@ export const useBorrowFlow = ({
     runningRef.current = false;
     clearDelayTimer();
 
+    const createdId = createdIdRef.current;
+
+    // The signature was declined: the created execution holds the wallet's
+    // lock, so it is cancelled now, with the prompt explained.
+    if (
+      createdId !== undefined &&
+      !isSigned() &&
+      isUserRejection(error) &&
+      !(error instanceof DepositTransferError)
+    ) {
+      if (await cancelOpen(createdId, 'declined')) {
+        setFlow({ kind: 'error', error: 'rejected', cause: error, step: 0 });
+      }
+
+      return;
+    }
+
     const generation = generationRef.current;
     const status = statusRef.current;
+    const step = stepRef.current;
     let borrowStep: BorrowStepFailure | undefined;
     const input = inputRef.current;
     const borrowed = borrowRef.current;
@@ -424,6 +539,7 @@ export const useBorrowFlow = ({
       kind: 'error',
       error: classifyBorrowError(error, recovery, { status }),
       cause: error,
+      step,
     });
 
     if (status === 'OPERATION_FAILED' && input && borrowed) {
@@ -452,6 +568,7 @@ export const useBorrowFlow = ({
           kind: 'error',
           error: classifyBorrowError(error, recovery, { status, borrowStep }),
           cause: error,
+          step,
         });
       }
     }
@@ -469,10 +586,10 @@ export const useBorrowFlow = ({
             setFlow({ kind: 'signing' });
           }
         } else if (event.phase === 'awaiting-deposit') {
-          signedRef.current = true;
+          noteSigned();
           toPending(0);
         } else if (event.phase === 'settling') {
-          signedRef.current = true;
+          noteSigned();
           toPending(Math.max(stepRef.current, 1) as BorrowPendingStep);
         }
 
@@ -482,12 +599,11 @@ export const useBorrowFlow = ({
         statusRef.current = event.status;
         const step = STATUS_STEP[event.status];
 
-        // Past CREATED, the service has the signature.
-        if (event.status !== 'CREATED') {
-          signedRef.current = true;
-        }
-
         if (TERMINAL_STATUSES.includes(event.status)) {
+          if (createdIdRef.current !== undefined) {
+            forgetProgress(createdOwnerRef.current, createdIdRef.current);
+          }
+
           settled(createdIdRef.current);
         }
 
@@ -503,31 +619,21 @@ export const useBorrowFlow = ({
       case 'created':
         createdIdRef.current = event.executionId;
         createdOwnerRef.current = addressRef.current;
+        markCreated(addressRef.current, event.executionId);
         onCreatedRef.current?.(event.executionId);
         break;
 
-      case 'deposit-address': {
-        signedRef.current = true;
-        depositAddressRef.current = event.address;
-
-        const { current } = stateRef;
-
-        if (awaitingDepositRef.current && current.kind === 'deposit') {
-          // The address the runner surfaced, for a deposit sent by hand.
-          setFlow({ ...current, depositAddress: event.address });
-        } else {
-          toPending(0);
-        }
-
+      case 'deposit-address':
+        noteSigned();
+        toPending(0);
         break;
-      }
 
       case 'deposit-sent':
-        signedRef.current = true;
+        noteSigned();
         depositSentRef.current = true;
 
         if (createdIdRef.current !== undefined) {
-          onDepositSentRef.current?.(createdIdRef.current);
+          markDepositSent(createdOwnerRef.current, createdIdRef.current);
         }
 
         toPending(1);
@@ -547,101 +653,12 @@ export const useBorrowFlow = ({
   executionRef.current = execution;
 
   /**
-   * This run's execution was signed: by its events, which survive a wallet
-   * switch, or by the runner that ran it.
-   */
-  const isSigned = () =>
-    signedRef.current || executionRef.current?.hasSubmittedSignature === true;
-
-  /**
    * The collateral arrived and the borrow step failed: a new bridge-in would
    * spend the user's funds a second time.
    */
   const isFundsWaiting = () =>
     waitingRef.current ||
     (isSigned() && statusRef.current === 'OPERATION_FAILED');
-
-  /**
-   * Cancels a created execution that was never signed: until then it holds
-   * the wallet's in-flight lock. One the runner already cancelled (a
-   * rejected signature is, by default) is left alone.
-   */
-  const releaseUnsigned = async () => {
-    const { current } = executionRef;
-    const executionId = createdIdRef.current;
-
-    createdIdRef.current = undefined;
-
-    if (
-      !current ||
-      executionId === undefined ||
-      isSigned() ||
-      current.phase === 'cancelled'
-    ) {
-      return;
-    }
-
-    try {
-      await current.cancel(executionId);
-    } catch {
-      // Already gone, or the lock is released when it expires.
-    }
-
-    settled(executionId);
-  };
-
-  /**
-   * The run is signed but abandoned: stopped (not driving the runner), its
-   * deposit never sent, still awaiting funds, and nothing waiting at the
-   * intermediary. Never one whose deposit went out or whose funds wait.
-   */
-  const isAbandoned = () => {
-    const status = statusRef.current;
-
-    return (
-      isSigned() &&
-      !runningRef.current &&
-      !depositSentRef.current &&
-      (status === undefined || AWAITING_FUNDS.has(status)) &&
-      !isFundsWaiting()
-    );
-  };
-
-  /**
-   * Cancels the signed run the user abandoned, so the next borrow is not
-   * refused by its in-flight lock, and drops what `onCreated` kept for it.
-   * Done when the next borrow starts, never on leaving: the cancel prompts
-   * the wallet for a `delete_execution` signature.
-   *
-   * Only while the wallet that left it is connected: another wallet would be
-   * prompted for an execution it does not own, the delete refused, and the
-   * owner's kept record dropped while its lock still holds. Then it is only
-   * forgotten; a restore with the owner's wallet finds it again.
-   */
-  const releaseAbandoned = async () => {
-    const { current } = executionRef;
-    const abandoned = abandonedRef.current;
-
-    if (!current || abandoned === undefined) {
-      return;
-    }
-
-    abandonedRef.current = undefined;
-
-    const { id: executionId, owner } = abandoned;
-
-    if (owner === undefined || owner !== addressRef.current) {
-      return;
-    }
-
-    try {
-      await current.cancel(executionId);
-    } catch {
-      // Declined, already gone, or the lock is released when it expires.
-    }
-
-    settled(executionId);
-  };
 
   /** A fresh run's bookkeeping. */
   const resetRun = () => {
@@ -655,8 +672,8 @@ export const useBorrowFlow = ({
     delayDismissedRef.current = false;
     signedRef.current = false;
     depositSentRef.current = false;
-    awaitingDepositRef.current = false;
-    depositAddressRef.current = undefined;
+    waitingForDepositRef.current = false;
+    declinedCancelRef.current = undefined;
   };
 
   const previewFor = async (
@@ -750,21 +767,150 @@ export const useBorrowFlow = ({
     }
   };
 
-  const leave = async () => {
+  /**
+   * Shows and tracks a signed execution on its way that this borrow did not
+   * start: one restored after a reload, or the previous borrow still running
+   * when Borrow was clicked.
+   */
+  const follow = (found: RestorableExecution) => {
     generationRef.current += 1;
+    resetRun();
+    // A restored borrow has no form input: an earlier one in this session
+    // (another wallet's, say) must never be quoted or run for it.
+    inputRef.current = undefined;
+    borrowRef.current = undefined;
+    // Nor are its figures known: the dialog shows the kept rows instead.
+    setFigures(undefined);
+    waitingRef.current = false;
+    intermediaryRef.current = undefined;
+    waitingExecutionIdRef.current = undefined;
+    reconnectingRef.current = false;
+    reconnectResumeRef.current = undefined;
+    createdIdRef.current = found.id;
+    // Restored for the wallet connected now, which the record was kept for.
+    createdOwnerRef.current = addressRef.current;
 
-    const executionId = createdIdRef.current;
+    const known = progressOf(addressRef.current, found.id);
 
-    // Kept for the next borrow to cancel: cancelling here would open a
-    // wallet prompt as the dialog closes.
-    if (executionId !== undefined && isAbandoned()) {
-      abandonedRef.current = {
-        id: executionId,
-        owner: createdOwnerRef.current,
-      };
+    statusRef.current = found.status;
+    confirmedRef.current = true;
+    // Only signed borrows on their way are restored (`isOngoingExecution`).
+    signedRef.current = true;
+    depositSentRef.current = known?.depositSent === true;
+
+    const step = STATUS_STEP[found.status] ?? 0;
+
+    // A deposit this session saw leave the wallet is on its way: past step
+    // 0. Otherwise a `DEPOSIT_PENDING` one may or may not have been sent:
+    // it is waited for, never prompted.
+    if (depositSentRef.current) {
+      toPending(Math.max(step, 1) as BorrowPendingStep);
+    } else {
+      waitingForDepositRef.current = step === 0;
+      toPending(step);
     }
 
-    await releaseUnsigned();
+    const { current } = executionRef;
+
+    // This runner still drives it (the dialog was closed while it ran):
+    // its events are followed again; a second resume would be refused.
+    if (current?.isBusy === true && current.executionId === found.id) {
+      runningRef.current = true;
+
+      return;
+    }
+
+    void drive(() => requireExecution().resume(found.id));
+  };
+
+  const restore = (found: RestorableExecution) => {
+    if (stateRef.current.kind === 'idle') {
+      follow(found);
+    }
+  };
+
+  /**
+   * The previous borrow, still on its way, blocks a new one: it is shown
+   * and tracked instead, named as the previous one by `onPrevious`; without
+   * that, the flow stops at `busy`.
+   */
+  const showPrevious = (previous: Execution) => {
+    if (!onPreviousRef.current) {
+      setFlow({ kind: 'error', error: 'busy', cause: undefined, step: 0 });
+
+      return;
+    }
+
+    onPreviousRef.current(previous);
+    follow(previous);
+  };
+
+  /**
+   * The wallet's first open execution; `undefined` when none, or when the
+   * list could not be read (the runner's own preflight still refuses a
+   * locked wallet, as `busy`).
+   */
+  const openExecution = async (): Promise<Execution | undefined> => {
+    const owner = addressRef.current;
+
+    if (owner === undefined) {
+      return undefined;
+    }
+
+    try {
+      const [open] = await apiRef.current.listExecutions(owner, {
+        status: IN_FLIGHT_STATUSES,
+      });
+
+      return open;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const isOngoing = (open: Execution) =>
+    isOngoingExecution(open, progressOf(addressRef.current, open.id));
+
+  /**
+   * Clears the wallet's in-flight lock before a new execution is created:
+   * an open execution on its way is shown instead (`showPrevious`), any
+   * other is cancelled (`previous`). `true` when the borrow can go on.
+   */
+  const clearOpenExecution = async (): Promise<boolean> => {
+    const generation = generationRef.current;
+    const blocking = await openExecution();
+
+    if (generation !== generationRef.current) {
+      return false;
+    }
+
+    if (!blocking) {
+      return true;
+    }
+
+    if (isOngoing(blocking)) {
+      showPrevious(blocking);
+
+      return false;
+    }
+
+    return cancelOpen(blocking.id, 'previous');
+  };
+
+  /** Runs `driveRun` once the wallet's lock is clear. */
+  const runClear = async (driveRun: () => Promise<{ id: string }>) => {
+    setFlow({ kind: 'signing' });
+
+    if (!(await clearOpenExecution())) {
+      return;
+    }
+
+    setFlow({ kind: 'signing' });
+    await drive(driveRun);
+  };
+
+  const leave = async () => {
+    generationRef.current += 1;
     resetRun();
     reconnectingRef.current = false;
     reconnectResumeRef.current = undefined;
@@ -773,7 +919,6 @@ export const useBorrowFlow = ({
     waitingRef.current = false;
     intermediaryRef.current = undefined;
     waitingExecutionIdRef.current = undefined;
-    depositOriginRef.current = undefined;
     setFigures(undefined);
     setFlow({ kind: 'idle' });
   };
@@ -794,11 +939,21 @@ export const useBorrowFlow = ({
     const generation = generationRef.current;
 
     setFlow({ kind: 'previewing' });
-    // An earlier run's unsigned execution would hold the wallet's lock, and
-    // so would a signed one the user abandoned before its deposit.
-    await releaseUnsigned();
-    await releaseAbandoned();
     resetRun();
+
+    // An earlier borrow still on its way is shown instead of quoting a new
+    // one: the new one could not start until it settles.
+    const blocking = await openExecution();
+
+    if (generation !== generationRef.current) {
+      return;
+    }
+
+    if (blocking && isOngoing(blocking)) {
+      showPrevious(blocking);
+
+      return;
+    }
 
     let next: Awaited<ReturnType<typeof previewFor>>;
 
@@ -826,15 +981,16 @@ export const useBorrowFlow = ({
       return;
     }
 
-    setFlow({ kind: 'signing' });
-    await drive(() => requireExecution().run(next.preview.preview.plan));
+    const { plan } = next.preview.preview;
+
+    await runClear(() => requireExecution().run(plan));
   };
 
   const start = async (input: BorrowFlowInput) => {
     const { kind } = stateRef.current;
 
     // A borrow is already on its way: the dialog is open on it.
-    if (kind === 'signing' || kind === 'pending') {
+    if (kind === 'signing' || kind === 'pending' || kind === 'cancelling') {
       return;
     }
 
@@ -843,7 +999,6 @@ export const useBorrowFlow = ({
     waitingRef.current = false;
     intermediaryRef.current = undefined;
     waitingExecutionIdRef.current = undefined;
-    depositOriginRef.current = undefined;
     setFigures(undefined);
     await previewAnd('confirm');
   };
@@ -857,150 +1012,16 @@ export const useBorrowFlow = ({
 
     resetRun();
     confirmedRef.current = true;
-    setFlow({ kind: 'signing' });
 
     const { preview } = current;
 
     // The dry run's plan as it is: `run()` and `runSteps()` reuse its
     // prepared steps.
-    await drive(() =>
+    await runClear(() =>
       isStepsPreview(preview)
         ? requireExecution().runSteps(preview.steps.plan)
         : requireExecution().run(preview.preview.plan),
     );
-  };
-
-  /**
-   * Signed, and the deposit not known to be sent: with its token, the user
-   * is offered to send it (no runner flow until then: the runner refuses a
-   * second one); without, the runner surfaces the address and watches.
-   */
-  const awaitDeposit = (
-    executionId: string,
-    depositAddress: string | undefined,
-    origin: RestoredDeposit['origin'],
-  ) => {
-    createdIdRef.current = executionId;
-    signedRef.current = true;
-    depositOriginRef.current = origin;
-    clearDelayTimer();
-
-    const address = depositAddress === '' ? undefined : depositAddress;
-
-    if (origin) {
-      runningRef.current = false;
-      setFlow({
-        kind: 'deposit',
-        executionId,
-        depositAddress: address,
-        canSend: true,
-      });
-
-      return;
-    }
-
-    awaitingDepositRef.current = true;
-    setFlow({
-      kind: 'deposit',
-      executionId,
-      depositAddress: address,
-      canSend: false,
-    });
-    void drive(() => requireExecution().resume(executionId));
-  };
-
-  const sendDeposit = async () => {
-    const { current } = stateRef;
-    const origin = depositOriginRef.current;
-
-    if (current.kind !== 'deposit' || !current.canSend || !origin) {
-      return;
-    }
-
-    const { executionId } = current;
-
-    generationRef.current += 1;
-    awaitingDepositRef.current = false;
-    lastErrorRef.current = undefined;
-    createdIdRef.current = executionId;
-    toPending(0);
-    // The user says no deposit was sent: the runner may prompt it
-    // (`ResumeDepositOptions.depositViaWallet`).
-    await drive(() =>
-      requireExecution().resume(executionId, {
-        depositViaWallet: true,
-        originChain: origin.chain,
-        originToken: {
-          contractAddress: origin.contractAddress,
-          decimals: origin.decimals,
-        },
-      }),
-    );
-  };
-
-  const restore = (found: RestorableExecution, saved?: RestoredDeposit) => {
-    if (stateRef.current.kind !== 'idle') {
-      return;
-    }
-
-    generationRef.current += 1;
-    resetRun();
-    // A restored borrow has no form input: an earlier one in this session
-    // (another wallet's, say) must never be quoted or run for it.
-    inputRef.current = undefined;
-    borrowRef.current = undefined;
-    // Nor are its figures known: the dialog shows the kept rows instead.
-    setFigures(undefined);
-    waitingRef.current = false;
-    intermediaryRef.current = undefined;
-    waitingExecutionIdRef.current = undefined;
-    reconnectingRef.current = false;
-    reconnectResumeRef.current = undefined;
-    depositOriginRef.current = saved?.origin;
-    depositSentRef.current = saved?.depositSent === true;
-    createdIdRef.current = found.id;
-    // Restored for the wallet connected now, which the record was kept for.
-    createdOwnerRef.current = addressRef.current;
-
-    // Picked up again: it is no longer abandoned. Another one stays
-    // remembered, for the next borrow to release.
-    if (abandonedRef.current?.id === found.id) {
-      abandonedRef.current = undefined;
-    }
-
-    statusRef.current = found.status;
-    // It was confirmed before the reload. Past CREATED, or with the message
-    // signed, the service has the signature; else resuming prompts for it.
-    confirmedRef.current = true;
-    signedRef.current =
-      found.status !== 'CREATED' || found.details?.messageSigned === true;
-
-    const { id } = found;
-
-    if (
-      signedRef.current &&
-      found.status === 'DEPOSIT_PENDING' &&
-      !depositSentRef.current
-    ) {
-      // Resumed without `depositViaWallet`, the runner would only surface
-      // the address, and no wallet prompt would come.
-      awaitDeposit(id, found.quote?.depositAddress, saved?.origin);
-
-      return;
-    }
-
-    if (signedRef.current) {
-      // A deposit sent before the reload is on its way: past step 0.
-      toPending(
-        depositSentRef.current
-          ? (Math.max(STATUS_STEP[found.status] ?? 0, 1) as BorrowPendingStep)
-          : (STATUS_STEP[found.status] ?? 0),
-      );
-    } else {
-      setFlow({ kind: 'signing' });
-    }
-
-    void drive(() => requireExecution().resume(id));
   };
 
   const fundsWaiting = state.kind === 'error' && isFundsWaiting();
@@ -1044,8 +1065,6 @@ export const useBorrowFlow = ({
     const generation = generationRef.current;
 
     setFlow({ kind: 'previewing' });
-    // A rejected retry's unsigned execution would hold the wallet's lock.
-    await releaseUnsigned();
     resetRun();
 
     let previewed: BorrowStepsPreview;
@@ -1091,10 +1110,43 @@ export const useBorrowFlow = ({
     setFlow({ kind: 'confirm', preview: previewed, figures: stepsFigures });
   };
 
+  /** Asks again for the cancellation the user declined. */
+  const retryCancel = async (declined: {
+    id: string;
+    reason: BorrowCancelReason;
+  }) => {
+    if (!(await cancelOpen(declined.id, declined.reason))) {
+      return;
+    }
+
+    if (declined.reason === 'declined') {
+      setFlow({
+        kind: 'error',
+        error: 'rejected',
+        cause: lastErrorRef.current,
+        step: 0,
+      });
+
+      return;
+    }
+
+    // The previous execution is gone: the confirmed borrow goes on, quoted
+    // afresh since the cancellation may have outlived its quote.
+    await previewAnd(confirmedRef.current ? 'run' : 'confirm');
+  };
+
   const retry = async () => {
     const { current } = executionRef;
 
     if (stateRef.current.kind !== 'error' || !current) {
+      return;
+    }
+
+    const declined = declinedCancelRef.current;
+
+    if (stateRef.current.error === 'cancelDeclined' && declined) {
+      await retryCancel(declined);
+
       return;
     }
 
@@ -1112,6 +1164,7 @@ export const useBorrowFlow = ({
     ) {
       // Signed: only the deposit transfer is prompted again.
       lastErrorRef.current = undefined;
+      runningRef.current = true;
       toPending(stepRef.current);
       await drive(() => current.retryDeposit());
 
@@ -1143,6 +1196,7 @@ export const useBorrowFlow = ({
       // Signed and still live (a poll timeout, say): keep watching it.
       lastErrorRef.current = undefined;
       createdIdRef.current = executionId;
+      runningRef.current = true;
       toPending(stepRef.current);
       await drive(() => current.resume(executionId));
     }
@@ -1158,6 +1212,14 @@ export const useBorrowFlow = ({
 
     await previewAnd('confirm');
   };
+
+  /** The pending dialog of a tracked borrow, back from a warning. */
+  const trackedPending = (executionId: string): BorrowFlowState => ({
+    kind: 'pending',
+    step: stepRef.current,
+    executionId,
+    waitingForDeposit: waitingForDepositRef.current,
+  });
 
   const close = async () => {
     const { current } = stateRef;
@@ -1181,20 +1243,27 @@ export const useBorrowFlow = ({
     ) {
       // Polling stopped: reattach to keep tracking it.
       lastErrorRef.current = undefined;
-      setFlow({ kind: 'pending', step: stepRef.current, executionId });
+      setFlow(trackedPending(executionId));
       await drive(() => requireExecution().resume(executionId));
 
       return;
     }
 
-    setFlow({ kind: 'pending', step: stepRef.current, executionId });
+    setFlow(trackedPending(executionId));
   };
 
   const reconnect = () => {
     reconnectingRef.current = true;
-    // A signed execution is still live and holds the lock: it is resumed,
-    // not quoted again.
-    reconnectResumeRef.current = isSigned() ? createdIdRef.current : undefined;
+    // A signed execution whose deposit left the wallet is still live: it is
+    // resumed, not quoted again. One never funded is abandoned, and the next
+    // borrow cancels it.
+    reconnectResumeRef.current =
+      isSigned() &&
+      (depositSentRef.current ||
+        (statusRef.current !== undefined &&
+          !AWAITING_FUNDS.has(statusRef.current)))
+        ? createdIdRef.current
+        : undefined;
     Promise.resolve(connect()).catch(() => {
       reconnectingRef.current = false;
       reconnectResumeRef.current = undefined;
@@ -1202,9 +1271,9 @@ export const useBorrowFlow = ({
   };
 
   /**
-   * Once the wallet is back: resume a signed execution from the new runner,
-   * or else re-quote, since the old dry run was prepared for the runner of
-   * the wallet that left.
+   * Once the wallet is back: resume a signed execution on its way from the
+   * new runner, or else re-quote, since the old dry run was prepared for the
+   * runner of the wallet that left.
    */
   const afterReconnect = async () => {
     const executionId = reconnectResumeRef.current;
@@ -1222,28 +1291,10 @@ export const useBorrowFlow = ({
     }
 
     lastErrorRef.current = undefined;
-
-    const status = statusRef.current;
-
-    if (
-      !depositSentRef.current &&
-      (status === undefined || AWAITING_FUNDS.has(status)) &&
-      stepRef.current === 0
-    ) {
-      // Signed, deposit not sent: the new runner did not drive this run, so
-      // a plain resume would only surface the address.
-      awaitDeposit(
-        executionId,
-        depositAddressRef.current,
-        inputRef.current?.origin ?? depositOriginRef.current,
-      );
-
-      return;
-    }
-
     createdIdRef.current = executionId;
     signedRef.current = true;
-    setFlow({ kind: 'pending', step: stepRef.current, executionId });
+    runningRef.current = true;
+    toPending(stepRef.current);
     await drive(() => requireExecution().resume(executionId));
   };
 
@@ -1260,15 +1311,7 @@ export const useBorrowFlow = ({
     }
   }, [isConnected, execution.preview]);
 
-  // Leaving the page with a created, unsigned execution releases its lock.
-  const unmountRef = useRef(() => {});
-
-  unmountRef.current = () => {
-    clearDelayTimer();
-    void releaseUnsigned();
-  };
-
-  useEffect(() => () => unmountRef.current(), []);
+  useEffect(() => () => clearTimeout(delayTimerRef.current), []);
 
   let action: BorrowRecoveryAction | undefined;
 
@@ -1299,7 +1342,6 @@ export const useBorrowFlow = ({
     reconnect,
     close,
     leave,
-    sendDeposit,
     fundsWaiting,
     fundsWaitingExecutionId: fundsWaiting
       ? (waitingExecutionIdRef.current ?? createdIdRef.current)

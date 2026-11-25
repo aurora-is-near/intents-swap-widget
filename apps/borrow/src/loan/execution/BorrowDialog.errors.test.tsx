@@ -49,7 +49,12 @@ const FIGURES: BorrowPreviewFigures = {
 };
 
 const stateOf = (error: BorrowErrorKind) =>
-  ({ kind: 'error', error, cause: undefined }) as const;
+  ({
+    kind: 'error',
+    error,
+    cause: undefined,
+    step: errorCopy[error].step,
+  }) as const;
 
 const renderError = (error: BorrowErrorKind, withFigures = true) => {
   const handlers = {
@@ -78,7 +83,11 @@ const CASES: [
   'retry' | 'refresh' | 'close',
 ][] = [
   ['rejected', 'Signature rejected', 'Try again', 'retry'],
+  ['depositRejected', 'Deposit not sent', 'Send deposit', 'retry'],
+  ['cancelDeclined', 'Request still open', 'Confirm cancellation', 'retry'],
+  ['busy', 'A borrow is already in progress', 'Close', 'close'],
   ['noGas', 'Not enough for the network fee', 'Try again', 'retry'],
+  ['quoteMoved', 'Quote changed', 'Refresh quote', 'refresh'],
   ['priceMoved', 'Collateral price moved', 'Refresh quote', 'refresh'],
   [
     'noLiquidity',
@@ -261,6 +270,7 @@ describe('BorrowDialog error states', () => {
     expect(borrowDialogStep(stateOf('unknown'), 'retry')).toEqual({
       kind: 'error',
       error: 'unknown',
+      step: 0,
       action: 'close',
       fundsWaiting: false,
     });
@@ -311,6 +321,7 @@ describe("BorrowDialog: the API's own reason", () => {
       kind: 'error',
       error: 'unknown',
       cause: new IntentsConnectApiError('Intents Connect API error', 400, body),
+      step: 0,
     }) as const;
 
   const renderStep = (step: ReturnType<typeof borrowDialogStep>) =>
