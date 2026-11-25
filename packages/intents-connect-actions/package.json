@@ -22,9 +22,17 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./sdk": {
+      "types": "./dist/sdk.d.ts",
+      "default": "./dist/sdk.js"
+    },
     "./package.json": "./package.json"
   },
+  "peerDependencies": {
+    "@aurora-is-near/intents-connect": "^7.31.0"
+  },
   "devDependencies": {
+    "@aurora-is-near/intents-connect": "^7.31.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "starlark-wasm": "0.0.4"

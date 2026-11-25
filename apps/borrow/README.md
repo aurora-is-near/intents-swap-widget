@@ -167,8 +167,10 @@ chain, where the execution's intermediary runs the steps.
    wallet: this is where "not enough gas" arises.
 5. **Steps** (pending step 2, "Bridge the collateral", then step 3, "Open
    the loan and deliver …"). Once the collateral arrives, the
-   intermediary runs the recipe's steps (`recipe.ts`,
-   `markets/aaveV3/steps.ts`): approve and `supply` (or the WETH gateway's
+   intermediary runs the recipe's steps (`recipe.ts`; the Aave adapter
+   builds them with the `aave-v3-borrow` action's step builder from
+   `@aurora-is-near/intents-connect-actions`, each step with a name and a
+   description in its `metadata`): approve and `supply` (or the WETH gateway's
    `depositETH` for native ETH), `borrow` at variable rate, and `transfer`
    of the borrowed tokens to the recipient (the connected wallet unless
    another address was given; required for a non-EVM wallet). The service

@@ -1,4 +1,8 @@
 import type { Recipe } from '@aurora-is-near/intents-connect';
+import {
+  AAVE_BORROW_INTENT,
+  type BorrowParams,
+} from '@aurora-is-near/intents-connect-actions/sdk';
 
 import type {
   BorrowReserve,
@@ -8,22 +12,16 @@ import type {
 } from '../../markets/types';
 
 /**
- * What every borrow Borrow runs is filed as (`recipe.intent`, echoed in an
- * execution's `metadata.intent`): an in-flight borrow is found by it after a
- * reload.
+ * From the `aave-v3-borrow` action's recipe
+ * (`@aurora-is-near/intents-connect-actions/sdk`):
+ * - `AAVE_BORROW_INTENT`: what every borrow Borrow runs is filed as
+ *   (`recipe.intent`, echoed in an execution's `metadata.intent`); an
+ *   in-flight borrow is found by it after a reload.
+ * - `BorrowParams`: what a borrow's steps need beyond the step context, a
+ *   literal `borrowAmount` (sized from the quote's minimum received, see
+ *   `previewBorrow`) and an optional `recipient`.
  */
-export const AAVE_BORROW_INTENT = 'aave_borrow';
-
-/** What a borrow's steps need beyond the step context. */
-export type BorrowParams = {
-  /**
-   * Borrowed, in borrow-token atomic units. A literal: it is sized from the
-   * quote's minimum received (see `previewBorrow`), so it can't be templated.
-   */
-  borrowAmount: string;
-  /** Where the borrowed tokens go; the connected wallet when unset. */
-  recipient?: string;
-};
+export { AAVE_BORROW_INTENT, type BorrowParams };
 
 /** A recipe's `destination`: the token the intermediary receives, and where. */
 export type CollateralDestination = Recipe<BorrowParams>['destination'];
@@ -49,6 +47,9 @@ export const collateralDestination = (
  * position"): it runs the steps, and Aave lets an account borrow only on its
  * own collateral. `ctx.amount` is opaque (it may be `{MIN_AMOUNT_OUT}`), so
  * it is passed through, never inspected.
+ *
+ * The steps are the adapter's (`buildBorrowSteps`); the Aave adapter builds
+ * them with the `aave-v3-borrow` action's step builder.
  *
  * With `flow: 'steps-only'` nothing is bridged: the same steps spend the
  * collateral already waiting at the intermediary (a borrow whose borrow step

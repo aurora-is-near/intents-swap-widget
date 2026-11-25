@@ -1,14 +1,14 @@
 import type { SupportedToken } from '@aurora-is-near/intents-connect';
+import { buildAaveBorrowSteps } from '@aurora-is-near/intents-connect-actions';
 
 import type {
   LendingMarket,
   LendingMarketAdapter,
   MarketSnapshot,
 } from '../types';
-import { markCoverage } from './coverage';
+import { actionPairOf, markCoverage } from './coverage';
 import { AAVE_V3_MARKETS, type AaveMarket } from './registry';
 import { type AaveReadClient, readAaveReserves } from './reserves';
-import { buildAaveBorrowSteps } from './steps';
 import {
   intersectSupported,
   listDeliveredTokens,
@@ -93,7 +93,28 @@ export const createAaveV3Adapter = ({
       };
     },
 
-    buildBorrowSteps: ({ market, ...input }) =>
-      buildAaveBorrowSteps(aaveMarketOf(market), input),
+    // The `aave-v3-borrow` action's steps, built with real values: the
+    // reserves are mapped to its table symbols by chain and address (or
+    // native delivery), and a reserve it does not cover throws.
+    buildBorrowSteps: ({
+      market,
+      collateral,
+      borrow,
+      amount,
+      borrowAmount,
+      owner,
+      recipient,
+    }) => {
+      const aave = aaveMarketOf(market);
+
+      return buildAaveBorrowSteps({
+        chain: aave.chain,
+        ...actionPairOf(aave, collateral, borrow),
+        collateralAmount: amount,
+        borrowAmount,
+        owner,
+        recipient,
+      });
+    },
   };
 };
