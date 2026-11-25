@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { FAKE_BASE, pairSnapshot, usdc, weth } from '../../tests/fakeMarkets';
 import {
+  apiErrorMessage,
   BORROW_DELAYED_AFTER_MS,
   type BorrowErrorContext,
   type BorrowErrorKind,
@@ -415,5 +416,50 @@ describe('checkOriginGas', () => {
         amount: 10n,
       }),
     ).toBe('unknown');
+  });
+});
+
+describe('apiErrorMessage', () => {
+  const apiError = (body: unknown) =>
+    new IntentsConnectApiError('Intents Connect API error', 400, body);
+
+  it("reads the API's error reason", () => {
+    expect(apiErrorMessage(apiError({ error: 'No liquidity available' }))).toBe(
+      'No liquidity available',
+    );
+  });
+
+  it('reads it through a wrapping error', () => {
+    expect(
+      apiErrorMessage(
+        new Error('wrapped', {
+          cause: apiError({ error: 'No liquidity available' }),
+        }),
+      ),
+    ).toBe('No liquidity available');
+  });
+
+  it.each([
+    ['a non-JSON body', '<html>502 Bad Gateway</html>'],
+    ['no body', undefined],
+    ['no error field', { message: 'nope' }],
+    ['an empty error', { error: '  ' }],
+    ['a non-string error', { error: 42 }],
+  ])('is undefined for %s', (_, body) => {
+    expect(apiErrorMessage(apiError(body))).toBeUndefined();
+  });
+
+  it('is undefined for an error that is not from the API', () => {
+    expect(
+      apiErrorMessage(new Error('No liquidity available')),
+    ).toBeUndefined();
+    expect(apiErrorMessage(undefined)).toBeUndefined();
+  });
+
+  it('cuts a very long reason', () => {
+    const reason = apiErrorMessage(apiError({ error: 'x'.repeat(1000) }));
+
+    expect(reason).toHaveLength(301);
+    expect(reason?.endsWith('…')).toBe(true);
   });
 });

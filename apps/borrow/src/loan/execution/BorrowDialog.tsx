@@ -14,6 +14,7 @@ import { formatApr, formatBps } from '../../markets/format';
 import { formatAddress } from '../../wallet/formatAddress';
 import { formatAmount, toDisplayNumber } from '../loanFormat';
 import {
+  apiErrorMessage,
   type BorrowErrorKind,
   type BorrowRecoveryAction,
   borrowRecoveryAction,
@@ -57,6 +58,11 @@ export type BorrowDialogStep =
       fundsWaiting: boolean;
       /** While `fundsWaiting`: the execution, so the collateral can be found. */
       executionId?: string;
+      /**
+       * An `unknown` error's reason from the Intents Connect API (such as
+       * "No liquidity available"), shown instead of the generic text.
+       */
+      detail?: string;
     };
 
 /**
@@ -86,11 +92,16 @@ export const borrowDialogStep = (
         depositAddress: state.depositAddress,
         canSend: state.canSend,
       };
-    case 'error':
+
+    case 'error': {
+      const detail =
+        state.error === 'unknown' ? apiErrorMessage(state.cause) : undefined;
+
       return {
         kind: 'error',
         error: state.error,
         fundsWaiting,
+        ...(detail ? { detail } : {}),
         ...(fundsWaiting && fundsWaitingExecutionId
           ? { executionId: fundsWaitingExecutionId }
           : {}),
@@ -99,6 +110,7 @@ export const borrowDialogStep = (
             ? 'close'
             : (action ?? borrowRecoveryAction(state.error, state.cause)),
       };
+    }
     default:
       return undefined;
   }
@@ -397,10 +409,13 @@ function ErrorBanner({
   error,
   fundsWaiting,
   errorContext,
+  detail,
 }: {
   error: BorrowErrorKind;
   fundsWaiting: boolean;
   errorContext: Summary['errorContext'];
+  /** The API's own reason, shown instead of the kind's text. */
+  detail?: string;
 }) {
   const copy = errorCopy[error];
   const context = { ...errorContext, fundsWaiting };
@@ -410,7 +425,7 @@ function ErrorBanner({
       className="mt-[16px]"
       title={copy.title(context)}
       tone={copy.tone === 'warn' ? 'warning' : 'danger'}>
-      {copy.text(context)}
+      {detail ?? copy.text(context)}
     </Banner>
   );
 }
@@ -654,6 +669,7 @@ export function BorrowDialog({
               <DialogDescription>{SUBTITLE}</DialogDescription>
               {content.step.kind === 'error' ? (
                 <ErrorBanner
+                  detail={content.step.detail}
                   error={content.step.error}
                   errorContext={content.summary.errorContext}
                   fundsWaiting={content.step.fundsWaiting}

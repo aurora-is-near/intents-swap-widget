@@ -2,6 +2,7 @@ import '../../tests/pointerEvent';
 
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { IntentsConnectApiError } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
 import { BorrowDialog, type BorrowDialogLoan } from './BorrowDialog';
@@ -27,6 +28,13 @@ const LOAN: BorrowDialogLoan = {
   },
   recipient: undefined,
   walletAddress: '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21',
+};
+
+const LOAN_CONTEXT = {
+  chainName: LOAN.paid.chainName,
+  collateralSymbol: LOAN.collateral.symbol,
+  borrowSymbol: LOAN.borrow.symbol,
+  marketName: LOAN.market.name,
 };
 
 const FIGURES: BorrowPreviewFigures = {
@@ -294,5 +302,64 @@ describe('BorrowDialog error states', () => {
     expect(
       borrowDialogStep(stateOf('rejected'), 'retry', false, 'exec-1'),
     ).not.toHaveProperty('executionId');
+  });
+});
+
+describe("BorrowDialog: the API's own reason", () => {
+  const apiFailure = (body: unknown) =>
+    ({
+      kind: 'error',
+      error: 'unknown',
+      cause: new IntentsConnectApiError('Intents Connect API error', 400, body),
+    }) as const;
+
+  const renderStep = (step: ReturnType<typeof borrowDialogStep>) =>
+    render(
+      <BorrowDialog
+        figures={FIGURES}
+        loan={LOAN}
+        step={step}
+        onAction={vi.fn()}
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+        onViewPosition={vi.fn()}
+      />,
+    );
+
+  it('shows the error the execution init answered with', () => {
+    renderStep(
+      borrowDialogStep(apiFailure({ error: 'No liquidity available' })),
+    );
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(
+      within(dialog).getByText('Something went wrong'),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText('No liquidity available'),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).queryByText(errorCopy.unknown.text(LOAN_CONTEXT)),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to the generic text when the body has no error', () => {
+    renderStep(borrowDialogStep(apiFailure('<html>502</html>')));
+
+    expect(
+      within(screen.getByRole('dialog')).getByText(
+        errorCopy.unknown.text(LOAN_CONTEXT),
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps a known kind's own copy", () => {
+    const step = borrowDialogStep({
+      ...apiFailure({ error: 'No liquidity available' }),
+      error: 'noLiquidity',
+    });
+
+    expect(step).not.toHaveProperty('detail');
   });
 });

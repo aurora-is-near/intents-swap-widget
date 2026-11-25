@@ -4,6 +4,7 @@ import {
   type ExecutionRecovery,
   type ExecutionStatus,
   GuardError,
+  IntentsConnectApiError,
   isUserRejection,
   parseOriginAsset,
   RunnerDisposedError,
@@ -139,6 +140,38 @@ const saysInsufficientFunds = (value: unknown): boolean => {
 /** The wallet could not pay for the deposit transaction's gas. */
 export const isInsufficientFunds = (value: unknown): boolean =>
   causeChainOf(value).some(saysInsufficientFunds);
+
+/** Longest API reason shown as is; a longer one is cut. */
+const API_ERROR_MAX_LENGTH = 300;
+
+/**
+ * The reason the Intents Connect API gave for a failed request, such as
+ * `{"error": "No liquidity available"}` from creating an execution, or
+ * `undefined` when the error is not an API error or its body is not JSON
+ * with a non-empty `error` string.
+ */
+export const apiErrorMessage = (error: unknown): string | undefined => {
+  const apiError = causeChainOf(error).find(
+    (value): value is IntentsConnectApiError =>
+      value instanceof IntentsConnectApiError,
+  );
+
+  const { body } = apiError ?? {};
+  const reason =
+    body && typeof body === 'object'
+      ? (body as { error?: unknown }).error
+      : undefined;
+
+  if (typeof reason !== 'string' || reason.trim() === '') {
+    return undefined;
+  }
+
+  const trimmed = reason.trim();
+
+  return trimmed.length > API_ERROR_MAX_LENGTH
+    ? `${trimmed.slice(0, API_ERROR_MAX_LENGTH)}…`
+    : trimmed;
+};
 
 /**
  * Which error state a failed borrow is, first match wins:
