@@ -17,16 +17,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "outDir": "./dist",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
     "jsx": "react-jsx"
   },
   "include": [
     "src",
-    "playground",
-    "vite.playground.config.ts"
+    ".storybook/*.ts",
+    ".storybook/*.tsx"
   ]
 }

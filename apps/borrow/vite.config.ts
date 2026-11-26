@@ -5,21 +5,26 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 
 import { themeInitScript } from './vite-plugins/themeInitScript';
-import { THEME_STORAGE_KEY } from './src/theme';
+import { THEME_STORAGE_KEY } from './src/constants';
+
+/** Names the API key had before it was `VITE_INTENTS_API_KEY`. */
+const OLD_KEY_NAMES = [
+  'INTENTS_CONNECT_API_KEY',
+  'VITE_INTENTS_CONNECT_API_KEY',
+] as const;
 
 /**
- * The Intents Connect key used to be the server-only
- * `INTENTS_CONNECT_API_KEY`, read by a proxy that no longer exists. A build
- * that still has only that name would ship with no key and fail every borrow
- * at creation, so it stops here with the rename instead.
+ * The Intents Connect and intents API clients share one key,
+ * `VITE_INTENTS_API_KEY`. A build that still sets only an old name would ship
+ * with no Intents Connect key and fail every borrow at creation, so it stops
+ * here with the rename instead.
  */
-const assertIntentsConnectKeyRenamed = (env: Record<string, string>) => {
-  if (
-    env.INTENTS_CONNECT_API_KEY?.trim() &&
-    !env.VITE_INTENTS_CONNECT_API_KEY?.trim()
-  ) {
+const assertApiKeyRenamed = (env: Record<string, string>) => {
+  const old = OLD_KEY_NAMES.find((name) => env[name]?.trim());
+
+  if (old && !env.VITE_INTENTS_API_KEY?.trim()) {
     throw new Error(
-      'INTENTS_CONNECT_API_KEY is set but VITE_INTENTS_CONNECT_API_KEY is not: rename it to VITE_INTENTS_CONNECT_API_KEY (the proxy that read the old name is gone).',
+      `${old} is set but VITE_INTENTS_API_KEY is not: rename it to VITE_INTENTS_API_KEY (one key now serves both APIs).`,
     );
   }
 };
@@ -27,7 +32,7 @@ const assertIntentsConnectKeyRenamed = (env: Record<string, string>) => {
 export default defineConfig(({ mode }) => {
   // The '' prefix loads every variable, so the old name is visible here; the
   // bundle still sees only VITE_ ones.
-  assertIntentsConnectKeyRenamed({
+  assertApiKeyRenamed({
     ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''),
     ...(process.env as Record<string, string>),
   });

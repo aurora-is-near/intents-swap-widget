@@ -3,15 +3,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { intentsConnectApi } from './config';
-import { intentsApi } from './intentsApi';
-import { createAaveV3Adapter } from './markets/aaveV3';
-import { getClient } from './markets/aaveV3/clients';
-import { MarketAdaptersProvider } from './markets/MarketAdaptersProvider';
-import type { AppRouter } from './router';
-import { THEME_STORAGE_KEY } from './theme';
-import { IntentsConnectWalletProvider } from './wallet/IntentsConnectWalletProvider';
-import { WalletProvider } from './wallet/WalletProvider';
+import { createAaveV3Adapter } from '@/domains/markets/aaveV3';
+import { getClient } from '@/domains/markets/aaveV3/config/clients';
+import { MarketAdaptersProvider } from '@/domains/markets/providers/MarketAdaptersProvider';
+import { intentsConnectApi } from '@/config';
+import { THEME_STORAGE_KEY } from '@/constants';
+import { IntentsConnectWalletProvider } from '@/domains/wallet/providers/IntentsConnectWalletProvider';
+import { WalletProvider } from '@/domains/wallet/providers/WalletProvider';
+import type { AppRouter } from '@/router';
 
 type AppProps = {
   router: AppRouter;
@@ -36,7 +35,7 @@ export function App({ router }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <MarketAdaptersProvider adapters={marketAdapters}>
           <WalletProvider>
-            <IntentsConnectWalletProvider intentsApi={intentsApi}>
+            <IntentsConnectWalletProvider>
               <RouterProvider router={router} />
             </IntentsConnectWalletProvider>
           </WalletProvider>

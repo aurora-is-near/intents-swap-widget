@@ -1,7 +1,7 @@
 import { getThemeInitScript } from '@aurora-is-near/ui-kit';
 import { describe, expect, it } from 'vitest';
 
-import { THEME_STORAGE_KEY } from '@/theme';
+import { THEME_STORAGE_KEY } from '../src/constants';
 import { themeInitScriptTags } from './themeInitScript';
 
 describe('themeInitScriptTags', () => {

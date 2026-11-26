@@ -16,7 +16,7 @@ const TONES = {
   ink: {
     width: 200,
     height: 20,
-    svg: 'block mobile:h-auto mobile:w-[150px]',
+    svg: 'block mobile:h-auto mobile:w-37.5',
     stroke: 'stroke-ink',
     fill: 'fill-ink',
   },
@@ -24,8 +24,8 @@ const TONES = {
     width: 220,
     height: 22,
     svg: 'block',
-    stroke: 'stroke-[#F5F6F4]',
-    fill: 'fill-[#F5F6F4]',
+    stroke: 'stroke-footer-logo',
+    fill: 'fill-footer-logo',
   },
 } as const;
 

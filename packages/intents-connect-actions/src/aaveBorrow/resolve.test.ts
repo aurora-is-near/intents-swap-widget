@@ -38,9 +38,8 @@ const calls = (steps: ReturnType<typeof buildAaveBorrowSteps>) =>
   steps.map(({ metadata: _, ...call }) => call);
 
 /**
- * The calls the Borrow app sent before its steps came from this action (its
- * `recipe.golden.json` pins them for every pair): borrow and send after the
- * supply.
+ * The calls the Borrow app sent before its steps came from this action:
+ * borrow and send after the supply.
  */
 const borrowAndSend = (pool: string, asset: string, amount: string) => [
   {

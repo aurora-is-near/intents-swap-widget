@@ -2,7 +2,10 @@ import { Tab, Tabs, TabsList, TabsPanel } from '@aurora-is-near/ui-kit';
 import { Outlet, useMatchRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useRef } from 'react';
 
-import { TabFocusContext, type TabPath } from './tabFocus';
+import { TabFocusContext } from './tabFocus';
+
+/** The paths the Borrow tabs stand for. */
+type TabPath = '/' | '/positions';
 
 /** Each tab's value is its route's path. */
 const TAB_PATHS: readonly TabPath[] = ['/', '/positions'];
@@ -10,26 +13,20 @@ const TAB_PATHS: readonly TabPath[] = ['/', '/positions'];
 const isTabPath = (value: unknown): value is TabPath =>
   TAB_PATHS.includes(value as TabPath);
 
-type BorrowTabsProps = {
-  /** Open positions, shown as a badge on My positions; hidden at zero. */
-  positionsCount?: number;
-};
-
 /**
  * New loan and My positions (Web-Borrow-NotConnected.dc.html line 208), the
  * kit's `Tabs` driven by the route: the URL selects the tab, and choosing a
  * tab navigates. The row has gap 8 (the kit's) and margin-bottom 20. The
  * selected tab's panel renders the matched route.
  */
-export function BorrowTabs({ positionsCount = 0 }: BorrowTabsProps) {
+export function BorrowTabs() {
   const matchRoute = useMatchRoute();
   const navigate = useNavigate();
 
   const newLoanTab = useRef<HTMLElement>(null);
-  const positionsTab = useRef<HTMLElement>(null);
 
-  const focusTab = useCallback((path: TabPath) => {
-    (path === '/' ? newLoanTab : positionsTab).current?.focus();
+  const focusNewLoan = useCallback(() => {
+    newLoanTab.current?.focus();
   }, []);
 
   const value: TabPath = matchRoute({ to: '/positions' }) ? '/positions' : '/';
@@ -43,18 +40,13 @@ export function BorrowTabs({ positionsCount = 0 }: BorrowTabsProps) {
   };
 
   return (
-    <TabFocusContext.Provider value={focusTab}>
+    <TabFocusContext.Provider value={focusNewLoan}>
       <Tabs onValueChange={onValueChange} value={value}>
-        <TabsList aria-label="Borrow views" className="mb-[20px]">
+        <TabsList aria-label="Borrow views" className="mb-5">
           <Tab ref={newLoanTab} value="/">
             New loan
           </Tab>
-          <Tab
-            ref={positionsTab}
-            count={positionsCount > 0 ? positionsCount : undefined}
-            value="/positions">
-            My positions
-          </Tab>
+          <Tab value="/positions">My positions</Tab>
         </TabsList>
         <TabsPanel value="/">
           <Outlet />

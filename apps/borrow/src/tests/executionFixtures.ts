@@ -14,7 +14,7 @@ type DryQuote = Partial<
 >;
 
 /** 0.01 WETH: the fee the service reports by default. */
-export const DRY_NETWORK_FEE = '10000000000000000';
+const DRY_NETWORK_FEE = '10000000000000000';
 
 /**
  * A dry bridge-in response into WETH, paid with 3,000 USDC. Pass

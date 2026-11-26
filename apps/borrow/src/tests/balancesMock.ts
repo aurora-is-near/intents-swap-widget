@@ -1,8 +1,8 @@
+import { vi } from 'vitest';
 import type {
   UseSupportedTokensResult,
   UseWalletBalancesResult,
 } from '@aurora-is-near/intents-connect/react';
-import { vi } from 'vitest';
 
 export type BalancesMockState = {
   wallet: UseWalletBalancesResult;
@@ -35,7 +35,7 @@ export const emptyBalances = (): BalancesMockState => ({
  *
  * `vi.mock` is hoisted per file, so each test file keeps its own call:
  * `vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
- * (await import('./tests/balancesMock')).createBalancesMock(importOriginal))`.
+ * (await import('@/tests/balancesMock')).createBalancesMock(importOriginal))`.
  */
 export const createBalancesMock = async (
   importOriginal: () => Promise<object>,

@@ -12,20 +12,21 @@
     "**/*.css"
   ],
   "scripts": {
-    "dev": "vite --config vite.playground.config.ts",
+    "dev": "storybook dev -p 6006",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
-    "build": "vite build"
+    "build": "vite build",
+    "build-storybook": "storybook build",
+    "storybook": "storybook dev -p 6006"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./gallery": "./src/gallery/index.tsx",
     "./styles.css": "./src/styles/index.css",
     "./package.json": "./package.json"
   },
@@ -40,9 +41,12 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@storybook/addon-docs": "10.6.7",
+    "@storybook/react-vite": "10.6.7",
     "@testing-library/jest-dom": "^6.9.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "storybook": "10.6.7"
   }
 }

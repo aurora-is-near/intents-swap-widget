@@ -34,10 +34,9 @@ const PREFERENCES: readonly ThemePreference[] = ['system', 'light', 'dark'];
 
 /**
  * One context per page, kept on `globalThis` under a registered symbol. A
- * second instance of this module (the kit's `dist` beside its source, as the
- * app's dev gallery loads it, or a `dist` rebuilt under a running dev server)
- * then shares the provider's context instead of creating an empty one, which
- * would make `useTheme` throw although a `ThemeProvider` is mounted.
+ * second instance of this module (the kit's `dist` beside its source, or a
+ * `dist` rebuilt under a running dev server) then shares the provider's
+ * context instead of creating an empty one, which would make `useTheme` throw although a `ThemeProvider` is mounted.
  */
 const THEME_CONTEXT_KEY = Symbol.for('@aurora-is-near/ui-kit/ThemeContext');
 

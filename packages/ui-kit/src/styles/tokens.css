@@ -5,7 +5,9 @@
  * of the Borrow, Positions and Repay/Withdraw canvases shares this block.
  *
  * Light is the default on :root; dark applies under [data-theme="dark"],
- * which the ThemeProvider writes on <html>.
+ * which the ThemeProvider writes on <html>. Before React mounts, the inline
+ * getThemeInitScript() writes it too, from the stored choice or the system
+ * theme, so the dark palette is declared once.
  */
 
 :root {
@@ -64,53 +66,14 @@
   color-scheme: dark;
 }
 
-/*
- * Before JS sets data-theme, follow the system theme. Must equal the
- * [data-theme="dark"] block above (tokens.test.ts asserts it).
- */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --sf: #16181D;
-    --sf2: #1F2328;
-    --sf3: #1B1E23;
-    --hov: #262A30;
-    --tint: #222B19;
-    --track: #2A2E34;
-    --bd: #2D3238;
-    --bd2: #3B4148;
-    --mid: #6B737C;
-    --mid2: #434950;
-    --limebd: #5F7B2E;
-    --ink: #F2F4EF;
-    --mut: #AAB1AB;
-    --mut2: #8F978F;
-    --mut3: #7A827B;
-    --pos: #8FD14F;
-    --neg: #FF8A73;
-    --warn: #F2C35B;
-    --warnbd: #8A6A1F;
-    --warnbg: #2A2415;
-    --negbg: #2E1D1A;
-    --onlime: #111613;
-    --badge: #0B0D0F;
-    color-scheme: dark;
-  }
-}
-
 /* Type scale (line 99), smaller at ≤640px (lines 107, 118). */
 :root {
   --h64: 64px;
-  --h56: 56px;
-  --h44: 44px;
-  --big: 44px;
 }
 
 @media (max-width: 640px) {
   :root {
     --h64: 38px;
-    --h56: 36px;
-    --h44: 28px;
-    --big: 32px;
   }
 }
 
@@ -121,11 +84,5 @@
     background: var(--sf);
     color: var(--ink);
     font-family: 'Schibsted Grotesk', system-ui, sans-serif;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }

@@ -3,7 +3,6 @@ import { BorrowTabs } from './BorrowTabs';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { Hero } from './Hero';
-import { WalletButton } from '../wallet/WalletButton';
 
 /**
  * The shell layout route around the two tab routes: header, hero and the Borrow
@@ -14,7 +13,7 @@ export function Shell() {
   return (
     <>
       <AppLayout>
-        <Header walletSlot={<WalletButton />} />
+        <Header />
         <main>
           <Hero />
           <BorrowTabs />

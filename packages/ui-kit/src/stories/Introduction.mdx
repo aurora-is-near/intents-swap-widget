@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Design system/Introduction" />
+
+# Borrow design system
+
+`@aurora-is-near/ui-kit` is Borrow's design language: the tokens, the theme
+and the base React components, drawn from the Web-Borrow artboards.
+
+- **Foundations**: the colour tokens (light and dark), the type scale and
+  the artboard scale (font sizes and radii by pixel value).
+- **Components**: every kit component, with its states and a playground
+  whose controls change its props.
+- **Borrow**: the app's own components built on the kit, such as every state
+  of the borrow dialog.
+
+Switch the theme from the toolbar's **Theme** menu: every story renders in
+light, dark or the system's theme through the kit's own `ThemeProvider`.
+
+## Using the kit in an app
+
+```css
+@import 'tailwindcss';
+@import '@aurora-is-near/ui-kit/styles.css';
+
+/* Portalled popups (Dialog, TokenSelect) stack above the app. */
+#root {
+  isolation: isolate;
+}
+```
+
+```tsx
+import { Button, ThemeProvider } from '@aurora-is-near/ui-kit';
+
+<ThemeProvider>
+  <Button>Borrow USDC</Button>
+</ThemeProvider>;
+```
+
+Inline `getThemeInitScript()` at the top of `<head>`: it writes the stored or
+system theme as `data-theme` before the first paint, and the tokens are
+declared only under `data-theme`.

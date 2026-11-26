@@ -46,3 +46,4 @@ spec.json
 .claude/
 AGENTS.md
 .mcp.json
+storybook-static/

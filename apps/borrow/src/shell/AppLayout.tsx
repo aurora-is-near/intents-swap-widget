@@ -11,7 +11,7 @@ type AppLayoutProps = {
  */
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="mx-auto box-border max-w-[1200px] px-[24px] pb-[56px] mobile:px-[16px] mobile:pb-[40px]">
+    <div className="mx-auto box-border max-w-300 px-6 pb-14 mobile:px-4 mobile:pb-10">
       {children}
     </div>
   );

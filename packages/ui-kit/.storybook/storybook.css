@@ -1,0 +1,20 @@
+/* Compiled the way a consuming app compiles the kit. */
+@import 'tailwindcss';
+@import '../src/styles/index.css';
+
+/* The stories (kit and Borrow) and Borrow's components they render. */
+@source "../src";
+@source "../../../apps/borrow/src";
+
+/*
+ * Base UI portals popups (dialogs, popovers) into <body>. Isolating the story
+ * root gives it its own stacking context, so they always sit above it.
+ */
+#storybook-root {
+  isolation: isolate;
+}
+
+body {
+  background: var(--sf);
+  color: var(--ink);
+}

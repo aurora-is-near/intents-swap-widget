@@ -1,6 +1,9 @@
-import { createIntentsConnectApi } from '@aurora-is-near/intents-connect';
+import {
+  createIntentsApi,
+  createIntentsConnectApi,
+} from '@aurora-is-near/intents-connect';
 
-import { readEnv } from './env';
+import { readEnv } from '@/env';
 
 /**
  * The Reown (WalletConnect Cloud) project id, from `VITE_REOWN_PROJECT_ID`.
@@ -17,31 +20,31 @@ export const REOWN_PROJECT_ID: string | undefined = readEnv(
 );
 
 /** The Intents Connect API used when no URL is configured. */
-export const DEFAULT_INTENTS_CONNECT_API_URL =
+const DEFAULT_INTENTS_CONNECT_API_URL =
   'https://intents-connect-alpha-api.aurora.dev';
 
 /** The Intents Connect API, from `VITE_INTENTS_CONNECT_API_URL`. */
-export const INTENTS_CONNECT_API_URL =
+const INTENTS_CONNECT_API_URL =
   readEnv(import.meta.env.VITE_INTENTS_CONNECT_API_URL) ??
   DEFAULT_INTENTS_CONNECT_API_URL;
 
 /**
- * The Intents Connect API key, from `VITE_INTENTS_CONNECT_API_KEY`. A
- * client-side key: it ships in the bundle, and the SDK sends it as
- * `x-api-key` on its two create calls.
+ * The API key, from `VITE_INTENTS_API_KEY`: one key for both clients below.
+ * Public: it ships in the bundle. The Intents Connect client sends it as
+ * `x-api-key` on its two create calls, and its fee configuration is the
+ * borrow fee; the intents API client puts it in the URL path, as for the
+ * swap widget.
  */
-export const INTENTS_CONNECT_API_KEY = readEnv(
-  import.meta.env.VITE_INTENTS_CONNECT_API_KEY,
-);
+const INTENTS_API_KEY = readEnv(import.meta.env.VITE_INTENTS_API_KEY);
 
 /** What is reported when the key is missing, so the cause is plain. */
-export const MISSING_INTENTS_CONNECT_API_KEY_MESSAGE =
-  '[Borrow] VITE_INTENTS_CONNECT_API_KEY is not set: every borrow will fail at creation. Add it to apps/borrow/.env.local (or the deployment environment; it was INTENTS_CONNECT_API_KEY before) and rebuild.';
+export const MISSING_INTENTS_API_KEY_MESSAGE =
+  '[Borrow] VITE_INTENTS_API_KEY is not set: wallet balances cannot be read and every borrow will fail at creation. Add it to apps/borrow/.env.local (or the deployment environment) and rebuild.';
 
-if (!INTENTS_CONNECT_API_KEY) {
-  // A configuration error, reported once at start-up like the intents API
-  // key in `intentsApi.ts`; the app still runs, but cannot create borrows.
-  console.error(MISSING_INTENTS_CONNECT_API_KEY_MESSAGE);
+if (!INTENTS_API_KEY) {
+  // A configuration error, reported once at start-up; the app still runs,
+  // without balances or borrows.
+  console.error(MISSING_INTENTS_API_KEY_MESSAGE);
 }
 
 /**
@@ -50,16 +53,18 @@ if (!INTENTS_CONNECT_API_KEY) {
  * `packages/intents-connect-wallet/src/connect/appkit/appkit.tsx`). Public
  * endpoints may rate-limit; production sets its own.
  */
-export const DEFAULT_RPC_URL_BASE = 'https://base-rpc.publicnode.com';
-export const DEFAULT_RPC_URL_ARB = 'https://arbitrum-one-rpc.publicnode.com';
+const DEFAULT_RPC_URL_BASE = 'https://base-rpc.publicnode.com';
+const DEFAULT_RPC_URL_ARB = 'https://arbitrum-one-rpc.publicnode.com';
 
-/** Base (8453) JSON-RPC URL, from `VITE_RPC_URL_BASE`. */
-export const RPC_URL_BASE =
-  readEnv(import.meta.env.VITE_RPC_URL_BASE) ?? DEFAULT_RPC_URL_BASE;
-
-/** Arbitrum One (42161) JSON-RPC URL, from `VITE_RPC_URL_ARB`. */
-export const RPC_URL_ARB =
-  readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB;
+/**
+ * The markets' chains, by id, with the RPC Borrow reads each through: Base
+ * (8453) from `VITE_RPC_URL_BASE`, Arbitrum One (42161) from
+ * `VITE_RPC_URL_ARB`.
+ */
+export const RPC_URLS: Readonly<Record<number, string>> = {
+  8453: readEnv(import.meta.env.VITE_RPC_URL_BASE) ?? DEFAULT_RPC_URL_BASE,
+  42161: readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB,
+};
 
 /**
  * The borrow fee the form shows, in basis points (30 = 0.30%), as the
@@ -74,5 +79,13 @@ export const BORROW_FEE_BPS = 30;
 /** The app's one Intents Connect client. */
 export const intentsConnectApi = createIntentsConnectApi({
   baseUrl: INTENTS_CONNECT_API_URL,
-  apiKey: INTENTS_CONNECT_API_KEY,
+  apiKey: INTENTS_API_KEY,
 });
+
+/**
+ * The Aurora intents API client (`intents-api.aurora.dev`): the token list
+ * and the reads behind the SDK's account hooks, such as `useWalletBalances`.
+ * `IntentsConnectProvider` needs it for those hooks. Without a key it is
+ * still built, so the hooks report a failed read rather than throwing.
+ */
+export const intentsApi = createIntentsApi({ apiKey: INTENTS_API_KEY ?? '' });

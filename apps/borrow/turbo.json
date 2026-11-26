@@ -2,7 +2,13 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/packages/ui-kit/src/**",
+        "$TURBO_ROOT$/packages/ui-kit/.storybook/**"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^typecheck", "^build"]

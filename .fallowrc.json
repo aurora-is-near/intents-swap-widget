@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "duplicates": {
+    "ignoredClones": ["dup:370998ae:2"]
+  },
+  "health": {
+    "tailwindIgnorePatterns": [
+      "^grid-cols-\\[",
+      "^flex-\\[",
+      "^transition-\\[",
+      "\\[(calc|var)\\(",
+      "^outline-\\[Highlight\\]$",
+      "^font-\\[inherit\\]$",
+      "-\\[\\d+\\.5px\\]$"
+    ]
+  }
+}

@@ -15,16 +15,16 @@ import { Logo } from './Logo';
  */
 export function Footer() {
   return (
-    <footer className="mt-[48px] border-t border-solid border-t-[#2A2E33] bg-[#141619] pt-[48px] pb-[26px] text-[#E8EBE6]">
-      <div className="mx-auto box-border max-w-[1200px] px-[24px] mobile:px-[16px]">
-        <div className="max-w-[340px]">
+    <footer className="mt-12 border-t border-solid border-t-footer-bd bg-footer pt-12 pb-6.5 text-footer-ink">
+      <div className="mx-auto box-border max-w-300 px-6 mobile:px-4">
+        <div className="max-w-85">
           <Logo tone="light" />
-          <p className="mt-[14px] mb-0 text-[15px]/[1.5] text-[#9AA39B]">
+          <p className="mt-3.5 mb-0 text-15/normal text-footer-mut">
             Borrow, swap and earn on any chain from one signature.
           </p>
         </div>
-        <div className="mt-[34px] border-t border-solid border-t-[#2A2E33] pt-[18px] text-[13px] text-[#8A928C]">
-          <small className="text-[13px]">
+        <div className="mt-8.5 border-t border-solid border-t-footer-bd pt-4.5 text-13 text-footer-mut2">
+          <small className="text-13">
             © 2026 Aurora. All rights reserved.
           </small>
         </div>

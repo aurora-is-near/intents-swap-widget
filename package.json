@@ -9,7 +9,9 @@
     "lint": "turbo run lint && eslint . --ext .js,.ts,.tsx",
     "typecheck": "turbo run typecheck --parallel",
     "test": "turbo run test",
-    "check-docs": "node ./bin/verify-docs.js"
+    "check-docs": "node ./bin/verify-docs.js",
+    "fallow": "fallow --workspace @aurora-is-near/ui-kit,borrow",
+    "fallow:audit": "fallow audit --workspace @aurora-is-near/ui-kit,borrow"
   },
   "engines": {
     "node": ">=22.14.0"
@@ -61,6 +63,7 @@
     "autoprefixer": "^10.4.21",
     "commitlint": "^20.5.2",
     "eslint": "^8",
+    "fallow": "3.48.0",
     "glob": "^10.5.0",
     "husky": "^9.0.11",
     "is-ci": "^4.1.0",

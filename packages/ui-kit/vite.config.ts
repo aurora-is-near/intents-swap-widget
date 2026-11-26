@@ -23,17 +23,18 @@ export default defineConfig({
     react(),
     dts({
       include: ['src'],
-      exclude: ['**/*.test.ts', '**/*.test.tsx', 'src/tests', 'src/gallery'],
+      exclude: [
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.stories.tsx',
+        'src/tests',
+        'src/stories',
+      ],
       entryRoot: 'src',
       outDir: 'dist',
       tsconfigPath: 'tsconfig.build.json',
     }),
   ],
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-    },
-  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

@@ -1,0 +1,18 @@
+/*
+ * Borrow's own Tailwind theme, on top of the kit's (which declares the
+ * `mobile:` variant), imported by index.css.
+ */
+
+/*
+ * Colours with no theme pair: the footer is dark in both themes, and the
+ * markets' "live" dot is the same green in both (no kit token holds it).
+ */
+@theme inline {
+  --color-footer: #141619;
+  --color-footer-bd: #2a2e33;
+  --color-footer-ink: #e8ebe6;
+  --color-footer-mut: #9aa39b;
+  --color-footer-mut2: #8a928c;
+  --color-footer-logo: #f5f6f4;
+  --color-live: #5e9e12;
+}

@@ -1,5 +1,6 @@
-import { createContext, type ReactNode } from 'react';
+import { createContext } from 'react';
 import { vi } from 'vitest';
+import type { ReactNode } from 'react';
 
 type MockWallet = {
   address: string | undefined;
@@ -17,7 +18,7 @@ type MockWallet = {
  * Pass a `vi.hoisted` object to change the wallet state from a test.
  *
  * `vi.mock` is hoisted per file, so each test file keeps its own call:
- * `vi.mock(path, async () => (await import('./tests/appKitMock')).createAppKitMock())`.
+ * `vi.mock(path, async () => (await import('@/tests/appKitMock')).createAppKitMock())`.
  */
 export const createAppKitMock = (
   wallet: MockWallet = {

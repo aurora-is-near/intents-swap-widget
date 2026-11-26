@@ -1,6 +1,7 @@
 import { AAVE_BORROW_INTENT } from '@aurora-is-near/intents-connect-actions/sdk';
 import { QueryClient } from '@tanstack/react-query';
-import { type Mock, vi } from 'vitest';
+import { vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 import type {
   BorrowReserve,
@@ -8,7 +9,7 @@ import type {
   LendingMarket,
   LendingMarketAdapter,
   MarketSnapshot,
-} from '../markets/types';
+} from '@/domains/markets/types';
 
 /**
  * One fake lending adapter and its data for every test that needs markets:
@@ -84,7 +85,6 @@ export const pairSnapshot = (
   reserves: Partial<Pick<MarketSnapshot, 'collateral' | 'borrowable'>> = {},
 ): MarketSnapshot => ({
   market,
-  blockNumber: 1n,
   baseCurrencyUnit: USD,
   collateral: [weth()],
   borrowable: [usdc()],
@@ -139,7 +139,7 @@ type FakeAdapterOptions = {
  * the flow and restore treat it as one, with no steps. The real one is the
  * Aave adapter's (the `aave-v3-borrow` action's recipe).
  */
-export const fakeBorrowRecipe: LendingMarketAdapter['borrowRecipe'] = ({
+const fakeBorrowRecipe: LendingMarketAdapter['borrowRecipe'] = ({
   market,
   collateral,
   borrow,
@@ -171,7 +171,6 @@ export const createFakeAdapter = ({
   borrowRecipe = fakeBorrowRecipe,
 }: FakeAdapterOptions = {}): FakeAdapter => ({
   id,
-  name: 'Aave',
   listMarkets: vi.fn(listMarkets),
   getMarketSnapshot: vi.fn(getMarketSnapshot),
   borrowRecipe: vi.fn(borrowRecipe),

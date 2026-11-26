@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && yarn build:storybook",
+    "build:storybook": "yarn workspace @aurora-is-near/ui-kit build-storybook --quiet --output-dir ../../apps/borrow/dist/storybook",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -30,7 +31,9 @@
     "viem": "2.55.19"
   },
   "devDependencies": {
+    "@storybook/react-vite": "10.6.7",
     "@testing-library/jest-dom": "^6.9.1",
-    "eslint-plugin-jsx-a11y": "^6.9.0"
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-perfectionist": "^4.15.1"
   }
 }

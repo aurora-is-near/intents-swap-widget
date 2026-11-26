@@ -1,97 +1,74 @@
-export { AmountInput } from './components/AmountInput';
-export type { AmountInputProps } from './components/AmountInput';
-export { Badge } from './components/Badge';
-export type { BadgeProps, BadgeVariant } from './components/Badge';
-export { Banner } from './components/Banner';
-export type { BannerProps, BannerTone } from './components/Banner';
-export { Button } from './components/Button';
+export { AmountInput } from './components/AmountInput/AmountInput';
+export type { AmountInputProps } from './components/AmountInput/AmountInput';
+export { Banner } from './components/Banner/Banner';
+export type { BannerProps, BannerTone } from './components/Banner/Banner';
+export { Button } from './components/Button/Button';
 export type {
   ButtonProps,
   ButtonSize,
   ButtonVariant,
-} from './components/Button';
-export { Card } from './components/Card';
-export type { CardProps, CardVariant } from './components/Card';
-export { ChainMark, ChainMarkGroup } from './components/ChainMark';
-export type {
-  ChainMarkGroupProps,
-  ChainMarkProps,
-  ChainMarkSize,
-} from './components/ChainMark';
-export { Checkbox } from './components/Checkbox';
-export type { CheckboxProps } from './components/Checkbox';
-export { Chip } from './components/Chip';
-export type { ChipProps } from './components/Chip';
+} from './components/Button/Button';
+export { Card } from './components/Card/Card';
+export type { CardProps } from './components/Card/Card';
+export { Checkbox } from './components/Checkbox/Checkbox';
+export type { CheckboxProps } from './components/Checkbox/Checkbox';
+export { Chip } from './components/Chip/Chip';
+export type { ChipProps } from './components/Chip/Chip';
 export {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogTrigger,
-} from './components/Dialog';
+} from './components/Dialog/Dialog';
 export type {
-  DialogCloseProps,
   DialogContentProps,
   DialogDescriptionProps,
   DialogProps,
   DialogTitleProps,
-  DialogTriggerProps,
-} from './components/Dialog';
-export { Highlight } from './components/Highlight';
-export type { HighlightProps } from './components/Highlight';
-export { QuickAmounts } from './components/QuickAmounts';
-export type {
-  QuickAmountOption,
-  QuickAmountsProps,
-} from './components/QuickAmounts';
-export { Skeleton } from './components/Skeleton';
-export type { SkeletonProps } from './components/Skeleton';
-export { RISK_ZONE_COLORS, Slider } from './components/Slider';
+} from './components/Dialog/Dialog';
+export { Highlight } from './components/Highlight/Highlight';
+export type { HighlightProps } from './components/Highlight/Highlight';
+export { Skeleton } from './components/Skeleton/Skeleton';
+export type { SkeletonProps } from './components/Skeleton/Skeleton';
+export { RISK_ZONE_COLORS, Slider } from './components/Slider/Slider';
 export type {
   SliderMarker,
   SliderProps,
   SliderZone,
-} from './components/Slider';
-export { Spinner } from './components/Spinner';
-export type { SpinnerProps, SpinnerTone } from './components/Spinner';
-export { StepProgress } from './components/StepProgress';
+} from './components/Slider/Slider';
+export { Spinner } from './components/Spinner/Spinner';
+export type { SpinnerProps, SpinnerTone } from './components/Spinner/Spinner';
+export { StepProgress } from './components/StepProgress/StepProgress';
 export type {
   Step,
   StepProgressProps,
   StepStatus,
-} from './components/StepProgress';
-export { Switch } from './components/Switch';
-export type { SwitchProps } from './components/Switch';
-export { Tab, Tabs, TabsList, TabsPanel } from './components/Tabs';
+} from './components/StepProgress/StepProgress';
+export { Tab, Tabs, TabsList, TabsPanel } from './components/Tabs/Tabs';
 export type {
   TabProps,
   TabsListProps,
   TabsPanelProps,
   TabsProps,
-} from './components/Tabs';
-export { Tag } from './components/Tag';
-export type { TagProps, TagTone } from './components/Tag';
-export { Text } from './components/Text';
-export type { TextElement, TextProps, TextVariant } from './components/Text';
-export { TextField } from './components/TextField';
-export type { TextFieldProps } from './components/TextField';
-export { TokenList, TokenRow } from './components/TokenList';
+} from './components/Tabs/Tabs';
+export { Text } from './components/Text/Text';
+export type { TextProps, TextVariant } from './components/Text/Text';
+export { TextField } from './components/TextField/TextField';
+export type { TextFieldProps } from './components/TextField/TextField';
+export { TokenList, TokenRow } from './components/TokenList/TokenList';
 export type {
   TokenListProps,
   TokenOption,
   TokenRowProps,
-} from './components/TokenList';
-export { TokenMark } from './components/TokenMark';
-export type { TokenMarkProps } from './components/TokenMark';
-export { TokenSelect } from './components/TokenSelect';
+} from './components/TokenList/TokenList';
+export { TokenMark } from './components/TokenMark/TokenMark';
+export type { TokenMarkProps } from './components/TokenMark/TokenMark';
+export { TokenSelect } from './components/TokenSelect/TokenSelect';
 export type {
   TokenSelectDisplay,
   TokenSelectProps,
-} from './components/TokenSelect';
-export { Tooltip, TooltipProvider } from './components/Tooltip';
-export type { TooltipProps, TooltipProviderProps } from './components/Tooltip';
-export { cn } from './lib/cn';
+} from './components/TokenSelect/TokenSelect';
+export { cn } from './utils/cn';
 export { ThemeProvider, useTheme } from './theme/ThemeProvider';
 export { getThemeInitScript } from './theme/themeInitScript';
 export type {

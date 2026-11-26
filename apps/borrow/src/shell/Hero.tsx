@@ -9,11 +9,11 @@ import { Highlight, Text } from '@aurora-is-near/ui-kit';
  */
 export function Hero() {
   return (
-    <section className="py-[28px]">
-      <Text className="mt-[14px]" variant="h64">
+    <section className="py-7">
+      <Text className="mt-3.5" variant="h64">
         One click <Highlight>borrow</Highlight>
       </Text>
-      <p className="mt-[16px] mb-0 max-w-[620px] text-[19px]/[1.45] text-mut">
+      <p className="mt-4 mb-0 max-w-155 text-19/1.45 text-mut">
         Pick what you supply and what you borrow. We compare the markets and
         point you to the cheapest one.
       </p>

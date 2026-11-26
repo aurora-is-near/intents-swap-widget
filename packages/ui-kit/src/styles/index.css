@@ -5,7 +5,7 @@
  *   @import 'tailwindcss';
  *   @import '@aurora-is-near/ui-kit/styles.css';
  *
- * Popups (Dialog, TokenSelect, Tooltip) are portalled into <body>. Give the
+ * Popups (Dialog, TokenSelect) are portalled into <body>. Give the
  * app's root element its own stacking context so they stack above it:
  *
  *   #root {
@@ -20,5 +20,5 @@
 @source "../components";
 @source not "../components/**/*.test.{ts,tsx}";
 /* Class strings shared between components, such as the focus ring. */
-@source "../lib";
-@source not "../lib/**/*.test.{ts,tsx}";
+@source "../utils";
+@source not "../utils/**/*.test.{ts,tsx}";

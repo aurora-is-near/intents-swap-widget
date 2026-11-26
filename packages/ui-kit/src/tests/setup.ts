@@ -1,13 +1,18 @@
 // Registers the jest-dom matchers (toHaveAttribute, toHaveFocus, …). The
 // shared eslint config's jest-dom plugin auto-fixes assertions into these
-// matchers, so they have to be available. Harmless in node-environment
-// tests: the matchers only touch the DOM when called.
+// matchers, so they have to be available.
 import '@testing-library/jest-dom/vitest';
 
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+// Unmounts what each test rendered (no vitest globals, so RTL can't).
+afterEach(cleanup);
+
 /**
- * jsdom has no PointerEvent. Base UI's buttons (Switch, Checkbox) dispatch
+ * jsdom has no PointerEvent. Base UI's buttons (such as Checkbox) dispatch
  * one as the click that Space and Enter make, so give jsdom a stand-in built
- * on MouseEvent. Only in jsdom tests: node-environment tests have no window.
+ * on MouseEvent. Not in the node-environment tests, which have no window.
  */
 if (typeof window !== 'undefined' && !('PointerEvent' in window)) {
   class PointerEventStub extends MouseEvent {

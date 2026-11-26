@@ -32,10 +32,75 @@
   --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
 
   --text-h64: var(--h64);
-  --text-h56: var(--h56);
-  --text-h44: var(--h44);
-  --text-big: var(--big);
+
+  /*
+   * The artboards' measurements as a scale, named by their pixel value
+   * (`text-14`, `rounded-18`). Font sizes carry no line height, like
+   * `text-[14px]`: set it with `leading-*`. Spacing needs no tokens:
+   * Tailwind's 4px grid already covers it (`gap-1.5` is 6px).
+   */
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-19: 19px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-28: 28px;
+  --text-30: 30px;
+  --text-34: 34px;
+
+  --radius-2: 2px;
+  --radius-5: 5px;
+  --radius-7: 7px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-24: 24px;
+  --radius-28: 28px;
+
+  /*
+   * Unitless line heights. A `leading-<number>` without a token here falls
+   * back to Tailwind's spacing scale (a length), so add the token first.
+   * 1.25 is Tailwind's own `leading-tight`.
+   */
+  --leading-font: normal;
+  --leading-1\.02: 1.02;
+  --leading-1\.1: 1.1;
+  --leading-1\.15: 1.15;
+  --leading-1\.2: 1.2;
+  --leading-1\.45: 1.45;
+
+  /* Display headings, big figures, titles; uppercase labels. */
+  --tracking-display: -0.04em;
+  --tracking-figure: -0.03em;
+  --tracking-title: -0.02em;
+  --tracking-label: 0.14em;
+
+  --border-width-1\.5: 1.5px;
+
+  /*
+   * The same in both themes: the backdrop and shadows use the light ink
+   * (rgb 17 22 19) on purpose, and the danger border has no theme pair.
+   */
+  --color-scrim: rgba(17, 22, 19, 0.5);
+  --color-negbd: #e5694f;
+  --shadow-popup: 0 18px 40px rgba(17, 22, 19, 0.18);
+  --shadow-dialog: 0 30px 80px rgba(17, 22, 19, 0.35);
+  --shadow-ink-ring: 0 0 0 2px var(--ink);
+
+  --animate-spin-fast: spin 0.8s linear infinite;
 }
 
-/* For the rare case a token is not enough: `dark:…` under data-theme=dark. */
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+/*
+ * The artboards' mobile block, `@media (max-width:640px)`, as `mobile:`.
+ * Tailwind's own `max-*` variants stop at `width < N`, one pixel short of it.
+ */
+@custom-variant mobile (@media (max-width: 640px));
