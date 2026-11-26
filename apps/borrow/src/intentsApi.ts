@@ -9,7 +9,7 @@ import { readEnv } from './env';
  *
  * Public: it travels in the URL path, identifies the integration and is
  * rate-limited, as for the swap widget (`createIntentsApi`). It is not the
- * Intents Connect API key, which stays on the server behind the proxy.
+ * Intents Connect API key (`VITE_INTENTS_CONNECT_API_KEY` in `config.ts`).
  */
 export const INTENTS_API_KEY = readEnv(import.meta.env.VITE_INTENTS_API_KEY);
 
