@@ -75,7 +75,10 @@ export type Positions = {
   /** Loans with debt first, as read, then repaid ones. */
   positions: LoanPosition[];
   partial: boolean;
-  /** Reads the failed reads again (all of them when none failed). */
+  /**
+   * Reads the failed loan reads again (all of them when none failed), and any
+   * failed market-figure read.
+   */
   refetch: () => void;
 };
 
@@ -189,6 +192,13 @@ export const usePositions = (): Positions => {
     }
 
     refetchAll(reads);
+    // Market figures are not part of `partial`, but a failed one is read
+    // again with the rest.
+    riskQueries
+      .filter(({ isError }) => isError)
+      .forEach((query) => {
+        void query.refetch();
+      });
   };
 
   const base = { positions, refetch };

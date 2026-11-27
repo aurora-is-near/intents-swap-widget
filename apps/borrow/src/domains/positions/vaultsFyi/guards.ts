@@ -133,6 +133,23 @@ const usdAt = (value: unknown, what: string): number | null => {
   return finite(Number(stringAt(value, what)), what);
 };
 
+/**
+ * A token's decimals: a whole number in ERC-20's `uint8` range. Anything else
+ * would turn a balance into a silent 0 or a raw viem error.
+ */
+const decimalsAt = (value: unknown): number => {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value < 0 ||
+    value > 255
+  ) {
+    throw fail('asset decimals');
+  }
+
+  return value;
+};
+
 const toNetwork = (value: unknown): VaultsFyiNetwork => {
   const network = objectAt(value, 'network');
 
@@ -159,7 +176,7 @@ const toAsset = (value: unknown): VaultsFyiAsset => {
   return {
     address: stringAt(asset.address, 'asset address').toLowerCase(),
     symbol: stringAt(asset.symbol, 'asset symbol'),
-    decimals: finite(asset.decimals, 'asset decimals'),
+    decimals: decimalsAt(asset.decimals),
   };
 };
 
