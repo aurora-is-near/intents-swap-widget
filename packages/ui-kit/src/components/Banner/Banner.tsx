@@ -16,25 +16,6 @@ import { AlertIcon, ClockIcon } from '../icons/icons';
  */
 
 /**
- * Lines 985 and 991: `display:flex; gap:12px; align-items:flex-start;
- * border:1.5px; border-radius:18px; padding:14px 16px`.
- */
-const BASE =
-  'box-border flex items-start gap-3 rounded-18 border-1.5 border-solid px-4 py-3.5 font-sans text-ink';
-
-/** Lines 986 and 992: `flex:0 0 auto; margin-top:1px`. */
-const ICON = 'mt-px shrink-0';
-
-/** Line 409: `min-width:0; flex:1`, so actions in the children can wrap. */
-const BODY = 'min-w-0 flex-1';
-
-/** Lines 987 and 993: `font-size:16px; font-weight:700`. */
-const TITLE = 'text-16 leading-font font-bold';
-
-/** Lines 987 and 993: `margin-top:4px; font-size:14px; line-height:1.45; color:var(--mut)`. */
-const TEXT = 'mt-1 text-14 leading-1.45 text-mut';
-
-/**
  * The icon circles are literal hex on the artboards, the same in both
  * themes: `#A8321F` (the light theme's `--neg`) and `#B27A00`, which has no
  * token. Their white glyphs stay white in dark too (the artboard's theme
@@ -49,7 +30,8 @@ const TONES = {
     /** Line 409: `background:var(--negbg)`. */
     tinted: 'bg-negbg border-neg',
     title: 'text-neg',
-    icon: <AlertIcon className={ICON} color="#A8321F" />,
+    // Lines 986 and 992: `flex:0 0 auto; margin-top:1px`.
+    icon: <AlertIcon className="mt-px shrink-0" color="#A8321F" />,
   },
   warning: {
     role: 'status',
@@ -57,7 +39,7 @@ const TONES = {
     box: 'bg-warnbg border-warnbd',
     tinted: 'bg-warnbg border-warnbd',
     title: 'text-warn',
-    icon: <ClockIcon className={ICON} color="#B27A00" />,
+    icon: <ClockIcon className="mt-px shrink-0" color="#B27A00" />,
   },
 } as const;
 
@@ -87,13 +69,23 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
     return (
       <div
         ref={ref}
-        className={cn(BASE, tinted ? styles.tinted : styles.box, className)}
+        className={cn(
+          'box-border flex items-start gap-3 rounded-18 border-1.5 border-solid px-4 py-3.5 font-sans text-ink',
+          tinted ? styles.tinted : styles.box,
+          className,
+        )}
         role={styles.role}
         {...props}>
         {styles.icon}
-        <div className={BODY}>
-          <div className={cn(TITLE, styles.title)}>{title}</div>
-          {children != null ? <div className={TEXT}>{children}</div> : null}
+        {/* Line 409: `min-width:0; flex:1`, so actions in the children can
+            wrap. */}
+        <div className="min-w-0 flex-1">
+          <div className={cn('text-16 leading-font font-bold', styles.title)}>
+            {title}
+          </div>
+          {children != null ? (
+            <div className="mt-1 text-14 leading-1.45 text-mut">{children}</div>
+          ) : null}
         </div>
       </div>
     );

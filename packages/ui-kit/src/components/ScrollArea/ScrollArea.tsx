@@ -2,7 +2,6 @@ import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area';
 import { forwardRef, type HTMLAttributes } from 'react';
 
 import { cn } from '../../utils/cn';
-import { FOCUS_RING } from '../../utils/focusRing';
 
 export type ScrollAreaProps = HTMLAttributes<HTMLDivElement> & {
   /**
@@ -41,7 +40,10 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
       className={cn('relative', className)}
       {...props}>
       <ScrollAreaPrimitive.Viewport
-        className={cn(`overscroll-contain ${FOCUS_RING}`, viewportClassName)}>
+        className={cn(
+          'overscroll-contain focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
+          viewportClassName,
+        )}>
         {children}
       </ScrollAreaPrimitive.Viewport>
       {/*

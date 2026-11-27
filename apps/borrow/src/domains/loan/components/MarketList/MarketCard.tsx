@@ -9,29 +9,6 @@ import {
 
 import type { ProviderRow } from '../../model/marketRows';
 
-/**
- * `.mkc` (Web-Borrow-NotConnected.dc.html lines 72–77): flex 1 1 170px,
- * padding 16, radius 18, 1.5px `bd`, `sf`, a column with gap 12; at ≤640px
- * one row of equal cards, padding 12, gap 8 (lines 122–123). The browser's
- * own button line-height, as the artboard has.
- */
-const CARD =
-  'box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3';
-
-/** `.mkn` (line 352): 26px / 800 / -0.03em / 1.1; 19px at ≤640px (line 124). */
-const NAME =
-  'text-26 font-extrabold leading-1.1 tracking-figure mobile:text-19';
-
-/** `.mka` (line 357): 34px / 800 / -0.03em / 1; 24px at ≤640px (line 125). */
-const APR =
-  'text-34 font-extrabold leading-none tracking-figure mobile:text-24';
-
-/** The two 13px `mut2` lines (lines 358–360). */
-const META = 'text-13 text-mut2';
-
-/** The first line (line 347): min-height 18, the BEST or "MAX" tag. */
-const TAG_ROW = 'flex min-h-4.5 items-center';
-
 type MarketFiguresProps = {
   name: ReactNode;
   apr: string;
@@ -50,12 +27,16 @@ function MarketFigures({
 }: MarketFiguresProps) {
   return (
     <>
-      <div className={NAME}>{name}</div>
-      <div>
-        <div className={APR}>{apr}</div>
-        <div className={cn(META, 'mt-1')}>APR · max LTV {maxLtv}</div>
+      <div className="text-26 font-extrabold leading-1.1 tracking-figure mobile:text-19">
+        {name}
       </div>
-      <div className={cn(META, 'border-t border-solid border-bd pt-2.5')}>
+      <div>
+        <div className="text-34 font-extrabold leading-none tracking-figure mobile:text-24">
+          {apr}
+        </div>
+        <div className="mt-1 text-13 text-mut2">APR · max LTV {maxLtv}</div>
+      </div>
+      <div className="border-t border-solid border-bd pt-2.5 text-13 text-mut2">
         Liq. {liqLtv} · {liquidity}
       </div>
     </>
@@ -88,7 +69,8 @@ export function MarketCard({
     <button
       aria-pressed={selected}
       className={cn(
-        CARD,
+        // `.mkc` (Web-Borrow-NotConnected.dc.html lines 72–77, mobile 122–123).
+        'box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3',
         // The card as a button: hover `mid`, focus ring (lines 73, 77).
         'cursor-pointer enabled:hover:border-mid focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed',
         // `.best` tint (line 74); it comes after `:hover` (lines 73–74), so
@@ -104,7 +86,7 @@ export function MarketCard({
       disabled={off}
       type="button"
       onClick={onPick}>
-      <div className={TAG_ROW}>
+      <div className="flex min-h-4.5 items-center">
         {best ? (
           // Line 349: 11px, 0.1em, a 7px `#5E9E12` dot (no token on the
           // artboard).
@@ -153,8 +135,11 @@ export function MarketCard({
 export function StaticMarketCard(props: MarketFiguresProps & { name: string }) {
   return (
     // A labelled group, not a button: its figures read as one card.
-    <div aria-label={props.name} className={CARD} role="group">
-      <div className={TAG_ROW} />
+    <div
+      aria-label={props.name}
+      className="box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3"
+      role="group">
+      <div className="flex min-h-4.5 items-center" />
       <MarketFigures {...props} />
     </div>
   );
@@ -170,23 +155,23 @@ const loadingLabel = (name: string | undefined) =>
  */
 export function MarketCardSkeleton({ name }: { name?: string }) {
   return (
-    <div className={CARD}>
+    <div className="box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3">
       <span className="sr-only">{loadingLabel(name)}</span>
-      <div className={TAG_ROW}>
+      <div className="flex min-h-4.5 items-center">
         <Skeleton height={11} width={44} />
       </div>
-      <div className={NAME}>
+      <div className="text-26 font-extrabold leading-1.1 tracking-figure mobile:text-19">
         <Skeleton height="1.1em" width="3.4em" />
       </div>
       <div>
-        <div className={APR}>
+        <div className="text-34 font-extrabold leading-none tracking-figure mobile:text-24">
           <Skeleton height="1em" width="3.2em" />
         </div>
-        <div className={cn(META, 'mt-1')}>
+        <div className="mt-1 text-13 text-mut2">
           <Skeleton height="1.2em" width="80%" />
         </div>
       </div>
-      <div className={cn(META, 'border-t border-solid border-bd pt-2.5')}>
+      <div className="border-t border-solid border-bd pt-2.5 text-13 text-mut2">
         <Skeleton height="1.2em" width="60%" />
       </div>
     </div>

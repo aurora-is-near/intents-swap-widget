@@ -55,12 +55,6 @@ export function TokenFilters({
   );
 }
 
-/** The row holding a picker and its amount box (lines 218, 260): gap 8. */
-export const PICK_ROW = 'flex items-stretch gap-2';
-
-/** The picker's width where it is placed (line 219). */
-export const PICK_WIDTH = 'w-47 shrink-0';
-
 /** The section labels (lines 216, 256): 12px, 0.14em, `mut2`. */
 export function SectionLabel({
   id,

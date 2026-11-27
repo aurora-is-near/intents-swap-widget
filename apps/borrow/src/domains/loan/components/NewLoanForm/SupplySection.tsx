@@ -19,13 +19,7 @@ import {
   reserveOption,
   unique,
 } from './tokenOptions';
-import {
-  PICK_ROW,
-  PICK_WIDTH,
-  SectionLabel,
-  TokenFilters,
-  triggerLabel,
-} from './TokenPicker';
+import { SectionLabel, TokenFilters, triggerLabel } from './TokenPicker';
 import type { LoanForm } from '../../model/loanForm';
 import type { FilterValue } from './tokenOptions';
 
@@ -93,7 +87,7 @@ function SupplyPicker({
   if (loading) {
     return (
       // The trigger's place, as tall as the row.
-      <div aria-busy="true" className={`flex ${PICK_WIDTH}`}>
+      <div aria-busy="true" className="flex w-47 shrink-0">
         <span className="sr-only">Loading balances</span>
         <Skeleton height="auto" radius={14} width="100%" />
       </div>
@@ -107,7 +101,7 @@ function SupplyPicker({
       anchor={anchor}
       aria-label="Choose collateral token"
       aria-labelledby={triggerLabel(labelId, triggerId)}
-      className={PICK_WIDTH}
+      className="w-47 shrink-0"
       filters={
         <TokenFilters
           chains={supplyChains(form)}
@@ -176,7 +170,7 @@ export function SupplySection({ form }: { form: LoanForm }) {
   return (
     <>
       <SectionLabel id={labelId}>SUPPLY</SectionLabel>
-      <div ref={anchor} className={PICK_ROW}>
+      <div ref={anchor} className="flex items-stretch gap-2">
         <SupplyPicker anchor={anchor} form={form} labelId={labelId} />
         <AmountInput
           className="min-w-0 flex-1"

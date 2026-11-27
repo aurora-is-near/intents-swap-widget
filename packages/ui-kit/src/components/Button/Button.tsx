@@ -1,38 +1,23 @@
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
 
 import { cn } from '../../utils/cn';
-import { FOCUS_RING } from '../../utils/focusRing';
-import { SEG_CLASSES } from '../../utils/segClasses';
 import { Spinner } from '../Spinner/Spinner';
-
-/**
- * Shared by every variant: focus ring (Web-Borrow.dc.html line 52) and the
- * disabled look (lines 16, 57).
- */
-const BASE = `box-border inline-flex cursor-pointer items-center justify-center gap-2 font-sans font-bold ${FOCUS_RING} disabled:cursor-not-allowed disabled:opacity-50`;
-
-/**
- * The browser's own button line-height, which the artboards rely on.
- * Preflight's `font: inherit` would give buttons the page's 1.5 instead.
- */
-const LEADING = 'leading-font';
 
 /** A caller's own line-height: `leading-*`, or a `text-size/leading` pair. */
 const SETS_LEADING = /leading-|text-\S+\//;
 
-/**
- * `.go` (lines 55–57). A press sinks it to 97% in 160ms, so the call to
- * action answers the click; reduced motion keeps only its colour states.
- */
-const GO =
-  'rounded-18 transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100';
-
 const VARIANT_CLASSES = {
-  primary: `${GO} border-0 bg-ink text-sf`,
+  // `.go` (Web-Borrow.dc.html lines 55–57). A press sinks it to 97% in
+  // 160ms, so the call to action answers the click; reduced motion keeps only
+  // its colour states.
+  primary:
+    'rounded-18 transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100 border-0 bg-ink text-sf',
   // `.go.bad` (line 56). #E5694F has no token on the artboards.
-  danger: `${GO} border-2 border-solid border-negbd bg-sf text-neg`,
-  // `.seg` (lines 136–137), shared with `Tab`.
-  secondary: SEG_CLASSES,
+  danger:
+    'rounded-18 transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100 border-2 border-solid border-negbd bg-sf text-neg',
+  // `.seg` (lines 136–137), as on `Tab`.
+  secondary:
+    'rounded-full border-1.5 border-solid border-bd2 bg-sf px-4.5 py-2.25 text-15 text-ink enabled:hover:border-ink',
   // `.nv` and `.ibtn` (lines 17–18, 53–54).
   ghost:
     'rounded-12 border-0 bg-transparent px-5 py-2.5 text-16 text-mut enabled:hover:bg-hov',
@@ -91,17 +76,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         aria-busy={loading || undefined}
         className={cn(
-          BASE,
+          // Focus ring (Web-Borrow.dc.html line 52) and the disabled look
+          // (lines 16, 57), shared by every variant.
+          'box-border inline-flex cursor-pointer items-center justify-center gap-2 font-sans font-bold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed disabled:opacity-50',
           VARIANT_CLASSES[variant],
           sized && SIZE_CLASSES[size],
           variant === 'danger' && DANGER_SIZE_CLASSES[size],
-          // After the font size: tailwind-merge drops a `leading-*` that a
-          // later `text-*` size follows.
-          LEADING,
+          // The browser's own button line-height, which the artboards rely
+          // on (Preflight's `font: inherit` would give 1.5). After the font
+          // size: tailwind-merge drops a `leading-*` that a later `text-*`
+          // size follows.
+          'leading-font',
           className,
           // Again after className, which may set a font size of its own,
           // unless the caller chose a line-height.
-          !SETS_LEADING.test(className ?? '') && LEADING,
+          !SETS_LEADING.test(className ?? '') && 'leading-font',
         )}
         disabled={(disabled ?? false) || loading}
         type={type}

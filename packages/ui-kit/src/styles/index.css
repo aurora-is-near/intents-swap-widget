@@ -19,6 +19,6 @@
 /* Generate the utilities the kit's components use, but not their tests'. */
 @source "../components";
 @source not "../components/**/*.test.{ts,tsx}";
-/* Class strings shared between components, such as the focus ring. */
+/* The kit's utilities, such as `cn`. */
 @source "../utils";
 @source not "../utils/**/*.test.{ts,tsx}";

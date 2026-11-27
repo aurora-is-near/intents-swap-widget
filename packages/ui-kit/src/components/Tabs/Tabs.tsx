@@ -2,30 +2,6 @@ import { Tabs as TabsPrimitive } from '@base-ui/react/tabs';
 import { forwardRef } from 'react';
 
 import { cn } from '../../utils/cn';
-import { FOCUS_RING } from '../../utils/focusRing';
-import { SEG_CLASSES } from '../../utils/segClasses';
-
-/** The tab row (Web-Borrow.dc.html line 208): flex, gap 8px. */
-const LIST = 'flex gap-2';
-
-/**
- * A tab is the `.seg` pill (lines 136–138): inline-flex, gap 8px, 15px /
- * 700. Selected (Base UI's `data-active`) is ink with `sf` text; disabled
- * is opacity .45 (line 102, used on line 902). The line-height is the
- * browser's button `normal`, after the font size (see Button). Focus ring
- * as on line 20.
- */
-const TAB = cn(
-  `box-border inline-flex cursor-pointer items-center gap-2 font-sans font-bold ${FOCUS_RING}`,
-  SEG_CLASSES,
-  'leading-font data-active:border-ink data-active:bg-ink data-active:text-sf data-disabled:cursor-not-allowed data-disabled:opacity-45',
-);
-
-/**
- * The count badge (line 210): `#C9EB8A` (the `accent` token's value) with
- * `onlime` text, radius 999, padding 0 8px, 13px.
- */
-const COUNT = 'rounded-full bg-accent px-2 text-13 text-onlime';
 
 export type TabsProps = TabsPrimitive.Root.Props;
 
@@ -44,12 +20,16 @@ export type TabsListProps = Omit<TabsPrimitive.List.Props, 'className'> & {
 };
 
 /**
- * The `tablist`. Arrow keys move between tabs, Home and End to the ends;
- * name it with `aria-label`.
+ * The `tablist` (Web-Borrow.dc.html line 208: flex, gap 8px). Arrow keys
+ * move between tabs, Home and End to the ends; name it with `aria-label`.
  */
 export const TabsList = forwardRef<HTMLDivElement, TabsListProps>(
   ({ className, ...props }, ref) => (
-    <TabsPrimitive.List ref={ref} className={cn(LIST, className)} {...props} />
+    <TabsPrimitive.List
+      ref={ref}
+      className={cn('flex gap-2', className)}
+      {...props}
+    />
   ),
 );
 
@@ -64,16 +44,31 @@ export type TabProps = Omit<TabsPrimitive.Tab.Props, 'className'> & {
   className?: string;
 };
 
-/** One `.seg` pill tab (role `tab`). */
+/**
+ * One `.seg` pill tab (role `tab`; lines 136–138): inline-flex, gap 8px,
+ * 15px / 700. Selected (Base UI's `data-active`) is ink with `sf` text;
+ * disabled is opacity .45 (line 102, used on line 902).
+ */
 export const Tab = forwardRef<HTMLElement, TabProps>(
   ({ count, className, children, ...props }, ref) => (
-    <TabsPrimitive.Tab ref={ref} className={cn(TAB, className)} {...props}>
+    <TabsPrimitive.Tab
+      ref={ref}
+      className={cn(
+        'box-border inline-flex cursor-pointer items-center gap-2 font-sans font-bold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
+        'rounded-full border-1.5 border-solid border-bd2 bg-sf px-4.5 py-2.25 text-15 text-ink enabled:hover:border-ink',
+        'leading-font data-active:border-ink data-active:bg-ink data-active:text-sf data-disabled:cursor-not-allowed data-disabled:opacity-45',
+        className,
+      )}
+      {...props}>
       {children}
       {count != null && (
         <>
           {/* Separates the count in the accessible name; a flex container
               does not render whitespace between items. */}{' '}
-          <span className={COUNT} data-slot="count">
+          {/* The count badge (line 210): `accent` with `onlime` text. */}
+          <span
+            className="rounded-full bg-accent px-2 text-13 text-onlime"
+            data-slot="count">
             {count}
           </span>
         </>

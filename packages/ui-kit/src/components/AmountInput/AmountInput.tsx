@@ -11,27 +11,6 @@ import {
 
 import { keptCharacters, sanitizeAmountInput } from '../../utils/amount';
 import { cn } from '../../utils/cn';
-import { FIELD_LABEL, HIDDEN_LABEL } from '../../utils/labels';
-
-/**
- * `.amtbox` (Web-Borrow.dc.html line 224): border 1.5px `bd2`, radius 14,
- * padding 8px 16px, `sf3`, a column centred vertically; focus-within turns
- * the border ink (line 49). No disabled look on the artboards:
- * `.go:disabled`'s opacity (line 57).
- */
-const BOX =
-  'box-border flex min-w-0 flex-col justify-center rounded-14 border-1.5 border-solid border-bd2 bg-sf3 px-4 py-2 focus-within:border-ink has-disabled:opacity-50';
-
-/**
- * `.amt` (line 226; lines 45–48): 30px / 700 / -0.02em, ink, no border,
- * background or outline; placeholder `mut3`. A text input, so there are no
- * spin buttons to hide.
- */
-const INPUT =
-  'block w-full min-w-0 border-0 bg-transparent p-0 font-sans text-30 font-bold tracking-title text-ink outline-none placeholder:text-mut3 disabled:cursor-not-allowed';
-
-/** The line under the amount (line 227): 12px `mut2`. */
-const SECONDARY = 'font-sans text-12 text-mut2';
 
 export type AmountInputProps = Omit<
   Input.Props,
@@ -153,14 +132,23 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
 
     return (
       <Field.Root className={cn('min-w-0', className)} disabled={disabled}>
-        <Field.Label className={hideLabel ? HIDDEN_LABEL : FIELD_LABEL}>
+        <Field.Label
+          className={
+            hideLabel
+              ? 'sr-only'
+              : 'mb-2 block font-sans text-12 tracking-label text-mut2'
+          }>
           {label}
         </Field.Label>
-        <div className={BOX}>
+        {/* `.amtbox` (Web-Borrow.dc.html line 224); no disabled look on the
+            artboards: `.go:disabled`'s opacity (line 57). */}
+        <div className="box-border flex min-w-0 flex-col justify-center rounded-14 border-1.5 border-solid border-bd2 bg-sf3 px-4 py-2 focus-within:border-ink has-disabled:opacity-50">
+          {/* `.amt` (line 226; lines 45–48). A text input, so there are no
+              spin buttons to hide. */}
           <Input
             ref={setRefs}
             autoComplete="off"
-            className={INPUT}
+            className="block w-full min-w-0 border-0 bg-transparent p-0 font-sans text-30 font-bold tracking-title text-ink outline-none placeholder:text-mut3 disabled:cursor-not-allowed"
             inputMode="decimal"
             onValueChange={(raw) => {
               const next = sanitizeAmountInput(raw, decimals);
@@ -182,7 +170,9 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
             value={value}
             {...props}
           />
-          {secondary != null && <div className={SECONDARY}>{secondary}</div>}
+          {secondary != null && (
+            <div className="font-sans text-12 text-mut2">{secondary}</div>
+          )}
         </div>
       </Field.Root>
     );
