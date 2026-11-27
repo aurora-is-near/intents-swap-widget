@@ -239,7 +239,8 @@ export const prepareRecipeSteps = async <TParams>(
   const prepared =
     plan.recipe.type === 'solana'
       ? await plan.recipe.buildSteps(context, plan.params)
-      : { steps: plan.recipe.buildSteps(context, plan.params) };
+      : // An `AsyncRecipe` resolves its steps; a plain `Recipe` returns them.
+        { steps: await plan.recipe.buildSteps(context, plan.params) };
 
   return validateSteps(plan, prepared);
 };

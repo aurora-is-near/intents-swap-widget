@@ -2,7 +2,7 @@ import { failGuard } from '@/errors';
 import * as guards from '@/machine/guards';
 import type { Execution, PreparedSteps } from '@/types/execution';
 import type { RunnerCtx } from '@/runner/ctx';
-import type { Recipe } from '@/types/recipe';
+import type { AsyncRecipe, Recipe } from '@/types/recipe';
 import { buildOutBody, payoutStep, validateSteps } from '@/runner/planHelpers';
 import type { OutOperationPlan } from '@/runner/types';
 
@@ -72,7 +72,9 @@ export const planOut = async <TParams>(
 
   // Validated with the payout: it is the step that touches the destination
   // token, which a release step (a withdraw) usually does not.
-  const released = (plan.recipe as Recipe<TParams>).buildSteps(
+  const released = await (
+    plan.recipe as Recipe<TParams> | AsyncRecipe<TParams>
+  ).buildSteps(
     { intermediary, userAddress: requireAddress(), amount: plan.amount },
     plan.params,
   );

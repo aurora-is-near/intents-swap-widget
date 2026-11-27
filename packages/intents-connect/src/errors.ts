@@ -140,6 +140,36 @@ export class IntentsConnectApiError extends IntentsConnectError {
   }
 }
 
+/** A non-2xx response from the Intents Connect actions API (`/api/v1/actions`). */
+export class IntentsConnectActionsApiError extends IntentsConnectError {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body?: unknown,
+  ) {
+    super(message);
+    this.name = 'IntentsConnectActionsApiError';
+  }
+
+  /**
+   * The action's definition or script no longer matches the pinned
+   * `expectedSha256Hash`: the catalog changed under the caller.
+   */
+  get isHashMismatch(): boolean {
+    return this.status === 409;
+  }
+
+  /** The inputs failed the action's schema or its own validation. */
+  get isInvalidInput(): boolean {
+    return this.status === 400;
+  }
+
+  /** No such action, or no such version of it. */
+  get isUnknownAction(): boolean {
+    return this.status === 404;
+  }
+}
+
 /** A non-2xx response from the Aurora intents API (`intents-api.aurora.dev`). */
 export class IntentsApiError extends IntentsConnectError {
   constructor(
@@ -250,7 +280,8 @@ export type GuardCode =
   | 'NO_SIGNING_PAYLOAD'
   | 'UNSUPPORTED_SIGNING_STANDARD'
   | 'NO_TRANSFER_IMPLEMENTATION'
-  | 'WALLET_NOT_CONNECTED';
+  | 'WALLET_NOT_CONNECTED'
+  | 'ACTION_MISMATCH';
 
 export type GuardMeta = {
   /** Set by EXECUTION_IN_FLIGHT: the execution holding the lock. */

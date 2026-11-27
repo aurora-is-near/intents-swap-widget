@@ -17,7 +17,7 @@ A **recipe** says what the intermediary account should do on the destination cha
 | `flow` | `'bridge-in' \| 'steps-only'` | Bridge funds in first, or act on funds already in the intermediary |
 | `type` | `'evm' \| 'solana'` | Which intermediary runs the steps. Use `Recipe` for EVM and `SolanaRecipe` for Solana |
 | `destination` | `{ chain, assetId, tokenAddress? }` | What arrives at the intermediary. Leave `tokenAddress` out for native assets |
-| `buildSteps(ctx, params)` | `→ Step[]` (EVM) · `→ PreparedSteps` (Solana, may be async) | Builds the calls. `ctx = { intermediary, userAddress, amount }` |
+| `buildSteps(ctx, params)` | `→ Step[]` (EVM; `AsyncRecipe`: `→ Promise<Step[]>`) · `→ PreparedSteps` (Solana, may be async) | Builds the calls. `ctx = { intermediary, userAddress, amount }` |
 
 ## Flows
 
@@ -97,6 +97,51 @@ How `threeRound` works:
 | Fee cap | `maxNetworkFee` if given | Automatic |
 
 A steps-only preview is valid for 30 s (`previewTtlMs`).
+
+## Hosted actions
+
+An action in the [Intents Connect actions catalog](https://github.com/aurora-is-near/intents-connect-actions) resolves its own steps on the server. `actionRecipe` turns one into a recipe for the runner: each `buildSteps` calls `POST /api/v1/actions/{id}/resolve` and returns the resolved steps. The runner still builds the creation body, quote and fees as for any recipe, so the recipe's static fields must describe what the action resolves to.
+
+```ts
+import {
+  actionRecipe,
+  createIntentsConnectActionsApi,
+} from '@aurora-is-near/intents-connect';
+
+const actionsApi = createIntentsConnectActionsApi({
+  baseUrl: 'https://intents-connect-actions-demo.aurora.dev',
+});
+
+const borrowRecipe = actionRecipe<{ borrowAmount: string }>({
+  api: actionsApi,
+  actionId: 'aave-v3-borrow',
+  version: 1,
+  // Pin the reviewed definition and script: a changed action answers 409.
+  expectedSha256Hash: 'cf4a065b…83fa',
+  id: 'aave-borrow:base:ETH:USDC',
+  intent: 'aave_borrow',
+  title: 'Borrow USDC against ETH on Aave Base',
+  flow: 'bridge-in',
+  destination: { chain: 'base', assetId: 'nep141:base.omft.near' },
+  // Called on every build: map `ctx.amount` through, never fix it here.
+  inputs: (ctx, { borrowAmount }) => ({
+    chain: 'base',
+    collateral: 'ETH',
+    borrowAsset: 'USDC',
+    borrowAmount,
+    recipient: ctx.userAddress,
+    amount: '3000000000000000',
+    originAsset: 'nep141:eth.omft.near',
+  }),
+});
+```
+
+- **Checked on every build.** The resolved execution must be EVM, have the shape of `flow` (a quote for bridge-in, a top-level `destinationAsset` for steps-only, `outOperation` for an out-operation), deliver `destination.assetId`, and carry the recipe's `intent` and `title`. Anything else throws `GuardError` `ACTION_MISMATCH`.
+- **Errors.** A non-2xx answer throws `IntentsConnectActionsApiError` with the API's message and `status`; `isHashMismatch` (409), `isInvalidInput` (400) and `isUnknownAction` (404) name the common cases.
+- **One request per build.** A bridge-in `preview` resolves once and `run` reuses the prepared steps. A steps-only preview with `feeFromAmount` resolves again at the post-fee amount.
+- **Placeholders pass through.** `{INTERMEDIARY}` and `{MIN_AMOUNT_OUT}` in the resolved steps are filled in by the service at creation, as in any recipe.
+
+`createIntentsConnectActionsApi` also has `listActions()`, the catalog with each action's input schema and `sha256Hash`. Its endpoints need no API key.
 
 ## Next
 

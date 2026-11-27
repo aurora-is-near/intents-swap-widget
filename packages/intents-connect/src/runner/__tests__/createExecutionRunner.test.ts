@@ -11,7 +11,7 @@ import type {
   Step,
   SubmitStatus,
 } from '@/types/execution';
-import type { Recipe, SolanaRecipe } from '@/types/recipe';
+import type { AsyncRecipe, Recipe, SolanaRecipe } from '@/types/recipe';
 import type { WalletConnector } from '@/types/wallet';
 import { createExecutionRunner } from '@/runner/createExecutionRunner';
 import type { RunnerEvent } from '@/runner/types';
@@ -2622,5 +2622,83 @@ describe('Solana bridge-in preparation', () => {
     });
     expect(h.api.createExecution).toHaveBeenCalledTimes(1);
     expect(h.api.submitSignature).not.toHaveBeenCalled();
+  });
+});
+
+describe('createExecutionRunner — an async EVM recipe (a hosted action)', () => {
+  /** The test recipe, its steps resolved asynchronously as `actionRecipe` does. */
+  const asyncRecipe = () => {
+    const buildSteps = vi.fn<AsyncRecipe<{ pool: string }>['buildSteps']>(
+      async (ctx, params) => recipe.buildSteps(ctx, params),
+    );
+
+    return { ...recipe, buildSteps } satisfies AsyncRecipe<{ pool: string }>;
+  };
+
+  const runnerFor = (api: IntentsConnectApi) =>
+    createExecutionRunner({
+      api,
+      wallet: makeWallet(),
+      logger: noopLogger,
+      pollIntervalMs: 0,
+    });
+
+  it('awaits the steps on run and submits them with the placeholder amount', async () => {
+    const api = makeApi();
+    const async = asyncRecipe();
+
+    const result = await runnerFor(api).run({ ...basePlan, recipe: async });
+
+    expect(result.status).toBe('SUCCESS');
+    expect(async.buildSteps).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: '{MIN_AMOUNT_OUT}' }),
+      { pool: '0xPool' },
+    );
+
+    const [, body] = vi.mocked(api.createExecution).mock.calls[0]!;
+
+    expect(body.steps).toEqual(
+      recipe.buildSteps(
+        {
+          intermediary: INTERMEDIARY,
+          userAddress: ADDRESS,
+          amount: '{MIN_AMOUNT_OUT}',
+        },
+        { pool: '0xPool' },
+      ),
+    );
+  });
+
+  it('resolves once in preview and reuses the prepared steps on run', async () => {
+    const api = makeApi();
+    const async = asyncRecipe();
+    const runner = runnerFor(api);
+
+    const preview = await runner.preview({
+      ...basePlan,
+      recipe: async,
+      quote: { ...basePlan.quote, deadline: '2099-01-01T00:00:00Z' },
+    });
+
+    await runner.run(preview.plan);
+
+    expect(async.buildSteps).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails before any create when the steps cannot be resolved', async () => {
+    const api = makeApi();
+
+    await expect(
+      runnerFor(api).run({
+        ...basePlan,
+        recipe: {
+          ...recipe,
+          buildSteps: vi.fn(async () => {
+            throw new Error('actions API unavailable');
+          }),
+        },
+      }),
+    ).rejects.toThrow('actions API unavailable');
+    expect(api.createExecution).not.toHaveBeenCalled();
   });
 });
