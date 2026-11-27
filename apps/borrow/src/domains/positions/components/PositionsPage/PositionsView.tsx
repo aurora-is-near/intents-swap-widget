@@ -10,14 +10,11 @@ import type { Positions } from '../../hooks/usePositions';
 /**
  * While nothing has loaded: a card of placeholders in the position card's
  * shape. No artboard has a loading state; built from the kit's `Skeleton`.
+ * Screen readers hear "Loading your positions" from the status line instead.
  */
 function PositionsLoading() {
   return (
-    <Card
-      aria-busy="true"
-      aria-label="Loading your positions"
-      className="max-w-160"
-      role="status">
+    <Card aria-busy="true" aria-hidden="true" className="max-w-160">
       <div className="flex items-center justify-between gap-3">
         <Skeleton height={14} width={96} />
         <Skeleton height={28} radius={14} width={140} />
@@ -36,6 +33,31 @@ function PositionsLoading() {
   );
 }
 
+/**
+ * What the status line says: loading, then the result, which only changes
+ * when the number of loans does, so a refresh is not read out every minute.
+ * Nothing without a wallet or on an error (the error card is an alert).
+ */
+const statusText = (
+  status: Positions['status'],
+  count: number,
+  partial: boolean,
+) => {
+  if (status === 'pending') {
+    return count > 0 ? '' : 'Loading your positions';
+  }
+
+  if (status !== 'success' || (count === 0 && partial)) {
+    return '';
+  }
+
+  if (count === 0) {
+    return 'No positions right now';
+  }
+
+  return count === 1 ? '1 position' : `${count} positions`;
+};
+
 type PositionsViewProps = Pick<
   Positions,
   'status' | 'positions' | 'partial' | 'refetch'
@@ -45,18 +67,7 @@ type PositionsViewProps = Pick<
   onSelect: (id: string) => void;
 };
 
-/**
- * The My positions tab's content, from what was read:
- * - no wallet, or nothing found: the empty state, which asks to connect
- *   while disconnected and points to New loan once connected;
- * - on the first read: placeholders;
- * - nothing loaded and the reads failed: an error card with Retry;
- * - otherwise the selected loan's card, under the summary when there are two
- *   or more (Web-Position-Two.dc.html lines 380–391, 18px above the card),
- *   with a warning and Retry above while some reads fail (what loaded
- *   stays).
- */
-export function PositionsView({
+function PositionsContent({
   status,
   positions,
   partial,
@@ -118,5 +129,31 @@ export function PositionsView({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The My positions tab's content, from what was read:
+ * - no wallet, or nothing found: the empty state, which asks to connect
+ *   while disconnected and points to New loan once connected;
+ * - on the first read: placeholders;
+ * - nothing loaded and the reads failed: an error card with Retry;
+ * - otherwise the selected loan's card, under the summary when there are two
+ *   or more (Web-Position-Two.dc.html lines 380–391, 18px above the card),
+ *   with a warning and Retry above while some reads fail (what loaded
+ *   stays).
+ */
+export function PositionsView(props: PositionsViewProps) {
+  const { status, positions, partial } = props;
+
+  return (
+    <>
+      {/* Mounted in every state, so its text change is announced: a live
+          region inserted with its text can be missed. */}
+      <p className="sr-only" role="status">
+        {statusText(status, positions.length, partial)}
+      </p>
+      <PositionsContent {...props} />
+    </>
   );
 }

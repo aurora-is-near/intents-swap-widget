@@ -68,9 +68,9 @@ describe('PositionsView', () => {
   it('shows placeholders on the first read', () => {
     view({ status: 'pending' });
 
-    expect(
-      screen.getByRole('status', { name: 'Loading your positions' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading your positions',
+    );
   });
 
   it('shows the empty state with no loans', () => {
@@ -79,6 +79,24 @@ describe('PositionsView', () => {
     expect(
       screen.getByRole('heading', { name: 'No positions right now' }),
     ).toBeInTheDocument();
+  });
+
+  it('announces the result in the same status line that said loading', () => {
+    const { rerender } = view({ status: 'pending' });
+    const status = screen.getByRole('status');
+
+    rerender(
+      <PositionsView
+        partial={false}
+        positions={[]}
+        refetch={vi.fn()}
+        status="success"
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toBe(status);
+    expect(status).toHaveTextContent('No positions right now');
   });
 
   it('shows an error with Retry when nothing could be read', async () => {
@@ -160,6 +178,34 @@ describe('PositionsView', () => {
       'Interest / year',
     ].forEach((label) =>
       expect(screen.getByText(label).nextElementSibling).toHaveTextContent('—'),
+    );
+
+    // Without an LTV there is no value to give a meter.
+    expect(screen.queryByRole('meter')).not.toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
+  it('shows no dollar total when a reserve has no price', () => {
+    view({
+      positions: [
+        fakeLoan({ debt: [fakeAsset('XYZ', 1000, null)], debtUsd: 0 }),
+      ],
+    });
+
+    expect(screen.getByText('Debt').nextElementSibling).toHaveTextContent(
+      '1,000 XYZ— · Base',
+    );
+  });
+
+  it('keeps a liquidation price under $1 readable', () => {
+    view({
+      positions: [
+        fakeLoan({ liquidationPrice: { symbol: 'WETH', usd: 0.004123 } }),
+      ],
+    });
+
+    expect(screen.getByText('Liq. price').nextElementSibling).toHaveTextContent(
+      '$0.00412',
     );
   });
 

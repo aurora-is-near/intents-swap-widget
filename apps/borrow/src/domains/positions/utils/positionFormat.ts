@@ -66,13 +66,26 @@ export const formatOptionalApr = (fraction: number | null) =>
 export const formatUsdCents = (usd: number | null) =>
   usd === null ? DASH : `$${USD_CENTS.format(usd)}`;
 
-/** "$1,500": whole dollars, as the summary's figures (line 1619). */
-export const formatUsdWhole = (usd: number) => `$${USD_ROUND.format(usd)}`;
+/** "$1,500": whole dollars, as the summary's figures (line 1619); "—" when unknown. */
+export const formatUsdWhole = (usd: number | null) =>
+  usd === null ? DASH : `$${USD_ROUND.format(usd)}`;
 
-/** "$1,445.78"; "—" when unknown. */
+const PRICE_UNDER_ONE = new Intl.NumberFormat('en-US', {
+  maximumSignificantDigits: 3,
+});
+
+/**
+ * A token price: whole dollars from $100 ("$1,446", as the artboard's script
+ * line 1398), cents from $1 ("$2.41"), and three significant digits under $1
+ * ("$0.00412"), so a small price never reads "$0.00".
+ */
+const formatPrice = (usd: number) =>
+  usd >= 1 ? formatUsd(usd) : `$${PRICE_UNDER_ONE.format(usd)}`;
+
+/** "$1,446", "$0.00412"; "—" when unknown. */
 export const formatLiquidationPrice = (
   price: LoanPosition['liquidationPrice'],
-) => (price === null ? DASH : formatUsd(price.usd));
+) => (price === null ? DASH : formatPrice(price.usd));
 
 /**
  * A Collateral or Debt tile's figure: the largest reserve, "1.5 WETH", and
@@ -146,7 +159,7 @@ export const riskText = ({ health, liquidationPrice }: LoanPosition) => {
 
   const drop = `${ONE_DP.format((1 - 1 / health) * 100)}% below today`;
   const fall = liquidationPrice
-    ? `If ${liquidationPrice.symbol} falls to ${formatUsd(liquidationPrice.usd)} (${drop})`
+    ? `If ${liquidationPrice.symbol} falls to ${formatPrice(liquidationPrice.usd)} (${drop})`
     : `If your collateral falls ${drop}`;
 
   return `${healthText} ${fall}, part of your collateral is sold to repay the loan. ${advice}`;

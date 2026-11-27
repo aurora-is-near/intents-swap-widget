@@ -34,7 +34,7 @@ type LtvMeterProps = {
 
 /**
  * A `meter` for assistive technology, in whole percent, whose text names
- * the liquidation LTV too.
+ * the liquidation LTV too; "Unknown" text without an LTV.
  */
 export function LtvMeter({
   ltv,
@@ -45,27 +45,33 @@ export function LtvMeter({
   const liquidation =
     liquidationLtv === null ? undefined : formatLiquidationLtv(liquidationLtv);
 
-  const valueText =
+  // A meter needs a value: with no LTV the track is drawn without one, and
+  // "Unknown" is read after the label instead.
+  const meter =
     ltv === null
-      ? 'Unknown'
-      : [formatLtv(ltv), liquidation && `liquidated at ${liquidation}`]
-          .filter(Boolean)
-          .join(', ');
+      ? {}
+      : {
+          role: 'meter',
+          'aria-labelledby': labelledBy,
+          'aria-valuemin': LTV_MIN,
+          'aria-valuemax': LTV_MAX,
+          // Clamped to the track, as ARIA requires; the text keeps the true
+          // LTV.
+          'aria-valuenow': Math.min(
+            LTV_MAX,
+            Math.max(LTV_MIN, Math.round(ltv * 1000) / 10),
+          ),
+          'aria-valuetext': [
+            formatLtv(ltv),
+            liquidation && `liquidated at ${liquidation}`,
+          ]
+            .filter(Boolean)
+            .join(', '),
+        };
 
   return (
-    <div
-      aria-labelledby={labelledBy}
-      aria-valuemax={LTV_MAX}
-      aria-valuemin={LTV_MIN}
-      // Clamped to the track, as ARIA requires; the text keeps the true LTV.
-      aria-valuenow={
-        ltv === null
-          ? undefined
-          : Math.min(LTV_MAX, Math.max(LTV_MIN, Math.round(ltv * 1000) / 10))
-      }
-      aria-valuetext={valueText}
-      className={cn('relative h-9', className)}
-      role="meter">
+    <div className={cn('relative h-9', className)} {...meter}>
+      {ltv === null ? <span className="sr-only">Unknown</span> : null}
       <div
         aria-hidden
         className="absolute inset-x-0 top-3 flex h-2.5 overflow-hidden rounded-5">

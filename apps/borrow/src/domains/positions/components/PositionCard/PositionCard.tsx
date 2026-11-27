@@ -3,6 +3,7 @@ import { useId } from 'react';
 
 import { DoneMark } from '@/domains/borrow/components/DoneMark/DoneMark';
 
+import { pricedTotal } from '../../model/reserves';
 import {
   formatHealth,
   formatLiquidationLtv,
@@ -54,6 +55,7 @@ function ReservesTile({
   size?: 'md' | 'lg';
 }) {
   const { amount, more } = reservesLabel(assets);
+  const total = pricedTotal(assets, usd);
 
   return (
     <div className="min-w-0 rounded-18 bg-sf2 px-4.5 py-4 leading-font">
@@ -72,7 +74,8 @@ function ReservesTile({
           ) : null}
         </span>
         <span className="block text-13 text-mut2">
-          ≈ {formatUsdCents(usd)} · {chain}
+          {/* No total when a reserve has no price: the sum would leave it out. */}
+          {total === null ? '—' : `≈ ${formatUsdCents(total)}`} · {chain}
         </span>
       </dd>
     </div>

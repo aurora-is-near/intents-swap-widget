@@ -1,6 +1,7 @@
 import { cn } from '@aurora-is-near/ui-kit';
 import { useId } from 'react';
 
+import { pricedTotal } from '../../model/reserves';
 import { positionsTotals } from '../../model/totals';
 import {
   formatHealth,
@@ -37,8 +38,9 @@ function SummaryCard({
     <button
       aria-pressed={selected}
       className={cn(
-        // `.pcard` (line 150), its hover and focus ring (lines 151, 153).
-        'box-border flex w-full min-w-0 cursor-pointer flex-col gap-1.5 rounded-18 bg-sf text-left font-sans leading-font text-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
+        // `.pcard` (line 150), its hover and focus ring (lines 151, 153); a
+        // press shrinks it at once, as the kit's main button does.
+        'box-border flex w-full min-w-0 cursor-pointer flex-col gap-1.5 rounded-18 bg-sf text-left font-sans leading-font text-ink transition-transform duration-160 ease-out focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid active:scale-97 motion-reduce:active:scale-100',
         // `.pcard.sel` (line 152): a 3px ink border, the padding taken in.
         selected
           ? 'border-3 border-solid border-ink px-[14.5px] py-[12.5px]'
@@ -65,7 +67,8 @@ function SummaryCard({
       </span>
       <span className="flex gap-4 text-14">
         <span>
-          Debt <b>{formatUsdWhole(position.debtUsd)}</b>
+          Debt{' '}
+          <b>{formatUsdWhole(pricedTotal(position.debt, position.debtUsd))}</b>
         </span>
         <span>
           Health{' '}

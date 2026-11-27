@@ -4,6 +4,15 @@ import type { PositionAsset } from '../types';
 export const sumUsd = (assets: readonly PositionAsset[]): number =>
   assets.reduce((total, { usd }) => total + (usd ?? 0), 0);
 
+/**
+ * A reserves total as it may be shown: `null` when one of them has no price,
+ * since the sum would leave it out.
+ */
+export const pricedTotal = (
+  assets: readonly PositionAsset[],
+  usd: number,
+): number | null => (assets.some((asset) => asset.usd === null) ? null : usd);
+
 /** Largest dollar value first; unpriced reserves last, in their order. */
 export const byUsdDescending = (assets: readonly PositionAsset[]) =>
   [...assets].sort((a, b) => (b.usd ?? -1) - (a.usd ?? -1));
