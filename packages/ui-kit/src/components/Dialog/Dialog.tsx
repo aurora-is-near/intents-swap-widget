@@ -10,6 +10,7 @@ import {
 import { cn } from '../../utils/cn';
 import { Button } from '../Button/Button';
 import { CloseIcon } from '../icons/icons';
+import { ScrollArea } from '../ScrollArea/ScrollArea';
 
 /*
  * The confirm modal (Web-Borrow.dc.html lines 967–983). Mobile is an
@@ -44,20 +45,21 @@ const VIEWPORT = 'fixed inset-0 box-border flex overflow-y-auto p-5 mobile:p-0';
 
 /**
  * The popup (line 968): `margin:auto; flex:0 1 460px; min-width:0`, radius
- * 28, padding 26, `sf`, shadow `0 30px 80px rgba(17,22,19,0.35)` (light ink
- * in both themes, so literal). The close button is positioned against it.
+ * 28, `sf`, shadow `0 30px 80px rgba(17,22,19,0.35)` (light ink in both
+ * themes, so literal). The close button is positioned against it; its 26px
+ * padding is on the content's scroll area (`DialogContent`), so a tall
+ * dialog scrolls inside the popup with the close button pinned above.
  *
  * Mobile: full width, pinned to the bottom (`margin-top:auto`), top corners
- * rounded, scrolls inside, at most the screen height less the 20px gutter,
- * with the bottom padding clear of the home indicator.
+ * rounded.
  *
  * Motion: desktop fades and scales from .96; the sheet slides up. Both are
  * off under `prefers-reduced-motion`.
  */
 const POPUP = [
-  'relative m-auto box-border min-w-0 flex-[0_1_460px] rounded-28 bg-sf p-6.5 font-sans text-ink shadow-dialog outline-none',
+  'relative m-auto box-border min-w-0 flex-[0_1_460px] rounded-28 bg-sf font-sans text-ink shadow-dialog outline-none',
   'transition-[opacity,scale,translate] duration-200 data-ending-style:scale-96 data-ending-style:opacity-0 data-starting-style:scale-96 data-starting-style:opacity-0 motion-reduce:transition-none',
-  'mobile:mx-0 mobile:mt-auto mobile:mb-0 mobile:max-h-[calc(100dvh_-_20px)] mobile:basis-full mobile:overflow-y-auto mobile:overscroll-contain mobile:rounded-t-28 mobile:rounded-b-none mobile:pb-[calc(26px_+_env(safe-area-inset-bottom))]',
+  'mobile:mx-0 mobile:mt-auto mobile:mb-0 mobile:basis-full mobile:rounded-t-28 mobile:rounded-b-none',
   'mobile:data-ending-style:translate-y-full mobile:data-ending-style:scale-100 mobile:data-ending-style:opacity-100 mobile:data-starting-style:translate-y-full mobile:data-starting-style:scale-100 mobile:data-starting-style:opacity-100',
 ].join(' ');
 
@@ -65,9 +67,10 @@ const POPUP = [
  * `.ibtn` (lines 53–54, markup line 982): 36×36, radius 12, transparent,
  * hover `hov`, focus ring (line 52): the `ghost` button without its padding.
  * On the artboard it ends the header row (`align-items:flex-start`), which
- * puts it at the popup's top-right padding corner.
+ * puts it at the popup's top-right padding corner. Above the scrolling
+ * content (`z-1`), which comes after it.
  */
-const CLOSE = 'absolute top-6.5 right-6.5 h-9 w-9 p-0 text-ink';
+const CLOSE = 'absolute top-6.5 right-6.5 z-1 h-9 w-9 p-0 text-ink';
 
 /**
  * Keeps the title and description clear of the close button: the button's
@@ -180,7 +183,21 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
                 <CloseIcon />
               </DialogPrimitive.Close>
             ) : null}
-            {children}
+            {/*
+              The content scrolls inside the popup, in the kit's ScrollArea,
+              with the popup's 26px padding (line 968). At most the screen
+              height less the backdrop's 20px gutter on each side (on mobile,
+              less the 20px gutter above the sheet), and the sheet's bottom
+              padding clears the home indicator. The scrollbar runs in the
+              right padding, 6px from the edge, and stops short of the 28px
+              corners.
+            */}
+            <ScrollArea
+              className="rounded-[inherit]"
+              scrollbarClassName="my-7 mr-1.5"
+              viewportClassName="max-h-[calc(100dvh_-_40px)] rounded-[inherit] p-6.5 mobile:max-h-[calc(100dvh_-_20px)] mobile:pb-[calc(26px_+_env(safe-area-inset-bottom))]">
+              {children}
+            </ScrollArea>
           </DialogPrimitive.Popup>
         </DialogPrimitive.Viewport>
       </DialogPrimitive.Portal>

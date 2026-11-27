@@ -63,14 +63,18 @@ export const groupOf = (symbol: string): Group | undefined => {
 
 export const ALL = 'all';
 
-/** One wallet balance as a picker row: its chain, balance and USD value. */
+/**
+ * One wallet balance as a picker row: its chain, balance and USD value. The
+ * balance is the number alone: the row already names the token, and the
+ * room goes to the name beside it.
+ */
 export const fundingOption = (asset: FundingAsset): TokenOption => ({
   id: asset.assetId,
   symbol: asset.symbol,
   mark: markOf(asset.symbol),
   chainsLabel: chainOf(asset.chain).name,
   priceLabel: '',
-  balanceLabel: `${formatAmount(toDisplayNumber(asset.amount, asset.decimals))} ${asset.symbol}`,
+  balanceLabel: formatAmount(toDisplayNumber(asset.amount, asset.decimals)),
   balanceUsdLabel:
     asset.usdValue === undefined
       ? undefined
@@ -79,15 +83,10 @@ export const fundingOption = (asset: FundingAsset): TokenOption => ({
 });
 
 /**
- * Why a reserve row can't be picked: the borrow action does not cover it
- * yet. The artboards draw no such row, so it takes the funding picker's
- * disabled-with-reason treatment ("Not supported yet").
- */
-const COMING_SOON_REASON = 'Coming soon';
-
-/**
  * A reserve as a picker row: the chains of its markets and its price;
- * disabled, "Coming soon", when the borrow action does not cover it.
+ * disabled, "Coming soon", when the borrow action does not cover it yet.
+ * The artboards draw no such row, so it takes the funding picker's
+ * disabled-with-reason treatment ("Not supported yet").
  */
 export const reserveOption = (asset: ReserveAsset): TokenOption => ({
   id: asset.symbol,
@@ -95,7 +94,7 @@ export const reserveOption = (asset: ReserveAsset): TokenOption => ({
   mark: markOf(asset.symbol),
   chainsLabel: asset.markets.map(({ chainLabel }) => chainLabel).join(' · '),
   priceLabel: `$${(asset.priceUsd > 10 ? USD_ROUND : USD_CENTS).format(asset.priceUsd)}`,
-  unavailableReason: asset.comingSoon ? COMING_SOON_REASON : undefined,
+  unavailableReason: asset.comingSoon ? 'Coming soon' : undefined,
 });
 
 export type FilterValue = { group: Group; chain: string };

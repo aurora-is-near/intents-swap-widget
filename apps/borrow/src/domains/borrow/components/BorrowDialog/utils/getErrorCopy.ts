@@ -1,7 +1,5 @@
-import type {
-  BorrowErrorKind,
-  BorrowRecoveryAction,
-} from '../../utils/classifyBorrowError';
+import type { BorrowRecoveryAction } from '../../../utils/borrowRecoveryAction';
+import type { BorrowErrorKind } from '../../../utils/classifyBorrowError';
 
 /*
  * The error dialogs' copy: the error table of Web-Borrow-Confirm.dc.html
@@ -42,7 +40,7 @@ export type ErrorCopy = {
   step: 0 | 1 | 2;
 };
 
-export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
+const ERROR_COPY: Record<BorrowErrorKind, ErrorCopy> = {
   // `rejected`.
   rejected: {
     title: () => 'Signature rejected',
@@ -169,6 +167,10 @@ export const errorCopy: Record<BorrowErrorKind, ErrorCopy> = {
   },
 };
 
+/** The copy of an error kind's dialog. */
+export const getErrorCopy = (error: BorrowErrorKind): ErrorCopy =>
+  ERROR_COPY[error];
+
 /** The button when the hook offers another action than the table's. */
 export const ACTION_LABEL: Record<BorrowRecoveryAction, string> = {
   retry: 'Try again',
@@ -176,7 +178,3 @@ export const ACTION_LABEL: Record<BorrowRecoveryAction, string> = {
   reconnect: 'Reconnect wallet',
   close: 'Close',
 };
-
-/** The secondary button: line 1513. */
-export const CANCEL_LABEL = 'Cancel';
-export const WARN_SECONDARY_LABEL = 'Go to my positions';

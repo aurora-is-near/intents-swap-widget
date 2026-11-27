@@ -35,8 +35,8 @@ const wallet = vi.hoisted(() => ({
 
 const balances = vi.hoisted(() => ({}) as BalancesMockState);
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
@@ -300,18 +300,18 @@ describe('NewLoanForm', () => {
       const list = await openSupply(user);
 
       expect(
-        list.getByRole('button', { name: 'ETH Base 1.5 ETH $4,500.00' }),
+        list.getByRole('button', { name: 'ETH Base 1.5 $4,500.00' }),
       ).toBeEnabled();
       expect(
-        list.getByRole('button', { name: 'WBTC Ethereum 0.04 WBTC $3,600.00' }),
+        list.getByRole('button', { name: 'WBTC Ethereum 0.04 $3,600.00' }),
       ).toBeEnabled();
       expect(
         list.getByRole('button', {
-          name: 'USDT Arbitrum 2,500 USDT $2,500.00',
+          name: 'USDT Arbitrum 2,500 $2,500.00',
         }),
       ).toBeEnabled();
       expect(
-        list.getByRole('button', { name: /^MEME Base · Not supported yet/ }),
+        list.getByRole('button', { name: /^MEME Not supported yet · Base/ }),
       ).toBeDisabled();
     });
 

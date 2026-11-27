@@ -26,7 +26,7 @@ import {
   TokenFilters,
   triggerLabel,
 } from './TokenPicker';
-import type { LoanForm } from '../../hooks/useLoanForm';
+import type { LoanForm } from '../../model/loanForm';
 import type { FilterValue } from './tokenOptions';
 
 /** The Supply picker's options: the wallet's balances, or the collateral. */

@@ -2,10 +2,8 @@ import type { Execution } from '@aurora-is-near/intents-connect';
 
 import type { LendingMarketAdapter } from '@/domains/markets/types';
 
-import type {
-  BorrowErrorKind,
-  GasPreCheckInput,
-} from '../utils/classifyBorrowError';
+import type { GasPreCheckInput } from '../utils/borrowPreChecks';
+import type { BorrowErrorKind } from '../utils/classifyBorrowError';
 import type { BorrowPreview, PreviewBorrowInput } from '../utils/preview';
 import type { BorrowPreviewFigures } from '../utils/previewFigures';
 import type { BorrowStepsPreview } from '../utils/stepsRetry';
@@ -71,6 +69,28 @@ export type BorrowFlowState =
       cause: unknown;
       step: BorrowPendingStep;
     };
+
+/** The page's callbacks, which `useBorrowFlow` calls as the borrow moves. */
+export type UseBorrowFlowOptions = {
+  /**
+   * Called once an execution is created (the runner's `created` event), so
+   * an in-flight borrow can be found again after a reload.
+   */
+  onCreated?: (executionId: string) => void;
+  /**
+   * Called when Borrow (or Confirm) finds an earlier execution of the wallet
+   * still on its way (`isOngoingExecution`): the flow then shows and tracks
+   * that one instead of starting a new borrow, so the dialog can name it as
+   * the previous borrow. Without it, the flow stops at `busy`.
+   */
+  onPrevious?: (execution: Execution) => void;
+  /**
+   * Called once the execution is over: a terminal status (`SUCCESS`,
+   * `DEPOSIT_FAILED`, `OPERATION_FAILED`), or it was cancelled. What
+   * `onCreated` kept for it can go.
+   */
+  onSettled?: (executionId: string) => void;
+};
 
 /** A restored execution: what `restore()` reads of it. */
 export type RestorableExecution = Pick<Execution, 'id' | 'status'>;

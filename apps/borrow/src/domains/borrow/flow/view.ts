@@ -1,9 +1,7 @@
-import { borrowRecoveryAction } from '../utils/classifyBorrowError';
+import { borrowRecoveryAction } from '../utils/borrowRecoveryAction';
 import { isFundsWaiting } from './guards';
-import type {
-  BorrowErrorKind,
-  BorrowRecoveryAction,
-} from '../utils/classifyBorrowError';
+import type { BorrowRecoveryAction } from '../utils/borrowRecoveryAction';
+import type { BorrowErrorKind } from '../utils/classifyBorrowError';
 import type { BorrowPreviewFigures } from '../utils/previewFigures';
 import type { FlowEnv } from './events';
 import type { BorrowState } from './state';

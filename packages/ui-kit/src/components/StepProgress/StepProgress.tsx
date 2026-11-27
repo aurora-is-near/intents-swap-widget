@@ -53,10 +53,21 @@ const STATUS_TEXT: Record<StepStatus, string> = {
 const WAITING =
   'box-border inline-flex size-6 shrink-0 items-center justify-center rounded-full border-1.5 border-solid border-mid text-12 leading-font font-bold text-mut2';
 
+/**
+ * A step's outcome (done or failed) arriving: its icon fades in from 90%
+ * over 200ms when it replaces the spinner; reduced motion only fades. The
+ * spinner and the number swap in place: one already moves, the other is
+ * where every step starts.
+ */
+const OUTCOME_ENTRANCE =
+  'transition-[opacity,scale] duration-200 ease-out starting:scale-90 starting:opacity-0 motion-reduce:starting:scale-100';
+
 /** The status icon for each step, by status. All are decorative. */
 const STEP_ICONS: Record<StepStatus, (index: number) => ReactNode> = {
   // Line 1004: the circle is `--badge` through the theme rule (line 171).
-  done: () => <DoneIcon className="shrink-0 text-badge" />,
+  done: () => (
+    <DoneIcon className={cn('shrink-0 text-badge', OUTCOME_ENTRANCE)} />
+  ),
   // Line 1005: `.spin` at 20px with a 2px margin. Hidden: the row's hidden
   // text names the status, not the spinner's own status role.
   active: () => (
@@ -65,7 +76,9 @@ const STEP_ICONS: Record<StepStatus, (index: number) => ReactNode> = {
     </span>
   ),
   // Line 1006: `#A8321F`, the same in both themes on the artboard.
-  failed: () => <CrossIcon className="shrink-0" color="#A8321F" />,
+  failed: () => (
+    <CrossIcon className={cn('shrink-0', OUTCOME_ENTRANCE)} color="#A8321F" />
+  ),
   // Line 1007: the step's number in the outlined circle.
   waiting: (index) => (
     <span aria-hidden="true" className={WAITING}>

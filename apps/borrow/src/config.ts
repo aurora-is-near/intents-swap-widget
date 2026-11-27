@@ -37,14 +37,12 @@ const INTENTS_CONNECT_API_URL =
  */
 const INTENTS_API_KEY = readEnv(import.meta.env.VITE_INTENTS_API_KEY);
 
-/** What is reported when the key is missing, so the cause is plain. */
-export const MISSING_INTENTS_API_KEY_MESSAGE =
-  '[Borrow] VITE_INTENTS_API_KEY is not set: wallet balances cannot be read and every borrow will fail at creation. Add it to apps/borrow/.env.local (or the deployment environment) and rebuild.';
-
 if (!INTENTS_API_KEY) {
   // A configuration error, reported once at start-up; the app still runs,
   // without balances or borrows.
-  console.error(MISSING_INTENTS_API_KEY_MESSAGE);
+  console.error(
+    '[Borrow] VITE_INTENTS_API_KEY is not set: wallet balances cannot be read and every borrow will fail at creation. Add it to apps/borrow/.env.local (or the deployment environment) and rebuild.',
+  );
 }
 
 /**

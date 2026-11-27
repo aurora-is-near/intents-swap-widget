@@ -1,15 +1,16 @@
 import { IntentsConnectProvider } from '@aurora-is-near/intents-connect/react';
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 import type { ReactNode } from 'react';
 
 import { intentsApi, intentsConnectApi } from '@/config';
 
+import { useWallet } from '../hooks/useWallet';
+
 /**
  * `IntentsConnectProvider` with the app's API clients (`intentsConnectApi`,
  * which sends the Intents Connect API key, and `intentsApi`, which the
- * account hooks such as `useWalletBalances` read through) and the AppKit
- * wallet, `null` while disconnected. Must sit inside `WalletProvider`, whose
- * AppKit the wallet hook reads.
+ * account hooks such as `useWalletBalances` read through) and the connected
+ * wallet (any family), `null` while disconnected. Must sit inside
+ * `WalletProvider`, whose session `useWallet` reads.
  *
  * The runner's auto-cancel on a declined signature is off: `useBorrowFlow`
  * cancels the execution itself, so its dialog can explain the second wallet
@@ -20,7 +21,7 @@ export function IntentsConnectWalletProvider({
 }: {
   children: ReactNode;
 }) {
-  const { wallet } = useIntentsConnectWallet();
+  const { wallet } = useWallet();
 
   return (
     <IntentsConnectProvider

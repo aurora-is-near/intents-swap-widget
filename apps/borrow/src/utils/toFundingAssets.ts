@@ -21,8 +21,6 @@ const usdValue = (
  */
 export type FundingToken = Omit<BalanceToken, 'price'> & { price?: number };
 
-export const NOT_SUPPORTED_REASON = 'Not supported yet';
-
 /** Highest USD value first; unpriced rows last, then by symbol. */
 const byValue = (a: FundingAsset, b: FundingAsset) =>
   (b.usdValue ?? -1) - (a.usdValue ?? -1) || a.symbol.localeCompare(b.symbol);
@@ -63,7 +61,7 @@ export const toFundingAssets = (
           usdValue: usdValue(amount, token.decimals, token.price),
           unavailableReason:
             payable && !payable.has(toQuoteAssetId({ assetId }))
-              ? NOT_SUPPORTED_REASON
+              ? 'Not supported yet'
               : undefined,
         },
       ];

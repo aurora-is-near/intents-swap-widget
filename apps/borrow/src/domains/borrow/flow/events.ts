@@ -1,7 +1,7 @@
 import type { Execution, RunnerEvent } from '@aurora-is-near/intents-connect';
 
 import type { ExecutionProgress } from '../stores/executionProgress';
-import type { BorrowStepFailure } from '../utils/classifyBorrowError';
+import type { BorrowStepFailure } from '../utils/diagnoseBorrowStep';
 import type { BorrowPreview } from '../utils/preview';
 import type { BorrowPreviewFigures } from '../utils/previewFigures';
 import type { BorrowStepsPreview } from '../utils/stepsRetry';

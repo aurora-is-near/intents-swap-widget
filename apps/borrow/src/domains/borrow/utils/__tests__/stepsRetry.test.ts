@@ -14,7 +14,7 @@ import {
 } from '@/tests/fakeMarkets';
 import type { MarketSnapshot } from '@/domains/markets/types';
 
-import { BorrowPreCheckError } from '../classifyBorrowError';
+import { BorrowPreCheckError } from '../borrowPreChecks';
 import { BorrowPreviewError } from '../preview';
 import {
   buildBorrowStepsPlan,

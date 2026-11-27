@@ -9,6 +9,7 @@
     ],
     "declaration": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,

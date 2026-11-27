@@ -6,16 +6,13 @@ import type {
 
 import { DEFAULT_PAIR, sameSymbol } from './reserveAssets';
 
-/**
+/*
  * Which Aave collateral a held asset funds (decided in the plan review): the
  * same asset when the market lists it as collateral, ETH and WETH both
  * counting as the wrapped-native reserve (WETH, or the reserve delivered
  * natively and supplied through Aave's gateway); any other asset is
  * converted to that reserve, and the form says "Supplied as WETH".
  */
-
-const NATIVE = 'ETH';
-const WRAPPED_NATIVE = 'WETH';
 
 export type CollateralChoice = {
   reserve: CollateralReserve;
@@ -40,7 +37,7 @@ const wrappedNative = (market: MarketSnapshot) => {
 
   return (
     available.find(({ nativeDelivery }) => nativeDelivery === true) ??
-    available.find(({ symbol }) => sameSymbol(symbol, WRAPPED_NATIVE))
+    available.find(({ symbol }) => sameSymbol(symbol, 'WETH'))
   );
 };
 
@@ -56,8 +53,7 @@ export const collateralFor = (
   const wrapped = wrappedNative(market);
 
   const same =
-    sameSymbol(fundingSymbol, NATIVE) ||
-    sameSymbol(fundingSymbol, WRAPPED_NATIVE)
+    sameSymbol(fundingSymbol, 'ETH') || sameSymbol(fundingSymbol, 'WETH')
       ? wrapped
       : listed(market, fundingSymbol);
 

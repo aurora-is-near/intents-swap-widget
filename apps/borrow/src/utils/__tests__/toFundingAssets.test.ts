@@ -4,7 +4,7 @@ import type {
   SupportedToken,
 } from '@aurora-is-near/intents-connect';
 
-import { NOT_SUPPORTED_REASON, toFundingAssets } from '../toFundingAssets';
+import { toFundingAssets } from '../toFundingAssets';
 import type { FundingToken } from '../toFundingAssets';
 
 const ETH: BalanceToken = {
@@ -92,7 +92,7 @@ describe('toFundingAssets', () => {
     );
 
     expect(rows.find((row) => row.symbol === 'MEME')).toMatchObject({
-      unavailableReason: NOT_SUPPORTED_REASON,
+      unavailableReason: 'Not supported yet',
     });
     expect(
       rows.find((row) => row.symbol === 'ETH')?.unavailableReason,

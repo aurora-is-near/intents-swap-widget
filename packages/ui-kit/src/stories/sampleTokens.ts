@@ -113,10 +113,10 @@ const HELD: Partial<
     Pick<TokenOption, 'balanceLabel' | 'balanceUsdLabel' | 'unavailableReason'>
   >
 > = {
-  eth: { balanceLabel: '1.25 ETH', balanceUsdLabel: '$3,750.00' },
-  usds: { balanceLabel: '1,200 USDS', balanceUsdLabel: '$1,200.00' },
+  eth: { balanceLabel: '1.25', balanceUsdLabel: '$3,750.00' },
+  usds: { balanceLabel: '1,200', balanceUsdLabel: '$1,200.00' },
   cbbtc: {
-    balanceLabel: '0.02 cbBTC',
+    balanceLabel: '0.02',
     balanceUsdLabel: '$1,800.00',
     unavailableReason: 'Not supported yet',
   },

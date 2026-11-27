@@ -97,6 +97,12 @@
   --shadow-ink-ring: 0 0 0 2px var(--ink);
 
   --animate-spin-fast: spin 0.8s linear infinite;
+
+  /*
+   * Motion: the strong ease-out for entrances, exits and presses, so the
+   * `ease-out` utility starts fast instead of Tailwind's gentle default.
+   */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /*

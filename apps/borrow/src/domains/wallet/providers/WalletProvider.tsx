@@ -8,6 +8,8 @@ import type { ReactNode } from 'react';
 
 import { REOWN_PROJECT_ID } from '@/config';
 
+import { WalletSessionProvider } from './WalletSessionProvider';
+
 /**
  * `AppKitProvider` creates AppKit once per mount and ignores later
  * `themeMode` props, so a theme switch after load is pushed to the live
@@ -29,8 +31,10 @@ type WalletProviderProps = {
 };
 
 /**
- * Reown AppKit (EVM and Solana connection), inside `ThemeProvider` so the
- * connect modal follows the kit's resolved light or dark theme.
+ * The wallet connection: Reown AppKit (EVM and Solana), inside `ThemeProvider`
+ * so its modal follows the kit's resolved light or dark theme, and the
+ * session that adds NEAR and Stellar behind the wallet package's connect
+ * modal (`WalletSessionProvider`).
  */
 export function WalletProvider({ children }: WalletProviderProps) {
   const { theme } = useTheme();
@@ -41,7 +45,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       projectId={REOWN_PROJECT_ID}
       themeMode={theme}>
       <AppKitThemeSync />
-      {children}
+      <WalletSessionProvider>{children}</WalletSessionProvider>
     </AppKitProvider>
   );
 }

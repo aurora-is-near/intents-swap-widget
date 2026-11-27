@@ -1,75 +1,38 @@
-import { IN_FLIGHT_STATUSES } from '@aurora-is-near/intents-connect';
 import {
   useExecution,
   useIntentsConnect,
 } from '@aurora-is-near/intents-connect/react';
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 import { useEffect, useRef, useState } from 'react';
 import type { UseExecutionResult } from '@aurora-is-near/intents-connect/react';
-import type { Execution, RunnerEvent } from '@aurora-is-near/intents-connect';
+import type { RunnerEvent } from '@aurora-is-near/intents-connect';
 
-import { isStepsPreview } from '../flow/guards';
+import { useWallet } from '@/domains/wallet/hooks/useWallet';
+
 import { initialState } from '../flow/state';
 import { transition } from '../flow/transition';
 import { viewOf } from '../flow/view';
-import {
-  forgetProgress,
-  markCreated,
-  markDepositSent,
-  progressOf,
-} from '../stores/executionProgress';
-import {
-  BORROW_DELAYED_AFTER_MS,
-  BorrowPreCheckError,
-  checkLiquidity,
-  checkOriginGas,
-  diagnoseBorrowStep,
-} from '../utils/classifyBorrowError';
-import { previewBorrow } from '../utils/preview';
-import {
-  borrowPreviewFigures,
-  stepsPreviewFigures,
-} from '../utils/previewFigures';
-import { previewBorrowSteps } from '../utils/stepsRetry';
-import type { BorrowEffect, BorrowEvent, FlowEnv } from '../flow/events';
-import type { BorrowState, DriveHow } from '../flow/state';
+import { progressOf } from '../stores/executionProgress';
+import { pageEffects } from './effects/pageEffects';
+import { quoteEffects } from './effects/quoteEffects';
+import { runnerEffects } from './effects/runnerEffects';
+import type { BorrowEvent, FlowEnv } from '../flow/events';
+import type { BorrowState } from '../flow/state';
 import type {
   BorrowFlowInput,
   BorrowFlowState,
   RestorableExecution,
+  UseBorrowFlowOptions,
 } from '../flow/types';
-import type { BorrowRecoveryAction } from '../utils/classifyBorrowError';
-import type { BorrowPreview } from '../utils/preview';
+import type { BorrowRecoveryAction } from '../utils/borrowRecoveryAction';
 import type { BorrowPreviewFigures } from '../utils/previewFigures';
-import type { BorrowStepsPreview } from '../utils/stepsRetry';
+import type {
+  EffectContext,
+  EffectHandler,
+  EffectHandlers,
+  Latest,
+} from './effects/context';
 
-export type {
-  BorrowCancelReason,
-  BorrowFlowInput,
-  BorrowFlowState,
-  BorrowPendingStep,
-} from '../flow/types';
-
-export type UseBorrowFlowOptions = {
-  /**
-   * Called once an execution is created (the runner's `created` event), so
-   * an in-flight borrow can be found again after a reload.
-   */
-  onCreated?: (executionId: string) => void;
-  /**
-   * Called when Borrow (or Confirm) finds an earlier execution of the wallet
-   * still on its way (`isOngoingExecution`): the flow then shows and tracks
-   * that one instead of starting a new borrow, so the dialog can name it as
-   * the previous borrow. Without it, the flow stops at `busy`.
-   */
-  onPrevious?: (execution: Execution) => void;
-  /**
-   * Called once the execution is over: a terminal status (`SUCCESS`,
-   * `DEPOSIT_FAILED`, `OPERATION_FAILED`), or it was cancelled. What
-   * `onCreated` kept for it can go.
-   */
-  onSettled?: (executionId: string) => void;
-};
+export type { BorrowFlowInput, BorrowFlowState } from '../flow/types';
 
 export type UseBorrowFlowResult = {
   state: BorrowFlowState;
@@ -133,31 +96,12 @@ export type UseBorrowFlowResult = {
   fundsWaitingExecutionId: string | undefined;
 };
 
-type Quoted = {
-  preview: BorrowPreview | BorrowStepsPreview;
-  figures: BorrowPreviewFigures;
-};
-
-type EffectHandler<E extends BorrowEffect = BorrowEffect> = (
-  effect: E,
-) => Promise<void> | undefined;
-
-/** A runner for each effect `type`, given the effect of that `type`. */
-type EffectHandlers = {
-  [T in BorrowEffect['type']]: EffectHandler<
-    Extract<BorrowEffect, { type: T }>
-  >;
-};
-
-/** Which `executionProgress` write each `progress` effect's `op` is. */
-const PROGRESS_RECORDERS = {
-  created: markCreated,
-  depositSent: markDepositSent,
-  forget: forgetProgress,
-} satisfies Record<
-  Extract<BorrowEffect, { type: 'progress' }>['op'],
-  (wallet: string | undefined, executionId: string) => void
->;
+/** How each effect `transition` returns is run, by its `type`. */
+const createEffectHandlers = (context: EffectContext): EffectHandlers => ({
+  ...quoteEffects(context),
+  ...runnerEffects(context),
+  ...pageEffects(context),
+});
 
 /**
  * A borrow from the confirm dialog to done or an error, over the SDK's
@@ -166,8 +110,9 @@ const PROGRESS_RECORDERS = {
  * The decisions are a pure state machine (`flow/transition.ts`: states in
  * `flow/state.ts`, events and effects in `flow/events.ts`, guards in
  * `flow/guards.ts`); this hook only feeds it events and runs the effects it
- * returns: the dry runs, the runner, the wallet's open executions, the
- * cancellation, the "taking longer" timer and the page's callbacks.
+ * returns (`effects/`): the dry runs, the runner, the wallet's open
+ * executions, the cancellation, the "taking longer" timer and the page's
+ * callbacks.
  *
  * Each method's promise settles once the work it started has (a run held
  * open keeps `confirm()` pending), except following an execution this run
@@ -180,38 +125,26 @@ export const useBorrowFlow = ({
 }: UseBorrowFlowOptions = {}): UseBorrowFlowResult => {
   const [state, setState] = useState<BorrowState>(initialState);
   const stateRef = useRef(state);
-  const {
-    address: walletAddress,
-    connect,
-    isConnected,
-  } = useIntentsConnectWallet();
-
+  const { address: wallet, connect, isConnected } = useWallet();
   const { api } = useIntentsConnect();
-  const apiRef = useRef(api);
 
-  apiRef.current = api;
+  /** What this render read, for effects that run later. */
+  const latestValue: Latest = {
+    api,
+    wallet,
+    isConnected,
+    connect,
+    callbacks: { onCreated, onPrevious, onSettled },
+  };
 
-  /** The connected wallet, read when an effect runs rather than rendered. */
-  const addressRef = useRef(walletAddress);
+  const latest = useRef(latestValue);
 
-  addressRef.current = walletAddress;
-
-  const callbacksRef = useRef({ onCreated, onPrevious, onSettled });
-
-  callbacksRef.current = { onCreated, onPrevious, onSettled };
+  latest.current = latestValue;
 
   const executionRef = useRef<UseExecutionResult | undefined>(undefined);
   // This render's effect handlers, which call `dispatch` in turn.
   const handlersRef = useRef<EffectHandlers | undefined>(undefined);
-  /**
-   * The runner's current drive, and the attempt its events and its result
-   * are tagged with: the one that started it, or a later one following it.
-   */
   const drivingRef = useRef<{ attempt: number } | undefined>(undefined);
-  /** Whether the wallet is connected, read when an effect runs. */
-  const connectedRef = useRef(isConnected);
-
-  connectedRef.current = isConnected;
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -229,11 +162,11 @@ export const useBorrowFlow = ({
     const { current } = executionRef;
 
     return {
-      wallet: addressRef.current,
+      wallet: latest.current.wallet,
       runnerSigned: current?.hasSubmittedSignature === true,
       runnerExecutionId: current?.executionId,
       runnerIntermediary: current?.execution?.details.intermediaryAddress,
-      hasOnPrevious: callbacksRef.current.onPrevious !== undefined,
+      hasOnPrevious: latest.current.callbacks.onPrevious !== undefined,
     };
   };
 
@@ -269,324 +202,13 @@ export const useBorrowFlow = ({
     return Promise.all(awaited).then(() => undefined);
   };
 
-  /** The wallet's first open execution; unread (an error) counts as none. */
-  const openExecution = async (): Promise<Execution | undefined> => {
-    const owner = addressRef.current;
-
-    if (owner === undefined) {
-      return undefined;
-    }
-
-    try {
-      const [open] = await apiRef.current.listExecutions(owner, {
-        status: IN_FLIGHT_STATUSES,
-      });
-
-      return open;
-    } catch {
-      return undefined;
-    }
-  };
-
-  /** Gas pre-check, the two-pass dry run and the liquidity pre-check. */
-  const quote = async (input: BorrowFlowInput): Promise<Quoted> => {
-    const { adapter, fundingRows, ...previewInput } = input;
-
-    if (
-      checkOriginGas({
-        rows: fundingRows,
-        origin: input.origin,
-        amount: input.amount,
-      }) === 'short'
-    ) {
-      throw new BorrowPreCheckError(
-        'noGas',
-        `Not enough gas on ${input.origin.chain} for the deposit`,
-      );
-    }
-
-    const previewed = await previewBorrow({
-      ...previewInput,
-      adapter,
-      preview: (plan) => requireExecution().preview(plan),
-    });
-
-    const snapshot = await adapter.getMarketSnapshot(input.market);
-
-    if (
-      checkLiquidity(snapshot, input.borrow, previewed.borrowAmount) ===
-      'noLiquidity'
-    ) {
-      throw new BorrowPreCheckError(
-        'noLiquidity',
-        `${input.market.name} can't lend ${input.borrow.symbol} at this size now`,
-      );
-    }
-
-    return {
-      preview: previewed,
-      figures: borrowPreviewFigures({
-        execution: previewed.preview.execution,
-        borrowAmount: previewed.borrowAmount,
-        paid: {
-          assetId: input.origin.assetId,
-          decimals: input.origin.decimals,
-        },
-        collateral: input.collateral,
-        borrow: input.borrow,
-      }),
-    };
-  };
-
-  /** The steps-only dry runs over the collateral waiting at `intermediary`. */
-  const quoteSteps = async (
-    input: BorrowFlowInput,
-    intermediary: string,
-  ): Promise<Quoted> => {
-    const previewed = await previewBorrowSteps({
-      adapter: input.adapter,
-      market: input.market,
-      collateral: input.collateral,
-      borrow: input.borrow,
-      ltv: input.ltv,
-      recipient: input.recipient,
-      intermediary,
-      previewSteps: (plan) => requireExecution().previewSteps(plan),
-    });
-
-    return {
-      preview: previewed,
-      figures: stepsPreviewFigures({
-        spendable: BigInt(previewed.steps.spendable),
-        networkFee:
-          previewed.steps.networkFee === undefined
-            ? undefined
-            : BigInt(previewed.steps.networkFee),
-        borrowAmount: previewed.borrowAmount,
-        collateral: previewed.collateral,
-        borrow: previewed.borrow,
-      }),
-    };
-  };
-
-  const startDrive = (how: DriveHow): Promise<{ id: string }> => {
-    const runner = requireExecution();
-
-    switch (how.kind) {
-      case 'run':
-        return runner.run(how.plan);
-      case 'runSteps':
-        return runner.runSteps(how.plan);
-      case 'resume':
-        return runner.resume(how.executionId);
-      default:
-        return runner.retryDeposit();
-    }
-  };
-
-  /**
-   * Drives the runner for `attempt`: its events, then its result, go to the
-   * machine, under the attempt following the drive by then (`follow` may
-   * hand it to a later one).
-   */
-  const drive = async (attempt: number, how: DriveHow) => {
-    const driving = { attempt };
-
-    drivingRef.current = driving;
-
-    let outcome: BorrowEvent;
-
-    try {
-      const { id } = await startDrive(how);
-
-      outcome = { type: 'RUN_DONE', attempt: driving.attempt, id };
-    } catch (error) {
-      outcome = { type: 'RUN_FAILED', attempt: driving.attempt, error };
-    }
-
-    if (drivingRef.current === driving) {
-      drivingRef.current = undefined;
-    }
-
-    await dispatch(outcome);
-  };
-
-  const clearDelayTimer = () => {
-    clearTimeout(delayTimerRef.current);
-    delayTimerRef.current = undefined;
-  };
-
-  /** `QUOTED` or `QUOTE_FAILED`, once a dry run for `attempt` settles. */
-  const settleQuote = (attempt: number, quoting: Promise<Quoted>) =>
-    quoting.then(
-      (quoted) => dispatch({ type: 'QUOTED', attempt, ...quoted }),
-      (error: unknown) => dispatch({ type: 'QUOTE_FAILED', attempt, error }),
-    );
-
-  /** How each effect `transition` returns is run, by its `type`. */
-  const handlers: EffectHandlers = {
-    listOpen: (effect) =>
-      openExecution().then((open) =>
-        dispatch({
-          type: 'OPEN_LISTED',
-          attempt: effect.attempt,
-          open,
-          known: open ? progressOf(addressRef.current, open.id) : undefined,
-        }),
-      ),
-
-    quote: (effect) => settleQuote(effect.attempt, quote(effect.input)),
-
-    quoteSteps: (effect) =>
-      settleQuote(
-        effect.attempt,
-        quoteSteps(effect.input, effect.intermediary),
-      ),
-
-    drive: (effect) => drive(effect.attempt, effect.how),
-
-    follow: (effect) => {
-      const { current } = executionRef;
-
-      // This runner still drives it (the dialog was closed while it ran):
-      // its events, and the result of the drive under way, now go to this
-      // attempt; a second resume would be refused.
-      if (
-        current?.isBusy === true &&
-        current.executionId === effect.executionId
-      ) {
-        if (drivingRef.current) {
-          drivingRef.current.attempt = effect.attempt;
-        } else {
-          drivingRef.current = { attempt: effect.attempt };
-        }
-      } else {
-        void drive(effect.attempt, {
-          kind: 'resume',
-          executionId: effect.executionId,
-        });
-      }
-
-      return undefined;
-    },
-
-    cancel: (effect) =>
-      requireExecution()
-        .cancel(effect.executionId)
-        .then(
-          () =>
-            dispatch({
-              type: 'CANCELLED',
-              attempt: effect.attempt,
-              executionId: effect.executionId,
-            }),
-          (error: unknown) =>
-            dispatch({
-              type: 'CANCEL_FAILED',
-              attempt: effect.attempt,
-              executionId: effect.executionId,
-              error,
-            }),
-        ),
-
-    diagnose: (effect) => {
-      const { input, borrowed } = effect;
-
-      return input.adapter
-        .getMarketSnapshot(input.market)
-        .then((snapshot) =>
-          diagnoseBorrowStep({
-            snapshot,
-            collateral: input.collateral,
-            borrow: input.borrow,
-            // What was supplied: the steps-only `spendable`, else the
-            // bridge's minimum received.
-            collateralAmount: BigInt(
-              isStepsPreview(borrowed)
-                ? borrowed.steps.spendable
-                : borrowed.preview.execution.quote.minAmountOut,
-            ),
-            borrowAmount: borrowed.borrowAmount,
-          }),
-        )
-        .then(
-          (borrowStep) =>
-            borrowStep
-              ? dispatch({
-                  type: 'DIAGNOSED',
-                  attempt: effect.attempt,
-                  cause: effect.cause,
-                  borrowStep,
-                })
-              : undefined,
-          // Unread: the failure stays unexplained.
-          () => undefined,
-        );
-    },
-
-    armDelay: (effect) => {
-      if (!delayTimerRef.current) {
-        delayTimerRef.current = setTimeout(() => {
-          void dispatch({ type: 'DELAY_ELAPSED', attempt: effect.attempt });
-        }, BORROW_DELAYED_AFTER_MS);
-      }
-
-      return undefined;
-    },
-
-    clearDelay: () => {
-      clearDelayTimer();
-
-      return undefined;
-    },
-
-    connect: () => {
-      // Still connected (the account switched): the new account's runner is
-      // in place and nothing the effect below watches will change, so the
-      // wallet is back once `connect()` resolves, which it does at once.
-      // Otherwise the effect waits for the runner rebuilt for the wallet.
-      const stillConnected = connectedRef.current;
-
-      Promise.resolve(connect()).then(
-        () => {
-          if (stillConnected) {
-            void dispatch({ type: 'WALLET_BACK' });
-          }
-        },
-        () => {
-          void dispatch({ type: 'RECONNECT_FAILED' });
-        },
-      );
-
-      return undefined;
-    },
-
-    progress: (effect) => {
-      PROGRESS_RECORDERS[effect.op](effect.wallet, effect.executionId);
-
-      return undefined;
-    },
-
-    notifyCreated: (effect) => {
-      callbacksRef.current.onCreated?.(effect.executionId);
-
-      return undefined;
-    },
-
-    notifyPrevious: (effect) => {
-      callbacksRef.current.onPrevious?.(effect.execution);
-
-      return undefined;
-    },
-
-    notifySettled: (effect) => {
-      callbacksRef.current.onSettled?.(effect.executionId);
-
-      return undefined;
-    },
-  };
-
-  handlersRef.current = handlers;
+  handlersRef.current = createEffectHandlers({
+    dispatch,
+    runner: requireExecution,
+    latest,
+    driving: drivingRef,
+    delayTimer: delayTimerRef,
+  });
 
   const onEvent = (event: RunnerEvent) => {
     void dispatch({
@@ -622,7 +244,7 @@ export const useBorrowFlow = ({
       void dispatch({
         type: 'RESTORE',
         execution: found,
-        known: progressOf(addressRef.current, found.id),
+        known: progressOf(latest.current.wallet, found.id),
       });
     },
     retry: () => dispatch({ type: 'RETRY' }),

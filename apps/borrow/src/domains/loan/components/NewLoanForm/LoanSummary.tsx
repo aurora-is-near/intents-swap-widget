@@ -12,8 +12,6 @@ const formatPrice = (usd: number) =>
 const formatHealth = (hundredths: bigint) =>
   (Number(hundredths) / 100).toFixed(2);
 
-const DASH = '—';
-
 /**
  * A tile (line 368): `sf2`, radius 14, padding 12px 16px; the label 12px
  * `mut2`, the value 26px / 800 / -0.02em, kept on one line.
@@ -77,7 +75,7 @@ export function LoanSummary({
         }
         value={
           liquidationPriceUsd === undefined
-            ? DASH
+            ? '—'
             : formatPrice(liquidationPriceUsd)
         }
       />
@@ -85,7 +83,7 @@ export function LoanSummary({
         label="Health"
         value={
           healthHundredths === null || healthHundredths === undefined
-            ? DASH
+            ? '—'
             : formatHealth(healthHundredths)
         }
       />

@@ -17,6 +17,7 @@ const CHAINS: Record<string, { name: string; color: string }> = {
   gnosis: { name: 'Gnosis', color: ALL_CHAINS_COLOR },
   sol: { name: 'Solana', color: ALL_CHAINS_COLOR },
   near: { name: 'NEAR', color: ALL_CHAINS_COLOR },
+  stellar: { name: 'Stellar', color: ALL_CHAINS_COLOR },
 };
 
 /** A chain's name and dot colour by its 1Click slug. */

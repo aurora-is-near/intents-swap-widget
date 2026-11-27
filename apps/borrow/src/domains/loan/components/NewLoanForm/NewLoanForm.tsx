@@ -1,7 +1,7 @@
 import { Card } from '@aurora-is-near/ui-kit';
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 
 import { useConnectWallet } from '@/domains/wallet/hooks/useConnectWallet';
+import { useWallet } from '@/domains/wallet/hooks/useWallet';
 
 import { useLoanForm } from '../../hooks/useLoanForm';
 import { MarketList } from '../MarketList/MarketList';
@@ -12,12 +12,6 @@ import { LtvField } from './LtvField';
 import { RecipientField } from './RecipientField';
 import { SupplySection } from './SupplySection';
 import type { BorrowRequest } from '../../hooks/useLoanForm';
-
-/**
- * The connect chip's market before any market has loaded: Borrow launches
- * on Aave only (line 372 names the selected market).
- */
-const LAUNCH_MARKET_NAME = 'Aave';
 
 /**
  * The New loan tab: the artboard's two columns (lines 213–375). The form
@@ -41,7 +35,7 @@ export function NewLoanForm({
   onBorrow?: (request: BorrowRequest) => void;
   borrowing?: boolean;
 }) {
-  const { isConnected, family } = useIntentsConnectWallet();
+  const { isConnected, family } = useWallet();
   const connectWallet = useConnectWallet();
   const form = useLoanForm({ connected: isConnected, walletFamily: family });
 
@@ -93,7 +87,8 @@ export function NewLoanForm({
           ltv={form.ltv}
         />
         <LoanCta
-          marketName={form.figuresMarket?.name ?? LAUNCH_MARKET_NAME}
+          // Before any market loads: Borrow launches on Aave only (line 372).
+          marketName={form.figuresMarket?.name ?? 'Aave'}
           busy={borrowing}
           state={form.cta}
           onBorrow={() => {

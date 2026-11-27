@@ -157,7 +157,7 @@ const borrowableOf = (
 
 /**
  * The market's collateral and borrowable reserves, all read at one block
- * (head − 1): the head, the reserve list, then one multicall with every
+ * (head − 1): the head, the reserve list (while `assets` resolves), then one multicall with every
  * reserve read and the oracle's prices (viem chunks it into a few `eth_call`s,
  * all at this block). Any failed read rejects;
  * a missing value throws, naming the reserve and the field.
@@ -177,17 +177,26 @@ export const readAaveReserves = async (
   market: AaveMarket,
   { assets }: ReadAaveReservesOptions = {},
 ): Promise<AaveReserves> => {
-  const head = await client.getBlockNumber();
-  const blockNumber = head > 0n ? head - 1n : head;
+  const readListed = async () => {
+    const head = await client.getBlockNumber();
+    const blockNumber = head > 0n ? head - 1n : head;
 
-  const listed = await client.readContract({
-    address: market.dataProvider,
-    abi: DATA_PROVIDER_ABI,
-    functionName: 'getAllReservesTokens',
-    blockNumber,
-  });
+    const listed = await client.readContract({
+      address: market.dataProvider,
+      abi: DATA_PROVIDER_ABI,
+      functionName: 'getAllReservesTokens',
+      blockNumber,
+    });
 
-  const wanted = assets && new Set(assets.map((asset) => asset.toLowerCase()));
+    return { blockNumber, listed };
+  };
+
+  const [{ blockNumber, listed }, filter] = await Promise.all([
+    readListed(),
+    assets,
+  ]);
+
+  const wanted = filter && new Set(filter.map((asset) => asset.toLowerCase()));
 
   const reserves: Reserve[] = listed.flatMap((entry, index) => {
     // The decoder's types promise both fields; a short RPC reply still throws.

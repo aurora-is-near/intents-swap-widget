@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -45,6 +45,23 @@ describe('TokenMark', () => {
 
     expect(logo).toHaveAttribute('src', '/eth.svg');
     expect(screen.queryByText('ET')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the letters when the logo fails to load', () => {
+    const { rerender } = render(<TokenMark label="ws" src="/missing.png" />);
+
+    fireEvent.error(screen.getByRole('img', { name: 'ws' }));
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('ws')).toBeInTheDocument();
+
+    // A new logo gets its own try.
+    rerender(<TokenMark label="ws" src="/wsteth.svg" />);
+
+    expect(screen.getByRole('img', { name: 'ws' })).toHaveAttribute(
+      'src',
+      '/wsteth.svg',
+    );
   });
 
   it('uses the alt text passed in', () => {

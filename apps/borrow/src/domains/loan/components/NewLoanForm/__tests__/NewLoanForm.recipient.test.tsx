@@ -7,12 +7,14 @@ import { MarketAdaptersProvider } from '@/domains/markets/providers/MarketAdapte
 import { emptyBalances } from '@/tests/balancesMock';
 import { createFakeAdapter, createTestQueryClient } from '@/tests/fakeMarkets';
 import type { BalancesMockState } from '@/tests/balancesMock';
+import type { WalletFamily } from '@/domains/wallet/types';
 
 import { NewLoanForm } from '../NewLoanForm';
 
 /**
- * The recipient rule by the connected wallet's family: a Solana wallet
- * can't receive on the market's EVM chain, so it must name a recipient.
+ * The recipient rule by the connected wallet's family: a Solana, NEAR or
+ * Stellar wallet can't receive on the market's EVM chain, so it must name a
+ * recipient.
  */
 
 const wallet = vi.hoisted(() => ({
@@ -20,13 +22,13 @@ const wallet = vi.hoisted(() => ({
   isConnected: false,
   connect: vi.fn(),
   disconnect: vi.fn(),
-  family: null as 'evm' | 'sol' | null,
+  family: null as WalletFamily | null,
 }));
 
 const balances = vi.hoisted(() => ({}) as BalancesMockState);
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
@@ -36,13 +38,17 @@ vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
   ),
 );
 
-const connect = (family: 'evm' | 'sol') => {
+const ADDRESSES: Record<WalletFamily, string> = {
+  evm: '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21',
+  sol: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+  near: 'alice.near',
+  stellar: 'GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG',
+};
+
+const connect = (family: WalletFamily) => {
   wallet.isConnected = true;
   wallet.family = family;
-  wallet.address =
-    family === 'evm'
-      ? '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21'
-      : '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
+  wallet.address = ADDRESSES[family];
 };
 
 const renderForm = async () => {
@@ -114,6 +120,34 @@ describe('NewLoanForm recipient by wallet family', () => {
     // 1 WETH less the 0.30% fee at $3,000, LTV 50%, on Arbitrum.
     expect(cta('Borrow 1,496 USDC on Aave')).toBeInTheDocument();
   });
+
+  it.each(['near', 'stellar'] as const)(
+    'with a %s wallet, locks the recipient on',
+    async (family) => {
+      const user = userEvent.setup();
+
+      connect(family);
+      await renderForm();
+
+      expect(checkbox()).toBeChecked();
+      expect(checkbox()).toHaveAttribute('aria-disabled', 'true');
+      expect(checkbox()).toHaveAccessibleDescription(REASON);
+
+      await user.type(
+        screen.getByRole('textbox', { name: 'Collateral amount' }),
+        '1',
+      );
+
+      expect(cta('Enter recipient address')).toBeDisabled();
+
+      await user.type(
+        screen.getByRole('textbox', { name: 'Recipient wallet address' }),
+        '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21',
+      );
+
+      expect(cta('Borrow 1,496 USDC on Aave')).toBeInTheDocument();
+    },
+  );
 
   it('with an EVM wallet, leaves the recipient optional', async () => {
     const user = userEvent.setup();

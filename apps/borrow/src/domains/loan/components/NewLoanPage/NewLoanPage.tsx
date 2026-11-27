@@ -1,13 +1,10 @@
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 import { useNavigate } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 
 import { useMarketAdapters } from '@/domains/markets/providers/MarketAdaptersProvider';
-import {
-  BorrowDialog,
-  borrowDialogStep,
-  confirmRows,
-} from '@/domains/borrow/components/BorrowDialog/BorrowDialog';
+import { BorrowDialog } from '@/domains/borrow/components/BorrowDialog/BorrowDialog';
+import { getBorrowDialogStep } from '@/domains/borrow/components/BorrowDialog/utils/getBorrowDialogStep';
+import { getConfirmRows } from '@/domains/borrow/components/BorrowDialog/utils/getSummary';
 import {
   clearPendingBorrow,
   savePendingBorrow,
@@ -17,10 +14,11 @@ import {
   earlierBorrowSummary,
   useRestoreBorrow,
 } from '@/domains/borrow/hooks/useRestoreBorrow';
+import { useWallet } from '@/domains/wallet/hooks/useWallet';
 import type {
   BorrowDialogLoan,
   RestoredBorrowSummary,
-} from '@/domains/borrow/components/BorrowDialog/BorrowDialog';
+} from '@/domains/borrow/components/BorrowDialog/utils/getSummary';
 import type { BorrowFlowState } from '@/domains/borrow/hooks/useBorrowFlow';
 
 import { chainOf } from '../../utils/chains';
@@ -83,7 +81,7 @@ const isTracked = (state: BorrowFlowState) =>
 export function NewLoanPage() {
   const adapters = useMarketAdapters();
   const navigate = useNavigate();
-  const { address } = useIntentsConnectWallet();
+  const { address } = useWallet();
   const [loan, setLoan] = useState<BorrowDialogLoan>();
   // A borrow picked up after a reload, shown without a loan or figures.
   const [restored, setRestored] = useState<RestoredBorrowSummary>();
@@ -113,7 +111,7 @@ export function NewLoanPage() {
       if (address && loan && created) {
         savePendingBorrow(address, {
           executionId,
-          rows: confirmRows(loan, created),
+          rows: getConfirmRows(loan, created),
           borrowSymbol: loan.borrow.symbol,
         });
       }
@@ -185,7 +183,7 @@ export function NewLoanPage() {
         step={
           dismissed && stillPending(state)
             ? undefined
-            : borrowDialogStep(
+            : getBorrowDialogStep(
                 state,
                 flow.action,
                 flow.fundsWaiting,

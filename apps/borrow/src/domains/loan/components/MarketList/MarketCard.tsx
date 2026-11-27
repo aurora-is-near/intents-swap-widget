@@ -18,20 +18,6 @@ import type { ProviderRow } from '../../model/marketRows';
 const CARD =
   'box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3';
 
-/**
- * The card as a button: hover `mid`, focus ring (lines 73, 77), `.best` tint
- * (line 74), `.sel` 3px ink border with the padding taken in to keep the box
- * (line 75, mobile line 124), `.off` at .55 opacity (line 76).
- */
-const CARD_BUTTON = `${CARD} cursor-pointer enabled:hover:border-mid focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed`;
-
-/** `.best` comes after `:hover` (lines 73–74), so it keeps `limebd` on hover. */
-const CARD_BEST = 'border-limebd bg-tint enabled:hover:border-limebd';
-const CARD_SELECTED =
-  'border-3 border-ink p-[14.5px] enabled:hover:border-ink mobile:p-[10.5px]';
-
-const CARD_OFF = 'opacity-55';
-
 /** `.mkn` (line 352): 26px / 800 / -0.03em / 1.1; 19px at ≤640px (line 124). */
 const NAME =
   'text-26 font-extrabold leading-1.1 tracking-figure mobile:text-19';
@@ -45,9 +31,6 @@ const META = 'text-13 text-mut2';
 
 /** The first line (line 347): min-height 18, the BEST or "MAX" tag. */
 const TAG_ROW = 'flex min-h-4.5 items-center';
-
-/** Line 349: 11px, 0.1em, a 7px `#5E9E12` dot (no token on the artboard). */
-const BEST_TAG = 'inline-flex items-center gap-1.5 text-11 tracking-widest';
 
 type MarketCardProps = {
   row: ProviderRow;
@@ -75,17 +58,27 @@ export function MarketCard({
     <button
       aria-pressed={selected}
       className={cn(
-        CARD_BUTTON,
-        best && CARD_BEST,
-        selected && CARD_SELECTED,
-        off && CARD_OFF,
+        CARD,
+        // The card as a button: hover `mid`, focus ring (lines 73, 77).
+        'cursor-pointer enabled:hover:border-mid focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid disabled:cursor-not-allowed',
+        // `.best` tint (line 74); it comes after `:hover` (lines 73–74), so
+        // it keeps `limebd` on hover.
+        best && 'border-limebd bg-tint enabled:hover:border-limebd',
+        // `.sel` 3px ink border with the padding taken in to keep the box
+        // (line 75, mobile line 124).
+        selected &&
+          'border-3 border-ink p-[14.5px] enabled:hover:border-ink mobile:p-[10.5px]',
+        // `.off` at .55 opacity (line 76).
+        off && 'opacity-55',
       )}
       disabled={off}
       type="button"
       onClick={onPick}>
       <div className={TAG_ROW}>
         {best ? (
-          <span className={BEST_TAG}>
+          // Line 349: 11px, 0.1em, a 7px `#5E9E12` dot (no token on the
+          // artboard).
+          <span className="inline-flex items-center gap-1.5 text-11 tracking-widest">
             <span
               aria-hidden="true"
               className="inline-block h-1.75 w-1.75 rounded-full bg-live"

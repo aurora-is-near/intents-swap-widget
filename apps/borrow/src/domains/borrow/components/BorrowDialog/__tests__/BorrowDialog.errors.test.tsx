@@ -3,11 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { IntentsConnectApiError } from '@aurora-is-near/intents-connect';
 import { describe, expect, it, vi } from 'vitest';
 
-import { BorrowDialog, borrowDialogStep } from '../BorrowDialog';
-import { errorCopy } from '../errorCopy';
+import { BorrowDialog } from '../BorrowDialog';
+import { getBorrowDialogStep } from '../utils/getBorrowDialogStep';
+import { getErrorCopy } from '../utils/getErrorCopy';
 import type { BorrowErrorKind } from '../../../utils/classifyBorrowError';
 import type { BorrowPreviewFigures } from '../../../utils/previewFigures';
-import type { BorrowDialogLoan } from '../BorrowDialog';
+import type { BorrowDialogLoan } from '../utils/getSummary';
 
 const LOAN: BorrowDialogLoan = {
   paid: {
@@ -49,7 +50,7 @@ const stateOf = (error: BorrowErrorKind) =>
     kind: 'error',
     error,
     cause: undefined,
-    step: errorCopy[error].step,
+    step: getErrorCopy(error).step,
   }) as const;
 
 const renderError = (error: BorrowErrorKind, withFigures = true) => {
@@ -64,7 +65,7 @@ const renderError = (error: BorrowErrorKind, withFigures = true) => {
     <BorrowDialog
       figures={withFigures ? FIGURES : undefined}
       loan={LOAN}
-      step={borrowDialogStep(stateOf(error))}
+      step={getBorrowDialogStep(stateOf(error))}
       {...handlers}
     />,
   );
@@ -107,7 +108,7 @@ describe('BorrowDialog error states', () => {
       expect(within(banner).getByText(title)).toBeInTheDocument();
       expect(
         within(banner).getByText(
-          errorCopy[error].text({
+          getErrorCopy(error).text({
             chainName: 'Arbitrum',
             collateralSymbol: 'WETH',
             borrowSymbol: 'USDC',
@@ -151,7 +152,7 @@ describe('BorrowDialog error states', () => {
 
   it('pairUnsupported with the collateral waiting: says it is held and not retried', () => {
     expect(
-      errorCopy.pairUnsupported.text({
+      getErrorCopy('pairUnsupported').text({
         chainName: 'Arbitrum',
         collateralSymbol: 'WETH',
         borrowSymbol: 'USDC',
@@ -202,7 +203,7 @@ describe('BorrowDialog error states', () => {
       <BorrowDialog
         figures={FIGURES}
         loan={LOAN}
-        step={borrowDialogStep(stateOf('rejected'), 'reconnect')}
+        step={getBorrowDialogStep(stateOf('rejected'), 'reconnect')}
         onAction={onAction}
         onCancel={vi.fn()}
         onConfirm={vi.fn()}
@@ -220,7 +221,7 @@ describe('BorrowDialog error states', () => {
       <BorrowDialog
         figures={FIGURES}
         loan={LOAN}
-        step={borrowDialogStep(stateOf('priceMoved'), 'close', true)}
+        step={getBorrowDialogStep(stateOf('priceMoved'), 'close', true)}
         onAction={vi.fn()}
         onCancel={vi.fn()}
         onConfirm={vi.fn()}
@@ -238,7 +239,7 @@ describe('BorrowDialog error states', () => {
       <BorrowDialog
         figures={FIGURES}
         loan={LOAN}
-        step={borrowDialogStep(stateOf('noLiquidity'), 'close', true)}
+        step={getBorrowDialogStep(stateOf('noLiquidity'), 'close', true)}
         onAction={vi.fn()}
         onCancel={vi.fn()}
         onConfirm={vi.fn()}
@@ -263,7 +264,7 @@ describe('BorrowDialog error states', () => {
   });
 
   it('an unknown error closes', () => {
-    expect(borrowDialogStep(stateOf('unknown'))).toEqual({
+    expect(getBorrowDialogStep(stateOf('unknown'))).toEqual({
       kind: 'error',
       error: 'unknown',
       step: 0,
@@ -280,7 +281,7 @@ describe('BorrowDialog error states', () => {
       <BorrowDialog
         figures={FIGURES}
         loan={LOAN}
-        step={borrowDialogStep(stateOf('walletDisconnected'), 'reconnect')}
+        step={getBorrowDialogStep(stateOf('walletDisconnected'), 'reconnect')}
         onAction={onAction}
         onCancel={vi.fn()}
         onConfirm={vi.fn()}
@@ -303,7 +304,7 @@ describe('BorrowDialog error states', () => {
       <BorrowDialog
         figures={FIGURES}
         loan={LOAN}
-        step={borrowDialogStep(
+        step={getBorrowDialogStep(
           stateOf('noLiquidity'),
           'retry',
           true,
@@ -329,7 +330,7 @@ describe('BorrowDialog error states', () => {
 
   it('names no execution while nothing waits', () => {
     expect(
-      borrowDialogStep(stateOf('rejected'), 'retry', false, 'exec-1'),
+      getBorrowDialogStep(stateOf('rejected'), 'retry', false, 'exec-1'),
     ).not.toHaveProperty('executionId');
   });
 });
@@ -343,7 +344,7 @@ describe("BorrowDialog: the API's own reason", () => {
       step: 0,
     }) as const;
 
-  const renderStep = (step: ReturnType<typeof borrowDialogStep>) =>
+  const renderStep = (step: ReturnType<typeof getBorrowDialogStep>) =>
     render(
       <BorrowDialog
         figures={FIGURES}
@@ -358,7 +359,7 @@ describe("BorrowDialog: the API's own reason", () => {
 
   it('shows the error the execution init answered with', () => {
     renderStep(
-      borrowDialogStep(apiFailure({ error: 'No liquidity available' })),
+      getBorrowDialogStep(apiFailure({ error: 'No liquidity available' })),
     );
 
     const dialog = screen.getByRole('dialog');
@@ -370,16 +371,16 @@ describe("BorrowDialog: the API's own reason", () => {
       within(dialog).getByText('No liquidity available'),
     ).toBeInTheDocument();
     expect(
-      within(dialog).queryByText(errorCopy.unknown.text(LOAN_CONTEXT)),
+      within(dialog).queryByText(getErrorCopy('unknown').text(LOAN_CONTEXT)),
     ).not.toBeInTheDocument();
   });
 
   it('falls back to the generic text when the body has no error', () => {
-    renderStep(borrowDialogStep(apiFailure('<html>502</html>')));
+    renderStep(getBorrowDialogStep(apiFailure('<html>502</html>')));
 
     expect(
       within(screen.getByRole('dialog')).getByText(
-        errorCopy.unknown.text(LOAN_CONTEXT),
+        getErrorCopy('unknown').text(LOAN_CONTEXT),
       ),
     ).toBeInTheDocument();
   });
@@ -397,14 +398,14 @@ describe("BorrowDialog: the API's own reason", () => {
     const { rerender } = render(
       <BorrowDialog
         {...props}
-        step={borrowDialogStep(apiFailure({ error: 'First reason' }))}
+        step={getBorrowDialogStep(apiFailure({ error: 'First reason' }))}
       />,
     );
 
     rerender(
       <BorrowDialog
         {...props}
-        step={borrowDialogStep(apiFailure({ error: 'Second reason' }))}
+        step={getBorrowDialogStep(apiFailure({ error: 'Second reason' }))}
       />,
     );
 
@@ -432,7 +433,7 @@ describe("BorrowDialog: the API's own reason", () => {
   });
 
   it("keeps a known kind's own copy", () => {
-    const step = borrowDialogStep({
+    const step = getBorrowDialogStep({
       ...apiFailure({ error: 'No liquidity available' }),
       error: 'noLiquidity',
     });

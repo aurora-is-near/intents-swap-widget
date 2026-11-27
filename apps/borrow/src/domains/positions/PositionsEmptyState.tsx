@@ -1,10 +1,10 @@
 import { Button, Card } from '@aurora-is-near/ui-kit';
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
 import { useNavigate } from '@tanstack/react-router';
 import { useId } from 'react';
 
 import { useFocusTab } from '@/shell/tabFocus';
 import { useConnectWallet } from '@/domains/wallet/hooks/useConnectWallet';
+import { useWallet } from '@/domains/wallet/hooks/useWallet';
 
 /**
  * The My positions card when there is nothing to list
@@ -21,7 +21,7 @@ import { useConnectWallet } from '@/domains/wallet/hooks/useConnectWallet';
  * Copy as drawn (decided; revisit before launch).
  */
 export function PositionsEmptyState() {
-  const { isConnected } = useIntentsConnectWallet();
+  const { isConnected } = useWallet();
   const connectWallet = useConnectWallet();
   const navigate = useNavigate();
   const focusNewLoan = useFocusTab();

@@ -120,6 +120,15 @@ export const attemptOf = (state: BorrowState): number =>
 export const runOf = (state: BorrowState): Run | undefined =>
   state.kind === 'idle' ? undefined : state.run;
 
+/**
+ * `state` with `change` merged into its run, every other field kept: the
+ * state keeps its own kind and run type (a `confirm` run keeps its dry run).
+ */
+export const updateRun = <S extends BorrowState & { run: Run }>(
+  state: S,
+  change: (run: S['run']) => Partial<Run>,
+): S => ({ ...state, run: { ...state.run, ...change(state.run) } });
+
 /** A run that has not started anything yet. */
 export const freshRun = (attempt: number, input?: BorrowFlowInput): Run => ({
   attempt,

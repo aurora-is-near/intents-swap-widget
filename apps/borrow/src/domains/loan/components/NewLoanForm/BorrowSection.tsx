@@ -21,7 +21,7 @@ import {
   TokenFilters,
   triggerLabel,
 } from './TokenPicker';
-import type { LoanForm } from '../../hooks/useLoanForm';
+import type { LoanForm } from '../../model/loanForm';
 import type { ReserveAsset } from '../../model/reserveAssets';
 
 /** The fee to two decimals (line 1573), more below one unit. */

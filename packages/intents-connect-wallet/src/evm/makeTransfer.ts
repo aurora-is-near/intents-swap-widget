@@ -7,7 +7,6 @@ import {
   erc20Abi,
   type WalletClient,
 } from 'viem';
-import * as viemChains from 'viem/chains';
 import {
   type Eip1193Provider,
   type MakeTransfer,
@@ -20,8 +19,14 @@ import { makeVirtualChainTransfer } from '@/evm/makeVirtualChainTransfer';
 import type { EvmTransferOptions } from '@/evm/types';
 import { isEvmAddress, isVirtualChain } from '@/evm/utils';
 
-const findViemChain = (id: number): Chain | undefined =>
-  (Object.values(viemChains) as unknown[]).find(
+/**
+ * viem's chain by id. The registry holds every chain viem knows, so it is
+ * loaded on first use (a deposit) rather than with the app.
+ */
+const findViemChain = async (id: number): Promise<Chain | undefined> => {
+  const viemChains = await import('viem/chains');
+
+  return (Object.values(viemChains) as unknown[]).find(
     (c): c is Chain =>
       !!c &&
       typeof c === 'object' &&
@@ -29,6 +34,7 @@ const findViemChain = (id: number): Chain | undefined =>
       typeof (c as { id: unknown }).id === 'number' &&
       (c as Chain).id === id,
   );
+};
 
 /** EIP-1193 `userRejectedRequest`: the user declined a wallet prompt. */
 const USER_REJECTED = 4001;
@@ -81,7 +87,7 @@ const addEthereumChain = async (
   targetChainId: number,
   provider: Eip1193Provider,
 ): Promise<void> => {
-  const chain = findViemChain(targetChainId);
+  const chain = await findViemChain(targetChainId);
 
   if (!chain) {
     throw new Error(
@@ -256,7 +262,8 @@ const sendAuthorized = async <T>(
       throw error;
     }
 
-    const chainName = findViemChain(evmChainId)?.name ?? `chain ${evmChainId}`;
+    const chainName =
+      (await findViemChain(evmChainId))?.name ?? `chain ${evmChainId}`;
 
     throw new Error(
       `Your wallet hasn't authorized this site on ${chainName} — reconnect and try again`,
@@ -312,7 +319,7 @@ export const makeTransfer: MakeTransfer<EvmTransferOptions> = async (
   });
 
   const from = await readAccount(walletClient);
-  const chain = findViemChain(evmChainId) ?? null;
+  const chain = (await findViemChain(evmChainId)) ?? null;
   const sendContext: SendContext = {
     walletClient,
     provider: resolved,

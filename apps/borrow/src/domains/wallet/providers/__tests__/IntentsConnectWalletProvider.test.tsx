@@ -16,8 +16,8 @@ vi.mock('@/config', () => ({
   intentsApi: mocks.intentsApi,
 }));
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', () => ({
-  useIntentsConnectWallet: () => ({ wallet: mocks.wallet }),
+vi.mock('../../hooks/useWallet', () => ({
+  useWallet: () => ({ wallet: mocks.wallet }),
 }));
 
 vi.mock('@aurora-is-near/intents-connect/react', () => ({
@@ -55,7 +55,7 @@ describe('IntentsConnectWalletProvider', () => {
     });
   });
 
-  it('passes the connected wallet from useIntentsConnectWallet', () => {
+  it('passes the connected wallet from useWallet', () => {
     const wallet = { family: 'evm', address: '0x7a3f' };
 
     mocks.wallet = wallet;

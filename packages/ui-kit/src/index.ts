@@ -28,6 +28,8 @@ export type {
 } from './components/Dialog/Dialog';
 export { Highlight } from './components/Highlight/Highlight';
 export type { HighlightProps } from './components/Highlight/Highlight';
+export { ScrollArea } from './components/ScrollArea/ScrollArea';
+export type { ScrollAreaProps } from './components/ScrollArea/ScrollArea';
 export { Skeleton } from './components/Skeleton/Skeleton';
 export type { SkeletonProps } from './components/Skeleton/Skeleton';
 export { RISK_ZONE_COLORS, Slider } from './components/Slider/Slider';

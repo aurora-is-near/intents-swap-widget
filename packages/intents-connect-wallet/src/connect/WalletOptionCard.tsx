@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { resolveTheme, type WalletSelectorTheme } from '@/connect/theme';
 import { WalletIcon } from '@/connect/WalletIcon';
 import type { WalletIconSpec } from '@/connect/types';
 
@@ -8,6 +9,8 @@ type WalletOptionCardProps = {
   title: string;
   description: string;
   icons: WalletIconSpec[];
+  /** Overrides of the default (dark) look. */
+  theme?: Partial<WalletSelectorTheme>;
 };
 
 export const WalletOptionCard = ({
@@ -15,8 +18,10 @@ export const WalletOptionCard = ({
   title,
   description,
   icons,
+  theme: overrides,
 }: WalletOptionCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const theme = resolveTheme(overrides);
 
   return (
     <button
@@ -30,9 +35,13 @@ export const WalletOptionCard = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 16,
-        borderRadius: 12,
-        color: '#F3F3F5',
-        backgroundColor: isHovered ? '#2F2F2F' : '#252525',
+        border: theme.optionBorder,
+        borderRadius: theme.optionRadius,
+        color: theme.text,
+        backgroundColor: isHovered
+          ? theme.optionHoverBackground
+          : theme.optionBackground,
+        fontFamily: theme.fontFamily,
         cursor: 'pointer',
         textAlign: 'left',
       }}>
@@ -42,7 +51,7 @@ export const WalletOptionCard = ({
           style={{
             fontSize: 12,
             fontWeight: 500,
-            color: '#B2B5C1',
+            color: theme.mutedText,
             marginTop: 8,
             maxWidth: 170,
           }}>
@@ -58,7 +67,11 @@ export const WalletOptionCard = ({
           marginLeft: 16,
         }}>
         {icons.map((iconProps, i) => (
-          <WalletIcon key={i} {...iconProps} />
+          <WalletIcon
+            key={i}
+            {...iconProps}
+            fallbackBackground={theme.iconBackground}
+          />
         ))}
       </div>
     </button>

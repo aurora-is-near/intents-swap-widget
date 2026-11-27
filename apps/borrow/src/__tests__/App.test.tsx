@@ -7,10 +7,14 @@ import { App } from '@/App';
 import { createAppRouter } from '@/router';
 import { THEME_STORAGE_KEY } from '@/constants';
 
-// The shell now mounts Reown AppKit and the header's wallet button; the shell
-// tests run without a wallet, so AppKit is replaced by a disconnected stub.
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(),
+// The shell mounts the wallet session and the header's wallet button; the
+// shell tests run without a wallet, so the session is a disconnected stub.
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(),
+);
+
+vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+  (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
 // The New loan tab reads markets through a fake Aave adapter with fixed

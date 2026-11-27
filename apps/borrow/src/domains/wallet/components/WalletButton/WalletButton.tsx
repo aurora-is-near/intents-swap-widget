@@ -1,8 +1,7 @@
-import { useIntentsConnectWallet } from '@aurora-is-near/intents-connect-wallet/connect/appkit';
-
 import { formatAddress } from '@/utils/formatAddress';
 
 import { useConnectWallet } from '../../hooks/useConnectWallet';
+import { useWallet } from '../../hooks/useWallet';
 
 /**
  * The `.wal` button (Web-Borrow-NotConnected.dc.html line 21, 640px block
@@ -13,11 +12,11 @@ const WALLET_BUTTON =
   'inline-flex cursor-pointer items-center gap-2 rounded-12 border-1.5 border-solid border-bd2 bg-sf px-4 py-2.5 font-[inherit] text-15 font-semibold leading-font text-ink hover:border-ink focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid mobile:px-3 mobile:py-2 mobile:text-14';
 
 /**
- * Connects through the AppKit modal when disconnected. Connected, it shows a
+ * Connects through the wallet modal when disconnected. Connected, it shows a
  * green dot and the shortened address, and a click disconnects.
  */
 export function WalletButton() {
-  const { address, isConnected, disconnect } = useIntentsConnectWallet();
+  const { address, isConnected, disconnect } = useWallet();
   const connectWallet = useConnectWallet();
 
   if (isConnected && address) {

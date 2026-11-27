@@ -13,9 +13,13 @@ const wallet = vi.hoisted(() => ({
   disconnect: vi.fn(),
 }));
 
-// AppKit is replaced by a stub whose wallet state each test sets.
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+// The wallet session is replaced by a stub whose state each test sets.
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
+);
+
+vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+  (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
 // The New loan tab reads markets through a fake Aave adapter with fixed

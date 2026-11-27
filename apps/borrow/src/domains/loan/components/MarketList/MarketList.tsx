@@ -1,6 +1,7 @@
 import { Card } from '@aurora-is-near/ui-kit';
 import { useState } from 'react';
 
+import { assertNever } from '@/utils/assertNever';
 import { useMarketSnapshots } from '@/domains/markets/hooks/useMarketSnapshots';
 import type {
   MarketListError,
@@ -222,11 +223,8 @@ export function MarketList({
           />
         );
       }
-      default: {
-        const unknown: never = item;
-
-        return unknown;
-      }
+      default:
+        return assertNever(item, 'market list item');
     }
   });
 

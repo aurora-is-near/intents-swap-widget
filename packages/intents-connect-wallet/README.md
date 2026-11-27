@@ -136,6 +136,34 @@ Connections are **mutually exclusive**: an execution is bound to one origin
 wallet, since both the signing standard and the intermediary address follow from
 it. `select()` disconnects the others first.
 
+### Theming
+
+The modal keeps the widget's dark look by default. Pass `theme` to restyle it:
+every key takes any CSS value, so custom properties let it follow the host's
+light/dark switch without a re-render. Keys left out keep their default
+(`DEFAULT_WALLET_SELECTOR_THEME`).
+
+```tsx
+<WalletSelectorModal
+  {...props}
+  theme={{
+    panelBackground: 'var(--surface)',
+    text: 'var(--ink)',
+    mutedText: 'var(--muted)',
+    optionBackground: 'var(--surface-raised)',
+    optionHoverBackground: 'var(--hover)',
+    optionBorder: '1.5px solid var(--border)',
+    titleAlign: 'left',
+  }}
+/>
+```
+
+Keys: `backdrop`, `panelBackground`, `panelRadius`, `panelShadow`,
+`panelBorder`, `text`, `mutedText`, `closeIcon`, `optionBackground`,
+`optionHoverBackground`, `optionBorder`, `optionRadius`, `iconBackground`
+(behind icons whose preset names no background), `fontFamily`, `titleAlign`.
+`WalletOptionCard` takes the same `theme`.
+
 ### Mobile wallets by QR, headless
 
 `./connect/walletconnect` pairs an EVM mobile wallet over WalletConnect v2

@@ -6,6 +6,7 @@ import {
 
 import { cn } from '../../utils/cn';
 import { FOCUS_RING } from '../../utils/focusRing';
+import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { TokenMark } from '../TokenMark/TokenMark';
 
 /** A token as the list and the select show it: display-ready strings only. */
@@ -16,12 +17,15 @@ export type TokenOption = {
   symbol: string;
   /** The round mark: letters with colours, or a logo. */
   mark: { label: string; bg?: string; fg?: string; src?: string };
-  /** Such as `Ethereum · Base · Arbitrum`; ellipsised when too long. */
+  /**
+   * Such as `Ethereum · Base · Arbitrum`; ellipsised when too long, the full
+   * list in its tooltip.
+   */
   chainsLabel: string;
   /** Such as `$3,120.40`. Shown when there is no `balanceLabel`. */
   priceLabel: string;
   /**
-   * A held balance, such as `1.25 ETH`. When set, the right-hand slot shows
+   * A held balance, such as `1.25`. When set, the right-hand slot shows
    * it (with `balanceUsdLabel` under it) in place of `priceLabel`.
    */
   balanceLabel?: string;
@@ -29,17 +33,11 @@ export type TokenOption = {
   balanceUsdLabel?: string;
   /**
    * Why the token can't be picked, such as `Not supported yet`. When set,
-   * the row is disabled and the reason follows the chains label.
+   * the row is disabled and the reason comes before the chains label, so a
+   * long chain list is what gets ellipsised, not the reason.
    */
   unavailableReason?: string;
 };
-
-/**
- * `.list` (Web-Borrow.dc.html line 33): a column, gap 2px, max height 236px,
- * scrolls. The artboard's 10px top margin separates it from the filter
- * chips; TokenSelect adds it when there are filters.
- */
-const LIST = 'flex max-h-59 flex-col gap-0.5 overflow-y-auto';
 
 /**
  * `.row` (lines 29–31, markup line 245): gap 12, padding 8px 10px, radius
@@ -52,8 +50,11 @@ const ROW = `box-border flex w-full cursor-pointer disabled:cursor-not-allowed d
 /** Symbol and chains (line 246): `flex:1; min-width:0; line-height:1.25`. */
 const NAMES = 'min-w-0 flex-1 leading-tight';
 
-/** Line 246: 16px / 700. */
-const SYMBOL = 'text-16 font-bold';
+/**
+ * Line 246: 16px / 700, one line: a squeezed symbol ellipsises instead of
+ * running under the price.
+ */
+const SYMBOL = 'truncate text-16 font-bold';
 
 /** Line 246: 12px `mut2`, one line with an ellipsis. */
 const CHAINS = 'truncate text-12 text-mut2';
@@ -71,12 +72,26 @@ const BALANCE_USD = 'text-12 text-mut2';
 export type TokenListProps = HTMLAttributes<HTMLDivElement>;
 
 /**
- * The scrolling column that holds `TokenRow`s. Name it with `aria-label`
- * when it is not inside a named popup.
+ * The scrolling column that holds `TokenRow`s, in the kit's `ScrollArea`.
+ * Name it with `aria-label` when it is not inside a named popup;
+ * `className` and the other props go on the scroll area's root.
+ *
+ * `.list` (Web-Borrow.dc.html line 33): a column with a 2px gap, at most
+ * 236px tall, scrolling. The artboard's 10px top margin separates it from
+ * the filter chips; TokenSelect adds it when there are filters. The
+ * scrollbar is pulled 10px out to the right (`-mr-2.5`), into the 12px
+ * padding a host such as TokenSelect's popup gives the list, so it sits 2px
+ * from the popup's border and never over a row.
  */
 export const TokenList = forwardRef<HTMLDivElement, TokenListProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn(LIST, className)} {...props} />
+  ({ children, ...props }, ref) => (
+    <ScrollArea
+      ref={ref}
+      scrollbarClassName="my-1 -mr-2.5"
+      viewportClassName="max-h-59 rounded-12"
+      {...props}>
+      <div className="flex flex-col gap-0.5">{children}</div>
+    </ScrollArea>
   ),
 );
 
@@ -130,10 +145,10 @@ export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
       />
       <span className={NAMES}>
         <span className={cn('block', SYMBOL)}>{option.symbol}</span>
-        <span className={cn('block', CHAINS)}>
+        <span className={cn('block', CHAINS)} title={option.chainsLabel}>
           {option.unavailableReason === undefined
             ? option.chainsLabel
-            : `${option.chainsLabel} · ${option.unavailableReason}`}
+            : `${option.unavailableReason} · ${option.chainsLabel}`}
         </span>
       </span>
       {option.balanceLabel === undefined ? (

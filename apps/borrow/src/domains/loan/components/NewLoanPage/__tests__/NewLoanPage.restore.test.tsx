@@ -51,8 +51,12 @@ const sdk = vi.hoisted(() => ({
   executionsOptions: undefined as UseWalletExecutionsOptions | undefined,
 }));
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
+);
+
+vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+  (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
 vi.mock('@/domains/markets/aaveV3', async () =>

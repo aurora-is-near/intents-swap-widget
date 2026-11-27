@@ -19,6 +19,10 @@ export {
 } from '@/connect/useWalletSelector';
 export { CONNECTOR_IDS, type ConnectorId } from '@/connect/ids';
 export {
+  DEFAULT_WALLET_SELECTOR_THEME,
+  type WalletSelectorTheme,
+} from '@/connect/theme';
+export {
   ALL_WALLET_OPTIONS,
   EVM_SOLANA_WALLET_OPTION,
   NEAR_WALLET_OPTION,

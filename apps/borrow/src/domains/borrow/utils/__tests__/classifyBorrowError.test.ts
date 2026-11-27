@@ -12,16 +12,17 @@ import type { ExecutionRecovery } from '@aurora-is-near/intents-connect';
 import { FAKE_BASE, pairSnapshot, usdc, weth } from '@/tests/fakeMarkets';
 
 import {
-  apiErrorMessage,
-  BORROW_DELAYED_AFTER_MS,
   BorrowPreCheckError,
-  borrowRecoveryAction,
   checkLiquidity,
   checkOriginGas,
+} from '../borrowPreChecks';
+import { borrowRecoveryAction } from '../borrowRecoveryAction';
+import {
+  BORROW_DELAYED_AFTER_MS,
   classifyBorrowError,
-  diagnoseBorrowStep,
-  isInsufficientFunds,
 } from '../classifyBorrowError';
+import { diagnoseBorrowStep } from '../diagnoseBorrowStep';
+import { apiErrorMessage, isInsufficientFunds } from '../errorCauses';
 import { BorrowPreviewError } from '../preview';
 import type {
   BorrowErrorContext,

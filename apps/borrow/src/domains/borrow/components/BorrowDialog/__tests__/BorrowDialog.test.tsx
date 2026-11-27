@@ -4,9 +4,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { stepTexts } from '@/tests/helpers';
 
-import { BorrowDialog, borrowDialogStep } from '../BorrowDialog';
+import { BorrowDialog } from '../BorrowDialog';
+import { getBorrowDialogStep } from '../utils/getBorrowDialogStep';
 import type { BorrowPreviewFigures } from '../../../utils/previewFigures';
-import type { BorrowDialogLoan, BorrowDialogStep } from '../BorrowDialog';
+import type { BorrowDialogStep } from '../utils/getBorrowDialogStep';
+import type { BorrowDialogLoan } from '../utils/getSummary';
 
 const WETH = { symbol: 'WETH', decimals: 18 };
 const USDC = { symbol: 'USDC', decimals: 6 };
@@ -90,32 +92,44 @@ const rows = () =>
       .map((term) => [term.textContent, term.nextElementSibling?.textContent]),
   );
 
-describe('borrowDialogStep', () => {
+describe('getBorrowDialogStep', () => {
   it('maps the flow to a dialog: signing is the first pending step', () => {
-    expect(borrowDialogStep({ kind: 'idle' })).toBeUndefined();
-    expect(borrowDialogStep({ kind: 'previewing' })).toBeUndefined();
-    expect(borrowDialogStep({ kind: 'signing' })).toEqual({
+    expect(getBorrowDialogStep({ kind: 'idle' })).toBeUndefined();
+    expect(getBorrowDialogStep({ kind: 'previewing' })).toBeUndefined();
+    expect(getBorrowDialogStep({ kind: 'signing' })).toEqual({
       kind: 'pending',
       step: 0,
       note: 'sign',
     });
     expect(
-      borrowDialogStep({ kind: 'pending', step: 0, waitingForDeposit: false }),
+      getBorrowDialogStep({
+        kind: 'pending',
+        step: 0,
+        waitingForDeposit: false,
+      }),
     ).toEqual({ kind: 'pending', step: 0, note: 'deposit' });
     expect(
-      borrowDialogStep({ kind: 'pending', step: 0, waitingForDeposit: true }),
+      getBorrowDialogStep({
+        kind: 'pending',
+        step: 0,
+        waitingForDeposit: true,
+      }),
     ).toEqual({ kind: 'pending', step: 0, note: 'awaitingDeposit' });
     expect(
-      borrowDialogStep({ kind: 'pending', step: 2, waitingForDeposit: false }),
+      getBorrowDialogStep({
+        kind: 'pending',
+        step: 2,
+        waitingForDeposit: false,
+      }),
     ).toEqual({ kind: 'pending', step: 2, note: 'opening' });
     expect(
-      borrowDialogStep({ kind: 'cancelling', reason: 'declined' }),
+      getBorrowDialogStep({ kind: 'cancelling', reason: 'declined' }),
     ).toEqual({ kind: 'cancelling', reason: 'declined' });
-    expect(borrowDialogStep({ kind: 'done', executionId: 'e' })).toEqual({
+    expect(getBorrowDialogStep({ kind: 'done', executionId: 'e' })).toEqual({
       kind: 'done',
     });
     expect(
-      borrowDialogStep({
+      getBorrowDialogStep({
         kind: 'error',
         error: 'rejected',
         cause: undefined,

@@ -20,8 +20,6 @@ import type { SupportedTokensApi } from './utils/supported';
 
 const AAVE_V3_ADAPTER_ID = 'aave-v3';
 
-const AAVE_NAME = 'Aave';
-
 export type AaveV3AdapterOptions = {
   /** The Intents Connect client: what 1Click can deliver. */
   api: SupportedTokensApi;
@@ -32,7 +30,7 @@ export type AaveV3AdapterOptions = {
 const toLendingMarket = (market: AaveMarket): LendingMarket => ({
   id: `${AAVE_V3_ADAPTER_ID}:${market.chain}`,
   provider: AAVE_V3_ADAPTER_ID,
-  name: AAVE_NAME,
+  name: 'Aave',
   chain: market.chain,
   chainId: market.chainId,
   chainLabel: market.chainLabel,
@@ -81,10 +79,20 @@ export const createAaveV3Adapter = ({
 
     getMarketSnapshot: async (market): Promise<MarketSnapshot> => {
       const aave = aaveMarketOf(market);
-      const supported = intersectSupported(await deliveredTokens(), aave);
-      const reserves = await readAaveReserves(getClient(aave.chainId), aave, {
-        assets: supported.assets,
-      });
+      // The delivered tokens are listed while the reserves are read: they
+      // only filter which reserves the multicall reads. Every promise is
+      // awaited here, so the first failure is the one reported.
+      const supporting = deliveredTokens().then((tokens) =>
+        intersectSupported(tokens, aave),
+      );
+
+      const assets = supporting.then((supported) => supported.assets);
+
+      const [supported, reserves] = await Promise.all([
+        supporting,
+        readAaveReserves(getClient(aave.chainId), aave, { assets }),
+        assets,
+      ]);
 
       return {
         market: toLendingMarket(aave),

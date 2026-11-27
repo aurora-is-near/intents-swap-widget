@@ -14,6 +14,13 @@ const appKit = vi.hoisted(() => ({
 
 vi.mock('@/config', () => ({ REOWN_PROJECT_ID: 'borrow-project' }));
 
+// The session's connectors are covered by WalletSessionProvider's own tests.
+vi.mock('../WalletSessionProvider', () => ({
+  WalletSessionProvider: ({ children }: { children: ReactNode }) => (
+    <div data-testid="wallet-session">{children}</div>
+  ),
+}));
+
 vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () => {
   const AppKitContext = createContext<
     { isLoading: boolean; appKit: unknown } | undefined
@@ -72,5 +79,19 @@ describe('WalletProvider', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Switch theme' }));
 
     expect(appKit.setThemeMode).toHaveBeenLastCalledWith('dark');
+  });
+
+  it('puts the app inside the wallet session', () => {
+    render(
+      <ThemeProvider>
+        <WalletProvider>
+          <p>app</p>
+        </WalletProvider>
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId('wallet-session')).toContainElement(
+      screen.getByText('app'),
+    );
   });
 });

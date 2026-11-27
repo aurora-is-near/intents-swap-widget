@@ -12,14 +12,15 @@ import {
   readPendingBorrow,
 } from '../stores/pendingBorrowStore';
 import { AAVE_BORROW_INTENT } from '../utils/recipe';
-import type { RestoredBorrowSummary } from '../components/BorrowDialog/BorrowDialog';
+import type {
+  RestoredBorrowSummary,
+  SummaryRow,
+} from '../components/BorrowDialog/utils/getSummary';
 
-const usdRow = (label: string, usd: string | undefined) => {
+const usdRow = (label: string, usd: string | undefined): SummaryRow[] => {
   const value = usd === undefined ? NaN : Number(usd);
 
-  return Number.isFinite(value)
-    ? [[label, `≈ ${formatUsd(value)}`] as [string, string]]
-    : [];
+  return Number.isFinite(value) ? [[label, `≈ ${formatUsd(value)}`]] : [];
 };
 
 /**
@@ -30,7 +31,7 @@ const usdRow = (label: string, usd: string | undefined) => {
  */
 const genericBorrowRows = (
   execution: Pick<Execution, 'id' | 'quote'>,
-): [string, string][] => [
+): SummaryRow[] => [
   ...usdRow('You pay', execution.quote?.amountInUsd),
   ...usdRow('Supply', execution.quote?.amountOutUsd),
   ['Execution', formatAddress(execution.id)],

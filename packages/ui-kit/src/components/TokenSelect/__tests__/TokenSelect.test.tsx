@@ -7,22 +7,23 @@ import { Chip } from '../../Chip/Chip';
 import type { TokenOption } from '../../TokenList/TokenList';
 import { TokenSelect } from '../TokenSelect';
 
-const OPTIONS: TokenOption[] = [
-  {
-    id: 'eth',
-    symbol: 'ETH',
-    mark: { label: 'ET', bg: '#E8ECFB', fg: '#3C4FB8' },
-    chainsLabel: 'Ethereum · Base · Arbitrum · Optimism',
-    priceLabel: '$3,120.40',
-  },
-  {
-    id: 'wbtc',
-    symbol: 'WBTC',
-    mark: { label: 'BT', bg: '#FDF0DF', fg: '#B25E00' },
-    chainsLabel: 'Ethereum · Arbitrum',
-    priceLabel: '$64,210.00',
-  },
-];
+const ETH: TokenOption = {
+  id: 'eth',
+  symbol: 'ETH',
+  mark: { label: 'ET', bg: '#E8ECFB', fg: '#3C4FB8' },
+  chainsLabel: 'Ethereum · Base · Arbitrum · Optimism',
+  priceLabel: '$3,120.40',
+};
+
+const WBTC: TokenOption = {
+  id: 'wbtc',
+  symbol: 'WBTC',
+  mark: { label: 'BT', bg: '#FDF0DF', fg: '#B25E00' },
+  chainsLabel: 'Ethereum · Arbitrum',
+  priceLabel: '$64,210.00',
+};
+
+const OPTIONS = [ETH, WBTC];
 
 function Controlled({
   onValueChange,
@@ -30,7 +31,7 @@ function Controlled({
   onValueChange: (value: string) => void;
 }) {
   const [value, setValue] = useState('eth');
-  const option = OPTIONS.find((item) => item.id === value) ?? OPTIONS[0];
+  const option = OPTIONS.find((item) => item.id === value) ?? ETH;
 
   return (
     <TokenSelect
@@ -107,7 +108,7 @@ describe('TokenSelect', () => {
     expect(rows).toHaveLength(2);
 
     OPTIONS.forEach((option, index) => {
-      const row = within(rows[index]);
+      const row = within(rows[index] as HTMLElement);
 
       expect(row.getByText(option.mark.label)).toBeInTheDocument();
       expect(row.getByText(option.symbol)).toBeInTheDocument();
@@ -120,12 +121,12 @@ describe('TokenSelect', () => {
     const user = userEvent.setup();
     const held: TokenOption[] = [
       {
-        ...OPTIONS[0],
+        ...ETH,
         balanceLabel: '1.25 ETH',
         balanceUsdLabel: '$3,900.50',
       },
-      { ...OPTIONS[1], balanceLabel: '0.1 WBTC' },
-      { ...OPTIONS[0], id: 'plain', symbol: 'wstETH' },
+      { ...WBTC, balanceLabel: '0.1 WBTC' },
+      { ...ETH, id: 'plain', symbol: 'wstETH' },
     ];
 
     render(
@@ -135,7 +136,7 @@ describe('TokenSelect', () => {
         options={held}
         selected={{
           symbol: 'ETH',
-          mark: OPTIONS[0].mark,
+          mark: ETH.mark,
           chainName: 'Ethereum',
         }}
       />,
@@ -153,7 +154,7 @@ describe('TokenSelect', () => {
     expect(plain).toHaveAccessibleName(/wstETH.*\$3,120\.40$/);
   });
 
-  it('disables an unavailable row and shows its reason after the chains', async () => {
+  it('disables an unavailable row and shows its reason before the chains', async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
 
@@ -161,13 +162,10 @@ describe('TokenSelect', () => {
       <TokenSelect
         aria-label="Choose collateral token"
         onValueChange={onValueChange}
-        options={[
-          OPTIONS[0],
-          { ...OPTIONS[1], unavailableReason: 'Not supported yet' },
-        ]}
+        options={[ETH, { ...WBTC, unavailableReason: 'Not supported yet' }]}
         selected={{
           symbol: 'ETH',
-          mark: OPTIONS[0].mark,
+          mark: ETH.mark,
           chainName: 'Ethereum',
         }}
       />,
@@ -181,10 +179,10 @@ describe('TokenSelect', () => {
     expect(available).toBeEnabled();
     expect(unavailable).toBeDisabled();
     expect(unavailable).toHaveTextContent(
-      'Ethereum · Arbitrum · Not supported yet',
+      'Not supported yet · Ethereum · Arbitrum',
     );
 
-    await user.click(unavailable);
+    await user.click(unavailable as HTMLElement);
 
     expect(onValueChange).not.toHaveBeenCalled();
   });
@@ -274,7 +272,7 @@ describe('TokenSelect', () => {
         options={OPTIONS}
         selected={{
           symbol: 'ETH',
-          mark: OPTIONS[0].mark,
+          mark: ETH.mark,
           chainName: 'Ethereum',
         }}
       />,
@@ -332,5 +330,50 @@ describe('Chip', () => {
     rerender(<Chip>Ethereum</Chip>);
 
     expect(screen.getByRole('button').querySelector('span')).toBeNull();
+  });
+
+  it('says so when there are no tokens, and names them otherwise', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <TokenSelect
+        aria-label="Choose collateral token"
+        onValueChange={vi.fn()}
+        options={[]}
+        selected={{ symbol: 'ETH', mark: ETH.mark, chainName: 'Ethereum' }}
+      />,
+    );
+
+    await user.click(getTrigger());
+
+    const popup = within(queryPopup() as HTMLElement);
+
+    expect(popup.getByText('No tokens match these filters')).toBeVisible();
+    expect(popup.queryAllByRole('button')).toHaveLength(0);
+
+    rerender(
+      <TokenSelect
+        aria-label="Choose collateral token"
+        emptyLabel="No tokens on Gnosis"
+        onValueChange={vi.fn()}
+        options={[]}
+        selected={{ symbol: 'ETH', mark: ETH.mark, chainName: 'Ethereum' }}
+      />,
+    );
+
+    expect(popup.getByText('No tokens on Gnosis')).toBeVisible();
+  });
+
+  it("keeps a row's full chain list in its tooltip", async () => {
+    const user = userEvent.setup();
+
+    render(<Controlled onValueChange={vi.fn()} />);
+    await user.click(getTrigger());
+
+    expect(
+      within(queryPopup() as HTMLElement).getByText(
+        'Ethereum · Base · Arbitrum · Optimism',
+      ),
+    ).toHaveAttribute('title', 'Ethereum · Base · Arbitrum · Optimism');
   });
 });

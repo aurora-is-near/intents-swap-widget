@@ -6,6 +6,7 @@ import {
 } from '@headlessui/react';
 
 import { CloseIcon } from '@/connect/icons/CloseIcon';
+import { resolveTheme, type WalletSelectorTheme } from '@/connect/theme';
 import { WalletOptionCard } from '@/connect/WalletOptionCard';
 import type { WalletOption } from '@/connect/types';
 
@@ -21,6 +22,11 @@ export type WalletSelectorModalProps = {
   /** Receives the selected option's `id`; wire it to `useWalletSelector.select`. */
   onSelect: (id: string) => void;
   title?: string;
+  /**
+   * Overrides of the default (dark) look; any CSS value, including the
+   * host's custom properties such as `var(--surface)`.
+   */
+  theme?: Partial<WalletSelectorTheme>;
 };
 
 /**
@@ -28,7 +34,7 @@ export type WalletSelectorModalProps = {
  *
  * The widget's version hardcoded the three rows and their `onSelect*` callbacks,
  * which is why it could not be reused without pulling every chain SDK. This one
- * renders whatever options it is handed.
+ * renders whatever options it is handed, in the host's `theme`.
  */
 export const WalletSelectorModal = ({
   open,
@@ -36,7 +42,10 @@ export const WalletSelectorModal = ({
   options,
   onSelect,
   title = 'Connect wallet',
+  theme: overrides,
 }: WalletSelectorModalProps) => {
+  const theme = resolveTheme(overrides);
+
   return (
     <Dialog
       open={open}
@@ -46,7 +55,7 @@ export const WalletSelectorModal = ({
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: theme.backdrop,
         }}
       />
       <div
@@ -62,8 +71,11 @@ export const WalletSelectorModal = ({
           style={{
             width: '100%',
             maxWidth: 400,
-            borderRadius: 16,
-            backgroundColor: '#202020',
+            borderRadius: theme.panelRadius,
+            border: theme.panelBorder,
+            boxShadow: theme.panelShadow,
+            backgroundColor: theme.panelBackground,
+            fontFamily: theme.fontFamily,
             padding: 24,
           }}>
           <div
@@ -77,18 +89,21 @@ export const WalletSelectorModal = ({
               style={{
                 fontSize: 18,
                 fontWeight: 600,
-                color: '#F3F3F5',
+                color: theme.text,
                 margin: 0,
                 flex: 1,
-                textAlign: 'center',
+                textAlign: theme.titleAlign,
               }}>
               {title}
             </DialogTitle>
             <button
+              aria-label="Close"
               type="button"
               onClick={onClose}
               style={{
                 border: 'none',
+                background: 'transparent',
+                color: theme.closeIcon,
                 cursor: 'pointer',
                 padding: 6,
                 display: 'flex',
@@ -108,6 +123,7 @@ export const WalletSelectorModal = ({
                 title={option.title}
                 description={option.description}
                 icons={option.icons}
+                theme={theme}
               />
             ))}
           </div>

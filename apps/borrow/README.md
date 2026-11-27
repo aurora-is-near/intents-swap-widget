@@ -45,12 +45,22 @@ yarn turbo run build typecheck lint test --filter=borrow
   positions shows
   `src/domains/positions/PositionsEmptyState.tsx`: "Connect wallet" when
   disconnected, "No positions right now" with "Make a loan" when connected.
-- **Wallet** (`src/domains/wallet/`): `providers/WalletProvider.tsx` mounts Reown AppKit (EVM
-  and Solana) inside `ThemeProvider`, and keeps the connect modal's theme in
-  step with the kit's. Set `VITE_REOWN_PROJECT_ID` to Borrow's own Reown
-  project in production; unset, AppKit falls back to the wallet package's
-  shared Aurora id. `components/WalletButton/WalletButton.tsx` in the header connects, and when
-  connected shows the short address and disconnects on click.
+- **Wallet** (`src/domains/wallet/`): EVM, Solana, NEAR and Stellar wallets,
+  one connected at a time. `providers/WalletProvider.tsx` mounts Reown
+  AppKit (EVM and Solana) inside `ThemeProvider`, keeping AppKit's modal in
+  step with the kit's theme, and `providers/WalletSessionProvider.tsx`
+  inside it. The session runs the wallet package's connectors (AppKit,
+  near-connect, Stellar Wallets Kit) behind its `useWalletSelector`, and
+  renders the package's `WalletSelectorModal` with Borrow's theme
+  (`walletModalTheme.ts`: kit CSS variables, so it follows light and dark).
+  Picking a row opens that family's own modal. Components read the
+  connection through `hooks/useWallet.ts`: address, family, the Intents
+  Connect wallet, `connect()` (resolves once connected, rejects when the
+  modal is closed) and `disconnect()`. Set `VITE_REOWN_PROJECT_ID` to
+  Borrow's own Reown project in production; unset, AppKit falls back to the
+  wallet package's shared Aurora id. `components/WalletButton/WalletButton.tsx`
+  in the header connects, and when connected shows the short address and
+  disconnects on click.
 - **Theme**: `ThemeProvider` from the kit wraps the router.
   `vite-plugins/themeInitScript.ts` inlines the kit's `getThemeInitScript()` in
   `<head>`, with the same storage key (`src/constants.ts`), so the stored
@@ -64,8 +74,8 @@ yarn turbo run build typecheck lint test --filter=borrow
   arbitrary values; `yarn fallow` reports any new one.
 - **Intents Connect** (`src/config.ts`, `src/domains/wallet/`): one API client,
   keyed with the client-side `VITE_INTENTS_API_KEY` (the SDK adds
-  `x-api-key` to its two create calls); `IntentsConnectProvider` gets it and the AppKit wallet (`null`
-  while disconnected), under a `QueryClientProvider`. `config.ts` also
+  `x-api-key` to its two create calls); `IntentsConnectProvider` gets it and the session's wallet, of
+  any family (`null` while disconnected), under a `QueryClientProvider`. `config.ts` also
   builds the intents API client the SDK's balance hooks need, which the
   provider passes on too, with the same key (in the URL path). The key is
   **required** and public; unset, the app logs a configuration error at
@@ -141,8 +151,8 @@ Its folders, each with its tests in `__tests__/`: `hooks/` (`useBorrowFlow`,
 `useRestoreBorrow`), `flow/` (the state machine), `utils/` (the dry runs,
 plan, recipe, steps-only retry, confirm figures and error classification),
 `stores/` (`executionProgress` in memory, `pendingBorrowStore` in
-`localStorage`) and `components/BorrowDialog/` (the dialogs, their stories and
-`errorCopy`).
+`localStorage`) and `components/BorrowDialog/` (the dialogs, their stories and,
+in `utils/`, their helpers such as `getErrorCopy`).
 
 1. **Preview** (`useBorrowFlow().start`, `preview.ts`). Pre-checks first:
    enough of the paying chain's gas token for the deposit (from the funding
@@ -166,8 +176,9 @@ plan, recipe, steps-only retry, confirm figures and error classification),
    lock (see "The wallet's in-flight lock" below). The runner then creates
    the execution (the `created` event; see restore below) and asks the
    wallet to sign the intent.
-4. **Deposit** (still pending step 1). An EVM origin then sends the deposit transaction from the
-   wallet: this is where "not enough gas" arises.
+4. **Deposit** (still pending step 1). The wallet then sends the deposit
+   transaction on its own chain (EVM, Solana, NEAR or Stellar): this is where
+   "not enough gas" arises.
 5. **Steps** (pending step 2, "Bridge the collateral", then step 3, "Open
    the loan and deliver …"). Once the collateral arrives, the
    intermediary runs the recipe's steps (`recipe.ts`; the Aave adapter
@@ -192,7 +203,7 @@ the bridged collateral; it is never one of the recipe's steps. The form's
 ### Errors and recovery
 
 `classifyBorrowError.ts` turns a failure into one of the error dialogs
-(copy in `errorCopy.ts`, from the artboards' error table), each with one
+(copy in `BorrowDialog/utils/getErrorCopy.ts`, from the artboards' error table), each with one
 recovery action (`borrowRecoveryAction`):
 
 | Error | When | Action |
@@ -330,7 +341,8 @@ did: an execution it created (`created`) and a deposit it saw sent
 
 ### Environment
 
-The borrow needs, besides the wallet's `VITE_REOWN_PROJECT_ID`:
+The borrow needs, besides the wallet's `VITE_REOWN_PROJECT_ID` (the EVM /
+Solana row of the connect modal; NEAR and Stellar need no configuration):
 
 - `VITE_INTENTS_API_KEY` (required, public, client-side): one key for both
   APIs. The SDK sends it on the two create calls (its fee configuration is

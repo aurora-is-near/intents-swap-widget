@@ -34,20 +34,6 @@ const TRIGGER_SYMBOL = 'block text-18 font-bold';
 /** Line 221: chain dot and name, gap 5, 12px `mut`. */
 const TRIGGER_CHAIN = 'flex items-center gap-1.25 text-12 text-mut';
 
-/**
- * `.panel` (line 32): as wide as the anchor wrapper (`left:0; right:0` on
- * the artboard), 8px below it, border 1.5px ink, radius 18, padding 12,
- * `sf`. The shadow's rgba is the light ink (#111613) in both themes on the
- * artboards, so it stays literal.
- *
- * No z-index: the artboard's `z-index:20` lifted an in-flow `.panel` over
- * the card. The popup is portalled, so like the kit's other portalled
- * layers it stacks in DOM order above the app root, which needs
- * `isolation: isolate`.
- */
-const POPUP =
-  'box-border w-[var(--anchor-width)] rounded-18 border-1.5 border-solid border-ink bg-sf p-3 font-sans text-ink shadow-popup outline-none';
-
 /** `.list` (line 33): 10px below the filter chips. */
 const LIST_AFTER_FILTERS = 'mt-2.5';
 
@@ -77,9 +63,12 @@ export type TokenSelectProps = Omit<
   /**
    * The element the popup lines up with and takes its width from, such as
    * the row holding the trigger and the amount field. Defaults to the
-   * trigger.
+   * trigger. The popup is never narrower than 288px (a row needs that room)
+   * nor wider than the space beside it.
    */
   anchor?: RefObject<Element | null>;
+  /** Shown in place of the list when there are no options. */
+  emptyLabel?: ReactNode;
   /** Names the popup (a dialog), such as "Choose collateral token". */
   'aria-label': string;
 };
@@ -100,6 +89,7 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
       selected,
       filters,
       anchor,
+      emptyLabel = 'No tokens match these filters',
       'aria-label': ariaLabel,
       className,
       ...props
@@ -145,21 +135,52 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
             anchor={anchor}
             side="bottom"
             sideOffset={8}>
-            <Popover.Popup aria-label={ariaLabel} className={POPUP}>
+            {/*
+              `.panel` (line 32): as wide as the anchor wrapper (`left:0;
+              right:0` on the artboard), but at least 288px (18rem) so a row
+              keeps room for its name beside a price or balance, and never
+              wider than the space Base UI reports (`--available-width`).
+              8px below the anchor, border 1.5px ink,
+              radius 18, padding 12, `sf`. The shadow's rgba is the light ink
+              (#111613) in both themes on the artboards, so it stays literal.
+
+              No z-index: the artboard's `z-index:20` lifted an in-flow
+              `.panel` over the card. The popup is portalled, so like the
+              kit's other portalled layers it stacks in DOM order above the
+              app root, which needs `isolation: isolate`.
+
+              It scales out of the trigger (`--transform-origin`) and back
+              into it, 200ms in and 150ms out; under reduced motion it only
+              fades.
+            */}
+            <Popover.Popup
+              aria-label={ariaLabel}
+              className="box-border w-[min(max(var(--anchor-width),18rem),var(--available-width))] origin-(--transform-origin) rounded-18 border-1.5 border-solid border-ink bg-sf p-3 font-sans text-ink shadow-popup outline-none transition-[opacity,scale] duration-200 ease-out data-ending-style:scale-95 data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:data-ending-style:scale-100 motion-reduce:data-starting-style:scale-100">
               {filters}
-              <TokenList className={cn(filters != null && LIST_AFTER_FILTERS)}>
-                {options.map((option) => (
-                  <TokenRow
-                    key={option.id}
-                    onClick={() => {
-                      onValueChange(option.id);
-                      setOpen(false);
-                    }}
-                    option={option}
-                    selected={option.id === value}
-                  />
-                ))}
-              </TokenList>
+              {options.length === 0 ? (
+                <p
+                  className={cn(
+                    'm-0 px-2.5 py-2 text-14 text-mut',
+                    filters != null && LIST_AFTER_FILTERS,
+                  )}>
+                  {emptyLabel}
+                </p>
+              ) : (
+                <TokenList
+                  className={cn(filters != null && LIST_AFTER_FILTERS)}>
+                  {options.map((option) => (
+                    <TokenRow
+                      key={option.id}
+                      onClick={() => {
+                        onValueChange(option.id);
+                        setOpen(false);
+                      }}
+                      option={option}
+                      selected={option.id === value}
+                    />
+                  ))}
+                </TokenList>
+              )}
             </Popover.Popup>
           </Popover.Positioner>
         </Popover.Portal>

@@ -30,7 +30,7 @@ import {
 } from '@/tests/fakeMarkets';
 import { deferred } from '@/tests/helpers';
 
-import { borrowDialogStep } from '../../components/BorrowDialog/BorrowDialog';
+import { getBorrowDialogStep } from '../../components/BorrowDialog/utils/getBorrowDialogStep';
 import {
   clearAllProgress,
   markCreated,
@@ -66,8 +66,8 @@ vi.mock('@aurora-is-near/intents-connect', async (importOriginal) => ({
   getIntermediaryBalance: vi.fn(async () => '990000000000000000'),
 }));
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
 vi.mock('@aurora-is-near/intents-connect/react', () => ({
@@ -1056,7 +1056,7 @@ describe('useBorrowFlow', () => {
       expect(result.current.action).toBe('reconnect');
       // What the page shows: the dialog offers Reconnect, not Close.
       expect(
-        borrowDialogStep(result.current.state, result.current.action),
+        getBorrowDialogStep(result.current.state, result.current.action),
       ).toMatchObject({
         kind: 'error',
         error: 'walletDisconnected',

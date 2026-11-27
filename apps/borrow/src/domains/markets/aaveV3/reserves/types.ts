@@ -18,9 +18,11 @@ export type AaveReserves = {
 export type ReadAaveReservesOptions = {
   /**
    * Read only these reserves (any address case). Addresses that are not a
-   * reserve of the market are ignored. Every reserve when left out.
+   * reserve of the market are ignored. Every reserve when left out. A
+   * promise is awaited alongside the head and the reserve list, which it
+   * only filters.
    */
-  assets?: readonly Address[];
+  assets?: readonly Address[] | Promise<readonly Address[]>;
 };
 
 /**

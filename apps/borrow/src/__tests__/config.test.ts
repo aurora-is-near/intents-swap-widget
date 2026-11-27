@@ -29,11 +29,12 @@ describe('missing API key', () => {
 
     vi.stubEnv('VITE_INTENTS_API_KEY', ' ');
 
-    const { MISSING_INTENTS_API_KEY_MESSAGE } = await loadConfig();
+    await loadConfig();
 
     expect(error).toHaveBeenCalledTimes(1);
-    expect(error).toHaveBeenCalledWith(MISSING_INTENTS_API_KEY_MESSAGE);
-    expect(MISSING_INTENTS_API_KEY_MESSAGE).toContain('VITE_INTENTS_API_KEY');
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('VITE_INTENTS_API_KEY is not set'),
+    );
   });
 
   it('is not reported when the key is set', async () => {

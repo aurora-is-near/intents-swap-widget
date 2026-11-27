@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -12,6 +13,13 @@ import {
   SAMPLE_TOKENS,
   toOption,
 } from '../../stories/sampleTokens';
+import {
+  ONE_OPTION,
+  WORST_OPTIONS,
+  WORST_SELECTED,
+} from '../../stories/worstCaseTokens';
+import type { TokenOption } from '../TokenList/TokenList';
+import type { TokenSelectProps } from './TokenSelect';
 
 const meta = {
   title: 'Components/TokenSelect',
@@ -166,4 +174,131 @@ export const AllPickers: Story = {
       <HeldTokenPicker />
     </div>
   ),
+};
+
+type Dataset = 'demo' | 'worst' | 'empty' | 'one';
+
+const DEMO_SELECTED: TokenSelectProps['selected'] = {
+  symbol: 'ETH',
+  mark: { label: 'ET', bg: '#DAD9F7', fg: '#25235C' },
+  chainName: CHAINS.eth.name,
+  chainColor: CHAINS.eth.color,
+};
+
+const DATASETS: Record<
+  Dataset,
+  {
+    label: string;
+    options: readonly TokenOption[];
+    selected: TokenSelectProps['selected'];
+  }
+> = {
+  demo: { label: 'Demo data', options: OPTIONS, selected: DEMO_SELECTED },
+  worst: {
+    label: 'Worst case',
+    options: WORST_OPTIONS,
+    selected: WORST_SELECTED,
+  },
+  empty: { label: 'Empty', options: [], selected: DEMO_SELECTED },
+  one: { label: 'One', options: ONE_OPTION, selected: DEMO_SELECTED },
+};
+
+/** The dataset switch: dev chrome, not part of the design under test. */
+function DatasetSwitch({
+  value,
+  onChange,
+}: {
+  value: Dataset;
+  onChange: (value: Dataset) => void;
+}) {
+  return (
+    <div
+      className="fixed bottom-4 left-1/2 flex -translate-x-1/2 gap-0.5 rounded-full bg-[#E5E5E5] p-0.5"
+      role="radiogroup"
+      style={{ fontFamily: 'system-ui, sans-serif', fontSize: 12 }}>
+      {(Object.keys(DATASETS) as Dataset[]).map((key) => (
+        <button
+          key={key}
+          aria-checked={value === key}
+          className={`cursor-pointer rounded-full border-0 px-3 py-1 ${value === key ? 'bg-white text-black shadow-sm' : 'bg-transparent text-[#555]'}`}
+          onClick={() => onChange(key)}
+          role="radio"
+          type="button">
+          {DATASETS[key].label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The Supply card's picker row in a 320px phone frame (card padding 16). */
+function PhonePickerRow({ dataset }: { dataset: (typeof DATASETS)[Dataset] }) {
+  const anchor = useRef<HTMLDivElement>(null);
+  const [amount, setAmount] = useState('');
+
+  return (
+    <div className="box-border w-80 rounded-18 border-1.5 border-solid border-bd bg-sf p-4">
+      <div ref={anchor} className="flex items-stretch gap-2">
+        <TokenSelect
+          anchor={anchor}
+          aria-label="Choose collateral token"
+          className="w-47 shrink-0"
+          onValueChange={fn()}
+          options={dataset.options}
+          selected={dataset.selected}
+          value={dataset.options[0]?.id}
+        />
+        <AmountInput
+          className="min-w-0 flex-1"
+          hideLabel
+          label="Collateral amount"
+          onValueChange={setAmount}
+          secondary="≈ $0.00"
+          value={amount}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Break-test: the picker with demo data, the worst realistic data, no
+ * tokens and one token (the switch at the bottom; kept in the URL). Two
+ * frames: the trigger alone, its popup as wide as the 188px trigger, and
+ * the Supply card's row at a 320px phone width, the popup as wide as the
+ * row.
+ */
+export const StressTest: StoryObj<{ data: Dataset }> = {
+  args: { data: 'worst' },
+  argTypes: {
+    data: { control: 'inline-radio', options: Object.keys(DATASETS) },
+  },
+  render: function StressTestRender({ data }) {
+    const [, updateArgs] = useArgs<{ data: Dataset }>();
+    const dataset = DATASETS[data];
+
+    return (
+      <div className="flex flex-col gap-10 pb-16">
+        <section className="flex flex-col gap-2">
+          <span className="text-12 text-mut">Trigger alone (188px)</span>
+          <TokenSelect
+            aria-label="Choose collateral token"
+            className="w-47"
+            onValueChange={fn()}
+            options={dataset.options}
+            selected={dataset.selected}
+            value={dataset.options[0]?.id}
+          />
+        </section>
+        <section className="flex flex-col gap-2">
+          <span className="text-12 text-mut">Supply row at 320px</span>
+          <PhonePickerRow dataset={dataset} />
+        </section>
+        <DatasetSwitch
+          onChange={(next) => updateArgs({ data: next })}
+          value={data}
+        />
+      </div>
+    );
+  },
 };

@@ -126,8 +126,11 @@ describe('createAaveV3Adapter', () => {
     expect(readAaveReserves).toHaveBeenCalledWith(
       client,
       expect.objectContaining({ chain: 'base' }),
-      { assets: [USDC.toLowerCase()] },
+      { assets: expect.any(Promise) },
     );
+    await expect(readAaveReserves.mock.calls[0]?.[2]?.assets).resolves.toEqual([
+      USDC.toLowerCase(),
+    ]);
 
     expect(snapshot).toEqual({
       market,
@@ -146,7 +149,7 @@ describe('createAaveV3Adapter', () => {
     });
   });
 
-  it('rejects, without reading reserves, when the token list fails', async () => {
+  it('rejects with the token list failure, read alongside the reserves', async () => {
     const market = await marketOn('base');
     const { adapter } = setup(
       vi.fn().mockRejectedValue(new Error('Intents Connect API responded 502')),
@@ -155,7 +158,8 @@ describe('createAaveV3Adapter', () => {
     await expect(adapter.getMarketSnapshot(market)).rejects.toThrow(
       'responded 502',
     );
-    expect(readAaveReserves).not.toHaveBeenCalled();
+    // Both reads start at once: the token list only filters the reserves.
+    expect(readAaveReserves).toHaveBeenCalledTimes(1);
   });
 
   it('rejects when the reserve read fails', async () => {

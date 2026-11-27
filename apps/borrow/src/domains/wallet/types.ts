@@ -1,3 +1,5 @@
+import type { WalletConnector } from '@aurora-is-near/intents-connect';
+
 /** One wallet balance the user can fund a loan with. */
 export type FundingAsset = {
   /** 1Click asset id. */
@@ -24,4 +26,24 @@ export type FundingAssets = {
   status: 'idle' | 'loading' | 'ready' | 'error';
   /** Reads the wallet's balances again. */
   refresh: () => void;
+};
+
+/** The connected wallet's chain family. */
+export type WalletFamily = 'evm' | 'sol' | 'near' | 'stellar';
+
+/** The connected wallet, whichever family the person picked in the modal. */
+export type WalletSession = {
+  address: string | undefined;
+  isConnected: boolean;
+  /** `null` while disconnected. */
+  family: WalletFamily | null;
+  /** What `IntentsConnectProvider` signs and deposits with; `null` while disconnected. */
+  wallet: WalletConnector | null;
+  /**
+   * Opens the connect modal. Resolves once a wallet is connected (at once
+   * when one already is); rejects when the modal is closed without one or
+   * the wallet refuses.
+   */
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
 };

@@ -36,8 +36,8 @@ const wallet = vi.hoisted(() => ({
 
 const balances = vi.hoisted(() => ({}) as BalancesMockState);
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () =>
-  (await import('@/tests/appKitMock')).createAppKitMock(wallet),
+vi.mock('@/domains/wallet/hooks/useWallet', async () =>
+  (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
@@ -180,7 +180,7 @@ describe('NewLoanForm reserves the borrow action does not cover', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveAccessibleName('WETH Base · Arbitrum $3,000');
     expect(rows[0]).toBeEnabled();
-    expect(rows[1]).toHaveAccessibleName('wstETH Base · Coming soon $4,000');
+    expect(rows[1]).toHaveAccessibleName('wstETH Coming soon · Base $4,000');
     expect(rows[1]).toBeDisabled();
   });
 
@@ -207,7 +207,7 @@ describe('NewLoanForm reserves the borrow action does not cover', () => {
 
     const list = await openPicker(user, borrowPicker, 'Choose token to borrow');
     const gho = list.getByRole('button', {
-      name: 'GHO Base · Coming soon $1.00',
+      name: 'GHO Coming soon · Base $1.00',
     });
 
     expect(gho).toBeDisabled();

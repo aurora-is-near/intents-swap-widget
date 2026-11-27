@@ -3,16 +3,14 @@ import { useEffect, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BorrowDialog } from './BorrowDialog';
-import type {
-  BorrowErrorKind,
-  BorrowRecoveryAction,
-} from '../../utils/classifyBorrowError';
+import type { BorrowRecoveryAction } from '../../utils/borrowRecoveryAction';
+import type { BorrowErrorKind } from '../../utils/classifyBorrowError';
 import type { BorrowPreviewFigures } from '../../utils/previewFigures';
+import type { BorrowDialogStep } from './utils/getBorrowDialogStep';
 import type {
   BorrowDialogLoan,
-  BorrowDialogStep,
   RestoredBorrowSummary,
-} from './BorrowDialog';
+} from './utils/getSummary';
 
 /*
  * The borrow dialogs, to compare with the artboards (Web-/Mob-Borrow-Confirm,

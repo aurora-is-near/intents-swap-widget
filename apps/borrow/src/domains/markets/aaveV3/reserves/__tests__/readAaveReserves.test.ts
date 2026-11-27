@@ -256,6 +256,30 @@ describe('readAaveReserves', () => {
     expect(client.multicall.mock.calls[0]?.[0].contracts).toHaveLength(2 + 7);
   });
 
+  it('reads the head and the reserve list while a promised filter resolves', async () => {
+    const client = mockClient([
+      reserve(),
+      reserve({ symbol: 'wstETH', tokenAddress: WSTETH, decimals: 18n }),
+    ]);
+
+    let resolveAssets: (assets: Address[]) => void = () => {};
+    const assets = new Promise<Address[]>((resolve) => {
+      resolveAssets = resolve;
+    });
+
+    const reading = readAaveReserves(client, market, { assets });
+
+    await vi.waitFor(() => expect(client.readContract).toHaveBeenCalled());
+
+    expect(client.multicall).not.toHaveBeenCalled();
+
+    resolveAssets([WSTETH]);
+
+    const result = await reading;
+
+    expect(result.collateral.map(({ symbol }) => symbol)).toEqual(['wstETH']);
+  });
+
   describe('filters', () => {
     it.each([
       ['frozen', { isFrozen: true }],

@@ -11,8 +11,8 @@ const wallet = vi.hoisted(() => ({
   disconnect: vi.fn(),
 }));
 
-vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', () => ({
-  useIntentsConnectWallet: () => wallet,
+vi.mock('../../../hooks/useWallet', () => ({
+  useWallet: () => wallet,
 }));
 
 const ADDRESS = '0x7a3f5b2e8d1c4a6f9e0b3d7c2a8f1e4b6d0c9c21';

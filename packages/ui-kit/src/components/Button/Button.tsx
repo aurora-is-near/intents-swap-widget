@@ -20,8 +20,12 @@ const LEADING = 'leading-font';
 /** A caller's own line-height: `leading-*`, or a `text-size/leading` pair. */
 const SETS_LEADING = /leading-|text-\S+\//;
 
-/** `.go` (lines 55–57). */
-const GO = 'rounded-18';
+/**
+ * `.go` (lines 55–57). A press sinks it to 97% in 160ms, so the call to
+ * action answers the click; reduced motion keeps only its colour states.
+ */
+const GO =
+  'rounded-18 transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100';
 
 const VARIANT_CLASSES = {
   primary: `${GO} border-0 bg-ink text-sf`,

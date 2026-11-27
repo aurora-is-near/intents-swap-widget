@@ -15,7 +15,7 @@ import {
   BorrowPreCheckError,
   checkLiquidity,
   reservesIn,
-} from './classifyBorrowError';
+} from './borrowPreChecks';
 import { BorrowPreviewError } from './preview';
 import { collateralDestination } from './recipe';
 import type { BorrowParams } from './recipe';

@@ -158,3 +158,43 @@ export const AllDialogs: Story = {
     </div>
   ),
 };
+
+/** Longer than the screen: the content scrolls inside the popup. */
+function LongDialog() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)} size="md">
+        Review terms
+      </Button>
+      <Dialog onOpenChange={setOpen} open={open}>
+        <DialogContent>
+          <DialogTitle>Loan terms</DialogTitle>
+          <DialogDescription>Scroll to read them all.</DialogDescription>
+          <div className="mt-4 flex flex-col gap-2">
+            {Array.from({ length: 30 }, (_, index) => (
+              <div
+                key={index}
+                className="rounded-12 bg-sf2 px-4 py-2.75 text-15 text-mut">
+                Term {index + 1}
+              </div>
+            ))}
+          </div>
+          <Button className="mt-5" onClick={() => setOpen(false)}>
+            Accept
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/**
+ * Taller than the screen: the content scrolls inside the popup with the
+ * close button pinned, and the 3px scrollbar shows in the right padding
+ * only while scrolling.
+ */
+export const LongContent: Story = {
+  render: () => <LongDialog />,
+};

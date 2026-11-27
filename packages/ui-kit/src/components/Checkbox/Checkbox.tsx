@@ -13,9 +13,6 @@ import { CheckIcon } from '../icons/icons';
  */
 const BOX = `box-border inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-7 border-2 border-solid border-mid bg-sf p-0 data-checked:border-ink data-checked:bg-ink data-disabled:cursor-not-allowed data-disabled:opacity-50 ${FOCUS_RING}`;
 
-/** The check (line 313): 14px, stroke 2.2, in the accent colour (#C9EB8A). */
-const INDICATOR = 'flex text-accent';
-
 /** The artboards have no indeterminate look, so `indeterminate` is left out. */
 export type CheckboxProps = Omit<
   CheckboxPrimitive.Root.Props,
@@ -41,7 +38,12 @@ export const Checkbox = forwardRef<HTMLElement, CheckboxProps>(
         ref={ref}
         className={cn(BOX, className)}
         {...props}>
-        <CheckboxPrimitive.Indicator className={INDICATOR}>
+        {/*
+          The check (line 313): 14px, stroke 2.2, in the accent colour
+          (#C9EB8A). It fades in from 90% over 120ms when ticked and back out
+          when cleared; reduced motion only fades.
+        */}
+        <CheckboxPrimitive.Indicator className="flex text-accent transition-[opacity,scale] duration-120 ease-out data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 motion-reduce:data-ending-style:scale-100 motion-reduce:data-starting-style:scale-100">
           <CheckIcon />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
