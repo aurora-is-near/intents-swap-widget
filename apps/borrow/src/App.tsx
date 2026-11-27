@@ -11,7 +11,7 @@ import { PositionsReaderProvider } from '@/domains/positions/providers/Positions
 import { intentsConnectActionsApi, intentsConnectApi } from '@/config';
 import { THEME_STORAGE_KEY } from '@/constants';
 import { IntentsConnectWalletProvider } from '@/domains/wallet/providers/IntentsConnectWalletProvider';
-import { WalletProvider } from '@/domains/wallet/providers/WalletProvider';
+import { WalletSessionProvider } from '@/domains/wallet/providers/WalletSessionProvider';
 import type { AppRouter } from '@/router';
 
 type AppProps = {
@@ -45,11 +45,11 @@ export function App({ router }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <MarketAdaptersProvider adapters={marketAdapters}>
           <PositionsReaderProvider reader={positionsReader}>
-            <WalletProvider>
+            <WalletSessionProvider>
               <IntentsConnectWalletProvider>
                 <RouterProvider router={router} />
               </IntentsConnectWalletProvider>
-            </WalletProvider>
+            </WalletSessionProvider>
           </PositionsReaderProvider>
         </MarketAdaptersProvider>
       </QueryClientProvider>

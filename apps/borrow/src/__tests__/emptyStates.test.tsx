@@ -18,7 +18,7 @@ vi.mock('@/domains/wallet/hooks/useWallet', async () =>
   (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
-vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+vi.mock('@/domains/wallet/providers/WalletSessionProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
@@ -225,23 +225,26 @@ describe('Footer', () => {
       'Borrow, swap and earn on any chain from one signature.',
     );
     expect(footer).toHaveTextContent('© 2026 Aurora. All rights reserved.');
+    // None has a URL yet: shown as text and icons, with no `#` links.
+    expect(within(footer).queryAllByRole('link')).toEqual([]);
     expect(
-      within(footer)
-        .getAllByRole('link')
-        .map((link) => link.getAttribute('aria-label') ?? link.textContent),
-    ).toEqual([
-      'X',
-      'YouTube',
-      'Telegram',
+      ['X', 'YouTube', 'Telegram'].map(
+        (name) => within(footer).getByRole('img', { name }).tagName,
+      ),
+    ).toEqual(['SPAN', 'SPAN', 'SPAN']);
+
+    [
       'Swap',
       'Borrow',
       'Earn',
       'Documentation',
       'Borrow API',
       'Status',
-      'Privacy',
-      'Terms',
-    ]);
+      'Privacy · Terms',
+    ].forEach((text) => {
+      expect(within(footer).getByText(text)).toBeInTheDocument();
+    });
+
     expect(
       within(footer)
         .getAllByRole('heading')

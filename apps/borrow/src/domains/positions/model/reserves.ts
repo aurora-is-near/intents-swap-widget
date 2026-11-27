@@ -15,7 +15,7 @@ export const pricedTotal = (
 
 /** Largest dollar value first; unpriced reserves last, in their order. */
 export const byUsdDescending = (assets: readonly PositionAsset[]) =>
-  [...assets].sort((a, b) => (b.usd ?? -1) - (a.usd ?? -1));
+  assets.toSorted((a, b) => (b.usd ?? -1) - (a.usd ?? -1));
 
 /**
  * What a Collateral or Debt tile shows: the largest reserve, and how many

@@ -76,6 +76,11 @@ export default defineConfig({
     rollupOptions: {
       external: (id) => isExt(id),
       output: {
+        // One file per source module, so an app that takes only part of a
+        // subpath (`useWalletSelector` from `./connect`, say) can leave the
+        // rest (the modal and its wallet icons) out of its own chunks.
+        preserveModules: true,
+        preserveModulesRoot: 'src',
         entryFileNames: '[name].js',
         chunkFileNames: 'chunks/[name]-[hash].js',
       },

@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 
+import { prerender } from './vite-plugins/prerender';
 import { themeInitScript } from './vite-plugins/themeInitScript';
 import { vaultsFyiProxy } from './vite-plugins/vaultsFyiProxy';
 import { THEME_STORAGE_KEY } from './src/constants';
@@ -43,6 +44,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       themeInitScript(THEME_STORAGE_KEY),
+      prerender(env.SITE_URL),
       vaultsFyiProxy(env),
       react(),
       tailwindcss(),

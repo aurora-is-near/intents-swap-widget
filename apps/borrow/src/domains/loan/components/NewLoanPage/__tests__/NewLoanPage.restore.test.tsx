@@ -55,7 +55,7 @@ vi.mock('@/domains/wallet/hooks/useWallet', async () =>
   (await import('@/tests/walletMock')).createWalletMock(wallet),
 );
 
-vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+vi.mock('@/domains/wallet/providers/WalletSessionProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 

@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-type Pending = {
-  promise: Promise<void>;
-  resolve: () => void;
-  reject: (error: unknown) => void;
-};
-
 type Outcome = { ok: true } | { ok: false; error: unknown };
 
 /**
@@ -28,7 +22,7 @@ export const useConnectRequest = ({
   // Counts picks whose wallet settled, so the check below runs after the
   // connection's own state updates have rendered.
   const [settledPicks, setSettledPicks] = useState(0);
-  const pendingRef = useRef<Pending | undefined>(undefined);
+  const pendingRef = useRef<PromiseWithResolvers<void> | undefined>(undefined);
   const connectedRef = useRef(isConnected);
   const selectRef = useRef(select);
 
@@ -74,14 +68,7 @@ export const useConnectRequest = ({
     }
 
     if (!pendingRef.current) {
-      let resolve: () => void = () => {};
-      let reject: (error: unknown) => void = () => {};
-      const promise = new Promise<void>((onResolve, onReject) => {
-        resolve = onResolve;
-        reject = onReject;
-      });
-
-      pendingRef.current = { promise, resolve, reject };
+      pendingRef.current = Promise.withResolvers<void>();
     }
 
     setOpen(true);

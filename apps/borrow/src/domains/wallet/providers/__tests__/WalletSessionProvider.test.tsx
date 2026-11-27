@@ -1,6 +1,8 @@
+import { ThemeProvider } from '@aurora-is-near/ui-kit';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ReactNode } from 'react';
 
 import { useWallet } from '../../hooks/useWallet';
 import { WalletSessionProvider } from '../WalletSessionProvider';
@@ -61,11 +63,21 @@ const adapters = vi.hoisted(() => ({
 }));
 
 vi.mock('@aurora-is-near/intents-connect-wallet/connect/appkit', async () => {
-  const { useSyncExternalStore } = await import('react');
+  const { createContext, useSyncExternalStore } = await import('react');
   const useStore = () =>
     useSyncExternalStore(store.subscribe, () => store.state.version);
 
+  const AppKitContext = createContext<{ appKit: unknown } | undefined>(
+    undefined,
+  );
+
   return {
+    AppKitContext,
+    AppKitProvider: ({ children }: { children: ReactNode }) => (
+      <AppKitContext.Provider value={{ appKit: { setThemeMode: () => {} } }}>
+        {children}
+      </AppKitContext.Provider>
+    ),
     useIntentsConnectWallet: () => {
       useStore();
 
@@ -107,13 +119,21 @@ vi.mock('@aurora-is-near/intents-connect-wallet/connect/stellar', async () => {
 });
 
 const loader = vi.hoisted(() => ({
-  load: undefined as undefined | (() => Promise<unknown>),
+  near: undefined as undefined | (() => Promise<unknown>),
+  stellar: undefined as undefined | (() => Promise<unknown>),
 }));
 
-// The real chunk unless a test stands in for the load.
-vi.mock('../loadChainConnectors', () => ({
-  loadChainConnectors: () => loader.load?.() ?? import('../ChainConnectors'),
+// The real chunks unless a test stands in for a load.
+vi.mock('../connectors/loaders', () => ({
+  connectorLoaders: {
+    appKit: () => import('../connectors/AppKitConnector'),
+    near: () => loader.near?.() ?? import('../connectors/NearConnector'),
+    stellar: () =>
+      loader.stellar?.() ?? import('../connectors/StellarConnector'),
+  },
 }));
+
+const STELLAR_SESSION_KEY = '@StellarWalletsKit/activeAddress';
 
 vi.mock('@aurora-is-near/intents-connect-wallet/near', () => ({
   toNearWalletConnector: adapters.near,
@@ -137,12 +157,14 @@ function Probe() {
 
 const renderTree = () =>
   render(
-    <WalletSessionProvider>
-      <Probe />
-    </WalletSessionProvider>,
+    <ThemeProvider>
+      <WalletSessionProvider>
+        <Probe />
+      </WalletSessionProvider>
+    </ThemeProvider>,
   );
 
-/** Renders and waits for the NEAR and Stellar chunk to report in. */
+/** Renders and waits for the NEAR chunk to report in. */
 const renderSession = async () => {
   renderTree();
   await waitFor(() => expect(adapters.near).toHaveBeenCalled());
@@ -182,7 +204,9 @@ beforeEach(() => {
   });
   adapters.near.mockClear();
   adapters.stellar.mockClear();
-  loader.load = undefined;
+  loader.near = undefined;
+  loader.stellar = undefined;
+  localStorage.removeItem(STELLAR_SESSION_KEY);
 });
 
 describe('WalletSessionProvider', () => {
@@ -206,7 +230,10 @@ describe('WalletSessionProvider', () => {
     });
     await renderSession();
 
-    expect(screen.getByTestId('probe')).toHaveTextContent('sol 0x7a3f');
+    await waitFor(() =>
+      expect(screen.getByTestId('probe')).toHaveTextContent('sol 0x7a3f'),
+    );
+
     expect(session.wallet).toBe(appKitWallet);
   });
 
@@ -232,6 +259,8 @@ describe('WalletSessionProvider', () => {
       s.stellar.address = 'GABC';
       s.stellar.getProviders = () => ({ stellar: provider });
     });
+    // A saved kit session: Stellar's chunk loads at start-up.
+    localStorage.setItem(STELLAR_SESSION_KEY, 'GABC');
     await renderSession();
 
     await waitFor(() => expect(session.family).toBe('stellar'));
@@ -341,39 +370,54 @@ describe('WalletSessionProvider', () => {
     expect(disconnect).toHaveBeenCalledTimes(1);
   });
 
-  it('offers EVM / Solana alone until the NEAR and Stellar chunk loads', async () => {
+  it("leaves Stellar's chunk unloaded without a saved session", async () => {
+    const load = vi.fn(() => import('../connectors/StellarConnector'));
+
+    loader.stellar = load;
+    await renderSession();
+
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it('loads Stellar when it is picked and connects it once in', async () => {
+    const user = userEvent.setup();
     let finish: () => void = () => {};
 
-    loader.load = () =>
+    loader.stellar = () =>
       new Promise((resolve) => {
-        finish = () => resolve(import('../ChainConnectors'));
+        finish = () => resolve(import('../connectors/StellarConnector'));
       });
-    renderTree();
-    startConnect();
+    store.state.stellar.connect = vi.fn(async () =>
+      store.update((s) => {
+        s.stellar.isConnected = true;
+        s.stellar.address = 'GABC';
+      }),
+    );
+    await renderSession();
 
-    expect(
-      await screen.findByRole('button', { name: /EVM \/ Solana/ }),
-    ).toBeVisible();
-    expect(
-      screen.queryByRole('button', { name: /NEAR/ }),
-    ).not.toBeInTheDocument();
+    const outcome = startConnect();
+
+    await user.click(await screen.findByRole('button', { name: /Stellar/ }));
+
+    expect(store.state.stellar.connect).not.toHaveBeenCalled();
 
     await act(async () => finish());
 
-    expect(await screen.findByRole('button', { name: /NEAR/ })).toBeVisible();
-    expect(screen.getByRole('button', { name: /Stellar/ })).toBeVisible();
+    await waitFor(() => expect(outcome.value).toBe('connected'));
+
+    expect(screen.getByTestId('probe')).toHaveTextContent('stellar GABC');
   });
 
-  it('keeps EVM / Solana working and reports why when the chunk fails to load', async () => {
+  it("keeps the other families working and drops NEAR's row when its chunk fails to load", async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     const failure = new Error('chunk missing');
 
-    loader.load = () => Promise.reject(failure);
+    loader.near = () => Promise.reject(failure);
     renderTree();
 
     await waitFor(() =>
       expect(error).toHaveBeenCalledWith(
-        expect.stringContaining('NEAR and Stellar wallets did not load'),
+        expect.stringContaining('NEAR wallets did not load'),
         failure,
       ),
     );
@@ -383,6 +427,7 @@ describe('WalletSessionProvider', () => {
     expect(
       await screen.findByRole('button', { name: /EVM \/ Solana/ }),
     ).toBeVisible();
+    expect(screen.getByRole('button', { name: /Stellar/ })).toBeVisible();
     expect(
       screen.queryByRole('button', { name: /NEAR/ }),
     ).not.toBeInTheDocument();

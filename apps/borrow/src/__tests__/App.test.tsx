@@ -13,7 +13,7 @@ vi.mock('@/domains/wallet/hooks/useWallet', async () =>
   (await import('@/tests/walletMock')).createWalletMock(),
 );
 
-vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
+vi.mock('@/domains/wallet/providers/WalletSessionProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
@@ -87,8 +87,10 @@ describe('App', () => {
 
     const banner = screen.getByRole('banner');
 
-    expect(within(banner).getByRole('link', { name: 'Docs' })).toBeVisible();
-    expect(within(banner).getByRole('link', { name: 'X' })).toBeVisible();
+    // No URLs yet: shown, but not as links.
+    expect(within(banner).getByText('Docs')).toBeVisible();
+    expect(within(banner).getByRole('img', { name: 'X' })).toBeVisible();
+    expect(within(banner).getAllByRole('link')).toHaveLength(2);
     expect(
       within(banner).queryByRole('link', { name: /earn/i }),
     ).not.toBeInTheDocument();

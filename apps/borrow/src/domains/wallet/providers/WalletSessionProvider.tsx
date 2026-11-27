@@ -1,75 +1,32 @@
 import {
   CONNECTOR_IDS,
-  EVM_SOLANA_WALLET_OPTION,
-  NEAR_WALLET_OPTION,
-  STELLAR_WALLET_OPTION,
   useWalletSelector,
-  WalletSelectorModal,
 } from '@aurora-is-near/intents-connect-wallet/connect';
-import {
-  useAppKitConnector,
-  useIntentsConnectWallet,
-} from '@aurora-is-near/intents-connect-wallet/connect/appkit';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { WalletConnector } from '@aurora-is-near/intents-connect';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { useConnectRequest } from '../hooks/useConnectRequest';
-import { WALLET_MODAL_THEME } from '../walletModalTheme';
-import { loadChainConnectors } from './loadChainConnectors';
+import { connectorLoaders } from './connectors/loaders';
+import { useLazyConnector } from './connectors/useLazyConnector';
 import { WalletSessionContext } from './walletSessionContext';
 import type { WalletFamily, WalletSession } from '../types';
-import type { ChainConnectorsState } from './ChainConnectors';
 
-/** The modal's rows until the NEAR and Stellar connectors have loaded. */
-const EVM_SOLANA_OPTIONS = [EVM_SOLANA_WALLET_OPTION];
+const loadConnectModal = () => import('./ConnectModal');
 
-/** The modal's rows: every family Borrow installs a connector for. */
-const ALL_OPTIONS = [
-  EVM_SOLANA_WALLET_OPTION,
-  NEAR_WALLET_OPTION,
-  STELLAR_WALLET_OPTION,
-];
+const ConnectModal = lazy(() =>
+  loadConnectModal().then((module) => ({ default: module.ConnectModal })),
+);
 
-type ChainConnectorsComponent = ComponentType<{
-  onChange: (state: ChainConnectorsState) => void;
-}>;
+/** Where Stellar Wallets Kit keeps a connected address between visits. */
+const STELLAR_SESSION_KEY = '@StellarWalletsKit/activeAddress';
 
-/**
- * Loads the NEAR and Stellar connectors once, after the first render. A
- * failed load leaves EVM and Solana working and reports why.
- */
-const useChainConnectors = () => {
-  const [Connectors, setConnectors] = useState<ChainConnectorsComponent>();
-  const [chains, setChains] = useState<ChainConnectorsState>();
-
-  useEffect(() => {
-    let mounted = true;
-
-    loadChainConnectors().then(
-      (module) => {
-        if (mounted) {
-          setConnectors(() => module.ChainConnectors);
-        }
-      },
-      (error: unknown) => {
-        // A configuration-level failure (a missing chunk after a deploy, a
-        // blocked request), reported once like the API key check.
-        console.error(
-          '[Borrow] NEAR and Stellar wallets did not load; EVM and Solana still work.',
-          error,
-        );
-      },
-    );
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const connectors = Connectors ? <Connectors onChange={setChains} /> : null;
-
-  return { chains, connectors };
+const hasStellarSession = () => {
+  try {
+    return localStorage.getItem(STELLAR_SESSION_KEY) !== null;
+  } catch {
+    return false;
+  }
 };
 
 /** The connected connector's family; AppKit's row is EVM or Solana. */
@@ -90,54 +47,50 @@ const familyOf = (
 };
 
 /**
- * The connected family's Intents Connect wallet, with its deposit transfer.
- * AppKit builds its own; NEAR's and Stellar's come from `ChainConnectors`.
- * One entry per family: a new family is a compile error here.
- */
-const walletFor = (
-  family: WalletFamily | null,
-  appKit: WalletConnector | null,
-  chains: ChainConnectorsState | undefined,
-): WalletConnector | null => {
-  if (family === null) {
-    return null;
-  }
-
-  const wallets: Record<WalletFamily, WalletConnector | null> = {
-    evm: appKit,
-    sol: appKit,
-    near: chains?.nearWallet ?? null,
-    stellar: chains?.stellarWallet ?? null,
-  };
-
-  return wallets[family];
-};
-
-/**
  * One wallet connection across EVM and Solana (Reown AppKit), NEAR
  * (near-connect) and Stellar (Stellar Wallets Kit), picked in the wallet
  * package's connect modal drawn in Borrow's theme. Connections are
  * exclusive: picking a family disconnects the others (`useWalletSelector`).
  *
- * Must sit inside `AppKitProvider`. Each connector hook runs once: the NEAR
- * and Stellar ones hold their connection in local state. Those two load in
- * their own chunk after the first render (`ChainConnectors`); their rows
- * join the modal once it is in.
+ * Each family is its own chunk (`connectors/`), so none of the wallet SDKs
+ * holds up the first paint. AppKit and NEAR load right after the first render,
+ * since they restore a saved session on mount; Stellar, the largest, loads
+ * only when the kit has a saved session or the person picks it. Until a
+ * family has loaded, its row still shows and picking it waits for the load.
+ * The modal's own chunk is fetched once AppKit is in.
  *
  * `connect()` keeps the contract the borrow flow's reconnect relies on
  * (`useConnectRequest`): it resolves once a wallet is connected and rejects
  * when the modal closes without one.
  */
 export function WalletSessionProvider({ children }: { children: ReactNode }) {
-  const appKit = useIntentsConnectWallet();
-  const evmSolana = useAppKitConnector();
-  const { chains, connectors } = useChainConnectors();
-  const selector = useWalletSelector(
-    chains ? [evmSolana, chains.near, chains.stellar] : [evmSolana],
-  );
+  const [stellarEager] = useState(hasStellarSession);
+  const evmSolana = useLazyConnector({
+    id: CONNECTOR_IDS.evmSolana,
+    load: connectorLoaders.appKit,
+    eager: true,
+    name: 'EVM and Solana',
+  });
+
+  const near = useLazyConnector({
+    id: CONNECTOR_IDS.near,
+    load: connectorLoaders.near,
+    eager: true,
+    name: 'NEAR',
+  });
+
+  const stellar = useLazyConnector({
+    id: CONNECTOR_IDS.stellar,
+    load: connectorLoaders.stellar,
+    eager: stellarEager,
+    name: 'Stellar',
+  });
+
+  const families = [evmSolana, near, stellar];
+  const selector = useWalletSelector(families.map((f) => f.connector));
 
   const { connected } = selector;
-  const family = familyOf(connected?.id, appKit.family);
+  const family = familyOf(connected?.id, evmSolana.report?.family ?? null);
   const isConnected = connected !== undefined;
 
   const { open, connect, pick, close } = useConnectRequest({
@@ -145,11 +98,38 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
     select: selector.select,
   });
 
+  // The modal's chunk (its dialog and wallet icons) is fetched once AppKit
+  // is in, so the first Connect click does not wait on it.
+  const appKitLoaded = evmSolana.report !== undefined;
+
+  useEffect(() => {
+    if (appKitLoaded) {
+      loadConnectModal().catch(() => {});
+    }
+  }, [appKitLoaded]);
+
+  // Mounted from the first open on, so the modal can animate closed.
+  const [modalLoaded, setModalLoaded] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setModalLoaded(true);
+    }
+  }, [open]);
+
+  /** One entry per family: a new family is a compile error here. */
+  const wallets: Record<WalletFamily, WalletConnector | null> = {
+    evm: evmSolana.report?.wallet ?? null,
+    sol: evmSolana.report?.wallet ?? null,
+    near: near.report?.wallet ?? null,
+    stellar: stellar.report?.wallet ?? null,
+  };
+
   const session: WalletSession = {
     address: connected?.address,
     isConnected,
     family,
-    wallet: walletFor(family, appKit.wallet, chains),
+    wallet: family === null ? null : wallets[family],
     connect,
     disconnect: () => selector.disconnect(),
   };
@@ -157,14 +137,21 @@ export function WalletSessionProvider({ children }: { children: ReactNode }) {
   return (
     <WalletSessionContext.Provider value={session}>
       {children}
-      {connectors}
-      <WalletSelectorModal
-        onClose={close}
-        onSelect={pick}
-        open={open}
-        options={chains ? ALL_OPTIONS : EVM_SOLANA_OPTIONS}
-        theme={WALLET_MODAL_THEME}
-      />
+      {evmSolana.element}
+      {near.element}
+      {stellar.element}
+      {(open || modalLoaded) && (
+        <Suspense fallback={null}>
+          <ConnectModal
+            available={families
+              .filter((f) => !f.failed)
+              .map((f) => f.connector.id)}
+            onClose={close}
+            onSelect={pick}
+            open={open}
+          />
+        </Suspense>
+      )}
     </WalletSessionContext.Provider>
   );
 }

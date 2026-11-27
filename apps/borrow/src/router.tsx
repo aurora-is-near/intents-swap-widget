@@ -28,11 +28,12 @@ const borrowRoute = createRoute({
   component: BorrowSection,
 });
 
-/** The Swap section, with no content yet. */
+/** The Swap section, with no content yet: kept out of search until it has. */
 const swapRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/swap',
   component: () => null,
+  staticData: { head: { title: 'Swap · Aurora Borrow', noindex: true } },
 });
 
 /**
@@ -43,6 +44,13 @@ const newLoanRoute = createRoute({
   getParentRoute: () => borrowRoute,
   path: '/',
   component: NewLoanPage,
+  staticData: {
+    head: {
+      title: 'One click borrow · Aurora Borrow',
+      description:
+        'Pick what you supply and what you borrow. Aurora Borrow compares the lending markets and points you to the cheapest one.',
+    },
+  },
 });
 
 /** `/positions?position=<id>`: the loan shown, by its `LoanPosition` id. */
@@ -64,6 +72,10 @@ const positionsRoute = createRoute({
   path: '/positions',
   validateSearch: validatePositionsSearch,
   component: PositionsPage,
+  // The connected wallet's loans: nothing to index.
+  staticData: {
+    head: { title: 'My positions · Aurora Borrow', noindex: true },
+  },
 });
 
 /**

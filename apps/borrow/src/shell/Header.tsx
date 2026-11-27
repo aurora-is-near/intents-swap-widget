@@ -1,6 +1,6 @@
 import { cn } from '@aurora-is-near/ui-kit';
 import { Link, useMatchRoute } from '@tanstack/react-router';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, Ref } from 'react';
 
 import { WalletButton } from '@/domains/wallet/components/WalletButton/WalletButton';
@@ -8,6 +8,12 @@ import { WalletButton } from '@/domains/wallet/components/WalletButton/WalletBut
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { XIcon } from './XIcon';
+
+// The pill is measured before paint in the browser; the build-time
+// prerender (src/prerender.tsx) renders it unplaced, as the first client
+// render does, and would warn about a layout effect on the server.
+const useIsomorphicLayoutEffect =
+  typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**
  * One `.nv` section pill (Web-Borrow-NotConnected.dc.html lines 17–19):
@@ -53,7 +59,7 @@ function useActivePill(onSwap: boolean) {
   const [style, setStyle] = useState<CSSProperties>();
   const [placed, setPlaced] = useState(false);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const link = linkRef.current;
 
     if (!link) {
@@ -81,7 +87,7 @@ function useActivePill(onSwap: boolean) {
     return () => observer.disconnect();
   }, [onSwap]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (style && !placed) {
       // Turn the transition on only after the first placement has painted.
       const frame = requestAnimationFrame(() => setPlaced(true));
@@ -101,7 +107,8 @@ function useActivePill(onSwap: boolean) {
  * right group share the first row, the nav takes a full row below, and Docs
  * and X are hidden.
  *
- * Swap and Borrow are shown (no Earn). Docs and X have no URLs yet.
+ * Swap and Borrow are shown (no Earn). Docs and X have no URLs yet, so they
+ * are text and an icon, not links.
  */
 export function Header() {
   const matchRoute = useMatchRoute();
@@ -136,19 +143,17 @@ export function Header() {
         </nav>
       </div>
       <div className="flex items-center gap-1.5 mobile:order-2 mobile:ml-auto">
-        {/* `.nv hide-m` (line 190). */}
-        <a
-          className="box-border inline-block rounded-12 px-5 py-2.5 text-16 font-bold leading-font text-mut no-underline hover:bg-hov focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid mobile:hidden"
-          href="#">
+        {/* `.nv hide-m` (line 190). Text until Docs has a URL. */}
+        <span className="box-border inline-block rounded-12 px-5 py-2.5 text-16 font-bold leading-font text-mut mobile:hidden">
           Docs
-        </a>
-        {/* `.ibtn hide-m`, 40×40 (lines 53–54, 190). */}
-        <a
+        </span>
+        {/* `.ibtn hide-m`, 40×40 (lines 53–54, 190). An icon until X has a URL. */}
+        <span
           aria-label="X"
-          className="flex h-10 w-10 items-center justify-center rounded-12 hover:bg-hov focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid mobile:hidden"
-          href="#">
+          className="flex h-10 w-10 items-center justify-center rounded-12 mobile:hidden"
+          role="img">
           <XIcon className="fill-ink" />
-        </a>
+        </span>
         <ThemeToggle />
         <WalletButton />
       </div>
