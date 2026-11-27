@@ -7,6 +7,8 @@ import { createHash } from 'crypto';
 import { p256 } from '@noble/curves/p256';
 import { base58, base64urlnopad } from '@scure/base';
 
+import type { SignedIntent } from '@/types/intents';
+
 import { getWebAuthnIntentsAccountId } from '../getWebAuthnIntentsAccountId';
 import { IntentSignerWebAuthn } from './webauthn';
 
@@ -31,8 +33,33 @@ const toBuffer = (bytes: Uint8Array) =>
     bytes.byteOffset + bytes.byteLength,
   ) as ArrayBuffer;
 
-/** A software passkey that produces assertions the way an authenticator does. */
-const createSoftwarePasskey = () => {
+/**
+ * Which DER integer of the signature should be short: a P-256 `r` or `s`
+ * under 2^248 encodes in 31 bytes or fewer, about 1 signature in 128.
+ */
+type SignatureShape = 'any' | 'short-r' | 'short-s';
+
+const fitsShape = (
+  signature: ReturnType<typeof p256.sign>,
+  shape: SignatureShape,
+) => {
+  const below248Bits = (value: bigint) => value < 2n ** 248n;
+
+  switch (shape) {
+    case 'short-r':
+      return below248Bits(signature.r);
+    case 'short-s':
+      return below248Bits(signature.s);
+    default:
+      return true;
+  }
+};
+
+/**
+ * A software passkey that produces assertions the way an authenticator does.
+ * `shape` keeps signing with fresh randomness until the signature has it.
+ */
+const createSoftwarePasskey = (shape: SignatureShape = 'any') => {
   const privateKey = p256.utils.randomPrivateKey();
   // Uncompressed point without the 0x04 prefix: x ‖ y.
   const point = p256.getPublicKey(privateKey, false).slice(1);
@@ -56,20 +83,52 @@ const createSoftwarePasskey = () => {
       new Uint8Array([0x05, 0, 0, 0, 0]),
     );
 
-    const signed = concat(authenticatorData, sha256(clientDataJSON));
-    const signature = p256
-      .sign(sha256(signed), privateKey, { lowS: false })
-      .toDERRawBytes();
+    const digest = sha256(concat(authenticatorData, sha256(clientDataJSON)));
+    let signature = p256.sign(digest, privateKey, { lowS: false });
+
+    while (!fitsShape(signature, shape)) {
+      signature = p256.sign(digest, privateKey, {
+        lowS: false,
+        extraEntropy: true,
+      });
+    }
 
     return {
       clientDataJSON: toBuffer(clientDataJSON),
       authenticatorData: toBuffer(authenticatorData),
-      signature: toBuffer(signature),
+      signature: toBuffer(signature.toDERRawBytes()),
       userHandle: null,
     } as unknown as AuthenticatorAssertionResponse;
   };
 
   return { publicKey, point, challenges, signChallenge };
+};
+
+/**
+ * Verifies like the contract: a 64-byte raw r‖s over
+ * sha256(authData ‖ sha256(clientData)), by the passkey's public key.
+ */
+const expectContractToVerify = (
+  signed: SignedIntent,
+  passkey: ReturnType<typeof createSoftwarePasskey>,
+) => {
+  if (signed.standard !== 'webauthn') {
+    throw new Error('Expected a webauthn payload');
+  }
+
+  const rawSignature = base58.decode(signed.signature.slice('p256:'.length));
+  const authenticatorData = base64urlnopad.decode(signed.authenticator_data);
+  const clientData = new TextEncoder().encode(signed.client_data_json);
+  const digest = sha256(concat(authenticatorData, sha256(clientData)));
+
+  expect(rawSignature).toHaveLength(64);
+  expect(
+    p256.verify(
+      rawSignature,
+      digest,
+      concat(new Uint8Array([4]), passkey.point),
+    ),
+  ).toBe(true);
 };
 
 const PAYLOAD = JSON.stringify({
@@ -103,21 +162,31 @@ describe('IntentSignerWebAuthn', () => {
     expect(signed.public_key).toBe(passkey.publicKey);
     expect(signed.signature).toMatch(/^p256:/);
 
-    // Verify like the contract: raw r‖s over sha256(authData ‖ sha256(clientData)).
-    const rawSignature = base58.decode(signed.signature.slice('p256:'.length));
-    const authenticatorData = base64urlnopad.decode(signed.authenticator_data);
-    const clientData = new TextEncoder().encode(signed.client_data_json);
-    const digest = sha256(concat(authenticatorData, sha256(clientData)));
-
-    expect(rawSignature).toHaveLength(64);
-    expect(
-      p256.verify(
-        rawSignature,
-        digest,
-        concat(new Uint8Array([4]), passkey.point),
-      ),
-    ).toBe(true);
+    expectContractToVerify(signed, passkey);
   });
+
+  it.each(['short-r', 'short-s'] as const)(
+    'pads a %s signature to 64 bytes the contract can verify',
+    async (shape) => {
+      const passkey = createSoftwarePasskey(shape);
+      const walletAddress = getWebAuthnIntentsAccountId(passkey.publicKey);
+      const signer = new IntentSignerWebAuthn({ walletAddress }, passkey);
+
+      const signed = await signer.signIntent({
+        standard: 'webauthn',
+        payload: PAYLOAD,
+      });
+
+      // The other fields stay as the SDK builds them.
+      expect(signed).toMatchObject({
+        standard: 'webauthn',
+        payload: PAYLOAD,
+        public_key: passkey.publicKey,
+      });
+
+      expectContractToVerify(signed, passkey);
+    },
+  );
 
   it('rejects payloads for other standards', async () => {
     const passkey = createSoftwarePasskey();
