@@ -58,10 +58,14 @@ export const listDeliveredTokens = async (
 const nonEmpty = (value: string | undefined): value is string =>
   typeof value === 'string' && value !== '';
 
-/** The token's delivery fields, or `undefined` when one is missing. */
+/**
+ * The token's delivery fields, or `undefined` when one is missing or 1Click
+ * marks the token `(DEPRECATED)`.
+ */
 const deliveredAsset = (token: SupportedToken): DeliveredAsset | undefined =>
   nonEmpty(token.assetId) &&
   nonEmpty(token.symbol) &&
+  !/\(deprecated\)$/i.test(token.symbol) &&
   Number.isInteger(token.decimals)
     ? { assetId: token.assetId, symbol: token.symbol }
     : undefined;
@@ -74,8 +78,10 @@ const isNativeSymbol = (symbol: string, market: AaveMarket): boolean =>
 /**
  * Which of the market's reserves 1Click can deliver: tokens on the market's
  * chain (by SDK slug), matched by contract address in any case. Tokens without
- * a chain, contract address, asset id, symbol or decimals are skipped; when two
- * tokens share an address, the first listed wins.
+ * a chain, contract address, asset id, symbol or decimals are skipped, and so
+ * are tokens 1Click marks `(DEPRECATED)` (Polygon lists one beside the
+ * current token at the same address, first); when two tokens
+ * share an address, the first listed wins.
  *
  * A chain's native token is listed with an empty contract address. When it is
  * listed (by the registry's native symbol), the wrapped-native reserve is read

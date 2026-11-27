@@ -18,7 +18,8 @@ import type { MarketPair } from './marketRows';
  * wstETH (line 1052), but 1Click does not deliver wstETH on Base or
  * Arbitrum; WETH is delivered on both and is Aave collateral on both
  * (decided in the feature review). Both are in the borrow action's tables
- * on every chain, so the pair is never "Coming soon" (tested).
+ * on Base and Arbitrum, so the pair is never "Coming soon" there (tested);
+ * Polygon takes POL instead.
  */
 export const DEFAULT_PAIR: MarketPair = { collateral: 'WETH', borrow: 'USDC' };
 
@@ -28,6 +29,27 @@ export const DEFAULT_PAIR: MarketPair = { collateral: 'WETH', borrow: 'USDC' };
  */
 export const sameSymbol = (a: string, b: string) =>
   a.toLowerCase() === b.toLowerCase();
+
+/** The wrapped reserve each market's native token is supplied as. */
+const WRAPPED_NATIVE: Readonly<Record<string, string>> = {
+  eth: 'WETH',
+  pol: 'WPOL',
+};
+
+/**
+ * Whether a held `symbol` funds the `reserve` symbol as itself: the same
+ * token, or a native token and the wrapped reserve Aave holds it as (ETH as
+ * WETH, POL as WPOL).
+ */
+export const fundsAsItself = (reserve: string, symbol: string) => {
+  const native = symbol.toLowerCase();
+
+  return (
+    sameSymbol(reserve, symbol) ||
+    (Object.hasOwn(WRAPPED_NATIVE, native) &&
+      sameSymbol(reserve, WRAPPED_NATIVE[native] ?? ''))
+  );
+};
 
 /**
  * One token a picker offers from the market snapshots: a collateral or a

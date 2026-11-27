@@ -4,14 +4,15 @@ import type {
   MarketSnapshot,
 } from '@/domains/markets/types';
 
-import { DEFAULT_PAIR, sameSymbol } from './reserveAssets';
+import { DEFAULT_PAIR, fundsAsItself, sameSymbol } from './reserveAssets';
 
 /*
- * Which Aave collateral a held asset funds (decided in the plan review): the
- * same asset when the market lists it as collateral, ETH and WETH both
- * counting as the wrapped-native reserve (WETH, or the reserve delivered
- * natively and supplied through Aave's gateway); any other asset is
- * converted to that reserve, and the form says "Supplied as WETH".
+ * Which Aave collateral a held asset funds (decided in the plan reviews): the
+ * same asset when the market lists it as collateral, a native token counting
+ * as the wrapped reserve it is delivered as (ETH as WETH, POL as WPOL); any
+ * other asset is converted first, to WETH when
+ * the market can take it, else to the market's wrapped native, and the form
+ * says "Supplied as <symbol>".
  */
 
 export type CollateralChoice = {
@@ -20,56 +21,51 @@ export type CollateralChoice = {
   convertedFrom?: string;
 };
 
-/** A reserve listed and suppliable now, matched by symbol in any case. */
+/** A reserve listed and suppliable now that `symbol` funds as itself. */
 const listed = (market: MarketSnapshot, symbol: string) =>
   market.collateral.find(
     (reserve) =>
-      sameSymbol(reserve.symbol, symbol) && isReserveAvailable(reserve),
+      fundsAsItself(reserve.symbol, symbol) && isReserveAvailable(reserve),
   );
 
 /**
- * The wrapped-native collateral (WETH) listed and suppliable now: the
- * reserve delivered natively (supplied through Aave's gateway, whatever
- * symbol it carries) or else the one named WETH.
+ * What any other held asset is converted to, when suppliable now: WETH, else
+ * the reserve delivered natively (WPOL).
  */
-const wrappedNative = (market: MarketSnapshot) => {
+const conversionTarget = (market: MarketSnapshot) => {
   const available = market.collateral.filter(isReserveAvailable);
 
   return (
-    available.find(({ nativeDelivery }) => nativeDelivery === true) ??
-    available.find(({ symbol }) => sameSymbol(symbol, 'WETH'))
+    available.find(({ symbol }) => sameSymbol(symbol, 'WETH')) ??
+    available.find(({ nativeDelivery }) => nativeDelivery === true)
   );
 };
 
 /**
  * The collateral `fundingSymbol` is supplied as in `market`. A reserve the
  * market lists but cannot take now counts as unlisted. `undefined` when the
- * market cannot take WETH either, so the asset cannot fund a loan there.
+ * market has no conversion target either, so the asset cannot fund a loan
+ * there.
  */
 export const collateralFor = (
   fundingSymbol: string,
   market: MarketSnapshot,
 ): CollateralChoice | undefined => {
-  const wrapped = wrappedNative(market);
-
-  const same =
-    sameSymbol(fundingSymbol, 'ETH') || sameSymbol(fundingSymbol, 'WETH')
-      ? wrapped
-      : listed(market, fundingSymbol);
+  const same = listed(market, fundingSymbol);
 
   if (same) {
     return { reserve: same };
   }
 
-  return wrapped
-    ? { reserve: wrapped, convertedFrom: fundingSymbol }
-    : undefined;
+  const target = conversionTarget(market);
+
+  return target ? { reserve: target, convertedFrom: fundingSymbol } : undefined;
 };
 
 /**
  * The collateral symbol a funding asset is read for across the markets: the
- * asset itself (ETH as WETH) when any market lists it, else WETH, to which
- * it is converted (decided in the plan review).
+ * asset itself (a native token as its wrapped reserve) when any market lists
+ * it, else WETH, to which it is converted (decided in the plan review).
  */
 export const collateralSymbolFor = (
   fundingSymbol: string,

@@ -95,6 +95,19 @@ describe('supplyIn', () => {
     expect(of('USDC')).toBe(true);
   });
 
+  it('before a market is known, counts any native token as its wrapped collateral', () => {
+    const of = (symbol: string, collateral: string) =>
+      supplyIn({
+        snapshot: undefined,
+        funding: funding(symbol),
+        pair: { collateral, borrow: 'USDC' },
+        atomic: 0n,
+      }).converted;
+
+    expect(of('POL', 'WPOL')).toBe(false);
+    expect(of('ETH', 'WPOL')).toBe(true);
+  });
+
   it('reads the collateral choice in a market, and values the amount at its oracle', () => {
     const { choice, converted, amountUsd } = supplyIn({
       snapshot: pairSnapshot(FAKE_BASE),

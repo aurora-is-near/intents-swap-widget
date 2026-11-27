@@ -92,7 +92,7 @@ beforeEach(() => {
 });
 
 describe('createAaveV3Adapter', () => {
-  it('lists Aave on Base and Arbitrum', async () => {
+  it('lists Aave on every registry chain', async () => {
     const { adapter } = setup();
 
     expect(adapter.id).toBe('aave-v3');
@@ -112,6 +112,14 @@ describe('createAaveV3Adapter', () => {
         chain: 'arb',
         chainId: 42161,
         chainLabel: 'Arbitrum',
+      },
+      {
+        id: 'aave-v3:pol',
+        provider: 'aave-v3',
+        name: 'Aave',
+        chain: 'pol',
+        chainId: 137,
+        chainLabel: 'Polygon',
       },
     ]);
   });

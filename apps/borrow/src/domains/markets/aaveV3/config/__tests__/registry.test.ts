@@ -2,14 +2,20 @@ import { EVM_CHAIN_IDS } from '@aurora-is-near/intents-connect';
 import { getAddress, isAddress } from 'viem';
 import { describe, expect, it } from 'vitest';
 
+import { RPC_URLS } from '@/config';
+
+import { AAVE_BORROW_CHAINS } from '../borrowAction';
 import { AAVE_V3_MARKETS } from '../registry';
 
 describe('Aave V3 registry', () => {
-  it('holds Base and Arbitrum only', () => {
+  it('holds the borrow action’s chains, in its order', () => {
     expect(AAVE_V3_MARKETS.map((market) => market.chain)).toEqual([
-      'base',
-      'arb',
+      ...AAVE_BORROW_CHAINS,
     ]);
+  });
+
+  it.each(AAVE_V3_MARKETS)('$chain: has a read RPC', (market) => {
+    expect(RPC_URLS[market.chainId]).toMatch(/^https:\/\//);
   });
 
   it.each(AAVE_V3_MARKETS)(

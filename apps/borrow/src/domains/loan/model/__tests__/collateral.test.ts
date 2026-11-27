@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { FAKE_BASE, nativeEth, pairSnapshot, weth } from '@/tests/fakeMarkets';
+import {
+  FAKE_BASE,
+  FAKE_POL,
+  nativeEth,
+  pairSnapshot,
+  weth,
+} from '@/tests/fakeMarkets';
 
 import { collateralFor } from '../collateral';
 
@@ -82,12 +88,11 @@ describe('collateralFor', () => {
       expect(collateralFor('wstETH', native)).toEqual({ reserve: WSTETH });
     });
 
-    it('finds the natively delivered reserve whatever its symbol', () => {
+    it('converts into the natively delivered reserve whatever its symbol', () => {
       const eth = nativeEth();
       const bySymbol = pairSnapshot(FAKE_BASE, { collateral: [eth] });
 
       expect(collateralFor('ETH', bySymbol)).toEqual({ reserve: eth });
-      expect(collateralFor('WETH', bySymbol)).toEqual({ reserve: eth });
       expect(collateralFor('USDC', bySymbol)).toEqual({
         reserve: eth,
         convertedFrom: 'USDC',
@@ -104,6 +109,52 @@ describe('collateralFor', () => {
       expect(
         collateralFor('USDC', pairSnapshot(FAKE_BASE, { collateral: [] })),
       ).toBeUndefined();
+    });
+  });
+
+  describe('on a market whose native token is not ETH', () => {
+    // As the Aave adapter reads Polygon: the wrapped native reserve,
+    // delivered natively.
+    const wpol = weth({
+      asset: '0x0000000000000000000000000000000000000010',
+      symbol: 'WPOL',
+      assetId: 'nep141:pol.omdep.near',
+      nativeDelivery: true,
+    });
+
+    const polygon = pairSnapshot(FAKE_POL, { collateral: [weth(), wpol] });
+    const polOnly = pairSnapshot(FAKE_POL, { collateral: [wpol] });
+
+    it.each(['POL', 'WPOL', 'pol'])(
+      'supplies %s as the natively delivered reserve',
+      (symbol) => {
+        expect(collateralFor(symbol, polygon)).toEqual({ reserve: wpol });
+      },
+    );
+
+    it('converts an unlisted asset to WETH where the market takes it', () => {
+      expect(collateralFor('USDC', polygon)).toEqual({
+        reserve: weth(),
+        convertedFrom: 'USDC',
+      });
+    });
+
+    it('converts to the wrapped native when WETH cannot be taken now', () => {
+      const comingSoon = pairSnapshot(FAKE_POL, {
+        collateral: [weth({ unavailable: true }), wpol],
+      });
+
+      expect(collateralFor('USDC', comingSoon)).toEqual({
+        reserve: wpol,
+        convertedFrom: 'USDC',
+      });
+    });
+
+    it('converts ETH, which is not the native token there, without WETH', () => {
+      expect(collateralFor('ETH', polOnly)).toEqual({
+        reserve: wpol,
+        convertedFrom: 'ETH',
+      });
     });
   });
 });

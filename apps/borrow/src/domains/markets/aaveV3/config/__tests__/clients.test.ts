@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { AAVE_V3_MARKETS } from '../registry';
+
 const loadClients = async () => {
   vi.resetModules();
 
@@ -19,12 +21,14 @@ describe('getClient', () => {
     expect(getClient(8453)).not.toBe(getClient(42161));
   });
 
-  it('binds each client to its chain', async () => {
-    const { getClient } = await loadClients();
+  it.each(AAVE_V3_MARKETS.map(({ chainId }) => chainId))(
+    'binds the client for chain %i to its chain',
+    async (chainId) => {
+      const { getClient } = await loadClients();
 
-    expect(getClient(8453).chain?.id).toBe(8453);
-    expect(getClient(42161).chain?.id).toBe(42161);
-  });
+      expect(getClient(chainId).chain?.id).toBe(chainId);
+    },
+  );
 
   it('uses the publicnode RPCs by default', async () => {
     vi.stubEnv('VITE_RPC_URL_BASE', '');

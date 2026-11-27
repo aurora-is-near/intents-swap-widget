@@ -115,6 +115,26 @@ describe('listDeliveredTokens', () => {
 });
 
 describe('intersectSupported', () => {
+  it('skips a token 1Click marks deprecated, listed before the current one', () => {
+    const supported = intersectSupported(
+      [
+        {
+          ...usdcToken,
+          symbol: 'USDC(DEPRECATED)',
+          assetId: 'nep141:deprecated-usdc',
+        },
+        usdcToken,
+      ],
+      base,
+    );
+
+    expect(supported.assets).toEqual([usdcToken.contractAddress]);
+    expect(supported.tokens.get(USDC.toLowerCase())).toEqual({
+      assetId: usdcToken.assetId,
+      symbol: 'USDC',
+    });
+  });
+
   it('matches addresses in any case and carries the asset id and symbol', () => {
     const supported = intersectSupported(
       [

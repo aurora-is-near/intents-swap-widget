@@ -18,7 +18,7 @@ type AppProps = {
   router: AppRouter;
 };
 
-/** The lending protocols Borrow shows: Aave V3 on Base and Arbitrum. */
+/** The lending protocols Borrow shows: Aave V3 on the registry's chains. */
 const marketAdapters = [
   createAaveV3Adapter({
     api: intentsConnectApi,

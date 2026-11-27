@@ -94,7 +94,7 @@ const aaveMarketOf = (market: LendingMarket): AaveMarket => {
 };
 
 /**
- * Aave V3 on Borrow's launch chains (Base and Arbitrum). A snapshot is the
+ * Aave V3 on the registry's chains (`AAVE_V3_MARKETS`). A snapshot is the
  * reserves 1Click can deliver: the supported token list first (a failed list
  * rejects), then one pinned read of only those reserves. Those the borrow
  * action does not cover stay listed, marked `coming-soon`. Caching is left to

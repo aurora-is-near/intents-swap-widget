@@ -1,5 +1,5 @@
 import { createPublicClient, http } from 'viem';
-import { arbitrum, base } from 'viem/chains';
+import { arbitrum, base, polygon } from 'viem/chains';
 import type { Chain, PublicClient } from 'viem';
 
 import { RPC_URLS } from '@/config';
@@ -8,6 +8,7 @@ import { RPC_URLS } from '@/config';
 const CHAINS: Readonly<Record<number, Chain>> = {
   [base.id]: base,
   [arbitrum.id]: arbitrum,
+  [polygon.id]: polygon,
 };
 
 const clients = new Map<number, PublicClient>();

@@ -249,6 +249,10 @@ describe('repaidMarkets', () => {
         network: 'arbitrum',
         marketId: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       },
+      {
+        network: 'polygon',
+        marketId: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+      },
     ]);
   });
 });

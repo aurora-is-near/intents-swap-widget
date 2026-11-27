@@ -13,9 +13,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "base",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "dry": false,
         "metadata": {
@@ -34,7 +34,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -93,9 +93,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "base",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "destinationAsset": "nep141:base.omft.near",
         "dry": false,
@@ -107,7 +107,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -167,9 +167,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "base",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "dry": false,
         "metadata": {
@@ -261,9 +261,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "base",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "destinationAsset": "nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near",
         "dry": false,
@@ -349,9 +349,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "arb",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "dry": false,
         "metadata": {
@@ -370,7 +370,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -429,9 +429,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "arb",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "destinationAsset": "nep141:arb.omft.near",
         "dry": false,
@@ -443,7 +443,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -503,9 +503,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "arb",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "dry": false,
         "metadata": {
@@ -524,7 +524,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -583,9 +583,9 @@
     },
     "resolution": {
       "actionId": "aave-v3-borrow",
-      "version": 1,
+      "version": 2,
       "executionChain": "arb",
-      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
       "execution": {
         "destinationAsset": "nep141:arb.omft.near",
         "dry": false,
@@ -597,7 +597,7 @@
           {
             "functionSignature": "depositETH(address,address,uint16)",
             "metadata": {
-              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "description": "Supply ETH to Aave V3 as collateral through the Aave gateway",
               "name": "Supply ETH"
             },
             "parameters": [
@@ -635,6 +635,314 @@
               "1500000000"
             ],
             "to": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "pol:POL:USDC:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "pol",
+      "collateral": "POL",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 2,
+      "executionChain": "pol",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against POL on Aave Polygon"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:pol.omdep.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply POL to Aave V3 as collateral through the Aave gateway",
+              "name": "Supply POL"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xBC302053db3aA514A3c86B9221082f162B91ad63",
+            "value": "{MIN_AMOUNT_OUT}"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "pol:POL:USDC:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "pol",
+      "collateral": "POL",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "123450000000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 2,
+      "executionChain": "pol",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
+      "execution": {
+        "destinationAsset": "nep141:pol.omdep.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against POL on Aave Polygon"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply POL to Aave V3 as collateral through the Aave gateway",
+              "name": "Supply POL"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xBC302053db3aA514A3c86B9221082f162B91ad63",
+            "value": "123450000000000000"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "pol:POL:USDT:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "pol",
+      "collateral": "POL",
+      "borrowAsset": "USDT",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 2,
+      "executionChain": "pol",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDT against POL on Aave Polygon"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:pol.omdep.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply POL to Aave V3 as collateral through the Aave gateway",
+              "name": "Supply POL"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xBC302053db3aA514A3c86B9221082f162B91ad63",
+            "value": "{MIN_AMOUNT_OUT}"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDT from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDT"
+            },
+            "parameters": [
+              "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDT to the recipient",
+              "name": "Send USDT"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "pol:POL:USDT:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "pol",
+      "collateral": "POL",
+      "borrowAsset": "USDT",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "123450000000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 2,
+      "executionChain": "pol",
+      "actionSha256Hash": "5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02",
+      "execution": {
+        "destinationAsset": "nep141:pol.omdep.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDT against POL on Aave Polygon"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply POL to Aave V3 as collateral through the Aave gateway",
+              "name": "Supply POL"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xBC302053db3aA514A3c86B9221082f162B91ad63",
+            "value": "123450000000000000"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDT from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDT"
+            },
+            "parameters": [
+              "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDT to the recipient",
+              "name": "Send USDT"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
             "value": "0"
           }
         ],

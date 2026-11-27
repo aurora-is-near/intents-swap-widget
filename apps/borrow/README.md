@@ -88,11 +88,11 @@ yarn turbo run build typecheck lint test --filter=borrow
 - **Markets** (`src/domains/markets/`): screens see lending protocols only through
   `types.ts` (`LendingMarketAdapter`, markets, reserves, snapshots).
   `aaveV3/config/registry.ts` holds the Aave V3 Pool, data provider and oracle for
-  Base and Arbitrum (checked against `@bgd-labs/aave-address-book`), and
-  `aaveV3/config/clients.ts` one viem public client per chain. Their RPCs are
-  `VITE_RPC_URL_BASE` and `VITE_RPC_URL_ARB`; unset, they default to
-  `https://base-rpc.publicnode.com` and
-  `https://arbitrum-one-rpc.publicnode.com`, which may rate-limit, so set
+  Base, Arbitrum and Polygon (checked against `@bgd-labs/aave-address-book`),
+  and `aaveV3/config/clients.ts` one viem public client per chain. Their RPCs
+  are `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB` and `VITE_RPC_URL_POL`; unset,
+  they default to the
+  chains' publicnode endpoints (`src/config.ts`), which may rate-limit, so set
   your own for production. `utils/math.ts` holds the loan math (LTV, health
   factor, liquidation price) in bigint, rounded against the
   borrower. `aaveV3/utils/supported.ts` keeps only the reserves 1Click can deliver:
@@ -366,7 +366,8 @@ Solana row of the connect modal; NEAR and Stellar need no configuration):
   `config/borrowAction.ts` needs updating (run
   `BORROW_ACTIONS_LIVE=1 yarn test borrowAction.contract`, re-record
   `borrowAction.golden.json`).
-- `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
+- `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`, `VITE_RPC_URL_POL`: the market
+  reads, including the
   liquidity pre-check and the failed-step diagnosis.
 - `VAULTS_FYI_API_KEY` (server-side, never `VITE_`): My positions reads the
   vaults.fyi borrow API through the same-origin proxy `/api/vaults-fyi`

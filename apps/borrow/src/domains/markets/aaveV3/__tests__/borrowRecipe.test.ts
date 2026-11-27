@@ -216,7 +216,7 @@ describe('Aave V3 borrowRecipe', () => {
       RESOLVED_STEPS,
     );
     expect(resolveAction).toHaveBeenLastCalledWith('aave-v3-borrow', {
-      version: 1,
+      version: BORROW_ACTION.version,
       expectedSha256Hash: BORROW_ACTION.sha256Hash,
       inputs: {
         chain: 'base',
