@@ -32,6 +32,36 @@ const META = 'text-13 text-mut2';
 /** The first line (line 347): min-height 18, the BEST or "MAX" tag. */
 const TAG_ROW = 'flex min-h-4.5 items-center';
 
+type MarketFiguresProps = {
+  name: ReactNode;
+  apr: string;
+  maxLtv: string;
+  liqLtv: string;
+  liquidity: string;
+};
+
+/** A card's name, APR and the two `mut2` lines (lines 352–360). */
+function MarketFigures({
+  name,
+  apr,
+  maxLtv,
+  liqLtv,
+  liquidity,
+}: MarketFiguresProps) {
+  return (
+    <>
+      <div className={NAME}>{name}</div>
+      <div>
+        <div className={APR}>{apr}</div>
+        <div className={cn(META, 'mt-1')}>APR · max LTV {maxLtv}</div>
+      </div>
+      <div className={cn(META, 'border-t border-solid border-bd pt-2.5')}>
+        Liq. {liqLtv} · {liquidity}
+      </div>
+    </>
+  );
+}
+
 type MarketCardProps = {
   row: ProviderRow;
   best: boolean;
@@ -95,25 +125,38 @@ export function MarketCard({
       </div>
       {/* No chain label: the tile is the provider, whichever chain it
           lends on. */}
-      <div className={NAME}>
-        {best ? (
-          // Line 353: the accent highlight on the BEST market's name.
-          <span className="inline-block rounded-8 bg-accent px-2 text-onlime">
-            {row.name}
-          </span>
-        ) : (
-          row.name
-        )}
-      </div>
-      <div>
-        <div className={APR}>{formatApr(chosen.apr)}</div>
-        <div className={cn(META, 'mt-1')}>APR · max LTV {maxLtv}</div>
-      </div>
-      <div className={cn(META, 'border-t border-solid border-bd pt-2.5')}>
-        Liq. {formatBps(chosen.liquidationLtvBps)} ·{' '}
-        {formatCompactUsd(chosen.liquidityUsd)}
-      </div>
+      <MarketFigures
+        apr={formatApr(chosen.apr)}
+        liqLtv={formatBps(chosen.liquidationLtvBps)}
+        liquidity={formatCompactUsd(chosen.liquidityUsd)}
+        maxLtv={maxLtv}
+        name={
+          best ? (
+            // Line 353: the accent highlight on the BEST market's name.
+            <span className="inline-block rounded-8 bg-accent px-2 text-onlime">
+              {row.name}
+            </span>
+          ) : (
+            row.name
+          )
+        }
+      />
     </button>
+  );
+}
+
+/**
+ * A provider Borrow does not lend on yet, with the artboard's sample
+ * figures (lines 1127–1129): the card's look, but not a button, so it can
+ * be neither picked nor focused, and it never counts for BEST.
+ */
+export function StaticMarketCard(props: MarketFiguresProps & { name: string }) {
+  return (
+    // A labelled group, not a button: its figures read as one card.
+    <div aria-label={props.name} className={CARD} role="group">
+      <div className={TAG_ROW} />
+      <MarketFigures {...props} />
+    </div>
   );
 }
 

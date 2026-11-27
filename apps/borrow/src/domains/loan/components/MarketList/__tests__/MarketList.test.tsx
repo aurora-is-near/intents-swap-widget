@@ -74,6 +74,15 @@ const card = (name: string) =>
 const findCard = (name: string) =>
   screen.findByRole('button', { name: cardName(name) });
 
+/**
+ * Text matching `pattern` outside the static Morpho and Spark cards (labelled
+ * groups), which always show their sample figures.
+ */
+const liveText = (pattern: RegExp) =>
+  screen
+    .queryAllByText(pattern)
+    .filter((element) => !element.closest('[role="group"]'));
+
 /** Every read has settled. */
 const settled = () =>
   waitFor(() => expect(screen.queryByText(/^Loading/)).not.toBeInTheDocument());
@@ -96,7 +105,7 @@ describe('MarketList', () => {
 
     expect(await screen.findByText('Loading Aave')).toBeInTheDocument();
     expect(screen.getAllByText(/^Loading/)).toHaveLength(1);
-    expect(screen.queryByText(/\d%/)).not.toBeInTheDocument();
+    expect(liveText(/\d%/)).toHaveLength(0);
   });
 
   it('shows one Aave card for Base and Arbitrum, with the chosen chain’s figures and no chain label', async () => {
@@ -227,9 +236,7 @@ describe('MarketList', () => {
     expect(await screen.findByText('Loading Aave')).toBeInTheDocument();
 
     // Base has loaded, but its figures would jump once Arbitrum does.
-    await waitFor(() =>
-      expect(screen.queryByText(/\d%/)).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(liveText(/\d%/)).toHaveLength(0));
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
 
@@ -288,7 +295,7 @@ describe('MarketList', () => {
     );
 
     expect(await findCard('Aave')).toHaveTextContent('4.85%');
-    expect(screen.queryByText(/4\.41%/)).not.toBeInTheDocument();
+    expect(liveText(/4\.41%/)).toHaveLength(0);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
