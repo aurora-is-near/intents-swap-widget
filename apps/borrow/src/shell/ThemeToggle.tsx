@@ -1,4 +1,19 @@
 import { Button, useTheme } from '@aurora-is-near/ui-kit';
+import { useSyncExternalStore } from 'react';
+
+const noSubscription = () => () => {};
+
+/**
+ * False while the prerendered page hydrates (and in the prerender), then true.
+ * The prerender cannot know the stored theme, so the toggle first renders as
+ * it did there (light), then React re-renders it in the real theme.
+ */
+const useHydrated = () =>
+  useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
 
 /** Sun, shown in the dark theme (Web-Borrow-NotConnected.dc.html line 192). */
 function SunIcon() {
@@ -43,7 +58,7 @@ function MoonIcon() {
  */
 export function ThemeToggle() {
   const { theme, setPreference } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = useHydrated() && theme === 'dark';
 
   return (
     <Button

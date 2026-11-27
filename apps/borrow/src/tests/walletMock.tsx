@@ -34,9 +34,9 @@ export const createWalletMock = (
 });
 
 /**
- * A pass-through `WalletProvider`, for tests that render the whole app:
- * no AppKit, no NEAR or Stellar connectors. Pair it with `createWalletMock`.
+ * A pass-through `WalletSessionProvider`, for tests that render the whole
+ * app: no AppKit, NEAR or Stellar connectors. Pair it with `createWalletMock`.
  */
 export const createWalletProviderMock = () => ({
-  WalletProvider: ({ children }: { children: ReactNode }) => children,
+  WalletSessionProvider: ({ children }: { children: ReactNode }) => children,
 });

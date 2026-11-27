@@ -25,9 +25,19 @@ yarn turbo run build typecheck lint test --filter=borrow
 - **Routes** (`src/router.tsx`, TanStack Router, code-based): `/` is the New
   loan tab, `/positions` is My positions, both inside the Borrow layout
   route; `/swap` is the empty Swap section; all inside the shell layout route;
-  any other path redirects to `/`. Path routes need an SPA rewrite to
-  `index.html` when deployed: `vercel.json` rewrites every path but
-  `/storybook/` to it.
+  any other path redirects to `/` in the app. Each route's title,
+  description and noindex flag are its `staticData.head` (`src/pageHead.ts`).
+- **Prerender and SEO** (`vite-plugins/prerender.ts`, `src/prerender.tsx`):
+  after the build, each page in `PRERENDERED_PATHS` is rendered in Node and
+  written as its own HTML file (`index.html`, `positions.html`,
+  `swap.html`) with its head tags, so crawlers that do not run JavaScript
+  get the content; the browser hydrates it (`src/main.tsx`). `vercel.json`
+  rewrites `/positions` and `/swap` to their files; any other path gets
+  `404.html` with status 404. The build also writes `robots.txt` and, when
+  `SITE_URL` is set, the canonical and social URLs, the home page's JSON-LD
+  and `sitemap.xml`. `/positions` and `/swap` are `noindex`, and Storybook
+  is sent with `X-Robots-Tag: noindex`. A new route needs adding to
+  `PRERENDERED_PATHS` and `vercel.json`.
 - **Storybook** (`/storybook` on the deployed site): the kit's design system
   and components, and Borrow's own stories (`*.stories.tsx` under `src/`,
   titled "Borrow/…", such as every borrow dialog state). Its config is the
@@ -51,13 +61,16 @@ yarn turbo run build typecheck lint test --filter=borrow
   `src/domains/positions/PositionsEmptyState.tsx`: "Connect wallet" when
   disconnected, "No positions right now" with "Make a loan" when connected.
 - **Wallet** (`src/domains/wallet/`): EVM, Solana, NEAR and Stellar wallets,
-  one connected at a time. `providers/WalletProvider.tsx` mounts Reown
-  AppKit (EVM and Solana) inside `ThemeProvider`, keeping AppKit's modal in
-  step with the kit's theme, and `providers/WalletSessionProvider.tsx`
-  inside it. The session runs the wallet package's connectors (AppKit,
-  near-connect, Stellar Wallets Kit) behind its `useWalletSelector`, and
-  renders the package's `WalletSelectorModal` with Borrow's theme
-  (`walletModalTheme.ts`: kit CSS variables, so it follows light and dark).
+  one connected at a time. `providers/WalletSessionProvider.tsx` runs the
+  wallet package's connectors (Reown AppKit for EVM and Solana,
+  near-connect, Stellar Wallets Kit) behind its `useWalletSelector`. Each
+  family is its own chunk (`providers/connectors/`), so no wallet SDK holds
+  up the first paint: AppKit, in the kit's theme and font, and NEAR load
+  right after the first render; Stellar loads only when the kit has a saved
+  session or the person picks it. The session renders the package's
+  `WalletSelectorModal` with Borrow's theme (`providers/ConnectModal.tsx`,
+  its own chunk; `walletModalTheme.ts`: kit CSS variables, so it follows
+  light and dark).
   Picking a row opens that family's own modal. Components read the
   connection through `hooks/useWallet.ts`: address, family, the Intents
   Connect wallet, `connect()` (resolves once connected, rejects when the

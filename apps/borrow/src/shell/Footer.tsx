@@ -4,8 +4,8 @@ import { Logo } from './Logo';
 import { XIcon } from './XIcon';
 
 /**
- * A `.soc` social link (Web-Borrow-NotConnected.dc.html lines 89–91): 40×40,
- * radius 12, 1px `#3A4046` border, `accent` on hover and as the focus ring.
+ * A `.soc` social icon (Web-Borrow-NotConnected.dc.html lines 89–91): 40×40,
+ * radius 12, 1px `#3A4046` border. An icon, not a link, until it has a URL.
  */
 function SocialLink({
   label,
@@ -15,27 +15,21 @@ function SocialLink({
   children: ReactNode;
 }) {
   return (
-    <a
+    <span
       aria-label={label}
-      className="box-border inline-flex h-10 w-10 items-center justify-center rounded-12 border border-solid border-footer-soc-bd hover:border-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid"
-      href="#">
+      className="box-border inline-flex h-10 w-10 items-center justify-center rounded-12 border border-solid border-footer-soc-bd"
+      role="img">
       {children}
-    </a>
+    </span>
   );
 }
 
 /**
- * A `.flink` (lines 87–88, 91): 15px `#C9CEC8`, `#FFFFFD` on hover, the
- * `accent` focus ring.
+ * A `.flink` (lines 87–88, 91): 15px `#C9CEC8`. Text, not a link, until it
+ * has a URL.
  */
 function FooterLink({ children }: { children: string }) {
-  return (
-    <a
-      className="block text-15 text-footer-link no-underline hover:text-footer-link-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid"
-      href="#">
-      {children}
-    </a>
-  );
+  return <span className="block text-15 text-footer-link">{children}</span>;
 }
 
 /** A link column (line 1036): a 13px / 700 heading, the links 12px apart. */
@@ -53,7 +47,8 @@ function LinkColumn({ title, links }: { title: string; links: string[] }) {
 /**
  * The footer, Web-Borrow-NotConnected.dc.html lines 1028–1043: logo,
  * tagline and social links beside the Product and Developers columns, then
- * the copyright with Privacy · Terms. The links have no URLs yet.
+ * the copyright with Privacy · Terms. None has a URL yet, so they are text,
+ * not links: a `#` link would send crawlers and keyboard users nowhere.
  *
  * Dark in both themes: band #141619 with a #2A2E33 top border, text #E8EBE6,
  * margin-top 48, padding 48px 0 26px. Its inner `.wrap` has no bottom
@@ -122,19 +117,7 @@ export function Footer() {
           <small className="text-13">
             © 2026 Aurora. All rights reserved.
           </small>
-          <span>
-            <a
-              className="text-inherit no-underline hover:text-footer-link-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid"
-              href="#">
-              Privacy
-            </a>
-            {' · '}
-            <a
-              className="text-inherit no-underline hover:text-footer-link-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid"
-              href="#">
-              Terms
-            </a>
-          </span>
+          <span>Privacy · Terms</span>
         </div>
       </div>
     </footer>

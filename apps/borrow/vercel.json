@@ -12,9 +12,13 @@
       "source": "/api/vaults-fyi/:path*",
       "destination": "/api/vaults-fyi?path=:path*"
     },
+    { "source": "/positions", "destination": "/positions.html" },
+    { "source": "/swap", "destination": "/swap.html" }
+  ],
+  "headers": [
     {
-      "source": "/((?!storybook/|api/).*)",
-      "destination": "/index.html"
+      "source": "/storybook/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     }
   ]
 }

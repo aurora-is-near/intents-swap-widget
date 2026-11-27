@@ -60,6 +60,11 @@ export type AppKitConfig = {
    * to the chain's public RPC as defined by viem.
    */
   rpcOverrides?: Readonly<Record<number, string>>;
+  /**
+   * Reown's theme variables. Setting `--w3m-font-family` also stops AppKit
+   * from preloading its own KHTeka fonts from fonts.reown.com at start-up.
+   */
+  themeVariables?: CreateAppKit['themeVariables'];
 };
 
 type AppKitProviderProps = AppKitConfig & {
@@ -219,6 +224,7 @@ export const initAppKit = ({
   themeMode,
   projectId = AURORA_WALLETCONNECT_PROJECT_ID,
   rpcOverrides = DEFAULT_RPC_OVERRIDES,
+  themeVariables,
 }: AppKitConfig = {}) => {
   const ethersAdapter = new EthersAdapter();
 
@@ -245,6 +251,7 @@ export const initAppKit = ({
       socials: false,
     },
     themeMode,
+    themeVariables,
   });
 };
 
