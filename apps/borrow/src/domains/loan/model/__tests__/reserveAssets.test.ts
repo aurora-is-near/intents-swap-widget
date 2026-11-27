@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { AAVE_V3_MARKETS } from '@/domains/markets/aaveV3/config/registry';
 import {
   FAKE_ARB,
   FAKE_BASE,
@@ -10,6 +11,7 @@ import {
 
 import {
   decimalsOf,
+  fundsAsItself,
   pickBorrowAsset,
   reserveAssets,
   sameSymbol,
@@ -29,6 +31,36 @@ describe('sameSymbol', () => {
   it('matches in any case, but not a bridged variant', () => {
     expect(sameSymbol('usdc', 'USDC')).toBe(true);
     expect(sameSymbol('USDC.e', 'USDC')).toBe(false);
+  });
+});
+
+describe('fundsAsItself', () => {
+  it('pairs each market native token with the wrapped reserve it funds', () => {
+    expect(fundsAsItself('WETH', 'ETH')).toBe(true);
+    expect(fundsAsItself('WPOL', 'pol')).toBe(true);
+    expect(fundsAsItself('wstETH', 'wstETH')).toBe(true);
+  });
+
+  it.each(AAVE_V3_MARKETS.map((market) => [market.chainLabel, market]))(
+    'pairs the native token of the %s market with its wrapped reserve',
+    (_label, market) => {
+      const native = market.native?.symbol ?? '';
+
+      expect(fundsAsItself(`W${native}`, native)).toBe(true);
+    },
+  );
+
+  it('does not take an inherited object key for a native token', () => {
+    expect(fundsAsItself('WETH', 'constructor')).toBe(false);
+    expect(fundsAsItself('WETH', 'toString')).toBe(false);
+  });
+
+  it('does not pair a token with another wrapped one', () => {
+    expect(fundsAsItself('WPOL', 'ETH')).toBe(false);
+    // Aave never names a reserve after the native token.
+    expect(fundsAsItself('ETH', 'WETH')).toBe(false);
+    expect(fundsAsItself('wstETH', 'stETH')).toBe(false);
+    expect(fundsAsItself('WBTC', 'BTC')).toBe(false);
   });
 });
 

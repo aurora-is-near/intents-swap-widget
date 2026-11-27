@@ -32,6 +32,8 @@ const fakeMarket = (
 
 export const FAKE_BASE = fakeMarket('base', 8453, 'Base');
 export const FAKE_ARB = fakeMarket('arb', 42161, 'Arbitrum');
+/** A market whose native token is not ETH, for the collateral model. */
+export const FAKE_POL = fakeMarket('pol', 137, 'Polygon');
 
 /** The oracle's unit: one dollar in 8 decimals, as on Aave. */
 export const USD = 100_000_000n;

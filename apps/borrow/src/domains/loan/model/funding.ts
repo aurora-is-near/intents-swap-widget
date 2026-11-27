@@ -8,7 +8,7 @@ import type {
 import type { FundingAsset } from '@/domains/wallet/types';
 
 import { collateralFor } from './collateral';
-import { decimalsOf, DEFAULT_PAIR, sameSymbol } from './reserveAssets';
+import { decimalsOf, DEFAULT_PAIR, fundsAsItself } from './reserveAssets';
 import type { CollateralChoice } from './collateral';
 import type { MarketPair } from './marketRows';
 import type { ReserveAsset } from './reserveAssets';
@@ -125,8 +125,8 @@ const amountInUsd = ({
 /**
  * How the funding is supplied in `snapshot`'s market (`choice`), whether it
  * is converted first, and the typed amount in dollars there. Before a market
- * is known, the pair already says whether it converts (ETH counting as
- * WETH).
+ * is known, the pair already says whether it converts (a native token
+ * counting as its wrapped reserve: ETH as WETH, POL as WPOL).
  */
 export const supplyIn = ({
   snapshot,
@@ -147,10 +147,7 @@ export const supplyIn = ({
 
   const converted = choice
     ? choice.convertedFrom !== undefined
-    : !sameSymbol(pair.collateral, funding.symbol) &&
-      !(
-        sameSymbol(funding.symbol, 'ETH') && sameSymbol(pair.collateral, 'WETH')
-      );
+    : !fundsAsItself(pair.collateral, funding.symbol);
 
   const amountUsd =
     atomic > 0n

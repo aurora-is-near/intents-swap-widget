@@ -63,24 +63,20 @@ const ACTIONS_API_URL =
   process.env.INTENTS_CONNECT_ACTIONS_API_URL ??
   'https://intents-connect-actions-demo.aurora.dev';
 
-const MARKETS: Record<AaveBorrowChain, LendingMarket> = {
-  base: {
-    id: 'aave-v3:base',
-    provider: 'aave-v3',
-    name: 'Aave',
-    chain: 'base',
-    chainId: 8453,
-    chainLabel: 'Base',
-  },
-  arb: {
-    id: 'aave-v3:arb',
-    provider: 'aave-v3',
-    name: 'Aave',
-    chain: 'arb',
-    chainId: 42161,
-    chainLabel: 'Arbitrum',
-  },
-};
+/** The adapter's markets, as `listMarkets` gives them, by chain. */
+const MARKETS = Object.fromEntries(
+  AAVE_V3_MARKETS.map(({ chain, chainId, chainLabel }) => [
+    chain,
+    {
+      id: `aave-v3:${chain}`,
+      provider: 'aave-v3',
+      name: 'Aave',
+      chain,
+      chainId,
+      chainLabel,
+    },
+  ]),
+) as Record<AaveBorrowChain, LendingMarket>;
 
 /** The reserves the adapter would list for an entry's table tokens. */
 const reservesOf = ({ inputs, resolution }: GoldenEntry) => {
@@ -95,8 +91,9 @@ const reservesOf = ({ inputs, resolution }: GoldenEntry) => {
 
   return {
     collateral: supplied.native
-      ? // Aave's wrapped-native reserve, delivered as the gas token.
-        nativeEth({ asset, symbol: 'WETH', assetId })
+      ? // Aave's wrapped-native reserve (WETH, WPOL), delivered as the gas
+        // token.
+        nativeEth({ asset, symbol: `W${supplied.label}`, assetId })
       : weth({ asset, symbol: supplied.label, assetId }),
     borrow: usdc({
       asset: borrowed.address as `0x${string}`,

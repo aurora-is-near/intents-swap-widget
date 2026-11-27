@@ -7,21 +7,30 @@
  * - `AAVE_BORROW_MARKETS`: per chain, the tokens the action can supply or
  *   borrow, by the symbols its inputs take, with the reserve address and
  *   delivery coverage (`utils/coverage.ts`) matches Aave reserves on. They
- *   mirror the token tables of `actions/aave-v3-borrow-v1/script.star` in
+ *   mirror the token tables of `actions/aave-v3-borrow-v2/script.star` in
  *   aurora-is-near/intents-connect-actions; the live contract test
  *   (`__tests__/borrowAction.contract.test.ts`) checks they still agree, and
  *   that the script's Pool and gateway are the registry's.
  *
+ * Native collateral (ETH, POL) is delivered as the chain's gas
+ * token and supplied as its wrapped reserve through Aave's gateway.
+ *
+ * Optimism, Avalanche and BNB Chain have Aave V3 markets too, but Intents
+ * Connect does not run steps there yet (as of 2026-11-27, alpha API), so the
+ * action leaves them out.
+ *
  * Left out by the action: WETH as its own collateral (1Click quotes no
- * liquidity into it; ETH covers the reserve), WBTC on Arbitrum (not
- * delivered), USDT on Base (no reserve) and USDC as collateral (LTV 0).
+ * liquidity into it on Base or Arbitrum; ETH covers the reserve; Polygon's
+ * ERC-20 WETH waits on a dry run), reserves 1Click does not deliver (WBTC on
+ * Arbitrum and Polygon; wstETH), USDT on Base (no reserve) and stablecoins
+ * as collateral (LTV 0).
  */
 
 export const BORROW_ACTION = {
   id: 'aave-v3-borrow',
-  version: 1,
+  version: 2,
   sha256Hash:
-    'cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa',
+    '5ccfbbdb08e6842621d1b64f08038b52e45d69dd712707c7e28c5ad70f753f02',
 } as const;
 
 /** What every borrow is filed as (`execution.metadata.intent`). */
@@ -31,7 +40,7 @@ export const AAVE_BORROW_INTENT = 'aave_borrow';
 const AAVE_MARKET_NAME = 'Aave';
 
 /** The action's `chain` input: backend chain identifiers. */
-export const AAVE_BORROW_CHAINS = ['base', 'arb'] as const;
+export const AAVE_BORROW_CHAINS = ['base', 'arb', 'pol'] as const;
 export type AaveBorrowChain = (typeof AAVE_BORROW_CHAINS)[number];
 
 /** The action's `borrowAsset` input. */
@@ -39,7 +48,7 @@ export const AAVE_BORROW_ASSETS = ['USDC', 'USDT'] as const;
 export type AaveBorrowAsset = (typeof AAVE_BORROW_ASSETS)[number];
 
 /** The action's `collateral` input. */
-export const AAVE_COLLATERAL_ASSETS = ['ETH', 'cbBTC'] as const;
+export const AAVE_COLLATERAL_ASSETS = ['ETH', 'cbBTC', 'POL'] as const;
 export type AaveCollateralAsset = (typeof AAVE_COLLATERAL_ASSETS)[number];
 
 export type AaveBorrowToken = {
@@ -104,6 +113,27 @@ export const AAVE_BORROW_MARKETS: Readonly<
       ETH: {
         label: 'ETH',
         address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+        native: true,
+      },
+    },
+  },
+  pol: {
+    borrow: {
+      USDC: {
+        label: 'USDC',
+        address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+        native: false,
+      },
+      USDT: {
+        label: 'USDT',
+        address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+        native: false,
+      },
+    },
+    collateral: {
+      POL: {
+        label: 'POL',
+        address: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
         native: true,
       },
     },

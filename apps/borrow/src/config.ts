@@ -70,15 +70,17 @@ if (!INTENTS_API_KEY) {
  */
 const DEFAULT_RPC_URL_BASE = 'https://base-rpc.publicnode.com';
 const DEFAULT_RPC_URL_ARB = 'https://arbitrum-one-rpc.publicnode.com';
+const DEFAULT_RPC_URL_POL = 'https://polygon-bor-rpc.publicnode.com';
 
 /**
  * The markets' chains, by id, with the RPC Borrow reads each through: Base
  * (8453) from `VITE_RPC_URL_BASE`, Arbitrum One (42161) from
- * `VITE_RPC_URL_ARB`.
+ * `VITE_RPC_URL_ARB`, Polygon (137) from `VITE_RPC_URL_POL`.
  */
 export const RPC_URLS: Readonly<Record<number, string>> = {
   8453: readEnv(import.meta.env.VITE_RPC_URL_BASE) ?? DEFAULT_RPC_URL_BASE,
   42161: readEnv(import.meta.env.VITE_RPC_URL_ARB) ?? DEFAULT_RPC_URL_ARB,
+  137: readEnv(import.meta.env.VITE_RPC_URL_POL) ?? DEFAULT_RPC_URL_POL,
 };
 
 /**

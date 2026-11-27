@@ -3,10 +3,14 @@ import { AAVE_V3_MARKETS } from '@/domains/markets/aaveV3/config/registry';
 import type { PositionMarketRef } from '../types';
 import type { VaultsFyiPosition } from './guards';
 
-/** Borrow's chain slugs (`AaveMarket.chain`) as vaults.fyi names networks. */
+/**
+ * Borrow's chain slugs (`AaveMarket.chain`) as vaults.fyi names networks
+ * (docs.vaults.fyi/api-reference/overview: `polygon` is Polygon PoS, 137).
+ */
 const NETWORK_OF_CHAIN: Record<string, string> = {
   base: 'base',
   arb: 'arbitrum',
+  pol: 'polygon',
 };
 
 /** Network labels as the market list shows them; others are capitalised. */

@@ -3,15 +3,15 @@ export const ALL_CHAINS_COLOR = '#8A928C';
 
 /**
  * Chain names and dots by 1Click slug: the artboard's `CH` (Web-Borrow.dc.html
- * line 1099) for the four it draws; other chains get their slug's name and
- * the "All chains" grey.
+ * line 1099) for the four it draws, and Polygon's brand colour for its Aave
+ * market; other chains get their slug's name and the "All chains" grey.
  */
 const CHAINS: Record<string, { name: string; color: string }> = {
   eth: { name: 'Ethereum', color: '#5B74D6' },
   base: { name: 'Base', color: '#2E6BFF' },
   arb: { name: 'Arbitrum', color: '#1F8FD6' },
   op: { name: 'Optimism', color: '#D9341F' },
-  pol: { name: 'Polygon', color: ALL_CHAINS_COLOR },
+  pol: { name: 'Polygon', color: '#8247E5' },
   avax: { name: 'Avalanche', color: ALL_CHAINS_COLOR },
   bsc: { name: 'BNB Chain', color: ALL_CHAINS_COLOR },
   gnosis: { name: 'Gnosis', color: ALL_CHAINS_COLOR },

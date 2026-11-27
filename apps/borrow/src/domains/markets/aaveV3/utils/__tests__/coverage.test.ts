@@ -120,31 +120,34 @@ describe('the default pair', () => {
   // The form's default collateral is Aave's WETH reserve, which the adapter
   // delivers as native ETH (the tables' native entry on that reserve); the
   // borrow token is read by the tables' `label`.
-  it.each(AAVE_V3_MARKETS.map((market) => [market.chainLabel, market]))(
-    'is covered on %s',
-    (_label, market) => {
-      expect(DEFAULT_PAIR.collateral).toBe('WETH');
+  // Only where ETH is the native token: Polygon takes POL, and its WETH
+  // reserve is not in the action's tables.
+  it.each(
+    AAVE_V3_MARKETS.filter((market) => market.native?.symbol === 'ETH').map(
+      (market) => [market.chainLabel, market],
+    ),
+  )('is covered on %s', (_label, market) => {
+    expect(DEFAULT_PAIR.collateral).toBe('WETH');
 
-      const table = AAVE_BORROW_MARKETS[market.chain];
-      const collateral = Object.values(table.collateral).filter(
-        ({ native }) => native,
-      );
+    const table = AAVE_BORROW_MARKETS[market.chain];
+    const collateral = Object.values(table.collateral).filter(
+      ({ native }) => native,
+    );
 
-      const borrow = Object.values(table.borrow).filter(
-        ({ label }) => label === DEFAULT_PAIR.borrow,
-      );
+    const borrow = Object.values(table.borrow).filter(
+      ({ label }) => label === DEFAULT_PAIR.borrow,
+    );
 
-      expect(collateral).toHaveLength(1);
-      expect(borrow).toHaveLength(1);
+    expect(collateral).toHaveLength(1);
+    expect(borrow).toHaveLength(1);
 
-      collateral.forEach(({ address }) =>
-        expect(
-          coversCollateral(market, { asset: address, nativeDelivery: true }),
-        ).toBe(true),
-      );
-      borrow.forEach(({ address }) =>
-        expect(coversBorrow(market, { asset: address })).toBe(true),
-      );
-    },
-  );
+    collateral.forEach(({ address }) =>
+      expect(
+        coversCollateral(market, { asset: address, nativeDelivery: true }),
+      ).toBe(true),
+    );
+    borrow.forEach(({ address }) =>
+      expect(coversBorrow(market, { asset: address })).toBe(true),
+    );
+  });
 });

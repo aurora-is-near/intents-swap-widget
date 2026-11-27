@@ -4,7 +4,7 @@ import type { Address } from 'viem';
 /**
  * The "Send borrowed funds to another wallet" address. EVM addresses only
  * (decided in the plan review): no ENS names, since funds are delivered on
- * Base or Arbitrum and resolving needs a mainnet client. viem's `isAddress`
+ * the market's EVM chain and resolving needs a mainnet client. viem's `isAddress`
  * is strict, so a mixed-case address must carry a valid checksum.
  */
 export type RecipientCheck =

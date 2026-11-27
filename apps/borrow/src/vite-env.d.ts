@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_RPC_URL_BASE?: string;
   /** Arbitrum One JSON-RPC for Aave market reads; publicnode when unset. */
   readonly VITE_RPC_URL_ARB?: string;
+  /** Polygon JSON-RPC for Aave market reads; publicnode when unset. */
+  readonly VITE_RPC_URL_POL?: string;
   /** The API key (public): Intents Connect create calls and balances. */
   readonly VITE_INTENTS_API_KEY?: string;
   /** Dev only: an address whose positions My positions shows instead. */

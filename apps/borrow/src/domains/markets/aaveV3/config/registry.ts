@@ -1,22 +1,25 @@
 import type { Address } from 'viem';
 
+import type { AaveBorrowChain } from './borrowAction';
+
 /**
  * Lifted from `apps/intents-connect-aave-ext/src/aave/markets.ts` (copied,
- * not imported: apps don't import from each other), narrowed to Borrow's
- * launch chains, Base and Arbitrum, with `chainId` and the Aave oracle added.
+ * not imported: apps don't import from each other), narrowed to the chains
+ * the borrow action covers (`AAVE_BORROW_CHAINS`), with `chainId` and the Aave
+ * oracle added.
  *
  * Aave V3 markets, each named by the `marketName` app.aave.com uses (its URL
  * and `selectedMarket`).
  *
  * Addresses (POOL, AAVE_PROTOCOL_DATA_PROVIDER, ORACLE, WETH_GATEWAY and the
  * wrapped native asset's UNDERLYING): @bgd-labs/aave-address-book 4.44.22
- * (AaveV3Base, AaveV3Arbitrum). Aave replaces the data provider on protocol
+ * (AaveV3Base, AaveV3Arbitrum, AaveV3Polygon). Aave replaces the data provider on protocol
  * upgrades, so a book bump means re-checking these by hand.
  */
 export type AaveMarket = {
   name: string;
   /** The SDK's chain slug (EVM_CHAIN_IDS). */
-  chain: 'base' | 'arb';
+  chain: AaveBorrowChain;
   chainId: number;
   /** As app.aave.com's market selector labels it. */
   chainLabel: string;
@@ -59,6 +62,20 @@ export const AAVE_V3_MARKETS: readonly AaveMarket[] = [
       symbol: 'ETH',
       reserve: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
       gateway: '0x5283BEcEd7ADF6D003225C13896E536f2D4264FF',
+    },
+  },
+  {
+    name: 'proto_polygon_v3',
+    chain: 'pol',
+    chainId: 137,
+    chainLabel: 'Polygon',
+    pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+    dataProvider: '0x243Aa95cAC2a25651eda86e80bEe66114413c43b',
+    oracle: '0xb023e699F5a33916Ea823A16485e259257cA8Bd1',
+    native: {
+      symbol: 'POL',
+      reserve: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+      gateway: '0xBC302053db3aA514A3c86B9221082f162B91ad63',
     },
   },
 ];
