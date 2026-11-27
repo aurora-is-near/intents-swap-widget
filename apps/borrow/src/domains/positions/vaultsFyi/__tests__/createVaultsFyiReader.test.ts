@@ -138,6 +138,31 @@ describe('readOwnerPositions', () => {
     );
   });
 
+  it.each([1.5, -1, 256])(
+    'throws on asset decimals of %s',
+    async (decimals) => {
+      const [first] = ownerPositions.data;
+
+      answer({
+        data: [
+          {
+            ...first,
+            assets: [
+              {
+                ...first?.assets[0],
+                asset: { ...first?.assets[0]?.asset, decimals },
+              },
+            ],
+          },
+        ],
+      });
+
+      await expect(reader.readOwnerPositions(OWNER)).rejects.toThrow(
+        'vaults.fyi answered an unexpected asset decimals',
+      );
+    },
+  );
+
   it('throws the API error with its status', async () => {
     answer({ error: 'Forbidden', message: 'out of credits' }, 403);
 

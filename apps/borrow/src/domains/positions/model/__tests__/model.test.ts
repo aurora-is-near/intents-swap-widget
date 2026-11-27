@@ -189,4 +189,28 @@ describe('positionsTotals', () => {
       ]),
     ).toEqual({ count: 2, debtUsd: 1000, collateralUsd: 3000 });
   });
+
+  it('keeps the priced copy of a shared balance, whatever the order', () => {
+    const priced = asset('WETH', 1, 3000, 'shared');
+    const unpriced = asset('WETH', 1, null, 'shared');
+
+    expect(
+      positionsTotals([
+        loan({ collateral: [priced] }),
+        loan({ id: 'other', collateral: [unpriced], debt: [] }),
+      ]).collateralUsd,
+    ).toBe(3000);
+    expect(
+      positionsTotals([
+        loan({ collateral: [unpriced] }),
+        loan({ id: 'other', collateral: [priced], debt: [] }),
+      ]).collateralUsd,
+    ).toBe(3000);
+  });
+
+  it('has no total when a balance has no price', () => {
+    expect(
+      positionsTotals([loan({ debt: [asset('USDC', 1000, null)] })]),
+    ).toMatchObject({ debtUsd: null, collateralUsd: 3000 });
+  });
 });
