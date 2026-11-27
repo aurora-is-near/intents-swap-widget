@@ -4,8 +4,9 @@
  */
 
 /*
- * Colours with no theme pair: the footer is dark in both themes, and the
- * markets' "live" dot is the same green in both (no kit token holds it).
+ * Colours with no theme pair: the footer is dark in both themes, the
+ * markets' "live" dot is the same green in both and a position's caution
+ * amber too (no kit token holds them).
  */
 @theme inline {
   --color-footer: #141619;
@@ -15,4 +16,10 @@
   --color-footer-mut2: #8a928c;
   --color-footer-logo: #f5f6f4;
   --color-live: #5e9e12;
+  /* A position's health between 1.2 and 1.5 (Web-Positions-Multi.dc.html
+     script line 1398): the same amber in both themes, no kit token. */
+  --color-caution: #b26a00;
+
+  /* The repaid card's collateral figure (Web-Repaid.dc.html line 493). */
+  --text-32: 32px;
 }

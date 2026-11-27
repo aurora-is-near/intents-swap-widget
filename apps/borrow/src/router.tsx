@@ -8,7 +8,7 @@ import {
 import type { RouterHistory } from '@tanstack/react-router';
 
 import { NewLoanPage } from '@/domains/loan/components/NewLoanPage/NewLoanPage';
-import { PositionsEmptyState } from '@/domains/positions/PositionsEmptyState';
+import { PositionsPage } from '@/domains/positions/components/PositionsPage/PositionsPage';
 import { Shell } from '@/shell/Shell';
 
 const rootRoute = createRootRoute({ component: Outlet });
@@ -30,11 +30,25 @@ const newLoanRoute = createRoute({
   component: NewLoanPage,
 });
 
-/** The My positions tab: the empty state until positions are read. */
+/** `/positions?position=<id>`: the loan shown, by its `LoanPosition` id. */
+export type PositionsSearch = { position?: string };
+
+const validatePositionsSearch = (
+  search: Record<string, unknown>,
+): PositionsSearch =>
+  typeof search.position === 'string' && search.position !== ''
+    ? { position: search.position }
+    : {};
+
+/**
+ * The My positions tab: the user's loans, or the empty, loading and error
+ * states. The `position` search param picks the loan shown.
+ */
 const positionsRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/positions',
-  component: PositionsEmptyState,
+  validateSearch: validatePositionsSearch,
+  component: PositionsPage,
 });
 
 /**

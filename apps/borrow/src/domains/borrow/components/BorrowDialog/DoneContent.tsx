@@ -1,26 +1,6 @@
 import { Button, DialogDescription, DialogTitle } from '@aurora-is-near/ui-kit';
 
-/** Line 972: the 68px badge circle with the lime tick, as the step icons. */
-function DoneMark() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="mx-auto block"
-      height="68"
-      viewBox="0 0 68 68"
-      width="68">
-      <circle className="fill-badge" cx="34" cy="34" r="34" />
-      <path
-        className="stroke-accent"
-        d="M20 35l10 10 18-19"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="5"
-      />
-    </svg>
-  );
-}
+import { DoneMark } from '../DoneMark/DoneMark';
 
 /** Done: the tick, "Loan opened" and "View position". */
 export function DoneContent({
@@ -34,7 +14,8 @@ export function DoneContent({
     <>
       {/* Line 971: centred, padding 14px 0 6px. */}
       <div className="pt-3.5 pb-1.5 text-center">
-        <DoneMark />
+        {/* Line 972: the 68px badge, centred. */}
+        <DoneMark className="mx-auto block" size={68} />
         {/* Line 973: 28px / 800, 18px above. */}
         <DialogTitle className="mt-4.5 text-28">Loan opened</DialogTitle>
         {/* Line 974: 16px / 1.45 `mut`, 10px above. */}

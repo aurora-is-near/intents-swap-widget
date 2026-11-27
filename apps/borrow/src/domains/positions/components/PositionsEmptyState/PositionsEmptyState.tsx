@@ -1,20 +1,14 @@
-import { Button, Card } from '@aurora-is-near/ui-kit';
 import { useNavigate } from '@tanstack/react-router';
-import { useId } from 'react';
 
 import { useFocusTab } from '@/shell/tabFocus';
 import { useConnectWallet } from '@/domains/wallet/hooks/useConnectWallet';
 import { useWallet } from '@/domains/wallet/hooks/useWallet';
 
+import { PositionsMessageCard } from '../PositionsMessageCard/PositionsMessageCard';
+
 /**
  * The My positions card when there is nothing to list
- * (Web-Positions-NotConnected.dc.html lines 393–398, copy line 1438):
- * `.card` at max-width 560 at the column's left edge with its text centred
- * (the artboard sets no auto margin), padding 48px 28px at every width (the
- * inline padding wins over the 640px block's); title 26px / 800, tracking
- * -0.02em; text 16px `mut`, margin 8px 0 22px; the button is `.go` at
- * `padding:14px 26px;font-size:17px`, the kit's `md` size. The artboard
- * sets no line-height, so the browser's `normal` holds, not preflight's 1.5.
+ * (Web-Positions-NotConnected.dc.html, copy line 1438).
  *
  * Disconnected it asks to connect; connected, it points to New loan, and
  * focus moves to the New loan tab, since this button unmounts with the panel.
@@ -25,14 +19,13 @@ export function PositionsEmptyState() {
   const connectWallet = useConnectWallet();
   const navigate = useNavigate();
   const focusNewLoan = useFocusTab();
-  const titleId = useId();
 
   const content = isConnected
     ? {
         title: 'No positions right now',
         text: 'Make a loan and it will show up here with its LTV, health and repay options.',
         action: 'Make a loan',
-        onClick: () => {
+        onAction: () => {
           void navigate({ to: '/', resetScroll: false }).then(() => {
             focusNewLoan();
           });
@@ -42,25 +35,8 @@ export function PositionsEmptyState() {
         title: 'Connect your wallet',
         text: 'Connect to see your loans across Morpho, Aave and Spark.',
         action: 'Connect wallet',
-        onClick: connectWallet,
+        onAction: connectWallet,
       };
 
-  return (
-    <Card
-      aria-labelledby={titleId}
-      className="max-w-140 px-7 py-12 text-center"
-      role="region">
-      <h2
-        className="m-0 text-26 leading-font font-extrabold tracking-title"
-        id={titleId}>
-        {content.title}
-      </h2>
-      <p className="mt-2 mb-5.5 text-16 leading-font text-mut">
-        {content.text}
-      </p>
-      <Button onClick={content.onClick} size="md">
-        {content.action}
-      </Button>
-    </Card>
-  );
+  return <PositionsMessageCard {...content} />;
 }
