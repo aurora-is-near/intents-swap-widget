@@ -15,7 +15,8 @@ export type ActionRecipeOptions<TParams> = Omit<
   /**
    * Pins the definition and script the integration was built against: a
    * changed action fails with `IntentsConnectActionsApiError.isHashMismatch`
-   * instead of running steps nobody reviewed.
+   * instead of running steps nobody reviewed, and a resolution carrying
+   * another hash or version fails with `ACTION_MISMATCH`.
    */
   expectedSha256Hash?: string;
   /**
@@ -53,7 +54,7 @@ export const actionRecipe = <TParams>({
         inputs: inputs(ctx, params),
       });
 
-      actionMatchesRecipe(shape, resolution);
+      actionMatchesRecipe(shape, { version, expectedSha256Hash }, resolution);
 
       // An `evm` execution carries EVM steps; the runner's step guards
       // (`validateSteps`) check their shape next.

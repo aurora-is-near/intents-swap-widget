@@ -79,6 +79,9 @@ export const planOut = async <TParams>(
     plan.params,
   );
 
+  // An `AsyncRecipe` resolved over the network: the runner may be gone.
+  ctx.throwIfDisposed();
+
   const withPayout = (payout: string): PreparedSteps =>
     validateSteps(plan, {
       steps: [...released, payoutStep(plan.recipe.destination, payout)],

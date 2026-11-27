@@ -181,6 +181,12 @@ describe('actionRecipe', () => {
       resolution({ metadata: { intent: 'aave_borrow', title: 'Other' } }),
       'bridge-in',
     ],
+    ['another version', { ...resolution(), version: 2 }, 'bridge-in'],
+    [
+      'another hash than the pinned one',
+      { ...resolution(), actionSha256Hash: 'f'.repeat(64) },
+      'bridge-in',
+    ],
   ] as const)('throws ACTION_MISMATCH for %s', async (_, answer, flow) => {
     const { recipe } = recipeFor(answer, flow);
 

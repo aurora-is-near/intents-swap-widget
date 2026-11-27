@@ -301,4 +301,20 @@ describe('runOut — an async EVM recipe (a hosted action)', () => {
       h.bodies.at(-1)?.steps.map((step) => 'to' in step && step.to),
     ).toEqual([POOL, USDC]);
   });
+
+  it('sends nothing when the runner is disposed while the steps resolve', async () => {
+    const h = setup();
+    const buildSteps = vi.fn<AsyncRecipe<{ all?: boolean }>['buildSteps']>(
+      async (ctx, params) => {
+        h.runner.dispose();
+
+        return withdraw.buildSteps(ctx, params);
+      },
+    );
+
+    await expect(
+      h.runner.runOut({ ...h.plan, recipe: { ...withdraw, buildSteps } }),
+    ).rejects.toMatchObject({ name: 'RunnerDisposedError' });
+    expect(h.api.createExecution).not.toHaveBeenCalled();
+  });
 });
