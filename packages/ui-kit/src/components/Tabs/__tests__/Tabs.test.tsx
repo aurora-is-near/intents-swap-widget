@@ -100,7 +100,8 @@ describe('Tabs', () => {
         'bg-accent',
         'text-onlime',
         'rounded-full',
-        'px-2',
+        'h-5',
+        'min-w-5',
         'text-13',
       ]),
     );
