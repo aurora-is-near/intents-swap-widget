@@ -137,7 +137,7 @@ const borrowRecipe = actionRecipe<{ borrowAmount: string }>({
 ```
 
 - **Checked on every build.** The resolved execution must be EVM, have the shape of `flow` (a quote for bridge-in, a top-level `destinationAsset` for steps-only, `outOperation` for an out-operation), deliver `destination.assetId`, and carry the recipe's `intent` and `title`. Anything else throws `GuardError` `ACTION_MISMATCH`.
-- **Errors.** A non-2xx answer throws `IntentsConnectActionsApiError` with the API's message and `status`; `isHashMismatch` (409), `isInvalidInput` (400) and `isUnknownAction` (404) name the common cases.
+- **Errors.** A non-2xx answer throws `IntentsConnectActionsApiError` with the API's message and `status`. `isHashMismatch` is the 409 of a changed action; 400 is invalid inputs and 404 an unknown action or version.
 - **One request per build.** A bridge-in `preview` resolves once and `run` reuses the prepared steps. A steps-only preview with `feeFromAmount` resolves again at the post-fee amount.
 - **Placeholders pass through.** `{INTERMEDIARY}` and `{MIN_AMOUNT_OUT}` in the resolved steps are filled in by the service at creation, as in any recipe.
 

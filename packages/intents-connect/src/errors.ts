@@ -153,20 +153,13 @@ export class IntentsConnectActionsApiError extends IntentsConnectError {
 
   /**
    * The action's definition or script no longer matches the pinned
-   * `expectedSha256Hash`: the catalog changed under the caller.
+   * `expectedSha256Hash`: the catalog changed under the caller. Other
+   * failures are told apart by `status` (400 invalid inputs, 404 unknown
+   * action or version).
    */
+  // fallow-ignore-next-line unused-class-member -- public API; Borrow reads it on a type-narrowed error (`apiErrorMessage`)
   get isHashMismatch(): boolean {
     return this.status === 409;
-  }
-
-  /** The inputs failed the action's schema or its own validation. */
-  get isInvalidInput(): boolean {
-    return this.status === 400;
-  }
-
-  /** No such action, or no such version of it. */
-  get isUnknownAction(): boolean {
-    return this.status === 404;
   }
 }
 

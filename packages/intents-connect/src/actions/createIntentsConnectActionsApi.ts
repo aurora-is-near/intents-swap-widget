@@ -5,36 +5,12 @@ import type {
   IntentsConnectActionsApiOptions,
 } from '@/actions/types';
 import { IntentsConnectActionsApiError } from '@/errors';
-import { bodySnippet, createJsonRequest } from '@/http';
+import { createJsonRequest, errorFieldMessage, unwrapResult } from '@/http';
 
 const DEFAULT_TIMEOUT = 15_000;
 
-/** Responses are wrapped as `{ result: … }`; tolerate a bare body too. */
-const unwrap = (payload: unknown): unknown =>
-  payload && typeof payload === 'object' && 'result' in payload
-    ? (payload as { result: unknown }).result
-    : payload;
-
 /** Errors are `{ "error": "…" }`, as on the execution API. */
-const errorMessage = (
-  payload: unknown,
-  status: number,
-  raw: string,
-): string => {
-  if (payload && typeof payload === 'object' && 'error' in payload) {
-    const { error } = payload as { error: unknown };
-
-    if (typeof error === 'string' && error) {
-      return error;
-    }
-  }
-
-  const snippet = bodySnippet(raw);
-
-  return snippet
-    ? `Intents Connect actions API responded ${status}: ${snippet}`
-    : `Intents Connect actions API responded ${status}`;
-};
+const errorMessage = errorFieldMessage('Intents Connect actions API');
 
 /**
  * Client for the Intents Connect actions API: the catalog of hosted actions
@@ -58,7 +34,7 @@ export const createIntentsConnectActionsApi = (
         status,
         parsed ? payload : raw,
       ),
-    unwrap,
+    unwrap: unwrapResult,
   });
 
   return {

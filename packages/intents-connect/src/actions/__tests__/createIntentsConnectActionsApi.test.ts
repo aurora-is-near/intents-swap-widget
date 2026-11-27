@@ -104,12 +104,12 @@ describe('createIntentsConnectActionsApi', () => {
   });
 
   it.each([
-    [409, 'isHashMismatch'],
-    [400, 'isInvalidInput'],
-    [404, 'isUnknownAction'],
+    [409, true],
+    [400, false],
+    [404, false],
   ] as const)(
-    'throws an IntentsConnectActionsApiError on %s with the API message (%s)',
-    async (status, flag) => {
+    'throws an IntentsConnectActionsApiError on %s with the API message (hash mismatch: %s)',
+    async (status, hashMismatch) => {
       const api = createIntentsConnectActionsApi({
         baseUrl: BASE,
         fetch: async () =>
@@ -126,7 +126,7 @@ describe('createIntentsConnectActionsApi', () => {
       expect(error).toBeInstanceOf(IntentsConnectActionsApiError);
       expect(error.status).toBe(status);
       expect(error.message).toBe('invalid action input: nope');
-      expect(error[flag]).toBe(true);
+      expect(error.isHashMismatch).toBe(hashMismatch);
     },
   );
 

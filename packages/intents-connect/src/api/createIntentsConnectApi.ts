@@ -1,5 +1,10 @@
 import { IntentsConnectApiError } from '@/errors';
-import { bodySnippet, createJsonRequest, type FetchLike } from '@/http';
+import {
+  createJsonRequest,
+  errorFieldMessage,
+  type FetchLike,
+  unwrapResult,
+} from '@/http';
 import type { Execution, Intermediary, SubmitStatus } from '@/types/execution';
 import type { DeleteSignatureEnvelope } from '@/types/signing';
 import type {
@@ -37,37 +42,7 @@ export type IntentsConnectApiOptions = {
 
 const DEFAULT_TIMEOUT = 30_000;
 
-/** Responses are wrapped as `{ result: … }`; tolerate a bare body too. */
-const unwrap = <T>(payload: unknown): T => {
-  if (payload && typeof payload === 'object' && 'result' in payload) {
-    return (payload as { result: T }).result;
-  }
-
-  return payload as T;
-};
-
-const errorMessage = (
-  payload: unknown,
-  status: number,
-  raw: string,
-): string => {
-  if (payload && typeof payload === 'object' && 'error' in payload) {
-    const { error } = payload as { error: unknown };
-
-    if (typeof error === 'string') {
-      return error;
-    }
-  }
-
-  // A non-JSON body is usually a proxy or CDN error page rather than the API.
-  // Including a snippet is the difference between a debuggable failure and an
-  // opaque status code.
-  const snippet = bodySnippet(raw);
-
-  return snippet
-    ? `Intents Connect API responded ${status}: ${snippet}`
-    : `Intents Connect API responded ${status}`;
-};
+const errorMessage = errorFieldMessage('Intents Connect API');
 
 export const createIntentsConnectApi = (
   options: IntentsConnectApiOptions,
@@ -93,7 +68,7 @@ export const createIntentsConnectApi = (
         status,
         parsed ? payload : raw,
       ),
-    unwrap,
+    unwrap: unwrapResult,
   });
 
   const request = <T>(args: {
