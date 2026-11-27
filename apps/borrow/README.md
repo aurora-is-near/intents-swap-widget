@@ -23,7 +23,8 @@ yarn turbo run build typecheck lint test --filter=borrow
 ## How it is put together
 
 - **Routes** (`src/router.tsx`, TanStack Router, code-based): `/` is the New
-  loan tab, `/positions` is My positions, both inside the shell layout route;
+  loan tab, `/positions` is My positions, both inside the Borrow layout
+  route; `/swap` is the empty Swap section; all inside the shell layout route;
   any other path redirects to `/`. Path routes need an SPA rewrite to
   `index.html` when deployed: `vercel.json` rewrites every path but
   `/storybook/` to it.
@@ -35,9 +36,13 @@ yarn turbo run build typecheck lint test --filter=borrow
   (`yarn build:storybook`), so it ships with the site. Locally:
   `yarn workspace @aurora-is-near/ui-kit storybook` (port 6006; Node
   20.19+).
-- **Shell** (`src/shell/`): the page column, header (logo, the Borrow
-  section, theme toggle, wallet button), hero, the route-driven tabs and the
-  reduced footer (logo, tagline and copyright; dark in both themes).
+- **Shell** (`src/shell/`): the page column, header (logo, the Swap and
+  Borrow sections, Docs and X links, theme toggle, wallet button) and the
+  footer (logo, tagline, social links, Product and Developers columns,
+  copyright with Privacy · Terms; dark in both themes). Docs, X and the
+  footer links have no URLs yet. `/swap` is the Swap section, empty for now;
+  the Borrow section (`BorrowSection.tsx`) holds the hero and the
+  route-driven tabs.
 - **Tab panels**: New loan shows `src/domains/loan/components/NewLoanForm/NewLoanForm.tsx`, the
   artboard's two columns: the loan form beside the live market list
   (`src/domains/loan/components/MarketList/MarketList.tsx`), the LTV / Liquidation / Health tiles and,

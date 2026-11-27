@@ -77,9 +77,11 @@ export function MarketCard({
         // it keeps `limebd` on hover.
         best && 'border-limebd bg-tint enabled:hover:border-limebd',
         // `.sel` 3px ink border with the padding taken in to keep the box
-        // (line 75, mobile line 124).
+        // (line 75, mobile line 124), on the `tint` the artboard's selected
+        // card shows (it is the BEST one there), so a selected card reads
+        // as chosen whichever market it is.
         selected &&
-          'border-3 border-ink p-[14.5px] enabled:hover:border-ink mobile:p-[10.5px]',
+          'border-3 border-ink bg-tint p-[14.5px] enabled:hover:border-ink mobile:p-[10.5px]',
         // `.off` at .55 opacity (line 76).
         off && 'opacity-55',
       )}
@@ -113,8 +115,9 @@ export function MarketCard({
         liquidity={formatCompactUsd(chosen.liquidityUsd)}
         maxLtv={maxLtv}
         name={
-          best ? (
-            // Line 353: the accent highlight on the BEST market's name.
+          best || selected ? (
+            // Line 353: the accent highlight on the BEST market's name, and
+            // on the selected one's.
             <span className="inline-block rounded-8 bg-accent px-2 text-onlime">
               {row.name}
             </span>
@@ -130,16 +133,20 @@ export function MarketCard({
 /**
  * A provider Borrow does not lend on yet, with the artboard's sample
  * figures (lines 1127–1129): the card's look, but not a button, so it can
- * be neither picked nor focused, and it never counts for BEST.
+ * be neither picked nor focused, and it never counts for BEST. Grayed out
+ * at the `.off` card's .55 opacity (line 76), since it cannot be chosen.
  */
 export function StaticMarketCard(props: MarketFiguresProps & { name: string }) {
   return (
     // A labelled group, not a button: its figures read as one card.
     <div
       aria-label={props.name}
-      className="box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3"
+      className="box-border flex min-w-0 flex-[1_1_170px] flex-col gap-3 rounded-18 border-1.5 border-solid border-bd bg-sf p-4 text-left font-sans leading-font text-ink opacity-55 mobile:flex-[1_1_0] mobile:gap-2 mobile:p-3"
       role="group">
-      <div className="flex min-h-4.5 items-center" />
+      <div className="flex min-h-4.5 items-center">
+        {/* The graying says it visually; this says it to screen readers. */}
+        <span className="sr-only">Not available yet</span>
+      </div>
       <MarketFigures {...props} />
     </div>
   );

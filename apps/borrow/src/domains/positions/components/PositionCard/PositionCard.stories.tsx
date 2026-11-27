@@ -125,7 +125,7 @@ export const Active: Story = { args: { position: ACTIVE } };
  */
 export const AtRisk: Story = { args: { position: AT_RISK } };
 
-/** Web-Repaid: no debt, collateral left to withdraw. */
+/** No debt left: the same card, "COLLATERAL ONLY". */
 export const Repaid: Story = { args: { position: REPAID } };
 
 /** A loan Borrow cannot manage: the provider in the pill, no actions. */

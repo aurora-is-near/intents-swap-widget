@@ -167,6 +167,7 @@ export const useLoanForm = ({
     market,
     figuresMarket: snapshot?.market,
     liquidationLtvBps: figuresRow?.liquidationLtvBps,
+    maxLtvBps: figuresRow?.maxLtvBps,
     disabledMarketIds: disabledProviders,
     pickMarket: setPickedProvider,
     recipientEnabled: to.enabled,

@@ -100,6 +100,14 @@ describe('MarketList', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('tells screen readers a provider Borrow does not lend on is not available', async () => {
+    renderList(fakeAdapter());
+
+    expect(
+      await screen.findByRole('group', { name: 'Morpho' }),
+    ).toHaveTextContent('Not available yet');
+  });
+
   it('names a skeleton by its provider once the markets are listed', async () => {
     renderList(fakeAdapter(() => new Promise(() => {})));
 

@@ -107,9 +107,9 @@ describe('New loan tab', () => {
     // Aave on Arbitrum at the starting LTV of 50%, with no amount yet: no
     // liquidation price, its liquidation LTV beneath, health 82.5 ÷ 50.
     expect(tiles.map((tile) => tile.textContent)).toEqual([
-      '50%',
+      '50%max 80%',
       '—at 82.5% LTV',
-      '1.65',
+      '1.65liq. at 1.00',
     ]);
   });
 
@@ -213,7 +213,7 @@ describe('Footer', () => {
     setConnected(false);
   });
 
-  it('shows only the logo, tagline and copyright, with no links', async () => {
+  it('shows the logo, tagline, social and link columns, and copyright', async () => {
     await renderApp('/');
 
     const footer = screen.getByRole('contentinfo');
@@ -225,8 +225,27 @@ describe('Footer', () => {
       'Borrow, swap and earn on any chain from one signature.',
     );
     expect(footer).toHaveTextContent('© 2026 Aurora. All rights reserved.');
-    expect(within(footer).queryAllByRole('link')).toHaveLength(0);
-    expect(within(footer).queryAllByRole('button')).toHaveLength(0);
-    expect(footer.querySelectorAll('a')).toHaveLength(0);
+    expect(
+      within(footer)
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('aria-label') ?? link.textContent),
+    ).toEqual([
+      'X',
+      'YouTube',
+      'Telegram',
+      'Swap',
+      'Borrow',
+      'Earn',
+      'Documentation',
+      'Borrow API',
+      'Status',
+      'Privacy',
+      'Terms',
+    ]);
+    expect(
+      within(footer)
+        .getAllByRole('heading')
+        .map((h) => h.textContent),
+    ).toEqual(['Product', 'Developers']);
   });
 });

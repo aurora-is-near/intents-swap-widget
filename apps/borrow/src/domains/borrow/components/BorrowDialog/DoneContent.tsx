@@ -15,7 +15,7 @@ export function DoneContent({
       {/* Line 971: centred, padding 14px 0 6px. */}
       <div className="pt-3.5 pb-1.5 text-center">
         {/* Line 972: the 68px badge, centred. */}
-        <DoneMark className="mx-auto block" size={68} />
+        <DoneMark className="mx-auto block" />
         {/* Line 973: 28px / 800, 18px above. */}
         <DialogTitle className="mt-4.5 text-28">Loan opened</DialogTitle>
         {/* Line 974: 16px / 1.45 `mut`, 10px above. */}

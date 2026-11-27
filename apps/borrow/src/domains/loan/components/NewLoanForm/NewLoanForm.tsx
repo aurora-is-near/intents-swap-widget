@@ -85,6 +85,7 @@ export function NewLoanForm({
           liquidationLtvBps={form.liquidationLtvBps}
           liquidationPriceUsd={form.liquidationPriceUsd}
           ltv={form.ltv}
+          maxLtvBps={form.maxLtvBps}
         />
         <LoanCta
           // Before any market loads: Borrow launches on Aave only (line 372).

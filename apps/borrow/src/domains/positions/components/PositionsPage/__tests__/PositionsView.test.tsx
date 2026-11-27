@@ -250,20 +250,37 @@ describe('PositionsView', () => {
 
     expect(screen.getByText(/^Morpho · /)).toBeVisible();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    // No empty Repay panel: Borrow will never manage this loan.
+    expect(screen.getByRole('region').parentElement?.children).toHaveLength(1);
   });
 
-  it('shows a repaid loan', () => {
-    view({ positions: [fakeRepaidLoan()] });
+  it('puts the empty Repay panel beside a loan Borrow manages', () => {
+    view({ positions: [fakeLoan()] });
 
-    const card = screen.getByRole('region', { name: 'Loan repaid' });
+    const row = screen.getByRole('region').parentElement;
 
-    expect(card).toHaveTextContent('Your collateral is free to withdraw.');
+    expect(row?.children).toHaveLength(2);
+    expect(row?.lastElementChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('shows a repaid loan in the same card, with no debt and no actions', () => {
+    const repaid = fakeRepaidLoan();
+
+    view({ positions: [repaid] });
+
+    const card = screen.getByRole('region', {
+      name: `WETH, ${repaid.marketName} on ${repaid.chainLabel}`,
+    });
+
+    expect(card).toHaveTextContent('COLLATERAL ONLY');
     expect(
-      within(card).getByText('Collateral to withdraw').nextElementSibling,
+      within(card).getByText('Collateral').nextElementSibling,
     ).toHaveTextContent('0.25 WETH');
-    expect(
-      within(card).getByRole('button', { name: 'Withdraw 0.25 WETH' }),
-    ).toBeDisabled();
+    expect(within(card).getByText('Debt').nextElementSibling).toHaveTextContent(
+      '—',
+    );
+    expect(within(card).queryByRole('button')).not.toBeInTheDocument();
+    expect(card).not.toHaveTextContent('Loan repaid');
   });
 
   describe('with several loans', () => {
@@ -290,7 +307,7 @@ describe('PositionsView', () => {
 
       view({ positions: loans, selectedId: 'repaid', onSelect });
 
-      expect(screen.getByRole('region', { name: 'Loan repaid' })).toBeVisible();
+      expect(screen.getByText('COLLATERAL ONLY')).toBeVisible();
 
       await userEvent.click(
         screen.getAllByRole('button', { pressed: false })[0] as HTMLElement,
