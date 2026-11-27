@@ -33,6 +33,18 @@ vi.mock('@/domains/markets/aaveV3', async () =>
   (await import('@/tests/aaveV3Mock')).createAaveV3Mock(),
 );
 
+// The Swap page's widget needs wallets and the network: a stand-in here, and
+// the Swap mode panel gets no quotes from the widget's store.
+vi.mock('@/domains/swap/components/SwapWidget', () => ({
+  SwapWidget: ({ mode }: { mode: string }) => (
+    <div data-testid="swap-widget">{mode}</div>
+  ),
+}));
+
+vi.mock('@/domains/swap/hooks/useModeQuotes', () => ({
+  useModeQuotes: () => ({ quotes: {}, isQuoting: false }),
+}));
+
 // The New loan form reads wallet balances through the SDK's hooks; they are
 // replaced by empty results, so no chain or token list is read.
 vi.mock('@aurora-is-near/intents-connect/react', async (importOriginal) =>
@@ -96,7 +108,7 @@ describe('App', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('shows an empty Swap section at /swap', async () => {
+  it('shows the swap widget and the Swap mode panel at /swap', async () => {
     render(
       <App
         router={createAppRouter(
@@ -111,8 +123,39 @@ describe('App', () => {
       'aria-current',
       'page',
     );
-    expect(screen.getByRole('main')).toBeEmptyDOMElement();
+    expect(await screen.findByTestId('swap-widget')).toHaveTextContent(
+      'confidential',
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Swap confidentially' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Confidential/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+  });
+
+  it('switches the widget to a public route from the Swap mode panel', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <App
+        router={createAppRouter(
+          createMemoryHistory({ initialEntries: ['/swap'] }),
+        )}
+      />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: /^Standard/ }));
+
+    expect(screen.getByTestId('swap-widget')).toHaveTextContent('public');
+    expect(
+      screen.getByRole('heading', { name: 'Swap publicly' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Standard/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('selects New loan at /', async () => {

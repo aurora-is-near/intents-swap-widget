@@ -23,3 +23,16 @@
      script line 1398): the same amber in both themes, no kit token. */
   --color-caution: #b26a00;
 }
+
+/*
+ * Scale steps the kit has no token for, from Web-Swap.dc.html: the `.mode`
+ * cards' radius (line 58) and the picked card's border (line 60), their
+ * description's line height (line 680) and the mode chip's tracking
+ * (line 526).
+ */
+@theme inline {
+  --radius-20: 20px;
+  --border-width-2\.5: 2.5px;
+  --leading-1\.4: 1.4;
+  --tracking-chip: 0.12em;
+}

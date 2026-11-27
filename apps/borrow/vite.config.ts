@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 import { prerender } from './vite-plugins/prerender';
 import { themeInitScript } from './vite-plugins/themeInitScript';
@@ -48,6 +49,12 @@ export default defineConfig(({ mode }) => {
       vaultsFyiProxy(env),
       react(),
       tailwindcss(),
+      // The swap widget touches Node's crypto, Buffer and process (its
+      // NEAR, TON and Stellar dependencies).
+      nodePolyfills({
+        include: ['crypto', 'buffer', 'process', 'util'],
+        globals: { Buffer: true, global: true, process: true },
+      }),
     ],
     resolve: {
       alias: {

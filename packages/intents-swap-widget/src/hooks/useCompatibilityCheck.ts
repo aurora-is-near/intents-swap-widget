@@ -8,6 +8,7 @@ import { TransferError } from '@/errors';
 import { notReachable } from '@/utils/notReachable';
 import { getIntentsAccountId } from '@/utils/intents/getIntentsAccountId';
 import { localStorageTyped } from '@/utils/localstorage';
+import { stellarSignatureToBytes } from '@/utils/stellar/stellarSignatureToBytes';
 import {
   verifyWalletSignature,
   walletVerificationMessageFactory,
@@ -133,7 +134,7 @@ export function useCompatibilityCheck({
           msg.STELLAR.message,
         );
 
-        const signature = new Uint8Array(Buffer.from(signedMessage, 'base64'));
+        const signature = stellarSignatureToBytes(signedMessage);
 
         return {
           type: 'STELLAR_SEP53',
