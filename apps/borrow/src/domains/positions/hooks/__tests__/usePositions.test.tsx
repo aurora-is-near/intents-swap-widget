@@ -180,6 +180,26 @@ describe('usePositions', () => {
     });
   });
 
+  it('reads a failed market-figure read again on refetch', async () => {
+    connect('sol', 'So1anaWa11et');
+    reader.readOwnerPositions.mockResolvedValue([
+      fakeLoan({ liquidationLtv: null, borrowApr: null }),
+    ]);
+    // A refused read is not retried on its own, so only refetch reads it again.
+    reader.readMarketRisk.mockRejectedValueOnce(
+      Object.assign(new Error('no credits'), { status: 403 }),
+    );
+
+    const { result } = render(usePositions);
+
+    await waitFor(() => expect(reader.readMarketRisk).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.status).toBe('success'));
+
+    act(() => result.current.refetch());
+
+    await waitFor(() => expect(reader.readMarketRisk).toHaveBeenCalledTimes(2));
+  });
+
   it('keeps the loans read when another read fails', async () => {
     connect('evm', EVM_WALLET);
     reader.readOwnerPositions.mockImplementation(async (owner) => {
