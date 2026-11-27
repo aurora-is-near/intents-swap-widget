@@ -22,6 +22,16 @@ vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
+// My positions reads through a fake reader (no loans by default) and a fake
+// intermediary, so these tests never call vaults.fyi or the Intents Connect API.
+vi.mock('@/domains/positions/vaultsFyi/createVaultsFyiReader', async () =>
+  (await import('@/tests/fakePositions')).createVaultsFyiReaderMock(),
+);
+
+vi.mock('@/domains/positions/hooks/useOwnerAccounts', async () =>
+  (await import('@/tests/fakePositions')).createOwnerAccountsMock(),
+);
+
 // The New loan tab reads markets through a fake Aave adapter with fixed
 // snapshots (Base 4.85%, Arbitrum 4.41%), so these tests stay offline.
 vi.mock('@/domains/markets/aaveV3', async () =>
@@ -172,7 +182,8 @@ describe('My positions tab', () => {
 
     const { history } = await renderApp('/positions');
 
-    const card = within(panel()).getByRole('region', {
+    // Shown once the (fake) reader has found no loans.
+    const card = await within(panel()).findByRole('region', {
       name: 'No positions right now',
     });
 

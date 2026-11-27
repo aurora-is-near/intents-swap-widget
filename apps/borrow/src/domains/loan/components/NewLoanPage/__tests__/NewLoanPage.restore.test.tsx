@@ -59,6 +59,16 @@ vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
+// My positions reads through a fake reader (no loans by default) and a fake
+// intermediary, so these tests never call vaults.fyi or the Intents Connect API.
+vi.mock('@/domains/positions/vaultsFyi/createVaultsFyiReader', async () =>
+  (await import('@/tests/fakePositions')).createVaultsFyiReaderMock(),
+);
+
+vi.mock('@/domains/positions/hooks/useOwnerAccounts', async () =>
+  (await import('@/tests/fakePositions')).createOwnerAccountsMock(),
+);
+
 vi.mock('@/domains/markets/aaveV3', async () =>
   (await import('@/tests/aaveV3Mock')).createAaveV3Mock(),
 );

@@ -17,6 +17,16 @@ vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
+// My positions reads through a fake reader (no loans by default) and a fake
+// intermediary, so these tests never call vaults.fyi or the Intents Connect API.
+vi.mock('@/domains/positions/vaultsFyi/createVaultsFyiReader', async () =>
+  (await import('@/tests/fakePositions')).createVaultsFyiReaderMock(),
+);
+
+vi.mock('@/domains/positions/hooks/useOwnerAccounts', async () =>
+  (await import('@/tests/fakePositions')).createOwnerAccountsMock(),
+);
+
 // The New loan tab reads markets through a fake Aave adapter with fixed
 // snapshots, so these tests stay offline and still show the market cards.
 vi.mock('@/domains/markets/aaveV3', async () =>
