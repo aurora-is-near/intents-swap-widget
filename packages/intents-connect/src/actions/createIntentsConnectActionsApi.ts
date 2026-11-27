@@ -9,8 +9,10 @@ import { createJsonRequest, errorFieldMessage, unwrapResult } from '@/http';
 
 const DEFAULT_TIMEOUT = 15_000;
 
+const LABEL = 'Intents Connect actions API';
+
 /** Errors are `{ "error": "…" }`, as on the execution API. */
-const errorMessage = errorFieldMessage('Intents Connect actions API');
+const errorMessage = errorFieldMessage(LABEL);
 
 /**
  * Client for the Intents Connect actions API: the catalog of hosted actions
@@ -27,7 +29,7 @@ export const createIntentsConnectActionsApi = (
     baseUrl,
     fetch: fetchImpl,
     timeout,
-    label: 'Intents Connect actions API',
+    label: LABEL,
     toHttpError: ({ payload, raw, status, parsed }) =>
       new IntentsConnectActionsApiError(
         errorMessage(payload, status, raw),
@@ -39,15 +41,13 @@ export const createIntentsConnectActionsApi = (
 
   return {
     listActions: () => send<ActionCatalogEntry[]>({ path: 'api/v1/actions' }),
-    resolveAction: (actionId, { version, expectedSha256Hash, inputs }) =>
+    // An unpinned request's `expectedSha256Hash: undefined` is left out of
+    // the JSON body.
+    resolveAction: (actionId, request) =>
       send<ActionResolution>({
         path: `api/v1/actions/${encodeURIComponent(actionId)}/resolve`,
         method: 'POST',
-        body: {
-          version,
-          ...(expectedSha256Hash === undefined ? {} : { expectedSha256Hash }),
-          inputs,
-        },
+        body: request,
       }),
   };
 };

@@ -49,7 +49,7 @@ export const actionRecipe = <TParams>({
     buildSteps: async (ctx, params) => {
       const resolution = await api.resolveAction(actionId, {
         version,
-        ...(expectedSha256Hash === undefined ? {} : { expectedSha256Hash }),
+        expectedSha256Hash,
         inputs: inputs(ctx, params),
       });
 

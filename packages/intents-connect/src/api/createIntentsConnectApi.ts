@@ -42,7 +42,9 @@ export type IntentsConnectApiOptions = {
 
 const DEFAULT_TIMEOUT = 30_000;
 
-const errorMessage = errorFieldMessage('Intents Connect API');
+const LABEL = 'Intents Connect API';
+
+const errorMessage = errorFieldMessage(LABEL);
 
 export const createIntentsConnectApi = (
   options: IntentsConnectApiOptions,
@@ -59,7 +61,7 @@ export const createIntentsConnectApi = (
     baseUrl,
     fetch: fetchImpl,
     timeout,
-    label: 'Intents Connect API',
+    label: LABEL,
     // A non-JSON error body must still surface its status, or
     // `isExecutionInFlight` becomes unreachable behind a proxy's HTML 502.
     toHttpError: ({ payload, raw, status, parsed }) =>
