@@ -56,6 +56,11 @@ export const Tab = forwardRef<HTMLElement, TabProps>(
       className={cn(
         'box-border inline-flex cursor-pointer items-center gap-2 font-sans font-bold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
         'rounded-full border-1.5 border-solid border-bd2 bg-sf px-4.5 py-2.25 text-15 text-ink enabled:hover:border-ink',
+        // Presses like `Button`'s secondary, on pointer-down. Base UI marks a
+        // disabled tab with `data-disabled` (it stays focusable, so not
+        // `:disabled`); the selected tab ignores clicks, so neither presses.
+        // Reduced motion keeps only the colour states.
+        'transition-transform duration-160 ease-out motion-safe:not-data-disabled:not-data-active:active:scale-97',
         'leading-font data-active:border-ink data-active:bg-ink data-active:text-sf data-disabled:cursor-not-allowed data-disabled:opacity-45',
         className,
       )}

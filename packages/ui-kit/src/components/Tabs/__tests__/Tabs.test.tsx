@@ -152,6 +152,8 @@ describe('Tabs', () => {
         'text-15',
         'text-ink',
         'enabled:hover:border-ink',
+        'transition-transform',
+        'motion-safe:not-data-disabled:not-data-active:active:scale-97',
         'inline-flex',
         'gap-2',
         'font-bold',

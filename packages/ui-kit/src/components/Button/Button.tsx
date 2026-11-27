@@ -15,9 +15,9 @@ const VARIANT_CLASSES = {
   // `.go.bad` (line 56). #E5694F has no token on the artboards.
   danger:
     'rounded-18 transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100 border-2 border-solid border-negbd bg-sf text-neg',
-  // `.seg` (lines 136–137), as on `Tab`.
+  // `.seg` (lines 136–137), as on `Tab`. Presses like `.go`, on pointer-down.
   secondary:
-    'rounded-full border-1.5 border-solid border-bd2 bg-sf px-4.5 py-2.25 text-15 text-ink enabled:hover:border-ink',
+    'rounded-full transition-transform duration-160 ease-out enabled:active:scale-97 motion-reduce:enabled:active:scale-100 border-1.5 border-solid border-bd2 bg-sf px-4.5 py-2.25 text-15 text-ink enabled:hover:border-ink',
   // `.nv` and `.ibtn` (lines 17–18, 53–54).
   ghost:
     'rounded-12 border-0 bg-transparent px-5 py-2.5 text-16 text-mut enabled:hover:bg-hov',
