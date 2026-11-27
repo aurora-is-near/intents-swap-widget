@@ -15,6 +15,10 @@
   "dependencies": {
     "@aurora-is-near/intents-connect": "*",
     "@aurora-is-near/intents-connect-wallet": "*",
+    "@aurora-is-near/intents-swap-widget": "*",
+    "@aurora-is-near/intents-swap-widget-evm": "*",
+    "@aurora-is-near/intents-swap-widget-solana": "*",
+    "@aurora-is-near/intents-swap-widget-stellar": "*",
     "@aurora-is-near/ui-kit": "*",
     "@base-ui/react": "^1.8.0",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
@@ -32,6 +36,7 @@
     "@tanstack/react-router": "^1.170.46",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "valtio": "2.1.7",
     "viem": "2.55.19"
   },
   "devDependencies": {

@@ -52,7 +52,7 @@ const INTENTS_CONNECT_ACTIONS_API_URL =
  * borrow fee; the intents API client puts it in the URL path, as for the
  * swap widget.
  */
-const INTENTS_API_KEY = readEnv(import.meta.env.VITE_INTENTS_API_KEY);
+export const INTENTS_API_KEY = readEnv(import.meta.env.VITE_INTENTS_API_KEY);
 
 if (!INTENTS_API_KEY) {
   // A configuration error, reported once at start-up; the app still runs,

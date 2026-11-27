@@ -1,0 +1,134 @@
+/*
+ * The swap widget in Borrow's look (Web-Swap.dc.html), by the widget's own
+ * CSS variables, so its elements and copy stay as the widget draws them.
+ * Every colour is a ui-kit token, so the light and dark themes follow the
+ * app's `data-theme`. `body .sw` outranks the widget's own `.sw` defaults
+ * and also reaches its portals, which the widget gives the `sw` class.
+ */
+body .sw {
+  --font-family-sw: 'Schibsted Grotesk', system-ui, sans-serif;
+
+  /* The widget's grays run from its text (50) to its background (950). */
+  --c-sw-gray-50: var(--ink);
+  --c-sw-gray-100: var(--ink);
+  --c-sw-gray-200: var(--mut);
+  --c-sw-gray-300: var(--mut);
+  --c-sw-gray-400: var(--mut2);
+  --c-sw-gray-500: var(--mut3);
+  --c-sw-gray-600: var(--mut);
+  --c-sw-gray-700: var(--bd2);
+  /* Token pills: white on the panels. */
+  --c-sw-gray-800: var(--sf);
+  /* The Sell and Buy panels. */
+  --c-sw-gray-900: var(--sf2);
+  --c-sw-gray-950: var(--sf);
+
+  --c-sw-accent-50: color-mix(in srgb, var(--accent) 10%, var(--sf));
+  --c-sw-accent-100: color-mix(in srgb, var(--accent) 20%, var(--sf));
+  --c-sw-accent-200: color-mix(in srgb, var(--accent) 40%, var(--sf));
+  --c-sw-accent-300: color-mix(in srgb, var(--accent) 60%, var(--sf));
+  --c-sw-accent-400: color-mix(in srgb, var(--accent) 80%, var(--sf));
+  --c-sw-accent-500: var(--accent);
+  --c-sw-accent-600: color-mix(in srgb, var(--accent) 85%, #111613);
+  --c-sw-accent-700: color-mix(in srgb, var(--accent) 70%, #111613);
+  --c-sw-accent-800: color-mix(in srgb, var(--accent) 50%, #111613);
+  --c-sw-accent-900: color-mix(in srgb, var(--accent) 30%, #111613);
+  --c-sw-accent-950: color-mix(in srgb, var(--accent) 15%, #111613);
+
+  --c-sw-status-success: var(--pos);
+  --c-sw-status-success-bg: var(--tint);
+  --c-sw-status-warning: var(--warn);
+  --c-sw-status-warning-bg: var(--warnbg);
+  --c-sw-status-error: var(--neg);
+  --c-sw-status-error-bg: var(--negbg);
+}
+
+/*
+ * Radii: the panels and main button 22, buttons and pills 16. The widget
+ * resolves its radius utilities on `.sw` from its preset, set inline there,
+ * so these replace the resolved values one level in.
+ */
+.sw > * {
+  --radius-sw-sm: 10px;
+  --radius-sw-md: 16px;
+  --radius-sw-lg: 22px;
+}
+
+/*
+ * The widget's own card as the design's: white, 1.5px border, radius 28,
+ * padding 16 and the lime glow, as wide as its column.
+ */
+.swap-widget .sw > div {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  padding: 16px;
+  border: 1.5px solid var(--bd);
+  border-radius: var(--radius-28);
+  background: var(--sf);
+  box-shadow:
+    0 0 0 6px var(--tint),
+    0 24px 60px rgba(158, 200, 80, 0.28);
+}
+
+/* Its confidential badge: the page's mode chip stands for it. */
+.swap-widget [data-beam] {
+  display: none;
+}
+
+/*
+ * An open token list or transaction history (the widget's virtual lists,
+ * `.hide-scrollbar`; the chains dropdown shares the class but is its own
+ * `.sw`) keeps the card as tall as the Swap mode panel beside it, set by
+ * `SwapLayout` as `--swap-panel-height`, and scrolls inside. The history
+ * stays mounted in a `.hidden` wrapper while closed, so a list in there
+ * counts for nothing. Every element down to the list becomes a shrinkable
+ * column, so the list gives up the height the card cannot. With no panel
+ * beside it, the variable is unset and the card grows as the widget likes.
+ */
+.swap-widget
+  .sw
+  div:has(.hide-scrollbar:not(.sw):not(.hidden .hide-scrollbar)) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.swap-widget .sw > div:has(.hide-scrollbar:not(.sw):not(.hidden .hide-scrollbar)) {
+  max-height: var(--swap-panel-height);
+}
+
+.swap-widget .sw .hide-scrollbar:not(.sw) {
+  flex-shrink: 1;
+  min-height: 0 !important;
+}
+
+/*
+ * gray-800 is the white of the token pills above, but the token list's
+ * conversion preview also writes its USD value in it ("(…$1.37)"), which
+ * then vanishes on the preview's panel-coloured chip. It is the widget's
+ * only text in gray-800: give it the muted text colour instead.
+ */
+.swap-widget .sw .text-sw-gray-800 {
+  color: var(--mut2);
+}
+
+/*
+ * Hovers in gray-800 go white. That suits the token rows, on the token
+ * list's panel-coloured background, but the transaction cards and the
+ * header's history and close buttons sit on the white card, where it
+ * vanishes: those hover a step darker than the panels instead.
+ */
+.swap-widget .sw .hover\:bg-sw-gray-800:not(li > *):hover {
+  background-color: var(--track);
+}
+
+/*
+ * The sell/buy direction switcher's spinner (the only `animate-spin` at half
+ * opacity) is the lime accent at 50%, washed out on the switcher's panel
+ * colour: draw it in ink, like the arrow it stands in for.
+ */
+.swap-widget .sw .animate-spin.opacity-50 {
+  color: var(--ink);
+  opacity: 1;
+}

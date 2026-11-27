@@ -23,11 +23,19 @@ describe('page heads', () => {
     expect(head.noindex).toBeUndefined();
   });
 
-  it.each([
-    ['/positions', 'My positions · Aurora Borrow'],
-    ['/swap', 'Swap · Aurora Borrow'],
-  ])('keeps %s out of search', async (path, title) => {
-    expect(await headAt(path)).toEqual({ title, noindex: true });
+  it('indexes Swap, with its own title and description', async () => {
+    const head = await headAt('/swap');
+
+    expect(head.title).toBe('Swap · Aurora Borrow');
+    expect(head.description).toContain('one signed intent');
+    expect(head.noindex).toBeUndefined();
+  });
+
+  it('keeps /positions out of search', async () => {
+    expect(await headAt('/positions')).toEqual({
+      title: 'My positions · Aurora Borrow',
+      noindex: true,
+    });
   });
 
   it('falls back to the not-found head with no matched route', () => {

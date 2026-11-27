@@ -9,6 +9,7 @@ import type { RouterHistory } from '@tanstack/react-router';
 
 import { NewLoanPage } from '@/domains/loan/components/NewLoanPage/NewLoanPage';
 import { PositionsPage } from '@/domains/positions/components/PositionsPage/PositionsPage';
+import { SwapPage } from '@/domains/swap/components/SwapPage';
 import { BorrowSection } from '@/shell/BorrowSection';
 import { Shell } from '@/shell/Shell';
 
@@ -28,12 +29,21 @@ const borrowRoute = createRoute({
   component: BorrowSection,
 });
 
-/** The Swap section, with no content yet: kept out of search until it has. */
+/**
+ * The Swap page: the swap widget beside the Swap mode panel. The widget is
+ * its own chunk, loaded on the client (`SwapPage`).
+ */
 const swapRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: '/swap',
-  component: () => null,
-  staticData: { head: { title: 'Swap · Aurora Borrow', noindex: true } },
+  component: SwapPage,
+  staticData: {
+    head: {
+      title: 'Swap · Aurora Borrow',
+      description:
+        'Sell any asset, receive any asset. Pick a private or a public route, settled from one signed intent.',
+    },
+  },
 });
 
 /**
