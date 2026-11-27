@@ -1,3 +1,5 @@
+import { p256 } from '@noble/curves/p256';
+import { base58 } from '@scure/base';
 import {
   authIdentity,
   messageFactory,
@@ -9,6 +11,10 @@ import type { PreparedIntent, SignedIntent } from '@/types/intents';
 import type { WebAuthnProvider } from '@/types/providers';
 
 import type { PreparedIntentSigner } from './types';
+
+/** A DER P-256 signature as raw r‖s (low-S), always 64 bytes. */
+const toRawP256Signature = (der: ArrayBuffer) =>
+  p256.Signature.fromDER(new Uint8Array(der)).normalizeS().toCompactRawBytes();
 
 export class IntentSignerWebAuthn implements PreparedIntentSigner {
   readonly standard = 'webauthn' as const;
@@ -42,9 +48,9 @@ export class IntentSignerWebAuthn implements PreparedIntentSigner {
 
     const signatureData = await this.passkey.signChallenge(challenge);
 
-    // Converts the DER signature to raw r‖s (low-S) and encodes the payload,
-    // public key, client data and authenticator data for the contract.
-    return prepareBroadcastRequest.prepareSwapSignedData(
+    // Encodes the payload, public key, client data and authenticator data
+    // for the contract, with the signature as raw r‖s (low-S).
+    const signed = prepareBroadcastRequest.prepareSwapSignedData(
       {
         type: 'WEBAUTHN',
         signatureData,
@@ -56,5 +62,17 @@ export class IntentSignerWebAuthn implements PreparedIntentSigner {
       },
       { userAddress: this.passkey.publicKey, userChainType: 'webauthn' },
     ) as SignedIntent;
+
+    if (!this.passkey.publicKey.startsWith('p256:')) {
+      return signed;
+    }
+
+    // The SDK (`extractRawSignature`) drops the leading zero bytes of a short
+    // r or s, about 1 signature in 128, which the contract then rejects:
+    // re-encode r and s at a fixed 32 bytes each.
+    return {
+      ...signed,
+      signature: `p256:${base58.encode(toRawP256Signature(signatureData.signature))}`,
+    };
   }
 }
