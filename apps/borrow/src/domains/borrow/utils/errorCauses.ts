@@ -89,22 +89,18 @@ export const ACTION_CHANGED_MESSAGE =
  * API's 409) is `ACTION_CHANGED_MESSAGE`.
  */
 export const apiErrorMessage = (error: unknown): string | undefined => {
-  const chain = causeChainOf(error);
-  const actionsError = chain.find(
-    (value): value is IntentsConnectActionsApiError =>
+  const apiError = causeChainOf(error).find(
+    (value): value is IntentsConnectApiError | IntentsConnectActionsApiError =>
+      value instanceof IntentsConnectApiError ||
       value instanceof IntentsConnectActionsApiError,
   );
 
-  if (actionsError?.isHashMismatch) {
+  if (
+    apiError instanceof IntentsConnectActionsApiError &&
+    apiError.isHashMismatch
+  ) {
     return ACTION_CHANGED_MESSAGE;
   }
-
-  const apiError =
-    actionsError ??
-    chain.find(
-      (value): value is IntentsConnectApiError =>
-        value instanceof IntentsConnectApiError,
-    );
 
   const { body } = apiError ?? {};
   const reason =
