@@ -49,6 +49,22 @@ vi.mock('@/domains/wallet/providers/WalletProvider', async () =>
   (await import('@/tests/walletMock')).createWalletProviderMock(),
 );
 
+// My positions reads through a fake reader (no loans by default) and a fake
+// intermediary, so these tests never call vaults.fyi or the Intents Connect API.
+vi.mock('@/domains/positions/vaultsFyi/createVaultsFyiReader', async () =>
+  (await import('@/tests/fakePositions')).createVaultsFyiReaderMock(),
+);
+
+vi.mock('@/domains/positions/hooks/useOwnerAccounts', async () =>
+  (await import('@/tests/fakePositions')).createOwnerAccountsMock(),
+);
+
+const refreshPositions = vi.hoisted(() => vi.fn());
+
+vi.mock('@/domains/positions/hooks/useRefreshPositions', () => ({
+  useRefreshPositionsOnDone: refreshPositions,
+}));
+
 vi.mock('@/domains/markets/aaveV3', async () =>
   (await import('@/tests/aaveV3Mock')).createAaveV3Mock(),
 );
@@ -134,6 +150,7 @@ const emit = (...events: RunnerEvent[]) =>
 let run = deferred<Execution>();
 
 beforeEach(() => {
+  refreshPositions.mockClear();
   run = deferred<Execution>();
   sdk.result = fakeExecution(run.promise);
   sdk.open = [];
@@ -234,6 +251,11 @@ describe('NewLoanPage', () => {
     expect(done).toHaveAccessibleDescription(
       '1,485 USDC is on its way to your wallet.',
     );
+    // The new loan is read at once, for the tab badge and My positions.
+    expect(refreshPositions).toHaveBeenLastCalledWith({
+      kind: 'done',
+      executionId: EXECUTION_ID,
+    });
 
     await user.click(screen.getByRole('button', { name: 'View position' }));
 
@@ -371,6 +393,10 @@ describe('NewLoanPage: the API refuses the borrow', () => {
     expect(
       within(dialog).getByText('No liquidity available'),
     ).toBeInTheDocument();
+    // No loan was opened: positions are not read again for it.
+    expect(refreshPositions).not.toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'done' }),
+    );
     expect(screen.queryByText(/useTheme must be used/)).not.toBeInTheDocument();
     // The page behind the dialog still renders: the header's theme switch.
     expect(

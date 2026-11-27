@@ -13,6 +13,8 @@ interface ImportMetaEnv {
   readonly VITE_RPC_URL_ARB?: string;
   /** The API key (public): Intents Connect create calls and balances. */
   readonly VITE_INTENTS_API_KEY?: string;
+  /** Dev only: an address whose positions My positions shows instead. */
+  readonly VITE_DEBUG_POSITIONS_OWNER?: string;
 }
 
 interface ImportMeta {

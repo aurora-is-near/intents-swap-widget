@@ -2,6 +2,8 @@ import { Tab, Tabs, TabsList, TabsPanel } from '@aurora-is-near/ui-kit';
 import { Outlet, useMatchRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useRef } from 'react';
 
+import { usePositionsCount } from '@/domains/positions/hooks/usePositionsCount';
+
 import { TabFocusContext } from './tabFocus';
 
 /** The paths the Borrow tabs stand for. */
@@ -17,12 +19,14 @@ const isTabPath = (value: unknown): value is TabPath =>
  * New loan and My positions (Web-Borrow-NotConnected.dc.html line 208), the
  * kit's `Tabs` driven by the route: the URL selects the tab, and choosing a
  * tab navigates. The row has gap 8 (the kit's) and margin-bottom 20. The
- * selected tab's panel renders the matched route.
+ * selected tab's panel renders the matched route. My positions carries the
+ * number of loans in its badge (Web-Position.dc.html), once they are read.
  */
 export function BorrowTabs() {
   const matchRoute = useMatchRoute();
   const navigate = useNavigate();
 
+  const positionsCount = usePositionsCount();
   const newLoanTab = useRef<HTMLElement>(null);
 
   const focusNewLoan = useCallback(() => {
@@ -46,7 +50,9 @@ export function BorrowTabs() {
           <Tab ref={newLoanTab} value="/">
             New loan
           </Tab>
-          <Tab value="/positions">My positions</Tab>
+          <Tab count={positionsCount} value="/positions">
+            My positions
+          </Tab>
         </TabsList>
         <TabsPanel value="/">
           <Outlet />

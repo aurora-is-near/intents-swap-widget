@@ -1,0 +1,32 @@
+{
+  "marketId": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+  "name": "Aave V3 BASE Market",
+  "network": { "name": "base", "chainId": 8453, "networkCaip": "eip155:8453" },
+  "protocol": {
+    "protocolId": "aave-collateral vault-v3",
+    "name": "aave",
+    "displayName": "Aave",
+    "version": "v3"
+  },
+  "userAddress": "0x195954FBa43C1A4266F5A66B4Fe468f459Fd0611",
+  "assets": [
+    {
+      "marketAssetId": "0x4200000000000000000000000000000000000006",
+      "positionId": "base-weth",
+      "asset": {
+        "address": "0x4200000000000000000000000000000000000006",
+        "assetCaip": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "name": "Wrapped Ether",
+        "symbol": "WETH",
+        "decimals": 18,
+        "assetGroup": "ETH"
+      },
+      "collateralEnabled": true,
+      "balanceNative": "250000000000000000",
+      "suppliedNative": "250000000000000000",
+      "borrowedNative": "0",
+      "suppliedUsd": "750",
+      "borrowedUsd": "0"
+    }
+  ]
+}

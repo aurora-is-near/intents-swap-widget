@@ -14,6 +14,7 @@ import {
   earlierBorrowSummary,
   useRestoreBorrow,
 } from '@/domains/borrow/hooks/useRestoreBorrow';
+import { useRefreshPositionsOnDone } from '@/domains/positions/hooks/useRefreshPositions';
 import { useWallet } from '@/domains/wallet/hooks/useWallet';
 import type {
   BorrowDialogLoan,
@@ -141,6 +142,10 @@ export function NewLoanPage() {
   }
 
   const tracked = isTracked(state);
+
+  // A borrow done, here or restored after a reload: My positions reads the
+  // new loan (and the tab badge counts it) without waiting for its interval.
+  useRefreshPositionsOnDone(state);
 
   useRestoreBorrow({
     address,

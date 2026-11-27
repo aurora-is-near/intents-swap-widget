@@ -9,7 +9,11 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!storybook/).*)",
+      "source": "/api/vaults-fyi/:path*",
+      "destination": "/api/vaults-fyi?path=:path*"
+    },
+    {
+      "source": "/((?!storybook/|api/).*)",
       "destination": "/index.html"
     }
   ]
