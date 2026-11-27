@@ -1,6 +1,8 @@
 {
   "include": [
     "src",
+    "server",
+    "api",
     "vite-plugins",
     "vite.config.ts",
     "vitest.config.ts"

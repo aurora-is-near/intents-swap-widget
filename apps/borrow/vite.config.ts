@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 
 import { themeInitScript } from './vite-plugins/themeInitScript';
+import { vaultsFyiProxy } from './vite-plugins/vaultsFyiProxy';
 import { THEME_STORAGE_KEY } from './src/constants';
 
 /** Names the API key had before it was `VITE_INTENTS_API_KEY`. */
@@ -30,15 +31,22 @@ const assertApiKeyRenamed = (env: Record<string, string>) => {
 };
 
 export default defineConfig(({ mode }) => {
-  // The '' prefix loads every variable, so the old name is visible here; the
-  // bundle still sees only VITE_ ones.
-  assertApiKeyRenamed({
+  // The '' prefix loads every variable, so the old name and the server-side
+  // VAULTS_FYI_API_KEY are visible here; the bundle still sees only VITE_ ones.
+  const env = {
     ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''),
     ...(process.env as Record<string, string>),
-  });
+  };
+
+  assertApiKeyRenamed(env);
 
   return {
-    plugins: [themeInitScript(THEME_STORAGE_KEY), react(), tailwindcss()],
+    plugins: [
+      themeInitScript(THEME_STORAGE_KEY),
+      vaultsFyiProxy(env),
+      react(),
+      tailwindcss(),
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

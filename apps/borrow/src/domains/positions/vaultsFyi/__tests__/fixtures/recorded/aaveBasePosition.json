@@ -1,0 +1,353 @@
+{
+  "marketId": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+  "name": "Aave V3 BASE Market",
+  "network": {
+    "name": "base",
+    "chainId": 8453,
+    "networkCaip": "eip155:8453"
+  },
+  "protocol": {
+    "protocolId": "aave-collateral vault-v3",
+    "name": "aave",
+    "displayName": "Aave",
+    "product": "collateral vault",
+    "version": "v3",
+    "protocolUrl": "https://app.aave.com/",
+    "description": "Lenders earn yield from interest paid by borrowers. Borrowers deposit collateral into Aave and borrow overcollateralized loans from liquidity pools. The interest paid by borrowers is distributed to lenders who have supplied assets to the liquidity pool.",
+    "protocolLogo": "https://images.vaults.fyi/protocols/aave.png"
+  },
+  "userAddress": "0x195954FBa43C1A4266F5A66B4Fe468f459Fd0611",
+  "ltv": 0,
+  "assets": [
+    {
+      "marketAssetId": "0x660975730059246A68521a3e2FBD4740173100f5",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x660975730059246A68521a3e2FBD4740173100f5",
+      "asset": {
+        "address": "0x660975730059246A68521a3e2FBD4740173100f5",
+        "assetCaip": "eip155:8453/erc20:0x660975730059246A68521a3e2FBD4740173100f5",
+        "name": "Syrup USDC",
+        "symbol": "syrupUSDC",
+        "decimals": 6,
+        "assetLogo": "https://images.vaults.fyi/tokens/syrupusdc.png",
+        "assetPriceInUsd": "1.1933996",
+        "assetGroup": "OTHER",
+        "oraclePriceUsd": "1.19493071"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
+      "asset": {
+        "address": "0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
+        "assetCaip": "eip155:8453/erc20:0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
+        "name": "Base tBTC v2",
+        "symbol": "tBTC",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/tbtc.png",
+        "assetPriceInUsd": "61388.80123949",
+        "assetGroup": "BTC",
+        "oraclePriceUsd": "61587.01982447"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x63706e401c06ac8513145b7687A14804d17f814b",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x63706e401c06ac8513145b7687A14804d17f814b",
+      "asset": {
+        "address": "0x63706e401c06ac8513145b7687A14804d17f814b",
+        "assetCaip": "eip155:8453/erc20:0x63706e401c06ac8513145b7687A14804d17f814b",
+        "name": "Aave Token",
+        "symbol": "AAVE",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/aave.png",
+        "assetPriceInUsd": "97.438548",
+        "assetGroup": "OTHER",
+        "oraclePriceUsd": "97.12828072"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+      "asset": {
+        "address": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "assetCaip": "eip155:8453/erc20:0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "name": "EURC",
+        "symbol": "EURC",
+        "decimals": 6,
+        "assetLogo": "https://images.vaults.fyi/tokens/eurc.png",
+        "assetPriceInUsd": "1.097085",
+        "assetGroup": "EURO",
+        "oraclePriceUsd": "1.09580056"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0xecAc9C5F704e954931349Da37F60E39f515c11c1",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0xecAc9C5F704e954931349Da37F60E39f515c11c1",
+      "asset": {
+        "address": "0xecAc9C5F704e954931349Da37F60E39f515c11c1",
+        "assetCaip": "eip155:8453/erc20:0xecAc9C5F704e954931349Da37F60E39f515c11c1",
+        "name": "Lombard BTC",
+        "symbol": "LBTC",
+        "decimals": 8,
+        "assetLogo": "https://images.vaults.fyi/tokens/lbtc.png",
+        "assetPriceInUsd": "61561.58711406",
+        "assetGroup": "BTC",
+        "oraclePriceUsd": "61963.03593652"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0xEDfa23602D0EC14714057867A78d01e94176BEA0",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0xEDfa23602D0EC14714057867A78d01e94176BEA0",
+      "asset": {
+        "address": "0xEDfa23602D0EC14714057867A78d01e94176BEA0",
+        "assetCaip": "eip155:8453/erc20:0xEDfa23602D0EC14714057867A78d01e94176BEA0",
+        "name": "rsETHWrapper",
+        "symbol": "wrsETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/rseth.png",
+        "assetPriceInUsd": "1836.330949",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "1876.04262841"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee",
+      "asset": {
+        "address": "0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee",
+        "assetCaip": "eip155:8453/erc20:0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee",
+        "name": "Gho Token",
+        "symbol": "GHO",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/gho.png",
+        "assetPriceInUsd": "0.99906209",
+        "assetGroup": "USD",
+        "oraclePriceUsd": "1"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x2416092f143378750bb29b79eD961ab195CcEea5",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x2416092f143378750bb29b79eD961ab195CcEea5",
+      "asset": {
+        "address": "0x2416092f143378750bb29b79eD961ab195CcEea5",
+        "assetCaip": "eip155:8453/erc20:0x2416092f143378750bb29b79eD961ab195CcEea5",
+        "name": "Renzo Restaked ETH",
+        "symbol": "ezETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/ezeth.png",
+        "assetPriceInUsd": "1878.71353569",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "1884.26707564"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "asset": {
+        "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "assetCaip": "eip155:8453/erc20:0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "name": "Coinbase Wrapped BTC",
+        "symbol": "cbBTC",
+        "decimals": 8,
+        "assetLogo": "https://images.vaults.fyi/tokens/cbbtc.png",
+        "assetPriceInUsd": "57592.23087371",
+        "assetGroup": "BTC",
+        "oraclePriceUsd": "61587.01982447"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A",
+      "asset": {
+        "address": "0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A",
+        "assetCaip": "eip155:8453/erc20:0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A",
+        "name": "Wrapped eETH",
+        "symbol": "weETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/weeth.png",
+        "assetPriceInUsd": "1916.0890835",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "1917.03419031"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "asset": {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "assetCaip": "eip155:8453/erc20:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "name": "USD Coin",
+        "symbol": "USDC",
+        "decimals": 6,
+        "assetLogo": "https://images.vaults.fyi/tokens/usdc.png",
+        "assetPriceInUsd": "0.99987004",
+        "assetGroup": "USD",
+        "oraclePriceUsd": "0.99988576"
+      },
+      "collateralEnabled": true,
+      "balanceNative": "5808277",
+      "balanceUsd": "5.80752215632108",
+      "suppliedNative": "3513477",
+      "suppliedUsd": "3.51302038852908",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+      "asset": {
+        "address": "0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+        "assetCaip": "eip155:8453/erc20:0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+        "name": "Wrapped liquid staked Ether 2.0",
+        "symbol": "wstETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/wsteth.png",
+        "assetPriceInUsd": "2163.03868104",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "2161.08777612"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+      "asset": {
+        "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+        "assetCaip": "eip155:8453/erc20:0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+        "name": "USD Base Coin",
+        "symbol": "USDbC",
+        "decimals": 6,
+        "assetLogo": "https://images.vaults.fyi/tokens/usdbc.png",
+        "assetPriceInUsd": "0.99987004",
+        "assetGroup": "USD",
+        "oraclePriceUsd": "0.99988576"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "asset": {
+        "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+        "assetCaip": "eip155:8453/erc20:0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+        "name": "Coinbase Wrapped Staked ETH",
+        "symbol": "cbETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/cbeth.png",
+        "assetPriceInUsd": "1978.53964432",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "1979.16631987"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    },
+    {
+      "marketAssetId": "0x4200000000000000000000000000000000000006",
+      "positionId": "eip155:8453:aave-collateral vault-v3:0xA238Dd80C259a72e81d7e4664a9801593F98d1c5:0x4200000000000000000000000000000000000006",
+      "asset": {
+        "address": "0x4200000000000000000000000000000000000006",
+        "assetCaip": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "name": "Wrapped Ether",
+        "symbol": "WETH",
+        "decimals": 18,
+        "assetLogo": "https://images.vaults.fyi/tokens/weth.png",
+        "assetPriceInUsd": "1728.60179117",
+        "assetGroup": "ETH",
+        "oraclePriceUsd": "1728.59"
+      },
+      "collateralEnabled": false,
+      "balanceNative": "0",
+      "balanceUsd": "0",
+      "suppliedNative": "0",
+      "suppliedUsd": "0",
+      "borrowedNative": "0",
+      "borrowedUsd": "0"
+    }
+  ]
+}

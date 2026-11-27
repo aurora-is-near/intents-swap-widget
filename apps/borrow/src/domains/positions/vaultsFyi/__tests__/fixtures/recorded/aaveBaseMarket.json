@@ -1,0 +1,398 @@
+{
+  "market": {
+    "marketId": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+    "name": "Aave V3 BASE Market",
+    "network": {
+      "name": "base",
+      "chainId": 8453,
+      "networkCaip": "eip155:8453"
+    },
+    "protocol": {
+      "protocolId": "aave-collateral vault-v3",
+      "name": "aave",
+      "displayName": "Aave",
+      "product": "collateral vault",
+      "version": "v3",
+      "protocolUrl": "https://app.aave.com/",
+      "description": "Lenders earn yield from interest paid by borrowers. Borrowers deposit collateral into Aave and borrow overcollateralized loans from liquidity pools. The interest paid by borrowers is distributed to lenders who have supplied assets to the liquidity pool.",
+      "protocolLogo": "https://images.vaults.fyi/protocols/aave.png"
+    },
+    "marketRootAddress": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+    "assetsData": [
+      {
+        "marketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "asset": {
+          "address": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+          "assetCaip": "eip155:8453/erc20:0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+          "name": "EURC",
+          "symbol": "EURC",
+          "decimals": 6,
+          "assetLogo": "https://images.vaults.fyi/tokens/eurc.png",
+          "assetPriceInUsd": "1.097085",
+          "assetGroup": "EURO",
+          "oraclePriceUsd": "1.09590527"
+        },
+        "isCollateralEnabled": true,
+        "supportsHistoricalData": true,
+        "lastUpdateTimestamp": 1795773600,
+        "supplyRate": 0.022334371592468004,
+        "borrowRate": 0.0439332550127734,
+        "utilizationRate": 0.5648568270849391,
+        "totalSupplied": {
+          "usd": "12033632.345265096",
+          "native": "10968732910636"
+        },
+        "totalBorrowed": {
+          "usd": "6797279.384853137",
+          "native": "6195763669044"
+        },
+        "availableLiquidity": {
+          "usd": "5236352.960411959",
+          "native": "4772969241592"
+        },
+        "availableToBorrow": {
+          "usd": "5236352.960411959",
+          "native": "4772969241592"
+        },
+        "assetConfig": {
+          "isBorrowEnabled": true,
+          "borrowInterestFeeRate": 0.1,
+          "borrowCap": "12000000",
+          "supplyCap": "25000000"
+        },
+        "interestRateModel": {
+          "model": "single-kink",
+          "baseRate": 0,
+          "optimalUtilization": 0.9,
+          "slope1": 0.075,
+          "slope2": 0.4
+        },
+        "defaultRiskParameters": {
+          "maxLtv": 0,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "marketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "asset": {
+          "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "assetCaip": "eip155:8453/erc20:0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "name": "Coinbase Wrapped BTC",
+          "symbol": "cbBTC",
+          "decimals": 8,
+          "assetLogo": "https://images.vaults.fyi/tokens/cbbtc.png",
+          "assetPriceInUsd": "57592.23087371",
+          "assetGroup": "BTC",
+          "oraclePriceUsd": "61597.80133614"
+        },
+        "isCollateralEnabled": true,
+        "supportsHistoricalData": true,
+        "lastUpdateTimestamp": 1795773600,
+        "supplyRate": 8.042716403980268e-5,
+        "borrowRate": 0.00628057091207788,
+        "utilizationRate": 0.02561149249888078,
+        "totalSupplied": {
+          "usd": "201971706.95315477",
+          "native": "350692626226"
+        },
+        "totalBorrowed": {
+          "usd": "5172796.857616871",
+          "native": "8981761566"
+        },
+        "availableLiquidity": {
+          "usd": "196798910.0955379",
+          "native": "341710864660"
+        },
+        "availableToBorrow": {
+          "usd": "16712250.874392929",
+          "native": "29018238434"
+        },
+        "assetConfig": {
+          "isBorrowEnabled": true,
+          "borrowInterestFeeRate": 0.5,
+          "borrowCap": "380",
+          "supplyCap": "3200"
+        },
+        "interestRateModel": {
+          "model": "single-kink",
+          "baseRate": 0.005,
+          "optimalUtilization": 0.8,
+          "slope1": 0.04,
+          "slope2": 0.6
+        },
+        "defaultRiskParameters": {
+          "maxLtv": 0.73,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.075
+        }
+      },
+      {
+        "marketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "asset": {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "assetCaip": "eip155:8453/erc20:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "decimals": 6,
+          "assetLogo": "https://images.vaults.fyi/tokens/usdc.png",
+          "assetPriceInUsd": "0.99987004",
+          "assetGroup": "USD",
+          "oraclePriceUsd": "0.99988576"
+        },
+        "isCollateralEnabled": true,
+        "supportsHistoricalData": true,
+        "lastUpdateTimestamp": 1795773600,
+        "supplyRate": 0.04404644151926971,
+        "borrowRate": 0.05305524099695094,
+        "utilizationRate": 0.9224457096962594,
+        "totalSupplied": {
+          "usd": "180331105.0246696",
+          "native": "180354543901195"
+        },
+        "totalBorrowed": {
+          "usd": "166345654.15479204",
+          "native": "166367275245883"
+        },
+        "availableLiquidity": {
+          "usd": "13985450.869877556",
+          "native": "13987268655312"
+        },
+        "availableToBorrow": {
+          "usd": "13985450.869877556",
+          "native": "13987268655312"
+        },
+        "assetConfig": {
+          "isBorrowEnabled": true,
+          "borrowInterestFeeRate": 0.1,
+          "borrowCap": "207000000",
+          "supplyCap": "230000000"
+        },
+        "interestRateModel": {
+          "model": "single-kink",
+          "baseRate": 0,
+          "optimalUtilization": 0.9,
+          "slope1": 0.045,
+          "slope2": 0.1
+        },
+        "defaultRiskParameters": {
+          "maxLtv": 0.75,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "marketAssetId": "0x4200000000000000000000000000000000000006",
+        "asset": {
+          "address": "0x4200000000000000000000000000000000000006",
+          "assetCaip": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+          "name": "Wrapped Ether",
+          "symbol": "WETH",
+          "decimals": 18,
+          "assetLogo": "https://images.vaults.fyi/tokens/weth.png",
+          "assetPriceInUsd": "1728.60179117",
+          "assetGroup": "ETH",
+          "oraclePriceUsd": "1727.66192494"
+        },
+        "isCollateralEnabled": true,
+        "supportsHistoricalData": true,
+        "lastUpdateTimestamp": 1795773600,
+        "supplyRate": 0.013444121510831712,
+        "borrowRate": 0.019885053268005156,
+        "utilizationRate": 0.7954027047590042,
+        "totalSupplied": {
+          "usd": "172112506.17258018",
+          "native": "99567469530438376700029"
+        },
+        "totalBorrowed": {
+          "usd": "136898752.93252108",
+          "native": "79196234570520427873858"
+        },
+        "availableLiquidity": {
+          "usd": "35213753.24005909",
+          "native": "20371234959917948826171"
+        },
+        "availableToBorrow": {
+          "usd": "35213753.24005909",
+          "native": "20371234959917948826171"
+        },
+        "assetConfig": {
+          "isBorrowEnabled": true,
+          "borrowInterestFeeRate": 0.15,
+          "borrowCap": "143000",
+          "supplyCap": "169000"
+        },
+        "interestRateModel": {
+          "model": "single-kink",
+          "baseRate": 0,
+          "optimalUtilization": 0.9,
+          "slope1": 0.025,
+          "slope2": 0.08
+        },
+        "defaultRiskParameters": {
+          "maxLtv": 0.8,
+          "liquidationThreshold": 0.83,
+          "liquidationPenalty": 0.05
+        }
+      }
+    ],
+    "pairs": [
+      {
+        "collateralAssetAddress": "0x4200000000000000000000000000000000000006",
+        "collateralMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "borrowAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.8,
+          "liquidationThreshold": 0.83,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x4200000000000000000000000000000000000006",
+        "collateralMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "borrowAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.8,
+          "liquidationThreshold": 0.83,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x4200000000000000000000000000000000000006",
+        "collateralMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "borrowAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.8,
+          "liquidationThreshold": 0.83,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowAssetAddress": "0x4200000000000000000000000000000000000006",
+        "borrowMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.75,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.75,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.75,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowAssetAddress": "0x4200000000000000000000000000000000000006",
+        "borrowMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.73,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.075
+        }
+      },
+      {
+        "collateralAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.73,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.075
+        }
+      },
+      {
+        "collateralAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0.73,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.075
+        }
+      },
+      {
+        "collateralAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowAssetAddress": "0x4200000000000000000000000000000000000006",
+        "borrowMarketAssetId": "0x4200000000000000000000000000000000000006",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowAssetAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "borrowMarketAssetId": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      },
+      {
+        "collateralAssetAddress": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "collateralMarketAssetId": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+        "borrowAssetAddress": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "borrowMarketAssetId": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+        "collateralEnabled": true,
+        "borrowEnabled": true,
+        "riskParameters": {
+          "maxLtv": 0,
+          "liquidationThreshold": 0.78,
+          "liquidationPenalty": 0.05
+        }
+      }
+    ]
+  }
+}

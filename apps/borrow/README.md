@@ -363,6 +363,12 @@ Solana row of the connect modal; NEAR and Stellar need no configuration):
   `borrowAction.golden.json`).
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
   liquidity pre-check and the failed-step diagnosis.
+- `VAULTS_FYI_API_KEY` (server-side, never `VITE_`): My positions reads the
+  vaults.fyi borrow API through the same-origin proxy `/api/vaults-fyi`
+  (`server/vaultsFyiProxy.ts`, served by `vite-plugins/vaultsFyiProxy.ts` in
+  dev and preview and by the Edge Function `api/vaults-fyi.ts` on Vercel). The
+  proxy forwards only the read-only borrow position and market calls, GET only.
+  Optional `VAULTS_FYI_API_URL` (https only).
 
 See `.env.example` for each.
 
