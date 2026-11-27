@@ -4,6 +4,7 @@ import type {
   SupportedToken,
 } from '@aurora-is-near/intents-connect';
 
+import { collateralDestination } from '@/domains/borrow/utils/recipe';
 import type { BorrowParams } from '@/domains/borrow/utils/recipe';
 
 import {
@@ -14,11 +15,7 @@ import {
 } from './config/borrowAction';
 import { AAVE_V3_MARKETS } from './config/registry';
 import { readAaveReserves } from './reserves';
-import {
-  actionAvailability,
-  actionPairOf,
-  markCoverage,
-} from './utils/coverage';
+import { actionPairOf, markCoverage } from './utils/coverage';
 import {
   intersectSupported,
   listDeliveredTokens,
@@ -31,7 +28,6 @@ import type {
 } from '../types';
 import type { AaveMarket } from './config/registry';
 import type { AaveReadClient } from './reserves';
-import type { ActionAvailability } from './utils/coverage';
 import type { SupportedTokensApi } from './utils/supported';
 
 const AAVE_V3_ADAPTER_ID = 'aave-v3';
@@ -41,8 +37,8 @@ export type AaveV3AdapterOptions = {
   api: SupportedTokensApi;
   /** The read client for a chain, such as `getClient` from `./config/clients`. */
   getClient: (chainId: number) => AaveReadClient;
-  /** The hosted actions API: the catalog, and the borrow steps. */
-  actionsApi: Pick<IntentsConnectActionsApi, 'listActions' | 'resolveAction'>;
+  /** The hosted actions API the borrow steps are resolved from. */
+  actionsApi: Pick<IntentsConnectActionsApi, 'resolveAction'>;
 };
 
 const toLendingMarket = (market: AaveMarket): LendingMarket => ({
@@ -82,34 +78,6 @@ export const createAaveV3Adapter = ({
   actionsApi,
 }: AaveV3AdapterOptions): LendingMarketAdapter => {
   let inFlightTokens: Promise<SupportedToken[]> | undefined;
-  let availability: Promise<ActionAvailability> | undefined;
-  let reported = false;
-
-  // What the served borrow action accepts, read once per page: a success is
-  // kept, a failure dropped so the next snapshot asks again (and rejects
-  // with it, as for the token list). A mismatch with the pin is logged once.
-  const served = () => {
-    availability ??= actionsApi
-      .listActions()
-      .then((catalog) => {
-        const { available, problem } = actionAvailability(catalog);
-
-        if (problem && !reported) {
-          reported = true;
-          console.error(
-            `[Borrow] ${problem}. Reserves it does not accept show as "Coming soon"; update BORROW_ACTION in domains/markets/aaveV3/config/borrowAction.ts.`,
-          );
-        }
-
-        return available;
-      })
-      .catch((error: unknown) => {
-        availability = undefined;
-        throw error;
-      });
-
-    return availability;
-  };
 
   const deliveredTokens = () => {
     inFlightTokens ??= listDeliveredTokens(api).finally(() => {
@@ -135,21 +103,16 @@ export const createAaveV3Adapter = ({
 
       const assets = supporting.then((supported) => supported.assets);
 
-      const [supported, reserves, available] = await Promise.all([
+      const [supported, reserves] = await Promise.all([
         supporting,
         readAaveReserves(getClient(aave.chainId), aave, { assets }),
-        served(),
         assets,
       ]);
 
       return {
         market: toLendingMarket(aave),
         baseCurrencyUnit: reserves.baseCurrencyUnit,
-        ...markCoverage(
-          aave,
-          withDeliveredAssets(reserves, supported),
-          available,
-        ),
+        ...markCoverage(aave, withDeliveredAssets(reserves, supported)),
       };
     },
 
@@ -171,14 +134,12 @@ export const createAaveV3Adapter = ({
         expectedSha256Hash: BORROW_ACTION.sha256Hash,
         id: `aave-borrow:${toLendingMarket(aave).id}:${supplied.label}:${borrowed.label}`,
         intent: AAVE_BORROW_INTENT,
-        title: aaveBorrowTitle(table, supplied, borrowed),
+        title: aaveBorrowTitle(aave, supplied, borrowed),
         flow,
-        destination: {
-          chain: aave.chain,
-          assetId: supplied.assetId,
-          // Native delivery arrives as the chain's gas token: no contract.
-          tokenAddress: supplied.native ? undefined : supplied.address,
-        },
+        // As 1Click delivers the reserve: the asset id it lists, and no
+        // contract for native delivery. The SDK checks it is what the action
+        // resolves.
+        destination: collateralDestination(aave, collateral),
         inputs: (ctx, params) => ({
           chain: aave.chain,
           collateral: pair.collateral,

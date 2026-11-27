@@ -4,10 +4,11 @@ import { AAVE_BORROW_MARKETS } from '../config/borrowAction';
 import { AAVE_V3_MARKETS } from '../config/registry';
 
 /**
- * The hosted borrow action's steps go to the Pool and gateway in its tables
- * (the app's copy in `config/borrowAction.ts`, checked against the served
- * script by the live contract test); the app reads the same markets from
- * `registry.ts`. They must be the same contracts.
+ * Coverage matches the reserves Borrow reads from `registry.ts` against the
+ * action's token tables (`config/borrowAction.ts`), so the two must describe
+ * the same chains and the same wrapped-native reserve. The tables themselves
+ * are checked against the served script, and its Pool and gateway against
+ * the registry, by the live contract test.
  */
 describe('the borrow action’s tables', () => {
   it('cover the same chains as the registry', () => {
@@ -17,22 +18,12 @@ describe('the borrow action’s tables', () => {
   });
 
   it.each(AAVE_V3_MARKETS.map((market) => [market.chainLabel, market]))(
-    'use the registry’s Pool and gateway on %s',
-    (_label, market) => {
-      const table = AAVE_BORROW_MARKETS[market.chain];
-
-      expect(table.pool).toBe(market.pool);
-      expect(table.gateway).toBe(market.native?.gateway);
-      expect(table.chainLabel).toBe(market.chainLabel);
-    },
-  );
-
-  it.each(AAVE_V3_MARKETS.map((market) => [market.chainLabel, market]))(
     'supply native ETH as the registry’s wrapped reserve on %s',
     (_label, market) => {
-      expect(AAVE_BORROW_MARKETS[market.chain].collateral.ETH).toMatchObject({
-        native: true,
+      expect(AAVE_BORROW_MARKETS[market.chain].collateral.ETH).toEqual({
+        label: 'ETH',
         address: market.native?.reserve,
+        native: true,
       });
     },
   );

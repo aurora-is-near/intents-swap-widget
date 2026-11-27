@@ -31,7 +31,7 @@ export type LendingMarket = {
  * - `cap-reached`: its supply cap (collateral) or borrow cap (borrow) is
  *   reached; it comes back once there is room.
  * - `coming-soon`: the borrow action (the hosted `aave-v3-borrow`) does
- *   not cover it yet, or the served action no longer accepts it. Takes
+ *   not cover it yet. Takes
  *   the place of `cap-reached` when both hold.
  */
 export type ReserveUnavailableReason = 'cap-reached' | 'coming-soon';

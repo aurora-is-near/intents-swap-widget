@@ -356,9 +356,9 @@ Solana row of the connect modal; NEAR and Stellar need no configuration):
 - `VITE_INTENTS_CONNECT_ACTIONS_API_URL` (optional, public). The hosted
   actions API the borrow steps are resolved from; the demo deployment
   (`https://intents-connect-actions-demo.aurora.dev`) when unset. Borrow
-  pins `aave-v3-borrow` v1 by hash: when the served action changes, its
-  reserves show as "Coming soon", a borrow fails with "The borrow action
-  changed", and the pin in `config/borrowAction.ts` needs updating (run
+  pins `aave-v3-borrow` v1 by hash: when the served action changes, a
+  borrow fails at its quote with "The borrow action changed", and the pin in
+  `config/borrowAction.ts` needs updating (run
   `BORROW_ACTIONS_LIVE=1 yarn test borrowAction.contract`, re-record
   `borrowAction.golden.json`).
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the

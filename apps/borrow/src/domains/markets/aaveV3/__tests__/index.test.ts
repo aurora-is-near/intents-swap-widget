@@ -1,11 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  ActionCatalogEntry,
-  SupportedToken,
-} from '@aurora-is-near/intents-connect';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SupportedToken } from '@aurora-is-near/intents-connect';
 
 import { createAaveV3Adapter } from '..';
-import { BORROW_ACTION } from '../config/borrowAction';
 import type { LendingMarket } from '../../types';
 import type { AaveReadClient, AaveReserves } from '../reserves';
 
@@ -66,40 +62,17 @@ const client: AaveReadClient = {
   multicall: vi.fn(),
 };
 
-/** The pinned borrow action as the catalog serves it. */
-const servedAction = (
-  overrides: Partial<ActionCatalogEntry> = {},
-): ActionCatalogEntry => ({
-  id: BORROW_ACTION.id,
-  version: BORROW_ACTION.version,
-  name: 'Borrow on Aave V3',
-  description: 'Borrow on Aave V3',
-  templateFormat: 'starlark',
-  supportedChains: ['base', 'arb'],
-  inputSchema: {
-    type: 'object',
-    properties: {
-      collateral: { type: 'string', enum: ['ETH', 'cbBTC'] },
-      borrowAsset: { type: 'string', enum: ['USDC', 'USDT'] },
-    },
-  },
-  script: '',
-  sha256Hash: BORROW_ACTION.sha256Hash,
-  ...overrides,
-});
-
 const setup = (
   listSupportedTokens = vi.fn().mockResolvedValue({ out: [usdcToken] }),
-  listActions = vi.fn().mockResolvedValue([servedAction()]),
 ) => {
   const getClient = vi.fn(() => client);
   const adapter = createAaveV3Adapter({
     api: { listSupportedTokens },
     getClient,
-    actionsApi: { listActions, resolveAction: vi.fn() },
+    actionsApi: { resolveAction: vi.fn() },
   });
 
-  return { adapter, getClient, listSupportedTokens, listActions };
+  return { adapter, getClient, listSupportedTokens };
 };
 
 const marketOn = async (chain: string): Promise<LendingMarket> => {
@@ -116,10 +89,6 @@ const marketOn = async (chain: string): Promise<LendingMarket> => {
 beforeEach(() => {
   readAaveReserves.mockReset();
   readAaveReserves.mockResolvedValue(read);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
 });
 
 describe('createAaveV3Adapter', () => {
@@ -248,94 +217,5 @@ describe('createAaveV3Adapter', () => {
       market,
     });
     expect(listSupportedTokens).toHaveBeenCalledTimes(2);
-  });
-
-  describe('the served borrow action', () => {
-    /** Base USDC, borrowable in the action's tables, as the snapshot lists it. */
-    const borrowableUsdc = async (listActions: Parameters<typeof setup>[1]) => {
-      const market = await marketOn('base');
-      const { adapter } = setup(undefined, listActions);
-
-      return (await adapter.getMarketSnapshot(market)).borrowable[0];
-    };
-
-    it('reads the catalog once and keeps what it accepts', async () => {
-      const [base, arb] = await Promise.all([
-        marketOn('base'),
-        marketOn('arb'),
-      ]);
-
-      const { adapter, listActions } = setup();
-
-      await adapter.getMarketSnapshot(base);
-      await adapter.getMarketSnapshot(arb);
-      await adapter.getMarketSnapshot(base);
-
-      expect(listActions).toHaveBeenCalledTimes(1);
-    });
-
-    it.each([
-      [
-        'missing from the catalog',
-        [] as ActionCatalogEntry[],
-        'is not in the actions catalog',
-      ],
-      [
-        'served with another hash',
-        [servedAction({ sha256Hash: 'f'.repeat(64) })],
-        'changed',
-      ],
-      [
-        'no longer accepting USDC',
-        [
-          servedAction({
-            inputSchema: {
-              properties: {
-                collateral: { enum: ['ETH', 'cbBTC'] },
-                borrowAsset: { enum: ['USDT'] },
-              },
-            },
-          }),
-        ],
-        'no longer accepts USDC',
-      ],
-      [
-        'no longer serving Base',
-        [servedAction({ supportedChains: ['arb'] })],
-        'no longer accepts base',
-      ],
-    ] as const)(
-      'marks what it refuses coming soon, logged once, when %s',
-      async (_, catalog, logged) => {
-        const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-        const usdc = await borrowableUsdc(vi.fn().mockResolvedValue(catalog));
-
-        expect(usdc).toMatchObject({
-          unavailable: true,
-          unavailableReason: 'coming-soon',
-        });
-        expect(error).toHaveBeenCalledTimes(1);
-        expect(error).toHaveBeenCalledWith(expect.stringContaining(logged));
-      },
-    );
-
-    it('rejects with a catalog failure and asks again next time', async () => {
-      const market = await marketOn('base');
-      const listActions = vi
-        .fn()
-        .mockRejectedValueOnce(new Error('actions API responded 503'))
-        .mockResolvedValue([servedAction()]);
-
-      const { adapter } = setup(undefined, listActions);
-
-      await expect(adapter.getMarketSnapshot(market)).rejects.toThrow(
-        'responded 503',
-      );
-      await expect(adapter.getMarketSnapshot(market)).resolves.toMatchObject({
-        market,
-      });
-      expect(listActions).toHaveBeenCalledTimes(2);
-    });
   });
 });

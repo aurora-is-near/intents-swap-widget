@@ -38,7 +38,7 @@ const DEFAULT_INTENTS_CONNECT_ACTIONS_API_URL =
 
 /**
  * The hosted actions API, from `VITE_INTENTS_CONNECT_ACTIONS_API_URL`: the
- * catalog and the resolve of the borrow action (`BORROW_ACTION`). Public, no
+ * resolve of the borrow action (`BORROW_ACTION`). Public, no
  * key. Executions are still created on `VITE_INTENTS_CONNECT_API_URL`.
  */
 const INTENTS_CONNECT_ACTIONS_API_URL =

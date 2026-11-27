@@ -16,6 +16,7 @@ import {
   AAVE_COLLATERAL_ASSETS,
   BORROW_ACTION,
 } from '../config/borrowAction';
+import { AAVE_V3_MARKETS } from '../config/registry';
 import golden from './borrowAction.golden.json';
 import type { LendingMarket } from '../../types';
 import type {
@@ -82,31 +83,24 @@ const MARKETS: Record<AaveBorrowChain, LendingMarket> = {
 };
 
 /** The reserves the adapter would list for an entry's table tokens. */
-const reservesOf = ({
-  chain,
-  collateral,
-  borrowAsset,
-}: GoldenEntry['inputs']) => {
-  const table = AAVE_BORROW_MARKETS[chain];
-  const supplied = table.collateral[collateral]!;
-  const borrowed = table.borrow[borrowAsset]!;
+const reservesOf = ({ inputs, resolution }: GoldenEntry) => {
+  const table = AAVE_BORROW_MARKETS[inputs.chain];
+  const supplied = table.collateral[inputs.collateral]!;
+  const borrowed = table.borrow[inputs.borrowAsset]!;
   const asset = supplied.address as `0x${string}`;
+  // As 1Click lists the collateral: the asset the action delivers.
+  const assetId =
+    resolution.execution.quote?.destinationAsset ??
+    resolution.execution.destinationAsset;
 
   return {
     collateral: supplied.native
       ? // Aave's wrapped-native reserve, delivered as the gas token.
-        nativeEth({ asset, symbol: 'WETH', assetId: supplied.assetId })
-      : weth({
-          asset,
-          symbol: supplied.label,
-          decimals: supplied.decimals,
-          assetId: supplied.assetId,
-        }),
+        nativeEth({ asset, symbol: 'WETH', assetId })
+      : weth({ asset, symbol: supplied.label, assetId }),
     borrow: usdc({
       asset: borrowed.address as `0x${string}`,
       symbol: borrowed.label,
-      decimals: borrowed.decimals,
-      assetId: borrowed.assetId,
     }),
   };
 };
@@ -167,12 +161,12 @@ describe('the hosted borrow action contract (recorded)', () => {
       const adapter = createAaveV3Adapter({
         api: { listSupportedTokens: vi.fn() },
         getClient: vi.fn(),
-        actionsApi: { listActions: vi.fn(), resolveAction },
+        actionsApi: { resolveAction },
       });
 
       const recipe = adapter.borrowRecipe({
         market: MARKETS[entry.inputs.chain],
-        ...reservesOf(entry.inputs),
+        ...reservesOf(entry),
         flow: entry.flow,
       });
 
@@ -190,8 +184,18 @@ describe('the hosted borrow action contract (recorded)', () => {
   );
 });
 
+type ScriptToken = { label: string; address: string; native: boolean };
+
+type ScriptMarket = {
+  chainLabel: string;
+  pool: string;
+  gateway: string;
+  borrow: Record<string, ScriptToken>;
+  collateral: Record<string, ScriptToken>;
+};
+
 /** The script's `MARKETS` literal as JSON (double quotes, no comments). */
-const marketsOf = (script: string): unknown => {
+const marketsOf = (script: string): Record<string, ScriptMarket> => {
   const literal = /^MARKETS = (\{\n[\s\S]*?\n\})\n/m.exec(script)?.[1];
 
   if (literal === undefined) {
@@ -226,7 +230,37 @@ describe.skipIf(!process.env.BORROW_ACTIONS_LIVE)(
 
       expect(properties.collateral?.enum).toEqual([...AAVE_COLLATERAL_ASSETS]);
       expect(properties.borrowAsset?.enum).toEqual([...AAVE_BORROW_ASSETS]);
-      expect(marketsOf(served?.script ?? '')).toEqual(AAVE_BORROW_MARKETS);
+
+      const markets = marketsOf(served?.script ?? '');
+      const tokens = (table: Record<string, ScriptToken>) =>
+        Object.fromEntries(
+          Object.entries(table).map(([symbol, { label, address, native }]) => [
+            symbol,
+            { label, address, native },
+          ]),
+        );
+
+      // The app's token tables are the script's, as far as the app reads them.
+      expect(
+        Object.fromEntries(
+          Object.entries(markets).map(([chain, market]) => [
+            chain,
+            {
+              borrow: tokens(market.borrow),
+              collateral: tokens(market.collateral),
+            },
+          ]),
+        ),
+      ).toEqual(AAVE_BORROW_MARKETS);
+
+      // The steps go to the Pool and gateway the app reads its markets from.
+      AAVE_V3_MARKETS.forEach(({ chain, chainLabel, pool, native }) => {
+        expect(markets[chain]).toMatchObject({
+          chainLabel,
+          pool,
+          gateway: native?.gateway,
+        });
+      });
     });
 
     it.each(ENTRIES.map((entry) => [entry.key, entry] as const))(

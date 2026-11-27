@@ -80,6 +80,14 @@ type BorrowInputs = {
   amount: string;
 };
 
+/** The 1Click asset ids the action delivers each collateral as. */
+const ASSET_IDS: Record<string, string> = {
+  'base:ETH': 'nep141:base.omft.near',
+  'base:cbBTC':
+    'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near',
+  'arb:ETH': 'nep141:arb.omft.near',
+};
+
 /** What the hosted action answers for `inputs`, as the server would shape it. */
 const resolutionFor = (
   actionId: string,
@@ -91,6 +99,8 @@ const resolutionFor = (
   const table = AAVE_BORROW_MARKETS[chain];
   const supplied = table.collateral[collateral]!;
   const borrowed = table.borrow[borrowAsset]!;
+  const assetId = ASSET_IDS[`${chain}:${collateral}`]!;
+  const chainLabel = chain === 'base' ? 'Base' : 'Arbitrum';
 
   return {
     actionId,
@@ -104,18 +114,18 @@ const resolutionFor = (
         ? {
             quote: {
               originAsset,
-              destinationAsset: supplied.assetId,
+              destinationAsset: assetId,
               amount,
               swapType: 'EXACT_INPUT',
               slippageTolerance: 100,
             },
             outOperation: false,
           }
-        : { destinationAsset: supplied.assetId }),
+        : { destinationAsset: assetId }),
       dry: false,
       metadata: {
         intent: 'aave_borrow',
-        title: aaveBorrowTitle(table, supplied, borrowed),
+        title: aaveBorrowTitle({ chainLabel }, supplied, borrowed),
       },
       steps: RESOLVED_STEPS,
     },
@@ -130,7 +140,6 @@ const client: AaveReadClient = {
 
 const listSupportedTokens = vi.fn();
 const getClient = vi.fn(() => client);
-const listActions = vi.fn<IntentsConnectActionsApi['listActions']>();
 const resolveAction = vi.fn<IntentsConnectActionsApi['resolveAction']>(
   async (actionId, request) => resolutionFor(actionId, request),
 );
@@ -138,7 +147,7 @@ const resolveAction = vi.fn<IntentsConnectActionsApi['resolveAction']>(
 const adapter = createAaveV3Adapter({
   api: { listSupportedTokens },
   getClient,
-  actionsApi: { listActions, resolveAction },
+  actionsApi: { resolveAction },
 });
 
 const ctx: StepContext = {
@@ -156,7 +165,16 @@ const PARAMS = {
 
 /** Base's cbBTC reserve: the action's ERC-20 collateral. */
 const cbBtc = (asset: `0x${string}` = BASE_CBBTC) =>
-  weth({ asset, symbol: 'cbBTC', decimals: 8 });
+  weth({
+    asset,
+    symbol: 'cbBTC',
+    decimals: 8,
+    assetId: ASSET_IDS['base:cbBTC'],
+  });
+
+/** Aave's wrapped-native reserve, delivered as the chain's gas token. */
+const nativeOn = (chain: 'base' | 'arb', asset: `0x${string}`) =>
+  nativeEth({ asset, assetId: ASSET_IDS[`${chain}:ETH`] });
 
 const input = (
   overrides: Partial<BorrowRecipeInput> = {},
@@ -189,7 +207,8 @@ describe('Aave V3 borrowRecipe', () => {
         chain: 'base',
         assetId:
           'nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near',
-        tokenAddress: BASE_CBBTC,
+        // The reserve's own address; the SDK compares it in any case.
+        tokenAddress: BASE_CBBTC.toLowerCase(),
       },
     });
 
@@ -213,7 +232,7 @@ describe('Aave V3 borrowRecipe', () => {
 
   it('asks for ETH, delivered as the gas token, for a natively delivered reserve', async () => {
     const recipe = adapter.borrowRecipe(
-      input({ collateral: nativeEth({ asset: BASE_WETH }) }),
+      input({ collateral: nativeOn('base', BASE_WETH) }),
     );
 
     expect(recipe.destination).toEqual({
@@ -295,7 +314,7 @@ describe('Aave V3 borrowRecipe', () => {
       adapter.borrowRecipe(
         input({
           market: ARB,
-          collateral: nativeEth({ asset: ARB_WETH }),
+          collateral: nativeOn('arb', ARB_WETH),
           borrow: usdc({ asset: ARB_USDT, symbol: 'USDT0' }),
         }),
       ),
@@ -366,7 +385,6 @@ describe('Aave V3 borrowRecipe', () => {
     expect(resolveAction).toHaveBeenCalledTimes(1);
     expect(listSupportedTokens).not.toHaveBeenCalled();
     expect(getClient).not.toHaveBeenCalled();
-    expect(listActions).not.toHaveBeenCalled();
   });
 
   it('rejects a market it does not serve', () => {
