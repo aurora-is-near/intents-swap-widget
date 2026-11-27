@@ -7,8 +7,8 @@ import { AAVE_BORROW_INTENT, collateralDestination } from '../recipe';
 /**
  * The recipe itself is the adapter's (`LendingMarketAdapter.borrowRecipe`):
  * the Aave adapter's is tested in `markets/aaveV3/borrowRecipe.test.ts`, and
- * its steps are pinned by the `aave-v3-borrow` action's own fixtures in
- * `@aurora-is-near/intents-connect-actions`.
+ * the steps the hosted `aave-v3-borrow` action resolves are pinned by
+ * `markets/aaveV3/__tests__/borrowAction.contract.test.ts`.
  */
 
 describe('AAVE_BORROW_INTENT', () => {

@@ -63,6 +63,8 @@ export const buildBorrowPlan = ({
   params: {
     borrowAmount: borrowAmount.toString(),
     recipient: recipient === '' ? undefined : recipient,
+    originAsset: toQuoteAssetId(origin),
+    originAmount: amount.toString(),
   },
   // No deadline: each preview stamps a fresh one.
   quote: {

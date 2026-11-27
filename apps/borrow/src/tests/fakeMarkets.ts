@@ -1,8 +1,8 @@
-import { AAVE_BORROW_INTENT } from '@aurora-is-near/intents-connect-actions/sdk';
 import { QueryClient } from '@tanstack/react-query';
 import { vi } from 'vitest';
 import type { Mock } from 'vitest';
 
+import { AAVE_BORROW_INTENT } from '@/domains/markets/aaveV3/config/borrowAction';
 import type {
   BorrowReserve,
   CollateralReserve,

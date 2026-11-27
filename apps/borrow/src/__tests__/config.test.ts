@@ -1,18 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { createIntentsApi, createIntentsConnectApi } = vi.hoisted(() => ({
+const {
+  createIntentsApi,
+  createIntentsConnectActionsApi,
+  createIntentsConnectApi,
+} = vi.hoisted(() => ({
   createIntentsApi: vi.fn((options: object) => ({ options })),
+  createIntentsConnectActionsApi: vi.fn((options: object) => ({ options })),
   createIntentsConnectApi: vi.fn((options: object) => ({ options })),
 }));
 
 vi.mock('@aurora-is-near/intents-connect', () => ({
   createIntentsApi,
+  createIntentsConnectActionsApi,
   createIntentsConnectApi,
 }));
 
 const loadConfig = async () => {
   vi.resetModules();
   createIntentsApi.mockClear();
+  createIntentsConnectActionsApi.mockClear();
   createIntentsConnectApi.mockClear();
 
   return import('@/config');
@@ -115,6 +122,37 @@ describe('intentsConnectApi', () => {
       apiKey: 'client-key',
     });
     expect(options).not.toHaveProperty('apiKeyProxyUrl');
+  });
+});
+
+describe('intentsConnectActionsApi', () => {
+  it('uses the demo actions API by default, with no key', async () => {
+    vi.stubEnv('VITE_INTENTS_CONNECT_ACTIONS_API_URL', '');
+    vi.stubEnv('VITE_INTENTS_API_KEY', 'client-key');
+
+    const { intentsConnectActionsApi } = await loadConfig();
+
+    expect(createIntentsConnectActionsApi).toHaveBeenCalledTimes(1);
+
+    const [options] = createIntentsConnectActionsApi.mock.calls[0] ?? [];
+
+    expect(options).toEqual({
+      baseUrl: 'https://intents-connect-actions-demo.aurora.dev',
+    });
+    expect(intentsConnectActionsApi).toEqual({ options });
+  });
+
+  it('reads the URL from VITE_INTENTS_CONNECT_ACTIONS_API_URL', async () => {
+    vi.stubEnv(
+      'VITE_INTENTS_CONNECT_ACTIONS_API_URL',
+      'https://actions.example',
+    );
+
+    await loadConfig();
+
+    expect(createIntentsConnectActionsApi).toHaveBeenCalledWith({
+      baseUrl: 'https://actions.example',
+    });
   });
 });
 

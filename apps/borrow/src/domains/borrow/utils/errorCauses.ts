@@ -1,4 +1,7 @@
-import { IntentsConnectApiError } from '@aurora-is-near/intents-connect';
+import {
+  IntentsConnectActionsApiError,
+  IntentsConnectApiError,
+} from '@aurora-is-near/intents-connect';
 
 /*
  * Reading what an error says, through everything it wraps: whether the
@@ -71,16 +74,37 @@ export const isInsufficientFunds = (value: unknown): boolean =>
 const API_ERROR_MAX_LENGTH = 300;
 
 /**
- * The reason the Intents Connect API gave for a failed request, such as
+ * What a changed borrow action is called: the hosted action no longer has
+ * the hash Borrow pins (409), so the steps it would run were not reviewed.
+ */
+export const ACTION_CHANGED_MESSAGE =
+  'The borrow action changed; reload to get the update.';
+
+/**
+ * The reason the Intents Connect API (or the hosted actions API, resolving
+ * the borrow's steps) gave for a failed request, such as
  * `{"error": "No liquidity available"}` from creating an execution, or
  * `undefined` when the error is not an API error or its body is not JSON
- * with a non-empty `error` string.
+ * with a non-empty `error` string. A changed borrow action (the actions
+ * API's 409) is `ACTION_CHANGED_MESSAGE`.
  */
 export const apiErrorMessage = (error: unknown): string | undefined => {
-  const apiError = causeChainOf(error).find(
-    (value): value is IntentsConnectApiError =>
-      value instanceof IntentsConnectApiError,
+  const chain = causeChainOf(error);
+  const actionsError = chain.find(
+    (value): value is IntentsConnectActionsApiError =>
+      value instanceof IntentsConnectActionsApiError,
   );
+
+  if (actionsError?.isHashMismatch) {
+    return ACTION_CHANGED_MESSAGE;
+  }
+
+  const apiError =
+    actionsError ??
+    chain.find(
+      (value): value is IntentsConnectApiError =>
+        value instanceof IntentsConnectApiError,
+    );
 
   const { body } = apiError ?? {};
   const reason =

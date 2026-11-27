@@ -1,12 +1,13 @@
-import { AAVE_BORROW_MARKETS } from '@aurora-is-near/intents-connect-actions';
 import { describe, expect, it } from 'vitest';
 
+import { AAVE_BORROW_MARKETS } from '../config/borrowAction';
 import { AAVE_V3_MARKETS } from '../config/registry';
 
 /**
- * The borrow action's steps go to the Pool and gateway in its own tables
- * (`@aurora-is-near/intents-connect-actions`); the app reads the same
- * markets from `registry.ts`. They must be the same contracts.
+ * The hosted borrow action's steps go to the Pool and gateway in its tables
+ * (the app's copy in `config/borrowAction.ts`, checked against the served
+ * script by the live contract test); the app reads the same markets from
+ * `registry.ts`. They must be the same contracts.
  */
 describe('the borrow action’s tables', () => {
   it('cover the same chains as the registry', () => {
