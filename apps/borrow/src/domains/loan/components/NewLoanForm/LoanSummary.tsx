@@ -14,7 +14,9 @@ const formatHealth = (hundredths: bigint) =>
 
 /**
  * A tile (line 368): `sf2`, radius 14, padding 12px 16px; the label 12px
- * `mut2`, the value 26px / 800 / -0.02em, kept on one line.
+ * `mut2`, the value 26px / 800 / -0.02em, kept on one line, and a 12px
+ * `mut2` note under it. Every tile keeps the note's line, so the three
+ * tiles share their rows and the values line up.
  */
 function Tile({
   label,
@@ -24,7 +26,7 @@ function Tile({
   label: string;
   value: string;
   /** A line under the value, such as the liquidation LTV. */
-  note?: string;
+  note: string | undefined;
 }) {
   return (
     <div className="min-w-0 rounded-14 bg-sf2 px-4 py-3 leading-font">
@@ -33,7 +35,10 @@ function Tile({
         <span className="block truncate text-26 font-extrabold tracking-title">
           {value}
         </span>
-        {note ? <span className="block text-12 text-mut2">{note}</span> : null}
+        <span className="block text-12 text-mut2">
+          {/* A non-breaking space holds the line until the note is known. */}
+          {note ?? '\u00a0'}
+        </span>
       </dd>
     </div>
   );
@@ -46,26 +51,36 @@ type LoanSummaryProps = {
   liquidationPriceUsd: number | undefined;
   /** The market's liquidation LTV; `undefined` until a market is known. */
   liquidationLtvBps: number | undefined;
+  /** The market's max LTV; `undefined` until a market is known. */
+  maxLtvBps: number | undefined;
   /** Health in hundredths; `null` at LTV 0, `undefined` without a market. */
   healthHundredths: bigint | null | undefined;
 };
 
 /**
  * The three tiles under the markets (Web-Borrow.dc.html lines 366–370), for
- * the selected market: the LTV; the collateral's liquidation price with the
- * liquidation LTV beneath it (decided: both); and health to two decimals,
- * "—" at LTV 0 (line 1173).
+ * the selected market: the LTV with the market's max LTV beneath it; the
+ * collateral's liquidation price with the liquidation LTV beneath it
+ * (decided: both); and health to two decimals, "—" at LTV 0 (line 1173),
+ * with the health Aave liquidates at.
  */
 export function LoanSummary({
   ltv,
   liquidationPriceUsd,
   liquidationLtvBps,
+  maxLtvBps,
   healthHundredths,
 }: LoanSummaryProps) {
   return (
     // Line 366: three equal columns, gap 10, margin-top 16.
     <dl className="m-0 mt-4 grid grid-cols-3 gap-2.5">
-      <Tile label="LTV" value={`${ltv}%`} />
+      <Tile
+        label="LTV"
+        note={
+          maxLtvBps === undefined ? undefined : `max ${formatBps(maxLtvBps)}`
+        }
+        value={`${ltv}%`}
+      />
       <Tile
         label="Liquidation"
         note={
@@ -79,8 +94,10 @@ export function LoanSummary({
             : formatPrice(liquidationPriceUsd)
         }
       />
+      {/* Aave liquidates a loan once its health reaches 1. */}
       <Tile
         label="Health"
+        note="liq. at 1.00"
         value={
           healthHundredths === null || healthHundredths === undefined
             ? '—'

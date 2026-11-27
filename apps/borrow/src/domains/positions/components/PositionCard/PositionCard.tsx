@@ -1,8 +1,6 @@
 import { Banner, Button, Card, cn } from '@aurora-is-near/ui-kit';
 import { useId } from 'react';
 
-import { DoneMark } from '@/domains/borrow/components/DoneMark/DoneMark';
-
 import { pricedTotal } from '../../model/reserves';
 import {
   formatHealth,
@@ -21,10 +19,10 @@ import { LtvMeter } from '../LtvMeter/LtvMeter';
 import type { LoanPosition, PositionAsset } from '../../types';
 
 /*
- * Web-Positions-Multi.dc.html lines 401–434 (`posActive`) and
- * Web-Repaid.dc.html lines 487–503 (`posRepaid`). The Mob-* artboards share
- * the markup: below 640px only the card's padding changes (16px, from
- * `Card`), and the tile grids reflow by their `auto-fit` columns.
+ * Web-Position.dc.html lines 401–434 (`posActive`), for every loan. The
+ * Mob-* artboards share the markup: below 640px only the card's padding
+ * changes (16px, from `Card`), and the tile grids reflow by their `auto-fit`
+ * columns.
  */
 
 /** The loan's name for assistive technology: "WETH → USDC, Aave V3 Base on Base". */
@@ -45,14 +43,11 @@ function ReservesTile({
   assets,
   usd,
   chain,
-  size = 'md',
 }: {
   label: string;
   assets: readonly PositionAsset[];
   usd: number;
   chain: string;
-  /** `lg` is the repaid card's 32px figure (Web-Repaid.dc.html line 493). */
-  size?: 'md' | 'lg';
 }) {
   const { amount, more } = reservesLabel(assets);
   const total = pricedTotal(assets, usd);
@@ -61,11 +56,7 @@ function ReservesTile({
     <div className="min-w-0 rounded-18 bg-sf2 px-4.5 py-4 leading-font">
       <dt className="text-13 text-mut2">{label}</dt>
       <dd className="m-0">
-        <span
-          className={cn(
-            'block font-extrabold tracking-figure break-words',
-            size === 'lg' ? 'text-32' : 'text-30 leading-1.15',
-          )}>
+        <span className="block text-30 leading-1.15 font-extrabold tracking-figure break-words">
           {amount}
           {more ? (
             <span className="ml-2 text-13 font-semibold tracking-normal text-mut2">
@@ -154,8 +145,21 @@ function RiskBanner({ position }: { position: LoanPosition }) {
   );
 }
 
-/** An active or at-risk loan (`posActive`, lines 403–434). */
-function ActiveLoanCard({ position }: { position: LoanPosition }) {
+type PositionCardProps = {
+  position: LoanPosition;
+};
+
+/**
+ * One loan on My positions (`posActive`, lines 403–434), with the "Close to
+ * liquidation" banner when it is at risk. A repaid loan shows the same card
+ * with no debt. A loan Borrow cannot manage (`manageable: false`) has the
+ * provider's name in the pill and no action buttons.
+ *
+ * Left out until their data or features exist: "Borrow fee paid" (line 432,
+ * no source) and the Repay / Add collateral panel beside the card (lines
+ * 436–485).
+ */
+export function PositionCard({ position }: PositionCardProps) {
   const ltvLabelId = useId();
   const { health, ltv, liquidationLtv } = position;
 
@@ -166,7 +170,9 @@ function ActiveLoanCard({ position }: { position: LoanPosition }) {
       role="region">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="font-sans text-12 tracking-label text-mut2">
-          ACTIVE LOAN
+          {/* Line 405. With no debt left it may be a repaid loan or a plain
+              supply that never borrowed: the reserves cannot tell. */}
+          {position.status === 'repaid' ? 'COLLATERAL ONLY' : 'ACTIVE LOAN'}
         </div>
         <MarketPill position={position} />
       </div>
@@ -203,7 +209,6 @@ function ActiveLoanCard({ position }: { position: LoanPosition }) {
         liquidationLtv={liquidationLtv}
         ltv={ltv}
       />
-      {/* "Borrow fee paid" (line 432) has no source and is left out (decided). */}
       <dl className="m-0 mt-5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
         <StatTile
           label="Health"
@@ -228,76 +233,5 @@ function ActiveLoanCard({ position }: { position: LoanPosition }) {
         />
       </dl>
     </Card>
-  );
-}
-
-/**
- * A repaid loan (`posRepaid`, Web-Repaid.dc.html lines 488–502): the card at
- * max-width 560; the badge beside "Loan repaid" (26px / 800 / -0.02em) and
- * its 15px `mut` line; the collateral tile 18px under; the withdraw button
- * (`.go`) 18px under that. Withdrawing is its own feature, so the button is
- * drawn disabled until it ships, and its "Withdraw to another wallet" option
- * is left to that feature. A read-only loan has no button.
- */
-function RepaidLoanCard({ position }: { position: LoanPosition }) {
-  const titleId = useId();
-  const { amount } = reservesLabel(position.collateral);
-
-  return (
-    <Card
-      aria-labelledby={titleId}
-      className="max-w-140 min-w-0 flex-[1_1_auto]"
-      role="region">
-      <div className="flex items-center gap-3.5 leading-font">
-        {/* Web-Repaid.dc.html line 490: the 44px badge. */}
-        <DoneMark className="shrink-0" size={44} />
-        <div>
-          <h2
-            className="m-0 text-26 font-extrabold tracking-title"
-            id={titleId}>
-            Loan repaid
-          </h2>
-          <p className="m-0 text-15 text-mut">
-            {position.manageable
-              ? 'Your collateral is free to withdraw.'
-              : `Your collateral is free to withdraw on ${position.providerName}.`}
-          </p>
-        </div>
-      </div>
-      <dl className="m-0 mt-4.5">
-        <ReservesTile
-          assets={position.collateral}
-          chain={position.chainLabel}
-          label="Collateral to withdraw"
-          size="lg"
-          usd={position.collateralUsd}
-        />
-      </dl>
-      {position.manageable ? (
-        <Button className="mt-4.5" disabled>
-          {position.collateral.length === 1
-            ? `Withdraw ${amount}`
-            : 'Withdraw collateral'}
-        </Button>
-      ) : null}
-    </Card>
-  );
-}
-
-type PositionCardProps = {
-  position: LoanPosition;
-};
-
-/**
- * One loan on My positions: the active card, with the "Close to liquidation"
- * banner when it is at risk, or the repaid card. A loan Borrow cannot manage
- * (`manageable: false`) has the provider's name in the pill and no action
- * buttons.
- */
-export function PositionCard({ position }: PositionCardProps) {
-  return position.status === 'repaid' ? (
-    <RepaidLoanCard position={position} />
-  ) : (
-    <ActiveLoanCard position={position} />
   );
 }

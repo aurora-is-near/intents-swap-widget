@@ -7,7 +7,8 @@ import type { LoanStatus, PositionAsset } from '../types';
 export const AT_RISK_HEALTH = 1.15;
 
 /**
- * `repaid` with no debt but collateral left, `at-risk` with health below
+ * `repaid` with no debt but collateral left (shown as "Collateral only": a
+ * supply that never borrowed reads the same), `at-risk` with health below
  * `AT_RISK_HEALTH`, else `active`. Decided from the reserves, not their
  * dollar values, which are missing for an unpriced token. A loan whose health
  * is unknown is `active`: it is not shown as at risk on a guess.

@@ -75,20 +75,42 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows only the Borrow section in the header', async () => {
+  it('shows the Swap and Borrow sections, Docs and X in the header', async () => {
     await renderApp();
 
     const nav = screen.getByRole('navigation', { name: 'Sections' });
     const links = within(nav).getAllByRole('link');
 
-    expect(links).toHaveLength(1);
-    expect(links[0]).toHaveAccessibleName('Borrow');
-    expect(links[0]).toHaveAttribute('aria-current', 'page');
+    expect(links.map((link) => link.textContent)).toEqual(['Swap', 'Borrow']);
+    expect(links[1]).toHaveAttribute('aria-current', 'page');
+    expect(links[0]).not.toHaveAttribute('aria-current');
 
-    [/swap/i, /earn/i, /docs/i, /^x$/i].forEach((name) => {
-      expect(screen.queryByRole('link', { name })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
-    });
+    const banner = screen.getByRole('banner');
+
+    expect(within(banner).getByRole('link', { name: 'Docs' })).toBeVisible();
+    expect(within(banner).getByRole('link', { name: 'X' })).toBeVisible();
+    expect(
+      within(banner).queryByRole('link', { name: /earn/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows an empty Swap section at /swap', async () => {
+    render(
+      <App
+        router={createAppRouter(
+          createMemoryHistory({ initialEntries: ['/swap'] }),
+        )}
+      />,
+    );
+
+    const nav = await screen.findByRole('navigation', { name: 'Sections' });
+
+    expect(within(nav).getByRole('link', { name: 'Swap' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('main')).toBeEmptyDOMElement();
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
   });
 
   it('selects New loan at /', async () => {

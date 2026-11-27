@@ -8,28 +8,51 @@ import { PositionsSummary } from '../PositionsSummary/PositionsSummary';
 import type { Positions } from '../../hooks/usePositions';
 
 /**
+ * Where Repay and Add collateral will go (Web-Position.dc.html line 436:
+ * flex 1 1 400px, max-width 520), empty until those features ship and as
+ * tall as the loan's card. Hidden once the row is too narrow for both
+ * columns (480 + 24 + 400px), where it would wrap into an empty strip.
+ */
+function RepayPlaceholder() {
+  return (
+    <Card
+      aria-hidden="true"
+      className="max-w-130 min-w-0 flex-[1_1_400px] self-stretch @max-[904px]:hidden"
+    />
+  );
+}
+
+/**
  * While nothing has loaded: a card of placeholders in the position card's
- * shape. No artboard has a loading state; built from the kit's `Skeleton`.
- * Screen readers hear "Loading your positions" from the status line instead.
+ * shape, beside the Repay placeholder, so the layout does not jump when the
+ * loan arrives. No artboard has a loading state; built from the kit's
+ * `Skeleton`. Screen readers hear "Loading your positions" from the status
+ * line instead.
  */
 function PositionsLoading() {
   return (
-    <Card aria-busy="true" aria-hidden="true" className="max-w-160">
-      <div className="flex items-center justify-between gap-3">
-        <Skeleton height={14} width={96} />
-        <Skeleton height={28} radius={14} width={140} />
-      </div>
-      <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
-        <Skeleton height={100} radius={18} />
-        <Skeleton height={100} radius={18} />
-      </div>
-      <Skeleton className="mt-5.5" height={36} />
-      <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
-        {['health', 'liquidation', 'price', 'apr', 'interest'].map((key) => (
-          <Skeleton key={key} height={70} radius={14} />
-        ))}
-      </div>
-    </Card>
+    <div
+      aria-busy="true"
+      aria-hidden="true"
+      className="@container flex flex-wrap items-start gap-6">
+      <Card className="min-w-0 flex-[1.2_1_480px]">
+        <div className="flex items-center justify-between gap-3">
+          <Skeleton height={14} width={96} />
+          <Skeleton height={28} radius={14} width={140} />
+        </div>
+        <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
+          <Skeleton height={100} radius={18} />
+          <Skeleton height={100} radius={18} />
+        </div>
+        <Skeleton className="mt-5.5" height={36} />
+        <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
+          {['health', 'liquidation', 'price', 'apr', 'interest'].map((key) => (
+            <Skeleton key={key} height={70} radius={14} />
+          ))}
+        </div>
+      </Card>
+      <RepayPlaceholder />
+    </div>
   );
 }
 
@@ -124,8 +147,10 @@ function PositionsContent({
             onSelect={onSelect}
           />
         ) : null}
-        <div className="flex flex-wrap items-start gap-6">
+        <div className="@container flex flex-wrap items-start gap-6">
           <PositionCard key={selected.id} position={selected} />
+          {/* A read-only loan will never get Borrow's actions. */}
+          {selected.manageable ? <RepayPlaceholder /> : null}
         </div>
       </div>
     </div>

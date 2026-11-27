@@ -14,6 +14,7 @@ const renderSummary = (liquidationPriceUsd: number) =>
       liquidationLtvBps={7800}
       liquidationPriceUsd={liquidationPriceUsd}
       ltv={50}
+      maxLtvBps={7500}
     />,
   );
 
@@ -34,5 +35,12 @@ describe('LoanSummary', () => {
     renderSummary(10_000);
 
     expect(tile('Liquidation')).toHaveTextContent('$10K');
+  });
+
+  it('notes the max LTV under the LTV and the liquidation health under health', () => {
+    renderSummary(9_999.4);
+
+    expect(tile('LTV')).toHaveTextContent('50%max 75%');
+    expect(tile('Health')).toHaveTextContent('1.62liq. at 1.00');
   });
 });

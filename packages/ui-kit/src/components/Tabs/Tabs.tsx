@@ -70,9 +70,10 @@ export const Tab = forwardRef<HTMLElement, TabProps>(
         <>
           {/* Separates the count in the accessible name; a flex container
               does not render whitespace between items. */}{' '}
-          {/* The count badge (line 210): `accent` with `onlime` text. */}
+          {/* The count badge (line 210): `accent` with `onlime` text, a
+              20px circle that widens into a pill past one digit. */}
           <span
-            className="rounded-full bg-accent px-2 text-13 text-onlime"
+            className="box-border inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-13 leading-none text-onlime"
             data-slot="count">
             {count}
           </span>

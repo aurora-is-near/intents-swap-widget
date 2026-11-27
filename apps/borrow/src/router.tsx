@@ -9,15 +9,30 @@ import type { RouterHistory } from '@tanstack/react-router';
 
 import { NewLoanPage } from '@/domains/loan/components/NewLoanPage/NewLoanPage';
 import { PositionsPage } from '@/domains/positions/components/PositionsPage/PositionsPage';
+import { BorrowSection } from '@/shell/BorrowSection';
 import { Shell } from '@/shell/Shell';
 
 const rootRoute = createRootRoute({ component: Outlet });
 
-/** The page chrome: header, hero, tabs and footer around the two tab routes. */
+/** The page chrome: header and footer around the sections. */
 const shellRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'shell',
   component: Shell,
+});
+
+/** The Borrow section: the hero and the tabs around the two tab routes. */
+const borrowRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  id: 'borrow',
+  component: BorrowSection,
+});
+
+/** The Swap section, with no content yet. */
+const swapRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: '/swap',
+  component: () => null,
 });
 
 /**
@@ -25,7 +40,7 @@ const shellRoute = createRoute({
  * dialogs it opens.
  */
 const newLoanRoute = createRoute({
-  getParentRoute: () => shellRoute,
+  getParentRoute: () => borrowRoute,
   path: '/',
   component: NewLoanPage,
 });
@@ -45,7 +60,7 @@ const validatePositionsSearch = (
  * states. The `position` search param picks the loan shown.
  */
 const positionsRoute = createRoute({
-  getParentRoute: () => shellRoute,
+  getParentRoute: () => borrowRoute,
   path: '/positions',
   validateSearch: validatePositionsSearch,
   component: PositionsPage,
@@ -66,7 +81,10 @@ const unknownRoute = createRoute({
 
 const createRouteTree = () =>
   rootRoute.addChildren([
-    shellRoute.addChildren([newLoanRoute, positionsRoute]),
+    shellRoute.addChildren([
+      borrowRoute.addChildren([newLoanRoute, positionsRoute]),
+      swapRoute,
+    ]),
     unknownRoute,
   ]);
 

@@ -76,6 +76,8 @@ export type LoanForm = {
   figuresMarket: LendingMarket | undefined;
   /** `figuresMarket`'s liquidation LTV for the pair, in bps. */
   liquidationLtvBps: number | undefined;
+  /** The selected market's max LTV; `undefined` until a market is known. */
+  maxLtvBps: number | undefined;
   /**
    * The providers (`LendingMarket.provider`) the LTV is above the max LTV
    * of: shown off, not pickable.

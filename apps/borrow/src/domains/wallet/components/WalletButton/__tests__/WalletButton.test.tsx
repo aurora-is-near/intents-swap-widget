@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -51,24 +51,60 @@ describe('WalletButton', () => {
     expect(wallet.connect).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the shortened address when connected and disconnects on click', async () => {
-    wallet.address = ADDRESS;
-    wallet.isConnected = true;
-    render(<WalletButton />);
-
-    const button = screen.getByRole('button', {
-      name: 'Wallet 0x7a3f…9c21 connected. Click to disconnect',
+  describe('when connected', () => {
+    beforeEach(() => {
+      wallet.address = ADDRESS;
+      wallet.isConnected = true;
     });
 
-    expect(button).toHaveTextContent('0x7a3f…9c21');
-    expect(button.querySelector('span[aria-hidden="true"]')).not.toBeNull();
-    expect(
-      screen.queryByRole('button', { name: 'Connect wallet' }),
-    ).not.toBeInTheDocument();
+    const walletButton = () =>
+      screen.getByRole('button', { name: 'Wallet 0x7a3f…9c21 connected' });
 
-    await userEvent.click(button);
+    it('shows the shortened address and does not disconnect on click', async () => {
+      render(<WalletButton />);
 
-    expect(wallet.disconnect).toHaveBeenCalledTimes(1);
-    expect(wallet.connect).not.toHaveBeenCalled();
+      expect(walletButton()).toHaveTextContent('0x7a3f…9c21');
+      expect(
+        walletButton().querySelector('span[aria-hidden="true"]'),
+      ).not.toBeNull();
+      expect(
+        screen.queryByRole('button', { name: 'Connect wallet' }),
+      ).not.toBeInTheDocument();
+
+      await userEvent.click(walletButton());
+
+      expect(await screen.findByText('Disconnect wallet?')).toBeInTheDocument();
+      expect(walletButton()).toHaveAttribute('aria-expanded', 'true');
+      expect(wallet.disconnect).not.toHaveBeenCalled();
+      expect(wallet.connect).not.toHaveBeenCalled();
+    });
+
+    it('keeps the wallet connected on Cancel', async () => {
+      render(<WalletButton />);
+
+      await userEvent.click(walletButton());
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Cancel' }),
+      );
+
+      expect(wallet.disconnect).not.toHaveBeenCalled();
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText('Disconnect wallet?'),
+        ).not.toBeInTheDocument(),
+      );
+    });
+
+    it('disconnects on the danger Disconnect', async () => {
+      render(<WalletButton />);
+
+      await userEvent.click(walletButton());
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Disconnect' }),
+      );
+
+      expect(wallet.disconnect).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -1,13 +1,12 @@
+import { Outlet } from '@tanstack/react-router';
+
 import { AppLayout } from './AppLayout';
-import { BorrowTabs } from './BorrowTabs';
 import { Footer } from './Footer';
 import { Header } from './Header';
-import { Hero } from './Hero';
 
 /**
- * The shell layout route around the two tab routes: header, hero and the Borrow
- * tabs, whose panel is the route, then the footer, which spans the full width
- * outside the page column.
+ * The shell layout route around the sections: header and the section's
+ * route, then the footer, which spans the full width outside the page column.
  */
 export function Shell() {
   return (
@@ -15,8 +14,7 @@ export function Shell() {
       <AppLayout>
         <Header />
         <main>
-          <Hero />
-          <BorrowTabs />
+          <Outlet />
         </main>
       </AppLayout>
       <Footer />

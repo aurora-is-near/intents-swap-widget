@@ -135,7 +135,8 @@ export const pillLabel = (position: LoanPosition) => {
 export const STATUS_TAGS = {
   active: { label: 'Active', className: 'bg-tint text-pos' },
   'at-risk': { label: 'At risk', className: 'bg-negbg text-neg' },
-  repaid: { label: 'Repaid', className: 'bg-tint text-pos' },
+  // No debt: a repaid loan or a supply that never borrowed look the same.
+  repaid: { label: 'Collateral only', className: 'bg-tint text-pos' },
 } as const satisfies Record<LoanStatus, { label: string; className: string }>;
 
 /**

@@ -15,11 +15,11 @@
   --color-footer-mut: #9aa39b;
   --color-footer-mut2: #8a928c;
   --color-footer-logo: #f5f6f4;
+  --color-footer-link: #c9cec8;
+  --color-footer-link-hover: #fffffd;
+  --color-footer-soc-bd: #3a4046;
   --color-live: #5e9e12;
   /* A position's health between 1.2 and 1.5 (Web-Positions-Multi.dc.html
      script line 1398): the same amber in both themes, no kit token. */
   --color-caution: #b26a00;
-
-  /* The repaid card's collateral figure (Web-Repaid.dc.html line 493). */
-  --text-32: 32px;
 }
