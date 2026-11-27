@@ -344,6 +344,28 @@ describe('Aave V3 borrowRecipe', () => {
     });
   });
 
+  it('refuses a bridge-in build with a concrete amount (threeRound)', async () => {
+    resolveAction.mockClear();
+
+    await expect(
+      adapter
+        .borrowRecipe(input())
+        .buildSteps({ ...ctx, amount: '987654321' }, PARAMS),
+    ).rejects.toThrow('placeholder fee strategy');
+    expect(resolveAction).not.toHaveBeenCalled();
+  });
+
+  it('refuses a bridge-in build without the bridged asset and amount', async () => {
+    resolveAction.mockClear();
+
+    await expect(
+      adapter
+        .borrowRecipe(input())
+        .buildSteps(ctx, { borrowAmount: '1', recipient: RECIPIENT }),
+    ).rejects.toThrow('params.originAsset and params.originAmount');
+    expect(resolveAction).not.toHaveBeenCalled();
+  });
+
   it('sends to the connected wallet when no recipient is given', async () => {
     await adapter
       .borrowRecipe(input())

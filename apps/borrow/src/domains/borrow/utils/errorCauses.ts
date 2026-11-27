@@ -1,4 +1,5 @@
 import {
+  GuardError,
   IntentsConnectActionsApiError,
   IntentsConnectApiError,
 } from '@aurora-is-near/intents-connect';
@@ -75,10 +76,12 @@ const API_ERROR_MAX_LENGTH = 300;
 
 /**
  * What a changed borrow action is called: the hosted action no longer has
- * the hash Borrow pins (409), so the steps it would run were not reviewed.
+ * the hash Borrow pins (409), or resolves to something the recipe does not
+ * describe (`ACTION_MISMATCH`), so the steps it would run were not reviewed.
+ * The pin ships in the bundle, so only a Borrow release lifts it.
  */
 export const ACTION_CHANGED_MESSAGE =
-  'The borrow action changed; reload to get the update.';
+  'The borrow action changed, so borrowing is paused until Borrow is updated.';
 
 /**
  * The reason the Intents Connect API (or the hosted actions API, resolving
@@ -86,21 +89,28 @@ export const ACTION_CHANGED_MESSAGE =
  * `{"error": "No liquidity available"}` from creating an execution, or
  * `undefined` when the error is not an API error or its body is not JSON
  * with a non-empty `error` string. A changed borrow action (the actions
- * API's 409) is `ACTION_CHANGED_MESSAGE`.
+ * API's 409, or the SDK's `ACTION_MISMATCH` guard) is
+ * `ACTION_CHANGED_MESSAGE`.
  */
 export const apiErrorMessage = (error: unknown): string | undefined => {
-  const apiError = causeChainOf(error).find(
+  const causes = causeChainOf(error);
+
+  if (
+    causes.some(
+      (value) =>
+        (value instanceof GuardError && value.code === 'ACTION_MISMATCH') ||
+        (value instanceof IntentsConnectActionsApiError &&
+          value.isHashMismatch),
+    )
+  ) {
+    return ACTION_CHANGED_MESSAGE;
+  }
+
+  const apiError = causes.find(
     (value): value is IntentsConnectApiError | IntentsConnectActionsApiError =>
       value instanceof IntentsConnectApiError ||
       value instanceof IntentsConnectActionsApiError,
   );
-
-  if (
-    apiError instanceof IntentsConnectActionsApiError &&
-    apiError.isHashMismatch
-  ) {
-    return ACTION_CHANGED_MESSAGE;
-  }
 
   const { body } = apiError ?? {};
   const reason =

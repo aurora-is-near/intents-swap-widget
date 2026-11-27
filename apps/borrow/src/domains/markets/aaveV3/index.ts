@@ -1,6 +1,10 @@
-import { actionRecipe } from '@aurora-is-near/intents-connect';
+import {
+  actionRecipe,
+  BACKEND_PLACEHOLDERS,
+} from '@aurora-is-near/intents-connect';
 import type {
   IntentsConnectActionsApi,
+  StepContext,
   SupportedToken,
 } from '@aurora-is-near/intents-connect';
 
@@ -39,6 +43,32 @@ export type AaveV3AdapterOptions = {
   getClient: (chainId: number) => AaveReadClient;
   /** The hosted actions API the borrow steps are resolved from. */
   actionsApi: Pick<IntentsConnectActionsApi, 'resolveAction'>;
+};
+
+/**
+ * A bridge-in borrow's amount inputs: the bridged asset and amount, which the
+ * action needs for its quote though the runner keeps its own and takes only
+ * the steps. Those steps supply `{MIN_AMOUNT_OUT}`, which only the
+ * placeholder fee strategy (the default) substitutes; under `threeRound` the
+ * runner's concrete amounts would never reach them, so that fails here.
+ */
+const bridgeInInputs = (
+  ctx: StepContext,
+  { originAsset, originAmount }: BorrowParams,
+) => {
+  if (ctx.amount !== BACKEND_PLACEHOLDERS.minAmountOut) {
+    throw new Error(
+      `the borrow action supplies ${BACKEND_PLACEHOLDERS.minAmountOut} on bridge-in; plan it with the placeholder fee strategy`,
+    );
+  }
+
+  if (originAsset === undefined || originAmount === undefined) {
+    throw new Error(
+      'a bridge-in borrow needs params.originAsset and params.originAmount',
+    );
+  }
+
+  return { originAsset, amount: originAmount };
 };
 
 const toLendingMarket = (market: AaveMarket): LendingMarket => ({
@@ -146,12 +176,10 @@ export const createAaveV3Adapter = ({
           borrowAsset: pair.borrowAsset,
           borrowAmount: params.borrowAmount,
           recipient: params.recipient ?? ctx.userAddress,
-          // Bridge-in: the action needs the bridged asset and amount for its
-          // quote, though the runner keeps its own and takes only the steps,
-          // which supply `{MIN_AMOUNT_OUT}`. Steps-only: the collateral the
-          // steps spend, which the runner varies (the post-fee amount).
+          // Steps-only: the collateral the steps spend, which the runner
+          // varies (the post-fee amount).
           ...(flow === 'bridge-in'
-            ? { originAsset: params.originAsset, amount: params.originAmount }
+            ? bridgeInInputs(ctx, params)
             : { amount: ctx.amount }),
         }),
       });

@@ -479,6 +479,14 @@ describe('apiErrorMessage', () => {
     ).toBe(ACTION_CHANGED_MESSAGE);
   });
 
+  it('names a borrow action that resolved to another recipe (ACTION_MISMATCH)', () => {
+    expect(
+      apiErrorMessage(
+        new GuardError('ACTION_MISMATCH', 'resolved another asset'),
+      ),
+    ).toBe(ACTION_CHANGED_MESSAGE);
+  });
+
   it('is undefined for an error that is not from the API', () => {
     expect(
       apiErrorMessage(new Error('No liquidity available')),
