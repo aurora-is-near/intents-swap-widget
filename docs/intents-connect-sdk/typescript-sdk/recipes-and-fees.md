@@ -123,20 +123,23 @@ const borrowRecipe = actionRecipe<{ borrowAmount: string }>({
   title: 'Borrow USDC against ETH on Aave Base',
   flow: 'bridge-in',
   destination: { chain: 'base', assetId: 'nep141:base.omft.near' },
-  // Called on every build: map `ctx.amount` through, never fix it here.
+  // Called on every build. This bridge-in action quotes from the bridged
+  // asset and amount (here fixed; a real integration passes the plan's quote
+  // through `params`) and its steps supply `{MIN_AMOUNT_OUT}`. A steps-only
+  // action takes `amount: ctx.amount` instead, which changes between builds.
   inputs: (ctx, { borrowAmount }) => ({
     chain: 'base',
     collateral: 'ETH',
     borrowAsset: 'USDC',
     borrowAmount,
     recipient: ctx.userAddress,
-    amount: '3000000000000000',
     originAsset: 'nep141:eth.omft.near',
+    amount: '3000000000000000',
   }),
 });
 ```
 
-- **Checked on every build.** The resolved execution must be EVM, have the shape of `flow` (a quote for bridge-in, a top-level `destinationAsset` for steps-only, `outOperation` for an out-operation), deliver `destination.assetId`, and carry the recipe's `intent` and `title`. Anything else throws `GuardError` `ACTION_MISMATCH`.
+- **Checked on every build.** The resolved execution must be EVM, have the shape of `flow` (a quote for bridge-in, a top-level `destinationAsset` for steps-only, `outOperation` for an out-operation), deliver `destination.assetId`, and, when it returns `metadata`, carry the recipe's `intent` and `title`. Its version, and its hash when pinned, must match the request. Anything else throws `GuardError` `ACTION_MISMATCH`.
 - **Errors.** A non-2xx answer throws `IntentsConnectActionsApiError` with the API's message and `status`. `isHashMismatch` is the 409 of a changed action; 400 is invalid inputs and 404 an unknown action or version.
 - **One request per build.** A bridge-in `preview` resolves once and `run` reuses the prepared steps. A steps-only preview with `feeFromAmount` resolves again at the post-fee amount.
 - **Placeholders pass through.** `{INTERMEDIARY}` and `{MIN_AMOUNT_OUT}` in the resolved steps are filled in by the service at creation, as in any recipe.
