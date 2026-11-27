@@ -2,6 +2,7 @@
  * Every precondition the Intents Connect protocol imposes, named after what it
  * prevents. Each throws a `GuardError` carrying a `GuardCode`.
  */
+export { actionMatchesRecipe } from '@/machine/guards/checks/actionMatchesRecipe';
 export { amountMustExceedFee } from '@/machine/guards/checks/amountMustExceedFee';
 export { destinationTokenIsTouched } from '@/machine/guards/checks/destinationTokenIsTouched';
 export { feeMustBeEstimated } from '@/machine/guards/checks/feeMustBeEstimated';

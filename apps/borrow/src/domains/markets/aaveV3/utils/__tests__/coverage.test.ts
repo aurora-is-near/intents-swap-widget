@@ -1,9 +1,9 @@
-import { AAVE_BORROW_MARKETS } from '@aurora-is-near/intents-connect-actions';
 import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_PAIR } from '@/domains/loan/model/reserveAssets';
 import { usdc, weth } from '@/tests/fakeMarkets';
 
+import { AAVE_BORROW_MARKETS } from '../../config/borrowAction';
 import { AAVE_V3_MARKETS } from '../../config/registry';
 import { coversBorrow, coversCollateral, markCoverage } from '../coverage';
 import type { AaveMarket } from '../../config/registry';

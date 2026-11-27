@@ -2,13 +2,6 @@ import { forwardRef, type HTMLAttributes } from 'react';
 
 import { cn } from '../../utils/cn';
 
-/**
- * `.spin` (Web-Borrow.dc.html line 161), on Tailwind's own `spin` keyframes
- * (the artboard's, line 160, are the same).
- */
-const BASE =
-  'box-border inline-block shrink-0 rounded-full border-3 border-solid animate-spin-fast';
-
 const TONE_CLASSES = {
   default: 'border-bd border-t-ink',
   /** Follows the text colour, for use inside a button. */
@@ -25,6 +18,10 @@ export type SpinnerProps = HTMLAttributes<HTMLSpanElement> & {
   label?: string;
 };
 
+/**
+ * `.spin` (Web-Borrow.dc.html line 161), on Tailwind's own `spin` keyframes
+ * (the artboard's, line 160, are the same).
+ */
 export const Spinner = forwardRef<HTMLSpanElement, SpinnerProps>(
   (
     {
@@ -40,7 +37,11 @@ export const Spinner = forwardRef<HTMLSpanElement, SpinnerProps>(
     <span
       ref={ref}
       aria-label={label}
-      className={cn(BASE, TONE_CLASSES[tone], className)}
+      className={cn(
+        'box-border inline-block shrink-0 rounded-full border-3 border-solid animate-spin-fast',
+        TONE_CLASSES[tone],
+        className,
+      )}
       role="status"
       style={{ width: size, height: size, ...style }}
       {...props}

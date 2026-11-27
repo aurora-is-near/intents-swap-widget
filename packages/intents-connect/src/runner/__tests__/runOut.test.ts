@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CreateExecutionBody, IntentsConnectApi } from '@/api/types';
 import { noopLogger } from '@/logger';
 import type { Execution, ExecutionStatus, Step } from '@/types/execution';
-import type { Recipe } from '@/types/recipe';
+import type { AsyncRecipe, Recipe } from '@/types/recipe';
 import type { WalletConnector } from '@/types/wallet';
 import { createExecutionRunner } from '@/runner/createExecutionRunner';
 import { isOutOperationExecution } from '@/runner/flows/resume';
@@ -277,5 +277,44 @@ describe('runOut', () => {
     const result = await h.runner.runOut(h.plan);
 
     expect(isOutOperationExecution(result)).toBe(true);
+  });
+});
+
+describe('runOut — an async EVM recipe (a hosted action)', () => {
+  it('awaits the release steps and pays out after them', async () => {
+    const h = setup();
+    const buildSteps = vi.fn<AsyncRecipe<{ all?: boolean }>['buildSteps']>(
+      async (ctx, params) => withdraw.buildSteps(ctx, params),
+    );
+
+    const result = await h.runner.runOut({
+      ...h.plan,
+      recipe: { ...withdraw, buildSteps },
+    });
+
+    expect(result.status).toBe('SUCCESS');
+    expect(buildSteps).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: '5000000' }),
+      {},
+    );
+    expect(
+      h.bodies.at(-1)?.steps.map((step) => 'to' in step && step.to),
+    ).toEqual([POOL, USDC]);
+  });
+
+  it('sends nothing when the runner is disposed while the steps resolve', async () => {
+    const h = setup();
+    const buildSteps = vi.fn<AsyncRecipe<{ all?: boolean }>['buildSteps']>(
+      async (ctx, params) => {
+        h.runner.dispose();
+
+        return withdraw.buildSteps(ctx, params);
+      },
+    );
+
+    await expect(
+      h.runner.runOut({ ...h.plan, recipe: { ...withdraw, buildSteps } }),
+    ).rejects.toMatchObject({ name: 'RunnerDisposedError' });
+    expect(h.api.createExecution).not.toHaveBeenCalled();
   });
 });

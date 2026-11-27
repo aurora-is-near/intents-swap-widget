@@ -8,34 +8,9 @@ import {
 } from 'react';
 
 import { cn } from '../../utils/cn';
-import { FOCUS_RING } from '../../utils/focusRing';
-import { DOT } from '../Chip/Chip';
 import { ChevronIcon } from '../icons/icons';
 import { TokenMark } from '../TokenMark/TokenMark';
 import { TokenList, type TokenOption, TokenRow } from '../TokenList/TokenList';
-
-/**
- * `.pick` (Web-Borrow.dc.html lines 23–25, markup line 219): gap 10, padding
- * 8px 12px 8px 8px, radius 14, border 1.5px `bd2`, `sf`; hover border ink;
- * open (`.pick.open`, Base UI's `data-popup-open`) border ink with a 2px ink
- * ring. Focus ring as on line 20. Disabled: `.go:disabled`'s opacity (line
- * 57) and the not-allowed cursor (line 16), with no hover, as Button. The
- * artboard sets the width (188px) where the trigger is placed: pass it as
- * `className`.
- */
-const TRIGGER = `box-border flex min-w-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-2.5 rounded-14 border-1.5 border-solid border-bd2 bg-sf py-2 pr-3 pl-2 text-left font-sans text-ink enabled:hover:border-ink data-popup-open:border-ink data-popup-open:shadow-ink-ring ${FOCUS_RING}`;
-
-/** Symbol and chain (line 221): `flex:1; min-width:0; line-height:1.2`. */
-const TRIGGER_NAMES = 'min-w-0 flex-1 leading-1.2';
-
-/** Line 221: 18px / 700. */
-const TRIGGER_SYMBOL = 'block text-18 font-bold';
-
-/** Line 221: chain dot and name, gap 5, 12px `mut`. */
-const TRIGGER_CHAIN = 'flex items-center gap-1.25 text-12 text-mut';
-
-/** `.list` (line 33): 10px below the filter chips. */
-const LIST_AFTER_FILTERS = 'mt-2.5';
 
 /** What the trigger shows for the chosen token. */
 export type TokenSelectDisplay = {
@@ -79,6 +54,12 @@ export type TokenSelectProps = Omit<
  * buttons reached with Tab (not a listbox). Picking one calls
  * `onValueChange`, closes the popup and returns focus to the trigger;
  * Escape and an outside press close it too.
+ *
+ * The trigger is `.pick` (Web-Borrow.dc.html lines 23–25, markup line 219);
+ * open (`.pick.open`, Base UI's `data-popup-open`) it has a 2px ink ring.
+ * Disabled: `.go:disabled`'s opacity (line 57) and the not-allowed cursor
+ * (line 16), with no hover, as Button. The artboard sets the width (188px)
+ * where the trigger is placed: pass it as `className`.
  */
 export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
   (
@@ -102,7 +83,10 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
       <Popover.Root onOpenChange={setOpen} open={open}>
         <Popover.Trigger
           ref={ref}
-          className={cn(TRIGGER, className)}
+          className={cn(
+            'box-border flex min-w-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-2.5 rounded-14 border-1.5 border-solid border-bd2 bg-sf py-2 pr-3 pl-2 text-left font-sans text-ink enabled:hover:border-ink data-popup-open:border-ink data-popup-open:shadow-ink-ring focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
+            className,
+          )}
           {...props}>
           {/* Line 220: 38px, letters 14px / 800. */}
           <TokenMark
@@ -114,13 +98,15 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
             size={38}
             src={selected.mark.src}
           />
-          <span className={TRIGGER_NAMES}>
-            <span className={TRIGGER_SYMBOL}>{selected.symbol}</span>
-            <span className={TRIGGER_CHAIN}>
+          {/* Symbol and chain (line 221). */}
+          <span className="min-w-0 flex-1 leading-1.2">
+            <span className="block text-18 font-bold">{selected.symbol}</span>
+            <span className="flex items-center gap-1.25 text-12 text-mut">
+              {/* The 7px chain dot, as Chip's (line 221). */}
               {selected.chainColor ? (
                 <span
                   aria-hidden="true"
-                  className={DOT}
+                  className="inline-block size-1.75 shrink-0 rounded-full"
                   style={{ background: selected.chainColor }}
                 />
               ) : null}
@@ -157,17 +143,17 @@ export const TokenSelect = forwardRef<HTMLButtonElement, TokenSelectProps>(
               aria-label={ariaLabel}
               className="box-border w-[min(max(var(--anchor-width),18rem),var(--available-width))] origin-(--transform-origin) rounded-18 border-1.5 border-solid border-ink bg-sf p-3 font-sans text-ink shadow-popup outline-none transition-[opacity,scale] duration-200 ease-out data-ending-style:scale-95 data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:data-ending-style:scale-100 motion-reduce:data-starting-style:scale-100">
               {filters}
+              {/* `.list` (line 33): 10px below the filter chips. */}
               {options.length === 0 ? (
                 <p
                   className={cn(
                     'm-0 px-2.5 py-2 text-14 text-mut',
-                    filters != null && LIST_AFTER_FILTERS,
+                    filters != null && 'mt-2.5',
                   )}>
                   {emptyLabel}
                 </p>
               ) : (
-                <TokenList
-                  className={cn(filters != null && LIST_AFTER_FILTERS)}>
+                <TokenList className={cn(filters != null && 'mt-2.5')}>
                   {options.map((option) => (
                     <TokenRow
                       key={option.id}

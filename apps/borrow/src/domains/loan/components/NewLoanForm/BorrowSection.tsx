@@ -14,13 +14,7 @@ import {
   reserveOption,
   unique,
 } from './tokenOptions';
-import {
-  PICK_ROW,
-  PICK_WIDTH,
-  SectionLabel,
-  TokenFilters,
-  triggerLabel,
-} from './TokenPicker';
+import { SectionLabel, TokenFilters, triggerLabel } from './TokenPicker';
 import type { LoanForm } from '../../model/loanForm';
 import type { ReserveAsset } from '../../model/reserveAssets';
 
@@ -71,12 +65,12 @@ export function BorrowSection({ form }: { form: LoanForm }) {
   return (
     <>
       <SectionLabel id={labelId}>BORROW</SectionLabel>
-      <div ref={anchor} className={PICK_ROW}>
+      <div ref={anchor} className="flex items-stretch gap-2">
         <TokenSelect
           anchor={anchor}
           aria-label="Choose token to borrow"
           aria-labelledby={triggerLabel(labelId, triggerId)}
-          className={PICK_WIDTH}
+          className="w-47 shrink-0"
           filters={
             <TokenFilters
               chains={chains}

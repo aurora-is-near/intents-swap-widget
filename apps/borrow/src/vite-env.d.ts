@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_REOWN_PROJECT_ID?: string;
   /** Intents Connect API; the alpha API when unset. */
   readonly VITE_INTENTS_CONNECT_API_URL?: string;
+  /** Hosted actions API (borrow steps); the demo deployment when unset. */
+  readonly VITE_INTENTS_CONNECT_ACTIONS_API_URL?: string;
   /** Base JSON-RPC for Aave market reads; publicnode when unset. */
   readonly VITE_RPC_URL_BASE?: string;
   /** Arbitrum One JSON-RPC for Aave market reads; publicnode when unset. */

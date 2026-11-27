@@ -1,6 +1,22 @@
-import { aaveBorrowRecipe } from '@aurora-is-near/intents-connect-actions/sdk';
-import type { SupportedToken } from '@aurora-is-near/intents-connect';
+import {
+  actionRecipe,
+  BACKEND_PLACEHOLDERS,
+} from '@aurora-is-near/intents-connect';
+import type {
+  IntentsConnectActionsApi,
+  StepContext,
+  SupportedToken,
+} from '@aurora-is-near/intents-connect';
 
+import { collateralDestination } from '@/domains/borrow/utils/recipe';
+import type { BorrowParams } from '@/domains/borrow/utils/recipe';
+
+import {
+  AAVE_BORROW_INTENT,
+  AAVE_BORROW_MARKETS,
+  aaveBorrowTitle,
+  BORROW_ACTION,
+} from './config/borrowAction';
 import { AAVE_V3_MARKETS } from './config/registry';
 import { readAaveReserves } from './reserves';
 import { actionPairOf, markCoverage } from './utils/coverage';
@@ -25,6 +41,34 @@ export type AaveV3AdapterOptions = {
   api: SupportedTokensApi;
   /** The read client for a chain, such as `getClient` from `./config/clients`. */
   getClient: (chainId: number) => AaveReadClient;
+  /** The hosted actions API the borrow steps are resolved from. */
+  actionsApi: Pick<IntentsConnectActionsApi, 'resolveAction'>;
+};
+
+/**
+ * A bridge-in borrow's amount inputs: the bridged asset and amount, which the
+ * action needs for its quote though the runner keeps its own and takes only
+ * the steps. Those steps supply `{MIN_AMOUNT_OUT}`, which only the
+ * placeholder fee strategy (the default) substitutes; under `threeRound` the
+ * runner's concrete amounts would never reach them, so that fails here.
+ */
+const bridgeInInputs = (
+  ctx: StepContext,
+  { originAsset, originAmount }: BorrowParams,
+) => {
+  if (ctx.amount !== BACKEND_PLACEHOLDERS.minAmountOut) {
+    throw new Error(
+      `the borrow action supplies ${BACKEND_PLACEHOLDERS.minAmountOut} on bridge-in; plan it with the placeholder fee strategy`,
+    );
+  }
+
+  if (originAsset === undefined || originAmount === undefined) {
+    throw new Error(
+      'a bridge-in borrow needs params.originAsset and params.originAmount',
+    );
+  }
+
+  return { originAsset, amount: originAmount };
 };
 
 const toLendingMarket = (market: AaveMarket): LendingMarket => ({
@@ -61,6 +105,7 @@ const aaveMarketOf = (market: LendingMarket): AaveMarket => {
 export const createAaveV3Adapter = ({
   api,
   getClient,
+  actionsApi,
 }: AaveV3AdapterOptions): LendingMarketAdapter => {
   let inFlightTokens: Promise<SupportedToken[]> | undefined;
 
@@ -101,16 +146,42 @@ export const createAaveV3Adapter = ({
       };
     },
 
-    // The `aave-v3-borrow` action's own recipe: the reserves are mapped to
-    // its table symbols by chain and address (or native delivery), and a
-    // reserve it does not cover throws.
+    // The hosted `aave-v3-borrow` action as a recipe: the reserves are
+    // mapped to its input symbols by chain and address (or native delivery),
+    // and a reserve it does not cover throws. Each build resolves the pinned
+    // action; the runner takes only its steps.
     borrowRecipe: ({ market, collateral, borrow, flow }) => {
       const aave = aaveMarketOf(market);
+      const pair = actionPairOf(aave, collateral, borrow);
+      const table = AAVE_BORROW_MARKETS[aave.chain];
+      const supplied = table.collateral[pair.collateral]!;
+      const borrowed = table.borrow[pair.borrowAsset]!;
 
-      return aaveBorrowRecipe({
-        chain: aave.chain,
-        ...actionPairOf(aave, collateral, borrow),
+      return actionRecipe<BorrowParams>({
+        api: actionsApi,
+        actionId: BORROW_ACTION.id,
+        version: BORROW_ACTION.version,
+        expectedSha256Hash: BORROW_ACTION.sha256Hash,
+        id: `aave-borrow:${toLendingMarket(aave).id}:${supplied.label}:${borrowed.label}`,
+        intent: AAVE_BORROW_INTENT,
+        title: aaveBorrowTitle(aave, supplied, borrowed),
         flow,
+        // As 1Click delivers the reserve: the asset id it lists, and no
+        // contract for native delivery. The SDK checks it is what the action
+        // resolves.
+        destination: collateralDestination(aave, collateral),
+        inputs: (ctx, params) => ({
+          chain: aave.chain,
+          collateral: pair.collateral,
+          borrowAsset: pair.borrowAsset,
+          borrowAmount: params.borrowAmount,
+          recipient: params.recipient ?? ctx.userAddress,
+          // Steps-only: the collateral the steps spend, which the runner
+          // varies (the post-fee amount).
+          ...(flow === 'bridge-in'
+            ? bridgeInInputs(ctx, params)
+            : { amount: ctx.amount }),
+        }),
       });
     },
   };

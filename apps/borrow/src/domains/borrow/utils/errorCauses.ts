@@ -1,4 +1,8 @@
-import { IntentsConnectApiError } from '@aurora-is-near/intents-connect';
+import {
+  GuardError,
+  IntentsConnectActionsApiError,
+  IntentsConnectApiError,
+} from '@aurora-is-near/intents-connect';
 
 /*
  * Reading what an error says, through everything it wraps: whether the
@@ -71,15 +75,41 @@ export const isInsufficientFunds = (value: unknown): boolean =>
 const API_ERROR_MAX_LENGTH = 300;
 
 /**
- * The reason the Intents Connect API gave for a failed request, such as
+ * What a changed borrow action is called: the hosted action no longer has
+ * the hash Borrow pins (409), or resolves to something the recipe does not
+ * describe (`ACTION_MISMATCH`), so the steps it would run were not reviewed.
+ * The pin ships in the bundle, so only a Borrow release lifts it.
+ */
+export const ACTION_CHANGED_MESSAGE =
+  'The borrow action changed, so borrowing is paused until Borrow is updated.';
+
+/**
+ * The reason the Intents Connect API (or the hosted actions API, resolving
+ * the borrow's steps) gave for a failed request, such as
  * `{"error": "No liquidity available"}` from creating an execution, or
  * `undefined` when the error is not an API error or its body is not JSON
- * with a non-empty `error` string.
+ * with a non-empty `error` string. A changed borrow action (the actions
+ * API's 409, or the SDK's `ACTION_MISMATCH` guard) is
+ * `ACTION_CHANGED_MESSAGE`.
  */
 export const apiErrorMessage = (error: unknown): string | undefined => {
-  const apiError = causeChainOf(error).find(
-    (value): value is IntentsConnectApiError =>
-      value instanceof IntentsConnectApiError,
+  const causes = causeChainOf(error);
+
+  if (
+    causes.some(
+      (value) =>
+        (value instanceof GuardError && value.code === 'ACTION_MISMATCH') ||
+        (value instanceof IntentsConnectActionsApiError &&
+          value.isHashMismatch),
+    )
+  ) {
+    return ACTION_CHANGED_MESSAGE;
+  }
+
+  const apiError = causes.find(
+    (value): value is IntentsConnectApiError | IntentsConnectActionsApiError =>
+      value instanceof IntentsConnectApiError ||
+      value instanceof IntentsConnectActionsApiError,
   );
 
   const { body } = apiError ?? {};

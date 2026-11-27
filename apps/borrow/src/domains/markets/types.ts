@@ -1,6 +1,7 @@
-import type { Recipe } from '@aurora-is-near/intents-connect';
-import type { BorrowParams } from '@aurora-is-near/intents-connect-actions/sdk';
+import type { AsyncRecipe, Recipe } from '@aurora-is-near/intents-connect';
 import type { Address } from 'viem';
+
+import type { BorrowParams } from '@/domains/borrow/utils/recipe';
 
 /**
  * The boundary between screens and lending protocols. Screens import only
@@ -29,8 +30,8 @@ export type LendingMarket = {
  * Why a listed reserve cannot take a new loan now:
  * - `cap-reached`: its supply cap (collateral) or borrow cap (borrow) is
  *   reached; it comes back once there is room.
- * - `coming-soon`: the borrow action (`aave-v3-borrow` in
- *   `@aurora-is-near/intents-connect-actions`) does not cover it yet. Takes
+ * - `coming-soon`: the borrow action (the hosted `aave-v3-borrow`) does
+ *   not cover it yet. Takes
  *   the place of `cap-reached` when both hold.
  */
 export type ReserveUnavailableReason = 'cap-reached' | 'coming-soon';
@@ -109,12 +110,14 @@ export interface LendingMarketAdapter {
   getMarketSnapshot(market: LendingMarket): Promise<MarketSnapshot>;
   /**
    * The borrow as an Intents Connect recipe, which owns its id, intent,
-   * title, destination and steps: once the collateral has arrived, the
+   * title, destination and steps (resolved by a hosted action, for Aave): once the collateral has arrived, the
    * intermediary supplies it for itself, borrows `params.borrowAmount`
    * against it and sends that to `params.recipient` (the connected wallet
    * when unset). The service's fee is the API key's fee configuration,
    * never a step. Throws for a market the adapter does not serve, or a pair
    * it cannot borrow.
    */
-  borrowRecipe(input: BorrowRecipeInput): Recipe<BorrowParams>;
+  borrowRecipe(
+    input: BorrowRecipeInput,
+  ): Recipe<BorrowParams> | AsyncRecipe<BorrowParams>;
 }

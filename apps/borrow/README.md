@@ -181,10 +181,12 @@ in `utils/`, their helpers such as `getErrorCopy`).
    "not enough gas" arises.
 5. **Steps** (pending step 2, "Bridge the collateral", then step 3, "Open
    the loan and deliver …"). Once the collateral arrives, the
-   intermediary runs the recipe's steps (`recipe.ts`; the Aave adapter
-   builds them with the `aave-v3-borrow` action's step builder from
-   `@aurora-is-near/intents-connect-actions`, each step with a name and a
-   description in its `metadata`): approve and `supply` (or the WETH gateway's
+   intermediary runs the recipe's steps. The Aave adapter's recipe is the
+   hosted `aave-v3-borrow` action (`actionRecipe` from the SDK): each dry run
+   and the steps-only retry resolve it on the actions API
+   (`VITE_INTENTS_CONNECT_ACTIONS_API_URL`), pinned by version and hash in
+   `domains/markets/aaveV3/config/borrowAction.ts`, and each step carries a
+   name and a description in its `metadata`. The steps: approve and `supply` (or the WETH gateway's
    `depositETH` for native ETH), `borrow` at variable rate, and `transfer`
    of the borrowed tokens to the recipient (the connected wallet unless
    another address was given; required for a non-EVM wallet). The service
@@ -351,6 +353,14 @@ Solana row of the connect modal; NEAR and Stellar need no configuration):
   sets only the old `VITE_INTENTS_CONNECT_API_KEY` or
   `INTENTS_CONNECT_API_KEY` stops with the rename.
 - `VITE_INTENTS_CONNECT_API_URL` (optional, public).
+- `VITE_INTENTS_CONNECT_ACTIONS_API_URL` (optional, public). The hosted
+  actions API the borrow steps are resolved from; the demo deployment
+  (`https://intents-connect-actions-demo.aurora.dev`) when unset. Borrow
+  pins `aave-v3-borrow` v1 by hash: when the served action changes, a
+  borrow fails at its quote with "The borrow action changed", and the pin in
+  `config/borrowAction.ts` needs updating (run
+  `BORROW_ACTIONS_LIVE=1 yarn test borrowAction.contract`, re-record
+  `borrowAction.golden.json`).
 - `VITE_RPC_URL_BASE`, `VITE_RPC_URL_ARB`: the market reads, including the
   liquidity pre-check and the failed-step diagnosis.
 

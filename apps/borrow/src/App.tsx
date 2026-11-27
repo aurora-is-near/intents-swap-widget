@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { createAaveV3Adapter } from '@/domains/markets/aaveV3';
 import { getClient } from '@/domains/markets/aaveV3/config/clients';
 import { MarketAdaptersProvider } from '@/domains/markets/providers/MarketAdaptersProvider';
-import { intentsConnectApi } from '@/config';
+import { intentsConnectActionsApi, intentsConnectApi } from '@/config';
 import { THEME_STORAGE_KEY } from '@/constants';
 import { IntentsConnectWalletProvider } from '@/domains/wallet/providers/IntentsConnectWalletProvider';
 import { WalletProvider } from '@/domains/wallet/providers/WalletProvider';
@@ -18,7 +18,11 @@ type AppProps = {
 
 /** The lending protocols Borrow shows: Aave V3 on Base and Arbitrum. */
 const marketAdapters = [
-  createAaveV3Adapter({ api: intentsConnectApi, getClient }),
+  createAaveV3Adapter({
+    api: intentsConnectApi,
+    getClient,
+    actionsApi: intentsConnectActionsApi,
+  }),
 ];
 
 /**

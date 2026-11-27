@@ -4,12 +4,6 @@ import { formatAmount, toDisplayNumber } from '../../utils/loanFormat';
 import type { CtaState } from '../../model/ctaState';
 
 /**
- * `.cta` (Web-Borrow.dc.html line 371): the kit's `.go` with radius 16, gap
- * 10 and margin-top 14.
- */
-const CTA = 'mt-3.5 gap-2.5 rounded-16';
-
-/**
  * The lime market chip (line 372): `accent`, `onlime` text, padding 1px
  * 10px, radius 7. A span, not the kit's `Chip`, which is a button and cannot
  * sit inside one.
@@ -62,14 +56,17 @@ export function LoanCta({
   switch (state.kind) {
     case 'connect':
       return (
-        <Button className={CTA} onClick={onConnect}>
+        <Button className="mt-3.5 gap-2.5 rounded-16" onClick={onConnect}>
           <span>Connect wallet to borrow on</span>
           <MarketChip name={marketName} />
         </Button>
       );
     case 'ready':
       return (
-        <Button className={CTA} loading={busy} onClick={onBorrow}>
+        <Button
+          className="mt-3.5 gap-2.5 rounded-16"
+          loading={busy}
+          onClick={onBorrow}>
           <span>
             Borrow{' '}
             {formatAmount(toDisplayNumber(state.borrowAmount, state.decimals))}{' '}
@@ -83,7 +80,7 @@ export function LoanCta({
 
       return (
         <Button
-          className={CTA}
+          className="mt-3.5 gap-2.5 rounded-16"
           disabled
           variant={danger ? 'danger' : 'primary'}>
           {label}

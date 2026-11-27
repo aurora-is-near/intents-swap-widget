@@ -1,0 +1,646 @@
+[
+  {
+    "key": "base:ETH:USDC:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "base",
+      "collateral": "ETH",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "base",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against ETH on Aave Base"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:base.omft.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24",
+            "value": "{MIN_AMOUNT_OUT}"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "base:ETH:USDC:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "base",
+      "collateral": "ETH",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "123450000000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "base",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "destinationAsset": "nep141:base.omft.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against ETH on Aave Base"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xa0d9C1E9E48Ca30c8d8C3B5D69FF5dc1f6DFfC24",
+            "value": "123450000000000000"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "base:cbBTC:USDC:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "base",
+      "collateral": "cbBTC",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "base",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against cbBTC on Aave Base"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "approve(address,uint256)",
+            "metadata": {
+              "description": "Allow the Aave V3 Pool to take the cbBTC collateral",
+              "name": "Approve cbBTC"
+            },
+            "parameters": [
+              "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+              "{MIN_AMOUNT_OUT}"
+            ],
+            "to": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "value": "0"
+          },
+          {
+            "functionSignature": "supply(address,uint256,address,uint16)",
+            "metadata": {
+              "description": "Supply cbBTC to Aave V3 as collateral",
+              "name": "Supply cbBTC"
+            },
+            "parameters": [
+              "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+              "{MIN_AMOUNT_OUT}",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "base:cbBTC:USDC:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "base",
+      "collateral": "cbBTC",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "12345000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "base",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "destinationAsset": "nep141:base-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf.omft.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against cbBTC on Aave Base"
+        },
+        "steps": [
+          {
+            "functionSignature": "approve(address,uint256)",
+            "metadata": {
+              "description": "Allow the Aave V3 Pool to take the cbBTC collateral",
+              "name": "Approve cbBTC"
+            },
+            "parameters": [
+              "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+              "12345000"
+            ],
+            "to": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+            "value": "0"
+          },
+          {
+            "functionSignature": "supply(address,uint256,address,uint16)",
+            "metadata": {
+              "description": "Supply cbBTC to Aave V3 as collateral",
+              "name": "Supply cbBTC"
+            },
+            "parameters": [
+              "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+              "12345000",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "arb:ETH:USDC:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "arb",
+      "collateral": "ETH",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "arb",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against ETH on Aave Arbitrum"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:arb.omft.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0x5283BEcEd7ADF6D003225C13896E536f2D4264FF",
+            "value": "{MIN_AMOUNT_OUT}"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "arb:ETH:USDC:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "arb",
+      "collateral": "ETH",
+      "borrowAsset": "USDC",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "123450000000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "arb",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "destinationAsset": "nep141:arb.omft.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDC against ETH on Aave Arbitrum"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0x5283BEcEd7ADF6D003225C13896E536f2D4264FF",
+            "value": "123450000000000000"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDC from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDC"
+            },
+            "parameters": [
+              "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDC to the recipient",
+              "name": "Send USDC"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "arb:ETH:USDT:bridge-in",
+    "flow": "bridge-in",
+    "inputs": {
+      "chain": "arb",
+      "collateral": "ETH",
+      "borrowAsset": "USDT",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "originAsset": "nep141:sol.omft.near",
+      "amount": "10000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "arb",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDT0 against ETH on Aave Arbitrum"
+        },
+        "outOperation": false,
+        "quote": {
+          "amount": "10000000000",
+          "destinationAsset": "nep141:arb.omft.near",
+          "originAsset": "nep141:sol.omft.near",
+          "slippageTolerance": 100,
+          "swapType": "EXACT_INPUT"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0x5283BEcEd7ADF6D003225C13896E536f2D4264FF",
+            "value": "{MIN_AMOUNT_OUT}"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDT0 from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDT0"
+            },
+            "parameters": [
+              "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDT0 to the recipient",
+              "name": "Send USDT0"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  },
+  {
+    "key": "arb:ETH:USDT:steps-only",
+    "flow": "steps-only",
+    "inputs": {
+      "chain": "arb",
+      "collateral": "ETH",
+      "borrowAsset": "USDT",
+      "borrowAmount": "1500000000",
+      "recipient": "0x00000000000000000000000000000000000000bb",
+      "amount": "123450000000000000"
+    },
+    "resolution": {
+      "actionId": "aave-v3-borrow",
+      "version": 1,
+      "executionChain": "arb",
+      "actionSha256Hash": "cf4a065b25d026dbf38b8724ced0d58642309f404672e552d038fa3e64b983fa",
+      "execution": {
+        "destinationAsset": "nep141:arb.omft.near",
+        "dry": false,
+        "metadata": {
+          "intent": "aave_borrow",
+          "title": "Borrow USDT0 against ETH on Aave Arbitrum"
+        },
+        "steps": [
+          {
+            "functionSignature": "depositETH(address,address,uint16)",
+            "metadata": {
+              "description": "Supply ETH to Aave V3 as collateral through the WETH gateway",
+              "name": "Supply ETH"
+            },
+            "parameters": [
+              "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+              "{INTERMEDIARY}",
+              "0"
+            ],
+            "to": "0x5283BEcEd7ADF6D003225C13896E536f2D4264FF",
+            "value": "123450000000000000"
+          },
+          {
+            "functionSignature": "borrow(address,uint256,uint256,uint16,address)",
+            "metadata": {
+              "description": "Borrow USDT0 from Aave V3 at the variable rate against the collateral",
+              "name": "Borrow USDT0"
+            },
+            "parameters": [
+              "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+              "1500000000",
+              "2",
+              "0",
+              "{INTERMEDIARY}"
+            ],
+            "to": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+            "value": "0"
+          },
+          {
+            "functionSignature": "transfer(address,uint256)",
+            "metadata": {
+              "description": "Send the borrowed USDT0 to the recipient",
+              "name": "Send USDT0"
+            },
+            "parameters": [
+              "0x00000000000000000000000000000000000000bb",
+              "1500000000"
+            ],
+            "to": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+            "value": "0"
+          }
+        ],
+        "type": "evm",
+        "version": "1.0"
+      }
+    }
+  }
+]

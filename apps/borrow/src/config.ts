@@ -1,5 +1,6 @@
 import {
   createIntentsApi,
+  createIntentsConnectActionsApi,
   createIntentsConnectApi,
 } from '@aurora-is-near/intents-connect';
 
@@ -27,6 +28,22 @@ const DEFAULT_INTENTS_CONNECT_API_URL =
 const INTENTS_CONNECT_API_URL =
   readEnv(import.meta.env.VITE_INTENTS_CONNECT_API_URL) ??
   DEFAULT_INTENTS_CONNECT_API_URL;
+
+/**
+ * The hosted actions API used when no URL is configured: the demo deployment
+ * that serves `aave-v3-borrow`.
+ */
+const DEFAULT_INTENTS_CONNECT_ACTIONS_API_URL =
+  'https://intents-connect-actions-demo.aurora.dev';
+
+/**
+ * The hosted actions API, from `VITE_INTENTS_CONNECT_ACTIONS_API_URL`: the
+ * resolve of the borrow action (`BORROW_ACTION`). Public, no
+ * key. Executions are still created on `VITE_INTENTS_CONNECT_API_URL`.
+ */
+const INTENTS_CONNECT_ACTIONS_API_URL =
+  readEnv(import.meta.env.VITE_INTENTS_CONNECT_ACTIONS_API_URL) ??
+  DEFAULT_INTENTS_CONNECT_ACTIONS_API_URL;
 
 /**
  * The API key, from `VITE_INTENTS_API_KEY`: one key for both clients below.
@@ -78,6 +95,11 @@ export const BORROW_FEE_BPS = 30;
 export const intentsConnectApi = createIntentsConnectApi({
   baseUrl: INTENTS_CONNECT_API_URL,
   apiKey: INTENTS_API_KEY,
+});
+
+/** The hosted actions client: Borrow's steps come from `aave-v3-borrow`. */
+export const intentsConnectActionsApi = createIntentsConnectActionsApi({
+  baseUrl: INTENTS_CONNECT_ACTIONS_API_URL,
 });
 
 /**

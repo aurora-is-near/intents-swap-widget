@@ -3,6 +3,7 @@ import {
   ExecutionCancelledError,
   ExecutionPollTimeoutError,
   GuardError,
+  IntentsConnectActionsApiError,
   IntentsConnectApiError,
   RunnerDisposedError,
 } from '@aurora-is-near/intents-connect';
@@ -22,7 +23,11 @@ import {
   classifyBorrowError,
 } from '../classifyBorrowError';
 import { diagnoseBorrowStep } from '../diagnoseBorrowStep';
-import { apiErrorMessage, isInsufficientFunds } from '../errorCauses';
+import {
+  ACTION_CHANGED_MESSAGE,
+  apiErrorMessage,
+  isInsufficientFunds,
+} from '../errorCauses';
 import { BorrowPreviewError } from '../preview';
 import type {
   BorrowErrorContext,
@@ -450,6 +455,36 @@ describe('apiErrorMessage', () => {
     ['a non-string error', { error: 42 }],
   ])('is undefined for %s', (_, body) => {
     expect(apiErrorMessage(apiError(body))).toBeUndefined();
+  });
+
+  it("reads the hosted actions API's reason, such as an invalid input", () => {
+    expect(
+      apiErrorMessage(
+        new IntentsConnectActionsApiError('invalid', 400, {
+          error: 'invalid action input: USDT cannot be borrowed on Base.',
+        }),
+      ),
+    ).toBe('invalid action input: USDT cannot be borrowed on Base.');
+  });
+
+  it('names a changed borrow action (the pinned hash answered 409)', () => {
+    expect(
+      apiErrorMessage(
+        new Error('wrapped', {
+          cause: new IntentsConnectActionsApiError('conflict', 409, {
+            error: 'action hash mismatch',
+          }),
+        }),
+      ),
+    ).toBe(ACTION_CHANGED_MESSAGE);
+  });
+
+  it('names a borrow action that resolved to another recipe (ACTION_MISMATCH)', () => {
+    expect(
+      apiErrorMessage(
+        new GuardError('ACTION_MISMATCH', 'resolved another asset'),
+      ),
+    ).toBe(ACTION_CHANGED_MESSAGE);
   });
 
   it('is undefined for an error that is not from the API', () => {

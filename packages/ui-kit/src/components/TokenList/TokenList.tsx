@@ -5,7 +5,6 @@ import {
 } from 'react';
 
 import { cn } from '../../utils/cn';
-import { FOCUS_RING } from '../../utils/focusRing';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { TokenMark } from '../TokenMark/TokenMark';
 
@@ -38,36 +37,6 @@ export type TokenOption = {
    */
   unavailableReason?: string;
 };
-
-/**
- * `.row` (lines 29–31, markup line 245): gap 12, padding 8px 10px, radius
- * 12, transparent 1.5px border; hover `hov`; selected `tint` with a `limebd`
- * border. Focus ring as on line 20. Disabled: `.go:disabled`'s opacity
- * (line 57) and the not-allowed cursor (line 16), with no hover, as Button.
- */
-const ROW = `box-border flex w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-3 rounded-12 border-1.5 border-solid border-transparent bg-transparent px-2.5 py-2 text-left font-sans text-ink enabled:hover:bg-hov aria-pressed:border-limebd aria-pressed:bg-tint ${FOCUS_RING}`;
-
-/** Symbol and chains (line 246): `flex:1; min-width:0; line-height:1.25`. */
-const NAMES = 'min-w-0 flex-1 leading-tight';
-
-/**
- * Line 246: 16px / 700, one line: a squeezed symbol ellipsises instead of
- * running under the price.
- */
-const SYMBOL = 'truncate text-16 font-bold';
-
-/** Line 246: 12px `mut2`, one line with an ellipsis. */
-const CHAINS = 'truncate text-12 text-mut2';
-
-/** Line 247: 14px / 600. */
-const PRICE = 'shrink-0 text-14 font-semibold';
-
-/**
- * A balance in the price's place: the price's type, right-aligned, with its
- * USD value under it in the chains line's type (12px `mut2`).
- */
-const BALANCE = 'shrink-0 text-right leading-tight';
-const BALANCE_USD = 'text-12 text-mut2';
 
 export type TokenListProps = HTMLAttributes<HTMLDivElement>;
 
@@ -112,6 +81,10 @@ export type TokenRowProps = Omit<
  * option has a `balanceLabel`. Its accessible name is that text; the mark is
  * decorative. An option with an `unavailableReason` is disabled, and the
  * reason is part of the name.
+ *
+ * `.row` (Web-Borrow.dc.html lines 29–31, markup line 245): selected is
+ * `tint` with a `limebd` border. Disabled: `.go:disabled`'s opacity (line 57)
+ * and the not-allowed cursor (line 16), with no hover, as Button.
  */
 export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
   (
@@ -128,7 +101,10 @@ export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
     <button
       ref={ref}
       aria-pressed={selected}
-      className={cn(ROW, className)}
+      className={cn(
+        'box-border flex w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 items-center gap-3 rounded-12 border-1.5 border-solid border-transparent bg-transparent px-2.5 py-2 text-left font-sans text-ink enabled:hover:bg-hov aria-pressed:border-limebd aria-pressed:bg-tint focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:outline-solid',
+        className,
+      )}
       disabled={disabled ?? option.unavailableReason !== undefined}
       type={type}
       {...props}>
@@ -143,21 +119,34 @@ export const TokenRow = forwardRef<HTMLButtonElement, TokenRowProps>(
         size={34}
         src={option.mark.src}
       />
-      <span className={NAMES}>
-        <span className={cn('block', SYMBOL)}>{option.symbol}</span>
-        <span className={cn('block', CHAINS)} title={option.chainsLabel}>
+      {/* Symbol and chains (line 246), each one line: a squeezed symbol
+          ellipsises instead of running under the price. */}
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate text-16 font-bold">
+          {option.symbol}
+        </span>
+        <span
+          className="block truncate text-12 text-mut2"
+          title={option.chainsLabel}>
           {option.unavailableReason === undefined
             ? option.chainsLabel
             : `${option.unavailableReason} · ${option.chainsLabel}`}
         </span>
       </span>
       {option.balanceLabel === undefined ? (
-        <span className={PRICE}>{option.priceLabel}</span>
+        // Line 247: 14px / 600.
+        <span className="shrink-0 text-14 font-semibold">
+          {option.priceLabel}
+        </span>
       ) : (
-        <span className={BALANCE}>
-          <span className={cn('block', PRICE)}>{option.balanceLabel}</span>
+        // A balance in the price's place: the price's type, right-aligned,
+        // with its USD value under it in the chains line's type.
+        <span className="shrink-0 text-right leading-tight">
+          <span className="block shrink-0 text-14 font-semibold">
+            {option.balanceLabel}
+          </span>
           {option.balanceUsdLabel === undefined ? null : (
-            <span className={cn('block', BALANCE_USD)}>
+            <span className="block text-12 text-mut2">
               {option.balanceUsdLabel}
             </span>
           )}

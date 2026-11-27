@@ -69,6 +69,7 @@ const setup = (
   const adapter = createAaveV3Adapter({
     api: { listSupportedTokens },
     getClient,
+    actionsApi: { resolveAction: vi.fn() },
   });
 
   return { adapter, getClient, listSupportedTokens };

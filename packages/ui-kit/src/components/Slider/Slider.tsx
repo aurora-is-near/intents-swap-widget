@@ -14,57 +14,6 @@ export const RISK_ZONE_COLORS = [
   '#E5694F',
 ] as const;
 
-/**
- * `.ltvwrap` (lines 302, 44): 36px high, holding the track 12px from its
- * top. The artboard's `focus-within` outline was removed on purpose, so the
- * slider shows no focus ring. The disabled look is `.go:disabled`'s opacity
- * (line 57); the artboards have no disabled slider.
- */
-const CONTROL =
-  'relative box-border h-9 cursor-pointer touch-none pt-3 data-disabled:cursor-not-allowed data-disabled:opacity-50';
-
-/**
- * The track (line 303): 10px high, radius 5. Base UI positions the thumb
- * inside it. `track` shows where no zone paints.
- */
-const TRACK = 'h-2.5 rounded-5 bg-track';
-
-/** The zone strip (lines 303–304): clipped to the track's radius. */
-const ZONES = 'absolute inset-0 flex overflow-hidden rounded-5';
-
-/**
- * The plain track's fill. The repay slider (line 450, `.rs`) is a native
- * range with `accent-color:var(--ink)`, and the style block has no `.rs`
- * rule, so the fill is ink on the `track` colour.
- */
-const INDICATOR = 'rounded-5 bg-ink';
-
-/**
- * The liquidation marker (line 306): 3×22px `neg`, radius 2, 6px from the
- * control's top (−6px from the track's), centred on its value (see
- * `markerPosition`).
- */
-const MARKER =
-  'pointer-events-none absolute -top-1.5 h-5.5 w-0.75 rounded-2 bg-neg';
-
-/**
- * The marker's label (line 302): 10px `neg`, 17px above the control's top
- * (−29px from the track's), centred on the marker.
- */
-const MARKER_LABEL =
-  'pointer-events-none absolute -top-7.25 font-sans text-10 whitespace-nowrap text-neg';
-
-/**
- * The thumb (line 307): 24px, `sf`, 4px ink border, centred on the track
- * (5px from the control's top). With the control's focus ring removed, the
- * thumb fills with ink while its range input has keyboard focus, so keyboard
- * users still see which control the arrow keys move, without an outline.
- * Forced-colors mode replaces both fills with the same system colour, so
- * there, and only there, the focused thumb gets a `Highlight` outline.
- */
-const THUMB =
-  'box-border size-6 rounded-full border-4 border-solid border-ink bg-sf has-focus-visible:bg-ink forced-colors:has-focus-visible:outline-2 forced-colors:has-focus-visible:outline-offset-2 forced-colors:has-focus-visible:outline-solid forced-colors:has-focus-visible:outline-[Highlight]';
-
 export type SliderZone = {
   /** Where the zone ends; it starts where the previous one ended, or at `min`. */
   upTo: number;
@@ -190,12 +139,21 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
         max={max}
         min={min}
         {...props}>
-        <SliderPrimitive.Control className={CONTROL}>
-          <SliderPrimitive.Track className={TRACK}>
+        {/* `.ltvwrap` (lines 302, 44): 36px high, the track 12px from its
+            top. The artboard's `focus-within` outline was removed on
+            purpose; the disabled look is `.go:disabled`'s opacity (line 57). */}
+        <SliderPrimitive.Control className="relative box-border h-9 cursor-pointer touch-none pt-3 data-disabled:cursor-not-allowed data-disabled:opacity-50">
+          {/* The track (line 303); `track` shows where no zone paints. */}
+          <SliderPrimitive.Track className="h-2.5 rounded-5 bg-track">
             {zones == null ? (
-              <SliderPrimitive.Indicator className={INDICATOR} />
+              // The repay slider (line 450, `.rs`) is a native range with
+              // `accent-color:var(--ink)`, so the fill is ink.
+              <SliderPrimitive.Indicator className="rounded-5 bg-ink" />
             ) : (
-              <div aria-hidden className={ZONES} data-slot="zones">
+              <div
+                aria-hidden
+                className="absolute inset-0 flex overflow-hidden rounded-5"
+                data-slot="zones">
                 {zoneWidths(zones, min, max).map(({ upTo, color, width }) => (
                   <div
                     key={upTo}
@@ -209,26 +167,32 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
             {markerStyle != null && (
               <>
                 {hasMarkerLabel && (
+                  // The marker's label (line 302): centred on the marker.
                   <div
-                    className={MARKER_LABEL}
+                    className="pointer-events-none absolute -top-7.25 font-sans text-10 whitespace-nowrap text-neg"
                     id={markerLabelId}
                     style={markerStyle}>
                     {marker?.label}
                   </div>
                 )}
+                {/* The liquidation marker (line 306), centred on its value
+                    (see `markerPosition`). */}
                 <div
                   aria-hidden
-                  className={MARKER}
+                  className="pointer-events-none absolute -top-1.5 h-5.5 w-0.75 rounded-2 bg-neg"
                   data-slot="marker"
                   style={markerStyle}
                 />
               </>
             )}
+            {/* The thumb (line 307). With no focus ring on the control, it
+                fills with ink while its input has keyboard focus; only
+                forced-colors mode, where both fills match, adds an outline. */}
             <SliderPrimitive.Thumb
               aria-describedby={describedBy}
               aria-label={ariaLabel}
               aria-labelledby={ariaLabelledBy}
-              className={THUMB}
+              className="box-border size-6 rounded-full border-4 border-solid border-ink bg-sf has-focus-visible:bg-ink forced-colors:has-focus-visible:outline-2 forced-colors:has-focus-visible:outline-offset-2 forced-colors:has-focus-visible:outline-solid forced-colors:has-focus-visible:outline-[Highlight]"
               getAriaValueText={getAriaValueText}
             />
           </SliderPrimitive.Track>

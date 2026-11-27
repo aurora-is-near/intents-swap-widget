@@ -43,14 +43,19 @@ describe('buildBorrowPlan', () => {
     expect(plan.prepared).toBeUndefined();
   });
 
-  it('runs the borrow recipe with the literal borrow amount and the recipient', () => {
+  it('runs the borrow recipe with the literal borrow amount, the recipient and the bridged origin', () => {
     const plan = buildBorrowPlan(input({ recipient: '0xbb' }));
 
     expect(plan.recipe.intent).toBe('aave_borrow');
+    // The origin is what a hosted action resolves its quote from; it is the
+    // plan's own quote.
     expect(plan.params).toEqual({
       borrowAmount: '1500000000',
       recipient: '0xbb',
+      originAsset: plan.quote.originAsset,
+      originAmount: plan.quote.amount,
     });
+    expect(plan.params.originAmount).toBe('3000000000');
   });
 
   it("runs the market adapter's bridge-in recipe for the pair", () => {

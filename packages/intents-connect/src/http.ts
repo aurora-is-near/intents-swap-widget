@@ -53,6 +53,37 @@ const BODY_SNIPPET_LENGTH = 200;
 export const bodySnippet = (raw: string): string =>
   raw.trim().slice(0, BODY_SNIPPET_LENGTH);
 
+/** Intents Connect responses are wrapped as `{ result: … }`; tolerate a bare body too. */
+export const unwrapResult = (payload: unknown): unknown =>
+  payload && typeof payload === 'object' && 'result' in payload
+    ? (payload as { result: unknown }).result
+    : payload;
+
+/**
+ * The message of a failed Intents Connect response: its `{ "error": "…" }`
+ * field (the execution and actions APIs share that shape), else the status
+ * and a snippet of the body. A non-JSON body is usually a proxy or CDN error
+ * page rather than the API; including a snippet is the difference between a
+ * debuggable failure and an opaque status code.
+ */
+export const errorFieldMessage =
+  (label: string) =>
+  (payload: unknown, status: number, raw: string): string => {
+    if (payload && typeof payload === 'object' && 'error' in payload) {
+      const { error } = payload as { error: unknown };
+
+      if (typeof error === 'string') {
+        return error;
+      }
+    }
+
+    const snippet = bodySnippet(raw);
+
+    return snippet
+      ? `${label} responded ${status}: ${snippet}`
+      : `${label} responded ${status}`;
+  };
+
 /**
  * The JSON-over-HTTP transport shared by every client in this package.
  *

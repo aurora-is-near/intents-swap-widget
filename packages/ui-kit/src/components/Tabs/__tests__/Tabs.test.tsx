@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { SEG_CLASSES } from '../../../utils/segClasses';
 import { Button } from '../../Button/Button';
 import { Tab, Tabs, TabsList, TabsPanel } from '../Tabs';
 
@@ -143,7 +142,16 @@ describe('Tabs', () => {
 
     expect(classes).toEqual(
       expect.arrayContaining([
-        ...SEG_CLASSES.split(' '),
+        'rounded-full',
+        'border-1.5',
+        'border-solid',
+        'border-bd2',
+        'bg-sf',
+        'px-4.5',
+        'py-2.25',
+        'text-15',
+        'text-ink',
+        'enabled:hover:border-ink',
         'inline-flex',
         'gap-2',
         'font-bold',
@@ -159,7 +167,18 @@ describe('Tabs', () => {
     render(<Button variant="secondary">Max</Button>);
 
     expect(classesOf(screen.getByRole('button'))).toEqual(
-      expect.arrayContaining(SEG_CLASSES.split(' ')),
+      expect.arrayContaining([
+        'rounded-full',
+        'border-1.5',
+        'border-solid',
+        'border-bd2',
+        'bg-sf',
+        'px-4.5',
+        'py-2.25',
+        'text-15',
+        'text-ink',
+        'enabled:hover:border-ink',
+      ]),
     );
   });
 });

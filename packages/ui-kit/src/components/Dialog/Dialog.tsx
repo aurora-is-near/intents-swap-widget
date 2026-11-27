@@ -25,66 +25,6 @@ import { ScrollArea } from '../ScrollArea/ScrollArea';
  */
 
 /**
- * The backdrop (line 967): `rgba(17,22,19,0.5)`, the light ink in both
- * themes on the artboards, so it stays literal. Fades in and out.
- *
- * No z-index (the artboard's is `z-index:100`): with the app root isolated
- * (see `styles/index.css`), portalled layers stack above the app in DOM
- * order, so a popup opened from inside the dialog, such as a `TokenSelect`,
- * is portalled later and lands on top of it.
- */
-const BACKDROP =
-  'fixed inset-0 bg-scrim transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none';
-
-/**
- * The scroll container (line 967): fixed, flex, padding 20px, scrolls, and
- * centres the popup with the popup's `margin:auto`. Mobile drops the gutter.
- * No z-index, as for the backdrop.
- */
-const VIEWPORT = 'fixed inset-0 box-border flex overflow-y-auto p-5 mobile:p-0';
-
-/**
- * The popup (line 968): `margin:auto; flex:0 1 460px; min-width:0`, radius
- * 28, `sf`, shadow `0 30px 80px rgba(17,22,19,0.35)` (light ink in both
- * themes, so literal). The close button is positioned against it; its 26px
- * padding is on the content's scroll area (`DialogContent`), so a tall
- * dialog scrolls inside the popup with the close button pinned above.
- *
- * Mobile: full width, pinned to the bottom (`margin-top:auto`), top corners
- * rounded.
- *
- * Motion: desktop fades and scales from .96; the sheet slides up. Both are
- * off under `prefers-reduced-motion`.
- */
-const POPUP = [
-  'relative m-auto box-border min-w-0 flex-[0_1_460px] rounded-28 bg-sf font-sans text-ink shadow-dialog outline-none',
-  'transition-[opacity,scale,translate] duration-200 data-ending-style:scale-96 data-ending-style:opacity-0 data-starting-style:scale-96 data-starting-style:opacity-0 motion-reduce:transition-none',
-  'mobile:mx-0 mobile:mt-auto mobile:mb-0 mobile:basis-full mobile:rounded-t-28 mobile:rounded-b-none',
-  'mobile:data-ending-style:translate-y-full mobile:data-ending-style:scale-100 mobile:data-ending-style:opacity-100 mobile:data-starting-style:translate-y-full mobile:data-starting-style:scale-100 mobile:data-starting-style:opacity-100',
-].join(' ');
-
-/**
- * `.ibtn` (lines 53–54, markup line 982): 36×36, radius 12, transparent,
- * hover `hov`, focus ring (line 52): the `ghost` button without its padding.
- * On the artboard it ends the header row (`align-items:flex-start`), which
- * puts it at the popup's top-right padding corner. Above the scrolling
- * content (`z-1`), which comes after it.
- */
-const CLOSE = 'absolute top-6.5 right-6.5 z-1 h-9 w-9 p-0 text-ink';
-
-/**
- * Keeps the title and description clear of the close button: the button's
- * 36px plus the header row's 12px gap (line 981).
- */
-const CLEAR_CLOSE = 'pr-12';
-
-/** Line 981: `margin:0; font-size:26px; font-weight:800; letter-spacing:-0.02em`. */
-const TITLE = 'm-0 text-26 font-extrabold leading-font tracking-title';
-
-/** Line 981: `margin:6px 0 0; font-size:15px; color:var(--mut)`. */
-const DESCRIPTION = 'mx-0 mt-1.5 mb-0 text-15 leading-font text-mut';
-
-/**
  * Whether the dialog shows its close button, which the title and
  * description keep clear of.
  */
@@ -166,20 +106,50 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
 
     return (
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className={BACKDROP} />
-        <DialogPrimitive.Viewport className={VIEWPORT}>
+        {/*
+          The backdrop (line 967): the light ink in both themes on the
+          artboards. No z-index on it or the viewport (the artboard's is
+          `z-index:100`): with the app root isolated, portalled layers stack
+          above the app in DOM order, so a popup opened from inside the
+          dialog, such as a `TokenSelect`, lands on top of it.
+        */}
+        <DialogPrimitive.Backdrop className="fixed inset-0 bg-scrim transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
+        {/* The scroll container (line 967) centres the popup with its
+            `margin:auto`; mobile drops the 20px gutter. */}
+        <DialogPrimitive.Viewport className="fixed inset-0 box-border flex overflow-y-auto p-5 mobile:p-0">
+          {/*
+            The popup (line 968). The close button is positioned against it;
+            its 26px padding is on the content's scroll area, so a tall
+            dialog scrolls inside the popup with the close button pinned
+            above. Mobile: full width, pinned to the bottom, top corners
+            rounded. Desktop fades and scales from .96; the sheet slides up;
+            both are off under `prefers-reduced-motion`.
+          */}
           <DialogPrimitive.Popup
             ref={ref}
-            className={cn(POPUP, className)}
+            className={cn(
+              'relative m-auto box-border min-w-0 flex-[0_1_460px] rounded-28 bg-sf font-sans text-ink shadow-dialog outline-none',
+              'transition-[opacity,scale,translate] duration-200 data-ending-style:scale-96 data-ending-style:opacity-0 data-starting-style:scale-96 data-starting-style:opacity-0 motion-reduce:transition-none',
+              'mobile:mx-0 mobile:mt-auto mobile:mb-0 mobile:basis-full mobile:rounded-t-28 mobile:rounded-b-none',
+              'mobile:data-ending-style:translate-y-full mobile:data-ending-style:scale-100 mobile:data-ending-style:opacity-100 mobile:data-starting-style:translate-y-full mobile:data-starting-style:scale-100 mobile:data-starting-style:opacity-100',
+              className,
+            )}
             {...props}>
-            {/* Rendered before the children (the artboard has it after the
-                title, line 982) so that it is the first focusable element
-                and takes the initial focus rather than the dialog's main
-                action. */}
+            {/* `.ibtn` (lines 53–54): the `ghost` button without its padding,
+                at the popup's top-right padding corner, above the scrolling
+                content (`z-1`). Rendered before the children (the artboard
+                has it after the title, line 982) so that it is the first
+                focusable element and takes the initial focus rather than the
+                dialog's main action. */}
             {closeButton ? (
               <DialogPrimitive.Close
                 aria-label="Close"
-                render={<Button className={CLOSE} variant="ghost" />}>
+                render={
+                  <Button
+                    className="absolute top-6.5 right-6.5 z-1 h-9 w-9 p-0 text-ink"
+                    variant="ghost"
+                  />
+                }>
                 <CloseIcon />
               </DialogPrimitive.Close>
             ) : null}
@@ -214,7 +184,11 @@ export type DialogTitleProps = Omit<
   className?: string;
 };
 
-/** The dialog's `<h2>` heading; it names the dialog. */
+/**
+ * The dialog's `<h2>` heading; it names the dialog (line 981). With a close
+ * button, `pr-12` keeps it clear of the button's 36px plus the header row's
+ * 12px gap.
+ */
 export const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(
   ({ className, ...props }, ref) => {
     const closeButton = useContext(CloseButtonContext);
@@ -222,7 +196,11 @@ export const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(
     return (
       <DialogPrimitive.Title
         ref={ref}
-        className={cn(TITLE, closeButton && CLEAR_CLOSE, className)}
+        className={cn(
+          'm-0 text-26 font-extrabold leading-font tracking-title',
+          closeButton && 'pr-12',
+          className,
+        )}
         {...props}
       />
     );
@@ -238,7 +216,10 @@ export type DialogDescriptionProps = Omit<
   className?: string;
 };
 
-/** The line under the title; it describes the dialog. */
+/**
+ * The line under the title (line 981); it describes the dialog. Clear of the
+ * close button as `DialogTitle` is.
+ */
 export const DialogDescription = forwardRef<
   HTMLParagraphElement,
   DialogDescriptionProps
@@ -248,7 +229,11 @@ export const DialogDescription = forwardRef<
   return (
     <DialogPrimitive.Description
       ref={ref}
-      className={cn(DESCRIPTION, closeButton && CLEAR_CLOSE, className)}
+      className={cn(
+        'mx-0 mt-1.5 mb-0 text-15 leading-font text-mut',
+        closeButton && 'pr-12',
+        className,
+      )}
       {...props}
     />
   );

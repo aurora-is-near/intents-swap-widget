@@ -14,7 +14,12 @@ import {
   pairRow,
   providerRows,
 } from '../../model/marketRows';
-import { MarketCard, MarketCards, MarketCardSkeleton } from './MarketCard';
+import {
+  MarketCard,
+  MarketCards,
+  MarketCardSkeleton,
+  StaticMarketCard,
+} from './MarketCard';
 import { MarketError } from './MarketError';
 import type { MarketPair, ProviderRow } from '../../model/marketRows';
 
@@ -23,6 +28,41 @@ import type { MarketPair, ProviderRow } from '../../model/marketRows';
  * while the market list itself is still loading.
  */
 const LAUNCH_PROVIDER_COUNT = 1;
+
+/**
+ * Morpho and Spark as drawn beside Aave (Web-Borrow-NotConnected.dc.html
+ * lines 1127–1129), sample figures only: Borrow does not lend on them yet.
+ * The APR is the artboard's rate for the borrowed asset, USDC's otherwise.
+ */
+const STATIC_MARKETS = {
+  morpho: {
+    name: 'Morpho',
+    maxLtv: '84%',
+    liqLtv: '86%',
+    liquidity: '$412M',
+    rates: { USDC: 3.92, USDS: 4.05, DAI: 4.01, USDT: 4.28, GHO: 4.7 },
+  },
+  spark: {
+    name: 'Spark',
+    maxLtv: '80%',
+    liqLtv: '82.5%',
+    liquidity: '$356M',
+    rates: { USDC: 4.41, USDS: 3.85, DAI: 4.25, USDT: 4.9, GHO: 5.3 },
+  },
+} as const;
+
+function StaticMarket({
+  market: { rates, ...figures },
+  borrow,
+}: {
+  market: (typeof STATIC_MARKETS)[keyof typeof STATIC_MARKETS];
+  borrow: string;
+}) {
+  const rate =
+    (rates as Record<string, number>)[borrow.toUpperCase()] ?? rates.USDC;
+
+  return <StaticMarketCard apr={`${rate.toFixed(2)}%`} {...figures} />;
+}
 
 type Item =
   /** `name`: the provider's, once its markets are listed. */
@@ -228,5 +268,12 @@ export function MarketList({
     }
   });
 
-  return <MarketCards loading={loading}>{content}</MarketCards>;
+  // The artboard's order: Morpho, Aave, Spark.
+  return (
+    <MarketCards loading={loading}>
+      <StaticMarket borrow={pair.borrow} market={STATIC_MARKETS.morpho} />
+      {content}
+      <StaticMarket borrow={pair.borrow} market={STATIC_MARKETS.spark} />
+    </MarketCards>
+  );
 }

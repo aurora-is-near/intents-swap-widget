@@ -16,6 +16,17 @@ export type {
   SupportedTokensResult,
 } from '@/api';
 
+export { actionRecipe, createIntentsConnectActionsApi } from '@/actions';
+export type {
+  ActionCatalogEntry,
+  ActionRecipeOptions,
+  ActionResolution,
+  IntentsConnectActionsApi,
+  IntentsConnectActionsApiOptions,
+  ResolveActionRequest,
+  ResolvedExecution,
+} from '@/actions';
+
 export { createIntentsApi, DEFAULT_INTENTS_API_URL } from '@/intentsApi';
 export type {
   AuthenticateResult,
@@ -246,6 +257,7 @@ export {
   ExecutionPollTimeoutError,
   GuardError,
   IntentsApiError,
+  IntentsConnectActionsApiError,
   IntentsConnectApiError,
   IntentsConnectError,
   RunnerDisposedError,

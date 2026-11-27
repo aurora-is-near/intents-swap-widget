@@ -1,5 +1,0 @@
-{
-  "name": "Borrow on Aave V3",
-  "description": "Bridge any asset into collateral on Base or Arbitrum, supply it to Aave V3 for your EVM intermediary, borrow USDC or USDT at the variable rate and send it to a recipient.",
-  "tags": []
-}

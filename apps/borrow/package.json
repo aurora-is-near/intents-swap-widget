@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@aurora-is-near/intents-connect": "*",
-    "@aurora-is-near/intents-connect-actions": "*",
     "@aurora-is-near/intents-connect-wallet": "*",
     "@aurora-is-near/ui-kit": "*",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",

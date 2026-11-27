@@ -61,4 +61,21 @@ export type SolanaRecipe<TParams = void> = Omit<
   ) => PreparedSteps<SolanaStep> | Promise<PreparedSteps<SolanaStep>>;
 };
 
-export type AnyRecipe<TParams = void> = Recipe<TParams> | SolanaRecipe<TParams>;
+/**
+ * An EVM recipe whose steps come from an asynchronous source, such as a hosted
+ * action resolved over HTTP (`actionRecipe`). The runner awaits `buildSteps`;
+ * everything else is a plain `Recipe`. It may be called more than once per
+ * flow with different `ctx.amount` values (a steps-only preview rebuilds at
+ * the post-fee amount), so it must not cache across amounts.
+ */
+export type AsyncRecipe<TParams = void> = Omit<
+  Recipe<TParams>,
+  'buildSteps'
+> & {
+  buildSteps: (ctx: StepContext, params: TParams) => Promise<Step[]>;
+};
+
+export type AnyRecipe<TParams = void> =
+  | Recipe<TParams>
+  | AsyncRecipe<TParams>
+  | SolanaRecipe<TParams>;

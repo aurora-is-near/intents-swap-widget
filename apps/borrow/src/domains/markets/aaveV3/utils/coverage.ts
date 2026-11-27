@@ -1,24 +1,25 @@
+import { markUnavailable } from '../../utils/availability';
 import {
   AAVE_BORROW_ASSETS,
   AAVE_BORROW_MARKETS,
   AAVE_COLLATERAL_ASSETS,
-} from '@aurora-is-near/intents-connect-actions';
+} from '../config/borrowAction';
+import type { BorrowReserve, CollateralReserve } from '../../types';
 import type {
   AaveBorrowAsset,
   AaveBorrowToken,
   AaveCollateralAsset,
-} from '@aurora-is-near/intents-connect-actions';
-
-import { markUnavailable } from '../../utils/availability';
-import type { BorrowReserve, CollateralReserve } from '../../types';
+} from '../config/borrowAction';
 import type { AaveMarket } from '../config/registry';
 
 /**
- * Which reserves the borrow action (`aave-v3-borrow`) can run: its tables
- * in `@aurora-is-near/intents-connect-actions`, per chain. A reserve is
- * covered when the chain's table has its token address with the same
- * delivery: the native token (`nativeDelivery`, supplied through the
- * gateway) or the ERC-20 itself. Borrowed tokens are never native.
+ * Which reserves the hosted borrow action (`aave-v3-borrow`) can run: the
+ * app's copy of its token tables (`config/borrowAction.ts`), per chain. A
+ * reserve is covered when the chain's table has its token address with the
+ * same delivery: the native token (`nativeDelivery`, supplied through the
+ * gateway) or the ERC-20 itself. Borrowed tokens are never native. The
+ * action itself is pinned by hash, so a changed action fails at quote time
+ * (`ACTION_CHANGED_MESSAGE`) rather than here.
  */
 
 /** The table symbol whose token is `asset` delivered as `native`. */
