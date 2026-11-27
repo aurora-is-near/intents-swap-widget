@@ -17,9 +17,11 @@ export type SolanaProvider<TTransaction = any> = {
 
 export type StellarProvider = {
   publicKey?: string;
-  signMessage: (
-    message: string,
-  ) => Promise<{ signedMessage: string; signerAddress: string | undefined }>;
+  signMessage: (message: string) => Promise<{
+    // Freighter versions disagree: a base64 string or the raw bytes.
+    signedMessage: string | Uint8Array;
+    signerAddress: string | undefined;
+  }>;
   signTransaction: (
     tx: string,
     options?: { networkPassphrase: string; address: string },

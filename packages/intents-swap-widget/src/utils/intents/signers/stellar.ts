@@ -1,14 +1,15 @@
 import bs58 from 'bs58';
 
 import { WidgetError } from '@/errors';
+import { stellarSignatureToBytes } from '@/utils/stellar/stellarSignatureToBytes';
 import type { PreparedIntent, SignedIntent } from '@/types/intents';
 import type { StellarNetworkPlugin } from '@/types/connectors';
 import type { StellarProvider } from '@/types/providers';
 
 import type { PreparedIntentSigner } from './types';
 
-function transformStellarSignature(signature: string) {
-  return `ed25519:${bs58.encode(Buffer.from(signature, 'base64'))}`;
+function transformStellarSignature(signature: string | Uint8Array) {
+  return `ed25519:${bs58.encode(stellarSignatureToBytes(signature))}`;
 }
 
 export class IntentSignerStellar implements PreparedIntentSigner {
